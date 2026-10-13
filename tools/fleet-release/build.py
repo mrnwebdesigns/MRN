@@ -78,6 +78,31 @@ def package_files(path, slug):
 def plugin_payload(row, repo, standalone):
     """Use the component-owned recipe when committed files need generated assets."""
     slug = row['slug']
+    if slug == 'category-visibility':
+        root, path = plugin_source(row, Path(repo), Path(standalone))
+        if row['repository'] != slug or path not in ('', '.'):
+            raise ReleaseError('Category Visibility recipe requires its standalone repository')
+        if git(root, 'status', '--porcelain=v1', '--untracked-files=all'):
+            raise ReleaseError('Category Visibility release source must be clean')
+        commit = git(root, 'rev-parse', 'HEAD')
+        version = lock_tool.read_header_version(root / 'category-visibility.php')
+        run(['python3', root / 'scripts/package.py'], cwd=root, timeout=300)
+        archive = root / 'build' / ('category-visibility-' + version + '.zip')
+        if archive.is_symlink() or not archive.is_file():
+            raise ReleaseError('Category Visibility runtime archive is missing or unsafe')
+        files = package_files(archive, slug)
+        source = git_files(row, Path(repo), Path(standalone))
+        runtime_roots = {'category-visibility.php', 'uninstall.php', 'readme.txt',
+                         'README.md', 'CHANGELOG.md', 'LICENSE'}
+        if (not {'category-visibility.php', 'uninstall.php', 'readme.txt'} <= files.keys()
+                or any(name not in runtime_roots and not name.startswith(
+                    ('includes/', 'assets/', 'languages/', 'docs/')) for name in files)
+                or any(source.get(name) != value for name, value in files.items())):
+            raise ReleaseError('Category Visibility runtime payload differs from committed source')
+        if git(root, 'rev-parse', 'HEAD') != commit or git(
+                root, 'status', '--porcelain=v1', '--untracked-files=all'):
+            raise ReleaseError('Category Visibility release source changed during packaging')
+        return files
     if slug != 'mrn-recaptcha-enterprise-manager':
         return git_files(row, repo, standalone)
     root, path = plugin_source(row, Path(repo), Path(standalone))

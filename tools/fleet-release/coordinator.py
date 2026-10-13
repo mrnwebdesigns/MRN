@@ -504,6 +504,25 @@ def dependencies(repo, standalone, settings):
     if (Path(repo) / 'composer.lock').exists():
         run([settings['qualification']['composer'], 'install', '--no-interaction', '--prefer-dist',
              '--no-progress'], cwd=repo, timeout=900)
+    category = Path(standalone) / 'category-visibility'
+    if category.is_dir():
+        # Its runtime has no Composer dependency or component lock. Use the
+        # Stack's locked development tools/stubs for its component analysis.
+        vendor = category / 'vendor'
+        target = Path(repo) / 'vendor'
+        if not target.is_dir() or ((vendor.exists() or vendor.is_symlink())
+                                  and vendor.resolve() != target.resolve()):
+            raise ReleaseError('Category Visibility development tools differ from the locked Stack tools')
+        if not vendor.is_symlink():
+            vendor.symlink_to(target, target_is_directory=True)
+        # The component ignores vendor directories; Git treats this tooling
+        # symlink as a file. Exclude that exact untracked mirror link only.
+        exclude = Path(git(category, 'rev-parse', '--git-path', 'info/exclude'))
+        if not exclude.is_absolute():
+            exclude = category / exclude
+        exclude.parent.mkdir(parents=True, exist_ok=True)
+        with exclude.open('a') as stream:
+            stream.write('\n/vendor\n')
     engine = Path(repo).parent / 'MRN-qa-engine'
     git_network('clone', '--no-tags', 'https://github.com/mrnwebdesigns/MRN-qa-engine.git', engine)
     clean_main(engine)

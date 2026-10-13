@@ -2294,6 +2294,50 @@
       },
       "target_tier": "optional-integration",
       "version": "0.6.1"
+    },
+    {
+      "classification": "shared-feature",
+      "current_distribution": "catalog-only",
+      "data": {
+        "cron": [],
+        "external_services": [],
+        "options": [
+          "category_visibility_settings"
+        ],
+        "routes": [
+          "native category Edit, Quick Edit and Bulk Actions",
+          "native public category/post REST filters"
+        ],
+        "tables": [],
+        "term_meta": [
+          "_category_visibility"
+        ]
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress 6.0+",
+          "PHP 8.1+"
+        ],
+        "release_group": "category-visibility",
+        "soft": [
+          "Yoast SEO",
+          "Rank Math",
+          "SEOPress",
+          "SmartCrawl"
+        ]
+      },
+      "lifecycle": "supported",
+      "name": "Category Visibility",
+      "purpose": "Controls category discovery and archive access while preserving publication status, category assignments and saved menus; optional per-site editorial policy with independent post listing/access settings.",
+      "runtime_type": "standard-plugin",
+      "slug": "category-visibility",
+      "source": {
+        "path": "/Users/khofmeyer/Development/MRN-plugins/category-visibility",
+        "repository": "category-visibility",
+        "state": "confirmed"
+      },
+      "target_tier": "optional-shared",
+      "version": "1.1.0"
     }
   ],
   "distribution_values": {
