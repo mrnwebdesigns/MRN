@@ -157,6 +157,37 @@ class SourcePublication(unittest.TestCase):
 
 
 class QualificationContracts(unittest.TestCase):
+    def test_category_recipe_preserves_runtime_and_rejects_changed_or_development_bytes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary); source = root / 'category-visibility'
+            (source / 'build').mkdir(parents=True)
+            files = {'category-visibility.php': b'<?php /* Version: 1.1.0 */',
+                     'uninstall.php': b'<?php', 'readme.txt': b'Stable tag: 1.1.0',
+                     'assets/admin.js': b'accepted runtime'}
+            row = {'slug': 'category-visibility', 'repository': 'category-visibility',
+                   'relative_source': '.'}
+            archive = source / 'build/category-visibility-1.1.0.zip'
+            def write(payload):
+                with zipfile.ZipFile(archive, 'w') as output:
+                    for name, data in payload.items():
+                        output.writestr('category-visibility/' + name, data)
+            def git(_root, *args):
+                return '' if args[0] == 'status' else 'a' * 40
+            with patch.object(build, 'git', side_effect=git), \
+                 patch.object(build, 'git_files', return_value={**files, 'tests/fixture.php': b'test'}), \
+                 patch.object(build.lock_tool, 'read_header_version', return_value='1.1.0'), \
+                 patch.object(build, 'run'):
+                write(files)
+                self.assertEqual(build.plugin_payload(row, root, root), files)
+                write({**files, 'assets/admin.js': b'uncommitted bytes'})
+                with self.assertRaises(common.ReleaseError): build.plugin_payload(row, root, root)
+                write({**files, 'tests/fixture.php': b'test'})
+                with self.assertRaises(common.ReleaseError): build.plugin_payload(row, root, root)
+            with patch.object(build, 'git', return_value=' M plugin.php'), \
+                 patch.object(build, 'run') as execute:
+                with self.assertRaises(common.ReleaseError): build.plugin_payload(row, root, root)
+                execute.assert_not_called()
+
     def test_qualification_runs_in_its_own_project_directory(self):
         with tempfile.TemporaryDirectory() as temporary:
             root=Path(temporary)
@@ -236,6 +267,25 @@ class QualificationContracts(unittest.TestCase):
 
 
 class CoordinatorBoundaries(unittest.TestCase):
+    def test_category_analysis_uses_locked_tools_and_refuses_foreign_vendor(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary); repo = base / 'MRN'; repo.mkdir()
+            (repo / 'vendor').mkdir(); (repo / 'composer.lock').write_text('{}')
+            standalone = base / 'plugins'; category = standalone / 'category-visibility'
+            category.mkdir(parents=True)
+            settings = {'qualification': {'composer': 'composer'}}
+            with patch.object(coordinator, 'link_mirrors'), patch.object(coordinator, 'run') as run, \
+                 patch.object(coordinator, 'git_network'), patch.object(coordinator, 'clean_main'), \
+                 patch.object(coordinator, 'git', return_value=str(category / '.git/info/exclude')):
+                coordinator.dependencies(repo, standalone, settings)
+                self.assertEqual((category / 'vendor').resolve(), (repo / 'vendor').resolve())
+                self.assertEqual(run.call_args_list[0].args[0][1], 'install')
+                self.assertEqual(run.call_args_list[0].kwargs['cwd'], repo)
+                self.assertIn('/vendor', (category / '.git/info/exclude').read_text())
+                (category / 'vendor').unlink(); (category / 'vendor').mkdir()
+                with self.assertRaises(common.ReleaseError):
+                    coordinator.dependencies(repo, standalone, settings)
+
     def test_publication_accepts_sealed_json_paths_and_verifies_public_readback(self):
         for serialized in (False, True):
             with self.subTest(serialized=serialized), tempfile.TemporaryDirectory() as temporary:

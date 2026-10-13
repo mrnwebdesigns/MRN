@@ -1424,6 +1424,35 @@
         "preserve_active_state": true
       },
       "version": "0.13.1"
+    },
+    {
+      "current_distribution": "catalog-only",
+      "package": {
+        "filename": "category-visibility-1.1.0-39156f32c4f2.zip",
+        "main_file": "category-visibility/category-visibility.php",
+        "path": "releases/stack-plugins/category-visibility-1.1.0-39156f32c4f2.zip",
+        "sha256": "963cde9883a77b7413addd9936459abf6ca2a7bc9f6a7b1b210abe9c424672c5",
+        "size_bytes": 46245
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "category-visibility",
+      "source": {
+        "git_commit": "39156f32c4f2aecea60434a2042429e0f94c1507",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/category-visibility",
+        "repository": "mrnwebdesigns/category-visibility"
+      },
+      "target_tier": "optional-shared",
+      "tree": {
+        "file_count": 20,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "3d117e69300db8b7d13224bf6e45bf0dd74e06ce1915801f6537407e1570cb5b"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "1.1.0"
     }
   ],
   "schema_version": 1
