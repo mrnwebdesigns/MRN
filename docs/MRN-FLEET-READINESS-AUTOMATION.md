@@ -91,5 +91,10 @@ The existing `stack-promotion-drift.yml` remains an independent read-only audit.
 Source fixtures test default installation without WooCommerce and native
 editor/forms, API, accessibility and performance. Genuine provider assessment,
 recovery and installed site adoption remain explicit separate qualifications.
-The documented CAPTCHA hold and retired exclusions are not automatically lifted
-by a source merge or generic fixture result.
+Retired exclusions are not automatically lifted by a source merge or generic
+fixture result. CAPTCHA's former 0.1.4 distribution hold was explicitly resolved
+by the owner's October 13 acceptance of retained genuine-provider evidence,
+verified unchanged successor protection code/assets and exact-package local QA.
+That source acceptance does not qualify the newer native CAPTCHA migration
+controller or authorize provider cutover, legacy retirement or any site write.
+See `releases/2026.10.13-captcha-source-acceptance.md` for the evidence boundary.
