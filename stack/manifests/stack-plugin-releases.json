@@ -1366,6 +1366,35 @@
         "preserve_active_state": true
       },
       "version": "0.2.3"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-universal-sticky-bar-1.2.3-5e6be56d5f0c.zip",
+        "main_file": "mrn-universal-sticky-bar/mrn-universal-sticky-bar.php",
+        "path": "releases/stack-plugins/mrn-universal-sticky-bar-1.2.3-5e6be56d5f0c.zip",
+        "sha256": "c70ee886eae47113c89cc4df47cd1c26b0a7ecd2df4bd622b0d591db89ceb2db",
+        "size_bytes": 14791
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-universal-sticky-bar",
+      "source": {
+        "git_commit": "5e6be56d5f0c39a3fd7d478c7a17fc4a17d8b7ab",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-universal-sticky-bar",
+        "repository": "mrnwebdesigns/mrn-universal-sticky-bar"
+      },
+      "target_tier": "platform-required",
+      "tree": {
+        "file_count": 5,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "34d91803558a76efa5ba74571997e99fb6299def6431d8bb88c61c6bdd6adbec"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "1.2.3"
     }
   ],
   "schema_version": 1

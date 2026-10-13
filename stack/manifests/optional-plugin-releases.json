@@ -49,29 +49,6 @@
       "version": "1.0.14"
     },
     {
-      "current_distribution": "standard-bootstrap",
-      "package": {
-        "filename": "mrn-recaptcha-enterprise-manager-0.1.4.zip",
-        "main_file": "mrn-recaptcha-enterprise-manager/mrn-recaptcha-enterprise-manager.php",
-        "path": "releases/plugins/mrn-recaptcha-enterprise-manager-0.1.4.zip",
-        "sha256": "858ff4f801b98c994c41caf056cdb54174861e54a2b86a78dd33d4bb3a066734",
-        "size_bytes": 27599
-      },
-      "slug": "mrn-recaptcha-enterprise-manager",
-      "source": {
-        "git_commit": "e2fc5e3a580aba197e714f5b530a5da49224d293",
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-recaptcha-enterprise-manager",
-        "repository": "mrnwebdesigns/mrn-recaptcha-enterprise-manager"
-      },
-      "target_tier": "optional-integration",
-      "update_policy": {
-        "mode": "upgrade-only",
-        "new_install": "requires-separate-owner-authorization-and-plan",
-        "preserve_active_state": true
-      },
-      "version": "0.1.4"
-    },
-    {
       "current_distribution": "catalog-only",
       "package": {
         "filename": "mrn-seo-helper-0.5.0.zip",
@@ -406,6 +383,35 @@
         "preserve_active_state": true
       },
       "version": "0.17.2"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-recaptcha-enterprise-manager-0.2.3-1bc4e4424b17.zip",
+        "main_file": "mrn-recaptcha-enterprise-manager/mrn-recaptcha-enterprise-manager.php",
+        "path": "releases/stack-plugins/mrn-recaptcha-enterprise-manager-0.2.3-1bc4e4424b17.zip",
+        "sha256": "a31c33740ac80e06fc08fdca556c7aa3019b5531c7b27f7e417bf60c1d0d44fb",
+        "size_bytes": 60382
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-recaptcha-enterprise-manager",
+      "source": {
+        "git_commit": "1bc4e4424b1736ec85743b4f67a8b8add0f26220",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-recaptcha-enterprise-manager",
+        "repository": "mrnwebdesigns/mrn-recaptcha-enterprise-manager"
+      },
+      "target_tier": "optional-integration",
+      "tree": {
+        "file_count": 18,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "10920eab056e593c98b23fb26e117eab00bb7236bfe4c0a83b65d84f5132c450"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.2.3"
     },
     {
       "current_distribution": "standard-bootstrap",
