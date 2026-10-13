@@ -52,14 +52,14 @@ if ( ! function_exists( 'mrn_base_stack_prepare_external_widget_markup' ) ) {
 
 if ( ! function_exists( 'mrn_base_stack_kses_external_widget_markup' ) ) {
 	/**
-	 * Limit external widget output to embed- and shortcode-safe markup.
+	 * Limit authored embed HTML before registered shortcodes are rendered.
 	 *
-	 * Shortcodes can legitimately render interactive forms (for example,
-	 * WooCommerce order tracking). Keep the controls and their accessibility
-	 * attributes while continuing to reject scripts, inline event handlers, and
-	 * unapproved markup.
+	 * Raw embed HTML keeps the existing restricted markup contract. Registered
+	 * shortcode callbacks own their output, as they do in WordPress content and
+	 * the dedicated WPForms row; filtering that output would remove provider
+	 * scripts, styles, data attributes, and accessibility markup.
 	 *
-	 * @param string $markup Trusted embed or shortcode output.
+	 * @param string $markup Authored embed HTML or shortcode source.
 	 * @return string
 	 */
 	function mrn_base_stack_kses_external_widget_markup( $markup ) {
@@ -315,7 +315,7 @@ $section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? m
 $surface_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $section_styles ) : implode( '; ', $section_styles );
 $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 $iframe_title      = '' !== $embed_title ? $embed_title : ( '' !== $heading ? $heading : $label );
-$embed_markup      = '' !== $embed_code ? mrn_base_stack_kses_external_widget_markup( do_shortcode( $embed_code ) ) : '';
+$embed_markup      = '' !== $embed_code ? do_shortcode( mrn_base_stack_kses_external_widget_markup( $embed_code ) ) : '';
 $embed_markup      = mrn_base_stack_prepare_external_widget_markup( $embed_markup, $iframe_title, $iframe_border );
 
 if ( '' === trim( $embed_markup ) && ! $has_intro_content ) {
