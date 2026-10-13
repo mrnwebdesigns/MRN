@@ -579,7 +579,7 @@ def once(settings):
                     raise ReleaseError('Discovery mirror is dirty; preserve and inspect it')
                 git_network('fetch', 'origin', 'main', cwd=catalog_checkout)
                 git(catalog_checkout, 'checkout', '--detach', 'origin/main')
-            names = sorted({'MRN'} | {row['repository'] for row in roster(catalog_checkout)})
+            names = sorted({'MRN', 'MRN-qa-engine'} | {row['repository'] for row in roster(catalog_checkout)})
             refs = remote_refs(names)
             previous = read(state / 'status.json') if (state / 'status.json').exists() else {}
             if previous.get('observed_refs') == refs and previous.get('status') in ('fleet_ready', 'no_change'):
@@ -598,7 +598,7 @@ def once(settings):
             try:
                 clone('MRN', repo)
                 for name in names:
-                    if name != 'MRN':
+                    if name not in ('MRN', 'MRN-qa-engine'):
                         clone(name, standalone / name)
                 dependencies(repo, standalone, settings)
                 policy = read(Path(__file__).with_name('policy.json'))
@@ -639,6 +639,8 @@ def once(settings):
                                     'qa_engine_root': str(engine)}
         metadata = progress['metadata']
         refs = metadata['snapshot']['refs']
+        if 'MRN-qa-engine' not in refs and progress['phase'] != 'published':
+            raise ReleaseError('superseded: qualification toolchain was not bound to accepted source')
         if not settings['publish']:
             return {'status': 'qualified_rehearsal', 'job': str(job), 'site_writes': False}
         if progress['phase'] == 'qualified':

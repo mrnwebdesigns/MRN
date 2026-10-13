@@ -114,7 +114,7 @@ def source_files(repo, path):
 
 def repository_name(value):
     name = str(value).removeprefix('mrnwebdesigns/')
-    if name != 'MRN' and not SLUG.fullmatch(name):
+    if name not in ('MRN', 'MRN-qa-engine') and not SLUG.fullmatch(name):
         raise ReleaseError('Repository outside the MRN source namespace')
     return name
 

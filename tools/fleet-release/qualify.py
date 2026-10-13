@@ -43,6 +43,8 @@ def qualify(repo, standalone, built, settings, evidence, selected):
                  'mysql_server_version': subprocess.run(
                      [settings['mysql_server'], '--no-defaults', '--version'],
                      capture_output=True, text=True, check=True).stdout.strip()}
+    if toolchain['qa_engine_commit'] != selected['refs']['MRN-qa-engine']:
+        raise ReleaseError('Qualification engine differs from the selected accepted source')
     execute([settings['node'], '--test', str(Path(repo) / 'tools/fleet-release/tests/published-source.test.mjs')],
             evidence / 'published-source-contracts.log', cwd=repo)
     execute(['python3', '-m', 'unittest', 'discover', '-s', str(Path(repo) / 'tools/fleet-release/tests')],

@@ -157,6 +157,26 @@ class SourcePublication(unittest.TestCase):
 
 
 class QualificationContracts(unittest.TestCase):
+    def test_accepted_qa_engine_revision_is_a_source_and_material_input(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary); repo = root / 'MRN'; repo.mkdir()
+            (root / 'MRN-qa-engine').mkdir()
+            def git(_root, *args):
+                return '' if args[0] == 'ls-files' else 'a' * 40
+            with patch.object(build, 'roster', return_value=[]), \
+                 patch.object(build.lock_tool, 'parse_theme_manifest', return_value=[]), \
+                 patch.object(build, 'git', side_effect=git), \
+                 patch.object(build, 'read', return_value={'plugins': []}), \
+                 patch.object(build, 'file_hash', return_value='a' * 64), \
+                 patch.object(build, 'clean_main', return_value='b' * 40) as engine:
+                first = build.snapshot(repo, root / 'plugins', {'held_defaults': {}})
+                engine.return_value = 'c' * 40
+                second = build.snapshot(repo, root / 'plugins', {'held_defaults': {}})
+            self.assertEqual(first['refs']['MRN-qa-engine'], 'b' * 40)
+            self.assertEqual(first['material']['qualification_tools'], {'MRN-qa-engine': 'b' * 40})
+            self.assertNotEqual(first['material_sha256'], second['material_sha256'])
+            self.assertNotEqual(first['source_vector_sha256'], second['source_vector_sha256'])
+
     def test_mainwp_recipe_preserves_qualified_runtime_and_rejects_tooling_or_changed_bytes(self):
         with tempfile.TemporaryDirectory() as temporary:
             base = Path(temporary); source = base / 'mrn-mainwp-operations-api'
@@ -557,7 +577,7 @@ class CoordinatorBoundaries(unittest.TestCase):
                 path.write_bytes(b'fixture')
             checksum=common.file_hash(job/'fleet.zip')
             progress={'phase':'qualified','repo':str(repo),'standalone':str(job/'repos/MRN-plugins'),
-                      'metadata':{'snapshot':{'refs':{}},'release_id':'fixture'},
+                      'metadata':{'snapshot':{'refs':{'MRN-qa-engine':'b'*40}},'release_id':'fixture'},
                       'built':{'fleet':str(job/'fleet.zip'),'bootstrap_archive':str(job/'bootstrap.tar'),
                                'optional_archive':str(job/'optional.tar'),
                                'bootstrap':str(bootstrap),'proof':{'lock_sha256':checksum}},
@@ -567,6 +587,11 @@ class CoordinatorBoundaries(unittest.TestCase):
             with patch.object(coordinator,'publish') as publish, patch.object(coordinator,'build_all') as build:
                 result=coordinator.once({'state_root':str(state),'qualification':{},'publish':False})
                 self.assertEqual(result['status'],'qualified_rehearsal');publish.assert_not_called();build.assert_not_called()
+            legacy = json.loads(json.dumps(progress));legacy['metadata']['snapshot']['refs'] = {}
+            coordinator.seal(job, legacy)
+            with self.assertRaisesRegex(common.ReleaseError, 'superseded: qualification toolchain'):
+                coordinator.once({'state_root':str(state),'qualification':{},'publish':False})
+            coordinator.seal(job, progress)
             (job/'fleet.zip').write_bytes(b'changed')
             with self.assertRaises(common.ReleaseError): coordinator.once({'state_root':str(state),'qualification':{},'publish':True})
 
