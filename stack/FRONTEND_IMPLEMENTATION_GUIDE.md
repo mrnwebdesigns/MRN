@@ -415,6 +415,34 @@ Why this pattern is preferred:
 - formatting logic stays centralized
 - header, footer, schema, and custom templates stay aligned
 
+## Location Information In PHP Templates
+
+Locations remain reusable Content Only records. Their `Location Details` editor
+contains structured address fields, a Media Library image, weekday open/close
+hours matching Business Information, social profile rows, and phone, text/SMS/RCS
+and fax numbers.
+
+Business Hours, Social Media, Phone, Text and Fax each have an independent
+`Use from Business Information` checkbox. These are off by default. Checked
+sections hide their custom inputs and resolve the current shared values; turning
+a checkbox off restores the saved location-specific values. Address and image
+always belong to the location. Shared Social Media comes from Config Helper's
+existing Site Configurations profiles. Business Information now includes Fax.
+
+Use the effective-value helper rather than reading individual fields when
+inheritance should apply:
+
+```php
+$location = mrn_base_stack_get_location_information( $location_post_id );
+```
+
+The payload contains `address` (`line_1`, `line_2`, `city`, `state`, `postal_code`,
+`country`), `image` (attachment ID), `business_hours` (weekday open/close pairs),
+`social_links`, `phone`, `phone_uri`, `text_phone`, `text_phone_uri`, and `fax`.
+Escape text and URLs for the output context and render images with WordPress
+attachment APIs so their Media Library alt text and responsive sizes are used.
+The helper does not create a frontend layout or public location destination.
+
 ## Business Information In Sass/CSS
 
 Business information is still rendered as HTML first. Sass/CSS should style stable classes and semantic markup, not re-create the data model.

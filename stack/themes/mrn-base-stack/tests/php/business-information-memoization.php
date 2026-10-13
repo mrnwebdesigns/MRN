@@ -24,6 +24,7 @@ $GLOBALS['mrn_business_test_fields']          = array(
 	'logo_footer_inverted'  => array( 'url' => 'https://example.test/footer-inverted.png' ),
 	'phone'                 => '9195551234',
 	'text_phone'            => '9195559876',
+	'fax'                   => '9195554321',
 	'address_line_1'        => '123 Main Street',
 	'address_line_2'        => 'Suite 4',
 	'address_city'          => 'Raleigh',
@@ -133,7 +134,7 @@ require dirname( __DIR__, 2 ) . '/inc/theme-options.php';
 $first_payload = mrn_base_stack_get_business_information();
 $acf_calls     = $GLOBALS['mrn_business_test_get_field_calls'];
 
-mrn_business_test_assert( 27 === $acf_calls, 'the initial payload performs the expected 27 ACF field reads' );
+mrn_business_test_assert( 28 === $acf_calls, 'the initial payload includes the fax field without duplicate reads' );
 mrn_business_test_assert( '(919) 555-1234' === $first_payload['phone'], 'header/footer phone display value is unchanged' );
 mrn_business_test_assert( 'tel:9195551234' === $first_payload['phone_uri'], 'header/footer phone URI is unchanged' );
 mrn_business_test_assert( 'Raleigh' === $first_payload['address']['city'], 'template consumer address value is unchanged' );
@@ -172,7 +173,7 @@ mrn_business_test_assert( array( 'https://social.example.test/alpha' ) === $sche
 mrn_business_test_assert( '123 Main Street, Suite 4' === $schema['address']['streetAddress'], 'schema address is unchanged' );
 mrn_business_test_assert( '09:00' === $schema['openingHoursSpecification'][0]['opens'], 'schema opening time is unchanged' );
 mrn_business_test_assert( '17:00' === $schema['openingHoursSpecification'][0]['closes'], 'schema closing time is unchanged' );
-mrn_business_test_assert( 34 === $GLOBALS['mrn_business_test_get_field_calls'], 'schema reuses the business payload and reads only its seven schema-specific ACF fields' );
+mrn_business_test_assert( 35 === $GLOBALS['mrn_business_test_get_field_calls'], 'schema reuses the business payload and reads only its seven schema-specific ACF fields' );
 
 ob_start();
 mrn_base_stack_print_business_schema();
