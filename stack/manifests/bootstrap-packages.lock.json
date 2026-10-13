@@ -240,15 +240,15 @@
       "name": "MRN reCAPTCHA Enterprise Manager",
       "package": "mrn-recaptcha-enterprise-manager.zip",
       "profile": "all",
-      "sha256": "858ff4f801b98c994c41caf056cdb54174861e54a2b86a78dd33d4bb3a066734",
-      "size_bytes": 27599,
+      "sha256": "a31c33740ac80e06fc08fdca556c7aa3019b5531c7b27f7e417bf60c1d0d44fb",
+      "size_bytes": 60382,
       "slug": "mrn-recaptcha-enterprise-manager",
       "source": {
-        "commit": "e2fc5e3a580aba197e714f5b530a5da49224d293",
+        "commit": "1bc4e4424b1736ec85743b4f67a8b8add0f26220",
         "repository": "mrn-recaptcha-enterprise-manager",
         "type": "git"
       },
-      "version": "0.1.4"
+      "version": "0.2.3"
     },
     {
       "main_file": "mrn-stack-deployment-agent/mrn-stack-deployment-agent.php",
@@ -304,15 +304,15 @@
       "name": "MRN Universal Sticky Bar",
       "package": "mrn-universal-sticky-bar.zip",
       "profile": "all",
-      "sha256": "8268d337d2d18c2ea21f52467c166f660e103c6d8eb311abe2db7a7decab5b1b",
-      "size_bytes": 11165,
+      "sha256": "c70ee886eae47113c89cc4df47cd1c26b0a7ecd2df4bd622b0d591db89ceb2db",
+      "size_bytes": 14791,
       "slug": "mrn-universal-sticky-bar",
       "source": {
-        "commit": "696e261cccc76cacad9c7fe54eac6c48758a70ff",
+        "commit": "5e6be56d5f0c39a3fd7d478c7a17fc4a17d8b7ab",
         "repository": "mrn-universal-sticky-bar",
         "type": "git"
       },
-      "version": "1.1.10"
+      "version": "1.2.3"
     },
     {
       "main_file": "post-duplicator/m4c-postduplicator.php",
@@ -513,7 +513,7 @@
       "version": "0.1.4"
     }
   ],
-  "release_id": "2026.10.13-fleet-auto-5407434351e6",
+  "release_id": "2026.10.13-fleet-auto-6f28a773bbad",
   "schema_version": 1,
   "scope": "new-site-bootstrap-inputs",
   "stack_plugin_count": 33
