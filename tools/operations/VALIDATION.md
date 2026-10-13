@@ -1,5 +1,42 @@
 # Operations validation
 
+## PR #256 source integration and hosted readback — 2026-10-13
+
+- Refreshed `main` at `0d5040f09b814994a5c4199fcb6cc670d5051c33` and updated
+  the existing PR branch with GitHub's normal merge update. The original
+  implementation commit `a41d1ba7ce2374fed10f110e7682eacaf4f2b49d` remains in
+  history. Main introduced no competing Operations change; the PR still changes
+  only `tools/operations`. Existing worktrees and unrelated changes were preserved.
+- All 138 Operations tests and direct ESLint passed on local Node 26.0.0;
+  the locked production dependency audit reported zero vulnerabilities.
+  Changed-file MRN QA passed. The staged commit gate also requires its matching
+  immutable-index proof. GitHub's `controlled-contracts` and required `Code gate` must pass for
+  the final PR head before merge. No local Stack/plugin qualification or Fleet
+  release is part of this task. WordPress PHP/API-runtime, frontend browser,
+  axe and performance checks are inapplicable to this backend reporting change;
+  authenticated HTTP/stdio and saved-result/history contracts cover its runtime.
+- Read-only inspection of the existing `mrn-proposals-admin` connection
+  confirmed host `MRN-Apps`, active/enabled `mrn-operations`, deployed revision
+  `a41d1ba7ce2374fed10f110e7682eacaf4f2b49d` and `writesEnabled: false`.
+  All 55 tracked Operations files matched that revision byte-for-byte. Loopback
+  health with the expected Host header, public health and OAuth resource metadata
+  returned 200; anonymous MCP returned 401.
+- The persisted acceptance inspection
+  `2a9926b3-725a-4e7d-be57-bec326a2b738` still contains nine named AmishMike
+  plugin rows with installed/available versions and complete inventory coverage,
+  with zero core/theme/translation/unknown updates. This reads the October 12
+  inspection; it is not a fresh client-site inventory. No new site inspection,
+  sync, backup, update or settings write was performed.
+- The retained deployment backup remains present at
+  `/var/backups/mrn-operations/a41d1ba-20261012T161135Z`; its database SHA-256
+  still matches `408bfd874b353b881a7af2b88e7f2b30145f063fb0876eb83aec4703b3d96aed`.
+  The October 12 isolated-restore evidence remains historical qualification;
+  this task did not perform another restore or replace live state. Scheduled
+  off-host backups remain an outstanding operational item.
+- Source integration does not redeploy the hosted service. Any subsequent
+  hosted deployment requires exact-target authorization and newly verified
+  backup/recovery gates. Client-site writes are outside this task's scope.
+
 ## Named update inventory — 2026-10-12
 
 - A staff member successfully used the installed plugin, as reported by the
