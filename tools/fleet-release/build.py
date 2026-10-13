@@ -4,16 +4,18 @@ from __future__ import annotations
 import copy
 import datetime as dt
 import io
+import json
 from pathlib import Path
 import re
 import shutil
+import tempfile
 import tarfile
 import urllib.request
 import zipfile
 
 from common import (ReleaseError, assembly, canonical, digest, distribution,
                     file_hash, fleet, git, lock_tool, read, relative, roster,
-                    source_files, write)
+                    source_files, write, run)
 
 BOOTSTRAP_FILES = (
     'scripts/site-bootstrap.sh', 'scripts/bootstrap-new-sites.sh',
@@ -73,6 +75,60 @@ def package_files(path, slug):
         return files
 
 
+def plugin_payload(row, repo, standalone):
+    """Use the component-owned recipe when committed files need generated assets."""
+    slug = row['slug']
+    if slug != 'mrn-recaptcha-enterprise-manager':
+        return git_files(row, repo, standalone)
+    root, path = plugin_source(row, Path(repo), Path(standalone))
+    if row['repository'] != slug or path not in ('', '.'):
+        raise ReleaseError('CAPTCHA release recipe requires its standalone repository')
+    if git(root, 'status', '--porcelain=v1', '--untracked-files=all'):
+        raise ReleaseError('CAPTCHA release source must be clean')
+    commit = git(root, 'rev-parse', 'HEAD')
+    # Install only the committed lock into this dedicated source mirror. The
+    # component recipe verifies Node/esbuild and exports the exact Git commit;
+    # ignored output in the owner's checkout never becomes a release input.
+    run(['npm', 'ci', '--ignore-scripts', '--no-audit', '--no-fund'], cwd=root, timeout=900)
+    with tempfile.TemporaryDirectory(prefix='mrn-captcha-package-') as temporary:
+        run(['python3', root / 'tools/build-release.py', temporary], cwd=root, timeout=300)
+        receipt = read(Path(temporary) / 'release-receipt.json')
+        archive = Path(temporary) / str(relative(receipt['archive']))
+        if (receipt['source_commit'] != commit
+                or receipt['source_repository'] != 'mrnwebdesigns/' + slug
+                or receipt['version'] != lock_tool.read_header_version(root / (slug + '.php'))
+                or archive.is_symlink()
+                or file_hash(archive) != receipt['sha256']
+                or archive.stat().st_size != receipt['size_bytes']):
+            raise ReleaseError('CAPTCHA generated package identity differs')
+        files = package_files(archive, slug)
+        if {name: digest(data) for name, data in files.items()} != receipt['files']:
+            raise ReleaseError('CAPTCHA generated package receipt differs')
+        manifest = read_payload_manifest(files, commit)
+        if digest(files['assets/manifest.json']) != receipt['asset_manifest_sha256']:
+            raise ReleaseError('CAPTCHA asset manifest receipt differs')
+        for asset in manifest['assets'].values():
+            for variant in ('source', 'minified'):
+                entry = asset[variant]
+                name = str(relative(entry['path']))
+                if (not name.startswith('assets/generated/') or name not in files
+                        or digest(files[name]) != entry['sha256']
+                        or len(files[name]) != entry['bytes']):
+                    raise ReleaseError('CAPTCHA generated asset differs')
+        if git(root, 'rev-parse', 'HEAD') != commit or git(root, 'status', '--porcelain=v1', '--untracked-files=all'):
+            raise ReleaseError('CAPTCHA release source changed during generation')
+        return files
+
+
+def read_payload_manifest(files, commit):
+    manifest = json.loads(files['assets/manifest.json'])
+    if (manifest.get('schema') != 1 or manifest.get('source_commit') != commit
+            or manifest.get('component') != 'mrn-recaptcha-enterprise-manager'
+            or set(manifest.get('assets', {})) != {'mrn-recaptcha-form-loader', 'mrn-recaptcha-comments'}):
+        raise ReleaseError('CAPTCHA generated asset manifest identity differs')
+    return manifest
+
+
 def snapshot(repo, standalone, policy):
     """Record all participating merged refs plus the exact distributable vector."""
     repo, standalone = Path(repo), Path(standalone)
@@ -130,7 +186,7 @@ def default_packages(repo, standalone, policy, inputs, output, registry_inputs=N
             if slug not in rows:
                 raise ReleaseError('Bootstrap source is retired, unregistered or missing: ' + slug)
             row = rows[slug]
-            files = git_files(row, Path(repo), Path(standalone))
+            files = plugin_payload(row, Path(repo), Path(standalone))
             entry = main_file(files, slug, item['main_file'])
             root, path = plugin_source(row, Path(repo), Path(standalone))
             version = lock_tool.read_header_version(root / path / entry)

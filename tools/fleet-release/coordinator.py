@@ -16,8 +16,8 @@ import sys
 import tempfile
 import time
 
-from build import (build_all, default_packages, generate_lock, git_files, main_file,
-                   prepare_metadata, snapshot, package_files)
+from build import (build_all, default_packages, generate_lock, main_file,
+                   prepare_metadata, snapshot, package_files, plugin_payload)
 from common import (COMMIT, SHA256, ReleaseError, canonical, clean_main, digest,
                     file_hash, fleet, git, lock_tool, promotion, read,
                     relative, repository_name, roster, run, write)
@@ -127,7 +127,7 @@ def prepare_registry(repo, standalone, job, registry_inputs=None):
         row = source_rows[slug]
         source = repo if row['repository'] == 'MRN' else standalone / row['repository']
         sha = git(source, 'rev-parse', 'HEAD')
-        files = git_files(row, repo, standalone)
+        files = plugin_payload(row, repo, standalone)
         tree, count = lock_tool.bytes_tree_sha256(files.items())
         version = entry['version']
         main = slug + '/' + main_file(files, slug)
