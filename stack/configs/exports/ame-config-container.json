@@ -51,35 +51,6 @@
                                 "file": "wp-2fa-setup"
                             },
                             "f": "iup"
-                        },
-                        {
-                            "template_id": "index.php>searchwp-welcome",
-                            "grant_access": {
-                                "role:editor": false
-                            },
-                            "hidden": true,
-                            "defaults": {
-                                "menu_title": "Welcome to SearchWP",
-                                "access_level": "manage_options",
-                                "file": "searchwp-welcome",
-                                "is_plugin_page": true,
-                                "url": "index.php?page=searchwp-welcome"
-                            },
-                            "f": "itp"
-                        },
-                        {
-                            "template_id": "index.php>\/wp-admin\/admin.php?page=searchwp-statistics",
-                            "grant_access": {
-                                "role:editor": false
-                            },
-                            "hidden": true,
-                            "defaults": {
-                                "page_title": "Search Statistics",
-                                "menu_title": "Search Stats",
-                                "access_level": "edit_others_posts",
-                                "file": "https:\/\/platform.localhost\/wp-admin\/admin.php?page=searchwp-statistics"
-                            },
-                            "f": "iup"
                         }
                     ],
                     "defaults": {
@@ -91,95 +62,6 @@
                     },
                     "f": "iu",
                     "required_capability_read_only": "read"
-                },
-                "wpmudev": {
-                    "template_id": ">wpmudev",
-                    "items": [
-                        {
-                            "template_id": "wpmudev>wpmudev",
-                            "defaults": {
-                                "page_title": "WPMU DEV Dashboard",
-                                "menu_title": "Dashboard",
-                                "access_level": "manage_options",
-                                "file": "wpmudev",
-                                "is_plugin_page": true,
-                                "url": "admin.php?page=wpmudev"
-                            },
-                            "f": "ip"
-                        },
-                        {
-                            "template_id": "wpmudev>wpmudev-plugins",
-                            "defaults": {
-                                "page_title": "WPMU DEV Plugins",
-                                "menu_title": "Plugins <span class=\"update-plugins plugin-updates wdev-update-count count-0\" data-count=\"0\"><span class=\"countval\">0<\/span><\/span>",
-                                "access_level": "install_plugins",
-                                "file": "wpmudev-plugins",
-                                "is_plugin_page": true,
-                                "url": "admin.php?page=wpmudev-plugins"
-                            },
-                            "f": "ip"
-                        },
-                        {
-                            "template_id": "wpmudev>wpmudev-support",
-                            "defaults": {
-                                "page_title": "WPMU DEV Support",
-                                "menu_title": "Support",
-                                "access_level": "manage_options",
-                                "file": "wpmudev-support",
-                                "is_plugin_page": true,
-                                "url": "admin.php?page=wpmudev-support"
-                            },
-                            "f": "ip"
-                        },
-                        {
-                            "template_id": "wpmudev>wpmudev-analytics",
-                            "defaults": {
-                                "page_title": "WPMU DEV Analytics",
-                                "menu_title": "Analytics",
-                                "access_level": "manage_options",
-                                "file": "wpmudev-analytics",
-                                "is_plugin_page": true,
-                                "url": "admin.php?page=wpmudev-analytics"
-                            },
-                            "f": "ip"
-                        },
-                        {
-                            "template_id": "wpmudev>wpmudev-whitelabel",
-                            "defaults": {
-                                "page_title": "WPMU DEV Whitelabel",
-                                "menu_title": "White Label",
-                                "access_level": "manage_options",
-                                "file": "wpmudev-whitelabel",
-                                "is_plugin_page": true,
-                                "url": "admin.php?page=wpmudev-whitelabel"
-                            },
-                            "f": "ip"
-                        },
-                        {
-                            "template_id": "wpmudev>wpmudev-settings",
-                            "defaults": {
-                                "page_title": "WPMU DEV Settings",
-                                "menu_title": "Settings",
-                                "access_level": "manage_options",
-                                "file": "wpmudev-settings",
-                                "is_plugin_page": true,
-                                "url": "admin.php?page=wpmudev-settings"
-                            },
-                            "f": "ip"
-                        }
-                    ],
-                    "defaults": {
-                        "page_title": "WPMU DEV Dashboard",
-                        "menu_title": "WPMU DEV <span class=\"update-plugins total-updates count-0\" title=\"0 Plugin updates\"><\/span>",
-                        "access_level": "manage_options",
-                        "file": "wpmudev",
-                        "css_class": "menu-top toplevel_page_wpmudev",
-                        "hookname": "toplevel_page_wpmudev",
-                        "icon_url": "data:image\/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CQk8c3ZnIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDIwIDIwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPg0KCQkJPHBhdGgNCgkJCQkJZD0iTTEuOTEyODIgMy45MTA4N0MxLjYzODgzIDQuMzc4ODcgMS40OTYwMiA0LjkxNTI4IDEuNTAwMDkgNS40NjExTDEuNTAwMDkgMTcuNDYyMkwzLjcwMDY2IDE3LjQ2MjJMMy43MDA2NiA1LjQ1OTA2QzMuNzAwNDEgNS4zNjU2MiAzLjcxODk1IDUuMjczMTMgMy43NTUxNCA1LjE4NzM2QzMuNzkxMzMgNS4xMDE2IDMuODQ0MzkgNS4wMjQ0MSAzLjkxMDk5IDQuOTYwNjNDNC4wNjU3NyA0LjgyMzA3IDQuMjYzNzQgNC43NDczNCA0LjQ2ODU3IDQuNzQ3MzRDNC42NzM0MSA0Ljc0NzM0IDQuODcxMzggNC44MjMwNyA1LjAyNjE2IDQuOTYwNjNDNS4wOTIyMSA1LjAyNDc0IDUuMTQ0NzcgNS4xMDIwNCA1LjE4MDYgNS4xODc3NkM1LjIxNjQzIDUuMjczNDcgNS4yMzQ3NyA1LjM2NTgxIDUuMjM0NSA1LjQ1OTA2TDUuMjM0NSAxNC40OTZDNS4yMjQyNSAxNC44ODc4IDUuMjkyNTggMTUuMjc3NiA1LjQzNTI1IDE1LjY0MTFDNS41Nzc5MyAxNi4wMDQ3IDUuNzkxOTEgMTYuMzM0NCA2LjA2MzkzIDE2LjYwOThDNi40NjkyNiAxNy4wMzI5IDYuOTg4NzEgMTcuMzIyMiA3LjU1NTU3IDE3LjQ0MDNDOC4xMjI0MyAxNy41NTg1IDguNzEwODEgMTcuNTAwMyA5LjI0NTEzIDE3LjI3M0M5Ljc3OTQ1IDE3LjA0NTggMTAuMjM1MyAxNi42NiAxMC41NTQyIDE2LjE2NTJDMTAuODczIDE1LjY3MDMgMTEuMDQwMyAxNS4wODkxIDExLjAzNDYgMTQuNDk2TDExLjAzNDYgNS40NTkwNkMxMS4wMzMgNS4zNjY1NCAxMS4wNDk4IDUuMjc0NjUgMTEuMDgzOSA1LjE4ODk4QzExLjExOCA1LjEwMzMgMTEuMTY4NyA1LjAyNTYxIDExLjIzMyA0Ljk2MDYzQzExLjMwNzEgNC44ODgyOSAxMS4zOTQ2IDQuODMyMDcgMTEuNDkwNSA0Ljc5NTM2QzExLjU4NjMgNC43NTg2NSAxMS42ODg0IDQuNzQyMiAxMS43OTA2IDQuNzQ3MDFDMTEuODkyOCA0Ljc0MTQ4IDExLjk5NTEgNC43NTc1OSAxMi4wOTEgNC43OTQzNEMxMi4xODcgNC44MzEwOSAxMi4yNzQ1IDQuODg3NjkgMTIuMzQ4MiA0Ljk2MDYzQzEyLjQxNDggNS4wMjQ0MSAxMi40Njc4IDUuMTAxNiAxMi41MDQgNS4xODczNkMxMi41NDAyIDUuMjczMTMgMTIuNTU4NyA1LjM2NTYyIDEyLjU1ODUgNS40NTkwNkwxMi41NTg1IDE0LjQ5NkMxMi41NDgzIDE0Ljg4NzYgMTIuNjE2NSAxNS4yNzcyIDEyLjc1ODggMTUuNjQwN0MxMi45MDExIDE2LjAwNDIgMTMuMTE0NiAxNi4zMzQgMTMuMzg1OSAxNi42MDk4QzEzLjY1NzkgMTYuODg5OCAxMy45ODI4IDE3LjEwOTkgMTQuMzQwOCAxNy4yNTY1QzE0LjY5ODcgMTcuNDAzMSAxNS4wODIxIDE3LjQ3MzEgMTUuNDY3NCAxNy40NjIyQzE2LjI1OTMgMTcuNDcxOCAxNy4wMjM5IDE3LjE2NjIgMTcuNjAwNSAxNi42MDk4QzE3Ljg5MDQgMTYuMzQ1IDE4LjEyMDkgMTYuMDE4OSAxOC4yNzYxIDE1LjY1NEMxOC40MzEzIDE1LjI4OTEgMTguNTA3NSAxNC44OTQgMTguNDk5NCAxNC40OTZMMTguNDk5NCAyLjUwMzAzTDE2LjI5NjkgMi41MDMwM0wxNi4yOTY5IDE0LjQ5NkMxNi4yOTg0IDE0LjU4ODUgMTYuMjgxNiAxNC42ODA0IDE2LjI0NzUgMTQuNzY2MUMxNi4yMTM0IDE0Ljg1MTggMTYuMTYyNyAxNC45Mjk1IDE2LjA5ODQgMTQuOTk0NEMxNS45NDM3IDE1LjEzMiAxNS43NDU3IDE1LjIwNzcgMTUuNTQwOSAxNS4yMDc3QzE1LjMzNiAxNS4yMDc3IDE1LjEzODEgMTUuMTMyIDE0Ljk4MzMgMTQuOTk0NEMxNC45MTcgMTQuOTMwNCAxNC44NjQxIDE0Ljg1MzIgMTQuODI3OSAxNC43Njc1QzE0Ljc5MTggMTQuNjgxOCAxNC43NzMgMTQuNTg5NCAxNC43NzI5IDE0LjQ5NkwxNC43NzI5IDUuNDU5MDZDMTQuNzgyOSA1LjA2NzUxIDE0LjcxNDYgNC42NzgwMSAxNC41NzIzIDQuMzE0NUMxNC40MyAzLjk1MSAxNC4yMTY3IDMuNjIxMTcgMTMuOTQ1NSAzLjM0NTI5QzEzLjY3MzkgMy4wNjgxNyAxMy4zNTAyIDIuODUwNDUgMTIuOTk0MiAyLjcwNTMzQzEyLjYzODEgMi41NjAyMSAxMi4yNTcgMi40OTA2OSAxMS44NzM5IDIuNTAxQzExLjA4MDcgMi40ODgzOSAxMC4zMTM0IDIuNzkwOTQgOS43MzI4NyAzLjM0NTI5QzkuNDQzMjMgMy42MTA0MyA5LjIxMjgxIDMuOTM2NTMgOS4wNTczNCA0LjMwMTMzQzguOTAxODcgNC42NjYxMyA4LjgyNSA1LjA2MTAzIDguODMyMDEgNS40NTkwNkw4LjgzMjAxIDE0LjQ5NkM4LjgxMzY2IDE0LjY3MTcgOC43MzI1OCAxNC44MzQzIDguNjA0MzcgMTQuOTUyNEM4LjQ3NjE3IDE1LjA3MDUgOC4zMDk4OCAxNS4xMzU5IDguMTM3NTEgMTUuMTM1OUM3Ljk2NTE0IDE1LjEzNTkgNy43OTg4NSAxNS4wNzA1IDcuNjcwNjUgMTQuOTUyNEM3LjU0MjQ0IDE0LjgzNDMgNy40NjEzNiAxNC42NzE3IDcuNDQzMDEgMTQuNDk2TDcuNDQzMDEgNS40NTkwNkM3LjQ0NzYyIDQuOTEyODkgNy4zMDQwMyA0LjM3NjE2IDcuMDI4MyAzLjkwODgzQzYuNzY4MjcgMy40NTQ1NiA2LjM4NDkzIDMuMDg3NjkgNS45MjUwNCAyLjg1Mjk2QzUuNDc0ODMgMi42MjE1MyA0Ljk3ODE1IDIuNTAxMDIgNC40NzQ1MyAyLjUwMTAyQzMuOTcwOSAyLjUwMTAyIDMuNDc0MjMgMi42MjE1MyAzLjAyNDAyIDIuODUyOTZDMi41NjA3MiAzLjA4NjY1IDIuMTc0NCAzLjQ1NDQ1IDEuOTEyODIgMy45MTA4N1oiDQoJCQkJCWZpbGw9IiNBN0FBQUQiDQoJCQkvPg0KCQk8L3N2Zz4NCgkJ",
-                        "is_plugin_page": true,
-                        "url": "admin.php?page=wpmudev"
-                    },
-                    "f": "i"
                 },
                 "separator_6": {
                     "separator": true,
@@ -1019,24 +901,6 @@
                     },
                     "f": "i"
                 },
-                "searchwp-statistics": {
-                    "menu_title": "Search Statistics",
-                    "css_class": "",
-                    "icon_url": "dashicons-search",
-                    "template_id": "searchwp-forms>searchwp-statistics",
-                    "local_id": "25CCPKare9D",
-                    "defaults": {
-                        "page_title": "SearchWP",
-                        "menu_title": "Statistics",
-                        "access_level": "manage_options",
-                        "file": "searchwp-statistics",
-                        "parent": "searchwp-forms",
-                        "is_plugin_page": true,
-                        "url": "admin.php?page=searchwp-statistics"
-                    },
-                    "required_capability_read_only": "manage_options",
-                    "f": "i"
-                },
                 "heading-zhZlU": {
                     "menu_title": "Appearance",
                     "file": "heading-zhZlU",
@@ -1246,18 +1110,6 @@
                             "f": "itp"
                         },
                         {
-                            "template_id": "tools.php>mrn-ai-assist",
-                            "local_id": "79Cbycgnahz",
-                            "defaults": {
-                                "menu_title": "AI Assist",
-                                "access_level": "manage_options",
-                                "file": "mrn-ai-assist",
-                                "is_plugin_page": true,
-                                "url": "tools.php?page=mrn-ai-assist"
-                            },
-                            "f": "itp"
-                        },
-                        {
                             "template_id": "tools.php>mrn-comment-management",
                             "local_id": "39Cwn3YJJJQ",
                             "grant_access": {
@@ -1269,18 +1121,6 @@
                                 "file": "mrn-comment-management",
                                 "is_plugin_page": true,
                                 "url": "tools.php?page=mrn-comment-management"
-                            },
-                            "f": "itp"
-                        },
-                        {
-                            "template_id": "tools.php>mrn-seo-helper",
-                            "local_id": "82CEcxLBNRj",
-                            "defaults": {
-                                "menu_title": "SEO Helper",
-                                "access_level": "manage_options",
-                                "file": "mrn-seo-helper",
-                                "is_plugin_page": true,
-                                "url": "tools.php?page=mrn-seo-helper"
                             },
                             "f": "itp"
                         }
@@ -1414,21 +1254,6 @@
                             "f": "itp"
                         },
                         {
-                            "template_id": "options-general.php>fluent-mail",
-                            "local_id": "49C7BYX53Ds",
-                            "grant_access": {
-                                "role:editor": false
-                            },
-                            "defaults": {
-                                "menu_title": "FluentSMTP",
-                                "access_level": "manage_options",
-                                "file": "fluent-mail",
-                                "is_plugin_page": true,
-                                "url": "options-general.php?page=fluent-mail"
-                            },
-                            "f": "itp"
-                        },
-                        {
                             "template_id": "options-general.php>happyfiles_settings",
                             "local_id": "93CR1WMwfOY",
                             "defaults": {
@@ -1442,48 +1267,6 @@
                             "f": "ip"
                         },
                         {
-                            "template_id": "options-general.php>mrn-acf-character-count",
-                            "local_id": "50CsuxiaGIQ",
-                            "grant_access": {
-                                "role:editor": false
-                            },
-                            "defaults": {
-                                "menu_title": "ACF Character Count",
-                                "access_level": "manage_options",
-                                "file": "mrn-acf-character-count",
-                                "is_plugin_page": true,
-                                "url": "options-general.php?page=mrn-acf-character-count"
-                            },
-                            "f": "itp"
-                        },
-                        {
-                            "template_id": "options-general.php>mrn-cookie-consent",
-                            "local_id": "51CHTDfajpz",
-                            "grant_access": {
-                                "role:editor": false
-                            },
-                            "defaults": {
-                                "menu_title": "Cookie Consent",
-                                "access_level": "manage_options",
-                                "file": "mrn-cookie-consent",
-                                "is_plugin_page": true,
-                                "url": "options-general.php?page=mrn-cookie-consent"
-                            },
-                            "f": "itp"
-                        },
-                        {
-                            "template_id": "options-general.php>mrn-editor-tools",
-                            "local_id": "54C61h6quc4",
-                            "defaults": {
-                                "menu_title": "Editor Enhancements",
-                                "access_level": "manage_options",
-                                "file": "mrn-editor-tools",
-                                "is_plugin_page": true,
-                                "url": "options-general.php?page=mrn-editor-tools"
-                            },
-                            "f": "itp"
-                        },
-                        {
                             "template_id": "options-general.php>mrn-fontawesome-profile-manager",
                             "local_id": "78C9iOoG8tJ",
                             "defaults": {
@@ -1494,22 +1277,6 @@
                                 "url": "options-general.php?page=mrn-fontawesome-profile-manager"
                             },
                             "f": "itp"
-                        },
-                        {
-                            "template_id": "options-general.php>mrn-gtm-settings",
-                            "local_id": "52CMbk76WWg",
-                            "grant_access": {
-                                "role:editor": false
-                            },
-                            "defaults": {
-                                "page_title": "GTM Settings",
-                                "menu_title": "GTM",
-                                "access_level": "manage_options",
-                                "file": "mrn-gtm-settings",
-                                "is_plugin_page": true,
-                                "url": "options-general.php?page=mrn-gtm-settings"
-                            },
-                            "f": "ip"
                         },
                         {
                             "template_id": "options-general.php>mrn-recaptcha-enterprise-manager",
@@ -1683,13 +1450,25 @@
                     },
                     "f": "i"
                 },
-                "#ame-unclickable-menu-item-1": {
+                "mrn-public-security-hardening": {
                     "menu_title": "Advanced",
                     "css_class": "menu-top",
                     "icon_url": "dashicons-admin-network",
-                    "template_id": ">special:none",
+                    "template_id": ">mrn-public-security-hardening",
                     "local_id": "60CB8ISGWZc",
                     "items": [
+                        {
+                            "template_id": "mrn-public-security-hardening>mrn-public-security-hardening",
+                            "defaults": {
+                                "menu_title": "Public Security",
+                                "page_title": "Public Security",
+                                "file": "mrn-public-security-hardening",
+                                "access_level": "manage_options",
+                                "is_plugin_page": true,
+                                "url": "admin.php?page=mrn-public-security-hardening"
+                            },
+                            "f": "ip"
+                        },
                         {
                             "template_id": ">wp-2fa-policies",
                             "local_id": "207CmbyCHdZt",
@@ -1803,11 +1582,15 @@
                         }
                     ],
                     "defaults": {
-                        "menu_title": "Unclickable Menu",
-                        "file": "#ame-unclickable-menu-item",
-                        "css_class": " ame-unclickable-menu-item"
+                        "menu_title": "Advanced",
+                        "file": "mrn-public-security-hardening",
+                        "css_class": " ame-unclickable-menu-item",
+                        "page_title": "Public Security",
+                        "access_level": "manage_options",
+                        "is_plugin_page": true,
+                        "url": "admin.php?page=mrn-public-security-hardening"
                     },
-                    "required_capability_read_only": null,
+                    "required_capability_read_only": "manage_options",
                     "f": "iu"
                 },
                 "themes.php": {
@@ -2036,138 +1819,6 @@
                             "f": "i"
                         },
                         {
-                            "template_id": ">wp-defender",
-                            "local_id": "75CYWgvg8eF",
-                            "items": [
-                                {
-                                    "template_id": "wp-defender>wp-defender",
-                                    "local_id": "65CnZZLTvwC",
-                                    "grant_access": {
-                                        "role:editor": false
-                                    },
-                                    "defaults": {
-                                        "menu_title": "Defender<span class=\"defender-admin-menu-pro-tag\">Pro<\/span>",
-                                        "access_level": "manage_options",
-                                        "file": "wp-defender",
-                                        "parent": "wp-defender",
-                                        "is_plugin_page": true,
-                                        "url": "admin.php?page=wp-defender"
-                                    },
-                                    "f": "it"
-                                },
-                                {
-                                    "template_id": "wp-defender>wdf-hardener",
-                                    "local_id": "66CMeu4AU2I",
-                                    "grant_access": {
-                                        "role:editor": false
-                                    },
-                                    "defaults": {
-                                        "menu_title": "Hardening",
-                                        "access_level": "manage_options",
-                                        "file": "wdf-hardener",
-                                        "parent": "wp-defender",
-                                        "is_plugin_page": true,
-                                        "url": "admin.php?page=wdf-hardener"
-                                    },
-                                    "f": "it"
-                                },
-                                {
-                                    "template_id": "wp-defender>wdf-scan",
-                                    "local_id": "67CM0IdXMza",
-                                    "grant_access": {
-                                        "role:editor": false
-                                    },
-                                    "defaults": {
-                                        "menu_title": "Issues",
-                                        "access_level": "manage_options",
-                                        "file": "wdf-scan",
-                                        "parent": "wp-defender",
-                                        "is_plugin_page": true,
-                                        "url": "admin.php?page=wdf-scan"
-                                    },
-                                    "f": "it"
-                                },
-                                {
-                                    "template_id": "wp-defender>wdf-logging",
-                                    "local_id": "68CatpLgZnd",
-                                    "grant_access": {
-                                        "role:editor": false
-                                    },
-                                    "defaults": {
-                                        "menu_title": "Audit Log",
-                                        "access_level": "manage_options",
-                                        "file": "wdf-logging",
-                                        "parent": "wp-defender",
-                                        "is_plugin_page": true,
-                                        "url": "admin.php?page=wdf-logging"
-                                    },
-                                    "f": "it"
-                                },
-                                {
-                                    "template_id": "wp-defender>wdf-ip-lockout",
-                                    "local_id": "69CletZxq21",
-                                    "grant_access": {
-                                        "role:editor": false
-                                    },
-                                    "defaults": {
-                                        "menu_title": "Firewalls",
-                                        "access_level": "manage_options",
-                                        "file": "wdf-ip-lockout",
-                                        "parent": "wp-defender",
-                                        "is_plugin_page": true,
-                                        "url": "admin.php?page=wdf-ip-lockout"
-                                    },
-                                    "f": "it"
-                                },
-                                {
-                                    "template_id": "wp-defender>wdf-advanced-tools",
-                                    "local_id": "72CvWKRQowd",
-                                    "grant_access": {
-                                        "role:editor": false
-                                    },
-                                    "defaults": {
-                                        "menu_title": "Login &amp; Access",
-                                        "access_level": "manage_options",
-                                        "file": "wdf-advanced-tools",
-                                        "parent": "wp-defender",
-                                        "is_plugin_page": true,
-                                        "url": "admin.php?page=wdf-advanced-tools"
-                                    },
-                                    "f": "it"
-                                },
-                                {
-                                    "template_id": "wp-defender>wdf-setting",
-                                    "local_id": "74CFxWJSqAP",
-                                    "grant_access": {
-                                        "role:editor": false
-                                    },
-                                    "defaults": {
-                                        "menu_title": "Settings",
-                                        "access_level": "manage_options",
-                                        "file": "wdf-setting",
-                                        "parent": "wp-defender",
-                                        "is_plugin_page": true,
-                                        "url": "admin.php?page=wdf-setting"
-                                    },
-                                    "f": "it"
-                                }
-                            ],
-                            "grant_access": {
-                                "role:editor": false
-                            },
-                            "defaults": {
-                                "menu_title": "Defender<span class=\"defender-admin-menu-pro-tag\">Pro<\/span>",
-                                "access_level": "manage_options",
-                                "file": "wp-defender",
-                                "css_class": "menu-top toplevel_page_wp-defender",
-                                "hookname": "toplevel_page_wp-defender",
-                                "icon_url": "data:image\/svg+xml;base64,CQk8c3ZnIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDE2IDE2IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPg0KCQkJPHBhdGggZD0iTTcuNDQgMS4xMjEyNUwyLjk0IDIuNDMxMjVDMi4wOSAyLjY4MTI1IDEuNSAzLjQ2MTI1IDEuNSA0LjM1MTI1VjguNjYxMjVDMS41IDExLjUzMTIgNC43MiAxNC45NjEyIDggMTQuOTYxMkMxMS4yOCAxNC45NjEyIDE0LjUgMTEuNTMxMiAxNC41IDguNjYxMjVWNC4zNTEyNUMxNC41IDMuNDYxMjUgMTMuOTEgMi42ODEyNSAxMy4wNiAyLjQzMTI1TDguNTYgMS4xMjEyNUM4LjIgMS4wMTEyNSA3LjgxIDEuMDExMjUgNy40NCAxLjEyMTI1Wk0xMy4wNiA4LjY2MTI1QzEzLjA2IDEwLjY5MTIgMTAuNTMgMTMuNTYxMiA4IDEzLjU2MTJWNy45NjEyNUgyLjk0VjMuOTAxMjVMOCAyLjQzMTI1VjcuOTYxMjVIMTMuMDZWOC42NjEyNVoiIGZpbGw9IiNGMEY2RkMiLz4NCgkJPC9zdmc+DQoJCQ==",
-                                "is_plugin_page": true,
-                                "url": "admin.php?page=wp-defender"
-                            },
-                            "f": "it"
-                        },
-                        {
                             "template_id": ">options-general.php?page=updraftplus",
                             "local_id": "112CS0Lx1LhK",
                             "grant_access": {
@@ -2312,180 +1963,6 @@
                                 "icon_url": "dashicons-welcome-widgets-menus"
                             },
                             "f": "iut"
-                        },
-                        {
-                            "template_id": ">wds_wizard",
-                            "local_id": "150CsboDQUvk",
-                            "items": [
-                                {
-                                    "template_id": "wds_wizard>wds_wizard",
-                                    "local_id": "141CnHnqYD6f",
-                                    "hidden_from_actor": {
-                                        "role:editor": true
-                                    },
-                                    "defaults": {
-                                        "page_title": "SmartCrawl Wizard: Dashboard",
-                                        "menu_title": "Dashboard",
-                                        "access_level": "manage_options",
-                                        "file": "wds_wizard",
-                                        "parent": "wds_wizard",
-                                        "is_plugin_page": true,
-                                        "url": "admin.php?page=wds_wizard"
-                                    },
-                                    "f": "i"
-                                },
-                                {
-                                    "template_id": "wds_wizard>wds_health",
-                                    "local_id": "142ClkwfBhlp",
-                                    "hidden_from_actor": {
-                                        "role:editor": true
-                                    },
-                                    "defaults": {
-                                        "page_title": "SmartCrawl Wizard: SEO Health",
-                                        "menu_title": "SEO Health",
-                                        "access_level": "manage_options",
-                                        "file": "wds_health",
-                                        "parent": "wds_wizard",
-                                        "is_plugin_page": true,
-                                        "url": "admin.php?page=wds_health"
-                                    },
-                                    "f": "i"
-                                },
-                                {
-                                    "template_id": "wds_wizard>wds_onpage",
-                                    "local_id": "143CqkE3NeOm",
-                                    "hidden_from_actor": {
-                                        "role:editor": true
-                                    },
-                                    "defaults": {
-                                        "page_title": "SmartCrawl Wizard: Title & Meta",
-                                        "menu_title": "Title &amp; Meta",
-                                        "access_level": "manage_options",
-                                        "file": "wds_onpage",
-                                        "parent": "wds_wizard",
-                                        "is_plugin_page": true,
-                                        "url": "admin.php?page=wds_onpage"
-                                    },
-                                    "f": "i"
-                                },
-                                {
-                                    "template_id": "wds_wizard>wds_schema",
-                                    "local_id": "144CGekPVRsp",
-                                    "hidden_from_actor": {
-                                        "role:editor": true
-                                    },
-                                    "defaults": {
-                                        "page_title": "SmartCrawl Wizard: Schema",
-                                        "menu_title": "Schema",
-                                        "access_level": "manage_options",
-                                        "file": "wds_schema",
-                                        "parent": "wds_wizard",
-                                        "is_plugin_page": true,
-                                        "url": "admin.php?page=wds_schema"
-                                    },
-                                    "f": "i"
-                                },
-                                {
-                                    "template_id": "wds_wizard>wds_instant_indexing",
-                                    "local_id": "145CsrCiWvOJ",
-                                    "hidden_from_actor": {
-                                        "role:editor": true
-                                    },
-                                    "defaults": {
-                                        "page_title": "SmartCrawl Wizard: Instant Indexing",
-                                        "menu_title": "Instant Indexing",
-                                        "access_level": "manage_options",
-                                        "file": "wds_instant_indexing",
-                                        "parent": "wds_wizard",
-                                        "is_plugin_page": true,
-                                        "url": "admin.php?page=wds_instant_indexing"
-                                    },
-                                    "f": "i"
-                                },
-                                {
-                                    "template_id": "wds_wizard>wds_social",
-                                    "local_id": "146CuHVITYB5",
-                                    "hidden_from_actor": {
-                                        "role:editor": true
-                                    },
-                                    "defaults": {
-                                        "page_title": "SmartCrawl Wizard: Social",
-                                        "menu_title": "Social",
-                                        "access_level": "manage_options",
-                                        "file": "wds_social",
-                                        "parent": "wds_wizard",
-                                        "is_plugin_page": true,
-                                        "url": "admin.php?page=wds_social"
-                                    },
-                                    "f": "i"
-                                },
-                                {
-                                    "template_id": "wds_wizard>wds-advanced",
-                                    "local_id": "147CcKb6aQpJ",
-                                    "hidden_from_actor": {
-                                        "role:editor": true
-                                    },
-                                    "defaults": {
-                                        "page_title": "SmartCrawl Wizard: Settings",
-                                        "menu_title": "Advanced Tools",
-                                        "access_level": "manage_options",
-                                        "file": "wds-advanced",
-                                        "parent": "wds_wizard",
-                                        "is_plugin_page": true,
-                                        "url": "admin.php?page=wds-advanced"
-                                    },
-                                    "f": "i"
-                                },
-                                {
-                                    "template_id": "wds_wizard>wds_sitemap",
-                                    "local_id": "148Cx928oWqi",
-                                    "hidden_from_actor": {
-                                        "role:editor": true
-                                    },
-                                    "defaults": {
-                                        "page_title": "SmartCrawl Wizard: Sitemap",
-                                        "menu_title": "Sitemaps",
-                                        "access_level": "manage_options",
-                                        "file": "wds_sitemap",
-                                        "parent": "wds_wizard",
-                                        "is_plugin_page": true,
-                                        "url": "admin.php?page=wds_sitemap"
-                                    },
-                                    "f": "i"
-                                },
-                                {
-                                    "template_id": "wds_wizard>wds_settings",
-                                    "local_id": "149CAg07T1Ru",
-                                    "hidden_from_actor": {
-                                        "role:editor": true
-                                    },
-                                    "defaults": {
-                                        "page_title": "SmartCrawl Wizard: Settings",
-                                        "menu_title": "Settings",
-                                        "access_level": "manage_options",
-                                        "file": "wds_settings",
-                                        "parent": "wds_wizard",
-                                        "is_plugin_page": true,
-                                        "url": "admin.php?page=wds_settings"
-                                    },
-                                    "f": "i"
-                                }
-                            ],
-                            "hidden_from_actor": {
-                                "role:editor": true
-                            },
-                            "defaults": {
-                                "page_title": "SmartCrawl Wizard: Dashboard",
-                                "menu_title": "SmartCrawl Pro",
-                                "access_level": "manage_options",
-                                "file": "wds_wizard",
-                                "css_class": "menu-top toplevel_page_wds_wizard",
-                                "hookname": "toplevel_page_wds_wizard",
-                                "icon_url": "data:image\/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTE0LjQ0NDYgMy4zNDgyN0MxMy4xMjkgMi40NjkyMiAxMS41ODIzIDIgMTAgMkM3Ljg3ODI3IDIgNS44NDM0MyAyLjg0Mjg1IDQuMzQzMTQgNC4zNDMxNEMyLjg0Mjg1IDUuODQzNDMgMiA3Ljg3ODI3IDIgMTBDMiAxMS4wNTAxIDIuMjA2NjggMTIuMDg0NiAyLjYwMjY3IDEzLjA0NjJMMTAuNjQ4OSA1SDguOTk5OTlWNEgxMkgxM1Y4SDEyVjYuMzM1OUwzLjU3MjYzIDE0Ljc2MzNDNC4xODU4IDE1LjU5MDcgNC45NTE0IDE2LjI4OTggNS44MjU0MSAxNi44MjQ0TDEwLjY0OTkgMTJIOC45OTk5N1YxMUgxMkgxM1YxNUgxMlYxMy4zMzY5TDcuNjgwNTEgMTcuNjU2NEM4LjkzNDggMTguMDM2NCAxMC4yNjc1IDE4LjEwMzUgMTEuNTYwNyAxNy44NDYzQzEzLjExMjYgMTcuNTM3NiAxNC41MzggMTYuNzc1NyAxNS42NTY5IDE1LjY1NjlDMTYuNzc1NyAxNC41MzggMTcuNTM3NiAxMy4xMTI2IDE3Ljg0NjMgMTEuNTYwN0MxOC4xNTQ5IDEwLjAwODkgMTcuOTk2NiA4LjQwMDM1IDE3LjM5MTEgNi45Mzg1NEMxNi43ODU2IDUuNDc2NzMgMTUuNzYwMiA0LjIyNzMyIDE0LjQ0NDYgMy4zNDgyN1pNMTIgNS4wMDAwNlY1SDExLjk5OTlMMTIgNS4wMDAwNlpNNC40NDQyOCAxLjY4NTNDNi4wODg3NyAwLjU4NjQ4OSA4LjAyMjE5IDAgMTAgMEMxMi42NTIyIDAgMTUuMTk1NyAxLjA1MzU5IDE3LjA3MSAyLjkyODk1QzE4Ljk0NjQgNC44MDQzMiAyMCA3LjM0NzgzIDIwIDEwQzIwIDExLjk3NzggMTkuNDEzNSAxMy45MTEyIDE4LjMxNDcgMTUuNTU1N0MxNy4yMTU5IDE3LjIwMDIgMTUuNjU0MSAxOC40ODE5IDEzLjgyNjggMTkuMjM4OEMxMS45OTk2IDE5Ljk5NTYgOS45ODg4OCAyMC4xOTM3IDguMDQ5MDggMTkuODA3OUM2LjEwOTI3IDE5LjQyMiA0LjMyNzQ4IDE4LjQ2OTYgMi45Mjg5NiAxNy4wNzFDMS41MzA0MyAxNS42NzI1IDAuNTc3OTk1IDEzLjg5MDcgMC4xOTIxNDMgMTEuOTUwOUMtMC4xOTM3MDkgMTAuMDExMSAwLjAwNDM1ODA1IDguMDAwNDIgMC43NjEyMzUgNi4xNzMxNkMxLjUxODExIDQuMzQ1OSAyLjc5OTc5IDIuNzg0MTIgNC40NDQyOCAxLjY4NTNaIiBmaWxsPSIjRjBGNkZDIi8+PC9zdmc+",
-                                "is_plugin_page": true,
-                                "url": "admin.php?page=wds_wizard"
-                            },
-                            "f": "i"
                         },
                         {
                             "template_id": ">wpforms-overview",
@@ -2738,137 +2215,6 @@
                                 "icon_url": "data:image\/svg+xml;base64,PHN2ZyB3aWR0aD0iMTc5MiIgaGVpZ2h0PSIxNzkyIiB2aWV3Qm94PSIwIDAgMTc5MiAxNzkyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGZpbGw9IiM5ZWEzYTgiIGQ9Ik02NDMgOTExdjEyOGgtMjUydi0xMjhoMjUyem0wLTI1NXYxMjdoLTI1MnYtMTI3aDI1MnptNzU4IDUxMXYxMjhoLTM0MXYtMTI4aDM0MXptMC0yNTZ2MTI4aC02NzJ2LTEyOGg2NzJ6bTAtMjU1djEyN2gtNjcydi0xMjdoNjcyem0xMzUgODYwdi0xMjQwcTAtOC02LTE0dC0xNC02aC0zMmwtMzc4IDI1Ni0yMTAtMTcxLTIxMCAxNzEtMzc4LTI1NmgtMzJxLTggMC0xNCA2dC02IDE0djEyNDBxMCA4IDYgMTR0MTQgNmgxMjQwcTggMCAxNC02dDYtMTR6bS04NTUtMTExMGwxODUtMTUwaC00MDZ6bTQzMCAwbDIyMS0xNTBoLTQwNnptNTUzLTEzMHYxMjQwcTAgNjItNDMgMTA1dC0xMDUgNDNoLTEyNDBxLTYyIDAtMTA1LTQzdC00My0xMDV2LTEyNDBxMC02MiA0My0xMDV0MTA1LTQzaDEyNDBxNjIgMCAxMDUgNDN0NDMgMTA1eiIvPjwvc3ZnPg==",
                                 "is_plugin_page": true,
                                 "url": "admin.php?page=wpforms-overview"
-                            },
-                            "f": "it"
-                        },
-                        {
-                            "template_id": ">searchwp-forms",
-                            "local_id": "44CFXZJUtBA",
-                            "items": [
-                                {
-                                    "template_id": "searchwp-forms>searchwp-forms",
-                                    "local_id": "36CppVvWnB3",
-                                    "grant_access": {
-                                        "role:editor": false
-                                    },
-                                    "hidden_from_actor": {
-                                        "role:editor": true
-                                    },
-                                    "defaults": {
-                                        "page_title": "SearchWP",
-                                        "menu_title": "Search Forms",
-                                        "access_level": "manage_options",
-                                        "file": "searchwp-forms",
-                                        "parent": "searchwp-forms",
-                                        "is_plugin_page": true,
-                                        "url": "admin.php?page=searchwp-forms"
-                                    },
-                                    "f": "i"
-                                },
-                                {
-                                    "template_id": "searchwp-forms>searchwp-algorithm",
-                                    "local_id": "37CYBZRH1iu",
-                                    "grant_access": {
-                                        "role:editor": false
-                                    },
-                                    "hidden_from_actor": {
-                                        "role:editor": true
-                                    },
-                                    "defaults": {
-                                        "page_title": "SearchWP",
-                                        "menu_title": "Algorithm",
-                                        "access_level": "manage_options",
-                                        "file": "searchwp-algorithm",
-                                        "parent": "searchwp-forms",
-                                        "is_plugin_page": true,
-                                        "url": "admin.php?page=searchwp-algorithm"
-                                    },
-                                    "f": "i"
-                                },
-                                {
-                                    "template_id": "searchwp-forms>searchwp-templates",
-                                    "local_id": "143CGTXTLrjX",
-                                    "defaults": {
-                                        "page_title": "SearchWP",
-                                        "menu_title": "Templates",
-                                        "access_level": "manage_options",
-                                        "file": "searchwp-templates",
-                                        "parent": "searchwp-forms",
-                                        "is_plugin_page": true,
-                                        "url": "admin.php?page=searchwp-templates"
-                                    },
-                                    "f": "i"
-                                },
-                                {
-                                    "template_id": "searchwp-forms>searchwp-extensions",
-                                    "local_id": "144CfrS1GMIh",
-                                    "defaults": {
-                                        "page_title": "SearchWP",
-                                        "menu_title": "<span style=\"color:#1da867\">Extensions<\/span>",
-                                        "access_level": "manage_options",
-                                        "file": "searchwp-extensions",
-                                        "parent": "searchwp-forms",
-                                        "is_plugin_page": true,
-                                        "url": "admin.php?page=searchwp-extensions"
-                                    },
-                                    "f": "i"
-                                },
-                                {
-                                    "template_id": "searchwp-forms>searchwp-tools",
-                                    "local_id": "145ChDzGe8B4",
-                                    "defaults": {
-                                        "page_title": "SearchWP",
-                                        "menu_title": "Tools",
-                                        "access_level": "manage_options",
-                                        "file": "searchwp-tools",
-                                        "parent": "searchwp-forms",
-                                        "is_plugin_page": true,
-                                        "url": "admin.php?page=searchwp-tools"
-                                    },
-                                    "f": "i"
-                                },
-                                {
-                                    "template_id": "searchwp-forms>searchwp-about-us",
-                                    "local_id": "146CQvO6UBqT",
-                                    "defaults": {
-                                        "page_title": "SearchWP",
-                                        "menu_title": "About Us",
-                                        "access_level": "manage_options",
-                                        "file": "searchwp-about-us",
-                                        "parent": "searchwp-forms",
-                                        "is_plugin_page": true,
-                                        "url": "admin.php?page=searchwp-about-us"
-                                    },
-                                    "f": "i"
-                                },
-                                {
-                                    "template_id": "searchwp-forms>searchwp-settings",
-                                    "local_id": "146CE5flRLdM",
-                                    "defaults": {
-                                        "page_title": "SearchWP",
-                                        "menu_title": "Add License Key",
-                                        "access_level": "manage_options",
-                                        "file": "searchwp-settings",
-                                        "parent": "searchwp-forms",
-                                        "css_class": "searchwp-sidebar-add-license-key",
-                                        "is_plugin_page": true,
-                                        "url": "admin.php?page=searchwp-settings"
-                                    },
-                                    "f": "i"
-                                }
-                            ],
-                            "hidden_from_actor": {
-                                "role:editor": true
-                            },
-                            "defaults": {
-                                "menu_title": "SearchWP",
-                                "access_level": "manage_options",
-                                "file": "searchwp-forms",
-                                "css_class": "menu-top toplevel_page_searchwp-forms",
-                                "hookname": "toplevel_page_searchwp-forms",
-                                "icon_url": "data:image\/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgNTAgNjEiIGZpbGw9IiNmMGYwZjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgICAgICAgICAgICAgICAgIDxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgZD0iTTkuNTcgMTMuMjU5Yy0uOTU5IDAtMS43ODIuNjgtMS45NDYgMS42MjUtLjUyNyAzLjAzMy0xLjU5IDkuNzE1LTEuNzAyIDE0Ljg3NS0uMTE0IDUuMjg4IDEuMTM0IDEzLjQxNyAxLjcxMiAxNi44NjQuMTYuOTUyLjk4NCAxLjYzNiAxLjk1IDEuNjM2aDMwLjY4M2MuOTU5IDAgMS43OC0uNjc1IDEuOTQ1LTEuNjE5LjU4NC0zLjMzOSAxLjgyMy0xMS4xMiAxLjcxLTE2LjM4MS0uMTEyLTUuMTk1LTEuMTk0LTEyLjIxNy0xLjcyLTE1LjM2YTEuOTY5IDEuOTY5IDAgMCAwLTEuOTUtMS42NHptMi43MjggNWEuOTkuOTkgMCAwIDAtLjk4Ni44NzNjLS4yMzcgMi4wMTItLjc5NyA3LjExMS0uODkgMTEuMTI3LS4wOTYgNC4xMTYuOTQgMTAuMDY2IDEuMzQgMTIuMi4wODkuNDY4LjQ5Ny44Ljk3Mi44aDI0LjM2OGEuOTgzLjk4MyAwIDAgMCAuOTcyLS43OTljLjQwMy0yLjEzMyAxLjQ0My04LjA4NCAxLjM0OC0xMi4yMDEtLjA5NC00LjAxNi0uNjU4LTkuMTE3LS44OTctMTEuMTI4YS45OS45OSAwIDAgMC0uOTg3LS44NzJ6Ii8+CiAgICAgICAgICAgICAgICAgIDxwYXRoIGQ9Ik0zNC41NjQgMzYuNzY1Yy41NS0zLjE5NS44NTgtNi43MTEuODU4LTEwLjQwOGE2NS43NiA2NS43NiAwIDAgMC0uMDktMy40MTZsLTguODUyIDYuNzc3ek0yNC45MiAzMS4wMTNsLTkuMiA4LjAxN2E0MS4yMyA0MS4yMyAwIDAgMCAxLjI3MiA0LjU3OWMuOTc4IDIuODM1IDIuMTQxIDMuNzMyIDMuMzQgNC4wMjEuNjM2LjE1NCAxLjMyNy4xNDkgMi4xMDUuMDk2LjIxNS0uMDE1LjQzOS0uMDM0LjY2OC0uMDUzLjU4LS4wNDggMS4xOTgtLjEgMS44MTctLjFzMS4yMzcuMDUyIDEuODE2LjFjLjIzLjAxOS40NTQuMDM4LjY2OC4wNTMuNzc4LjA1MyAxLjQ3LjA1OCAyLjEwNi0uMDk2IDEuMTk4LS4yOSAyLjM2MS0xLjE4NiAzLjM0LTQuMDIxLjQ4NC0xLjQwNi45MS0yLjk0IDEuMjY5LTQuNTc3ek0yMy4zNjMgMjkuNzE2bC04Ljg1MS02Ljc3N2MtLjA1OSAxLjExOS0uMDkgMi4yNTktLjA5IDMuNDE4IDAgMy42OTYuMzA1IDcuMjEyLjg1NSAxMC40MDZ6TTMxLjUzIDExLjc1OWMtLjQwNS4wMDQtLjgxNC4wNC0xLjE5NC4wODJsLS40NC4wNWMtLjMyMy4wNC0uNjIzLjA3Ni0uODM0LjA4M2E1NC41NyA1NC41NyAwIDAgMC0zLjU2Ni4yMmwtLjEyMS4wMTJhNS42MTcgNS42MTcgMCAwIDEtLjQ1My4wMzEgMS4zNCAxLjM0IDAgMCAxLS4zMTctLjA1bC0uMjEzLS4wNTctLjExNy0uMDMzYTkuMzA4IDkuMzA4IDAgMCAwLS45Ny0uMjE1Yy0uNzk2LS4xMy0xLjkxLS4xOTItMy4zMjkuMDg0LS4zMTIuMDYtLjc0My4wNC0xLjEzNi4wMjNsLS4wMzctLjAwMmgtLjAwOGMtLjQzNC0uMDE4LS44ODYtLjAzOC0xLjMxNy0uMDA1LS40MzYuMDMyLS44LjExNy0xLjA3Mi4yNzMtLjI1LjE0NS0uNDM4LjM2LS41MjUuNzI4LS41NDggMi4zMi0uOTU0IDQuODctMS4xOTggNy41NjlsMTAuMjQgNy44MzggMTAuMjM3LTcuODM4Yy0uMjQ0LTIuNy0uNjUtNS4yNDgtMS4xOTctNy41NjlhMS4zMTEgMS4zMTEgMCAwIDAtLjY3OC0uOTAyYy0uMzUxLS4xOTMtLjgxOC0uMjg4LTEuMzUzLS4zMTRhNi44ODggNi44ODggMCAwIDAtLjQwMy0uMDA4eiIvPgogICAgICAgICAgICAgICAgICA8cGF0aCBkPSJNMTUuNzMyIDQzLjI0MmgxOC4zOGExLjUgMS41IDAgMCAxIDEuNDkyIDEuMzVsLjYgNmExLjUgMS41IDAgMCAxLTEuNDkyIDEuNjVoLTE5LjU4YTEuNSAxLjUgMCAwIDEtMS40OTMtMS42NWwuNi02YTEuNSAxLjUgMCAwIDEgMS40OTMtMS4zNXoiLz4KICAgICAgICAgICAgICAgICAgPHBhdGggZD0iTTE5LjkxOCAzLjI2Yy0xLjA4NyAwLTIgLjkxMy0yIDJ2OC41YTEuNSAxLjUgMCAwIDAgMS41IDEuNWgxMWExLjUgMS41IDAgMCAwIDEuNS0xLjV2LTguNWMwLTEuMDg3LS45MTMtMi0yLTJ6bTEgM2g4djZoLTh6Ii8+CiAgICAgICAgICAgICAgICAgIDxwYXRoIGQ9Ik0xNy45MTggOC43NTloMTRhMS41IDEuNSAwIDAgMSAxLjUgMS41djQuNWgtMTd2LTQuNWExLjUgMS41IDAgMCAxIDEuNS0xLjV6Ii8+CiAgICAgICAgICAgICAgICAgIDxwYXRoIGQ9Ik0xNC45MTggMTEuNzU5aDIwYTEuNSAxLjUgMCAwIDEgMS41IDEuNXY0LjVoLTIzdi00LjVhMS41IDEuNSAwIDAgMSAxLjUtMS41ek0xMS40MyA1MC43NTloMjYuOTgzYTEuNSAxLjUgMCAwIDEgMS40NDIgMS4wODhsLjg1OCAzYTEuNSAxLjUgMCAwIDEtMS40NDMgMS45MTJIMTAuNTczYTEuNSAxLjUgMCAwIDEtMS40NDItMS45MTJsLjg1Ny0zYTEuNSAxLjUgMCAwIDEgMS40NDItMS4wODh6Ii8+CiAgICAgICAgICAgICAgICA8L3N2Zz4=",
-                                "is_plugin_page": true,
-                                "url": "admin.php?page=searchwp-forms"
                             },
                             "f": "it"
                         }
@@ -3616,22 +2962,6 @@
                     "callbackFileName": "\/srv\/mrn-sites\/platform\/public\/wp-admin\/includes\/dashboard.php"
                 },
                 {
-                    "id": "wds_sitemaps_dashboard_widget",
-                    "title": "",
-                    "location": "",
-                    "priority": "",
-                    "isPresent": true,
-                    "grantAccess": [],
-                    "widgetType": "wrapper",
-                    "wrappedWidget": {
-                        "title": "Sitemaps - SmartCrawl",
-                        "location": "normal",
-                        "priority": "core"
-                    },
-                    "wasPresent": true,
-                    "callbackFileName": "\/srv\/mrn-sites\/platform\/public\/wp-content\/plugins\/wpmu-dev-seo\/includes\/core\/sitemaps\/class-dashboard-widget.php"
-                },
-                {
                     "id": "dashboard_quick_press",
                     "title": "",
                     "location": "",
@@ -3676,38 +3006,6 @@
                     },
                     "wasPresent": true,
                     "callbackFileName": "\/srv\/mrn-sites\/platform\/public\/wp-admin\/includes\/dashboard.php"
-                },
-                {
-                    "id": "searchwp_statistics",
-                    "title": "",
-                    "location": "column3",
-                    "priority": "",
-                    "isPresent": true,
-                    "grantAccess": [],
-                    "widgetType": "wrapper",
-                    "wrappedWidget": {
-                        "title": "SearchWP Statistics 30 Day Overview",
-                        "location": "normal",
-                        "priority": "core"
-                    },
-                    "wasPresent": true,
-                    "callbackFileName": "\/srv\/mrn-sites\/platform\/public\/wp-content\/plugins\/searchwp\/includes\/Admin\/DashboardWidgets\/StatisticsDashboardWidget.php"
-                },
-                {
-                    "id": "fluentsmtp_reports_widget",
-                    "title": "",
-                    "location": "",
-                    "priority": "",
-                    "isPresent": true,
-                    "grantAccess": [],
-                    "widgetType": "wrapper",
-                    "wrappedWidget": {
-                        "title": "Fluent SMTP",
-                        "location": "normal",
-                        "priority": "core"
-                    },
-                    "wasPresent": true,
-                    "callbackFileName": "\/srv\/mrn-sites\/platform\/public\/wp-content\/plugins\/fluent-smtp\/app\/Hooks\/Handlers\/AdminMenuHandler.php"
                 },
                 {
                     "id": "wpforms_reports_widget_pro",
@@ -4057,18 +3355,6 @@
                 },
                 "page": {
                     "metaBoxes:": {
-                        "acf-group_69a1c0f3a1b01": {
-                            "id": "acf-group_69a1c0f3a1b01",
-                            "title": "SEO Must Have Fields - These fields work with Smart Crawl Pro",
-                            "context": "side",
-                            "isPresent": true,
-                            "grantAccess": [],
-                            "defaultVisibility": [],
-                            "isHiddenByDefault": false,
-                            "className": "ameMetaBoxWrapper",
-                            "wasPresent": true,
-                            "callbackFileName": "\/srv\/mrn-sites\/platform\/public\/wp-content\/plugins\/advanced-custom-fields-pro\/includes\/forms\/form-post.php"
-                        },
                         "ame-cpe-content-permissions": {
                             "id": "ame-cpe-content-permissions",
                             "title": "Content Permissions (AME)",
@@ -4191,18 +3477,6 @@
                             "wasPresent": true,
                             "callbackFileName": "\/srv\/mrn-sites\/platform\/public\/wp-admin\/includes\/meta-boxes.php"
                         },
-                        "mrn-schema-bridge-controls": {
-                            "id": "mrn-schema-bridge-controls",
-                            "title": "SEO & Schema",
-                            "context": "side",
-                            "isPresent": true,
-                            "grantAccess": [],
-                            "defaultVisibility": [],
-                            "isHiddenByDefault": false,
-                            "className": "ameMetaBoxWrapper",
-                            "wasPresent": true,
-                            "callbackFileName": "\/srv\/mrn-sites\/platform\/public\/wp-content\/mu-plugins\/mrn-schema-bridge\/mrn-schema-bridge.php"
-                        },
                         "mrn-layout-import": {
                             "id": "mrn-layout-import",
                             "title": "Import Layout",
@@ -4227,18 +3501,6 @@
                             "wasPresent": true,
                             "callbackFileName": "\/srv\/mrn-sites\/platform\/public\/wp-content\/themes\/mrn-base-stack\/inc\/builder\/layout-allowlist.php"
                         },
-                        "mrn-config-helper-breadcrumbs": {
-                            "id": "mrn-config-helper-breadcrumbs",
-                            "title": "Breadcrumb Trail",
-                            "context": "side",
-                            "isPresent": true,
-                            "grantAccess": [],
-                            "defaultVisibility": [],
-                            "isHiddenByDefault": false,
-                            "className": "ameMetaBoxWrapper",
-                            "wasPresent": true,
-                            "callbackFileName": "\/srv\/mrn-sites\/platform\/public\/wp-content\/plugins\/mrn-config-helper\/mrn-config-helper.php"
-                        },
                         "slugdiv": {
                             "id": "slugdiv",
                             "title": "Slug",
@@ -4262,18 +3524,6 @@
                             "className": "ameMetaBoxWrapper",
                             "wasPresent": true,
                             "callbackFileName": "\/srv\/mrn-sites\/platform\/public\/wp-admin\/includes\/meta-boxes.php"
-                        },
-                        "wds-wds-meta-box": {
-                            "id": "wds-wds-meta-box",
-                            "title": "SmartCrawl",
-                            "context": "normal",
-                            "isPresent": true,
-                            "grantAccess": [],
-                            "defaultVisibility": [],
-                            "isHiddenByDefault": false,
-                            "className": "ameMetaBoxWrapper",
-                            "wasPresent": true,
-                            "callbackFileName": "\/srv\/mrn-sites\/platform\/public\/wp-content\/plugins\/wpmu-dev-seo\/includes\/core\/admin\/class-metabox.php"
                         },
                         "revisionsdiv": {
                             "id": "revisionsdiv",
@@ -4478,18 +3728,6 @@
                             "wasPresent": false,
                             "callbackFileName": "\/Users\/khofmeyer\/Development\/MRN\/stack\/themes\/mrn-base-stack\/inc\/builder\/layout-allowlist.php"
                         },
-                        "schema_meta_json_ld": {
-                            "id": "schema_meta_json_ld",
-                            "title": "Schema App Structured Data",
-                            "context": "advanced",
-                            "isPresent": false,
-                            "grantAccess": [],
-                            "defaultVisibility": [],
-                            "isHiddenByDefault": false,
-                            "className": "ameMetaBoxWrapper",
-                            "wasPresent": false,
-                            "callbackFileName": null
-                        },
                         "slugdiv": {
                             "id": "slugdiv",
                             "title": "Slug",
@@ -4538,30 +3776,6 @@
                             "wasPresent": true,
                             "callbackFileName": "\/Users\/khofmeyer\/Local Sites\/mrn-plugin-stack\/app\/public\/wp-admin\/includes\/meta-boxes.php"
                         },
-                        "wds-wds-meta-box": {
-                            "id": "wds-wds-meta-box",
-                            "title": "SmartCrawl",
-                            "context": "normal",
-                            "isPresent": true,
-                            "grantAccess": [],
-                            "defaultVisibility": [],
-                            "isHiddenByDefault": false,
-                            "className": "ameMetaBoxWrapper",
-                            "wasPresent": true,
-                            "callbackFileName": "\/Users\/khofmeyer\/Local Sites\/mrn-plugin-stack\/app\/public\/wp-content\/plugins\/wpmu-dev-seo\/includes\/core\/admin\/class-metabox.php"
-                        },
-                        "acf-group_69a1c0f3a1b01": {
-                            "id": "acf-group_69a1c0f3a1b01",
-                            "title": "SEO Must Have Fields - These fields work with Smart Crawl Pro",
-                            "context": "side",
-                            "isPresent": true,
-                            "grantAccess": [],
-                            "defaultVisibility": [],
-                            "isHiddenByDefault": false,
-                            "className": "ameMetaBoxWrapper",
-                            "wasPresent": true,
-                            "callbackFileName": "\/Users\/khofmeyer\/Local Sites\/mrn-plugin-stack\/app\/public\/wp-content\/plugins\/advanced-custom-fields-pro\/includes\/forms\/form-post.php"
-                        },
                         "revisionsdiv": {
                             "id": "revisionsdiv",
                             "title": "Revisions",
@@ -4602,99 +3816,6 @@
                         }
                     },
                     "postType:": "post",
-                    "taxonomy:": null,
-                    "isContentTypeMissing:": false
-                },
-                "saswp": {
-                    "metaBoxes:": {
-                        "saswp_amp_select": {
-                            "id": "saswp_amp_select",
-                            "title": "Placement",
-                            "context": "normal",
-                            "isPresent": true,
-                            "grantAccess": [],
-                            "defaultVisibility": [],
-                            "isHiddenByDefault": false,
-                            "className": "ameMetaBoxWrapper",
-                            "wasPresent": true,
-                            "callbackFileName": null
-                        },
-                        "saswp_help_meta_box": {
-                            "id": "saswp_help_meta_box",
-                            "title": "Help",
-                            "context": "side",
-                            "isPresent": true,
-                            "grantAccess": [],
-                            "defaultVisibility": [],
-                            "isHiddenByDefault": false,
-                            "className": "ameMetaBoxWrapper",
-                            "wasPresent": true,
-                            "callbackFileName": null
-                        },
-                        "saswp_location_meta_box": {
-                            "id": "saswp_location_meta_box",
-                            "title": "Front End",
-                            "context": "side",
-                            "isPresent": true,
-                            "grantAccess": [],
-                            "defaultVisibility": [],
-                            "isHiddenByDefault": false,
-                            "className": "ameMetaBoxWrapper",
-                            "wasPresent": true,
-                            "callbackFileName": null
-                        },
-                        "saswp_schema_options": {
-                            "id": "saswp_schema_options",
-                            "title": "Advance Schema Options",
-                            "context": "normal",
-                            "isPresent": true,
-                            "grantAccess": [],
-                            "defaultVisibility": [],
-                            "isHiddenByDefault": false,
-                            "className": "ameMetaBoxWrapper",
-                            "wasPresent": true,
-                            "callbackFileName": null
-                        },
-                        "saswp_schema_type": {
-                            "id": "saswp_schema_type",
-                            "title": "Schema Type",
-                            "context": "normal",
-                            "isPresent": true,
-                            "grantAccess": [],
-                            "defaultVisibility": [],
-                            "isHiddenByDefault": false,
-                            "className": "ameMetaBoxWrapper",
-                            "wasPresent": true,
-                            "callbackFileName": null
-                        },
-                        "submitdiv": {
-                            "id": "submitdiv",
-                            "title": "Publish",
-                            "context": "side",
-                            "isPresent": true,
-                            "grantAccess": [],
-                            "defaultVisibility": [],
-                            "isHiddenByDefault": false,
-                            "className": "ameMetaBoxWrapper",
-                            "wasPresent": true,
-                            "callbackFileName": null
-                        }
-                    },
-                    "postTypeFeatures:": {
-                        "title": {
-                            "id": "title",
-                            "title": "Title",
-                            "context": "normal",
-                            "isPresent": true,
-                            "grantAccess": [],
-                            "defaultVisibility": [],
-                            "isHiddenByDefault": false,
-                            "className": "amePostTypeFeature",
-                            "parentCollectionKey": "postTypeFeatures:",
-                            "isVirtual": true
-                        }
-                    },
-                    "postType:": null,
                     "taxonomy:": null,
                     "isContentTypeMissing:": false
                 },
@@ -4928,18 +4049,6 @@
                 },
                 "blog": {
                     "metaBoxes:": {
-                        "wds-wds-meta-box": {
-                            "id": "wds-wds-meta-box",
-                            "title": "SmartCrawl",
-                            "context": "normal",
-                            "isPresent": false,
-                            "grantAccess": [],
-                            "defaultVisibility": [],
-                            "isHiddenByDefault": false,
-                            "className": "ameMetaBoxWrapper",
-                            "wasPresent": false,
-                            "callbackFileName": "\/Users\/khofmeyer\/Local Sites\/mrn-plugin-stack\/app\/public\/wp-content\/plugins\/wpmu-dev-seo\/includes\/core\/admin\/class-metabox.php"
-                        },
                         "postexcerpt": {
                             "id": "postexcerpt",
                             "title": "Excerpt",
@@ -5011,18 +4120,6 @@
                             "className": "ameMetaBoxWrapper",
                             "wasPresent": true,
                             "callbackFileName": "\/Users\/khofmeyer\/Local Sites\/mrn-plugin-stack\/app\/public\/wp-admin\/includes\/meta-boxes.php"
-                        },
-                        "acf-group_69a1c0f3a1b01": {
-                            "id": "acf-group_69a1c0f3a1b01",
-                            "title": "SEO Must Have Fields - These fields work with Smart Crawl Pro",
-                            "context": "side",
-                            "isPresent": true,
-                            "grantAccess": [],
-                            "defaultVisibility": [],
-                            "isHiddenByDefault": false,
-                            "className": "ameMetaBoxWrapper",
-                            "wasPresent": true,
-                            "callbackFileName": "\/Users\/khofmeyer\/Local Sites\/mrn-plugin-stack\/app\/public\/wp-content\/plugins\/advanced-custom-fields-pro\/includes\/forms\/form-post.php"
                         },
                         "postimagediv": {
                             "id": "postimagediv",
@@ -5141,18 +4238,6 @@
                 },
                 "gallery": {
                     "metaBoxes:": {
-                        "wds-wds-meta-box": {
-                            "id": "wds-wds-meta-box",
-                            "title": "SmartCrawl",
-                            "context": "normal",
-                            "isPresent": true,
-                            "grantAccess": [],
-                            "defaultVisibility": [],
-                            "isHiddenByDefault": false,
-                            "className": "ameMetaBoxWrapper",
-                            "wasPresent": true,
-                            "callbackFileName": "\/Users\/khofmeyer\/Local Sites\/mrn-plugin-stack\/app\/public\/wp-content\/plugins\/wpmu-dev-seo\/includes\/core\/admin\/class-metabox.php"
-                        },
                         "revisionsdiv": {
                             "id": "revisionsdiv",
                             "title": "Revisions",
@@ -5212,18 +4297,6 @@
                             "className": "ameMetaBoxWrapper",
                             "wasPresent": true,
                             "callbackFileName": "\/Users\/khofmeyer\/Local Sites\/mrn-plugin-stack\/app\/public\/wp-admin\/includes\/meta-boxes.php"
-                        },
-                        "acf-group_69a1c0f3a1b01": {
-                            "id": "acf-group_69a1c0f3a1b01",
-                            "title": "SEO Must Have Fields - These fields work with Smart Crawl Pro",
-                            "context": "side",
-                            "isPresent": true,
-                            "grantAccess": [],
-                            "defaultVisibility": [],
-                            "isHiddenByDefault": false,
-                            "className": "ameMetaBoxWrapper",
-                            "wasPresent": true,
-                            "callbackFileName": "\/Users\/khofmeyer\/Local Sites\/mrn-plugin-stack\/app\/public\/wp-content\/plugins\/advanced-custom-fields-pro\/includes\/forms\/form-post.php"
                         },
                         "postimagediv": {
                             "id": "postimagediv",
@@ -5318,18 +4391,6 @@
                 },
                 "testimonial": {
                     "metaBoxes:": {
-                        "wds-wds-meta-box": {
-                            "id": "wds-wds-meta-box",
-                            "title": "SmartCrawl",
-                            "context": "normal",
-                            "isPresent": true,
-                            "grantAccess": [],
-                            "defaultVisibility": [],
-                            "isHiddenByDefault": false,
-                            "className": "ameMetaBoxWrapper",
-                            "wasPresent": true,
-                            "callbackFileName": "\/srv\/mrn-sites\/platform\/public\/wp-content\/plugins\/wpmu-dev-seo\/includes\/core\/admin\/class-metabox.php"
-                        },
                         "slugdiv": {
                             "id": "slugdiv",
                             "title": "Slug",
@@ -5366,18 +4427,6 @@
                             "wasPresent": true,
                             "callbackFileName": null
                         },
-                        "acf-group_69a1c0f3a1b01": {
-                            "id": "acf-group_69a1c0f3a1b01",
-                            "title": "SEO Must Have Fields - These fields work with Smart Crawl Pro",
-                            "context": "side",
-                            "isPresent": true,
-                            "grantAccess": [],
-                            "defaultVisibility": [],
-                            "isHiddenByDefault": false,
-                            "className": "ameMetaBoxWrapper",
-                            "wasPresent": true,
-                            "callbackFileName": "\/srv\/mrn-sites\/platform\/public\/wp-content\/plugins\/advanced-custom-fields-pro\/includes\/forms\/form-post.php"
-                        },
                         "mrn-builder-layout-allowlist": {
                             "id": "mrn-builder-layout-allowlist",
                             "title": "Available Builder Layout Types",
@@ -5389,18 +4438,6 @@
                             "className": "ameMetaBoxWrapper",
                             "wasPresent": true,
                             "callbackFileName": "\/srv\/mrn-sites\/platform\/public\/wp-content\/themes\/mrn-base-stack\/inc\/builder\/layout-allowlist.php"
-                        },
-                        "mrn-config-helper-breadcrumbs": {
-                            "id": "mrn-config-helper-breadcrumbs",
-                            "title": "Breadcrumb Trail",
-                            "context": "side",
-                            "isPresent": true,
-                            "grantAccess": [],
-                            "defaultVisibility": [],
-                            "isHiddenByDefault": false,
-                            "className": "ameMetaBoxWrapper",
-                            "wasPresent": true,
-                            "callbackFileName": "\/srv\/mrn-sites\/platform\/public\/wp-content\/plugins\/mrn-config-helper\/mrn-config-helper.php"
                         },
                         "acf-group_mrn_hero_builder": {
                             "id": "acf-group_mrn_hero_builder",
@@ -5471,18 +4508,6 @@
                 },
                 "case_study": {
                     "metaBoxes:": {
-                        "wds-wds-meta-box": {
-                            "id": "wds-wds-meta-box",
-                            "title": "SmartCrawl",
-                            "context": "normal",
-                            "isPresent": true,
-                            "grantAccess": [],
-                            "defaultVisibility": [],
-                            "isHiddenByDefault": false,
-                            "className": "ameMetaBoxWrapper",
-                            "wasPresent": true,
-                            "callbackFileName": "\/srv\/mrn-sites\/platform\/public\/wp-content\/plugins\/wpmu-dev-seo\/includes\/core\/admin\/class-metabox.php"
-                        },
                         "slugdiv": {
                             "id": "slugdiv",
                             "title": "Slug",
@@ -5543,18 +4568,6 @@
                             "wasPresent": true,
                             "callbackFileName": "\/srv\/mrn-sites\/platform\/public\/wp-admin\/includes\/meta-boxes.php"
                         },
-                        "acf-group_69a1c0f3a1b01": {
-                            "id": "acf-group_69a1c0f3a1b01",
-                            "title": "SEO Must Have Fields - These fields work with Smart Crawl Pro",
-                            "context": "side",
-                            "isPresent": true,
-                            "grantAccess": [],
-                            "defaultVisibility": [],
-                            "isHiddenByDefault": false,
-                            "className": "ameMetaBoxWrapper",
-                            "wasPresent": true,
-                            "callbackFileName": "\/srv\/mrn-sites\/platform\/public\/wp-content\/plugins\/advanced-custom-fields-pro\/includes\/forms\/form-post.php"
-                        },
                         "postimagediv": {
                             "id": "postimagediv",
                             "title": "Featured image",
@@ -5578,18 +4591,6 @@
                             "className": "ameMetaBoxWrapper",
                             "wasPresent": true,
                             "callbackFileName": "\/srv\/mrn-sites\/platform\/public\/wp-content\/themes\/mrn-base-stack\/inc\/builder\/layout-allowlist.php"
-                        },
-                        "mrn-config-helper-breadcrumbs": {
-                            "id": "mrn-config-helper-breadcrumbs",
-                            "title": "Breadcrumb Trail",
-                            "context": "side",
-                            "isPresent": true,
-                            "grantAccess": [],
-                            "defaultVisibility": [],
-                            "isHiddenByDefault": false,
-                            "className": "ameMetaBoxWrapper",
-                            "wasPresent": true,
-                            "callbackFileName": "\/srv\/mrn-sites\/platform\/public\/wp-content\/plugins\/mrn-config-helper\/mrn-config-helper.php"
                         },
                         "acf-group_mrn_hero_builder": {
                             "id": "acf-group_mrn_hero_builder",
@@ -5732,18 +4733,6 @@
                             "wasPresent": true,
                             "callbackFileName": "\/Users\/khofmeyer\/Local Sites\/mrn-plugin-stack\/app\/public\/wp-admin\/includes\/meta-boxes.php"
                         },
-                        "acf-group_69a1c0f3a1b01": {
-                            "id": "acf-group_69a1c0f3a1b01",
-                            "title": "SEO Must Have Fields - These fields work with Smart Crawl Pro",
-                            "context": "side",
-                            "isPresent": true,
-                            "grantAccess": [],
-                            "defaultVisibility": [],
-                            "isHiddenByDefault": false,
-                            "className": "ameMetaBoxWrapper",
-                            "wasPresent": true,
-                            "callbackFileName": "\/Users\/khofmeyer\/Local Sites\/mrn-plugin-stack\/app\/public\/wp-content\/plugins\/advanced-custom-fields-pro\/includes\/forms\/form-post.php"
-                        },
                         "postimagediv": {
                             "id": "postimagediv",
                             "title": "Featured image",
@@ -5827,18 +4816,6 @@
                             "className": "ameMetaBoxWrapper",
                             "wasPresent": true,
                             "callbackFileName": "\/Users\/khofmeyer\/Local Sites\/mrn-plugin-stack\/app\/public\/wp-content\/plugins\/advanced-custom-fields-pro\/includes\/forms\/form-post.php"
-                        },
-                        "wds-wds-meta-box": {
-                            "id": "wds-wds-meta-box",
-                            "title": "SmartCrawl",
-                            "context": "normal",
-                            "isPresent": true,
-                            "grantAccess": [],
-                            "defaultVisibility": [],
-                            "isHiddenByDefault": false,
-                            "className": "ameMetaBoxWrapper",
-                            "wasPresent": true,
-                            "callbackFileName": "\/Users\/khofmeyer\/Local Sites\/mrn-plugin-stack\/app\/public\/wp-content\/plugins\/wpmu-dev-seo\/includes\/core\/admin\/class-metabox.php"
                         }
                     },
                     "postTypeFeatures:": {
@@ -5912,18 +4889,6 @@
                         "pageparentdiv": {
                             "id": "pageparentdiv",
                             "title": "Pages with Sidebars Attributes",
-                            "context": "side",
-                            "isPresent": true,
-                            "grantAccess": [],
-                            "defaultVisibility": [],
-                            "isHiddenByDefault": false,
-                            "className": "ameMetaBoxWrapper",
-                            "wasPresent": true,
-                            "callbackFileName": null
-                        },
-                        "acf-group_69a1c0f3a1b01": {
-                            "id": "acf-group_69a1c0f3a1b01",
-                            "title": "SEO Must Have Fields - These fields work with Smart Crawl Pro",
                             "context": "side",
                             "isPresent": true,
                             "grantAccess": [],
@@ -6188,18 +5153,6 @@
                             "wasPresent": true,
                             "callbackFileName": "\/srv\/mrn-sites\/platform\/public\/wp-admin\/includes\/meta-boxes.php"
                         },
-                        "mrn-config-helper-breadcrumbs": {
-                            "id": "mrn-config-helper-breadcrumbs",
-                            "title": "Breadcrumb Trail",
-                            "context": "side",
-                            "isPresent": true,
-                            "grantAccess": [],
-                            "defaultVisibility": [],
-                            "isHiddenByDefault": false,
-                            "className": "ameMetaBoxWrapper",
-                            "wasPresent": true,
-                            "callbackFileName": "\/srv\/mrn-sites\/platform\/public\/wp-content\/plugins\/mrn-config-helper\/mrn-config-helper.php"
-                        },
                         "slugdiv": {
                             "id": "slugdiv",
                             "title": "Slug",
@@ -6211,18 +5164,6 @@
                             "className": "ameMetaBoxWrapper",
                             "wasPresent": true,
                             "callbackFileName": "\/srv\/mrn-sites\/platform\/public\/wp-admin\/includes\/meta-boxes.php"
-                        },
-                        "wds-wds-meta-box": {
-                            "id": "wds-wds-meta-box",
-                            "title": "SmartCrawl",
-                            "context": "normal",
-                            "isPresent": true,
-                            "grantAccess": [],
-                            "defaultVisibility": [],
-                            "isHiddenByDefault": false,
-                            "className": "ameMetaBoxWrapper",
-                            "wasPresent": true,
-                            "callbackFileName": "\/srv\/mrn-sites\/platform\/public\/wp-content\/plugins\/wpmu-dev-seo\/includes\/core\/admin\/class-metabox.php"
                         }
                     },
                     "postTypeFeatures:": {
@@ -6256,18 +5197,6 @@
                             "className": "ameMetaBoxWrapper",
                             "wasPresent": true,
                             "callbackFileName": "\/srv\/mrn-sites\/platform\/public\/wp-admin\/includes\/meta-boxes.php"
-                        },
-                        "acf-group_69a1c0f3a1b01": {
-                            "id": "acf-group_69a1c0f3a1b01",
-                            "title": "SEO Must Have Fields - These fields work with Smart Crawl Pro",
-                            "context": "side",
-                            "isPresent": true,
-                            "grantAccess": [],
-                            "defaultVisibility": [],
-                            "isHiddenByDefault": false,
-                            "className": "ameMetaBoxWrapper",
-                            "wasPresent": true,
-                            "callbackFileName": "\/srv\/mrn-sites\/platform\/public\/wp-content\/plugins\/advanced-custom-fields-pro\/includes\/forms\/form-post.php"
                         },
                         "mrn-mega-menu-assignment": {
                             "id": "mrn-mega-menu-assignment",
@@ -6861,10 +5790,7 @@
                         "author",
                         "categories",
                         "tags",
-                        "date",
-                        "seo",
-                        "readability",
-                        "smartcrawl-robots"
+                        "date"
                     ],
                     "menuUrl": "edit.php",
                     "menuTitle": [
@@ -6902,21 +5828,6 @@
                             "title": "Date",
                             "present": true,
                             "defaultPosition": 5
-                        },
-                        "seo": {
-                            "title": "SEO",
-                            "present": true,
-                            "defaultPosition": 6
-                        },
-                        "readability": {
-                            "title": "Readability",
-                            "present": true,
-                            "defaultPosition": 7
-                        },
-                        "smartcrawl-robots": {
-                            "title": "Robots Meta",
-                            "present": true,
-                            "defaultPosition": 8
                         },
                         "comments": {
                             "title": "<span class=\"vers comment-grey-bubble\" title=\"Comments\" aria-hidden=\"true\"><\/span><span class=\"screen-reader-text\">Comments<\/span>",
@@ -6983,10 +5894,7 @@
                         "cb",
                         "title",
                         "author",
-                        "date",
-                        "seo",
-                        "readability",
-                        "smartcrawl-robots"
+                        "date"
                     ],
                     "menuUrl": "edit.php?post_type=page",
                     "menuTitle": [
@@ -7014,21 +5922,6 @@
                             "title": "Date",
                             "present": true,
                             "defaultPosition": 3
-                        },
-                        "seo": {
-                            "title": "SEO",
-                            "present": true,
-                            "defaultPosition": 4
-                        },
-                        "readability": {
-                            "title": "Readability",
-                            "present": true,
-                            "defaultPosition": 5
-                        },
-                        "smartcrawl-robots": {
-                            "title": "Robots Meta",
-                            "present": true,
-                            "defaultPosition": 6
                         },
                         "wcp_move": {
                             "title": "<div class=\"wcp-move-multiple wcp-col\" title=\"Move selected items\"><span class=\"dashicons dashicons-move\"><\/span><div class=\"wcp-items\"><\/div><\/div>",
@@ -7128,10 +6021,6 @@
                             "present": true,
                             "defaultPosition": 4
                         },
-                        "defender-two-fa": {
-                            "title": "Two Factor",
-                            "present": false
-                        },
                         "posts": {
                             "title": "Posts",
                             "present": true,
@@ -7191,8 +6080,7 @@
                         "name",
                         "description",
                         "slug",
-                        "posts",
-                        "wds-seo-status"
+                        "posts"
                     ],
                     "menuUrl": "edit-tags.php?taxonomy=category",
                     "menuTitle": [
@@ -7220,10 +6108,6 @@
                         "posts": {
                             "title": "Count",
                             "present": true
-                        },
-                        "wds-seo-status": {
-                            "title": "SEO Status",
-                            "present": true
                         }
                     }
                 },
@@ -7235,8 +6119,7 @@
                         "name",
                         "description",
                         "slug",
-                        "posts",
-                        "wds-seo-status"
+                        "posts"
                     ],
                     "menuUrl": "edit-tags.php?taxonomy=post_tag",
                     "menuTitle": [
@@ -7263,10 +6146,6 @@
                         },
                         "posts": {
                             "title": "Count",
-                            "present": true
-                        },
-                        "wds-seo-status": {
-                            "title": "SEO Status",
                             "present": true
                         }
                     }
@@ -7336,10 +6215,6 @@
                             "title": "Media Categories",
                             "present": true,
                             "defaultPosition": 3
-                        },
-                        "smushit": {
-                            "title": "Smush",
-                            "present": false
                         },
                         "fb_filesize": {
                             "title": "File Size",
@@ -7663,40 +6538,6 @@
                         }
                     }
                 },
-                "edit-saswp": {
-                    "postType": "saswp",
-                    "taxonomy": "",
-                    "defaultOrder": [
-                        "cb",
-                        "title",
-                        "saswp_schema_type",
-                        "saswp_target_location"
-                    ],
-                    "menuUrl": "edit.php?post_type=saswp",
-                    "menuTitle": [
-                        "Structured Data",
-                        "Schema Types"
-                    ],
-                    "lastUpdated": 1772647564,
-                    "columns": {
-                        "cb": {
-                            "title": "<input type=\"checkbox\" \/>",
-                            "present": true
-                        },
-                        "title": {
-                            "title": "Title",
-                            "present": true
-                        },
-                        "saswp_schema_type": {
-                            "title": "<a>Schema Type<a>",
-                            "present": true
-                        },
-                        "saswp_target_location": {
-                            "title": "<a>Target Location<a>",
-                            "present": true
-                        }
-                    }
-                },
                 "wpforms_page_wpforms-entries": {
                     "postType": "",
                     "taxonomy": "",
@@ -7938,10 +6779,7 @@
                         "cb",
                         "title",
                         "taxonomy-gallery_category",
-                        "date",
-                        "seo",
-                        "readability",
-                        "smartcrawl-robots"
+                        "date"
                     ],
                     "menuUrl": "edit.php?post_type=gallery",
                     "menuTitle": [
@@ -7965,18 +6803,6 @@
                         "date": {
                             "title": "Date",
                             "present": true
-                        },
-                        "seo": {
-                            "title": "SEO",
-                            "present": true
-                        },
-                        "readability": {
-                            "title": "Readability",
-                            "present": true
-                        },
-                        "smartcrawl-robots": {
-                            "title": "Robots Meta",
-                            "present": true
                         }
                     }
                 },
@@ -7988,8 +6814,7 @@
                         "name",
                         "description",
                         "slug",
-                        "posts",
-                        "wds-seo-status"
+                        "posts"
                     ],
                     "menuUrl": "edit-tags.php?taxonomy=gallery_category&post_type=gallery",
                     "menuTitle": [
@@ -8017,19 +6842,13 @@
                         "posts": {
                             "title": "Count",
                             "present": true
-                        },
-                        "wds-seo-status": {
-                            "title": "SEO Status",
-                            "present": true
                         }
                     }
                 },
                 "edit-gallery_media_category": {
                     "postType": "attachment",
                     "taxonomy": "gallery_media_category",
-                    "defaultOrder": [
-                        "wds-seo-status"
-                    ],
+                    "defaultOrder": [],
                     "menuUrl": null,
                     "menuTitle": [
                         "Media",
@@ -8056,10 +6875,6 @@
                         "posts": {
                             "title": "Count",
                             "present": false
-                        },
-                        "wds-seo-status": {
-                            "title": "SEO Status",
-                            "present": true
                         }
                     }
                 },
@@ -8071,8 +6886,7 @@
                         "name",
                         "description",
                         "slug",
-                        "posts",
-                        "wds-seo-status"
+                        "posts"
                     ],
                     "menuUrl": "edit-tags.php?taxonomy=mlo-category&post_type=attachment",
                     "menuTitle": [
@@ -8100,10 +6914,6 @@
                         "posts": {
                             "title": "Count",
                             "present": true
-                        },
-                        "wds-seo-status": {
-                            "title": "SEO Status",
-                            "present": true
                         }
                     }
                 },
@@ -8114,10 +6924,7 @@
                         "cb",
                         "title",
                         "mrn_testimonial_display_style",
-                        "date",
-                        "seo",
-                        "readability",
-                        "smartcrawl-robots"
+                        "date"
                     ],
                     "menuUrl": "edit.php?post_type=testimonial",
                     "menuTitle": [
@@ -8140,21 +6947,6 @@
                             "title": "Date",
                             "present": true,
                             "defaultPosition": 3
-                        },
-                        "seo": {
-                            "title": "SEO",
-                            "present": true,
-                            "defaultPosition": 4
-                        },
-                        "readability": {
-                            "title": "Readability",
-                            "present": true,
-                            "defaultPosition": 5
-                        },
-                        "smartcrawl-robots": {
-                            "title": "Robots Meta",
-                            "present": true,
-                            "defaultPosition": 6
                         },
                         "mrn_testimonial_display_style": {
                             "title": "Display Style",
@@ -8215,10 +7007,7 @@
                         "title",
                         "categories",
                         "tags",
-                        "date",
-                        "seo",
-                        "readability",
-                        "smartcrawl-robots"
+                        "date"
                     ],
                     "menuUrl": "edit.php?post_type=case_study",
                     "menuTitle": [
@@ -8241,21 +7030,6 @@
                             "title": "Date",
                             "present": true,
                             "defaultPosition": 4
-                        },
-                        "seo": {
-                            "title": "SEO",
-                            "present": true,
-                            "defaultPosition": 5
-                        },
-                        "readability": {
-                            "title": "Readability",
-                            "present": true,
-                            "defaultPosition": 6
-                        },
-                        "smartcrawl-robots": {
-                            "title": "Robots Meta",
-                            "present": true,
-                            "defaultPosition": 7
                         },
                         "categories": {
                             "title": "Categories",
@@ -8322,10 +7096,7 @@
                         "author",
                         "categories",
                         "tags",
-                        "date",
-                        "seo",
-                        "readability",
-                        "smartcrawl-robots"
+                        "date"
                     ],
                     "menuUrl": "edit.php?post_type=blog",
                     "menuTitle": [
@@ -8357,18 +7128,6 @@
                         "date": {
                             "title": "Date",
                             "present": true
-                        },
-                        "seo": {
-                            "title": "SEO",
-                            "present": true
-                        },
-                        "readability": {
-                            "title": "Readability",
-                            "present": true
-                        },
-                        "smartcrawl-robots": {
-                            "title": "Robots Meta",
-                            "present": true
                         }
                     }
                 },
@@ -8379,10 +7138,7 @@
                         "cb",
                         "title",
                         "author",
-                        "date",
-                        "seo",
-                        "readability",
-                        "smartcrawl-robots"
+                        "date"
                     ],
                     "menuUrl": "edit.php?post_type=page_with_sidebars",
                     "menuTitle": [
@@ -8406,18 +7162,6 @@
                         "date": {
                             "title": "Date",
                             "present": true
-                        },
-                        "seo": {
-                            "title": "SEO",
-                            "present": true
-                        },
-                        "readability": {
-                            "title": "Readability",
-                            "present": true
-                        },
-                        "smartcrawl-robots": {
-                            "title": "Robots Meta",
-                            "present": true
                         }
                     }
                 },
@@ -8430,9 +7174,7 @@
                         "author",
                         "categories",
                         "tags",
-                        "date",
-                        "seo",
-                        "smartcrawl-robots"
+                        "date"
                     ],
                     "menuUrl": "edit.php?post_type=post_with_sidebars",
                     "menuTitle": [
@@ -8463,18 +7205,6 @@
                         },
                         "date": {
                             "title": "Date",
-                            "present": true
-                        },
-                        "seo": {
-                            "title": "SEO",
-                            "present": true
-                        },
-                        "readability": {
-                            "title": "Readability",
-                            "present": false
-                        },
-                        "smartcrawl-robots": {
-                            "title": "Robots Meta",
                             "present": true
                         }
                     }
@@ -8524,10 +7254,7 @@
                     "defaultOrder": [
                         "cb",
                         "title",
-                        "date",
-                        "seo",
-                        "readability",
-                        "smartcrawl-robots"
+                        "date"
                     ],
                     "menuUrl": "edit.php?post_type=location",
                     "menuTitle": [
@@ -8549,21 +7276,6 @@
                         "date": {
                             "title": "Date",
                             "defaultPosition": 2,
-                            "present": true
-                        },
-                        "seo": {
-                            "title": "SEO",
-                            "defaultPosition": 3,
-                            "present": true
-                        },
-                        "readability": {
-                            "title": "Readability",
-                            "defaultPosition": 4,
-                            "present": true
-                        },
-                        "smartcrawl-robots": {
-                            "title": "Robots Meta",
-                            "defaultPosition": 5,
                             "present": true
                         }
                     },
