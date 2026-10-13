@@ -60,8 +60,13 @@ URL and must match the accepted checksum and size. Licensed input updates stage
 their ZIP as `releases/vendor-inputs/<sha256>.zip` as part of that source task;
 the worker discovers it without a separate release request or credential lookup.
 
-CAPTCHA's default stays at 0.1.4 until genuine provider/controller/protection
-cutover evidence exists. Retired capabilities remain excluded. Optional
+CAPTCHA's default stays at 0.1.4 pending its coordinated native controller and
+recovery trial. Historical genuine provider and operator cutover receipts bind
+the exact Gloves 0.2.2 artifact; they do not qualify a successor package or the
+new Dashboard controller. When eligible, the worker uses CAPTCHA's committed,
+locked release builder to include both generated browser asset pairs and their
+manifest. Registry comparison uses those distributable bytes and keeps the same
+immutable-version checks as other plugins. Retired capabilities remain excluded. Optional
 components stay optional: their presence in a source inventory does not imply
 installation. Native qualification uses synthetic content and a disposable MySQL
 database on a private Unix socket with TCP disabled. It starts no global database

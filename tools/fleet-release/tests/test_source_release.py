@@ -327,7 +327,7 @@ class CoordinatorBoundaries(unittest.TestCase):
             common.write(manifests/'bootstrap-packages.lock.json',{'plugins':[
                 {'slug':'mrn-example','version':'1.0.0','source':{'type':'git'},'package':'default.zip'}]})
             with patch.object(coordinator,'roster',return_value=[{**entry,'repository':'MRN'}]), \
-                 patch.object(coordinator,'git',return_value='a'*40),patch.object(coordinator,'git_files',return_value=files):
+                 patch.object(coordinator,'git',return_value='a'*40),patch.object(coordinator,'plugin_payload',return_value=files):
                 coordinator.prepare_registry(repo,root,job)
             record=common.read(manifests/'stack-plugin-releases.json')['releases'][0]
             self.assertEqual((repo/record['package']['path']).read_bytes(),legacy.read_bytes())
@@ -348,7 +348,7 @@ class CoordinatorBoundaries(unittest.TestCase):
             files={'mrn-example.php':b'<?php /* Plugin Name: Fixture\nVersion: 1.0.0 */'}
             with patch.object(coordinator,'roster',return_value=[row]), \
                  patch.object(coordinator,'git',return_value='a'*40), \
-                 patch.object(coordinator,'git_files',return_value=files):
+                 patch.object(coordinator,'plugin_payload',return_value=files):
                 coordinator.prepare_registry(repo,Path(temporary),job)
                 registry=common.read(manifests/'stack-plugin-releases.json')
                 record=registry['releases'][0]
