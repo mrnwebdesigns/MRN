@@ -15,6 +15,14 @@ team member to Codex, a terminal, API keys, configuration files or site enrollme
 An unavailable check is explained as unavailable. Unsupported repairs remain
 explicit; plugin installation does not enable an unimplemented workflow.
 
+For example, ask “Which plugins need updating on this website?” The inspection
+returns names and installed/available versions, with separate plugin, theme,
+WordPress core and translation totals. Public REST restrictions or missing Stack
+deployment agents do not invalidate successfully retrieved MainWP update records.
+Update availability does not establish compatibility or authorize installation.
+Older saved inspections may contain only counts; request a fresh inspection for
+the detailed output. Historical records are not rewritten.
+
 ## Delivery state
 
 ChatGPT is the chosen host. `chatgpt/plugin.json` defines the portable package,

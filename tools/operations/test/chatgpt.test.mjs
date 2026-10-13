@@ -56,6 +56,23 @@ test('an expired tool identity returns the ChatGPT relinking challenge without a
   assert.equal(f.state.calls.length, 0);
 });
 
+test('ChatGPT receives named update versions and type totals over HTTP, with private package metadata excluded', async t => {
+  const f = await hosted(t, async () => actor);
+  f.state.updateInventory = { site_id: f.state.id, site_url: f.state.url,
+    updates: [{ type: 'plugin', name: 'WooCommerce', slug: 'woocommerce/woocommerce.php', current_version: '11.1.2', new_version: '11.2.1',
+      package: 'https://private.test/package?token=private-sentinel' }],
+    summary: { core: 0, plugins: 1, themes: 0, translations: 0, total: 1 } };
+  const { body } = await f.call('tools/call', { name: 'inspect_website', arguments: { website: 'example' } });
+  assert.equal(body.result.isError, undefined);
+  const report = JSON.parse(body.result.content[0].text);
+  const updates = report.evidence.find(e => e.source === 'mainwp:updates');
+  assert.equal(updates.summary.plugins, 1); assert.equal(updates.summary.themes, 0);
+  assert.deepEqual(updates.updates[0], { type: 'plugin', name: 'WooCommerce', slug: 'woocommerce/woocommerce.php', currentVersion: '11.1.2', availableVersion: '11.2.1' });
+  assert.ok(!body.result.content[0].text.includes('private-sentinel'));
+  const saved = await f.call('tools/call', { name: 'get_operation', arguments: { operationId: report.id } });
+  assert.deepEqual(JSON.parse(saved.body.result.content[0].text).evidence.find(e => e.source === 'mainwp:updates'), updates);
+});
+
 test('role denial never triggers a misleading sign-in loop or trusts ChatGPT identity hints', async t => {
   const f = await hosted(t, async () => ({ ...actor, subject: 'not-authorized' }));
   const response = await f.call('tools/call', { name: 'inspect_website', arguments: { website: 'example' }, _meta: { 'openai/subject': actor.subject, 'openai/organization': 'mrn' } });
