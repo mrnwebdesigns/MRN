@@ -1,14 +1,14 @@
 # Accepted source distribution
 
 `coordinator.py` is the source release worker. It polls accepted default refs in
-MRN and the catalog's participating WordPress repositories, creates isolated
+MRN, the accepted QA Engine and the catalog's participating WordPress repositories, creates isolated
 mirrors, reconciles versions and immutable release records, runs native local
 qualification with all default packages and no WooCommerce, separately packages
 and qualifies eligible non-bootstrap plugins on a native fixture (including a
 pinned, isolated MainWP Dashboard with no connected sites), builds twice,
 opens a promotion PR, waits for its normal Code gate, qualifies clean merged
 source, publishes private/public distributions, and verifies their checksums.
-It never calls MainWP, site installers, site deployment, or provider APIs.
+The QA Engine revision participates in the source/material fingerprint and is checked against the actual qualification toolchain. Engine merges therefore trigger fresh qualification automatically. Unpublished legacy jobs without that binding are superseded through the existing receipt-safe recovery path. It never calls MainWP, site installers, site deployment, or provider APIs.
 
 `launcher.py` fetches the current accepted controller into its own clean mirror.
 `install.py` installs an owner-local LaunchAgent at five minute intervals. It

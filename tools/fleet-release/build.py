@@ -15,7 +15,7 @@ import zipfile
 
 from common import (ReleaseError, assembly, canonical, digest, distribution,
                     file_hash, fleet, git, lock_tool, read, relative, roster,
-                    source_files, write, run)
+                    source_files, write, run, clean_main)
 
 BOOTSTRAP_FILES = (
     'scripts/site-bootstrap.sh', 'scripts/bootstrap-new-sites.sh',
@@ -189,7 +189,8 @@ def snapshot(repo, standalone, policy):
     """Record all participating merged refs plus the exact distributable vector."""
     repo, standalone = Path(repo), Path(standalone)
     rows = roster(repo)
-    refs = {'MRN': git(repo, 'rev-parse', 'HEAD')}
+    refs = {'MRN': git(repo, 'rev-parse', 'HEAD'),
+            'MRN-qa-engine': clean_main(repo.parent / 'MRN-qa-engine')}
     units = []
     for row in rows:
         root, path = plugin_source(row, repo, standalone)
@@ -221,7 +222,8 @@ def snapshot(repo, standalone, policy):
     packages = [{key: item.get(key) for key in ('slug', 'version', 'sha256', 'package', 'source')}
                 for item in vendor['plugins']
                 if item['source']['type'] != 'git' or item['slug'] in policy['held_defaults']]
-    material = {'units': units, 'contracts': contracts, 'pinned_packages': packages}
+    material = {'units': units, 'contracts': contracts, 'pinned_packages': packages,
+                'qualification_tools': {'MRN-qa-engine': refs['MRN-qa-engine']}}
     return {'refs': refs, 'material': material, 'material_sha256': digest(canonical(material)),
             'source_vector_sha256': digest(canonical(refs))}
 
@@ -322,7 +324,8 @@ def prepare_metadata(repo, standalone, policy, inputs, job, selected, registry_i
     if not history.exists():
         history.parent.mkdir(parents=True, exist_ok=True)
         history.write_bytes(old_bytes)
-    epoch = max(int(git(repo if name == 'MRN' else standalone / name,
+    epoch = max(int(git(repo if name == 'MRN' else repo.parent / name
+                        if name == 'MRN-qa-engine' else standalone / name,
                         'show', '-s', '--format=%ct', sha))
                 for name, sha in selected['refs'].items())
     date = dt.datetime.fromtimestamp(epoch, dt.timezone.utc).date().isoformat()
