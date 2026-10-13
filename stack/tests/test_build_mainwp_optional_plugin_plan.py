@@ -403,8 +403,8 @@ class OptionalReleaseCatalogTests(unittest.TestCase):
         manifest = (stack / "manifests/plugins.txt").read_text(encoding="utf-8")
         catalog_by_slug = {item["slug"]: item for item in catalog["components"]}
         release_by_slug = {item["slug"]: item for item in releases["releases"]}
-        # Catalog source versions and qualified distribution versions may differ.
-        # CAPTCHA 0.2.2 pilot source is accepted; the generic default remains 0.1.4.
+        # Source acceptance and distribution are separate: the last qualified
+        # default may lag the catalog while an accepted promotion is pending.
         expected = {
             "background-video-popout-disabler": ("1.0.2", "1.0.2", "catalog-only"),
             "mrn-acf-character-count": ("1.1.9", "1.1.9", "catalog-only"),
@@ -424,8 +424,23 @@ class OptionalReleaseCatalogTests(unittest.TestCase):
                     self.assertGreaterEqual(planner.version_tuple(entry["version"], "version"),
                                             planner.version_tuple(source_version, "baseline"))
                     self.assertEqual(entry["version"], release["version"])
+                elif slug == "mrn-recaptcha-enterprise-manager":
+                    self.assertGreaterEqual(planner.version_tuple(entry["version"], "version"),
+                                            planner.version_tuple(source_version, "baseline"))
+                    self.assertGreaterEqual(planner.version_tuple(release["version"], "version"),
+                                            planner.version_tuple(package_version, "baseline"))
+                    self.assertGreaterEqual(planner.version_tuple(entry["version"], "version"),
+                                            planner.version_tuple(release["version"], "version"))
+                    bootstrap = json.loads((stack / "manifests/bootstrap-packages.lock.json").read_text())
+                    package = next(row for row in bootstrap["plugins"] if row["slug"] == slug)
+                    self.assertEqual(package["version"], release["version"])
+                    self.assertEqual(package["sha256"], release["package"]["sha256"])
+                    policy = json.loads((stack.parent / "tools/fleet-release/policy.json").read_text())
+                    hold = policy["held_defaults"].get(slug)
+                    if hold:
+                        self.assertEqual(hold["version"], release["version"])
                 else:
-                    # Retired inputs and the explicit CAPTCHA hold stay pinned.
+                    # Retired inputs stay pinned.
                     self.assertEqual(source_version, entry["version"])
                     self.assertEqual(package_version, release["version"])
                 self.assertEqual(distribution, entry["current_distribution"])
