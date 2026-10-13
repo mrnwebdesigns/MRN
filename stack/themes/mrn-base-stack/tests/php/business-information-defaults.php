@@ -42,6 +42,7 @@ $expected = array(
 	'phone_uri'            => '',
 	'text_phone'           => '',
 	'text_phone_uri'       => '',
+	'fax'                  => '',
 	'address'              => array(),
 	'business_hours'       => array(),
 	'holiday_hours'        => array(),

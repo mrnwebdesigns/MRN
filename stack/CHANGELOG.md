@@ -1,5 +1,10 @@
 # Stack Changelog
 
+## Unreleased — parent 1.5.15
+
+- Add Location Details fields for address, image, weekday hours, social profiles, phone, Text/SMS/RCS and fax. Hours, social profiles and each contact number can independently use shared Business Information values while preserving saved custom data.
+- Add Fax to Business Information and share contact validation, formatting and weekday hours definitions. Give visible hours controls accessible day-specific names.
+
 ## 2026.10.13-fleet-auto-2ff5a8f4dfd0
 
 - Automatic cumulative release from accepted source vector `ccd591e8013b59ab3694409cea840b1e29cca5a0bd2e908797df4acf0b2a3eb4`.

@@ -2475,6 +2475,7 @@ require_once get_template_directory() . '/inc/events.php';
  * Load field-ready content post type registrations.
  */
 require_once get_template_directory() . '/inc/content-post-types.php';
+require_once get_template_directory() . '/inc/locations.php';
 
 /**
  * Implement the Custom Header feature.
