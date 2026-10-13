@@ -120,16 +120,55 @@ function mrn_base_stack_register_resource_field_group() {
 			'menu_order'            => 10,
 			'fields'                => array(
 				array(
-					'key'           => 'field_mrn_resource_file',
-					'label'         => 'File',
-					'name'          => 'resource_file',
-					'aria-label'    => '',
-					'type'          => 'file',
-					'return_format' => 'array',
-					'library'       => 'all',
-					'mime_types'    => 'pdf,doc,docx,xls,xlsx,ppt,pptx,csv,txt,rtf,odt,ods,odp,jpg,jpeg,png,gif,webp,mp4,mov,webm,mp3,wav,zip',
-					'required'      => 1,
-					'instructions'  => 'This resource is Content Only: it has no standalone page or archive. Add it to a Reference Content (Content List) row and turn Enable Item Links on to link to this file. PDFs open in a new tab. Turning links off affects that row only. Accepted files: documents (PDF, Word, Excel, PowerPoint, RTF, OpenDocument), images (JPG, PNG, GIF, WebP), video (MP4, MOV, WebM), audio (MP3, WAV), and ZIP archives.',
+					'key'           => 'field_mrn_resource_source',
+					'label'         => 'Resource Source',
+					'name'          => 'resource_source',
+					'type'          => 'radio',
+					'choices'       => array(
+						'file'         => 'Uploaded file or video',
+						'remote_video' => 'Remote video',
+					),
+					'default_value' => 'file',
+					'layout'        => 'horizontal',
+					'instructions'  => 'Video resources open in the Stack video modal when Enable Item Links is on. Use the featured image as the video poster.',
+				),
+				array(
+					'key'               => 'field_mrn_resource_file',
+					'label'             => 'File',
+					'name'              => 'resource_file',
+					'aria-label'        => '',
+					'type'              => 'file',
+					'return_format'     => 'array',
+					'library'           => 'all',
+					'mime_types'        => 'pdf,doc,docx,xls,xlsx,ppt,pptx,csv,txt,rtf,odt,ods,odp,jpg,jpeg,png,gif,webp,mp4,mov,webm,mp3,wav,zip',
+					'required'          => 1,
+					'instructions'      => 'This resource is Content Only: it has no standalone page or archive. Add it to a Reference Content (Content List) row and turn Enable Item Links on. Uploaded videos (MP4, MOV, WebM) open in the video modal; PDFs open in a new tab. Turning links off affects that row only. Also accepts documents, images, audio, and ZIP archives.',
+					'conditional_logic' => array(
+						array(
+							array(
+								'field'    => 'field_mrn_resource_source',
+								'operator' => '!=',
+								'value'    => 'remote_video',
+							),
+						),
+					),
+				),
+				array(
+					'key'               => 'field_mrn_resource_video_remote',
+					'label'             => 'Remote Video URL',
+					'name'              => 'resource_video_remote',
+					'type'              => 'url',
+					'required'          => 1,
+					'instructions'      => 'Enter a YouTube, Vimeo, Google Drive video link, or a direct MP4, MOV, or WebM URL. The provider must allow playback or embedding for visitors.',
+					'conditional_logic' => array(
+						array(
+							array(
+								'field'    => 'field_mrn_resource_source',
+								'operator' => '==',
+								'value'    => 'remote_video',
+							),
+						),
+					),
 				),
 			),
 			'location'              => array(
@@ -154,6 +193,76 @@ function mrn_base_stack_register_resource_field_group() {
 add_action( 'acf/init', 'mrn_base_stack_register_resource_field_group' );
 
 /**
+ * Resolve a supported remote video using the existing Stack embed contract.
+ *
+ * @param mixed $url Video URL.
+ * @return array<string, string> Modal URL/type, or an empty array.
+ */
+function mrn_base_stack_get_resource_remote_video( $url ) {
+	$url    = is_string( $url ) ? esc_url_raw( trim( $url ), array( 'http', 'https' ) ) : '';
+	$host   = strtolower( (string) wp_parse_url( $url, PHP_URL_HOST ) );
+	$scheme = strtolower( (string) wp_parse_url( $url, PHP_URL_SCHEME ) );
+	if ( '' === $host || ! in_array( $scheme, array( 'http', 'https' ), true ) ) {
+		return array();
+	}
+
+	$hosts = array( 'youtube.com', 'www.youtube.com', 'm.youtube.com', 'youtu.be', 'vimeo.com', 'www.vimeo.com', 'player.vimeo.com', 'drive.google.com' );
+	if ( in_array( $host, $hosts, true ) && function_exists( 'mrn_base_stack_get_video_embed' ) ) {
+		$embed = mrn_base_stack_get_video_embed( $url );
+		if ( ! empty( $embed['embed_url'] ) ) {
+			return array(
+				'url'  => $embed['embed_url'],
+				'type' => 'google_drive' === $embed['provider'] ? 'external' : 'video',
+			);
+		}
+	}
+
+	$extension = strtolower( pathinfo( (string) wp_parse_url( $url, PHP_URL_PATH ), PATHINFO_EXTENSION ) );
+	return in_array( $extension, array( 'mp4', 'mov', 'webm' ), true ) ? array(
+		'url'  => $url,
+		'type' => 'video',
+	) : array();
+}
+
+/**
+ * Validate the remote URL without fetching third-party content.
+ *
+ * @param bool|string $valid Existing validation result.
+ * @param mixed       $value Submitted URL.
+ * @return bool|string
+ */
+function mrn_base_stack_validate_resource_remote_video( $valid, $value ) {
+	if ( true !== $valid || empty( $value ) ) {
+		return $valid;
+	}
+	return mrn_base_stack_get_resource_remote_video( $value ) ? true : __( 'Enter a supported YouTube, Vimeo, Google Drive, MP4, MOV, or WebM video URL.', 'mrn-base-stack' );
+}
+add_filter( 'acf/validate_value/key=field_mrn_resource_video_remote', 'mrn_base_stack_validate_resource_remote_video', 10, 2 );
+
+/**
+ * Resolve a Resource video. Unset source fields preserve existing file records.
+ *
+ * @param int $post_id Resource ID.
+ * @return array<string, string> Modal URL/type, or an empty array.
+ */
+function mrn_base_stack_get_resource_video( $post_id ) {
+	if ( ! function_exists( 'get_field' ) ) {
+		return array();
+	}
+	if ( 'remote_video' === get_field( 'resource_source', $post_id ) ) {
+		return mrn_base_stack_get_resource_remote_video( get_field( 'resource_video_remote', $post_id ) );
+	}
+	$file = mrn_base_stack_get_resource_file( $post_id );
+	if ( $file && in_array( $file['mime_type'] ?? '', array( 'video/mp4', 'video/quicktime', 'video/webm' ), true ) ) {
+		return array(
+			'url'  => esc_url_raw( $file['url'], array( 'http', 'https' ) ),
+			'type' => 'video',
+		);
+	}
+	return array();
+}
+
+/**
  * Get a resource's uploaded file field.
  *
  * @param int|null $post_id Post ID. Defaults to the current post.
@@ -163,6 +272,9 @@ function mrn_base_stack_get_resource_file( $post_id = null ) {
 	$post_id = $post_id ? (int) $post_id : get_the_ID();
 
 	if ( ! $post_id || ! function_exists( 'get_field' ) ) {
+		return null;
+	}
+	if ( 'remote_video' === get_field( 'resource_source', $post_id ) ) {
 		return null;
 	}
 
@@ -370,9 +482,10 @@ function mrn_base_stack_filter_resource_content_list_permalink( $permalink, $ite
 		return $permalink;
 	}
 
-	$file = mrn_base_stack_get_resource_file( $item_post->ID );
+	$file  = mrn_base_stack_get_resource_file( $item_post->ID );
+	$video = mrn_base_stack_get_resource_video( $item_post->ID );
 
-	return $file ? mrn_base_stack_get_resource_file_url( $item_post->ID ) : '';
+	return $video ? $video['url'] : ( $file ? mrn_base_stack_get_resource_file_url( $item_post->ID ) : '' );
 }
 add_filter( 'mrn_base_stack_content_list_item_permalink', 'mrn_base_stack_filter_resource_content_list_permalink', 10, 2 );
 
@@ -388,7 +501,16 @@ function mrn_base_stack_filter_resource_content_list_link_attributes( $attribute
 		return $attributes;
 	}
 
-	$file = mrn_base_stack_get_resource_file( $item_post->ID );
+	$file  = mrn_base_stack_get_resource_file( $item_post->ID );
+	$video = mrn_base_stack_get_resource_video( $item_post->ID );
+	if ( $video ) {
+		$attributes['data-mrn-video-modal'] = '1';
+		$attributes['data-type']            = $video['type'];
+		$attributes['aria-haspopup']        = 'dialog';
+		$attributes['aria-label']           = sprintf( /* translators: %s: Resource title. */ __( 'Play video: %s', 'mrn-base-stack' ), get_the_title( $item_post ) );
+		unset( $attributes['target'], $attributes['rel'] );
+		return $attributes;
+	}
 
 	if ( ! is_array( $file ) || 'application/pdf' !== strtolower( (string) ( $file['mime_type'] ?? '' ) ) ) {
 		return $attributes;

@@ -1,5 +1,25 @@
 # Builder integration checks
 
+## Resource videos
+
+Use a disposable loopback WordPress fixture with ACF Pro, the candidate parent
+theme, and the Stack Content Only MU component. `resource-video.php` refuses
+remote environments. Set `MRN_RESOURCE_VIDEO_STATE` to a private unused JSON
+path and `MRN_RESOURCE_VIDEO_VIDEO` / `MRN_RESOURCE_VIDEO_POSTER` to existing
+local MP4 / PNG fixture assets. Run `wp eval-file resource-video.php setup`,
+then `check`. The checks cover retained uploads, remote provider URLs, missing
+media, URL validation, poster/title/CTA triggers, title-only output, links off,
+PDF behavior and conditional asset discovery. Dispose of the fixture database
+and uploads after qualification; these scripts do not edit client content.
+
+Pass the private `WordPressFixture.browser_input()` JSON, with the setup state
+under `resource`, to `node resource-video-browser.cjs` on stdin. It checks native
+Classic Editor validation/save/reload, delayed video loading, local/direct
+remote playback, provider iframe construction, responsive posters, WCAG AA,
+keyboard containment, Escape, focus return and player teardown. Provider iframe
+construction does not establish third-party availability or embedding rights.
+Keep session credentials, screenshots and evidence outside tracked source.
+
 ## Deferred builder layout templates
 
 On an explicitly resolved Local Hub `.localhost` runtime with the candidate
