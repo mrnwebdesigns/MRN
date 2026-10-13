@@ -78,6 +78,37 @@ def package_files(path, slug):
 def plugin_payload(row, repo, standalone):
     """Use the component-owned recipe when committed files need generated assets."""
     slug = row['slug']
+    if slug == 'mrn-mainwp-operations-api':
+        root, path = plugin_source(row, Path(repo), Path(standalone))
+        if row['repository'] != slug or path not in ('', '.'):
+            raise ReleaseError('MainWP runtime recipe requires its standalone repository')
+        if git(root, 'status', '--porcelain=v1', '--untracked-files=all'):
+            raise ReleaseError('MainWP release source must be clean')
+        commit = git(root, 'rev-parse', 'HEAD')
+        version = lock_tool.read_header_version(root / (slug + '.php'))
+        run(['python3', root / 'tools/package-release.py', '--ref', commit], cwd=root, timeout=300)
+        archive = root / 'artifacts' / (slug + '-' + version + '-' + commit[:12] + '.zip')
+        if archive.is_symlink() or not archive.is_file():
+            raise ReleaseError('MainWP runtime archive is missing or unsafe')
+        receipt = read(archive.with_suffix('.manifest.json'))
+        files = package_files(archive, slug)
+        required = {slug + '.php', 'child/code-files.php', 'child/code-storage.php',
+                    'child/code-storage-qualify.php', 'vendor/mrn-jwt/JWT.php', 'vendor/mrn-jwt/LICENSE'}
+        if (receipt.get('source_commit') != commit or receipt.get('version') != version
+                or receipt.get('package') != archive.name
+                or receipt.get('plugin_main_file') != slug + '/' + slug + '.php'
+                or receipt.get('sha256') != file_hash(archive)
+                or receipt.get('files') != {name: digest(data) for name, data in files.items()}
+                or not required <= files.keys()
+                or any(name not in {slug + '.php', 'README.md', 'LICENSE', 'LICENSE.md'}
+                       and not name.startswith(('includes/', 'assets/', 'child/', 'vendor/mrn-jwt/'))
+                       for name in files)
+                or any((root / str(relative(name))).read_bytes() != data for name, data in files.items())):
+            raise ReleaseError('MainWP runtime package differs from its committed recipe or source')
+        if git(root, 'rev-parse', 'HEAD') != commit or git(
+                root, 'status', '--porcelain=v1', '--untracked-files=all'):
+            raise ReleaseError('MainWP release source changed during packaging')
+        return files
     if slug == 'category-visibility':
         root, path = plugin_source(row, Path(repo), Path(standalone))
         if row['repository'] != slug or path not in ('', '.'):
@@ -163,7 +194,8 @@ def snapshot(repo, standalone, policy):
     for row in rows:
         root, path = plugin_source(row, repo, standalone)
         refs[row['repository']] = git(root, 'rev-parse', 'HEAD')
-        files = git_files(row, repo, standalone)
+        files = (plugin_payload(row, repo, standalone) if row['slug'] == 'mrn-mainwp-operations-api'
+                 else git_files(row, repo, standalone))
         checksum, count = lock_tool.bytes_tree_sha256(files.items())
         units.append({'slug': row['slug'], 'repository': row['repository'],
                       'source_path': path, 'sha256': checksum, 'file_count': count,

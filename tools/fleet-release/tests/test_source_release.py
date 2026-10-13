@@ -157,6 +157,42 @@ class SourcePublication(unittest.TestCase):
 
 
 class QualificationContracts(unittest.TestCase):
+    def test_mainwp_recipe_preserves_qualified_runtime_and_rejects_tooling_or_changed_bytes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary); source = base / 'mrn-mainwp-operations-api'
+            (source / 'artifacts').mkdir(parents=True)
+            names = ('mrn-mainwp-operations-api.php', 'README.md', 'child/code-files.php',
+                     'child/code-storage.php', 'child/code-storage-qualify.php',
+                     'vendor/mrn-jwt/JWT.php', 'vendor/mrn-jwt/LICENSE')
+            files = {name: b'accepted runtime' for name in names}
+            for name, data in {**files, 'tools/build-jwt.php': b'development tool'}.items():
+                path = source / name; path.parent.mkdir(parents=True, exist_ok=True); path.write_bytes(data)
+            commit = 'a' * 40; slug = 'mrn-mainwp-operations-api'
+            archive = source / 'artifacts' / (slug + '-0.13.4-' + commit[:12] + '.zip')
+            row = {'slug': slug, 'repository': slug, 'relative_source': '.'}
+            def package(payload, override=None):
+                build.fleet.deterministic_zip(archive, {slug + '/' + n: d for n, d in payload.items()})
+                receipt = {'source_commit': commit, 'version': '0.13.4', 'package': archive.name,
+                           'plugin_main_file': slug + '/' + slug + '.php',
+                           'sha256': common.file_hash(archive),
+                           'files': {n: common.digest(d) for n, d in payload.items()}}
+                common.write(archive.with_suffix('.manifest.json'), {**receipt, **(override or {})})
+            def git(_root, *args):
+                return '' if args[0] == 'status' else commit
+            with patch.object(build, 'git', side_effect=git), \
+                 patch.object(build.lock_tool, 'read_header_version', return_value='0.13.4'), \
+                 patch.object(build, 'run'):
+                package(files)
+                self.assertEqual(build.plugin_payload(row, base, base), files)
+                for payload, override in (({**files, 'child/code-files.php': b'changed'}, None),
+                                          ({**files, 'tools/build-jwt.php': b'development tool'}, None),
+                                          (files, {'sha256': '0' * 64})):
+                    package(payload, override)
+                    with self.assertRaises(common.ReleaseError): build.plugin_payload(row, base, base)
+            with patch.object(build, 'git', return_value=' M plugin.php'), patch.object(build, 'run') as run:
+                with self.assertRaises(common.ReleaseError): build.plugin_payload(row, base, base)
+                run.assert_not_called()
+
     def test_category_recipe_preserves_runtime_and_rejects_changed_or_development_bytes(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary); source = root / 'category-visibility'
@@ -403,6 +439,32 @@ class CoordinatorBoundaries(unittest.TestCase):
             record=common.read(manifests/'stack-plugin-releases.json')['releases'][0]
             self.assertEqual((repo/record['package']['path']).read_bytes(),legacy.read_bytes())
             self.assertEqual(build.package_files(current,'mrn-example'),files)
+
+    def test_mainwp_registration_preserves_its_component_owned_zip_envelope(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary); repo = root / 'repo'; source = root / 'mrn-mainwp-operations-api'
+            manifests = repo / 'stack/manifests'; manifests.mkdir(parents=True)
+            (source / 'artifacts').mkdir(parents=True)
+            slug = 'mrn-mainwp-operations-api'; commit = 'a' * 40
+            files = {slug + '.php': b'accepted runtime'}
+            archive = source / 'artifacts' / (slug + '-0.13.4-' + commit[:12] + '.zip')
+            with zipfile.ZipFile(archive, 'w', compression=zipfile.ZIP_DEFLATED) as output:
+                output.writestr(slug + '/' + slug + '.php', files[slug + '.php'])
+            common.write(archive.with_suffix('.manifest.json'), {'sha256': common.file_hash(archive)})
+            entry = {'slug': slug, 'version': '0.13.4', 'runtime_type': 'standard-plugin',
+                     'target_tier': 'dashboard-only', 'current_distribution': 'dashboard-only',
+                     'source': {'path': str(source)}}
+            for name, data in [('component-catalog.json', {'catalog_updated': '2026-10-13', 'components': [entry]}),
+                               ('stack-plugin-releases.json', {'releases': []}),
+                               ('optional-plugin-releases.json', {'releases': []}),
+                               ('bootstrap-packages.lock.json', {'plugins': []})]:
+                common.write(manifests / name, data)
+            with patch.object(coordinator, 'roster', return_value=[{**entry, 'repository': slug}]), \
+                 patch.object(coordinator, 'git', return_value=commit), \
+                 patch.object(coordinator, 'plugin_payload', return_value=files):
+                coordinator.prepare_registry(repo, root, root / 'job')
+            record = common.read(manifests / 'stack-plugin-releases.json')['releases'][0]
+            self.assertEqual(common.file_hash(repo / record['package']['path']), common.file_hash(archive))
 
     def test_nonbootstrap_source_is_packaged_registered_and_cannot_rebind_a_version(self):
         with tempfile.TemporaryDirectory() as temporary:

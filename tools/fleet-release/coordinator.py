@@ -155,7 +155,16 @@ def prepare_registry(repo, standalone, job, registry_inputs=None):
         elif not package:
             origin = job / 'additional-packages' / (slug + '.zip')
             origin.parent.mkdir(parents=True, exist_ok=True)
-            fleet.deterministic_zip(origin, {slug + '/' + k: v for k, v in files.items()})
+            if slug == 'mrn-mainwp-operations-api':
+                # Its validated component recipe is the Dashboard qualification
+                # input. Preserve that exact ZIP envelope as well as its files.
+                built = source / 'artifacts' / (slug + '-' + version + '-' + sha[:12] + '.zip')
+                receipt = read(built.with_suffix('.manifest.json'))
+                if built.is_symlink() or file_hash(built) != receipt['sha256']:
+                    raise ReleaseError('MainWP qualified archive changed before registration')
+                shutil.copyfile(built, origin)
+            else:
+                fleet.deterministic_zip(origin, {slug + '/' + k: v for k, v in files.items()})
         if (not origin.is_file() or origin.is_symlink()
                 or package_files(origin, slug) != files
                 or (old and file_hash(origin) != old['package']['sha256'])):
