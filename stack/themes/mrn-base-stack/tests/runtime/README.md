@@ -1,5 +1,15 @@
 # Builder integration checks
 
+## Shortcode / Embed provider output
+
+On an explicitly resolved `.localhost` runtime with WPForms active, set
+`MRN_EXTERNAL_WIDGET_FORM_ID` to an existing local form ID and run
+`wp eval-file <theme>/tests/runtime/external-widget-shortcodes.php`.
+`MRN_EXTERNAL_WIDGET_TEMPLATE` may point at the candidate template in an isolated
+worktree. The checks cover real WPForms markup, shortcode execution and escaping,
+mixed HTML/shortcodes, provider data/accessibility/styles/configuration, raw HTML
+restrictions, and iframe defaults. They make no submissions or persisted changes.
+
 ## Resource videos
 
 Use a disposable loopback WordPress fixture with ACF Pro, the candidate parent
