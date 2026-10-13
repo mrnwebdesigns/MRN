@@ -1625,7 +1625,7 @@
         "state": "confirmed-symlinked"
       },
       "target_tier": "optional-integration",
-      "version": "0.2.2"
+      "version": "0.2.3"
     },
     {
       "classification": "integration-adapter",
@@ -1738,7 +1738,7 @@
         "state": "confirmed-symlinked"
       },
       "target_tier": "platform-required",
-      "version": "1.1.10"
+      "version": "1.2.3"
     },
     {
       "classification": "integration-adapter",
