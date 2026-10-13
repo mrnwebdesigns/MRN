@@ -275,6 +275,7 @@ class CoordinatorBoundaries(unittest.TestCase):
             category.mkdir(parents=True)
             settings = {'qualification': {'composer': 'composer'}}
             with patch.object(coordinator, 'link_mirrors'), patch.object(coordinator, 'run') as run, \
+                 patch.object(coordinator, 'roster', return_value=[]), \
                  patch.object(coordinator, 'git_network'), patch.object(coordinator, 'clean_main'), \
                  patch.object(coordinator, 'git', return_value=str(category / '.git/info/exclude')):
                 coordinator.dependencies(repo, standalone, settings)
@@ -285,6 +286,26 @@ class CoordinatorBoundaries(unittest.TestCase):
                 (category / 'vendor').unlink(); (category / 'vendor').mkdir()
                 with self.assertRaises(common.ReleaseError):
                     coordinator.dependencies(repo, standalone, settings)
+
+    def test_component_analysis_installs_its_existing_lock_and_reuses_cli_symbols(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary); repo = base / 'MRN'; repo.mkdir()
+            (repo / 'vendor').mkdir(); (repo / 'composer.lock').write_text('{}')
+            standalone = base / 'plugins'
+            guardrails = standalone / 'mrn-ai-guardrails'; guardrails.mkdir(parents=True)
+            (guardrails / 'composer.lock').write_text('{}')
+            control = standalone / 'mrn-wp-control'; control.mkdir()
+            rows = [{'repository': 'mrn-ai-guardrails'}, {'repository': 'mrn-wp-control'}]
+            settings = {'qualification': {'composer': 'composer'}}
+            with patch.object(coordinator, 'link_mirrors'), patch.object(coordinator, 'run') as run, \
+                 patch.object(coordinator, 'roster', return_value=rows), \
+                 patch.object(coordinator, 'git_network'), patch.object(coordinator, 'clean_main'), \
+                 patch.object(coordinator, 'git', return_value=str(control / '.git/info/exclude')):
+                coordinator.dependencies(repo, standalone, settings)
+                installs = [call.kwargs['cwd'] for call in run.call_args_list if call.args[0][1] == 'install']
+                self.assertEqual(installs, [repo, guardrails])
+                self.assertEqual((control / 'vendor').resolve(), (repo / 'vendor').resolve())
+                self.assertIn('/vendor', (control / '.git/info/exclude').read_text())
 
     def test_publication_accepts_sealed_json_paths_and_verifies_public_readback(self):
         for serialized in (False, True):

@@ -1,0 +1,16 @@
+<?php
+
+// Stub validation requires declarations for referenced external symbols.
+// The real WordPress class members continue to come from the locked WordPress stubs.
+class WP_Post {}
+class WP_Term {}
+
+/**
+ * WordPress enriches navigation posts through wp_setup_nav_menu_item().
+ * Model only this API's returned objects; ordinary WP_Post properties remain strict.
+ *
+ * @param int|string|WP_Term $menu
+ * @param array<string, mixed> $args
+ * @return array<int, WP_Post&object{type: string, object: string, object_id: int|string, title: string}>|false
+ */
+function wp_get_nav_menu_items( $menu, $args = array() ) {}

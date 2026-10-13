@@ -6,7 +6,7 @@ DEFAULT_STACK_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 STACK_ROOT="${MRN_STACK_ROOT:-${DEFAULT_STACK_ROOT}}"
 PHPSTAN_BIN="${STACK_ROOT}/vendor/bin/phpstan"
 PHPSTAN_CONFIG="${MRN_PHPSTAN_CONFIG:-${STACK_ROOT}/phpstan.neon.dist}"
-DEFAULT_MEMORY_LIMIT="${MRN_PHPSTAN_MEMORY_LIMIT:-2G}"
+DEFAULT_MEMORY_LIMIT="${MRN_PHPSTAN_MEMORY_LIMIT:-${MRN_QA_PHPSTAN_MEMORY_LIMIT:-4G}}"
 
 usage() {
 	cat <<USAGE
@@ -61,6 +61,11 @@ done
 
 if [[ "${#ARGS[@]}" -eq 0 ]]; then
 	usage >&2
+	exit 1
+fi
+
+if [[ ! "${MEMORY_LIMIT}" =~ ^[1-9][0-9]*[KMG]?$ ]]; then
+	echo "mrn-phpstan: use a bounded memory value such as 2G or 4G" >&2
 	exit 1
 fi
 
