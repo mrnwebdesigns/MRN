@@ -141,6 +141,12 @@ function mrn_base_stack_get_hydrated_local_flexible_layouts( array $field ) {
 	if ( empty( $field['layouts'] ) || ! is_array( $field['layouts'] ) || ! function_exists( 'acf_get_fields' ) ) {
 		return array();
 	}
+	if ( function_exists( 'mrn_base_stack_get_initial_builder_source_layouts' ) ) {
+		$initial_layouts = mrn_base_stack_get_initial_builder_source_layouts( $field );
+		if ( null !== $initial_layouts ) {
+			return $initial_layouts;
+		}
+	}
 
 	$sub_fields = acf_get_fields( $field );
 	if ( ! is_array( $sub_fields ) ) {
@@ -2756,7 +2762,7 @@ function mrn_base_stack_get_content_list_item_link_attributes( WP_Post $item_pos
 		return '';
 	}
 
-	$allowed = array( 'target', 'rel' );
+	$allowed = array( 'target', 'rel', 'data-mrn-video-modal', 'data-type', 'aria-label', 'aria-haspopup' );
 	$markup  = array();
 
 	foreach ( $allowed as $attribute ) {
@@ -3091,6 +3097,7 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 	$link_attributes   = mrn_base_stack_get_content_list_item_link_attributes( $item_post, $args );
 	$item_title        = get_the_title( $item_post );
 	$title_icon_html   = (string) apply_filters( 'mrn_base_stack_content_list_item_title_icon_html', '', $item_post, $args );
+	$is_resource_video = 'resource' === $item_post->post_type && '' !== $permalink && function_exists( 'mrn_base_stack_get_resource_video' ) && ! empty( mrn_base_stack_get_resource_video( $item_post->ID ) );
 	$uses_row_settings = '' === $display_mode;
 	$show_date         = 'resource' !== get_post_type( $item_post ) && ( ! $uses_row_settings || ! empty( $args['show_publish_date'] ) ) && ! empty( $mode_config['allows_date'] );
 	$show_excerpt      = ( ! $uses_row_settings || ! empty( $args['show_excerpt'] ) ) && ! empty( $mode_config['allows_excerpt'] );
@@ -3171,8 +3178,11 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 								<?php $head_open = false; ?>
 							<?php endif; ?>
 							<?php if ( 'featured_image' === $field_key && $show_image && '' !== $permalink ) : ?>
-								<a class="mrn-content-list-row__media mrn-ui__media mrn-ui__link" href="<?php echo esc_url( $permalink ); ?>"<?php echo '' !== $link_attributes ? ' ' . $link_attributes : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped by mrn_base_stack_get_content_list_item_link_attributes(). ?>>
+								<a class="mrn-content-list-row__media mrn-ui__media mrn-ui__link<?php echo $is_resource_video ? ' mrn-video-row__trigger' : ''; ?>" href="<?php echo esc_url( $permalink ); ?>"<?php echo '' !== $link_attributes ? ' ' . $link_attributes : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped by mrn_base_stack_get_content_list_item_link_attributes(). ?>>
 									<?php echo mrn_base_stack_get_lazy_post_thumbnail( $item_post, 'medium_large' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+									<?php if ( $is_resource_video ) : ?>
+										<span class="mrn-video-row__play" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M8 5v14l11-7z"></path></svg></span>
+									<?php endif; ?>
 							</a>
 						<?php elseif ( 'featured_image' === $field_key && $show_image ) : ?>
 								<div class="mrn-content-list-row__media mrn-ui__media">

@@ -61,6 +61,11 @@ const { createRequire } = require('node:module');
       await page.goto(editorUrl, { waitUntil: 'domcontentloaded' });
       const onboarding = new URL(page.url()).searchParams.get('page');
       if (onboarding === 'wpforms-getting-started') continue;
+      if (onboarding === 'seopress-setup') {
+        await page.getByRole('link', {name: 'Skip for now', exact: true}).click();
+        await page.waitForLoadState('domcontentloaded');
+        continue;
+      }
       if (input.dashboard && onboarding === 'mainwp-setup') {
         // Use MainWP's supported empty-Dashboard workflow. Qualification must
         // never enroll a real site just to reach its native admin screens.
@@ -76,8 +81,16 @@ const { createRequire } = require('node:module');
     await expect(page.locator('.block-editor')).toHaveCount(0);
     await expect(page.locator('.acf-field[data-name="page_after_content_rows"]').first()).toBeVisible();
     await expect(page.locator('.acf-field[data-name="page_after_content_rows"] .layout:not(.acf-clone)')).toHaveCount(2);
-    const heading = page.locator('.acf-field[data-name="page_after_content_rows"] .layout:not(.acf-clone)')
-      .first().locator('.acf-field[data-name="heading"] input').first();
+    const afterContentRow = page.locator('.acf-field[data-name="page_after_content_rows"] .layout:not(.acf-clone)').first();
+    const heading = afterContentRow.locator('.acf-field[data-name="heading"] input').first();
+    async function openAfterContentRow() {
+      await page.waitForLoadState('networkidle');
+      if ((await afterContentRow.getAttribute('class') || '').split(/\s+/).includes('-collapsed')) {
+        await afterContentRow.locator('.acf-fc-layout-handle').first().click();
+      }
+      await expect(heading).toBeVisible();
+    }
+    await openAfterContentRow();
     await expect(heading).toHaveValue('Fleet After Content');
     await heading.fill('Fleet editor saved After Content');
     const [saved] = await Promise.all([
@@ -90,6 +103,7 @@ const { createRequire } = require('node:module');
       {waitUntil: 'domcontentloaded', timeout: 120000});
     await page.reload({ waitUntil: 'domcontentloaded' });
     await expect(page.locator('.acf-field[data-name="page_after_content_rows"] .layout:not(.acf-clone)')).toHaveCount(2);
+    await openAfterContentRow();
     await expect(heading).toHaveValue('Fleet editor saved After Content');
     checks.push('Classic Editor save/reload persists edited heading and both native After Content rows');
     const forms = await page.goto(`${input.url}/wp-admin/admin.php?page=wpforms-overview`,

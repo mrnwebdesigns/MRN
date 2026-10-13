@@ -23,3 +23,16 @@ Analytics, consent, breadcrumbs and mail have additional site-owned inputs. Pres
 - **Breadcrumbs:** select `provider=seopress`, enable SEOPress visible breadcrumbs and JSON-LD, and preserve MRN placement/style/menu/WooCommerce context. Compare category entry versus direct product navigation, primary category and schema/visible trail parity. Review legacy manual overrides before switching. New-site bootstrap sets the native provider; existing sites must pass their own trail comparison.
 - **Mail:** install/configure Post SMTP with the site's approved provider and sender, verify delivery through an approved test route, then deactivate FluentSMTP. Do not copy provider passwords into source, logs or migration reports. Mail transport stays inactive on new development bootstraps until configured.
 - **Comments/reviews:** retain existing protection until Enterprise key/domain/assessment access and real submission behavior pass. New support is opt-in. A mocked Google test is not production assessment permission.
+
+## Admin Menu Editor settings
+
+`clean-ame-stack-settings.php` removes cached UI records owned by retired Stack providers, including the old SmartCrawl ACF group. The canonical imports are `ame-config-container.json` and `ame-toolbar-editor.settings.json` under `stack/configs/exports`; dated exports remain historical records. AME's merging import behavior means existing installations also need this migration.
+
+Use the same checkout's `stack/configs/ame-stack-cleanup.php` alongside the script. It requires active AME, native SEOPress Free/Pro and Public Security, and refuses active retired providers. It preserves site-specific menus, role/capability maps, branding, content and saved SEO metadata. The former inert Advanced placeholder is replaced with the existing Public Security route only when it is present.
+
+1. Run `wp eval-file <script> plan` on the exact site and review the URL, option names, removal counts and plan hash. Planning is read-only.
+2. Before a remote write, complete the authorized, verified database-only Updraft backup gate. Local Hub runtimes are exempt. Run `wp eval-file <script> apply <reviewed-sha256>`; changed settings or prerequisites refuse the write. Exact original option values are journaled without autoload before mutation.
+3. Reload AME's Meta Boxes, Tables, Dashboard Widgets and Toolbar pages. Verify retired entries are absent and current editor controls remain. Repeating apply is a no-op.
+4. For recovery, run `wp eval-file <script> rollback <original-sha256>` after the applicable fresh remote backup. Rollback refuses settings edited since apply. An interrupted worker retains its lock and journal for inspection; never discard an uncertain lock automatically.
+
+Run the focused contract and migration tests with `python3 -m unittest discover -s stack/tests -p test_ame_stack_cleanup.py -v`.

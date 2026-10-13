@@ -32,6 +32,10 @@ exact previous source before any new attempt. No failed release advances the
 owner-local Fleet index. A retained public release may exist before the hosted
 pointer changes; only a fully verified publication is selected as latest.
 
+Qualified plugin ZIPs are retained in the private immutable local cache before
+their promotion records merge, so a superseding release can recover those exact
+inputs. Caching inputs does not advance the Fleet-ready index.
+
 The host publisher accepts only the canonical source-owner/root/depot. It
 requires one-time source-lease enrollment before replacing the bootstrap bundle.
 Pause legacy source consumers and verify no installer is running before that
@@ -56,8 +60,19 @@ URL and must match the accepted checksum and size. Licensed input updates stage
 their ZIP as `releases/vendor-inputs/<sha256>.zip` as part of that source task;
 the worker discovers it without a separate release request or credential lookup.
 
-CAPTCHA's default stays at 0.1.4 until genuine provider/controller/protection
-cutover evidence exists. Retired capabilities remain excluded. Optional
+CAPTCHA 0.2.3 is accepted for source promotion under the owner's October 13
+decision. The retained genuine Google and operator cutover evidence binds the
+exact 0.2.2 artifact; the recorded successor comparison verifies unchanged
+protection code and browser assets, with version/documentation/provenance changes
+and additional exact-package no-WooCommerce qualification. This acceptance does
+not claim a new genuine Google trial on 0.2.3 or qualify the newer native
+Dashboard migration controller. Its connected prepare/resume/restore recovery
+trial remains a separate gate before using that controller. See
+`docs/releases/2026.10.13-captcha-source-acceptance.json` and the accompanying
+release note. The worker uses CAPTCHA's committed,
+locked release builder to include both generated browser asset pairs and their
+manifest. Registry comparison uses those distributable bytes and keeps the same
+immutable-version checks as other plugins. Retired capabilities remain excluded. Optional
 components stay optional: their presence in a source inventory does not imply
 installation. Native qualification uses synthetic content and a disposable MySQL
 database on a private Unix socket with TCP disabled. It starts no global database

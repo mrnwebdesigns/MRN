@@ -1,6 +1,6 @@
 {
   "compatibility": {
-    "minimum_loader_version": "1.6.1",
+    "minimum_loader_version": "1.6.2",
     "runtime_report_schema_version": 1
   },
   "components": [
@@ -13,7 +13,7 @@
       "sha256": "92aa8b24d906d0c40890c1cf7594d75e935f325d6f45e54d43092f3caca945e6",
       "slug": "mrn-active-style-guide",
       "source": {
-        "git_commit": "2b28eadc24e254a943b24e72cc32773608924765",
+        "git_commit": "db53816f3c33c0471f4859c581f61ceff65a67e0",
         "path": "mu-plugins/mrn-active-style-guide",
         "repository": "MRN"
       },
@@ -28,7 +28,7 @@
       "sha256": "57553c96f1e158a464da7d97ee1bf24298e6de236d010ffa6435485437a7cd23",
       "slug": "mrn-active-style-guide-loader",
       "source": {
-        "git_commit": "2b28eadc24e254a943b24e72cc32773608924765",
+        "git_commit": "db53816f3c33c0471f4859c581f61ceff65a67e0",
         "path": "stack/mu-plugins/mrn-active-style-guide.php",
         "repository": "MRN"
       },
@@ -43,7 +43,7 @@
       "sha256": "6a4baf4b1f1842f58904433fc85be40f4cd13da23dbfe36cc5b3a39222b1a623",
       "slug": "mrn-admin-data-post-types",
       "source": {
-        "git_commit": "2b28eadc24e254a943b24e72cc32773608924765",
+        "git_commit": "db53816f3c33c0471f4859c581f61ceff65a67e0",
         "path": "mu-plugins/mrn-admin-data-post-types",
         "repository": "MRN"
       },
@@ -58,7 +58,7 @@
       "sha256": "82c8fc7dc6ca42b0d9a1e68b6518da2c928e1e611740b2b10bcabbab60b9e718",
       "slug": "mrn-admin-data-post-types-loader",
       "source": {
-        "git_commit": "2b28eadc24e254a943b24e72cc32773608924765",
+        "git_commit": "db53816f3c33c0471f4859c581f61ceff65a67e0",
         "path": "stack/mu-plugins/mrn-admin-data-post-types.php",
         "repository": "MRN"
       },
@@ -73,7 +73,7 @@
       "sha256": "265baa398b0ef2432ab682c61fd0ec1ac4f93d8a6f9b8e510505f8248510d4a8",
       "slug": "mrn-admin-ui-css",
       "source": {
-        "git_commit": "2b28eadc24e254a943b24e72cc32773608924765",
+        "git_commit": "db53816f3c33c0471f4859c581f61ceff65a67e0",
         "path": "mu-plugins/mrn-admin-ui-css",
         "repository": "MRN"
       },
@@ -81,18 +81,18 @@
     },
     {
       "deployed_path": "plugins/mrn-config-helper",
-      "file_count": 28,
+      "file_count": 30,
       "name": "MRN Config Helper",
       "required": true,
       "runtime_type": "standard-plugin",
-      "sha256": "d6e5ae40ee1583e01e158c7d4d5bb75ae7e15cc5035221b26743b0c4ab484e17",
+      "sha256": "88a818487642af200a33eb1567132e223a1dd7e3e406f06167789f7a49dc180f",
       "slug": "mrn-config-helper",
       "source": {
-        "git_commit": "5f22f06acda7ea445b32f03d79fe8cf5061c03cc",
+        "git_commit": "eb167abaa68efd75c28593598d6a5d0b8dc1152c",
         "path": ".",
         "repository": "mrn-config-helper"
       },
-      "version": "0.1.71"
+      "version": "0.1.74"
     },
     {
       "deployed_path": "mu-plugins/mrn-dashboard-support",
@@ -103,7 +103,7 @@
       "sha256": "fb494ac3d1cd98d2d17d3bda58bad43f4f60dea0f9ac12f2cfb7af7d718b675f",
       "slug": "mrn-dashboard-support",
       "source": {
-        "git_commit": "2b28eadc24e254a943b24e72cc32773608924765",
+        "git_commit": "db53816f3c33c0471f4859c581f61ceff65a67e0",
         "path": "mu-plugins/mrn-dashboard-support",
         "repository": "MRN"
       },
@@ -118,7 +118,7 @@
       "sha256": "3a53451169e864dce7828bf9f0b2d93274041b480625cbc5bd096e387fb6e3b7",
       "slug": "mrn-disable-comments",
       "source": {
-        "git_commit": "2b28eadc24e254a943b24e72cc32773608924765",
+        "git_commit": "db53816f3c33c0471f4859c581f61ceff65a67e0",
         "path": "mu-plugins/mrn-disable-comments",
         "repository": "MRN"
       },
@@ -126,18 +126,18 @@
     },
     {
       "deployed_path": "mu-plugins/mrn-editor-lockdown",
-      "file_count": 9,
+      "file_count": 13,
       "name": "MRN Editor Lockdown",
       "required": true,
       "runtime_type": "mu-component",
-      "sha256": "aa0f30d7076104e31f8798e5a5c6c383fc7f6b1f414295302c5760c82598a0f4",
+      "sha256": "02fa7bb88678f5bd8e93f3a3f8c187d4646ae9ac816a723260a4c743d45c50c0",
       "slug": "mrn-editor-lockdown",
       "source": {
-        "git_commit": "2b28eadc24e254a943b24e72cc32773608924765",
+        "git_commit": "db53816f3c33c0471f4859c581f61ceff65a67e0",
         "path": "mu-plugins/mrn-editor-lockdown",
         "repository": "MRN"
       },
-      "version": "1.0.33"
+      "version": "1.0.34"
     },
     {
       "deployed_path": "mu-plugins/mrn-editor-lockdown.php",
@@ -145,14 +145,14 @@
       "name": "MRN Editor Lockdown Loader",
       "required": true,
       "runtime_type": "mu-loader",
-      "sha256": "dd8ebde554798d45f7048ecf10a7df59af8dcade4ab78470e32036ef5456dbaa",
+      "sha256": "13bbbb1c008ea6cc7cefbcc2075be697bf35c40f7adbfc0e3e761ad31d69a584",
       "slug": "mrn-editor-lockdown-loader",
       "source": {
-        "git_commit": "2b28eadc24e254a943b24e72cc32773608924765",
+        "git_commit": "db53816f3c33c0471f4859c581f61ceff65a67e0",
         "path": "stack/mu-plugins/mrn-editor-lockdown.php",
         "repository": "MRN"
       },
-      "version": "1.0.33"
+      "version": "1.0.34"
     },
     {
       "deployed_path": "mu-plugins/mrn-environment-runtime",
@@ -163,7 +163,7 @@
       "sha256": "754d7210a5b480cc777acabadaf1881c6459db30ed3fb9dc6f6abc8fe619724f",
       "slug": "mrn-environment-runtime",
       "source": {
-        "git_commit": "2b28eadc24e254a943b24e72cc32773608924765",
+        "git_commit": "db53816f3c33c0471f4859c581f61ceff65a67e0",
         "path": "mu-plugins/mrn-environment-runtime",
         "repository": "MRN"
       },
@@ -178,7 +178,7 @@
       "sha256": "75afe8a79a40e46bb59185d6aeddde66f82a6fa9ef3b5df9e8137d89142300d8",
       "slug": "mrn-environment-runtime-loader",
       "source": {
-        "git_commit": "2b28eadc24e254a943b24e72cc32773608924765",
+        "git_commit": "db53816f3c33c0471f4859c581f61ceff65a67e0",
         "path": "stack/mu-plugins/mrn-environment-runtime.php",
         "repository": "MRN"
       },
@@ -190,14 +190,14 @@
       "name": "MRN Loader",
       "required": true,
       "runtime_type": "mu-loader",
-      "sha256": "84016001a5e62476a21ba8fb3deada3060cd66f8c2a23992c8de289a8b5a6c8f",
+      "sha256": "39b8f6fecb82b26669e821585e411b42c54868307ac67610e5406847077674bf",
       "slug": "mrn-loader",
       "source": {
-        "git_commit": "2b28eadc24e254a943b24e72cc32773608924765",
+        "git_commit": "db53816f3c33c0471f4859c581f61ceff65a67e0",
         "path": "stack/mu-plugins/mrn-loader.php",
         "repository": "MRN"
       },
-      "version": "1.6.1"
+      "version": "1.6.2"
     },
     {
       "deployed_path": "plugins/mrn-media-bulk-tools",
@@ -220,14 +220,14 @@
       "name": "MRN Public Security Hardening",
       "required": true,
       "runtime_type": "mu-component",
-      "sha256": "2990992319e1bea4184a458a05267fd2ea712e260b589eed0b2b7fc19de0bc6c",
+      "sha256": "2bf2f21eaa08a4ae0098a2799e4bf3b675e94f61f346ac917973a147db6bd7da",
       "slug": "mrn-public-security-hardening",
       "source": {
-        "git_commit": "2b28eadc24e254a943b24e72cc32773608924765",
+        "git_commit": "db53816f3c33c0471f4859c581f61ceff65a67e0",
         "path": "mu-plugins/mrn-public-security-hardening",
         "repository": "MRN"
       },
-      "version": "0.4.3"
+      "version": "0.4.4"
     },
     {
       "deployed_path": "mu-plugins/mrn-public-security-hardening.php",
@@ -235,14 +235,14 @@
       "name": "MRN Public Security Hardening Loader",
       "required": true,
       "runtime_type": "mu-loader",
-      "sha256": "446b87463ad74ba8432bf20487a55890fa939cdb02f02de553790d34c5c99b6a",
+      "sha256": "fe4e32f0ecd10eec664c078659c37447c64b2d9a5d623b56d22875af0b2b4774",
       "slug": "mrn-public-security-hardening-loader",
       "source": {
-        "git_commit": "2b28eadc24e254a943b24e72cc32773608924765",
+        "git_commit": "db53816f3c33c0471f4859c581f61ceff65a67e0",
         "path": "stack/mu-plugins/mrn-public-security-hardening.php",
         "repository": "MRN"
       },
-      "version": "0.4.3"
+      "version": "0.4.4"
     },
     {
       "deployed_path": "mu-plugins/mrn-schema-bridge",
@@ -268,7 +268,7 @@
       "sha256": "a8511b01840c43ab1f5a82e65da8c89016e74af706ed4d2d7228758805ba0621",
       "slug": "mrn-schema-bridge-loader",
       "source": {
-        "git_commit": "2b28eadc24e254a943b24e72cc32773608924765",
+        "git_commit": "db53816f3c33c0471f4859c581f61ceff65a67e0",
         "path": "stack/mu-plugins/mrn-schema-bridge.php",
         "repository": "MRN"
       },
@@ -280,14 +280,14 @@
       "name": "MRN Shared Assets",
       "required": true,
       "runtime_type": "mu-component",
-      "sha256": "5ba9a6a4e1b91f418c3c634baf336154e86554b12b6a3759c4deb9b6ef7eb5b1",
+      "sha256": "73551184a5b6a1a67a3ee1a1e2040dc030233e1bce09b80f1588fe3c75a37ff6",
       "slug": "mrn-shared-assets",
       "source": {
-        "git_commit": "2b28eadc24e254a943b24e72cc32773608924765",
+        "git_commit": "db53816f3c33c0471f4859c581f61ceff65a67e0",
         "path": "mu-plugins/mrn-shared-assets",
         "repository": "MRN"
       },
-      "version": "0.2.1"
+      "version": "0.2.2"
     },
     {
       "deployed_path": "mu-plugins/mrn-shared-assets.php",
@@ -295,14 +295,14 @@
       "name": "MRN Shared Assets Loader",
       "required": true,
       "runtime_type": "mu-loader",
-      "sha256": "4dc499607e1bad2274c93184135075bb67bf71d35aea56c88b2ecc232eafea25",
+      "sha256": "dee2b9675abcbdd02c63214da507d6f0af8d727542e7aa55efb3a6a55cac821e",
       "slug": "mrn-shared-assets-loader",
       "source": {
-        "git_commit": "2b28eadc24e254a943b24e72cc32773608924765",
+        "git_commit": "db53816f3c33c0471f4859c581f61ceff65a67e0",
         "path": "stack/mu-plugins/mrn-shared-assets.php",
         "repository": "MRN"
       },
-      "version": "0.2.1"
+      "version": "0.2.2"
     },
     {
       "deployed_path": "shared",
@@ -313,7 +313,7 @@
       "sha256": "bce231c5024666bc3a53a263f75d67a5dade2ae2622d5cb581152897dc09f937",
       "slug": "mrn-shared-runtime",
       "source": {
-        "git_commit": "2b28eadc24e254a943b24e72cc32773608924765",
+        "git_commit": "db53816f3c33c0471f4859c581f61ceff65a67e0",
         "path": "shared",
         "repository": "MRN"
       },
@@ -328,7 +328,7 @@
       "sha256": "c15c8d9d4aab6ab085dce482eb119a6af800153f9f8c5c42c5b813b2dae843e2",
       "slug": "mrn-site-colors",
       "source": {
-        "git_commit": "2b28eadc24e254a943b24e72cc32773608924765",
+        "git_commit": "db53816f3c33c0471f4859c581f61ceff65a67e0",
         "path": "mu-plugins/mrn-site-colors",
         "repository": "MRN"
       },
@@ -343,7 +343,7 @@
       "sha256": "6620c7b44fd476021806c09efad252fe9510fc60fb33c5f770b380a697714687",
       "slug": "mrn-site-colors-loader",
       "source": {
-        "git_commit": "2b28eadc24e254a943b24e72cc32773608924765",
+        "git_commit": "db53816f3c33c0471f4859c581f61ceff65a67e0",
         "path": "stack/mu-plugins/mrn-site-colors.php",
         "repository": "MRN"
       },
@@ -381,18 +381,18 @@
     },
     {
       "deployed_path": "plugins/mrn-universal-sticky-bar",
-      "file_count": 3,
+      "file_count": 5,
       "name": "MRN Universal Sticky Bar",
       "required": true,
       "runtime_type": "standard-plugin",
-      "sha256": "7c653d7b34d9c4701e1092a36a3cdda3ce7a702a87996dbcc8634e9dd24a1f19",
+      "sha256": "34d91803558a76efa5ba74571997e99fb6299def6431d8bb88c61c6bdd6adbec",
       "slug": "mrn-universal-sticky-bar",
       "source": {
-        "git_commit": "696e261cccc76cacad9c7fe54eac6c48758a70ff",
+        "git_commit": "5e6be56d5f0c39a3fd7d478c7a17fc4a17d8b7ab",
         "path": ".",
         "repository": "mrn-universal-sticky-bar"
       },
-      "version": "1.1.10"
+      "version": "1.2.3"
     },
     {
       "deployed_path": "mu-plugins/mrn-updraft-local-retention.php",
@@ -403,7 +403,7 @@
       "sha256": "396c7faaac2d4468cbc5a39895c7310d0d36ebdf52c3561be772b0d5f9f80db4",
       "slug": "mrn-updraft-backup-policy-loader",
       "source": {
-        "git_commit": "2b28eadc24e254a943b24e72cc32773608924765",
+        "git_commit": "db53816f3c33c0471f4859c581f61ceff65a67e0",
         "path": "stack/mu-plugins/mrn-updraft-local-retention.php",
         "repository": "MRN"
       },
@@ -418,7 +418,7 @@
       "sha256": "f37c438b7b0c83ac0c81dddf4ae1ef3ffefa16d5bafdc6dc0a44d08899fa975e",
       "slug": "mrn-updraft-local-retention",
       "source": {
-        "git_commit": "2b28eadc24e254a943b24e72cc32773608924765",
+        "git_commit": "db53816f3c33c0471f4859c581f61ceff65a67e0",
         "path": "mu-plugins/mrn-updraft-local-retention",
         "repository": "MRN"
       },
@@ -426,29 +426,29 @@
     }
   ],
   "hash_algorithm": "sha256-tree-v1",
-  "release_id": "2026.10.08-fleet-readiness-r3",
-  "released_at": "2026-10-08T00:00:00Z",
+  "release_id": "2026.10.13-fleet-auto-3f3cb0645d92",
+  "released_at": "2026-10-13T00:00:00Z",
   "schema_version": 1,
   "source": {
-    "git_commit": "2b28eadc24e254a943b24e72cc32773608924765",
+    "git_commit": "db53816f3c33c0471f4859c581f61ceff65a67e0",
     "repository": "MRN"
   },
-  "stack_version": "2026.10.08-fleet-readiness-r3",
+  "stack_version": "2026.10.13-fleet-auto-3f3cb0645d92",
   "themes": [
     {
       "active": false,
       "deployed_path": "themes/mrn-base-stack",
       "deployment_role": "parent-template",
-      "file_count": 167,
-      "sha256": "ff766624b9676ea2b2ef4833e4b655e29d17a070f11c22e57924b900b6ca4fd3",
+      "file_count": 178,
+      "sha256": "43001d3158ec9ea53ffeedb486171bf7ef4c866b88c249bd13a8499daa16b780",
       "slug": "mrn-base-stack",
       "source": {
-        "git_commit": "2b28eadc24e254a943b24e72cc32773608924765",
+        "git_commit": "db53816f3c33c0471f4859c581f61ceff65a67e0",
         "path": "stack/themes/mrn-base-stack",
         "repository": "MRN"
       },
       "verification_mode": "exact",
-      "version": "1.5.8"
+      "version": "1.5.15"
     },
     {
       "active": true,
@@ -458,7 +458,7 @@
       "sha256": "0c95125152bb19c6eb376e4e40bf89135d54287e6cc8a613f684e6e9f9fe3911",
       "slug": "mrn-base-stack-child",
       "source": {
-        "git_commit": "2b28eadc24e254a943b24e72cc32773608924765",
+        "git_commit": "db53816f3c33c0471f4859c581f61ceff65a67e0",
         "path": "stack/themes/mrn-base-stack-child",
         "repository": "MRN"
       },

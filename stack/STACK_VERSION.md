@@ -1,52 +1,55 @@
 # Stack Version
 
 ## Candidate Release
-- Stack release: `2026.10.08-fleet-readiness-r3`
-- Release date: `2026-10-08`
-- Status: `signoff candidate; Trilliant deferred; site adoption separately gated`
+- Stack release: `2026.10.13-fleet-auto-3f3cb0645d92`
+- Release date: `2026-10-13`
+- Status: `source snapshot; qualification/publication evidence establishes Fleet readiness; site rollout separate`
 
 ## Included MRN-Owned Components
-- Theme:
-  - `mrn-base-stack` `1.5.8`
-  - `mrn-base-stack-child` `1.1.0`
-- MU plugins:
-  - `mrn-loader` `1.6.1`
-  - `mrn-shared-runtime` `1.0.0`
-  - `mrn-active-style-guide` `0.1.7`
-  - `mrn-admin-data-post-types` `0.2.1`
-  - `mrn-admin-ui-css` `3.2.4`
-  - `mrn-dashboard-support` `1.3.0`
-  - `mrn-disable-comments` `1.2.5`
-  - `mrn-shared-assets` `0.2.1`
-  - `mrn-editor-lockdown` `1.0.33`
-  - `mrn-environment-runtime` `0.6.0`
-  - `mrn-public-security-hardening` `0.4.3`
-  - `mrn-schema-bridge` `0.7.0`
-  - `mrn-site-colors` / `Site Styles` `0.1.39`
-  - `mrn-updraft-backup-policy-loader` `0.6.1`
-  - `mrn-updraft-local-retention` `0.6.1`
-- Standard plugins:
-  - `mrn-acf-focal-point` `1.1.2`
-  - `mrn-announcements` `1.8.2`
-  - `mrn-comment-management` `1.3.0`
-  - `mrn-config-helper` `0.1.71`
-  - `mrn-fontawesome-profile-manager` `0.5.1`
-  - `mrn-google-fonts` `1.0.7`
-  - `mrn-hierarchical-menu-taxonomies` `0.1.1`
-  - `mrn-layout-import-export` `0.1.2`
-  - `mrn-media-bulk-tools` `0.13.1`
-  - `mrn-mega-menu` `0.17.2`
-  - `mrn-recaptcha-enterprise-manager` `0.1.4` (qualified default retained; 0.2.2 pilot source accepted; native Dashboard route and broader adoption remain gated)
-  - `mrn-stack-deployment-agent` `0.3.2`
-  - `mrn-template-inspector` `0.2.7`
-  - `mrn-tokens` `0.1.4` (platform-required)
-  - `mrn-universal-sticky-bar` `1.1.10`
 
-- Profile-gated standard plugins:
-  - `mrn-reusable-block-library` `0.2.0` (`MRN_SITE_PROFILE=stack`)
-
-- Catalog-only optional plugins:
-  - `background-video-popout-disabler` `1.0.2` (excluded from bootstrap; source and qualified optional package retained)
+| Component | Version |
+| --- | --- |
+| `mrn-acf-focal-point` | `1.1.2` |
+| `mrn-active-style-guide` | `0.1.7` |
+| `mrn-active-style-guide-loader` | `0.1.7` |
+| `mrn-admin-data-post-types` | `0.2.1` |
+| `mrn-admin-data-post-types-loader` | `0.2.1` |
+| `mrn-admin-ui-css` | `3.2.4` |
+| `mrn-announcements` | `1.8.2` |
+| `mrn-base-stack` | `1.5.15` |
+| `mrn-base-stack-child` | `1.1.0` |
+| `mrn-comment-management` | `1.3.0` |
+| `mrn-config-helper` | `0.1.74` |
+| `mrn-dashboard-support` | `1.3.0` |
+| `mrn-disable-comments` | `1.2.5` |
+| `mrn-editor-lockdown` | `1.0.34` |
+| `mrn-editor-lockdown-loader` | `1.0.34` |
+| `mrn-environment-runtime` | `0.6.0` |
+| `mrn-environment-runtime-loader` | `0.6.0` |
+| `mrn-fontawesome-profile-manager` | `0.5.1` |
+| `mrn-google-fonts` | `1.0.7` |
+| `mrn-hierarchical-menu-taxonomies` | `0.1.1` |
+| `mrn-layout-import-export` | `0.1.3` |
+| `mrn-loader` | `1.6.2` |
+| `mrn-media-bulk-tools` | `0.13.1` |
+| `mrn-mega-menu` | `0.17.2` |
+| `mrn-public-security-hardening` | `0.4.4` |
+| `mrn-public-security-hardening-loader` | `0.4.4` |
+| `mrn-recaptcha-enterprise-manager` | `0.2.3` |
+| `mrn-reusable-block-library` | `0.2.1` |
+| `mrn-schema-bridge` | `0.7.0` |
+| `mrn-schema-bridge-loader` | `0.7.0` |
+| `mrn-shared-assets` | `0.2.2` |
+| `mrn-shared-assets-loader` | `0.2.2` |
+| `mrn-shared-runtime` | `1.0.0` |
+| `mrn-site-colors` | `0.1.39` |
+| `mrn-site-colors-loader` | `0.1.39` |
+| `mrn-stack-deployment-agent` | `0.3.2` |
+| `mrn-template-inspector` | `0.2.7` |
+| `mrn-tokens` | `0.1.4` |
+| `mrn-universal-sticky-bar` | `1.2.3` |
+| `mrn-updraft-backup-policy-loader` | `0.6.1` |
+| `mrn-updraft-local-retention` | `0.6.1` |
 
 ## Stack Manifests
 - Plugins manifest: [`manifests/plugins.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/plugins.txt)

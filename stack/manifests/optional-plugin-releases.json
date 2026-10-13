@@ -1,260 +1,679 @@
 {
-  "schema_version": 1,
-  "catalog_updated": "2026-10-04",
   "authority": "Checksum-locked independently released plugins available to explicit one-site upgrade plans. A release may remain a standard bootstrap default; registration never authorizes installation or a site write.",
+  "catalog_updated": "2026-10-13",
   "releases": [
     {
-      "slug": "mrn-cookie-consent",
-      "version": "1.1.43",
-      "target_tier": "optional-integration",
       "current_distribution": "catalog-only",
-      "source": {
-        "repository": "mrnwebdesigns/mrn-cookie-consent",
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-cookie-consent",
-        "git_commit": "1e14bd239e2e9651033be31fe36b694fa19856de"
-      },
       "package": {
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-cookie-consent/zip/mrn-cookie-consent-1.1.43.zip",
         "filename": "mrn-cookie-consent.zip",
         "main_file": "mrn-cookie-consent/mrn-cookie-consent.php",
-        "size_bytes": 74037,
-        "sha256": "98a6703e6e2053ab60bdadc0506e174a72b60371a0b6736a01bf2ea13d731419"
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-cookie-consent/zip/mrn-cookie-consent-1.1.43.zip",
+        "sha256": "98a6703e6e2053ab60bdadc0506e174a72b60371a0b6736a01bf2ea13d731419",
+        "size_bytes": 74037
       },
-      "update_policy": {
-        "mode": "upgrade-only",
-        "preserve_active_state": true,
-        "new_install": "requires-separate-owner-authorization-and-plan"
-      }
-    },
-    {
-      "slug": "mrn-database-retention",
-      "version": "1.1.1",
-      "target_tier": "maintenance-only",
-      "current_distribution": "catalog-only",
+      "slug": "mrn-cookie-consent",
       "source": {
-        "repository": "mrnwebdesigns/mrn-database-retention",
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-database-retention",
-        "git_commit": "aa92d64844c3d9a4f6009c58eda28ca9300eac8c"
+        "git_commit": "1e14bd239e2e9651033be31fe36b694fa19856de",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-cookie-consent",
+        "repository": "mrnwebdesigns/mrn-cookie-consent"
       },
-      "package": {
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-database-retention/dist/mrn-database-retention-1.1.1.zip",
-        "filename": "mrn-database-retention-1.1.1.zip",
-        "main_file": "mrn-database-retention/mrn-database-retention.php",
-        "size_bytes": 17751,
-        "sha256": "c65b540480afcee0cdd61034797fdf9453df35f187892dff7b7fa249a98829e3"
-      },
-      "update_policy": {
-        "mode": "upgrade-only",
-        "preserve_active_state": true,
-        "new_install": "requires-separate-owner-authorization-and-plan"
-      }
-    },
-    {
-      "slug": "mrn-gtm-injector",
-      "version": "1.0.14",
       "target_tier": "optional-integration",
-      "current_distribution": "catalog-only",
-      "source": {
-        "repository": "mrnwebdesigns/mrn-gtm-injector",
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-gtm-injector",
-        "git_commit": "1c8908013fa0b35581409c13502f9a98894a96a0"
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
       },
+      "version": "1.1.43"
+    },
+    {
+      "current_distribution": "catalog-only",
       "package": {
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-gtm-injector/zip/mrn-gtm-injector-1.0.14.zip",
         "filename": "mrn-gtm-injector-1.0.14.zip",
         "main_file": "mrn-gtm-injector/mrn-gtm-injector.php",
-        "size_bytes": 27750,
-        "sha256": "e227b8a33ad8dffc1904cacbfba1c48a068e6182f204ee6f13e4a804746ce6c1"
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-gtm-injector/zip/mrn-gtm-injector-1.0.14.zip",
+        "sha256": "e227b8a33ad8dffc1904cacbfba1c48a068e6182f204ee6f13e4a804746ce6c1",
+        "size_bytes": 27750
       },
+      "slug": "mrn-gtm-injector",
+      "source": {
+        "git_commit": "1c8908013fa0b35581409c13502f9a98894a96a0",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-gtm-injector",
+        "repository": "mrnwebdesigns/mrn-gtm-injector"
+      },
+      "target_tier": "optional-integration",
       "update_policy": {
         "mode": "upgrade-only",
-        "preserve_active_state": true,
-        "new_install": "requires-separate-owner-authorization-and-plan"
-      }
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "1.0.14"
     },
     {
-      "slug": "background-video-popout-disabler",
-      "version": "1.0.2",
-      "target_tier": "optional-shared",
       "current_distribution": "catalog-only",
-      "source": {
-        "repository": "mrnwebdesigns/background-video-popout-disabler",
-        "path": "/Users/khofmeyer/Development/MRN-plugins/background-video-popout-disabler",
-        "git_commit": "d0fef00d2e03316cf3ad4b6bb0b24a964aa97849"
-      },
       "package": {
-        "path": "/Users/khofmeyer/Development/MRN-plugins/background-video-popout-disabler/zip/background-video-popout-disabler-1.0.2.zip",
-        "filename": "background-video-popout-disabler-1.0.2.zip",
-        "main_file": "background-video-popout-disabler/background-video-popout-disabler.php",
-        "size_bytes": 3308,
-        "sha256": "734729096992ac391a1ae74dd5085dd3408ca386e62d7704b885545975ac9362"
-      },
-      "update_policy": {
-        "mode": "upgrade-only",
-        "preserve_active_state": true,
-        "new_install": "requires-separate-owner-authorization-and-plan"
-      }
-    },
-    {
-      "slug": "mrn-announcements",
-      "version": "1.8.2",
-      "target_tier": "optional-shared",
-      "current_distribution": "standard-bootstrap",
-      "source": {
-        "repository": "mrnwebdesigns/mrn-announcements",
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-announcements",
-        "git_commit": "284b1ae8a171daad55781c161cfb263fff289433"
-      },
-      "package": {
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-announcements/zip/mrn-announcements-1.8.2.zip",
-        "filename": "mrn-announcements-1.8.2.zip",
-        "main_file": "mrn-announcements/mrn-announcements.php",
-        "size_bytes": 34133,
-        "sha256": "4e184f5cc8724631cfa112cc6a98b0144e5c2c7faaca2a55192b93394d02f349"
-      },
-      "update_policy": {
-        "mode": "upgrade-only",
-        "preserve_active_state": true,
-        "new_install": "requires-separate-owner-authorization-and-plan"
-      }
-    },
-    {
-      "slug": "mrn-fontawesome-profile-manager",
-      "version": "0.5.1",
-      "target_tier": "optional-integration",
-      "current_distribution": "standard-bootstrap",
-      "source": {
-        "repository": "mrnwebdesigns/mrn-fontawesome-profile-manager",
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-fontawesome-profile-manager",
-        "git_commit": "ab46ed996cd6d7c02d7bc5ba93badda2587dbeb5"
-      },
-      "package": {
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-fontawesome-profile-manager/zip/mrn-fontawesome-profile-manager-0.5.1.zip",
-        "filename": "mrn-fontawesome-profile-manager-0.5.1.zip",
-        "main_file": "mrn-fontawesome-profile-manager/mrn-fontawesome-profile-manager.php",
-        "size_bytes": 27401,
-        "sha256": "d99439fec3c77fcd87f54215f134231e1367a1cf8ab85adee4edd09eb9b59d6a"
-      },
-      "update_policy": {
-        "mode": "upgrade-only",
-        "preserve_active_state": true,
-        "new_install": "requires-separate-owner-authorization-and-plan"
-      }
-    },
-    {
-      "slug": "mrn-recaptcha-enterprise-manager",
-      "version": "0.1.4",
-      "target_tier": "optional-integration",
-      "current_distribution": "standard-bootstrap",
-      "source": {
-        "repository": "mrnwebdesigns/mrn-recaptcha-enterprise-manager",
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-recaptcha-enterprise-manager",
-        "git_commit": "e2fc5e3a580aba197e714f5b530a5da49224d293"
-      },
-      "package": {
-        "path": "releases/plugins/mrn-recaptcha-enterprise-manager-0.1.4.zip",
-        "filename": "mrn-recaptcha-enterprise-manager-0.1.4.zip",
-        "main_file": "mrn-recaptcha-enterprise-manager/mrn-recaptcha-enterprise-manager.php",
-        "size_bytes": 27599,
-        "sha256": "858ff4f801b98c994c41caf056cdb54174861e54a2b86a78dd33d4bb3a066734"
-      },
-      "update_policy": {
-        "mode": "upgrade-only",
-        "preserve_active_state": true,
-        "new_install": "requires-separate-owner-authorization-and-plan"
-      }
-    },
-    {
-      "slug": "mrn-seo-helper",
-      "version": "0.5.0",
-      "target_tier": "optional-integration",
-      "current_distribution": "catalog-only",
-      "source": {
-        "repository": "mrnwebdesigns/mrn-seo-helper",
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-seo-helper",
-        "git_commit": "056a2071781af613e73beed288e2e183af4647d7"
-      },
-      "package": {
-        "path": "releases/plugins/mrn-seo-helper-0.5.0.zip",
         "filename": "mrn-seo-helper-0.5.0.zip",
         "main_file": "mrn-seo-helper/mrn-seo-helper.php",
-        "size_bytes": 13702,
-        "sha256": "8e272f29b4a524c2097c7fb0277973ed1b70c915c13f5c0265012144648d2bed"
+        "path": "releases/plugins/mrn-seo-helper-0.5.0.zip",
+        "sha256": "8e272f29b4a524c2097c7fb0277973ed1b70c915c13f5c0265012144648d2bed",
+        "size_bytes": 13702
       },
-      "update_policy": {
-        "mode": "upgrade-only",
-        "preserve_active_state": true,
-        "new_install": "requires-separate-owner-authorization-and-plan"
-      }
-    },
-    {
-      "slug": "mrn-reusable-block-library",
-      "version": "0.2.0",
-      "target_tier": "optional-shared",
-      "current_distribution": "standard-bootstrap",
+      "slug": "mrn-seo-helper",
       "source": {
-        "repository": "mrnwebdesigns/mrn-reusable-block-library",
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-reusable-block-library",
-        "git_commit": "ef45cee815dbcc88b9d87050812f0951e1e51281"
+        "git_commit": "056a2071781af613e73beed288e2e183af4647d7",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-seo-helper",
+        "repository": "mrnwebdesigns/mrn-seo-helper"
       },
-      "package": {
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-reusable-block-library/dist/mrn-reusable-block-library-0.2.0.zip",
-        "filename": "mrn-reusable-block-library-0.2.0.zip",
-        "main_file": "mrn-reusable-block-library/mrn-reusable-block-library.php",
-        "size_bytes": 55274,
-        "sha256": "6fab9fbe8fddf19f6a70f88c183451a3805181659b39a488003f1a04b18b1faa"
-      },
-      "update_policy": {
-        "mode": "upgrade-only",
-        "preserve_active_state": true,
-        "new_install": "requires-separate-owner-authorization-and-plan"
-      }
-    },
-    {
-      "slug": "mrn-acf-character-count",
-      "version": "1.1.9",
       "target_tier": "optional-integration",
-      "current_distribution": "catalog-only",
-      "source": {
-        "repository": "mrnwebdesigns/mrn-acf-character-count",
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-acf-character-count",
-        "git_commit": "0e9c4bb9a0a81d882b7f3b8e787d8bbd524b1a33"
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
       },
+      "version": "0.5.0"
+    },
+    {
+      "current_distribution": "catalog-only",
       "package": {
-        "path": "releases/plugins/mrn-acf-character-count-1.1.9.zip",
         "filename": "mrn-acf-character-count-1.1.9.zip",
         "main_file": "mrn-acf-character-count/mrn-acf-character-count.php",
-        "size_bytes": 16393,
-        "sha256": "1984717bee9b3d7236cc323d39a9dfbb374f63b42879b514aff184c0635745a4"
+        "path": "releases/plugins/mrn-acf-character-count-1.1.9.zip",
+        "sha256": "1984717bee9b3d7236cc323d39a9dfbb374f63b42879b514aff184c0635745a4",
+        "size_bytes": 16393
       },
+      "slug": "mrn-acf-character-count",
+      "source": {
+        "git_commit": "0e9c4bb9a0a81d882b7f3b8e787d8bbd524b1a33",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-acf-character-count",
+        "repository": "mrnwebdesigns/mrn-acf-character-count"
+      },
+      "target_tier": "optional-integration",
       "update_policy": {
         "mode": "upgrade-only",
-        "preserve_active_state": true,
-        "new_install": "requires-separate-owner-authorization-and-plan"
-      }
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "1.1.9"
     },
     {
-      "slug": "mrn-comment-management",
-      "version": "1.3.0",
-      "target_tier": "maintenance-only",
       "current_distribution": "standard-bootstrap",
-      "source": {
-        "repository": "mrnwebdesigns/mrn-comment-management",
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-comment-management",
-        "git_commit": "582188ccc22cbae6b05807c8ce990efad66cba3e"
-      },
       "package": {
-        "path": "releases/plugins/mrn-comment-management-1.3.0.zip",
-        "filename": "mrn-comment-management-1.3.0.zip",
-        "main_file": "mrn-comment-management/mrn-comment-management.php",
-        "size_bytes": 28627,
-        "sha256": "a87742769c154f8054128366a92e26dd3e72faca707231afedd2673a63789904"
+        "filename": "mrn-reusable-block-library-0.2.1-777efa5ab227.zip",
+        "main_file": "mrn-reusable-block-library/mrn-reusable-block-library.php",
+        "path": "releases/stack-plugins/mrn-reusable-block-library-0.2.1-777efa5ab227.zip",
+        "sha256": "0a9a1b83cab1fa7a02ed3cb35b352d15476d63c59130162ba73397c309695cfd",
+        "size_bytes": 60314
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-reusable-block-library",
+      "source": {
+        "git_commit": "777efa5ab2275c348fc61ae7a5724b6bcbe96e30",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-reusable-block-library",
+        "repository": "mrnwebdesigns/mrn-reusable-block-library"
+      },
+      "target_tier": "optional-shared",
+      "tree": {
+        "file_count": 19,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "ec779e5f310419d774a3bf574995b2bf2beccaa840440fc71f0c6b6b18c5c54f"
       },
       "update_policy": {
         "mode": "upgrade-only",
-        "preserve_active_state": true,
-        "new_install": "requires-separate-owner-authorization-and-plan"
-      }
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.2.1"
+    },
+    {
+      "current_distribution": "catalog-only",
+      "package": {
+        "filename": "background-video-popout-disabler-1.0.2-d0fef00d2e03.zip",
+        "main_file": "background-video-popout-disabler/background-video-popout-disabler.php",
+        "path": "releases/stack-plugins/background-video-popout-disabler-1.0.2-d0fef00d2e03.zip",
+        "sha256": "734729096992ac391a1ae74dd5085dd3408ca386e62d7704b885545975ac9362",
+        "size_bytes": 3308
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "background-video-popout-disabler",
+      "source": {
+        "git_commit": "d0fef00d2e03316cf3ad4b6bb0b24a964aa97849",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/background-video-popout-disabler",
+        "repository": "mrnwebdesigns/background-video-popout-disabler"
+      },
+      "target_tier": "optional-shared",
+      "tree": {
+        "file_count": 3,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "b30049b880a6a9c9962746780d04c64bbe14c6b3b7323f62655ef1124935a49d"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "1.0.2"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-acf-focal-point-1.1.2-5f1600f97ae0.zip",
+        "main_file": "mrn-acf-focal-point/mrn-acf-focal-point.php",
+        "path": "releases/stack-plugins/mrn-acf-focal-point-1.1.2-5f1600f97ae0.zip",
+        "sha256": "51b961093a5d9fc3db12e15bd4771b275bcfe60048f0d4ac962570bbc1e723b6",
+        "size_bytes": 12696
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-acf-focal-point",
+      "source": {
+        "git_commit": "5f1600f97ae062f1ccc1a29e2b34b1d634fc8b18",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-acf-focal-point",
+        "repository": "mrnwebdesigns/mrn-acf-focal-point"
+      },
+      "target_tier": "optional-integration",
+      "tree": {
+        "file_count": 12,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "f747f622a9ea3bd694fedc7ecfe668c2b8d697a386cb49dfd308db6cec08a052"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "1.1.2"
+    },
+    {
+      "current_distribution": "catalog-only",
+      "package": {
+        "filename": "mrn-ai-guardrails-0.1.1-1770f887c097.zip",
+        "main_file": "mrn-ai-guardrails/mrn-ai-guardrails.php",
+        "path": "releases/stack-plugins/mrn-ai-guardrails-0.1.1-1770f887c097.zip",
+        "sha256": "b9d3eebf061ec14697c336ab7e6e56b2dc143278968fd291d5fdfa023321e584",
+        "size_bytes": 27584
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-ai-guardrails",
+      "source": {
+        "git_commit": "1770f887c0979a17711f8cc505218e407eae11a7",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-ai-guardrails",
+        "repository": "mrnwebdesigns/mrn-ai-guardrails"
+      },
+      "target_tier": "optional-integration",
+      "tree": {
+        "file_count": 18,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "5d9cfdfd16f3f621d087aaa0c6b5c100a60081089c562f61f33cec49c68ffee1"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.1.1"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-announcements-1.8.2-284b1ae8a171.zip",
+        "main_file": "mrn-announcements/mrn-announcements.php",
+        "path": "releases/stack-plugins/mrn-announcements-1.8.2-284b1ae8a171.zip",
+        "sha256": "4e184f5cc8724631cfa112cc6a98b0144e5c2c7faaca2a55192b93394d02f349",
+        "size_bytes": 34133
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-announcements",
+      "source": {
+        "git_commit": "284b1ae8a171daad55781c161cfb263fff289433",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-announcements",
+        "repository": "mrnwebdesigns/mrn-announcements"
+      },
+      "target_tier": "optional-shared",
+      "tree": {
+        "file_count": 8,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "1725127c5285418e730bb22cf3e51c9638430761a942247acf8a7ea24285f777"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "1.8.2"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-comment-management-1.3.0-582188ccc22c.zip",
+        "main_file": "mrn-comment-management/mrn-comment-management.php",
+        "path": "releases/stack-plugins/mrn-comment-management-1.3.0-582188ccc22c.zip",
+        "sha256": "a87742769c154f8054128366a92e26dd3e72faca707231afedd2673a63789904",
+        "size_bytes": 28627
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-comment-management",
+      "source": {
+        "git_commit": "582188ccc22cbae6b05807c8ce990efad66cba3e",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-comment-management",
+        "repository": "mrnwebdesigns/mrn-comment-management"
+      },
+      "target_tier": "maintenance-only",
+      "tree": {
+        "file_count": 15,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "83b91411f943ea422c46caf98036144c791605f4c9e4e5651f7d70f7efbdc99b"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "1.3.0"
+    },
+    {
+      "current_distribution": "catalog-only",
+      "package": {
+        "filename": "mrn-contextual-content-editor-0.4.11-a9f3ae769b6a.zip",
+        "main_file": "mrn-contextual-content-editor/mrn-contextual-content-editor.php",
+        "path": "releases/stack-plugins/mrn-contextual-content-editor-0.4.11-a9f3ae769b6a.zip",
+        "sha256": "e9cc3c0103eb6e3e8b988f0bb354939e1bc4f8d5b49b58c4e4355446117f0c06",
+        "size_bytes": 29205
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-contextual-content-editor",
+      "source": {
+        "git_commit": "a9f3ae769b6a7b6003173c226ce82ae4c70986fb",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-contextual-content-editor",
+        "repository": "mrnwebdesigns/mrn-contextual-content-editor"
+      },
+      "target_tier": "optional-shared",
+      "tree": {
+        "file_count": 13,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "3e80fb9ca59d886e4b023fb1e709de9e7f90f91c0c1990b2ae5e703484db4f3d"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.4.11"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-fontawesome-profile-manager-0.5.1-ab46ed996cd6.zip",
+        "main_file": "mrn-fontawesome-profile-manager/mrn-fontawesome-profile-manager.php",
+        "path": "releases/stack-plugins/mrn-fontawesome-profile-manager-0.5.1-ab46ed996cd6.zip",
+        "sha256": "d99439fec3c77fcd87f54215f134231e1367a1cf8ab85adee4edd09eb9b59d6a",
+        "size_bytes": 27401
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-fontawesome-profile-manager",
+      "source": {
+        "git_commit": "ab46ed996cd6d7c02d7bc5ba93badda2587dbeb5",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-fontawesome-profile-manager",
+        "repository": "mrnwebdesigns/mrn-fontawesome-profile-manager"
+      },
+      "target_tier": "optional-integration",
+      "tree": {
+        "file_count": 4,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "aa896d9556e0535d28fa87a074efac0f58426062d74540f1aff4417f5b39aaeb"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.5.1"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-google-fonts-1.0.7-b48ddeb6448d.zip",
+        "main_file": "mrn-google-fonts/mrn-google-fonts.php",
+        "path": "releases/stack-plugins/mrn-google-fonts-1.0.7-b48ddeb6448d.zip",
+        "sha256": "dde36dcfb560d151eed6fe1cce0266f13f10b38e1499bd067e1cf7caadc11fba",
+        "size_bytes": 54599
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-google-fonts",
+      "source": {
+        "git_commit": "b48ddeb6448d970c70f8410d99218dc4170b9320",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-google-fonts",
+        "repository": "mrnwebdesigns/mrn-google-fonts"
+      },
+      "target_tier": "optional-integration",
+      "tree": {
+        "file_count": 20,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "75eb97b3f3e3ad47fcfe896df51237a09e6de81a37241bc3bbfeb4164b519a66"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "1.0.7"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-mega-menu-0.17.2-de68c999edad.zip",
+        "main_file": "mrn-mega-menu/mrn-mega-menu.php",
+        "path": "releases/stack-plugins/mrn-mega-menu-0.17.2-de68c999edad.zip",
+        "sha256": "090c1d19154fb0400124c2a1bb77ce30fc64f788b72a950744feadba7d796508",
+        "size_bytes": 63641
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-mega-menu",
+      "source": {
+        "git_commit": "de68c999edade4a4f8c9481c8d2f280d045db6f3",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-mega-menu",
+        "repository": "mrnwebdesigns/mrn-mega-menu"
+      },
+      "target_tier": "optional-shared",
+      "tree": {
+        "file_count": 20,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "031fd28fa2ec0a1e1759923d0f2984a01aaa1b85a8fdbdcb624bb145afa112a4"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.17.2"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-recaptcha-enterprise-manager-0.2.3-1bc4e4424b17.zip",
+        "main_file": "mrn-recaptcha-enterprise-manager/mrn-recaptcha-enterprise-manager.php",
+        "path": "releases/stack-plugins/mrn-recaptcha-enterprise-manager-0.2.3-1bc4e4424b17.zip",
+        "sha256": "a31c33740ac80e06fc08fdca556c7aa3019b5531c7b27f7e417bf60c1d0d44fb",
+        "size_bytes": 60382
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-recaptcha-enterprise-manager",
+      "source": {
+        "git_commit": "1bc4e4424b1736ec85743b4f67a8b8add0f26220",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-recaptcha-enterprise-manager",
+        "repository": "mrnwebdesigns/mrn-recaptcha-enterprise-manager"
+      },
+      "target_tier": "optional-integration",
+      "tree": {
+        "file_count": 18,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "10920eab056e593c98b23fb26e117eab00bb7236bfe4c0a83b65d84f5132c450"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.2.3"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-template-inspector-0.2.7-336c4fed9f98.zip",
+        "main_file": "mrn-template-inspector/mrn-template-inspector.php",
+        "path": "releases/stack-plugins/mrn-template-inspector-0.2.7-336c4fed9f98.zip",
+        "sha256": "142fda514d0b368fb11c9c74721c19528775cc3a99d0709fa930dec839d8327e",
+        "size_bytes": 16228
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-template-inspector",
+      "source": {
+        "git_commit": "336c4fed9f98fd23ed9b4cdea681e979c3c544d8",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-template-inspector",
+        "repository": "mrnwebdesigns/mrn-template-inspector"
+      },
+      "target_tier": "development-only",
+      "tree": {
+        "file_count": 7,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "d741fb623b708c799ca08579d432fc8ecd6c84602d7043cbf797a70b5c7dd61d"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.2.7"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-hierarchical-menu-taxonomies-0.1.1-4f950323e35e.zip",
+        "main_file": "mrn-hierarchical-menu-taxonomies/mrn-hierarchical-menu-taxonomies.php",
+        "path": "releases/stack-plugins/mrn-hierarchical-menu-taxonomies-0.1.1-4f950323e35e.zip",
+        "sha256": "271ebc6b75a37402f9f932eaee0bf841b0e5ec340120eb538673d2dc481b3d96",
+        "size_bytes": 4513
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-hierarchical-menu-taxonomies",
+      "source": {
+        "git_commit": "4f950323e35efb86335f7617a9f54b7823f99a55",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-hierarchical-menu-taxonomies",
+        "repository": "mrnwebdesigns/mrn-hierarchical-menu-taxonomies"
+      },
+      "target_tier": "optional-integration",
+      "tree": {
+        "file_count": 6,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "0b5032aefedcc67b78189f00025a60d850878dbbf736d3cdf8cc3f86c069f58e"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.1.1"
+    },
+    {
+      "current_distribution": "catalog-only",
+      "package": {
+        "filename": "mrn-database-retention-1.1.2-b7e1bed0c98a.zip",
+        "main_file": "mrn-database-retention/mrn-database-retention.php",
+        "path": "releases/stack-plugins/mrn-database-retention-1.1.2-b7e1bed0c98a.zip",
+        "sha256": "c7c53456fd0b103053178dfee8668757e8586dde076b820bdb1885ff216b88bb",
+        "size_bytes": 24439
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-database-retention",
+      "source": {
+        "git_commit": "b7e1bed0c98a3934f10848179c0332caff6e6b58",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-database-retention",
+        "repository": "mrnwebdesigns/mrn-database-retention"
+      },
+      "target_tier": "maintenance-only",
+      "tree": {
+        "file_count": 17,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "0794271d3d0dba6288332f1327bde85326d317c320d7516132bd8e7e0952e7e5"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "1.1.2"
+    },
+    {
+      "current_distribution": "catalog-only",
+      "package": {
+        "filename": "mrn-dummy-content-0.3.2-cb1fb7d2702f.zip",
+        "main_file": "mrn-dummy-content/mrn-dummy-content.php",
+        "path": "releases/stack-plugins/mrn-dummy-content-0.3.2-cb1fb7d2702f.zip",
+        "sha256": "1aa96ec7edc789bf922d3e222e59c94ee812af3bc6842f6c357d464cf3c561c2",
+        "size_bytes": 45264
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-dummy-content",
+      "source": {
+        "git_commit": "cb1fb7d2702fab213f8e641781cd4dc5e1e43f17",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-dummy-content",
+        "repository": "mrnwebdesigns/mrn-dummy-content"
+      },
+      "target_tier": "development-only",
+      "tree": {
+        "file_count": 12,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "2bd50cc877d26357f41cb3fa3eb4a98075436d941e2b07bd56218fc09a1f3afd"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.3.2"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-layout-import-export-0.1.3-f48ba7263d5c.zip",
+        "main_file": "mrn-layout-import-export/mrn-layout-import-export.php",
+        "path": "releases/stack-plugins/mrn-layout-import-export-0.1.3-f48ba7263d5c.zip",
+        "sha256": "9b5cba66a6a00280926711a4fb10cfe150ea4d2bfe71e76d161883aac5d476cf",
+        "size_bytes": 18843
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-layout-import-export",
+      "source": {
+        "git_commit": "f48ba7263d5c5d78f79c3d403909aaf5de6e0106",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-layout-import-export",
+        "repository": "mrnwebdesigns/mrn-layout-import-export"
+      },
+      "target_tier": "maintenance-only",
+      "tree": {
+        "file_count": 12,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "70c0c32e40f3d8bc7a228349434d74374d1a88baa95e4a94e681de6695c937cc"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.1.3"
+    },
+    {
+      "current_distribution": "catalog-only",
+      "package": {
+        "filename": "mrn-mainwp-operations-api-0.13.1-ea8a2369881a.zip",
+        "main_file": "mrn-mainwp-operations-api/mrn-mainwp-operations-api.php",
+        "path": "releases/stack-plugins/mrn-mainwp-operations-api-0.13.1-ea8a2369881a.zip",
+        "sha256": "a18c2575d424c31c07b7e5b73cbcef0ccd2c1f60e8bb98fe352886170963fb31",
+        "size_bytes": 117890
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-mainwp-operations-api",
+      "source": {
+        "git_commit": "ea8a2369881a7b3be28f5431919b6af733837f6d",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-mainwp-operations-api",
+        "repository": "mrnwebdesigns/mrn-mainwp-operations-api"
+      },
+      "target_tier": "dashboard-only",
+      "tree": {
+        "file_count": 34,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "98cfc88d9cec5ade6d347f79230bf74ffa099569f4463252521fefeb8047cd02"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.13.1"
+    },
+    {
+      "current_distribution": "catalog-only",
+      "package": {
+        "filename": "mrn-wp-control-1.1.2-4a0891b14bd9.zip",
+        "main_file": "mrn-wp-control/mrn-wp-control.php",
+        "path": "releases/stack-plugins/mrn-wp-control-1.1.2-4a0891b14bd9.zip",
+        "sha256": "13ab86a1de252c7f58c2983d3bc3580a943e7043bd93c3201ed561bea2fe3aff",
+        "size_bytes": 6957
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-wp-control",
+      "source": {
+        "git_commit": "4a0891b14bd96d74f6595305fd6cb843772fc0ae",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-wp-control",
+        "repository": "mrnwebdesigns/mrn-wp-control"
+      },
+      "target_tier": "dashboard-only",
+      "tree": {
+        "file_count": 9,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "c5371e1f6374abc541b4c3117b0a9c6464287f64472d4a31d3e6ad94cde95977"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "1.1.2"
+    },
+    {
+      "current_distribution": "catalog-only",
+      "package": {
+        "filename": "mrn-wp-control-table-exporter-1.4.4-cebcdde53066.zip",
+        "main_file": "mrn-wp-control-table-exporter/mrn-wp-control-table-exporter.php",
+        "path": "releases/stack-plugins/mrn-wp-control-table-exporter-1.4.4-cebcdde53066.zip",
+        "sha256": "9d6abedf0094abd59c8800e67a3b4f7cc70030ec1f6836b1666b7f4c6ac75fd0",
+        "size_bytes": 17502
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-wp-control-table-exporter",
+      "source": {
+        "git_commit": "cebcdde530667634a908ca90240bc784108cb6a5",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-wp-control-table-exporter",
+        "repository": "mrnwebdesigns/mrn-wp-control-table-exporter"
+      },
+      "target_tier": "dashboard-only",
+      "tree": {
+        "file_count": 16,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "c6c6a687ce4c11b5165d1a14416a0b2b51acf47a3ab7578cd9df1be43159db20"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "1.4.4"
+    },
+    {
+      "current_distribution": "catalog-only",
+      "package": {
+        "filename": "mrn-relevanssi-ai-search-0.6.1-4f2001bc8ed1.zip",
+        "main_file": "mrn-relevanssi-ai-search/mrn-relevanssi-ai-search.php",
+        "path": "releases/stack-plugins/mrn-relevanssi-ai-search-0.6.1-4f2001bc8ed1.zip",
+        "sha256": "31bbc4b109afe1881e2e4ae13ad464171bdcf6a19b768ffda667e06dfd52e2e6",
+        "size_bytes": 29832
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-relevanssi-ai-search",
+      "source": {
+        "git_commit": "4f2001bc8ed1ba188b0f4288ef842dede113536f",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-relevanssi-ai-search",
+        "repository": "mrnwebdesigns/mrn-relevanssi-ai-search"
+      },
+      "target_tier": "optional-integration",
+      "tree": {
+        "file_count": 7,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "5404719c9ec04c8dc472d0a8483830c7cb4c897e6cc94fd3d1d97ffbb5298209"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.6.1"
     }
-  ]
+  ],
+  "schema_version": 1
 }

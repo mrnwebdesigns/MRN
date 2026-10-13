@@ -1,5 +1,48 @@
 # Builder integration checks
 
+## Resource videos
+
+Use a disposable loopback WordPress fixture with ACF Pro, the candidate parent
+theme, and the Stack Content Only MU component. `resource-video.php` refuses
+remote environments. Set `MRN_RESOURCE_VIDEO_STATE` to a private unused JSON
+path and `MRN_RESOURCE_VIDEO_VIDEO` / `MRN_RESOURCE_VIDEO_POSTER` to existing
+local MP4 / PNG fixture assets. Run `wp eval-file resource-video.php setup`,
+then `check`. The checks cover retained uploads, remote provider URLs, missing
+media, URL validation, poster/title/CTA triggers, title-only output, links off,
+PDF behavior and conditional asset discovery. Dispose of the fixture database
+and uploads after qualification; these scripts do not edit client content.
+
+Pass the private `WordPressFixture.browser_input()` JSON, with the setup state
+under `resource`, to `node resource-video-browser.cjs` on stdin. It checks native
+Classic Editor validation/save/reload, delayed video loading, local/direct
+remote playback, provider iframe construction, responsive posters, WCAG AA,
+keyboard containment, Escape, focus return and player teardown. Provider iframe
+construction does not establish third-party availability or embedding rights.
+Keep session credentials, screenshots and evidence outside tracked source.
+
+## Locations
+
+Use a disposable loopback WordPress fixture with ACF Pro, Config Helper, the
+Stack Content Only component and the candidate parent theme. Client Local Hub
+sites and remote sites are outside this fixture's scope. In a separate request,
+seed Business Information phone/text/fax with `9195551111`, `9195552222`, and
+`9195553333`, plus Monday hours `08:00:00`–`16:00:00`, using their existing ACF
+field keys and the new `field_mrn_business_fax` key. A separate request preserves
+the Business Information helper's request-scoped cache contract.
+
+Define `MRN_LOCATIONS_FIXTURE` as `true` and require `locations.php` through
+WP-CLI. It refuses non-loopback or non-local environments, creates an owned
+draft Location, and checks real ACF field references, custom address/social/
+contact/hour persistence, independent inheritance and restored custom values.
+Destroy the disposable database after qualification.
+
+Run `locations-browser.cjs` with a private JSON object on stdin containing
+`url`, `login_url`, `username`, `password`, `location_id` from the PHP check,
+`engine_root` (MRN QA Engine dependencies) and an absolute `output_directory`.
+It verifies native Classic Editor saves/reloads, checkbox visibility, retained
+custom values and WCAG 2.1 A/AA across all four tabs. The runner saves screenshots
+and scan results in the output directory; credentials are never written there.
+
 ## Deferred builder layout templates
 
 On an explicitly resolved Local Hub `.localhost` runtime with the candidate

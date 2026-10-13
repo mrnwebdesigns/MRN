@@ -68,6 +68,15 @@ $GLOBALS['mrn_component_test_meta'] = array(
 		'display_mode' => array( 'slider' ),
 		'logo_items'   => array( '4' ),
 	),
+	26 => array(
+		'page_content_rows' => array( array( 'content_lists' ) ),
+		'page_content_rows_0_list_post_type' => array( 'resource' ),
+	),
+	27 => array(
+		'page_content_rows' => array( array( 'content_lists' ) ),
+		'page_content_rows_0_list_post_type' => array( 'resource' ),
+		'page_content_rows_0_link_items' => array( '0' ),
+	),
 );
 $GLOBALS['mrn_component_test_content'] = array(
 	20 => '<div data-gallery-root></div>',
@@ -214,6 +223,8 @@ mrn_component_test_assert( empty( array_filter( mrn_base_stack_get_front_end_com
 mrn_component_test_assert_only_need( 22, 'faq' );
 mrn_component_test_assert_only_need( 23, 'faq' );
 mrn_component_test_assert_only_need( 25, 'slider' );
+mrn_component_test_assert_only_need( 26, 'video_modal' );
+mrn_component_test_assert( empty( array_filter( mrn_base_stack_get_front_end_component_needs_for_post( 27 ) ) ), 'Unlinked Resource rows do not load video modal assets.' );
 
 $expected_assets = array(
 	'slider'         => array( 'style' => 'mrn-base-stack-splide', 'script' => 'mrn-base-stack-front-end-slider', 'dependency' => 'mrn-base-stack-splide' ),

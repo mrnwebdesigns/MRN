@@ -9,7 +9,7 @@
 
 if ( ! defined( '_S_VERSION' ) ) {
 	// Replace the version number of the theme on each release.
-	define( '_S_VERSION', '1.5.8' );
+	define( '_S_VERSION', '1.5.14' );
 }
 
 /**
@@ -2475,6 +2475,7 @@ require_once get_template_directory() . '/inc/events.php';
  * Load field-ready content post type registrations.
  */
 require_once get_template_directory() . '/inc/content-post-types.php';
+require_once get_template_directory() . '/inc/locations.php';
 
 /**
  * Implement the Custom Header feature.

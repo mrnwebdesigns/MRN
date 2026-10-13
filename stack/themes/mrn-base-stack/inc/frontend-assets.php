@@ -442,7 +442,7 @@ function mrn_base_stack_collect_front_end_component_needs_from_content( $content
 		'motion'         => array( 'data-mrn-motion-effect', 'data-mrn-surface' ),
 		'slider'         => array( 'mrn-splide' ),
 		'tabs'           => array( 'data-mrn-tabbed-layout' ),
-		'video_modal'    => array( 'mrn-video-row__trigger', 'data-glightbox' ),
+		'video_modal'    => array( 'mrn-video-row__trigger', 'data-glightbox', 'data-mrn-video-modal' ),
 	);
 
 	foreach ( $markers as $component => $component_markers ) {
@@ -601,6 +601,13 @@ function mrn_base_stack_collect_front_end_component_needs_for_post( $post_id, ar
 				} elseif ( 'content_lists' === $layout_name && 'testimonial' === sanitize_key( mrn_base_stack_get_front_end_meta_scalar( $post_meta, $row_prefix . 'list_post_type' ) ) ) {
 					// Content-list items can include deferred testimonial videos.
 					$needs['deferred_media'] = true;
+				} elseif ( 'content_lists' === $layout_name && 'resource' === sanitize_key( mrn_base_stack_get_front_end_meta_scalar( $post_meta, $row_prefix . 'list_post_type' ) ) ) {
+					// Resource queries can return uploaded or remote videos. Prepare
+					// modal assets before wp_head without duplicating the list query.
+					$link_items = mrn_base_stack_get_front_end_meta_scalar( $post_meta, $row_prefix . 'link_items' );
+					if ( '' === $link_items || mrn_base_stack_front_end_meta_value_is_enabled( $link_items ) ) {
+						$needs['video_modal'] = true;
+					}
 				} elseif ( 'reusable_block' === $layout_name ) {
 					$block_id = absint( mrn_base_stack_get_front_end_meta_scalar( $post_meta, $row_prefix . 'block' ) );
 					if ( $block_id > 0 ) {

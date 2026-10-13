@@ -1,647 +1,1430 @@
 {
-  "schema_version": 1,
-  "catalog_updated": "2026-10-09",
   "authority": "Checksum- and tree-locked standard-plugin releases available to explicit one-site Stack component plans. Registration never authorizes a site write or changes the immutable Stack release identity.",
+  "catalog_updated": "2026-10-13",
   "releases": [
     {
-      "slug": "mrn-config-helper",
-      "version": "0.1.59",
-      "runtime_type": "standard-plugin",
-      "target_tier": "platform-required",
       "current_distribution": "standard-bootstrap",
-      "source": {
-        "repository": "mrnwebdesigns/mrn-config-helper",
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
-        "git_commit": "dea6af834369b343666c296bedaf72463a9ecdde"
-      },
+      "legacy_supplements": [
+        {
+          "path": "ai-data/stack-plugin-docs/mrn-config-helper.md",
+          "sha256": "5fc8cee9b5083d31de81007cf855b00de9eeb6a0e779ba51239a42c422721463",
+          "size_bytes": 11149
+        },
+        {
+          "path": "ai-data/thread-and-ai-references.md",
+          "sha256": "1cac0fe8f9f87be71b9210d8bb5f001cf5489557eddd0c7fa966992e8e6a4f9a",
+          "size_bytes": 45748
+        }
+      ],
       "package": {
-        "path": "releases/stack-plugins/mrn-config-helper-0.1.59.zip",
         "filename": "mrn-config-helper-0.1.59.zip",
         "main_file": "mrn-config-helper/mrn-config-helper.php",
-        "size_bytes": 119439,
-        "sha256": "d52fa9eb607c39c3ee24ed89629a8cdbf4f77e89f2d98c8f8c45c8ce881c96ed"
+        "path": "releases/stack-plugins/mrn-config-helper-0.1.59.zip",
+        "sha256": "d52fa9eb607c39c3ee24ed89629a8cdbf4f77e89f2d98c8f8c45c8ce881c96ed",
+        "size_bytes": 119439
       },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-config-helper",
+      "source": {
+        "git_commit": "dea6af834369b343666c296bedaf72463a9ecdde",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
+        "repository": "mrnwebdesigns/mrn-config-helper"
+      },
+      "target_tier": "platform-required",
       "tree": {
+        "file_count": 19,
         "hash_algorithm": "sha256-tree-v1",
-        "sha256": "10ac5a405fc6c9ed6ab9536d3e6a184caff512f7720137d6129ebfd9c4d41b63",
-        "file_count": 19
+        "sha256": "10ac5a405fc6c9ed6ab9536d3e6a184caff512f7720137d6129ebfd9c4d41b63"
       },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.1.59"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
       "legacy_supplements": [
         {
           "path": "ai-data/stack-plugin-docs/mrn-config-helper.md",
-          "size_bytes": 11149,
-          "sha256": "5fc8cee9b5083d31de81007cf855b00de9eeb6a0e779ba51239a42c422721463"
+          "sha256": "5fc8cee9b5083d31de81007cf855b00de9eeb6a0e779ba51239a42c422721463",
+          "size_bytes": 11149
         },
         {
           "path": "ai-data/thread-and-ai-references.md",
-          "size_bytes": 45748,
-          "sha256": "1cac0fe8f9f87be71b9210d8bb5f001cf5489557eddd0c7fa966992e8e6a4f9a"
+          "sha256": "1cac0fe8f9f87be71b9210d8bb5f001cf5489557eddd0c7fa966992e8e6a4f9a",
+          "size_bytes": 45748
         }
       ],
-      "update_policy": {
-        "mode": "upgrade-only",
-        "preserve_active_state": true,
-        "new_install": "requires-separate-owner-authorization-and-plan"
-      }
-    },
-    {
-      "slug": "mrn-config-helper",
-      "version": "0.1.60",
-      "runtime_type": "standard-plugin",
-      "target_tier": "platform-required",
-      "current_distribution": "standard-bootstrap",
-      "source": {
-        "repository": "mrnwebdesigns/mrn-config-helper",
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
-        "git_commit": "c1368c309735eab0fd59e26ee6b1c00fa28ce6e8"
-      },
       "package": {
-        "path": "releases/stack-plugins/mrn-config-helper-0.1.60.zip",
         "filename": "mrn-config-helper-0.1.60.zip",
         "main_file": "mrn-config-helper/mrn-config-helper.php",
-        "size_bytes": 119789,
-        "sha256": "dffbe596d94a9edb009a5bd24801d33166e5374c2f12e3cf8402fb3458cf6c85"
+        "path": "releases/stack-plugins/mrn-config-helper-0.1.60.zip",
+        "sha256": "dffbe596d94a9edb009a5bd24801d33166e5374c2f12e3cf8402fb3458cf6c85",
+        "size_bytes": 119789
       },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-config-helper",
+      "source": {
+        "git_commit": "c1368c309735eab0fd59e26ee6b1c00fa28ce6e8",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
+        "repository": "mrnwebdesigns/mrn-config-helper"
+      },
+      "target_tier": "platform-required",
       "tree": {
+        "file_count": 19,
         "hash_algorithm": "sha256-tree-v1",
-        "sha256": "f42baacb71fb6bae7244847eb0d2fce6beb6606ac7154f756dc20888556d4563",
-        "file_count": 19
+        "sha256": "f42baacb71fb6bae7244847eb0d2fce6beb6606ac7154f756dc20888556d4563"
       },
-      "legacy_supplements": [
-        {
-          "path": "ai-data/stack-plugin-docs/mrn-config-helper.md",
-          "size_bytes": 11149,
-          "sha256": "5fc8cee9b5083d31de81007cf855b00de9eeb6a0e779ba51239a42c422721463"
-        },
-        {
-          "path": "ai-data/thread-and-ai-references.md",
-          "size_bytes": 45748,
-          "sha256": "1cac0fe8f9f87be71b9210d8bb5f001cf5489557eddd0c7fa966992e8e6a4f9a"
-        }
-      ],
       "update_policy": {
         "mode": "upgrade-only",
-        "preserve_active_state": true,
-        "new_install": "requires-separate-owner-authorization-and-plan"
-      }
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.1.60"
     },
     {
-      "slug": "mrn-config-helper",
-      "version": "0.1.61",
-      "runtime_type": "standard-plugin",
-      "target_tier": "platform-required",
       "current_distribution": "standard-bootstrap",
-      "source": {
-        "repository": "mrnwebdesigns/mrn-config-helper",
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
-        "git_commit": "a7581b7ca72b17e87eeb9d688be6dff8afc454e6"
-      },
       "package": {
-        "path": "releases/stack-plugins/mrn-config-helper-0.1.61.zip",
         "filename": "mrn-config-helper-0.1.61.zip",
         "main_file": "mrn-config-helper/mrn-config-helper.php",
-        "size_bytes": 100732,
-        "sha256": "af347a7ab8677be8ead399566a4df2a6d7a0424c70dee31c00ce7d056ec1190d"
+        "path": "releases/stack-plugins/mrn-config-helper-0.1.61.zip",
+        "sha256": "af347a7ab8677be8ead399566a4df2a6d7a0424c70dee31c00ce7d056ec1190d",
+        "size_bytes": 100732
       },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-config-helper",
+      "source": {
+        "git_commit": "a7581b7ca72b17e87eeb9d688be6dff8afc454e6",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
+        "repository": "mrnwebdesigns/mrn-config-helper"
+      },
+      "target_tier": "platform-required",
       "tree": {
+        "file_count": 17,
         "hash_algorithm": "sha256-tree-v1",
-        "sha256": "daaea660ab86ef22a35dd6981cb4521c80499800d32da341cb6f8589186c11f9",
-        "file_count": 17
+        "sha256": "daaea660ab86ef22a35dd6981cb4521c80499800d32da341cb6f8589186c11f9"
       },
       "update_policy": {
         "mode": "upgrade-only",
-        "preserve_active_state": true,
-        "new_install": "requires-separate-owner-authorization-and-plan"
-      }
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.1.61"
     },
     {
-      "slug": "mrn-config-helper",
-      "version": "0.1.62",
-      "runtime_type": "standard-plugin",
-      "target_tier": "platform-required",
       "current_distribution": "standard-bootstrap",
-      "source": {
-        "repository": "mrnwebdesigns/mrn-config-helper",
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
-        "git_commit": "286481cada65bf0ed88023a2646ebc06b2514f7b"
-      },
       "package": {
-        "path": "releases/stack-plugins/mrn-config-helper-0.1.62.zip",
         "filename": "mrn-config-helper-0.1.62.zip",
         "main_file": "mrn-config-helper/mrn-config-helper.php",
-        "size_bytes": 101734,
-        "sha256": "67e0c1db08fcb5356e21d3c5891b6c80550eb7d68c4ebd4d16bbd7a093c29b8f"
+        "path": "releases/stack-plugins/mrn-config-helper-0.1.62.zip",
+        "sha256": "67e0c1db08fcb5356e21d3c5891b6c80550eb7d68c4ebd4d16bbd7a093c29b8f",
+        "size_bytes": 101734
       },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-config-helper",
+      "source": {
+        "git_commit": "286481cada65bf0ed88023a2646ebc06b2514f7b",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
+        "repository": "mrnwebdesigns/mrn-config-helper"
+      },
+      "target_tier": "platform-required",
       "tree": {
+        "file_count": 17,
         "hash_algorithm": "sha256-tree-v1",
-        "sha256": "0021b054a69a229a7e4a9fa5f93f8b2775cf24f871b55c296353bd40573ac978",
-        "file_count": 17
+        "sha256": "0021b054a69a229a7e4a9fa5f93f8b2775cf24f871b55c296353bd40573ac978"
       },
       "update_policy": {
         "mode": "upgrade-only",
-        "preserve_active_state": true,
-        "new_install": "requires-separate-owner-authorization-and-plan"
-      }
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.1.62"
     },
     {
-      "slug": "mrn-config-helper",
-      "version": "0.1.63",
-      "runtime_type": "standard-plugin",
-      "target_tier": "platform-required",
       "current_distribution": "standard-bootstrap",
-      "source": {
-        "repository": "mrnwebdesigns/mrn-config-helper",
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
-        "git_commit": "124dcfd22ce867900b878f5b82c5854f5f93a029"
-      },
       "package": {
-        "path": "releases/stack-plugins/mrn-config-helper-0.1.63.zip",
         "filename": "mrn-config-helper-0.1.63.zip",
         "main_file": "mrn-config-helper/mrn-config-helper.php",
-        "size_bytes": 101595,
-        "sha256": "e598b01b4efd514a30487694ac1e82540ac712a3a56fc6a58e5d656e076b21df"
+        "path": "releases/stack-plugins/mrn-config-helper-0.1.63.zip",
+        "sha256": "e598b01b4efd514a30487694ac1e82540ac712a3a56fc6a58e5d656e076b21df",
+        "size_bytes": 101595
       },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-config-helper",
+      "source": {
+        "git_commit": "124dcfd22ce867900b878f5b82c5854f5f93a029",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
+        "repository": "mrnwebdesigns/mrn-config-helper"
+      },
+      "target_tier": "platform-required",
       "tree": {
+        "file_count": 17,
         "hash_algorithm": "sha256-tree-v1",
-        "sha256": "d9cddb1edbebef50804e991395a2b8c4ea13251637e217796411e8d25bb51035",
-        "file_count": 17
+        "sha256": "d9cddb1edbebef50804e991395a2b8c4ea13251637e217796411e8d25bb51035"
       },
       "update_policy": {
         "mode": "upgrade-only",
-        "preserve_active_state": true,
-        "new_install": "requires-separate-owner-authorization-and-plan"
-      }
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.1.63"
     },
     {
-      "slug": "mrn-stack-deployment-agent",
-      "version": "0.2.2",
-      "runtime_type": "standard-plugin",
-      "target_tier": "platform-required",
       "current_distribution": "standard-bootstrap",
-      "source": {
-        "repository": "mrnwebdesigns/mrn-stack-deployment-agent",
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-stack-deployment-agent",
-        "git_commit": "875aba9fd67d44fe2a4ed38ffe4e5f6c71a6f763"
-      },
       "package": {
-        "path": "releases/stack-plugins/mrn-stack-deployment-agent-0.2.2.zip",
         "filename": "mrn-stack-deployment-agent-0.2.2.zip",
         "main_file": "mrn-stack-deployment-agent/mrn-stack-deployment-agent.php",
-        "size_bytes": 29969,
-        "sha256": "43745ce065cd343d3ec2bd85473c1b0d2f38e80531f82af281e4cfea462c5c80"
+        "path": "releases/stack-plugins/mrn-stack-deployment-agent-0.2.2.zip",
+        "sha256": "43745ce065cd343d3ec2bd85473c1b0d2f38e80531f82af281e4cfea462c5c80",
+        "size_bytes": 29969
       },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-stack-deployment-agent",
+      "source": {
+        "git_commit": "875aba9fd67d44fe2a4ed38ffe4e5f6c71a6f763",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-stack-deployment-agent",
+        "repository": "mrnwebdesigns/mrn-stack-deployment-agent"
+      },
+      "target_tier": "platform-required",
       "tree": {
+        "file_count": 9,
         "hash_algorithm": "sha256-tree-v1",
-        "sha256": "7e366405dba55ea72feb20832b9a075310be6b71052e10231d5852877eb20513",
-        "file_count": 9
+        "sha256": "7e366405dba55ea72feb20832b9a075310be6b71052e10231d5852877eb20513"
       },
       "update_policy": {
         "mode": "upgrade-only",
-        "preserve_active_state": true,
-        "new_install": "requires-separate-owner-authorization-and-plan"
-      }
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.2.2"
     },
     {
-      "slug": "mrn-stack-deployment-agent",
-      "version": "0.2.3",
-      "runtime_type": "standard-plugin",
-      "target_tier": "platform-required",
       "current_distribution": "standard-bootstrap",
-      "source": {
-        "repository": "mrnwebdesigns/mrn-stack-deployment-agent",
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-stack-deployment-agent",
-        "git_commit": "c9898688a64df53858cbc485b01386cc0246be1c"
-      },
       "package": {
-        "path": "releases/stack-plugins/mrn-stack-deployment-agent-0.2.3.zip",
         "filename": "mrn-stack-deployment-agent-0.2.3.zip",
         "main_file": "mrn-stack-deployment-agent/mrn-stack-deployment-agent.php",
-        "size_bytes": 32357,
-        "sha256": "e60e58c372e16ed5ad193fd2b3aeac23af70b09f826eefacff872a1e4ea54956"
+        "path": "releases/stack-plugins/mrn-stack-deployment-agent-0.2.3.zip",
+        "sha256": "e60e58c372e16ed5ad193fd2b3aeac23af70b09f826eefacff872a1e4ea54956",
+        "size_bytes": 32357
       },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-stack-deployment-agent",
+      "source": {
+        "git_commit": "c9898688a64df53858cbc485b01386cc0246be1c",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-stack-deployment-agent",
+        "repository": "mrnwebdesigns/mrn-stack-deployment-agent"
+      },
+      "target_tier": "platform-required",
       "tree": {
+        "file_count": 9,
         "hash_algorithm": "sha256-tree-v1",
-        "sha256": "5c84d1ac32efcd048e50e62dc9459a929f4e9a016017716961b607cd096ae567",
-        "file_count": 9
+        "sha256": "5c84d1ac32efcd048e50e62dc9459a929f4e9a016017716961b607cd096ae567"
       },
       "update_policy": {
         "mode": "upgrade-only",
-        "preserve_active_state": true,
-        "new_install": "requires-separate-owner-authorization-and-plan"
-      }
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.2.3"
     },
     {
-      "slug": "mrn-stack-deployment-agent",
-      "version": "0.2.4",
-      "runtime_type": "standard-plugin",
-      "target_tier": "platform-required",
       "current_distribution": "standard-bootstrap",
-      "source": {
-        "repository": "mrnwebdesigns/mrn-stack-deployment-agent",
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-stack-deployment-agent",
-        "git_commit": "c8c724b1008240cfc8717941c40237cd881b23a2"
-      },
       "package": {
-        "path": "releases/stack-plugins/mrn-stack-deployment-agent-0.2.4.zip",
         "filename": "mrn-stack-deployment-agent-0.2.4.zip",
         "main_file": "mrn-stack-deployment-agent/mrn-stack-deployment-agent.php",
-        "size_bytes": 32422,
-        "sha256": "f3fac84207cf5176809071dda5d494009b544d4fee98be75e520cf0f539d7ec9"
+        "path": "releases/stack-plugins/mrn-stack-deployment-agent-0.2.4.zip",
+        "sha256": "f3fac84207cf5176809071dda5d494009b544d4fee98be75e520cf0f539d7ec9",
+        "size_bytes": 32422
       },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-stack-deployment-agent",
+      "source": {
+        "git_commit": "c8c724b1008240cfc8717941c40237cd881b23a2",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-stack-deployment-agent",
+        "repository": "mrnwebdesigns/mrn-stack-deployment-agent"
+      },
+      "target_tier": "platform-required",
       "tree": {
+        "file_count": 9,
         "hash_algorithm": "sha256-tree-v1",
-        "sha256": "d2a571c62a81edc3d71f45f8d2e696a9e69b574ad2df47203b5d44bfd0f82c26",
-        "file_count": 9
+        "sha256": "d2a571c62a81edc3d71f45f8d2e696a9e69b574ad2df47203b5d44bfd0f82c26"
       },
       "update_policy": {
         "mode": "upgrade-only",
-        "preserve_active_state": true,
-        "new_install": "requires-separate-owner-authorization-and-plan"
-      }
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.2.4"
     },
     {
-      "slug": "mrn-stack-deployment-agent",
-      "version": "0.2.5",
-      "runtime_type": "standard-plugin",
-      "target_tier": "platform-required",
       "current_distribution": "standard-bootstrap",
-      "source": {
-        "repository": "mrnwebdesigns/mrn-stack-deployment-agent",
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-stack-deployment-agent",
-        "git_commit": "8bc985f2430756857dfecd41f7a435deddbafb49"
-      },
       "package": {
-        "path": "releases/stack-plugins/mrn-stack-deployment-agent-0.2.5.zip",
         "filename": "mrn-stack-deployment-agent-0.2.5.zip",
         "main_file": "mrn-stack-deployment-agent/mrn-stack-deployment-agent.php",
-        "size_bytes": 33699,
-        "sha256": "7eef5538264634e20c44c4f650852cafc6a44eae591108c9f0e2d08fced9b3b2"
+        "path": "releases/stack-plugins/mrn-stack-deployment-agent-0.2.5.zip",
+        "sha256": "7eef5538264634e20c44c4f650852cafc6a44eae591108c9f0e2d08fced9b3b2",
+        "size_bytes": 33699
       },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-stack-deployment-agent",
+      "source": {
+        "git_commit": "8bc985f2430756857dfecd41f7a435deddbafb49",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-stack-deployment-agent",
+        "repository": "mrnwebdesigns/mrn-stack-deployment-agent"
+      },
+      "target_tier": "platform-required",
       "tree": {
+        "file_count": 9,
         "hash_algorithm": "sha256-tree-v1",
-        "sha256": "45d42a9b603703123afa06ed661f40b5d6b271e06cc74cc7564f22a6b4640769",
-        "file_count": 9
+        "sha256": "45d42a9b603703123afa06ed661f40b5d6b271e06cc74cc7564f22a6b4640769"
       },
       "update_policy": {
         "mode": "upgrade-only",
-        "preserve_active_state": true,
-        "new_install": "requires-separate-owner-authorization-and-plan"
-      }
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.2.5"
     },
     {
-      "slug": "mrn-stack-deployment-agent",
-      "version": "0.2.6",
-      "runtime_type": "standard-plugin",
-      "target_tier": "platform-required",
       "current_distribution": "standard-bootstrap",
-      "source": {
-        "repository": "mrnwebdesigns/mrn-stack-deployment-agent",
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-stack-deployment-agent",
-        "git_commit": "6e07902c9b4397c86775de9c82156e6911381a9d"
-      },
       "package": {
-        "path": "releases/stack-plugins/mrn-stack-deployment-agent-0.2.6.zip",
         "filename": "mrn-stack-deployment-agent-0.2.6.zip",
         "main_file": "mrn-stack-deployment-agent/mrn-stack-deployment-agent.php",
-        "size_bytes": 44427,
-        "sha256": "a5a07082160a0b5baa5f51248a496e80c5e37a4ad7224a1cb600f52a411fa523"
+        "path": "releases/stack-plugins/mrn-stack-deployment-agent-0.2.6.zip",
+        "sha256": "a5a07082160a0b5baa5f51248a496e80c5e37a4ad7224a1cb600f52a411fa523",
+        "size_bytes": 44427
       },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-stack-deployment-agent",
+      "source": {
+        "git_commit": "6e07902c9b4397c86775de9c82156e6911381a9d",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-stack-deployment-agent",
+        "repository": "mrnwebdesigns/mrn-stack-deployment-agent"
+      },
+      "target_tier": "platform-required",
       "tree": {
+        "file_count": 13,
         "hash_algorithm": "sha256-tree-v1",
-        "sha256": "b2ff2e4e159cfa32d37f8ae6d3cca530aa1fc1a1737dce85d328a646e3005c82",
-        "file_count": 13
+        "sha256": "b2ff2e4e159cfa32d37f8ae6d3cca530aa1fc1a1737dce85d328a646e3005c82"
       },
       "update_policy": {
         "mode": "upgrade-only",
-        "preserve_active_state": true,
-        "new_install": "requires-separate-owner-authorization-and-plan"
-      }
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.2.6"
     },
     {
-      "slug": "mrn-universal-sticky-bar",
-      "version": "1.1.8",
-      "runtime_type": "standard-plugin",
-      "target_tier": "platform-required",
       "current_distribution": "standard-bootstrap",
-      "source": {
-        "repository": "mrnwebdesigns/mrn-universal-sticky-bar",
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-universal-sticky-bar",
-        "git_commit": "27acb356b0ecc9de793fabe6cd4ca1c96f30d926"
-      },
-      "package": {
-        "path": "releases/stack-plugins/mrn-universal-sticky-bar-1.1.8.zip",
-        "filename": "mrn-universal-sticky-bar-1.1.8.zip",
-        "main_file": "mrn-universal-sticky-bar/mrn-universal-sticky-bar.php",
-        "size_bytes": 26543,
-        "sha256": "1f0f9639b735f93ef0f318c64e1d55e6f564490e5ef7ef633c6d8f4aeb191655"
-      },
-      "tree": {
-        "hash_algorithm": "sha256-tree-v1",
-        "sha256": "13fbaac427190839ddac5c21fa484a9b81e82f67f480d31e3faa582e7dbde16b",
-        "file_count": 10
-      },
       "legacy_supplements": [
         {
           "path": "ai-data/thread-and-ai-references.md",
-          "size_bytes": 36571,
-          "sha256": "fb049c87b8a4eacaa88f1cc18274b473643170d3cf752fdfbef7a840ed1e3e0e"
+          "sha256": "fb049c87b8a4eacaa88f1cc18274b473643170d3cf752fdfbef7a840ed1e3e0e",
+          "size_bytes": 36571
         }
       ],
+      "package": {
+        "filename": "mrn-universal-sticky-bar-1.1.8.zip",
+        "main_file": "mrn-universal-sticky-bar/mrn-universal-sticky-bar.php",
+        "path": "releases/stack-plugins/mrn-universal-sticky-bar-1.1.8.zip",
+        "sha256": "1f0f9639b735f93ef0f318c64e1d55e6f564490e5ef7ef633c6d8f4aeb191655",
+        "size_bytes": 26543
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-universal-sticky-bar",
+      "source": {
+        "git_commit": "27acb356b0ecc9de793fabe6cd4ca1c96f30d926",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-universal-sticky-bar",
+        "repository": "mrnwebdesigns/mrn-universal-sticky-bar"
+      },
+      "target_tier": "platform-required",
+      "tree": {
+        "file_count": 10,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "13fbaac427190839ddac5c21fa484a9b81e82f67f480d31e3faa582e7dbde16b"
+      },
       "update_policy": {
         "mode": "upgrade-only",
-        "preserve_active_state": true,
-        "new_install": "requires-separate-owner-authorization-and-plan"
-      }
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "1.1.8"
     },
     {
-      "slug": "mrn-universal-sticky-bar",
-      "version": "1.1.9",
-      "runtime_type": "standard-plugin",
-      "target_tier": "platform-required",
       "current_distribution": "standard-bootstrap",
-      "source": {
-        "repository": "mrnwebdesigns/mrn-universal-sticky-bar",
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-universal-sticky-bar",
-        "git_commit": "12733067489a543cefb273e3af086895a42f6c54"
-      },
       "package": {
-        "path": "releases/stack-plugins/mrn-universal-sticky-bar-1.1.9.zip",
         "filename": "mrn-universal-sticky-bar-1.1.9.zip",
         "main_file": "mrn-universal-sticky-bar/mrn-universal-sticky-bar.php",
-        "size_bytes": 14561,
-        "sha256": "adac34a11beba147346d659d36d38f75e400adaf06325031edbebb42e94a6cfc"
+        "path": "releases/stack-plugins/mrn-universal-sticky-bar-1.1.9.zip",
+        "sha256": "adac34a11beba147346d659d36d38f75e400adaf06325031edbebb42e94a6cfc",
+        "size_bytes": 14561
       },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-universal-sticky-bar",
+      "source": {
+        "git_commit": "12733067489a543cefb273e3af086895a42f6c54",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-universal-sticky-bar",
+        "repository": "mrnwebdesigns/mrn-universal-sticky-bar"
+      },
+      "target_tier": "platform-required",
       "tree": {
+        "file_count": 9,
         "hash_algorithm": "sha256-tree-v1",
-        "sha256": "8368e7e2fac3640608ab4d48915fe536d43270288bbb4aab44c37c4ed424fff0",
-        "file_count": 9
+        "sha256": "8368e7e2fac3640608ab4d48915fe536d43270288bbb4aab44c37c4ed424fff0"
       },
       "update_policy": {
         "mode": "upgrade-only",
-        "preserve_active_state": true,
-        "new_install": "requires-separate-owner-authorization-and-plan"
-      }
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "1.1.9"
     },
     {
-      "slug": "mrn-universal-sticky-bar",
-      "version": "1.1.10",
-      "runtime_type": "standard-plugin",
-      "target_tier": "platform-required",
       "current_distribution": "standard-bootstrap",
-      "source": {
-        "repository": "mrnwebdesigns/mrn-universal-sticky-bar",
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-universal-sticky-bar",
-        "git_commit": "696e261cccc76cacad9c7fe54eac6c48758a70ff"
-      },
       "package": {
-        "path": "releases/stack-plugins/mrn-universal-sticky-bar-1.1.10.zip",
         "filename": "mrn-universal-sticky-bar-1.1.10.zip",
         "main_file": "mrn-universal-sticky-bar/mrn-universal-sticky-bar.php",
-        "size_bytes": 11165,
-        "sha256": "8268d337d2d18c2ea21f52467c166f660e103c6d8eb311abe2db7a7decab5b1b"
+        "path": "releases/stack-plugins/mrn-universal-sticky-bar-1.1.10.zip",
+        "sha256": "8268d337d2d18c2ea21f52467c166f660e103c6d8eb311abe2db7a7decab5b1b",
+        "size_bytes": 11165
       },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-universal-sticky-bar",
+      "source": {
+        "git_commit": "696e261cccc76cacad9c7fe54eac6c48758a70ff",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-universal-sticky-bar",
+        "repository": "mrnwebdesigns/mrn-universal-sticky-bar"
+      },
+      "target_tier": "platform-required",
       "tree": {
+        "file_count": 3,
         "hash_algorithm": "sha256-tree-v1",
-        "sha256": "7c653d7b34d9c4701e1092a36a3cdda3ce7a702a87996dbcc8634e9dd24a1f19",
-        "file_count": 3
+        "sha256": "7c653d7b34d9c4701e1092a36a3cdda3ce7a702a87996dbcc8634e9dd24a1f19"
       },
       "update_policy": {
         "mode": "upgrade-only",
-        "preserve_active_state": true,
-        "new_install": "requires-separate-owner-authorization-and-plan"
-      }
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "1.1.10"
     },
     {
-      "slug": "mrn-config-helper",
-      "version": "0.1.64",
-      "runtime_type": "standard-plugin",
-      "target_tier": "platform-required",
       "current_distribution": "standard-bootstrap",
-      "source": {
-        "repository": "mrnwebdesigns/mrn-config-helper",
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
-        "git_commit": "12fa0498d67e6e7a649645bdeddd4846558228db"
-      },
       "package": {
-        "path": "releases/stack-plugins/mrn-config-helper-0.1.64.zip",
         "filename": "mrn-config-helper-0.1.64.zip",
         "main_file": "mrn-config-helper/mrn-config-helper.php",
-        "size_bytes": 101926,
-        "sha256": "af39fb356c7f99f9da2c5ed2ecd9e1e90c020268ce3c9f2b2edbcdee126579ff"
+        "path": "releases/stack-plugins/mrn-config-helper-0.1.64.zip",
+        "sha256": "af39fb356c7f99f9da2c5ed2ecd9e1e90c020268ce3c9f2b2edbcdee126579ff",
+        "size_bytes": 101926
       },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-config-helper",
+      "source": {
+        "git_commit": "12fa0498d67e6e7a649645bdeddd4846558228db",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
+        "repository": "mrnwebdesigns/mrn-config-helper"
+      },
+      "target_tier": "platform-required",
       "tree": {
+        "file_count": 17,
         "hash_algorithm": "sha256-tree-v1",
-        "sha256": "0cd8b1aa6a30a3bb2543f2ac13fddeae54176dfe7ecf39a3fd9a666f50b0b39c",
-        "file_count": 17
+        "sha256": "0cd8b1aa6a30a3bb2543f2ac13fddeae54176dfe7ecf39a3fd9a666f50b0b39c"
       },
       "update_policy": {
         "mode": "upgrade-only",
-        "preserve_active_state": true,
-        "new_install": "requires-separate-owner-authorization-and-plan"
-      }
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.1.64"
     },
     {
-      "slug": "mrn-config-helper",
-      "version": "0.1.65",
-      "runtime_type": "standard-plugin",
-      "target_tier": "platform-required",
       "current_distribution": "standard-bootstrap",
-      "source": {
-        "repository": "mrnwebdesigns/mrn-config-helper",
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
-        "git_commit": "13d31380561e1e907ef091e8e1573ace83365bb5"
-      },
       "package": {
-        "path": "releases/stack-plugins/mrn-config-helper-0.1.65.zip",
         "filename": "mrn-config-helper-0.1.65.zip",
         "main_file": "mrn-config-helper/mrn-config-helper.php",
-        "size_bytes": 102289,
-        "sha256": "e96be0eef4da46221314d813d06ef5c2f480df56a90d94b2d359bf53ca2c608f"
+        "path": "releases/stack-plugins/mrn-config-helper-0.1.65.zip",
+        "sha256": "e96be0eef4da46221314d813d06ef5c2f480df56a90d94b2d359bf53ca2c608f",
+        "size_bytes": 102289
       },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-config-helper",
+      "source": {
+        "git_commit": "13d31380561e1e907ef091e8e1573ace83365bb5",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
+        "repository": "mrnwebdesigns/mrn-config-helper"
+      },
+      "target_tier": "platform-required",
       "tree": {
+        "file_count": 17,
         "hash_algorithm": "sha256-tree-v1",
-        "sha256": "05f4b605589dbf28663edce099440d2665c8f7d53b7f2074d213c5ac9035d5bd",
-        "file_count": 17
+        "sha256": "05f4b605589dbf28663edce099440d2665c8f7d53b7f2074d213c5ac9035d5bd"
       },
       "update_policy": {
         "mode": "upgrade-only",
-        "preserve_active_state": true,
-        "new_install": "requires-separate-owner-authorization-and-plan"
-      }
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.1.65"
     },
     {
-      "slug": "mrn-config-helper",
-      "version": "0.1.66",
-      "runtime_type": "standard-plugin",
-      "target_tier": "platform-required",
       "current_distribution": "standard-bootstrap",
-      "source": {
-        "repository": "mrnwebdesigns/mrn-config-helper",
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
-        "git_commit": "1a326a5e9977dc2a45da5ed7444a58897fecd955"
-      },
       "package": {
-        "path": "releases/stack-plugins/mrn-config-helper-0.1.66.zip",
         "filename": "mrn-config-helper-0.1.66.zip",
         "main_file": "mrn-config-helper/mrn-config-helper.php",
-        "size_bytes": 108826,
-        "sha256": "7073f358b13d2a83e8350e586e532d3370d3914149f17059029c4cefa85c93df"
+        "path": "releases/stack-plugins/mrn-config-helper-0.1.66.zip",
+        "sha256": "7073f358b13d2a83e8350e586e532d3370d3914149f17059029c4cefa85c93df",
+        "size_bytes": 108826
       },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-config-helper",
+      "source": {
+        "git_commit": "1a326a5e9977dc2a45da5ed7444a58897fecd955",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
+        "repository": "mrnwebdesigns/mrn-config-helper"
+      },
+      "target_tier": "platform-required",
       "tree": {
+        "file_count": 19,
         "hash_algorithm": "sha256-tree-v1",
-        "sha256": "1c5882823dfddcbe24b3a018ca95c726602e557ab15f79d136e276071dc74dd8",
-        "file_count": 19
+        "sha256": "1c5882823dfddcbe24b3a018ca95c726602e557ab15f79d136e276071dc74dd8"
       },
       "update_policy": {
         "mode": "upgrade-only",
-        "preserve_active_state": true,
-        "new_install": "requires-separate-owner-authorization-and-plan"
-      }
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.1.66"
     },
     {
-      "slug": "mrn-config-helper",
-      "version": "0.1.68",
-      "runtime_type": "standard-plugin",
-      "target_tier": "platform-required",
       "current_distribution": "standard-bootstrap",
-      "source": {
-        "repository": "mrnwebdesigns/mrn-config-helper",
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
-        "git_commit": "074e07ddf638bca15bd66cae311ffba69ff66745"
-      },
       "package": {
-        "path": "releases/stack-plugins/mrn-config-helper-0.1.68.zip",
         "filename": "mrn-config-helper-0.1.68.zip",
         "main_file": "mrn-config-helper/mrn-config-helper.php",
-        "size_bytes": 120931,
-        "sha256": "a43c8bf7228bb357cf18fb910ff8b87521e0e76873256630be2d8bc12fe5bc59"
+        "path": "releases/stack-plugins/mrn-config-helper-0.1.68.zip",
+        "sha256": "a43c8bf7228bb357cf18fb910ff8b87521e0e76873256630be2d8bc12fe5bc59",
+        "size_bytes": 120931
       },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-config-helper",
+      "source": {
+        "git_commit": "074e07ddf638bca15bd66cae311ffba69ff66745",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
+        "repository": "mrnwebdesigns/mrn-config-helper"
+      },
+      "target_tier": "platform-required",
       "tree": {
+        "file_count": 25,
         "hash_algorithm": "sha256-tree-v1",
-        "sha256": "23b7941d6d57a4a8441a6d24c05ae47c432f0aaadcf6a7dc612c74499f8db929",
-        "file_count": 25
+        "sha256": "23b7941d6d57a4a8441a6d24c05ae47c432f0aaadcf6a7dc612c74499f8db929"
       },
       "update_policy": {
         "mode": "upgrade-only",
-        "preserve_active_state": true,
-        "new_install": "requires-separate-owner-authorization-and-plan"
-      }
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.1.68"
     },
     {
-      "slug": "mrn-config-helper",
-      "version": "0.1.70",
-      "runtime_type": "standard-plugin",
-      "target_tier": "platform-required",
       "current_distribution": "standard-bootstrap",
-      "source": {
-        "repository": "mrnwebdesigns/mrn-config-helper",
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
-        "git_commit": "f16bedf0f87b5aeb7516f286e38fc4b70f569bef"
-      },
       "package": {
-        "path": "releases/stack-plugins/mrn-config-helper-0.1.70.zip",
         "filename": "mrn-config-helper-0.1.70.zip",
         "main_file": "mrn-config-helper/mrn-config-helper.php",
-        "size_bytes": 122343,
-        "sha256": "668c6f35dceb304d83f116308776202d023e098e89b875a559a0b606b2b0b052"
+        "path": "releases/stack-plugins/mrn-config-helper-0.1.70.zip",
+        "sha256": "668c6f35dceb304d83f116308776202d023e098e89b875a559a0b606b2b0b052",
+        "size_bytes": 122343
       },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-config-helper",
+      "source": {
+        "git_commit": "f16bedf0f87b5aeb7516f286e38fc4b70f569bef",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
+        "repository": "mrnwebdesigns/mrn-config-helper"
+      },
+      "target_tier": "platform-required",
       "tree": {
+        "file_count": 27,
         "hash_algorithm": "sha256-tree-v1",
-        "sha256": "f0fafc1b88acf1d4738beae6d735b0530e6a5f80f2912cfa8cc421db33ac1a87",
-        "file_count": 27
+        "sha256": "f0fafc1b88acf1d4738beae6d735b0530e6a5f80f2912cfa8cc421db33ac1a87"
       },
       "update_policy": {
         "mode": "upgrade-only",
-        "preserve_active_state": true,
-        "new_install": "requires-separate-owner-authorization-and-plan"
-      }
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.1.70"
     },
     {
-      "slug": "mrn-config-helper",
-      "version": "0.1.71",
-      "runtime_type": "standard-plugin",
-      "target_tier": "platform-required",
       "current_distribution": "standard-bootstrap",
-      "source": {
-        "repository": "mrnwebdesigns/mrn-config-helper",
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
-        "git_commit": "5f22f06acda7ea445b32f03d79fe8cf5061c03cc"
-      },
       "package": {
-        "path": "releases/stack-plugins/mrn-config-helper-0.1.71.zip",
         "filename": "mrn-config-helper-0.1.71.zip",
         "main_file": "mrn-config-helper/mrn-config-helper.php",
-        "size_bytes": 123880,
-        "sha256": "f01e69e14f1112f53bcb1ff3d15599cd52d564a00f983f7cd906163dd9884a99"
+        "path": "releases/stack-plugins/mrn-config-helper-0.1.71.zip",
+        "sha256": "f01e69e14f1112f53bcb1ff3d15599cd52d564a00f983f7cd906163dd9884a99",
+        "size_bytes": 123880
       },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-config-helper",
+      "source": {
+        "git_commit": "5f22f06acda7ea445b32f03d79fe8cf5061c03cc",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
+        "repository": "mrnwebdesigns/mrn-config-helper"
+      },
+      "target_tier": "platform-required",
       "tree": {
+        "file_count": 28,
         "hash_algorithm": "sha256-tree-v1",
-        "sha256": "d6e5ae40ee1583e01e158c7d4d5bb75ae7e15cc5035221b26743b0c4ab484e17",
-        "file_count": 28
+        "sha256": "d6e5ae40ee1583e01e158c7d4d5bb75ae7e15cc5035221b26743b0c4ab484e17"
       },
       "update_policy": {
         "mode": "upgrade-only",
-        "preserve_active_state": true,
-        "new_install": "requires-separate-owner-authorization-and-plan"
-      }
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.1.71"
     },
     {
-      "slug": "mrn-config-helper",
-      "version": "0.1.72",
-      "runtime_type": "standard-plugin",
-      "target_tier": "platform-required",
       "current_distribution": "standard-bootstrap",
-      "source": {
-        "repository": "mrnwebdesigns/mrn-config-helper",
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
-        "git_commit": "29dd9bbb47c8f14cbe7aa0b9340e957893b0e573"
-      },
       "package": {
-        "path": "releases/stack-plugins/mrn-config-helper-0.1.72.zip",
         "filename": "mrn-config-helper-0.1.72.zip",
         "main_file": "mrn-config-helper/mrn-config-helper.php",
-        "size_bytes": 126370,
-        "sha256": "8230f7b149e3b8b24d3f7c7606db4e7627d7372f5e328d4fb39bf4ee78b57b72"
+        "path": "releases/stack-plugins/mrn-config-helper-0.1.72.zip",
+        "sha256": "8230f7b149e3b8b24d3f7c7606db4e7627d7372f5e328d4fb39bf4ee78b57b72",
+        "size_bytes": 126370
       },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-config-helper",
+      "source": {
+        "git_commit": "29dd9bbb47c8f14cbe7aa0b9340e957893b0e573",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
+        "repository": "mrnwebdesigns/mrn-config-helper"
+      },
+      "target_tier": "platform-required",
       "tree": {
+        "file_count": 29,
         "hash_algorithm": "sha256-tree-v1",
-        "sha256": "e189af68c5e02facc7137773c0ce9b2e86f12340377ea11232cb195722fba832",
-        "file_count": 29
+        "sha256": "e189af68c5e02facc7137773c0ce9b2e86f12340377ea11232cb195722fba832"
       },
       "update_policy": {
         "mode": "upgrade-only",
-        "preserve_active_state": true,
-        "new_install": "requires-separate-owner-authorization-and-plan"
-      }
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.1.72"
     },
     {
-      "slug": "mrn-stack-deployment-agent",
-      "version": "0.3.2",
-      "runtime_type": "standard-plugin",
-      "target_tier": "platform-required",
       "current_distribution": "standard-bootstrap",
-      "source": {
-        "repository": "mrnwebdesigns/mrn-stack-deployment-agent",
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-stack-deployment-agent",
-        "git_commit": "e1d0dc07e8abc81640b76bd04883456900dc7d01"
-      },
       "package": {
-        "path": "releases/stack-plugins/mrn-stack-deployment-agent-0.3.2.zip",
-        "filename": "mrn-stack-deployment-agent-0.3.2.zip",
-        "main_file": "mrn-stack-deployment-agent/mrn-stack-deployment-agent.php",
-        "size_bytes": 62383,
-        "sha256": "834e1716a2ba74fccfe3205d8944fcfac4a8b685e1edfd1366ae9b42da5f766f"
+        "filename": "mrn-config-helper-0.1.73.zip",
+        "main_file": "mrn-config-helper/mrn-config-helper.php",
+        "path": "releases/stack-plugins/mrn-config-helper-0.1.73.zip",
+        "sha256": "2cb9e3f8b8a75c87cadf007983636224dbd67e8e75cdce89b31e862f8c4710bc",
+        "size_bytes": 120602
       },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-config-helper",
+      "source": {
+        "git_commit": "eb9fbb151be714f7d782ff072da5dafe03190352",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
+        "repository": "mrnwebdesigns/mrn-config-helper"
+      },
+      "target_tier": "platform-required",
       "tree": {
+        "file_count": 29,
         "hash_algorithm": "sha256-tree-v1",
-        "sha256": "08c21226d2d682b34e7530fa5ced62ebf965dad748cf4118d08d7744e75494df",
-        "file_count": 19
+        "sha256": "4bbe3081b173aeefeb050fd6b3b9bd96f798dad96641524cac3a897921d42590"
       },
       "update_policy": {
         "mode": "upgrade-only",
-        "preserve_active_state": true,
-        "new_install": "requires-separate-owner-authorization-and-plan"
-      }
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.1.73"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-stack-deployment-agent-0.3.2.zip",
+        "main_file": "mrn-stack-deployment-agent/mrn-stack-deployment-agent.php",
+        "path": "releases/stack-plugins/mrn-stack-deployment-agent-0.3.2.zip",
+        "sha256": "834e1716a2ba74fccfe3205d8944fcfac4a8b685e1edfd1366ae9b42da5f766f",
+        "size_bytes": 62383
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-stack-deployment-agent",
+      "source": {
+        "git_commit": "e1d0dc07e8abc81640b76bd04883456900dc7d01",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-stack-deployment-agent",
+        "repository": "mrnwebdesigns/mrn-stack-deployment-agent"
+      },
+      "target_tier": "platform-required",
+      "tree": {
+        "file_count": 19,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "08c21226d2d682b34e7530fa5ced62ebf965dad748cf4118d08d7744e75494df"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.3.2"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-reusable-block-library-0.2.1-777efa5ab227.zip",
+        "main_file": "mrn-reusable-block-library/mrn-reusable-block-library.php",
+        "path": "releases/stack-plugins/mrn-reusable-block-library-0.2.1-777efa5ab227.zip",
+        "sha256": "0a9a1b83cab1fa7a02ed3cb35b352d15476d63c59130162ba73397c309695cfd",
+        "size_bytes": 60314
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-reusable-block-library",
+      "source": {
+        "git_commit": "777efa5ab2275c348fc61ae7a5724b6bcbe96e30",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-reusable-block-library",
+        "repository": "mrnwebdesigns/mrn-reusable-block-library"
+      },
+      "target_tier": "optional-shared",
+      "tree": {
+        "file_count": 19,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "ec779e5f310419d774a3bf574995b2bf2beccaa840440fc71f0c6b6b18c5c54f"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.2.1"
+    },
+    {
+      "current_distribution": "catalog-only",
+      "package": {
+        "filename": "background-video-popout-disabler-1.0.2-d0fef00d2e03.zip",
+        "main_file": "background-video-popout-disabler/background-video-popout-disabler.php",
+        "path": "releases/stack-plugins/background-video-popout-disabler-1.0.2-d0fef00d2e03.zip",
+        "sha256": "734729096992ac391a1ae74dd5085dd3408ca386e62d7704b885545975ac9362",
+        "size_bytes": 3308
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "background-video-popout-disabler",
+      "source": {
+        "git_commit": "d0fef00d2e03316cf3ad4b6bb0b24a964aa97849",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/background-video-popout-disabler",
+        "repository": "mrnwebdesigns/background-video-popout-disabler"
+      },
+      "target_tier": "optional-shared",
+      "tree": {
+        "file_count": 3,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "b30049b880a6a9c9962746780d04c64bbe14c6b3b7323f62655ef1124935a49d"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "1.0.2"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-acf-focal-point-1.1.2-5f1600f97ae0.zip",
+        "main_file": "mrn-acf-focal-point/mrn-acf-focal-point.php",
+        "path": "releases/stack-plugins/mrn-acf-focal-point-1.1.2-5f1600f97ae0.zip",
+        "sha256": "51b961093a5d9fc3db12e15bd4771b275bcfe60048f0d4ac962570bbc1e723b6",
+        "size_bytes": 12696
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-acf-focal-point",
+      "source": {
+        "git_commit": "5f1600f97ae062f1ccc1a29e2b34b1d634fc8b18",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-acf-focal-point",
+        "repository": "mrnwebdesigns/mrn-acf-focal-point"
+      },
+      "target_tier": "optional-integration",
+      "tree": {
+        "file_count": 12,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "f747f622a9ea3bd694fedc7ecfe668c2b8d697a386cb49dfd308db6cec08a052"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "1.1.2"
+    },
+    {
+      "current_distribution": "catalog-only",
+      "package": {
+        "filename": "mrn-ai-guardrails-0.1.1-1770f887c097.zip",
+        "main_file": "mrn-ai-guardrails/mrn-ai-guardrails.php",
+        "path": "releases/stack-plugins/mrn-ai-guardrails-0.1.1-1770f887c097.zip",
+        "sha256": "b9d3eebf061ec14697c336ab7e6e56b2dc143278968fd291d5fdfa023321e584",
+        "size_bytes": 27584
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-ai-guardrails",
+      "source": {
+        "git_commit": "1770f887c0979a17711f8cc505218e407eae11a7",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-ai-guardrails",
+        "repository": "mrnwebdesigns/mrn-ai-guardrails"
+      },
+      "target_tier": "optional-integration",
+      "tree": {
+        "file_count": 18,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "5d9cfdfd16f3f621d087aaa0c6b5c100a60081089c562f61f33cec49c68ffee1"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.1.1"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-announcements-1.8.2-284b1ae8a171.zip",
+        "main_file": "mrn-announcements/mrn-announcements.php",
+        "path": "releases/stack-plugins/mrn-announcements-1.8.2-284b1ae8a171.zip",
+        "sha256": "4e184f5cc8724631cfa112cc6a98b0144e5c2c7faaca2a55192b93394d02f349",
+        "size_bytes": 34133
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-announcements",
+      "source": {
+        "git_commit": "284b1ae8a171daad55781c161cfb263fff289433",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-announcements",
+        "repository": "mrnwebdesigns/mrn-announcements"
+      },
+      "target_tier": "optional-shared",
+      "tree": {
+        "file_count": 8,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "1725127c5285418e730bb22cf3e51c9638430761a942247acf8a7ea24285f777"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "1.8.2"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-comment-management-1.3.0-582188ccc22c.zip",
+        "main_file": "mrn-comment-management/mrn-comment-management.php",
+        "path": "releases/stack-plugins/mrn-comment-management-1.3.0-582188ccc22c.zip",
+        "sha256": "a87742769c154f8054128366a92e26dd3e72faca707231afedd2673a63789904",
+        "size_bytes": 28627
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-comment-management",
+      "source": {
+        "git_commit": "582188ccc22cbae6b05807c8ce990efad66cba3e",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-comment-management",
+        "repository": "mrnwebdesigns/mrn-comment-management"
+      },
+      "target_tier": "maintenance-only",
+      "tree": {
+        "file_count": 15,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "83b91411f943ea422c46caf98036144c791605f4c9e4e5651f7d70f7efbdc99b"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "1.3.0"
+    },
+    {
+      "current_distribution": "catalog-only",
+      "package": {
+        "filename": "mrn-contextual-content-editor-0.4.11-a9f3ae769b6a.zip",
+        "main_file": "mrn-contextual-content-editor/mrn-contextual-content-editor.php",
+        "path": "releases/stack-plugins/mrn-contextual-content-editor-0.4.11-a9f3ae769b6a.zip",
+        "sha256": "e9cc3c0103eb6e3e8b988f0bb354939e1bc4f8d5b49b58c4e4355446117f0c06",
+        "size_bytes": 29205
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-contextual-content-editor",
+      "source": {
+        "git_commit": "a9f3ae769b6a7b6003173c226ce82ae4c70986fb",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-contextual-content-editor",
+        "repository": "mrnwebdesigns/mrn-contextual-content-editor"
+      },
+      "target_tier": "optional-shared",
+      "tree": {
+        "file_count": 13,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "3e80fb9ca59d886e4b023fb1e709de9e7f90f91c0c1990b2ae5e703484db4f3d"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.4.11"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-fontawesome-profile-manager-0.5.1-ab46ed996cd6.zip",
+        "main_file": "mrn-fontawesome-profile-manager/mrn-fontawesome-profile-manager.php",
+        "path": "releases/stack-plugins/mrn-fontawesome-profile-manager-0.5.1-ab46ed996cd6.zip",
+        "sha256": "d99439fec3c77fcd87f54215f134231e1367a1cf8ab85adee4edd09eb9b59d6a",
+        "size_bytes": 27401
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-fontawesome-profile-manager",
+      "source": {
+        "git_commit": "ab46ed996cd6d7c02d7bc5ba93badda2587dbeb5",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-fontawesome-profile-manager",
+        "repository": "mrnwebdesigns/mrn-fontawesome-profile-manager"
+      },
+      "target_tier": "optional-integration",
+      "tree": {
+        "file_count": 4,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "aa896d9556e0535d28fa87a074efac0f58426062d74540f1aff4417f5b39aaeb"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.5.1"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-google-fonts-1.0.7-b48ddeb6448d.zip",
+        "main_file": "mrn-google-fonts/mrn-google-fonts.php",
+        "path": "releases/stack-plugins/mrn-google-fonts-1.0.7-b48ddeb6448d.zip",
+        "sha256": "dde36dcfb560d151eed6fe1cce0266f13f10b38e1499bd067e1cf7caadc11fba",
+        "size_bytes": 54599
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-google-fonts",
+      "source": {
+        "git_commit": "b48ddeb6448d970c70f8410d99218dc4170b9320",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-google-fonts",
+        "repository": "mrnwebdesigns/mrn-google-fonts"
+      },
+      "target_tier": "optional-integration",
+      "tree": {
+        "file_count": 20,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "75eb97b3f3e3ad47fcfe896df51237a09e6de81a37241bc3bbfeb4164b519a66"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "1.0.7"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-media-bulk-tools-0.13.1-7c303fb50b35.zip",
+        "main_file": "mrn-media-bulk-tools/mrn-media-bulk-tools.php",
+        "path": "releases/stack-plugins/mrn-media-bulk-tools-0.13.1-7c303fb50b35.zip",
+        "sha256": "90efadf55ba0f8ca0a6f35326e5bda3bb8e1fc2749d14b89cdd400b15e020ec6",
+        "size_bytes": 51260
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-media-bulk-tools",
+      "source": {
+        "git_commit": "7c303fb50b35d798ad1e00d3e98682af2158353a",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-media-bulk-tools",
+        "repository": "mrnwebdesigns/mrn-media-bulk-tools"
+      },
+      "target_tier": "platform-required",
+      "tree": {
+        "file_count": 29,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "b67657c2301e9217dbf3996aab9a001a5fb173d5daa2605dc0539633d715ca94"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.13.1"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-mega-menu-0.17.2-de68c999edad.zip",
+        "main_file": "mrn-mega-menu/mrn-mega-menu.php",
+        "path": "releases/stack-plugins/mrn-mega-menu-0.17.2-de68c999edad.zip",
+        "sha256": "090c1d19154fb0400124c2a1bb77ce30fc64f788b72a950744feadba7d796508",
+        "size_bytes": 63641
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-mega-menu",
+      "source": {
+        "git_commit": "de68c999edade4a4f8c9481c8d2f280d045db6f3",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-mega-menu",
+        "repository": "mrnwebdesigns/mrn-mega-menu"
+      },
+      "target_tier": "optional-shared",
+      "tree": {
+        "file_count": 20,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "031fd28fa2ec0a1e1759923d0f2984a01aaa1b85a8fdbdcb624bb145afa112a4"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.17.2"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-template-inspector-0.2.7-336c4fed9f98.zip",
+        "main_file": "mrn-template-inspector/mrn-template-inspector.php",
+        "path": "releases/stack-plugins/mrn-template-inspector-0.2.7-336c4fed9f98.zip",
+        "sha256": "142fda514d0b368fb11c9c74721c19528775cc3a99d0709fa930dec839d8327e",
+        "size_bytes": 16228
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-template-inspector",
+      "source": {
+        "git_commit": "336c4fed9f98fd23ed9b4cdea681e979c3c544d8",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-template-inspector",
+        "repository": "mrnwebdesigns/mrn-template-inspector"
+      },
+      "target_tier": "development-only",
+      "tree": {
+        "file_count": 7,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "d741fb623b708c799ca08579d432fc8ecd6c84602d7043cbf797a70b5c7dd61d"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.2.7"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-hierarchical-menu-taxonomies-0.1.1-4f950323e35e.zip",
+        "main_file": "mrn-hierarchical-menu-taxonomies/mrn-hierarchical-menu-taxonomies.php",
+        "path": "releases/stack-plugins/mrn-hierarchical-menu-taxonomies-0.1.1-4f950323e35e.zip",
+        "sha256": "271ebc6b75a37402f9f932eaee0bf841b0e5ec340120eb538673d2dc481b3d96",
+        "size_bytes": 4513
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-hierarchical-menu-taxonomies",
+      "source": {
+        "git_commit": "4f950323e35efb86335f7617a9f54b7823f99a55",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-hierarchical-menu-taxonomies",
+        "repository": "mrnwebdesigns/mrn-hierarchical-menu-taxonomies"
+      },
+      "target_tier": "optional-integration",
+      "tree": {
+        "file_count": 6,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "0b5032aefedcc67b78189f00025a60d850878dbbf736d3cdf8cc3f86c069f58e"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.1.1"
+    },
+    {
+      "current_distribution": "catalog-only",
+      "package": {
+        "filename": "mrn-database-retention-1.1.2-b7e1bed0c98a.zip",
+        "main_file": "mrn-database-retention/mrn-database-retention.php",
+        "path": "releases/stack-plugins/mrn-database-retention-1.1.2-b7e1bed0c98a.zip",
+        "sha256": "c7c53456fd0b103053178dfee8668757e8586dde076b820bdb1885ff216b88bb",
+        "size_bytes": 24439
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-database-retention",
+      "source": {
+        "git_commit": "b7e1bed0c98a3934f10848179c0332caff6e6b58",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-database-retention",
+        "repository": "mrnwebdesigns/mrn-database-retention"
+      },
+      "target_tier": "maintenance-only",
+      "tree": {
+        "file_count": 17,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "0794271d3d0dba6288332f1327bde85326d317c320d7516132bd8e7e0952e7e5"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "1.1.2"
+    },
+    {
+      "current_distribution": "catalog-only",
+      "package": {
+        "filename": "mrn-dummy-content-0.3.2-cb1fb7d2702f.zip",
+        "main_file": "mrn-dummy-content/mrn-dummy-content.php",
+        "path": "releases/stack-plugins/mrn-dummy-content-0.3.2-cb1fb7d2702f.zip",
+        "sha256": "1aa96ec7edc789bf922d3e222e59c94ee812af3bc6842f6c357d464cf3c561c2",
+        "size_bytes": 45264
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-dummy-content",
+      "source": {
+        "git_commit": "cb1fb7d2702fab213f8e641781cd4dc5e1e43f17",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-dummy-content",
+        "repository": "mrnwebdesigns/mrn-dummy-content"
+      },
+      "target_tier": "development-only",
+      "tree": {
+        "file_count": 12,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "2bd50cc877d26357f41cb3fa3eb4a98075436d941e2b07bd56218fc09a1f3afd"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.3.2"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-layout-import-export-0.1.3-f48ba7263d5c.zip",
+        "main_file": "mrn-layout-import-export/mrn-layout-import-export.php",
+        "path": "releases/stack-plugins/mrn-layout-import-export-0.1.3-f48ba7263d5c.zip",
+        "sha256": "9b5cba66a6a00280926711a4fb10cfe150ea4d2bfe71e76d161883aac5d476cf",
+        "size_bytes": 18843
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-layout-import-export",
+      "source": {
+        "git_commit": "f48ba7263d5c5d78f79c3d403909aaf5de6e0106",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-layout-import-export",
+        "repository": "mrnwebdesigns/mrn-layout-import-export"
+      },
+      "target_tier": "maintenance-only",
+      "tree": {
+        "file_count": 12,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "70c0c32e40f3d8bc7a228349434d74374d1a88baa95e4a94e681de6695c937cc"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.1.3"
+    },
+    {
+      "current_distribution": "catalog-only",
+      "package": {
+        "filename": "mrn-mainwp-operations-api-0.10.0-032b3e52e5e1.zip",
+        "main_file": "mrn-mainwp-operations-api/mrn-mainwp-operations-api.php",
+        "path": "releases/stack-plugins/mrn-mainwp-operations-api-0.10.0-032b3e52e5e1.zip",
+        "sha256": "5bf4740a13fc28322daa5a7457cd071695c604fcdde5febe5fd018858954a9c6",
+        "size_bytes": 54152
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-mainwp-operations-api",
+      "source": {
+        "git_commit": "032b3e52e5e1c7788009083022f927f1b43631b9",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-mainwp-operations-api",
+        "repository": "mrnwebdesigns/mrn-mainwp-operations-api"
+      },
+      "target_tier": "dashboard-only",
+      "tree": {
+        "file_count": 9,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "ceb425d9a0c05772fdc3992af5834830cfa4ca4ef1776f7a0bc27818ba850dc3"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.10.0"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-tokens-0.1.4-f257964af13d.zip",
+        "main_file": "mrn-tokens/mrn-tokens.php",
+        "path": "releases/stack-plugins/mrn-tokens-0.1.4-f257964af13d.zip",
+        "sha256": "20830ee1eddbb4cdd809d0be1a2847794a96bac9caddc41ce6f2b2513856b715",
+        "size_bytes": 10602
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-tokens",
+      "source": {
+        "git_commit": "f257964af13d2b5f1e428c65ca2311c8f008f9e1",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-tokens",
+        "repository": "mrnwebdesigns/mrn-tokens"
+      },
+      "target_tier": "platform-required",
+      "tree": {
+        "file_count": 4,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "46046071ee41ad1103ff548019561ccc940fed5f53bc1826ecb8755bf20f4f37"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.1.4"
+    },
+    {
+      "current_distribution": "catalog-only",
+      "package": {
+        "filename": "mrn-wp-control-1.1.2-4a0891b14bd9.zip",
+        "main_file": "mrn-wp-control/mrn-wp-control.php",
+        "path": "releases/stack-plugins/mrn-wp-control-1.1.2-4a0891b14bd9.zip",
+        "sha256": "13ab86a1de252c7f58c2983d3bc3580a943e7043bd93c3201ed561bea2fe3aff",
+        "size_bytes": 6957
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-wp-control",
+      "source": {
+        "git_commit": "4a0891b14bd96d74f6595305fd6cb843772fc0ae",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-wp-control",
+        "repository": "mrnwebdesigns/mrn-wp-control"
+      },
+      "target_tier": "dashboard-only",
+      "tree": {
+        "file_count": 9,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "c5371e1f6374abc541b4c3117b0a9c6464287f64472d4a31d3e6ad94cde95977"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "1.1.2"
+    },
+    {
+      "current_distribution": "catalog-only",
+      "package": {
+        "filename": "mrn-wp-control-table-exporter-1.4.4-cebcdde53066.zip",
+        "main_file": "mrn-wp-control-table-exporter/mrn-wp-control-table-exporter.php",
+        "path": "releases/stack-plugins/mrn-wp-control-table-exporter-1.4.4-cebcdde53066.zip",
+        "sha256": "9d6abedf0094abd59c8800e67a3b4f7cc70030ec1f6836b1666b7f4c6ac75fd0",
+        "size_bytes": 17502
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-wp-control-table-exporter",
+      "source": {
+        "git_commit": "cebcdde530667634a908ca90240bc784108cb6a5",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-wp-control-table-exporter",
+        "repository": "mrnwebdesigns/mrn-wp-control-table-exporter"
+      },
+      "target_tier": "dashboard-only",
+      "tree": {
+        "file_count": 16,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "c6c6a687ce4c11b5165d1a14416a0b2b51acf47a3ab7578cd9df1be43159db20"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "1.4.4"
+    },
+    {
+      "current_distribution": "catalog-only",
+      "package": {
+        "filename": "mrn-relevanssi-ai-search-0.6.1-4f2001bc8ed1.zip",
+        "main_file": "mrn-relevanssi-ai-search/mrn-relevanssi-ai-search.php",
+        "path": "releases/stack-plugins/mrn-relevanssi-ai-search-0.6.1-4f2001bc8ed1.zip",
+        "sha256": "31bbc4b109afe1881e2e4ae13ad464171bdcf6a19b768ffda667e06dfd52e2e6",
+        "size_bytes": 29832
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-relevanssi-ai-search",
+      "source": {
+        "git_commit": "4f2001bc8ed1ba188b0f4288ef842dede113536f",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-relevanssi-ai-search",
+        "repository": "mrnwebdesigns/mrn-relevanssi-ai-search"
+      },
+      "target_tier": "optional-integration",
+      "tree": {
+        "file_count": 7,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "5404719c9ec04c8dc472d0a8483830c7cb4c897e6cc94fd3d1d97ffbb5298209"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.6.1"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-config-helper-0.1.74-eb167abaa68e.zip",
+        "main_file": "mrn-config-helper/mrn-config-helper.php",
+        "path": "releases/stack-plugins/mrn-config-helper-0.1.74-eb167abaa68e.zip",
+        "sha256": "cdee274d8465a0f22d242ad4cfaff8c333d1f2ab8a26080b5ccbb039a26f77c1",
+        "size_bytes": 121641
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-config-helper",
+      "source": {
+        "git_commit": "eb167abaa68efd75c28593598d6a5d0b8dc1152c",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
+        "repository": "mrnwebdesigns/mrn-config-helper"
+      },
+      "target_tier": "platform-required",
+      "tree": {
+        "file_count": 30,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "88a818487642af200a33eb1567132e223a1dd7e3e406f06167789f7a49dc180f"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.1.74"
+    },
+    {
+      "current_distribution": "catalog-only",
+      "package": {
+        "filename": "mrn-mainwp-operations-api-0.13.0-dbdde23f182b.zip",
+        "main_file": "mrn-mainwp-operations-api/mrn-mainwp-operations-api.php",
+        "path": "releases/stack-plugins/mrn-mainwp-operations-api-0.13.0-dbdde23f182b.zip",
+        "sha256": "0c5141773eec4f710fc3fa6e7fecef0515c19ccf508cf90a5f788abf10c3f5f5",
+        "size_bytes": 117102
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-mainwp-operations-api",
+      "source": {
+        "git_commit": "dbdde23f182b9f741a80f55a08b09ee7f2e2f57d",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-mainwp-operations-api",
+        "repository": "mrnwebdesigns/mrn-mainwp-operations-api"
+      },
+      "target_tier": "dashboard-only",
+      "tree": {
+        "file_count": 34,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "9d6324fcd204d3ea71c78cf6c9deac54359877b50d5a608c307d149b18b1d795"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.13.0"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-recaptcha-enterprise-manager-0.2.3-1bc4e4424b17.zip",
+        "main_file": "mrn-recaptcha-enterprise-manager/mrn-recaptcha-enterprise-manager.php",
+        "path": "releases/stack-plugins/mrn-recaptcha-enterprise-manager-0.2.3-1bc4e4424b17.zip",
+        "sha256": "a31c33740ac80e06fc08fdca556c7aa3019b5531c7b27f7e417bf60c1d0d44fb",
+        "size_bytes": 60382
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-recaptcha-enterprise-manager",
+      "source": {
+        "git_commit": "1bc4e4424b1736ec85743b4f67a8b8add0f26220",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-recaptcha-enterprise-manager",
+        "repository": "mrnwebdesigns/mrn-recaptcha-enterprise-manager"
+      },
+      "target_tier": "optional-integration",
+      "tree": {
+        "file_count": 18,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "10920eab056e593c98b23fb26e117eab00bb7236bfe4c0a83b65d84f5132c450"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.2.3"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-universal-sticky-bar-1.2.3-5e6be56d5f0c.zip",
+        "main_file": "mrn-universal-sticky-bar/mrn-universal-sticky-bar.php",
+        "path": "releases/stack-plugins/mrn-universal-sticky-bar-1.2.3-5e6be56d5f0c.zip",
+        "sha256": "c70ee886eae47113c89cc4df47cd1c26b0a7ecd2df4bd622b0d591db89ceb2db",
+        "size_bytes": 14791
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-universal-sticky-bar",
+      "source": {
+        "git_commit": "5e6be56d5f0c39a3fd7d478c7a17fc4a17d8b7ab",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-universal-sticky-bar",
+        "repository": "mrnwebdesigns/mrn-universal-sticky-bar"
+      },
+      "target_tier": "platform-required",
+      "tree": {
+        "file_count": 5,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "34d91803558a76efa5ba74571997e99fb6299def6431d8bb88c61c6bdd6adbec"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "1.2.3"
+    },
+    {
+      "current_distribution": "catalog-only",
+      "package": {
+        "filename": "mrn-mainwp-operations-api-0.13.1-ea8a2369881a.zip",
+        "main_file": "mrn-mainwp-operations-api/mrn-mainwp-operations-api.php",
+        "path": "releases/stack-plugins/mrn-mainwp-operations-api-0.13.1-ea8a2369881a.zip",
+        "sha256": "a18c2575d424c31c07b7e5b73cbcef0ccd2c1f60e8bb98fe352886170963fb31",
+        "size_bytes": 117890
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-mainwp-operations-api",
+      "source": {
+        "git_commit": "ea8a2369881a7b3be28f5431919b6af733837f6d",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-mainwp-operations-api",
+        "repository": "mrnwebdesigns/mrn-mainwp-operations-api"
+      },
+      "target_tier": "dashboard-only",
+      "tree": {
+        "file_count": 34,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "98cfc88d9cec5ade6d347f79230bf74ffa099569f4463252521fefeb8047cd02"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.13.1"
     }
-  ]
+  ],
+  "schema_version": 1
 }

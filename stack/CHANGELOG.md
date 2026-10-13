@@ -1,5 +1,59 @@
 # Stack Changelog
 
+## 2026.10.13-fleet-auto-3f3cb0645d92
+
+- Automatic cumulative release from accepted source vector `d740537a9972d24db97034eed99806ec6e07e3218c05e92b63fcc3664b1e7927`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## Unreleased — parent 1.5.15
+
+- Add Location Details fields for address, image, weekday hours, social profiles, phone, Text/SMS/RCS and fax. Hours, social profiles and each contact number can independently use shared Business Information values while preserving saved custom data.
+- Add Fax to Business Information and share contact validation, formatting and weekday hours definitions. Give visible hours controls accessible day-specific names.
+
+## 2026.10.13-fleet-auto-2ff5a8f4dfd0
+
+- Automatic cumulative release from accepted source vector `ccd591e8013b59ab3694409cea840b1e29cca5a0bd2e908797df4acf0b2a3eb4`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.10.13-fleet-auto-6f28a773bbad
+
+- Automatic cumulative release from accepted source vector `c0abf17f75e5fcaeb0740f8a592842154ad3a08bbe6e82494c3349d19c5f460e`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.10.13-fleet-auto-5407434351e6
+
+- Automatic cumulative release from accepted source vector `92ba3ec183f98a10d2d54e3be9695b58a4c5db5901b5b9e0a2fa93e425af55dc`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.10.12-fleet-auto-2552180026cd
+
+- Automatic cumulative release from accepted source vector `0e427c6f00a75bc9623e36f918d7bd96352808a0407ee8263f687543eafc3445`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.10.12-fleet-auto-fe9e47121424
+
+- Automatic cumulative release from accepted source vector `5bedecaa8d2bc9351d7829b2b0fcff104c3590b0978e3d0c6b5e1ead6a8454f6`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.10.12-fleet-auto-ebd48881d0b6
+
+- Automatic cumulative release from accepted source vector `ad0369677f7629e00bac23d752f51d9f6a230840c8dfef14043606f73a64dd43`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.10.12-fleet-auto-9c26b35530de
+
+- Automatic cumulative release from accepted source vector `a8928165e46ce1bd50ce3a17a263b4769746a3837ea55d702e4cce626d80f718`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## Unreleased — parent 1.5.12
+
+- Apply `Name - Original layout name` titles to nested left/right columns, card rows, and tab panel rows, including ACF AJAX refreshes.
+
+## 2026-10-12 Config Helper 0.1.73 selective Fleet update
+
+- Register the exact merged Config Helper 0.1.73 source and deterministic package for upgrade-only Fleet plans. Remove the custom Breadcrumb Trail editor and save handler for every provider while preserving stored overrides, native SEOPress editing and frontend output.
+- Retain Config Helper 0.1.72 and all historical release records for rollback. The cumulative Stack/bootstrap locks remain unchanged; this registration does not deploy any site.
+
 ## Unreleased — parent 1.5.11
 
 - Show named builder rows as `Name - Original layout name` in the editor and ACF AJAX title refreshes. Preserve the configured layout label, unnamed-row fallbacks, and HTML escaping.
