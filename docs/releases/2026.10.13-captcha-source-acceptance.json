@@ -1,0 +1,70 @@
+{
+  "additional_qualification": "Exact 0.2.3 installed no-WooCommerce/no-WPForms QA passed; native authentication and denial checks passed. See retained October 13 local qualification evidence.",
+  "candidate": {
+    "current_distribution": "standard-bootstrap",
+    "package": {
+      "filename": "mrn-recaptcha-enterprise-manager-0.2.3-1bc4e4424b17.zip",
+      "main_file": "mrn-recaptcha-enterprise-manager/mrn-recaptcha-enterprise-manager.php",
+      "path": "releases/stack-plugins/mrn-recaptcha-enterprise-manager-0.2.3-1bc4e4424b17.zip",
+      "sha256": "a31c33740ac80e06fc08fdca556c7aa3019b5531c7b27f7e417bf60c1d0d44fb",
+      "size_bytes": 60382
+    },
+    "runtime_type": "standard-plugin",
+    "slug": "mrn-recaptcha-enterprise-manager",
+    "source": {
+      "git_commit": "1bc4e4424b1736ec85743b4f67a8b8add0f26220",
+      "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-recaptcha-enterprise-manager",
+      "repository": "mrnwebdesigns/mrn-recaptcha-enterprise-manager"
+    },
+    "target_tier": "optional-integration",
+    "tree": {
+      "file_count": 18,
+      "hash_algorithm": "sha256-tree-v1",
+      "sha256": "10920eab056e593c98b23fb26e117eab00bb7236bfe4c0a83b65d84f5132c450"
+    },
+    "update_policy": {
+      "mode": "upgrade-only",
+      "new_install": "requires-separate-owner-authorization-and-plan",
+      "preserve_active_state": true
+    },
+    "version": "0.2.3"
+  },
+  "component": "mrn-recaptcha-enterprise-manager",
+  "decision": "accepted-for-source-promotion",
+  "future_gloves_activity": "excluded",
+  "historical_trial": {
+    "genuine_submissions": 2,
+    "live_cutover_and_preservation_verified": true,
+    "receipt_sha256": {
+      "LIVE-CLOSEOUT.md": "5103d8621612bbc7235b93f9a9bded86d2d244e88f0c1fe10a225491f5f583af",
+      "dev-genuine-tests-summary.json": "e1578acc75619d4aa5de935e6fda3b5ffb6dc190e5296cf8e1dba6de98e68a5b",
+      "live-final-runtime-verification.json": "73528936b16384e47f53c1efed49fb6cc2f7c68481ddf04c43e3fd0a11749423"
+    },
+    "source_commit": "c571bc955c106393a49e0907072c134e45b912a5",
+    "version": "0.2.2",
+    "zip_sha256": "44e43aad96cc4ac55c671cc29821b8ea1a6c59decb024a24e183444c2e6fc7de"
+  },
+  "owner_decision_date": "2026-10-13",
+  "owner_instruction": "It was tested and worked on Gloves; accept the completed trial. Ignore Gloves for future work.",
+  "protection_defaults": "Comments and WooCommerce reviews remain opt-in and default off; WPForms settings are preserved.",
+  "schema_version": 1,
+  "scope": "Plugin source acceptance; automatic cumulative release qualification and publication are still required.",
+  "separate_pending_gate": "New native MainWP CAPTCHA prepare/resume/restore controller and recovery workflow remain unqualified for connected operation; the earlier qualified operator route is not relabeled as that controller.",
+  "site_operations_authorized": false,
+  "successor_comparison": {
+    "changed_files": [
+      "README.md",
+      "assets/manifest.json",
+      "docs/COMMENT-PROTECTION.md",
+      "docs/GLOVES-READINESS.md",
+      "includes/class-mrn-recaptcha-enterprise-manager.php",
+      "mrn-recaptcha-enterprise-manager.php",
+      "readme.txt"
+    ],
+    "differences": "Version metadata, documentation, manifest source identity and locked build provenance only. No new Google trial was performed on 0.2.3.",
+    "identical_browser_assets": true,
+    "identical_manifest_asset_records": true,
+    "identical_protection_code_after_version_metadata_normalization": true,
+    "same_file_set": true
+  }
+}
