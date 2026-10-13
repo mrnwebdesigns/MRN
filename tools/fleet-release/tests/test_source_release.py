@@ -629,4 +629,34 @@ class CoordinatorBoundaries(unittest.TestCase):
         self.assertNotIn('site',json.dumps(value))
 
 
+class GeneratedAnalysisScope(unittest.TestCase):
+    def test_real_phpstan_ignores_generated_caches_and_still_checks_source(self):
+        import subprocess
+        root = Path(__file__).resolve().parents[3]
+        binary = root / 'vendor/bin/phpstan'
+        if not binary.exists():
+            self.skipTest('Install the locked root Composer dependencies for analyzer integration')
+        with tempfile.TemporaryDirectory(prefix='mrn-phpstan-scope-') as temporary:
+            base = Path(temporary)
+            for directory in ('build/phpstan/cache', '.tmp/phpstan/cache'):
+                cache = base / 'component' / directory
+                cache.mkdir(parents=True)
+                (cache / 'generated.php').write_text('<?php this is invalid generated cache;')
+            source = base / 'component/runtime.php'
+            source.write_text('<?php function mrn_scope_fixture() { mrn_missing_source_function(); }')
+            config = base / 'scope.neon'
+            config.write_text('includes:\n    - ' + str(root / 'phpstan.neon.dist') +
+                              '\nparameters:\n    tmpDir: ' + str(base / 'results') + '\n')
+            result = subprocess.run(['php', str(binary), 'analyse', '--no-progress',
+                                     '--error-format=json', '--memory-limit=4G',
+                                     '--configuration=' + str(config), str(base / 'component')],
+                                    cwd=root, capture_output=True, text=True, timeout=120)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            report = json.loads(result.stdout)
+            self.assertEqual(report['errors'], [], report)
+            self.assertEqual(set(report['files']), {str(source)}, report)
+            messages = report['files'][str(source)]['messages']
+            self.assertTrue(any('mrn_missing_source_function' in row['message'] for row in messages), report)
+
+
 if __name__ == '__main__': unittest.main()

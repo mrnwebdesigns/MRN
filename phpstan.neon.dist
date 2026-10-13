@@ -26,6 +26,9 @@ parameters:
         # Test fixtures redefine WordPress globals and execute in separate processes.
         analyseAndScan:
             - */tests/*
+            # Component QA caches contain generated PHP, not deployable source.
+            - */build/phpstan/*
+            - */.tmp/phpstan/*
         analyse:
             - */vendor/*
             - */node_modules/*
