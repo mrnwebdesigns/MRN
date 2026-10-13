@@ -1,5 +1,10 @@
 # Stack Changelog
 
+## 2026.10.13-fleet-auto-3a606e21ce78
+
+- Automatic cumulative release from accepted source vector `543f88074249277fd811ee0afcacb21b852e2bda9ece2f36f82f888bbe34f3b6`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
 ## Unreleased — parent 1.5.16
 
 - Filter authored Shortcode / Embed HTML before running registered shortcodes, preserving provider-generated form styles, scripts, data attributes and accessibility markup while retaining the raw HTML restrictions.
