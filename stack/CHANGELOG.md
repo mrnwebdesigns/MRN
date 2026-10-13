@@ -1,5 +1,10 @@
 # Stack Changelog
 
+## 2026.10.13-fleet-auto-3f3cb0645d92
+
+- Automatic cumulative release from accepted source vector `d740537a9972d24db97034eed99806ec6e07e3218c05e92b63fcc3664b1e7927`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
 ## Unreleased — parent 1.5.15
 
 - Add Location Details fields for address, image, weekday hours, social profiles, phone, Text/SMS/RCS and fax. Hours, social profiles and each contact number can independently use shared Business Information values while preserving saved custom data.
