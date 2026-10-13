@@ -1976,7 +1976,7 @@
         "state": "confirmed-independent-dashboard"
       },
       "target_tier": "dashboard-only",
-      "version": "0.13.3"
+      "version": "0.13.4"
     },
     {
       "classification": "operations-policy",
