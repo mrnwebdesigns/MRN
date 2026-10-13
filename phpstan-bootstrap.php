@@ -182,6 +182,7 @@ foreach ( array(
 	'MRN_LAYOUT_IMPORT_EXPORT_DIR' => __DIR__ . '/plugins/mrn-layout-import-export/',
 	'MRN_LAYOUT_IMPORT_EXPORT_URL' => '',
 	'MRN_TOKENS_DIR' => __DIR__ . '/plugins/mrn-tokens/',
+	'MRN_WPCTE_URL' => '',
 ) as $mrn_analysis_constant => $mrn_analysis_value ) {
 	if ( ! defined( $mrn_analysis_constant ) ) {
 		define( $mrn_analysis_constant, $mrn_analysis_value );

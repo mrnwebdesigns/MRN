@@ -7,6 +7,8 @@ parameters:
     tmpDir: .tmp/phpstan
     bootstrapFiles:
         - phpstan-bootstrap.php
+    stubFiles:
+        - tools/phpstan/nav-menu-items.stub
     scanFiles:
         - vendor/php-stubs/wp-cli-stubs/wp-cli-stubs.php
         - stack/themes/mrn-base-stack/functions.php
@@ -16,7 +18,8 @@ parameters:
         - stack/themes/mrn-base-stack/inc/image-helpers.php
         - mu-plugins/mrn-public-security-hardening/mrn-public-security-hardening.php
     parallel:
-        maximumNumberOfProcesses: 4
+        maximumNumberOfProcesses: 1
+        jobSize: 20
     reportUnmatchedIgnoredErrors: false
     treatPhpDocTypesAsCertain: false
     excludePaths:
