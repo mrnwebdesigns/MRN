@@ -83,6 +83,24 @@ timestamp, and retain valid normalized URL plus fresh-readback behavior. All 234
 controlled tests and direct lint pass. A transport timeout still permits only
 the existing one exact freshness readback, never a sync retry or fallback.
 
+Provider `47de8802681450bd07f0b3610b02919531135601` passes
+[all four jobs](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38616458943),
+including the actual delegated HTTP fresh-sync sequence. Metadata-only probes
+confirmed root-owned signing files blocked the web user. The disposable fixture
+now assigns only its generated MainWP data to that user and creates private keys
+with a private process mask, preserving 0700 directories and 0600 keys. No vendor
+code, TLS verification, credential or production setting changed.
+Gateway `9039d17` pins that fix. Its [combined run](https://github.com/mrnwebdesigns/MRN/actions/runs/38616849742)
+passes discovery/fresh sync, native inspection and exact policy, unchanged
+preparation and denial checks, then marks the approved execution uncertain.
+The gateway expected a null error code where the provider uses an empty string
+on success; it also incorrectly required rollback availability on reverse plans.
+The fix admits only null/empty success codes and requires the exact forward versus
+reverse rollback flag. Every state/site/target/hash/migration/readback gate remains.
+The fixture now mirrors native output; failed or inconsistent outcomes retain
+their locks and never retry. All 237 controlled tests pass. The native lifecycle
+rerun remains required before reporting actual gateway content acceptance.
+
 The new six-group lifecycle harness will require exact snapshot and public HTML
 verification after the approved edit and separate rollback, with individual
 audit attribution and approval/revocation refusals. Only the two backup calls
@@ -95,7 +113,7 @@ unverified.
 
 - Verified canonical MainWP status on wpcontrol.mrndev.io: connected, 107 provider abilities, 52 exposed by a fresh configured connection at 15:06 UTC (previously 48). The abilities resource is policy-filtered too; the unexposed 55 are not enumerated or qualified. Last verified live provider 0.13.4 retains the company-only code policy and QA scope. Native REST post/page reads succeeded using the separately authorized Production Hub bearer lookup; no site write was attempted.
 - Added per-request Google identity delegation, strict cross-language signed claims, POST-only metadata checks, active-membership authorization, audit identity migration, expanded portfolio/site reads, exact native content reads, code inspection, central GitHub source handling and protected QA/code lifecycle adapters.
-- Full Node 24 suite passed 234 checks. Tests include signature/identity forgery, outsider and revoked denial, request isolation, unsafe GET metadata rejection, live-state drift, backup/approval gates, exact snapshot edit/rollback, pre-PR QA versus merged-source QA and live approvals, rejection before source publication on failed preliminary QA or disabled writes, lost response lock retention, bounded receipt extraction and token narrowing. Site-directory reads require portfolio access; ignored-update reads reject empty, different-site or expanded selectors. Read-only OAuth consent cannot authorize the eight change-lifecycle tools. These are controlled integration fixtures, not ordinary-member ChatGPT acceptance.
+- Full Node 24 suite passed 237 checks. Tests include signature/identity forgery, outsider and revoked denial, request isolation, unsafe GET metadata rejection, live-state drift, backup/approval gates, exact snapshot edit/rollback, pre-PR QA versus merged-source QA and live approvals, rejection before source publication on failed preliminary QA or disabled writes, lost response lock retention, bounded receipt extraction and token narrowing. Site-directory reads require portfolio access; ignored-update reads reject empty, different-site or expanded selectors. Read-only OAuth consent cannot authorize the eight change-lifecycle tools. These are controlled integration fixtures, not ordinary-member ChatGPT acceptance.
 - Configuration preflight and startup use the same QA-policy loader before opening SQLite state. Fourteen CLI/loader regressions cover legacy read-only, code-only, content-only and combined configurations; missing, malformed and interchanged policy files; central QA/source repository pins; bounded non-secret output; and rejection before state creation. Snapshot workflows require no source repository. This is static configuration validation, not credential, hosted-runtime or live Google acceptance.
 - Direct ESLint passed. The staged MRN task QA gate is required for the final index. A broader MRN QA invocation resolved the parent monorepo and reported static Pass, with PHPStan missing-stub advisory; it skipped service ESLint/npm rows because no root package exists. Its report is not a substitute for direct Node tests/lint or live provider/runtime checks.
 - There is no new browser UI in the gateway. Its hosted WordPress/API, browser, accessibility and performance acceptance remains unverified; the separate disposable provider/runner evidence below does not establish live gateway acceptance. Central service credentials, runner/App provisioning, automatic access policy, workspace tool refresh and deployment are pending concrete approval gates.

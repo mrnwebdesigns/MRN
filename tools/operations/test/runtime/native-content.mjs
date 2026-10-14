@@ -11,7 +11,7 @@ import { delegationCanonical } from '../../src/delegation.mjs';
 import { ProtectedContentQa, contentQaPolicySchema } from '../../src/content-qa.mjs';
 import { ContentWorkflow } from '../../src/content-workflow.mjs';
 import { responseEvidence } from '../../src/probe.mjs';
-import { toolNames } from '../../src/mainwp.mjs';
+import { payload, toolNames } from '../../src/mainwp.mjs';
 
 const origin = 'https://child.fixture.example.invalid';
 export function nativeFixture({ privateDirectory, certificate, runtimeCli }) {
@@ -36,7 +36,7 @@ export function nativeFixture({ privateDirectory, certificate, runtimeCli }) {
   const policy = contentQaPolicySchema.parse({ version: 1, repository: 'mrnwebdesigns/mrn-code-qa-runner',
     workflowCommit: 'd'.repeat(40), actor: 'fixture[bot]', keyId: 'disposable-content', publicKeyBase64, engineCommit: 'e'.repeat(40),
     profiles: [{ siteUrl: origin, profile: profile.descriptor, targets: [{ target: profile.target, selector: profile.selector }] }] });
-  const qa = new ProtectedContentQa(null, policy), stats = { qa: 0, backups: 0, publicReads: 0 };
+  const qa = new ProtectedContentQa(null, policy), stats = { qa: 0, backups: 0, publicReads: 0, executions: [] };
   // Exercise request reconstruction and signature validation with a synthetic
   // signer. This does not replace the separately tested protected runner.
   qa.dispatch = async (request, authorize) => {
@@ -62,7 +62,21 @@ export function nativeFixture({ privateDirectory, certificate, runtimeCli }) {
   const wrapClient = client => {
     const original = client.callTool.bind(client);
     client.callTool = async (request, schema, options) => {
-      if (![toolNames.backup, toolNames.backupStatus].includes(request.name)) return original(request, schema, options);
+      if (![toolNames.backup, toolNames.backupStatus].includes(request.name)) {
+        const response = await original(request, schema, options);
+        if (request.name === toolNames.contentExecute && stats.executions.length < 2) {
+          const result = payload(response);
+          // Bounded fixture diagnostics only: never log records, hashes,
+          // receipts, identities or arbitrary upstream messages.
+          stats.executions.push({
+            state: ['completed', 'failed', 'uncertain'].includes(result.state) ? result.state : 'other',
+            errorCode: [null, '', 'mrn_content_uncertain', 'mrn_content_profile', 'mrn_content_precondition'].includes(result.error_code) ? result.error_code : 'other',
+            changed: result.changed === true, rollbackAvailable: result.rollback_available === true,
+            candidateHashMatches: typeof result.current_sha256 === 'string' && result.current_sha256 === result.candidate_sha256,
+          });
+        }
+        return response;
+      }
       assert.equal(process.env.GITHUB_ACTIONS, 'true');
       assert.equal(request.arguments.site_id, site.site_id); requireWriteScope(client.actor); await client.verifyStaff();
       let result;
@@ -153,6 +167,7 @@ export async function checkNativeContent({ fixture, token, call, toolResult, pas
   const execute = async op => {
     const approved = await invoke('approve_operation', { operationId: op.id, planDigest: op.planDigest }); assert.equal(approved.status, 'approved');
     await invoke('execute_operation', { operationId: op.id }); const completed = await settle(op.id);
+    if (completed.status !== 'verified') process.stderr.write(JSON.stringify({ nativeExecution: fixture.stats.executions }) + '\n');
     assert.equal(completed.status, 'verified', JSON.stringify(completed.error));
     assert.equal(completed.result.contentSnapshotVerified, true); assert.equal(completed.result.publicHtmlContentVerified, true);
     assert.equal(completed.result.liveBrowserVerified, false);

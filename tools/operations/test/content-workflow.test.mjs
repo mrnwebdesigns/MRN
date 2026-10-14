@@ -50,7 +50,8 @@ function configured(t) {
       if (state.lostResponse) throw new Error('timed out after applying');
       return response({ operation_id: p.operation_id, state: 'completed', site_id: p.site_id, site_url: p.site_url, target: p.target,
         before_sha256: p.before_sha256, candidate_sha256: p.candidate_sha256, current_sha256: p.candidate_sha256, changed: true,
-        migration_artifact: p.migration_artifact, affected_paths: p.affected_paths, rollback_available: true, error_code: null });
+        migration_artifact: p.migration_artifact, affected_paths: p.affected_paths,
+        rollback_available: p.rollback_operation_id === '', error_code: '', ...state.executionResult });
     }
     const result = await call(request);
     if (name === toolNames.backupStatus && state.afterBackup) state.afterBackup();
@@ -88,10 +89,38 @@ test('content preview, approved edit and separate rollback verify snapshots and 
   assert.equal(op.status, 'prepared'); assert.equal(op.preview.before, original.post_content); assert.equal(f.contentState.applied, 0);
   assert.equal(JSON.stringify(op).includes('signature_base64'), false); assert.equal(JSON.stringify(op).includes('before_snapshot'), false);
   const result = await execute(f, op); assert.equal(result.status, 'verified'); assert.equal(result.result.publicHtmlContentVerified, true);
+  assert.equal(result.result.rollbackAvailable, true);
   assert.equal(result.result.liveBrowserVerified, false); assert.equal(result.result.publicVerificationMethod, 'exact-selector-html-text'); assert.equal(f.contentState.applied, 1);
   const rollback = await f.service.prepareRollback(person, { operationId: op.id, requestKey: 'content-rollback' }); await f.service.jobs.get(rollback.id);
   const rolled = await execute(f, f.service.get(person, rollback.id));
   assert.equal(rolled.status, 'verified'); assert.deepEqual(f.contentState.snapshot, original); assert.equal(f.state.backups, 2); assert.equal(f.contentState.qa, 2);
+  assert.equal(rolled.result.rollbackAvailable, false);
+  await assert.rejects(() => f.service.prepareRollback(person, { operationId: rolled.id, requestKey: 'reverse-again' }), { code: 'ROLLBACK_UNAVAILABLE' });
+});
+
+test('the nullable success error code remains compatible with the frozen content contract', async t => {
+  const f = configured(t), op = await prepared(f); f.contentState.executionResult = { error_code: null };
+  assert.equal((await execute(f, op)).status, 'verified');
+});
+
+test('failed, inconsistent or uncertain provider outcomes retain the lock and never retry the content mutation', async t => {
+  for (const result of [{ error_code: 'mrn_content_uncertain' }, { error_code: 'unexpected-error' }, { error_code: ' ' },
+    { state: 'uncertain' }, { state: 'failed' }, { current_sha256: '0'.repeat(64) }, { rollback_available: false }]) {
+    const f = configured(t), op = await prepared(f); f.contentState.executionResult = result;
+    const completed = await execute(f, op);
+    assert.equal(completed.status, 'uncertain'); assert.equal(completed.error.code, 'CONTENT_OUTCOME_UNVERIFIED');
+    assert.equal(f.contentState.applied, 1); f.store.assertLocked(f.store.get(op.id));
+    await f.service.execute(person, { operationId: op.id }); assert.equal(f.contentState.applied, 1);
+  }
+});
+
+test('a reverse plan cannot claim another rollback is available', async t => {
+  const f = configured(t), op = await prepared(f); await execute(f, op);
+  const rollback = await f.service.prepareRollback(person, { operationId: op.id, requestKey: 'reverse-flag' });
+  await f.service.jobs.get(rollback.id); f.contentState.executionResult = { rollback_available: true };
+  const reversed = await execute(f, f.service.get(person, rollback.id));
+  assert.equal(reversed.status, 'uncertain'); f.store.assertLocked(f.store.get(rollback.id));
+  assert.equal(f.contentState.applied, 2);
 });
 
 test('failed content QA, unknown ownership and live drift never dispatch a write', async t => {

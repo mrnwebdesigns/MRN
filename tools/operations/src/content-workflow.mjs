@@ -146,10 +146,10 @@ export class ContentWorkflow {
     requireThat(receipt, 'BACKUP_UNVERIFIED', 'The remote database backup was not verified before expiry.');
     await authorize(); this.proof(op); await this.fresh(session, op);
     const result = await contentCall(session, 'execute-content-change-v1', { operation_id: p.operation_id, reviewed_digest: p.digest, confirm: true, backup_receipt: receipt });
-    requireThat(result.operation_id === p.operation_id && result.state === 'completed' && result.error_code === null && typeof result.changed === 'boolean'
+    requireThat(result.operation_id === p.operation_id && result.state === 'completed' && [null, ''].includes(result.error_code) && typeof result.changed === 'boolean'
       && result.site_id === p.site_id && result.site_url === p.site_url && contentSame(result.target, p.target)
       && result.before_sha256 === p.before_sha256 && result.candidate_sha256 === p.candidate_sha256 && result.current_sha256 === p.candidate_sha256
-      && result.rollback_available && contentSame(result.migration_artifact, p.migration_artifact) && contentSame(result.affected_paths, p.affected_paths),
+      && result.rollback_available === (p.rollback_operation_id === '') && contentSame(result.migration_artifact, p.migration_artifact) && contentSame(result.affected_paths, p.affected_paths),
     'CONTENT_OUTCOME_UNVERIFIED', 'Content execution did not verify the exact outcome. Retain the lock and do not retry.');
     const after = await inspectContentTarget(session, p.target); this.qualifyPolicy(after, p.target);
     requireThat(contentSame(after.inspected.snapshot, p.candidate_snapshot) && contentSame(after.inspected.affected_paths, p.affected_paths), 'CONTENT_READBACK', 'Fresh content readback differs from the approved result.');
@@ -164,7 +164,7 @@ export class ContentWorkflow {
     requireThat(rest.status === 200 && rest.restHealthy === true, 'PUBLIC_VERIFICATION', 'Post-change WordPress API health is unverified.');
     return { providerOperationId: p.operation_id, snapshotSha256: p.candidate_sha256, backupVerified: true, contentSnapshotVerified: true,
       publicHtmlContentVerified: true, publicVerificationMethod: 'exact-selector-html-text', liveBrowserVerified: false,
-      qaReportSha256: op.qaProof.claims.qa_report_sha256, migration: p.migration_artifact, rollbackAvailable: true };
+      qaReportSha256: op.qaProof.claims.qa_report_sha256, migration: p.migration_artifact, rollbackAvailable: result.rollback_available };
   }
   async rollback(actor, { operationId, requestKey }) {
     const previous = this.service.store.get(operationId), p = previous.plan?.provider;
