@@ -29,7 +29,7 @@ The four-field challenge is nonce/expires_at/authenticated_connection_sha256/pol
 
 The source config keeps legacy deployment behavior until a reviewed migration enables googleWorkspace and delegation together. Failure or absence of the new provider denies authentication; there is no silent fallback. Identity keys are owner-only, non-symlink Ed25519 files. Audit events retain the validated individual subject, Google subject and email without tokens or argument payloads.
 
-Native content reads repeat live staff authorization after each REST response and at the service return boundary. Revocation during a pending read withholds its result. Known MainWP content/QA/backup/lock/Directory blockers retain safe, fixed chat explanations; raw upstream messages are never reflected. Safe Mode and uncertain outcomes remain hard stops with no alternate-route retry. The full gateway suite passes 232 controlled tests; this is source evidence, not live revoked-account acceptance.
+Native content reads repeat live staff authorization after each REST response and at the service return boundary. Revocation during a pending read withholds its result. Known MainWP content/QA/backup/lock/Directory blockers retain safe, fixed chat explanations; raw upstream messages are never reflected. A sync response must confirm one exact synchronized ID/URL with zero errors; HTTP 200 alone is insufficient. Safe Mode and uncertain outcomes remain hard stops with no alternate-route retry. The full gateway suite passes 234 controlled tests; this is source evidence, not live revoked-account acceptance.
 
 ## Capability mapping
 

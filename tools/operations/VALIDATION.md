@@ -65,7 +65,23 @@ including real exact-URL resolution, one-site numeric sync and fresh exact URL,
 ID, connection and timestamp readback. URL reads bind one current authorized
 record and recheck the returned identity; malformed/alias/ambiguous/disconnected
 targets and response drift are denied. Sync and mutations stay numeric-only.
-The gateway now pins that immutable fix; its combined lifecycle rerun is pending.
+Gateway `b7851e1215b4a661eab32602e7de0171e095c99a` pins that fix and passes
+controlled contracts and the [Code gate](https://github.com/mrnwebdesigns/MRN/actions/runs/38613140903).
+Its [combined run 38613140657](https://github.com/mrnwebdesigns/MRN/actions/runs/38613140657)
+passes the ten authorization cases, native provider checks and initial exact URL
+resolution, but fails the same-URL readback after HTTP sync. The sync route
+returns HTTP 200; the following read returns `mrn_delegation_target`. No gateway
+content mutation ran. HTTP-originated child sync remains unqualified even though
+the provider's CLI-context native sequence passes.
+
+The gateway now checks the canonical sync body as well as subsequent freshness:
+no queue, one synchronized record matching the resolved ID/normalized URL, zero
+errors and consistent counts. A failed or malformed sync returns fixed
+`SYNC_UNVERIFIED` without reflecting provider messages. Two new tests reject
+failed/queued/malformed/wrong-site/multiple-site results even with a fresh
+timestamp, and retain valid normalized URL plus fresh-readback behavior. All 234
+controlled tests and direct lint pass. A transport timeout still permits only
+the existing one exact freshness readback, never a sync retry or fallback.
 
 The new six-group lifecycle harness will require exact snapshot and public HTML
 verification after the approved edit and separate rollback, with individual

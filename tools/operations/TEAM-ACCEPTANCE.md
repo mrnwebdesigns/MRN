@@ -59,6 +59,12 @@ content mutation. It does not pass content acceptance. Its planned edit/rollback
 checks use synthetic OAuth/Directory, QA signatures and backup creation; even
 after they pass, every live row above will still require its own evidence.
 
+At gateway `b7851e1` with provider `aeb0f2c`,
+[run 38613140657](https://github.com/mrnwebdesigns/MRN/actions/runs/38613140657)
+passes the first URL read and dispatches the HTTP sync, then fails the fresh
+same-URL readback. No gateway content mutation ran. The provider's passing
+CLI-context native sequence does not close this HTTP integration failure.
+
 Protected runner `0fd0ff7` separately passed disposable code/content QA and both
 required report uploads in [run 38593836989, attempt 2](https://github.com/mrnwebdesigns/mrn-code-qa-runner/actions/runs/38593836989/attempts/2).
 The eight downloaded reports and two HTTP parity manifests verify fixture

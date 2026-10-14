@@ -25,7 +25,8 @@ export class FixtureMainwp {
       if (!this.data.stale) this.data.lastSync = new Date().toISOString();
       this.persist();
       if (this.data.syncTimeout) throw new Error('Request timed out');
-      return response({ success: true });
+      const selected = this.data.directory?.find(s => s.id === a.site_ids[0]) || { id: this.data.id, url: this.data.url, name: 'Example' };
+      return response(this.data.syncResult ?? { queued: false, synced: [selected], errors: [], total_synced: 1, total_errors: 0 });
     }
     if (name === toolNames.updates) return response(this.data.updateInventory ?? {
       site_id: this.data.id, site_url: this.data.url, updates: [],

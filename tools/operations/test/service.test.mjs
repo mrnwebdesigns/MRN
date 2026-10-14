@@ -96,6 +96,35 @@ test('sync timeout uses one exact readback; stale state does not become current'
   await assert.rejects(() => f.service.inspect(actor, { website: 'example' }), { code: 'STALE_INVENTORY' });
 });
 
+test('native sync failure, queues and malformed target evidence stop before fresh readback even with a current timestamp', async t => {
+  const f = setup(); t.after(() => f.close());
+  const valid = { queued: false, synced: [{ id: f.state.id, url: f.state.url }], errors: [], total_synced: 1, total_errors: 0 };
+  for (const result of [
+    { ...valid, errors: [{ code: 'mainwp_sync_exception', message: 'private-sync-sentinel' }], total_errors: 1 },
+    { ...valid, queued: true }, { ...valid, synced: [], total_synced: 0 },
+    { ...valid, synced: [{ id: f.state.id + 1, url: f.state.url }] },
+    { ...valid, synced: [{ id: f.state.id, url: 'https://other.test' }] },
+    { ...valid, synced: [{ id: f.state.id, url: 'https://private-sync-sentinel@other.test' }] },
+    { ...valid, synced: [...valid.synced, ...valid.synced], total_synced: 2 },
+    { ...valid, total_errors: 1 }, { ...valid, total_synced: '1' }, { success: true }, {},
+  ]) {
+    f.state.syncResult = result; f.state.calls.length = 0;
+    await assert.rejects(() => f.service.inspect(actor, { website: 'example' }), error => {
+      assert.equal(error.code, 'SYNC_UNVERIFIED'); assert.ok(!error.message.includes('sentinel')); return true;
+    });
+    assert.deepEqual(f.state.calls, [toolNames.site, toolNames.sync]);
+    assert.equal(f.state.backups, 0); assert.equal(f.state.mutations, 0);
+  }
+});
+
+test('native one-site sync confirmation permits canonical trailing slash then requires fresh readback', async t => {
+  const f = setup(); t.after(() => f.close());
+  f.state.syncResult = { queued: false, synced: [{ id: f.state.id, url: `${f.state.url}/` }], errors: [], total_synced: 1, total_errors: 0 };
+  const session = new MainwpSession(f.client, f.registry, f.store, actor, f.registry.resolve(actor, 'example'));
+  assert.equal((await session.fresh()).id, f.state.id);
+  assert.deepEqual(f.state.calls, [toolNames.site, toolNames.sync, toolNames.site]);
+});
+
 test('partial and absent components remain qualification cases without automatic installation', async t => {
   const f = setup(); t.after(() => f.close()); f.state.partial = true;
   const report = await f.service.inspect(actor, { website: 'example' });

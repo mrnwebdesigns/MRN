@@ -92,6 +92,17 @@ export function validateStatus(result) {
   return { connected: true, dashboardHost: status.dashboardHost, abilitiesCount: status.abilitiesCount };
 }
 
+function validateSync(result, siteId, siteUrl) {
+  let exact = false;
+  if (Array.isArray(result?.synced) && result.synced.length === 1 && result.synced[0]?.id === siteId
+    && typeof result.synced[0]?.url === 'string') {
+    try { exact = normalizeSiteUrl(result.synced[0].url) === siteUrl; } catch { /* Untrusted URL details stay private. */ }
+  }
+  requireThat(result?.queued === false && result.total_synced === 1 && result.total_errors === 0
+    && Array.isArray(result.errors) && result.errors.length === 0 && exact,
+  'SYNC_UNVERIFIED', 'MainWP did not confirm a successful sync of this exact website. Fresh-state checks remain blocked; do not switch targets or access routes.');
+}
+
 export async function connectMainwp(config, environment = process.env) {
   requireThat(config.command && Array.isArray(config.args) && config.cwd, 'MAINWP_CONFIG', 'Configure the hosted MainWP process, arguments, working directory and credential references explicitly.');
   const env = { PATH: environment.PATH || '/usr/local/bin:/usr/bin:/bin' };
@@ -171,6 +182,9 @@ export class MainwpSession {
     if ([toolNames.backup, toolNames.update, toolNames.rollback].includes(name) && (name === toolNames.backup || args.user_confirmed === true)) this.onMutation();
     if ([toolNames.codeExecute, toolNames.contentExecute].includes(name)) this.onMutation();
     const result = await this.guarded(`mainwp:${name}`, () => this.client.callTool(request, schema, { timeout: 120000, ...options }));
+    // Native MainWP can return HTTP 200 with per-site sync errors. A transport
+    // response alone must never count as a successful synchronization.
+    if (name === toolNames.sync) validateSync(payload(result), this.siteId, this.target.url);
     if (name === toolNames.site) {
       const site = payload(result); const id = Number(site.id ?? site.site_id);
       requireThat(Number.isInteger(id) && id > 0 && normalizeSiteUrl(site.url ?? site.site_url ?? '') === this.target.url && site.status === 'connected', 'TARGET_MISMATCH', 'MainWP did not return the exact connected website.');
