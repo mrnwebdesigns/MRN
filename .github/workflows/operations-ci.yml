@@ -84,6 +84,11 @@ jobs:
           npm ci --ignore-scripts --prefix tools/operations
           npm ci --ignore-scripts --prefix .runtime/transport
           npm run build --prefix .runtime/transport
+      - name: Verify private capture transport size and deadlines
+        env:
+          MRN_GATEWAY_MCP_SOURCE: ${{ github.workspace }}/.runtime/transport
+          MRN_CAPTURE_TRANSPORT_REPORT: ${{ runner.temp }}/capture-transport-report.json
+        run: node tools/operations/test/runtime/check-capture-transport.mjs
       - name: Exercise actual gateway, MCP and WordPress authorization
         env:
           MRN_DISPOSABLE_API_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/provider-hook.sh
@@ -117,5 +122,6 @@ jobs:
           path: |
             ${{ runner.temp }}/gateway-provider-report.json
             ${{ runner.temp }}/gateway-native-content-report.json
+            ${{ runner.temp }}/capture-transport-report.json
           if-no-files-found: error
           retention-days: 14

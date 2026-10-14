@@ -112,6 +112,20 @@ simulated package bytes and an injected plan builder; the real adapter uses the
 canonical Python builder. Existing Fleet and source-builder contract tests remain
 the source of validation for ZIP/source/baseline construction.
 
+CI also runs `test/runtime/check-capture-transport.mjs` through the unmodified,
+pinned MainWP MCP subprocess and SDK over authenticated loopback HTTPS. It
+verifies an exact 4,400,000-byte synthetic capture artifact, refusal of responses
+over the existing 10 MiB HTTP limit, incomplete JSON, header/body timeouts and
+zero retries. A response delayed beyond the default 30-second upstream timeout
+passes with an explicit bounded 150-second upstream deadline. The SDK call
+deadline alone does not configure that HTTP timeout.
+
+This is transport evidence only: its inventory is synthetic and does not prove
+provider capture, parity eligibility, a protected qualification worker, or team
+acceptance. The protected content QA runner exists; automatic qualification
+dispatch and its authenticated capture connection remain unfinished. No
+production setting or consumer authority is enabled by this test.
+
 ## Operator setup for the hosted service
 
 1. Reuse the existing DigitalOcean MRN Apps service at
