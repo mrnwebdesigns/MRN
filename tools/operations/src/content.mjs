@@ -35,6 +35,7 @@ export class NativeContentReader {
       }
       const body = JSON.parse(Buffer.concat(chunks).toString('utf8'));
       requireThat(body && typeof body === 'object' && (!Object.hasOwn(body, 'success') || [1, true].includes(body.success)), 'CONTENT_UNAVAILABLE', 'MainWP did not confirm the content read.');
+      await authorize();
       return body.data;
     } catch (error) {
       if (error instanceof OpsError) throw error;

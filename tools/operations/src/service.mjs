@@ -98,7 +98,7 @@ export class Operations {
       this.store.audit(actor, target, '', 'content:read', 'attempted');
       const authorize = async () => { this.registry.current(actor, target, 'read'); await this.verifyStaff?.(actor); };
       const result = recordId ? await this.content.read(site, kind, recordId, authorize) : await this.content.search(site, kind, search, maximum, authorize);
-      this.registry.current(actor, target, 'read');
+      await authorize();
       this.store.audit(actor, target, '', 'content:read', 'returned');
       return result;
     } catch (error) { this.store.audit(actor, target, '', 'content:read', 'failed'); throw error; }

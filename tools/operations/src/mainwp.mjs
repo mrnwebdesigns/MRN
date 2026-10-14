@@ -33,17 +33,53 @@ export function withoutSecrets(value) {
   return Object.fromEntries(Object.entries(value).filter(([key]) => !/(password|secret|token|credential|authorization|cookie|license.?key|api.?key|private.?key|access.?key|package_base64|^nonce$|^receipt$|^(?:package|download|notes|custom_fields|meta)(?:_url|_link)?$)/i.test(key)).map(([key, item]) => [key, withoutSecrets(item)]));
 }
 
+const providerBlockers = Object.freeze({
+  SAFE_MODE_BLOCKED: ['SAFE_MODE_BLOCKED', 'MainWP Safe Mode blocked this action. MRN services must review the restriction; do not retry through another route.'],
+  mrn_content_disabled: ['CONTENT_DISABLED', 'Content editing is not enabled in MRN services. Staff do not need another account or enrollment.'],
+  mrn_content_profile: ['CONTENT_PROFILE_UNQUALIFIED', 'MRN services have not qualified the current rendering dependencies for this exact content target. This change remains blocked.'],
+  mrn_content_ownership: ['CONTENT_OWNERSHIP', 'The content owner or rendering adapter is not qualified. ACF and builder content require their own supported workflow.'],
+  mrn_content_target: ['CONTENT_TARGET_MISMATCH', 'The provider could not verify the exact content record or retained operation. Resolve and inspect the target again.'],
+  mrn_content_size: ['CONTENT_SIZE', 'The complete content request exceeds the qualified limit. No content was truncated.'],
+  mrn_content_precondition: ['CONTENT_PRECONDITION', 'The current content no longer matches the reviewed snapshot. Inspect it again and prepare a fresh preview.'],
+  mrn_content_qa: ['CONTENT_QA_REQUIRED', 'The exact content plan lacks a valid protected QA receipt. A new qualifying QA run is required.'],
+  mrn_content_approval: ['CONTENT_APPROVAL', 'The provider could not verify the current operator, exact approval or required execution evidence. Inspect the operation before proceeding.'],
+  mrn_content_backup: ['BACKUP_UNVERIFIED', 'A fresh, verified remote database backup for this exact website is required.'],
+  mrn_content_locked: ['SITE_LOCKED', 'Another code or content operation still holds this website lock. Inspect its outcome; do not force-unlock or retry the change.'],
+  mrn_content_consumed: ['CONTENT_CONSUMED', 'This operation or its evidence has already been consumed. Read its retained outcome; do not execute it again.'],
+  mrn_content_uncertain: ['CONTENT_OUTCOME_UNVERIFIED', 'The provider could not verify the operation outcome. Retain its lock and rollback evidence; do not retry the change.'],
+  mrn_content_unsupported: ['CONTENT_ADAPTER_UNAVAILABLE', 'The required typed MainWP content adapter is unavailable. MRN services must complete the integration.'],
+  mrn_code_directory_inactive: ['STAFF_ACCESS_DENIED', 'The Google Workspace account is inactive, revoked or no longer matches the verified MRN identity. Access is denied.'],
+  mrn_code_directory_unavailable: ['STAFF_VERIFICATION_UNAVAILABLE', 'Current Google Workspace membership could not be verified. Access remains blocked until verification is available.'],
+  mrn_code_directory_setup: ['STAFF_VERIFICATION_UNAVAILABLE', 'MRN services have not configured the Google Workspace membership check. Access remains blocked.'],
+  mrn_code_directory_auth: ['STAFF_VERIFICATION_UNAVAILABLE', 'The central Google Workspace membership check is unavailable. MRN services must restore it.'],
+  mrn_code_directory_key: ['STAFF_VERIFICATION_UNAVAILABLE', 'The central Google Workspace membership check is unavailable. MRN services must restore it.'],
+  mrn_code_directory_integrity: ['STAFF_VERIFICATION_UNAVAILABLE', 'The central Google Workspace membership check is unavailable. MRN services must restore it.'],
+});
 export function integrationError(error) {
   if (error instanceof OpsError) return error;
   // Classify privately, without reflecting arbitrary remote text or credentials.
   const message = String(error?.message || '');
+  // The pinned MCP transport retains WordPress's code in this fixed prefix.
+  // Only recognize exact codes or that prefix, never instructions/substrings in
+  // arbitrary error prose. Caller-visible text comes solely from this table.
+  const code = typeof error?.code === 'string' && Object.hasOwn(providerBlockers, error.code) ? error.code
+    : /^(?:MainWP failed: )?Ability execution failed: ([a-zA-Z0-9_]+) - /.exec(message)?.[1];
+  if (code && Object.hasOwn(providerBlockers, code)) return new OpsError(...providerBlockers[code]);
   if (/timeout|timed out/i.test(message)) return new OpsError('DOWNSTREAM_TIMEOUT', 'MainWP timed out. Read back exact state before retrying any mutation.');
   if (/401|403|authentication|permission|unauthoriz/i.test(message)) return new OpsError('MAINWP_ACCESS', 'MainWP rejected authentication or permission. Repair the approved connection; no fallback was attempted.');
   if (/\bmrn_mainwp_stack_report_unavailable\b/.test(message)) return new OpsError('STACK_REPORT_UNAVAILABLE', 'The child site did not return a Stack runtime report. Read-only qualification may explain what is missing.');
   return new OpsError('MAINWP_FAILED', 'The approved MainWP connection failed or returned an unsupported response.');
 }
 export function payload(result, { allowError = false } = {}) {
-  try { return parseToolResult(result, 'MainWP', { allowError }).payload; } catch (error) { throw integrationError(error); }
+  try {
+    const parsed = parseToolResult(result, 'MainWP', { allowError: true });
+    if (parsed.isError && !allowError) {
+      const remote = parsed.payload?.error;
+      throw integrationError({ code: typeof remote === 'string' ? remote : remote?.code,
+        message: typeof remote?.message === 'string' ? remote.message : parsed.payload?.message ?? (typeof remote === 'string' ? remote : '') });
+    }
+    return parsed.payload;
+  } catch (error) { throw integrationError(error); }
 }
 export function validateStatus(result) {
   let status;
