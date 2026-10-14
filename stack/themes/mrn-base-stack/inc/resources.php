@@ -170,6 +170,25 @@ function mrn_base_stack_register_resource_field_group() {
 						),
 					),
 				),
+				array(
+					'key'               => 'field_mrn_resource_use_provider_poster',
+					'label'             => 'Use Provider Poster',
+					'name'              => 'resource_use_provider_poster',
+					'type'              => 'true_false',
+					'ui'                => 0,
+					'message'           => 'Enabled',
+					'default_value'     => 0,
+					'instructions'      => 'On save, use the YouTube or Vimeo poster as the featured image when available. Turn off to restore or choose a manual featured image. Google Drive and direct video files use the manual image.',
+					'conditional_logic' => array(
+						array(
+							array(
+								'field'    => 'field_mrn_resource_source',
+								'operator' => '==',
+								'value'    => 'remote_video',
+							),
+						),
+					),
+				),
 			),
 			'location'              => array(
 				array(
@@ -193,6 +212,152 @@ function mrn_base_stack_register_resource_field_group() {
 add_action( 'acf/init', 'mrn_base_stack_register_resource_field_group' );
 
 /**
+ * Import a provider's poster through WordPress media, only during an editor save.
+ *
+ * Discovery is disabled and thumbnail hosts are restricted to the providers'
+ * image CDNs. WordPress validates HTTP destinations and uploaded image bytes.
+ *
+ * @param string $url     Supported remote video URL.
+ * @param int    $post_id Resource ID.
+ * @return int Attachment ID, or zero when no public provider poster is available.
+ */
+function mrn_base_stack_import_resource_provider_poster( $url, $post_id ) {
+	$video    = mrn_base_stack_get_resource_remote_video( $url );
+	$provider = $video['provider'] ?? '';
+	$hosts    = array(
+		'youtube' => array( 'i.ytimg.com', 'img.youtube.com' ),
+		'vimeo'   => array( 'i.vimeocdn.com' ),
+	);
+	if ( empty( $hosts[ $provider ] ) || ! current_user_can( 'upload_files' ) ) {
+		return 0;
+	}
+
+	// WordPress's YouTube oEmbed provider does not match /embed/ URLs.
+	$provider_url = 'youtube' === $provider ? 'https://www.youtube.com/watch?v=' . rawurlencode( basename( (string) wp_parse_url( $video['url'], PHP_URL_PATH ) ) ) : $url;
+	$data         = _wp_oembed_get_object()->get_data( $provider_url, array( 'discover' => false, 'width' => 1280 ) );
+
+	$thumbnail = is_object( $data ) && isset( $data->thumbnail_url ) && is_string( $data->thumbnail_url ) ? esc_url_raw( $data->thumbnail_url, array( 'https' ) ) : '';
+	$parts     = wp_parse_url( $thumbnail );
+	if ( ! is_array( $parts ) || 'https' !== ( $parts['scheme'] ?? '' ) || ! in_array( strtolower( $parts['host'] ?? '' ), $hosts[ $provider ], true ) || isset( $parts['user'] ) || isset( $parts['pass'] ) || isset( $parts['port'] ) ) {
+		return 0;
+	}
+
+	require_once ABSPATH . 'wp-admin/includes/file.php';
+	require_once ABSPATH . 'wp-admin/includes/media.php';
+	require_once ABSPATH . 'wp-admin/includes/image.php';
+
+	// Bound both the save delay and download size; do not follow CDN redirects.
+	$limit_download = static function ( $args, $request_url ) use ( $thumbnail ) {
+		if ( $thumbnail === $request_url ) {
+			$args['limit_response_size'] = 5 * MB_IN_BYTES;
+			$args['redirection']         = 0;
+		}
+		return $args;
+	};
+	add_filter( 'http_request_args', $limit_download, 10, 2 );
+	$temporary = download_url( $thumbnail, 8 );
+	remove_filter( 'http_request_args', $limit_download, 10 );
+	if ( is_wp_error( $temporary ) ) {
+		return 0;
+	}
+	if ( filesize( $temporary ) >= 5 * MB_IN_BYTES ) {
+		wp_delete_file( $temporary );
+		return 0;
+	}
+
+	$extensions = array( 'image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp', 'image/gif' => 'gif' );
+	$mime       = wp_get_image_mime( $temporary );
+	if ( ! isset( $extensions[ $mime ] ) ) {
+		wp_delete_file( $temporary );
+		return 0;
+	}
+	$title = sanitize_text_field( wp_strip_all_tags( get_the_title( $post_id ) ) );
+	$image = media_handle_sideload(
+		array(
+			'name'     => 'resource-' . $post_id . '-video-poster.' . $extensions[ $mime ],
+			'tmp_name' => $temporary,
+		),
+		$post_id,
+		$title
+	);
+	if ( is_wp_error( $image ) ) {
+		wp_delete_file( $temporary );
+		return 0;
+	}
+	update_post_meta( $image, '_source_url', $thumbnail );
+	update_post_meta( $image, '_wp_attachment_image_alt', $title );
+	return (int) $image;
+}
+
+/**
+ * Apply the optional provider image after ACF saves, preserving manual selection.
+ *
+ * ACF owns request nonce validation. This hook reads saved fields, never request
+ * input, and also requires the current user's post-edit capability.
+ *
+ * @param int|string $post_id ACF post ID.
+ * @return void
+ */
+function mrn_base_stack_sync_resource_provider_poster( $post_id ) {
+	$post_id = is_numeric( $post_id ) ? (int) $post_id : 0;
+	if ( $post_id <= 0 || 'resource' !== get_post_type( $post_id ) || wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) || ! current_user_can( 'edit_post', $post_id ) || ! function_exists( 'get_field' ) ) {
+		return;
+	}
+
+	$cached  = get_post_meta( $post_id, '_mrn_resource_provider_poster', true );
+	$cached  = is_array( $cached ) ? $cached : array();
+	$auto_id = absint( $cached['attachment_id'] ?? 0 );
+	$active  = (bool) get_post_meta( $post_id, '_mrn_resource_provider_poster_active', true );
+	$current = (int) get_post_thumbnail_id( $post_id );
+	$enabled = 'remote_video' === get_field( 'resource_source', $post_id ) && get_field( 'resource_use_provider_poster', $post_id );
+	$poster  = 0;
+	if ( $enabled ) {
+		// Remember a newly selected manual image before applying the automatic one.
+		if ( ! $active || $current !== $auto_id || ! metadata_exists( 'post', $post_id, '_mrn_resource_manual_thumbnail' ) ) {
+			update_post_meta( $post_id, '_mrn_resource_manual_thumbnail', $current );
+		}
+		$url    = get_field( 'resource_video_remote', $post_id );
+		$url    = is_string( $url ) ? esc_url_raw( trim( $url ), array( 'http', 'https' ) ) : '';
+		$source = hash( 'sha256', $url );
+		if ( $source === ( $cached['source'] ?? '' ) && 'trash' !== get_post_status( $auto_id ) && wp_attachment_is_image( $auto_id ) ) {
+			$poster = $auto_id;
+		} else {
+			$poster = mrn_base_stack_import_resource_provider_poster( $url, $post_id );
+			if ( $poster ) {
+				update_post_meta( $post_id, '_mrn_resource_provider_poster', array( 'source' => $source, 'attachment_id' => $poster ) );
+			}
+		}
+	}
+	if ( $poster ) {
+		set_post_thumbnail( $post_id, $poster );
+		update_post_meta( $post_id, '_mrn_resource_provider_poster_active', 1 );
+	} elseif ( $active && $auto_id && $current === $auto_id ) {
+		// An unavailable or changed provider must never retain the wrong poster.
+		$manual = absint( get_post_meta( $post_id, '_mrn_resource_manual_thumbnail', true ) );
+		if ( $manual && 'trash' !== get_post_status( $manual ) && wp_attachment_is_image( $manual ) ) {
+			set_post_thumbnail( $post_id, $manual );
+		} else {
+			delete_post_thumbnail( $post_id );
+		}
+	}
+	if ( ! $poster ) {
+		delete_post_meta( $post_id, '_mrn_resource_provider_poster_active' );
+	}
+}
+add_action( 'acf/save_post', 'mrn_base_stack_sync_resource_provider_poster', 20 );
+
+/**
+ * Run after WordPress REST authentication and ACF additional fields are saved.
+ *
+ * @param WP_Post $post Updated Resource.
+ * @return void
+ */
+function mrn_base_stack_sync_resource_provider_poster_after_rest_save( $post ) {
+	mrn_base_stack_sync_resource_provider_poster( $post->ID );
+}
+add_action( 'rest_after_insert_resource', 'mrn_base_stack_sync_resource_provider_poster_after_rest_save', 20 );
+
+/**
  * Resolve a supported remote video using the existing Stack embed contract.
  *
  * @param mixed $url Video URL.
@@ -211,8 +376,9 @@ function mrn_base_stack_get_resource_remote_video( $url ) {
 		$embed = mrn_base_stack_get_video_embed( $url );
 		if ( ! empty( $embed['embed_url'] ) ) {
 			return array(
-				'url'  => $embed['embed_url'],
-				'type' => 'google_drive' === $embed['provider'] ? 'external' : 'video',
+				'url'      => $embed['embed_url'],
+				'type'     => 'google_drive' === $embed['provider'] ? 'external' : 'video',
+				'provider' => $embed['provider'],
 			);
 		}
 	}
