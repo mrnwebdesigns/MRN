@@ -6,15 +6,40 @@ This is an execution plan, not deployment authorization. The policy source and
 MainWP verification contract are prepared in the repository, but no child site
 is changed by this plan or its feature commit.
 
-The read-only Dashboard snapshot taken on 2026-09-22 showed 106 registered
-sites: 104 connected and two disconnected. The disconnected snapshot entries
-were site ID 115 (`https://44ec8d3fc1.nxcli.io/`) and site ID 79
-(`https://eloghomes.tempurl.host/`). These IDs and states are diagnostic only;
-the execution task must re-query the Dashboard and resolve every target from
-its exact current URL instead of reusing this snapshot.
+The read-only Dashboard snapshot taken on 2026-10-14 showed 104 registered
+sites: 102 connected and two disconnected. This count is diagnostic only; the
+execution task must re-query the Dashboard and resolve every target from its
+exact current URL instead of reusing this snapshot. The P&P source then had 90
+Yes, 16 No, and 16 blank records. Seventy-seven MainWP sites matched a Yes row
+by exact URL. Sites with blank source URLs, environment aliases, or no exact
+match require explicit reconciliation before a write.
+
+The exact-match breakdown from that snapshot is 77 P&P=Yes sites, five sites
+whose source row says No (MainWP IDs 75, 12, 28, 38, and 48), one site with a
+blank P&P value (ID 55), and 21 MainWP sites without an exact source URL. The
+No sites are Artisan Quality Roofing, Bassett CPAs, First Choice Roofing, Jon
+Parker Real Estate, and Oasis Mental Wellness; ID 55 is Quality Seamless
+Gutters. Do not treat the 21 unmatched URLs as Yes by inference.
+
+Potential aliases requiring identity confirmation include IDs 34, 36, 46, 50,
+84, and 86, which correspond by domain/name to Yes rows with blank source URLs;
+ID 116 (`dosterandbrown.mrndev.io`), which appears to be the Yes production
+site's development environment; and IDs 13 and 58, which appear related to the
+Yes Best Day Psych production site. Six Yes source rows have no exact MainWP
+site: Citadel Contractors, eLoghomes, ezReconcile, Gray Flex, SnapRite, and
+Strategic Revenue Group. Reconcile every alias and missing target against the
+current source and MainWP identity before a write.
 
 ## Target Contract
 
+- Apply the remote backup profile only to sites with a verified **Yes** for
+  P&P. Use the current MRN Website Information source and exact MainWP URLs;
+  do not use the legacy overlapping MainWP tags as the selector.
+- For a site without **Yes**, disable all Updraft remote destinations, set
+  routine file and database schedules to `manual`, and mark the site as
+  excluded from the MRN routine policy. Preserve disabled credentials and
+  historical remote objects; deleting historical objects is a separate
+  reviewed operation requiring its own explicit approval.
 - Staging and production run one combined file/database backup daily.
 - Development/review environments use manual scheduling but retain the same
   mandatory database-only backup gate before every remote write.
@@ -76,7 +101,7 @@ operational batch. Follow the shared state machine in
 6. Immediately before the first write, create a labeled database-only Updraft
    backup, send it to remote storage, and require the successful remote receipt.
 7. Submit the exact guarded install confirmation for that one site and release.
-8. Read the runtime report again. Require plugin and loader version `0.6.0`,
+8. Read the runtime report again. Require plugin and loader version `0.7.0`,
    `backup_policy.compliant=true`, daily or manual scheduling appropriate to the
    environment, file/database caps `23`/`100`, the exact advanced rules, local
    deletion, core exclusion, unique S3 prefix, and advanced-retention activity.
@@ -84,6 +109,11 @@ operational batch. Follow the shared state machine in
    expected site-owned remote objects. Do not use a shared-root remote scan.
 10. Run the applicable public/admin smoke checks and MRN QA, then store the
     preflight, backup receipt, release result, readback, and verification result.
+
+For an excluded site, verify the runtime reports `management_mode=excluded`,
+both routine schedules are `manual`, the Updraft remote-service list is empty,
+and all S3 instances are inactive. Confirm the operation reports that existing
+remote objects were not deleted.
 
 ## Canary and Expansion
 
@@ -106,6 +136,7 @@ is safe.
 ## Completion Criteria
 
 The rollout is complete only when every registered target is either verified
-compliant or explicitly recorded as blocked with an owner, reason, and next
-action. Dashboard connectivity, a successful source merge, or a successful
-package install alone is not compliance proof.
+compliant because P&P is **Yes**, verified excluded because P&P is not **Yes**,
+or explicitly recorded as blocked with an owner, reason, and next action.
+Dashboard connectivity, a successful source merge, or a successful package
+install alone is not compliance proof.

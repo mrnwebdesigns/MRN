@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 define('ABSPATH', __DIR__ . '/');
 define('WP_CONTENT_DIR', __DIR__);
+define('HOUR_IN_SECONDS', 3600);
 
 $mrn_test_actions   = array();
 $mrn_test_events    = array();
@@ -23,6 +24,9 @@ $mrn_test_home_url = 'https://trilliant.mrndev.io/';
 $mrn_test_environment = 'production';
 $mrn_test_host_signal = 'production';
 $mrn_test_backup_hostname = getenv('MRN_TEST_BACKUP_HOSTNAME');
+$mrn_test_history = array();
+$mrn_test_s3_filename = '';
+$mrn_test_s3_delete_calls = 0;
 if (false !== $mrn_test_backup_hostname) {
 	define('MRN_UPDRAFT_BACKUP_HOSTNAME', $mrn_test_backup_hostname);
 }
@@ -60,10 +64,84 @@ function get_option(string $name, $default = false) {
 	return $mrn_test_intervals[$name] ?? $default;
 }
 
-function update_option(string $name, $value): bool {
+function update_option(string $name, $value, $autoload = null): bool {
 	global $mrn_test_intervals;
 	$mrn_test_intervals[$name] = $value;
 	return true;
+}
+
+function add_option(string $name, $value, $unused = '', $autoload = null): bool {
+	global $mrn_test_intervals;
+	if (array_key_exists($name, $mrn_test_intervals)) {
+		return false;
+	}
+	$mrn_test_intervals[$name] = $value;
+	return true;
+}
+
+function delete_option(string $name): bool {
+	global $mrn_test_intervals;
+	unset($mrn_test_intervals[$name]);
+	return true;
+}
+
+function wp_unslash(string $value): string {
+	return $value;
+}
+
+function wp_json_encode($value, int $flags = 0) {
+	return json_encode($value, $flags);
+}
+
+final class WP_Error {
+	private string $error_code;
+
+	public function __construct(string $error_code, string $message = '') {
+		$this->error_code = $error_code;
+	}
+
+	public function get_error_code(): string {
+		return $this->error_code;
+	}
+}
+
+function is_wp_error($value): bool {
+	return $value instanceof WP_Error;
+}
+
+final class UpdraftPlus_Backup_History {
+	public static function get_history() {
+		global $mrn_test_history;
+		return $mrn_test_history;
+	}
+}
+
+final class UpdraftPlus_Storage_Methods_Interface {
+	public static function get_storage_objects_and_ids(array $services): array {
+		global $mrn_test_s3_storage;
+		return in_array('s3', $services, true) ? array('s3' => array('object' => $mrn_test_s3_storage, 'instance_settings' => array('instance' => array(
+			'path' => 'mrn-backups/sites/' . mrn_updraft_backup_policy_get_sanitized_hostname(),
+			'accesskey' => 'fixture-access-key',
+			'secretkey' => 'fixture-secret-key',
+		)))) : array();
+	}
+}
+
+final class MRN_Test_S3_Client {
+	public function getBucket(string $bucket, string $prefix, $marker, int $limit): array {
+		global $mrn_test_s3_filename;
+		return array(array('name' => 'sites/' . mrn_updraft_backup_policy_get_sanitized_hostname() . '/' . $mrn_test_s3_filename, 'size' => 1));
+	}
+}
+
+final class MRN_Test_S3_Storage {
+	public function set_options(array $settings, bool $use_settings, string $instance_id): void {}
+	public function delete(array $files, bool $use_settings, array $options): bool {
+		global $mrn_test_s3_delete_calls;
+		++$mrn_test_s3_delete_calls;
+		return true;
+	}
+	public function getS3(...$arguments): MRN_Test_S3_Client { return new MRN_Test_S3_Client(); }
 }
 
 function wp_clear_scheduled_hook(string $hook): void {
@@ -78,6 +156,10 @@ function mrn_environment_runtime_host_signal($host = null): string {
 
 function sanitize_key(string $key): string {
 	return strtolower((string) preg_replace('/[^a-z0-9_\-]/', '', $key));
+}
+
+function sanitize_text_field(string $value): string {
+	return trim($value);
 }
 
 function untrailingslashit(string $value): string {
@@ -233,4 +315,126 @@ foreach (array('plugins', 'themes', 'uploads', 'others', 'mu-plugins') as $entit
 		exit(1);
 	}
 }
+
+$mrn_test_intervals[MRN_UPDRAFT_BACKUP_POLICY_EXCLUDED_OPTION] = '1';
+$mrn_test_intervals['updraft_interval'] = 'weekly';
+$mrn_test_intervals['updraft_interval_database'] = 'weekly';
+mrn_updraft_backup_policy_enforce_settings();
+if ('weekly' !== $mrn_test_intervals['updraft_interval'] || 'weekly' !== $mrn_test_intervals['updraft_interval_database']) {
+	fwrite(STDERR, "An excluded site had its Updraft schedule changed.\n");
+	exit(1);
+}
+$excluded_status = mrn_updraft_backup_policy_get_retention_status();
+if (empty($excluded_status['excluded']) || 'excluded' !== ($excluded_status['management_mode'] ?? '') || !empty($excluded_status['compliant'])) {
+	fwrite(STDERR, "The runtime report did not identify an explicit policy exclusion.\n");
+	exit(1);
+}
+if (mrn_updraft_backup_policy_prune_expired_routine_backup(false, 'files', $expired_timestamp, 'plugins', 0, array(), 1)) {
+	fwrite(STDERR, "An excluded site's backup history was pruned by the MRN policy.\n");
+	exit(1);
+}
+if (123 !== mrn_updraft_local_retention_filter_files_start_time(123)) {
+	fwrite(STDERR, "An excluded site's backup start time was rewritten by the MRN policy.\n");
+	exit(1);
+}
+
+$mrn_test_intervals['updraft_service'] = array('s3', 'dropbox');
+$mrn_test_intervals['updraft_interval'] = 'daily';
+$mrn_test_intervals['updraft_interval_database'] = 'daily';
+$preview_request = array(
+	'protocol'     => 1,
+	'operation'    => 'preview_decommission',
+	'expected_host' => 'trilliant.mrndev.io',
+	'request_ref'  => null,
+	'payload'      => array(),
+);
+$preview = MRN_Updraft_MainWP_Policy::dispatch(
+	array(),
+	array(
+		'function' => 'extra_execution',
+		MRN_Updraft_MainWP_Policy::REQUEST_KEY => wp_json_encode($preview_request, JSON_UNESCAPED_SLASHES),
+	)
+);
+if (empty($preview['ok']) || array('s3', 'dropbox') !== ($preview['data']['remote_services_before'] ?? null) || array() !== ($preview['data']['remote_services_after'] ?? null) || false !== ($preview['data']['historical_remote_objects_deleted'] ?? null)) {
+	fwrite(STDERR, "The MainWP preview did not accurately show remote decommission scope.\n");
+	exit(1);
+}
+
+$valid_s3_settings = $mrn_test_intervals['updraft_s3'] ?? array();
+$mrn_test_intervals['updraft_s3'] = array('settings' => 'invalid-shape');
+$invalid_preview = MRN_Updraft_MainWP_Policy::dispatch(array(), array(
+	'function' => 'extra_execution',
+	MRN_Updraft_MainWP_Policy::REQUEST_KEY => wp_json_encode($preview_request, JSON_UNESCAPED_SLASHES),
+));
+if (!empty($invalid_preview['ok']) || 'mrn_updraft_decommission_state_unavailable' !== ($invalid_preview['error_code'] ?? '')) {
+	fwrite(STDERR, "The decommission preview accepted an unknown S3 storage shape.\n");
+	exit(1);
+}
+$mrn_test_intervals['updraft_s3'] = $valid_s3_settings;
+
+$mrn_test_intervals[MRN_UPDRAFT_BACKUP_POLICY_EXCLUDED_OPTION] = '0';
+$mrn_test_intervals['updraft_interval'] = 'daily';
+$mrn_test_intervals['updraft_interval_database'] = 'daily';
+$mrn_test_intervals['updraft_service'] = array('s3', 'dropbox');
+$mrn_test_intervals['updraft_s3'] = array('settings' => array('instance' => array(
+	'path' => 'mrn-backups/sites/' . $expected_slug,
+	'accesskey' => 'fixture-access-key',
+	'secretkey' => 'fixture-secret-key',
+	'instance_enabled' => '1',
+)));
+$mrn_test_s3_storage = new MRN_Test_S3_Storage();
+$nonce = 'abcdef123456';
+$mrn_test_s3_filename = 'backup_' . gmdate('Y-m-d-H-i') . '_trilliant_' . $nonce . '-db.gz';
+$backup_timestamp = time();
+$mrn_test_history = array($backup_timestamp => array(
+	'nonce' => $nonce,
+	'db' => array($mrn_test_s3_filename),
+	'label' => 'MRN MainWP database-only backup',
+	'service' => array('s3'),
+	'service_instance_ids' => array('s3' => array('instance')),
+	'native' => true,
+));
+$preview_request['payload'] = array();
+$preview_request['request_ref'] = null;
+$preview_request['operation'] = 'preview_decommission';
+$preview = MRN_Updraft_MainWP_Policy::dispatch(array(), array(
+	'function' => 'extra_execution',
+	MRN_Updraft_MainWP_Policy::REQUEST_KEY => wp_json_encode($preview_request, JSON_UNESCAPED_SLASHES),
+));
+if (empty($preview['ok'])) {
+	fwrite(STDERR, "The backup-backed decommission preview failed.\n");
+	exit(1);
+}
+$write_request = array(
+	'protocol' => 1,
+	'operation' => 'decommission_policy',
+	'expected_host' => 'trilliant.mrndev.io',
+	'request_ref' => '00000000-0000-4000-8000-000000000001',
+	'payload' => array(
+		'plan_sha256' => $preview['data']['plan_sha256'],
+		'as_of' => $preview['data']['as_of'],
+		'backup_nonce' => $nonce,
+	),
+);
+$decommissioned = MRN_Updraft_MainWP_Policy::dispatch(array(), array(
+	'function' => 'extra_execution',
+	MRN_Updraft_MainWP_Policy::REQUEST_KEY => wp_json_encode($write_request, JSON_UNESCAPED_SLASHES),
+));
+if (
+	empty($decommissioned['ok']) ||
+	'decommissioned' !== ($decommissioned['data']['status'] ?? '') ||
+	array() !== $mrn_test_intervals['updraft_service'] ||
+	'0' !== $mrn_test_intervals['updraft_s3']['settings']['instance']['instance_enabled'] ||
+	'manual' !== $mrn_test_intervals['updraft_interval'] ||
+	'manual' !== $mrn_test_intervals['updraft_interval_database'] ||
+	'1' !== $mrn_test_intervals[MRN_UPDRAFT_BACKUP_POLICY_EXCLUDED_OPTION] ||
+	false !== $decommissioned['data']['historical_remote_objects_deleted'] ||
+	1 !== count($mrn_test_history) ||
+	0 !== $mrn_test_s3_delete_calls ||
+	array() !== $mrn_test_events
+) {
+	fwrite(STDERR, "The backup-gated decommission did not disable destinations and schedules without deleting history.\n");
+	exit(1);
+}
+
 echo "Updraft retention, isolation, expiry, and schedule regression passed.\n";
