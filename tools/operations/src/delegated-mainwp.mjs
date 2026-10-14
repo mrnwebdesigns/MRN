@@ -10,7 +10,7 @@ const readAbilities = new Set([
   'list-sites', 'get-site', 'get-sites-basic', 'get-site-plugins', 'get-site-themes', 'get-site-updates',
   'get-site-security', 'get-site-changes', 'get-abandoned-plugins', 'get-abandoned-themes', 'get-site-client', 'get-site-costs',
   'count-sites', 'list-clients', 'count-clients', 'get-client', 'get-client-sites', 'count-client-sites', 'get-client-costs',
-  'list-tags', 'get-tag', 'get-tag-sites', 'get-tag-clients', 'list-ignored-updates',
+  'list-tags', 'get-tag', 'get-tag-sites', 'get-tag-clients', 'list-ignored-updates', 'list-updates', 'get-batch-job-status',
 ].map(name => `mainwp/${name}-v1`).concat([
   'get-stack-runtime-report', 'qualify-stack-site', 'get-stack-deployment-agent-status', 'get-google-fonts-status',
   'inspect-backup-retention-policy', 'inspect-code-file', 'get-code-operation',

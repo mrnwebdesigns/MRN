@@ -80,3 +80,44 @@ test('site directory search is bounded and requires portfolio read permission', 
     await assert.rejects(() => f.service.portfolioDetails(actor, input));
   assert.equal(dispatches, 1);
 });
+
+test('aggregate updates retain portfolio authorization, bounded filters and cached-inventory scope', async t => {
+  const f = setup(); t.after(f.close);
+  await assert.rejects(() => f.service.portfolioDetails(actor, { section: 'updates' }), { code: 'FORBIDDEN' });
+  f.policy.members[0].portfolio = { sources: ['mainwp'], actions: ['read'] };
+  const list = f.client.listTools.bind(f.client);
+  f.client.listTools = async () => ({ tools: [...(await list()).tools, { name: 'list_updates_v1', inputSchema: { type: 'object' } }] });
+  let calls = 0;
+  f.client.callTool = async ({ name, arguments: args }) => {
+    calls++; assert.equal(name, 'list_updates_v1'); assert.deepEqual(args, { page: 2, per_page: 100, types: ['plugins', 'themes'] });
+    return { content: [{ type: 'text', text: JSON.stringify({ updates: [{ site_id: 1, name: 'Example', current_version: '1', new_version: '2', token: 'private' }], total: 101 }) }] };
+  };
+  const result = await f.service.portfolioDetails(actor, { section: 'updates', page: 2, types: ['plugins', 'themes'] });
+  assert.deepEqual(result.data.updates[0], { site_id: 1, name: 'Example', current_version: '1', new_version: '2' });
+  assert.match(result.scope, /Cached.*no child sync/);
+  for (const input of [{ section: 'updates', types: [] }, { section: 'updates', types: ['plugins', 'plugins'] }, { section: 'updates', types: ['shell'] },
+    { section: 'updates', search: 'site' }, { section: 'updates', recordId: 1 }, { section: 'sites', types: ['plugins'] }])
+    await assert.rejects(() => f.service.portfolioDetails(actor, input));
+  assert.equal(calls, 1);
+});
+
+test('batch status reads select one bounded existing ID and discard results after revocation', async t => {
+  const f = setup(); t.after(f.close);
+  await assert.rejects(() => f.service.portfolioDetails(actor, { section: 'batch_job', batchJobId: 'sync_fixture-123' }), { code: 'FORBIDDEN' });
+  f.policy.members[0].portfolio = { sources: ['mainwp'], actions: ['read'] };
+  const list = f.client.listTools.bind(f.client);
+  f.client.listTools = async () => ({ tools: [...(await list()).tools, { name: 'get_batch_job_status_v1', inputSchema: { type: 'object' } }] });
+  let calls = 0;
+  f.client.callTool = async ({ name, arguments: args }) => {
+    calls++; assert.equal(name, 'get_batch_job_status_v1'); assert.deepEqual(args, { job_id: 'sync_fixture-123' });
+    if (calls === 2) f.policy.members[0].enabled = false;
+    return { content: [{ type: 'text', text: JSON.stringify({ status: 'running', confirmation_token: 'private' }) }] };
+  };
+  const result = await f.service.portfolioDetails(actor, { section: 'batch_job', batchJobId: 'sync_fixture-123' });
+  assert.deepEqual(result.data, { status: 'running' }); assert.equal(result.batchJobId, 'sync_fixture-123');
+  for (const input of [{ section: 'batch_job' }, { section: 'batch_job', batchJobId: '../job' }, { section: 'batch_job', batchJobId: 'sync_fixture-123', page: 2 },
+    { section: 'batch_job', batchJobId: 'sync_fixture-123', search: 'site' }, { section: 'sites', batchJobId: 'sync_fixture-123' }])
+    await assert.rejects(() => f.service.portfolioDetails(actor, input));
+  assert.equal(calls, 1);
+  await assert.rejects(() => f.service.portfolioDetails(actor, { section: 'batch_job', batchJobId: 'sync_fixture-123' }), { code: 'FORBIDDEN' });
+});

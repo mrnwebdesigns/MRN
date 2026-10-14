@@ -91,3 +91,12 @@ test('unsafe GET metadata or missing confirmation boundary blocks before sending
     assert.equal(f.state.calls.length, 0);
   }
 });
+
+test('portfolio updates and existing batch status use signed read delegation only', async () => {
+  const f = fixture(), client = f.delegated('123');
+  await client.callTool({ name: 'list_updates_v1', arguments: { page: 1, per_page: 100, types: ['plugins'] } });
+  await client.callTool({ name: 'get_batch_job_status_v1', arguments: { job_id: 'sync_fixture-123' } });
+  assert.deepEqual(f.state.calls, [delegationTools.challenge, delegationTools.read, delegationTools.challenge, delegationTools.read]);
+  assert.deepEqual(f.state.dispatched.map(d => d.ability), ['mainwp/list-updates-v1', 'mainwp/get-batch-job-status-v1']);
+  assert.ok(f.state.dispatched.every(d => d.person.google_sub === '123'));
+});

@@ -11,7 +11,8 @@ export const detailSections = Object.freeze({
 });
 export const portfolioSections = Object.freeze({ sites: 'list_sites_v1', clients: 'list_clients_v1', client: 'get_client_v1', client_sites: 'get_client_sites_v1',
   client_costs: 'get_client_costs_v1', client_site_count: 'count_client_sites_v1', client_count: 'count_clients_v1',
-  tags: 'list_tags_v1', tag: 'get_tag_v1', tag_sites: 'get_tag_sites_v1', tag_clients: 'get_tag_clients_v1', site_count: 'count_sites_v1' });
+  tags: 'list_tags_v1', tag: 'get_tag_v1', tag_sites: 'get_tag_sites_v1', tag_clients: 'get_tag_clients_v1', site_count: 'count_sites_v1',
+  updates: 'list_updates_v1', batch_job: 'get_batch_job_status_v1' });
 const mapped = new Map([
   ['get_sites_basic_v1', 'list_websites'], ['get_site_v1', 'inspect_website'], ['sync_sites_v1', 'inspect_website'],
   ...Object.values(detailSections).map(name => [name, 'read_website_details']),
@@ -52,7 +53,7 @@ export async function capabilityInventory(client, authorize) {
   };
 }
 
-export async function portfolioDetails(client, authorize, { section, recordId, page = 1, search = '' }) {
+export async function portfolioDetails(client, authorize, { section, recordId, page = 1, search = '', types, batchJobId }) {
   requireThat(Object.hasOwn(portfolioSections, section), 'CAPABILITY_DENIED', 'Choose a supported portfolio directory section.');
   requireThat(Number.isSafeInteger(page) && page >= 1 && page <= 100 && typeof search === 'string' && search.length <= 200,
     'MAINWP_SCHEMA', 'Use bounded directory filters.');
@@ -60,18 +61,28 @@ export async function portfolioDetails(client, authorize, { section, recordId, p
   const needsRecord = ['client', 'client_sites', 'client_costs', 'client_site_count', 'tag', 'tag_sites', 'tag_clients'].includes(section);
   requireThat(!needsRecord || Number.isSafeInteger(recordId) && recordId > 0, 'TARGET_REQUIRED', 'Choose one exact client or tag ID from the directory.');
   requireThat(needsRecord || recordId === undefined, 'TARGET_MISMATCH', 'This directory section does not accept a record ID.');
+  requireThat(section === 'batch_job' ? typeof batchJobId === 'string' && /^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/.test(batchJobId) && page === 1 && !search
+    : batchJobId === undefined, 'TARGET_MISMATCH', 'Use one bounded existing batch job ID only with the batch_job section.');
+  requireThat(types === undefined || section === 'updates' && Array.isArray(types) && types.length > 0 && types.length <= 4
+    && new Set(types).size === types.length && types.every(type => ['core', 'plugins', 'themes', 'translations'].includes(type)),
+  'MAINWP_SCHEMA', 'Update-type filters apply only to the updates section.');
+  requireThat(section !== 'updates' || !search, 'MAINWP_SCHEMA', 'Aggregate updates do not accept a text search.');
   const args = {};
   if (needsRecord) args[section.startsWith('client') ? 'client_id_or_email' : 'tag_id'] = recordId;
-  if (['sites', 'clients', 'tags', 'tag_sites', 'tag_clients'].includes(section)) Object.assign(args, { page, per_page: 100 });
+  if (['sites', 'clients', 'tags', 'tag_sites', 'tag_clients', 'updates'].includes(section)) Object.assign(args, { page, per_page: 100 });
   if (['sites', 'clients', 'tags'].includes(section) && search) args.search = search;
+  if (section === 'updates' && types) args.types = types;
+  if (section === 'batch_job') args.job_id = batchJobId;
   const inventory = await capabilityInventory(client, authorize);
   requireThat(inventory.capabilities.some(c => c.capability === name), 'CAPABILITY_MISSING', 'The approved backend does not expose this directory capability.');
   await authorize();
   const response = await client.callTool({ name, arguments: args }, undefined, { timeout: 60000 });
   await authorize();
   // Parsed by the same sanitized MainWP boundary as exact-site workflows.
-  return { section, recordId, page, observedAt: new Date().toISOString(), data: withoutSecrets(payload(response)),
-    scope: 'Portfolio directory information. Site inventory and health require an exact-site fresh inspection.' };
+  return { section, recordId, page, ...(batchJobId ? { batchJobId } : {}), observedAt: new Date().toISOString(), data: withoutSecrets(payload(response)),
+    scope: section === 'updates' ? 'Cached Dashboard update inventory across the portfolio; no child sync was performed. Inspect the exact site freshly before an action.'
+      : section === 'batch_job' ? 'Status of an existing Dashboard batch job. This read does not start, resume or retry work.'
+        : 'Portfolio directory information. Site inventory and health require an exact-site fresh inspection.' };
 }
 
 export async function websiteDetails(session, section) {

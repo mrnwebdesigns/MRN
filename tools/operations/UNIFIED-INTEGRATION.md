@@ -42,7 +42,7 @@ Observed 2026-10-14T10:57:16.039Z. Mapping is against this source checkout; conn
 | get_site_costs_v1 | read_website_details | Read |
 | count_sites_v1 | read_portfolio_details | Read |
 | get_sites_basic_v1 | list_websites | Read |
-| list_updates_v1 | Not yet integrated | Read |
+| list_updates_v1 | read_portfolio_details (cached updates) | Read |
 | list_ignored_updates_v1 | read_website_details | Read |
 | get_site_updates_v1 | read_website_details | Read |
 | list_clients_v1 | read_portfolio_details | Read |
@@ -55,7 +55,7 @@ Observed 2026-10-14T10:57:16.039Z. Mapping is against this source checkout; conn
 | get_tag_v1 | read_portfolio_details | Read |
 | get_tag_sites_v1 | read_portfolio_details | Read |
 | get_tag_clients_v1 | read_portfolio_details | Read |
-| get_batch_job_status_v1 | Not yet integrated | Read |
+| get_batch_job_status_v1 | read_portfolio_details (existing batch_job) | Read |
 | mrn_mainwp__start_database_backup_v1 | approved_operation | Guarded operation |
 | mrn_mainwp__get_database_backup_status_v1 | approved_operation | Guarded operation |
 | mrn_mainwp__get_google_fonts_status_v1 | read_website_details | Read |
@@ -84,7 +84,9 @@ The frozen `contracts/content-v1.json` matches the provider contract. The gatewa
 
 The protected content receipt has its own signature prefix and binds the exact record, before/candidate hashes, plan, migration, qualified profile/runtime context and affected public paths. Code or preliminary source receipts cannot authorize content. Approval and execution require live Google membership; original-operator execution repeats current policy and baseline checks after the verified remote DB backup. Fresh full snapshot and exact public HTML text at a trusted selector must match after execution. A stale public page or uncertain response retains the lock; Fleet recovery cannot release it. Rollback requires new QA, approval and backup.
 
-The gateway has controlled fixture coverage only. The separate runner draft PR #4 now implements `content-qa.yml`, a fixed typed WordPress replay adapter, before/after visible-text browser checks and a separate content signer. Production content policy remains disabled with no profiles or service actors. Cross-service receipt verification passes, but the first isolated content runtime run stopped at its WordPress replay gate; runtime qualification is still open. Browser visibility, accessibility and performance remain mandatory runtime checks. A passing synthetic run will not prove current production rendering dependencies match a pinned profile. Typed ACF, menu and media adapters remain required follow-up work; this phase does not make them available.
+The gateway has controlled fixture coverage only. The separate runner draft PR #4 implements `content-qa.yml`, a fixed typed WordPress replay adapter, before/after visible-text browser checks and a separate content signer. [Disposable runtime CI at dccd447](https://github.com/mrnwebdesigns/mrn-code-qa-runner/actions/runs/38572700895) passed page-content edit/rollback, normalized title, post excerpt, mandatory API/browser/accessibility/performance QA and unsafe-HTML/unnormalized-title/stale-render rejection. Cross-service receipt verification also passes. Production content policy remains disabled with no profiles or service actors; the runner additionally rejects all real sites until independent parity measurement is implemented and qualified. The frozen parity schema is validated structurally, but a passing synthetic run cannot prove current production rendering dependencies match a pinned profile. Typed ACF, menu and media adapters remain required follow-up work; this phase does not make them available.
+
+Portfolio updates and existing batch-job status are bounded reads through the same signed identity transport. Updates are explicitly labeled cached Dashboard inventory; they do not trigger bulk child sync or replace exact-site inspection. Batch reads never start/retry a job. Provider-side delegated adapters and real hosted execution still need qualification before these source mappings can be called deployed capabilities.
 
 Live gateway readback reports `publicHtmlContentVerified` with method `exact-selector-html-text` and explicitly reports `liveBrowserVerified: false`. It does not label an HTTP/HTML comparison as live browser visibility. The protected disposable runtime and final team acceptance have their own browser evidence.
 
