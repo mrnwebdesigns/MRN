@@ -6,35 +6,27 @@ This is an execution plan, not deployment authorization. The policy source and
 MainWP verification contract are prepared in the repository, but no child site
 is changed by this plan or its feature commit.
 
-The read-only Dashboard snapshot taken on 2026-10-14 showed 104 registered
-sites: 102 connected and two disconnected. This count is diagnostic only; the
-execution task must re-query the Dashboard and resolve every target from its
-exact current URL instead of reusing this snapshot. The P&P source then had 90
-Yes, 16 No, and 16 blank records. Seventy-seven MainWP sites matched a Yes row
-by exact URL. Sites with blank source URLs, environment aliases, or no exact
-match require explicit reconciliation before a write.
+The read-only MainWP Dashboard snapshot taken on 2026-10-14 showed 104
+registered sites: 102 connected and two disconnected. The authoritative P&P
+roster is MainWP's **Platform & Plugins > Included** field. A direct read of
+that field showed 80 **Yes**, 24 **No**, and no blank values. This count is
+diagnostic only; before execution, re-query the Dashboard and resolve every
+target from its exact current URL instead of reusing this snapshot.
 
-The exact-match breakdown from that snapshot is 77 P&P=Yes sites, five sites
-whose source row says No (MainWP IDs 75, 12, 28, 38, and 48), one site with a
-blank P&P value (ID 55), and 21 MainWP sites without an exact source URL. The
-No sites are Artisan Quality Roofing, Bassett CPAs, First Choice Roofing, Jon
-Parker Real Estate, and Oasis Mental Wellness; ID 55 is Quality Seamless
-Gutters. Do not treat the 21 unmatched URLs as Yes by inference.
-
-Potential aliases requiring identity confirmation include IDs 34, 36, 46, 50,
-84, and 86, which correspond by domain/name to Yes rows with blank source URLs;
-ID 116 (`dosterandbrown.mrndev.io`), which appears to be the Yes production
-site's development environment; and IDs 13 and 58, which appear related to the
-Yes Best Day Psych production site. Six Yes source rows have no exact MainWP
-site: Citadel Contractors, eLoghomes, ezReconcile, Gray Flex, SnapRite, and
-Strategic Revenue Group. Reconcile every alias and missing target against the
-current source and MainWP identity before a write.
+The generated `Platform & Plugins: Yes` tag currently matches the 80 Yes field
+values, but `Platform & Plugins: No` is stale: it is also assigned to 30 Yes
+sites and is missing from four No sites. Use the MainWP Included field as the
+selector, never the generated P&P tags or an external spreadsheet. Do not infer
+a value when the field cannot be read or the MainWP site identity is ambiguous.
 
 ## Target Contract
 
-- Apply the remote backup profile only to sites with a verified **Yes** for
-  P&P. Use the current MRN Website Information source and exact MainWP URLs;
-  do not use the legacy overlapping MainWP tags as the selector.
+- Apply the remote backup profile only to sites whose current MainWP
+  **Platform & Plugins > Included** field is **Yes**. Resolve each site by its
+  exact current MainWP URL; do not use generated P&P tags or an external
+  spreadsheet as the roster. Treat No, blank, or any other value as excluded
+  from the routine policy. If the field cannot be read or the URL cannot be
+  uniquely resolved, stop for that site until MainWP data is reconciled.
 - For a site without **Yes**, disable all Updraft remote destinations, set
   routine file and database schedules to `manual`, and mark the site as
   excluded from the MRN routine policy. Preserve disabled credentials and
