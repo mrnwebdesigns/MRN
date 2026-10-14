@@ -98,18 +98,33 @@ on success; it also incorrectly required rollback availability on reverse plans.
 The fix admits only null/empty success codes and requires the exact forward versus
 reverse rollback flag. Every state/site/target/hash/migration/readback gate remains.
 The fixture now mirrors native output; failed or inconsistent outcomes retain
-their locks and never retry. All 237 controlled tests pass. The native lifecycle
-rerun remains required before reporting actual gateway content acceptance.
+their locks and never retry. All 237 controlled tests pass.
 
-The new six-group lifecycle harness will require exact snapshot and public HTML
+Gateway `7105c1582e6f8bfde7f6ec726d9cf17dfe0d7c5b` then passed
+[complete Operations CI](https://github.com/mrnwebdesigns/MRN/actions/runs/38617704685)
+and the [Code gate](https://github.com/mrnwebdesigns/MRN/actions/runs/38617704678).
+All ten identity/authorization transport cases and all six native content groups
+pass: exact discovery/sync/snapshot/policy, unchanged preparation, approval and
+revocation refusals, actual approved Child page-title edit with public HTML and provider
+status, separately approved exact rollback, and verified-individual audit.
+Artifact `11919998889` was downloaded and checked; archive digest is
+`c601a99d7b1a8f8fbbe4173f8035ce8f871f80bb22b663a4ddb85d6e6c407f54`.
+Its native report digest is
+`db9421da5b2279c4cc6ea8e1366f30f3f4b4c46ef4b771a5331eea8cd6bd247e`;
+the authorization report digest is
+`051b8f0f25b0a0ce110e7ce398bdaa0b095fc7eee0c6c6c9b9cbc9c7bf81537a`.
+The immutable sources are provider `47de880` and canonical MCP `3249bde`.
+This closes the demonstrated disposable gateway content transport lifecycle,
+not real-site rendering qualification, code editing or team acceptance.
+
+The passing six-group lifecycle harness requires exact snapshot and public HTML
 verification after the approved edit and separate rollback, with individual
 audit attribution and approval/revocation refusals. Only the two backup calls
 are substituted with explicitly synthetic provider-consumable receipts; QA
 uses a synthetic signer while exercising the real receipt verifier. OAuth and
 Directory are synthetic too. Private credentials, receipts and fixture files
-are never uploaded. A future passing report must still state that protected QA,
-remote backup creation, live Google, code editing and ChatGPT acceptance are
-unverified.
+are never uploaded. Both retained reports explicitly state that protected QA, remote backup
+creation, live Google, code editing and ChatGPT acceptance remain unverified.
 
 - Verified canonical MainWP status on wpcontrol.mrndev.io: connected, 107 provider abilities, 52 exposed by a fresh configured connection at 15:06 UTC (previously 48). The abilities resource is policy-filtered too; the unexposed 55 are not enumerated or qualified. Last verified live provider 0.13.4 retains the company-only code policy and QA scope. Native REST post/page reads succeeded using the separately authorized Production Hub bearer lookup; no site write was attempted.
 - Added per-request Google identity delegation, strict cross-language signed claims, POST-only metadata checks, active-membership authorization, audit identity migration, expanded portfolio/site reads, exact native content reads, code inspection, central GitHub source handling and protected QA/code lifecycle adapters.
@@ -117,7 +132,7 @@ unverified.
 - Configuration preflight and startup use the same QA-policy loader before opening SQLite state. Fourteen CLI/loader regressions cover legacy read-only, code-only, content-only and combined configurations; missing, malformed and interchanged policy files; central QA/source repository pins; bounded non-secret output; and rejection before state creation. Snapshot workflows require no source repository. This is static configuration validation, not credential, hosted-runtime or live Google acceptance.
 - Direct ESLint passed. The staged MRN task QA gate is required for the final index. A broader MRN QA invocation resolved the parent monorepo and reported static Pass, with PHPStan missing-stub advisory; it skipped service ESLint/npm rows because no root package exists. Its report is not a substitute for direct Node tests/lint or live provider/runtime checks.
 - There is no new browser UI in the gateway. Its hosted WordPress/API, browser, accessibility and performance acceptance remains unverified; the separate disposable provider/runner evidence below does not establish live gateway acceptance. Central service credentials, runner/App provisioning, automatic access policy, workspace tool refresh and deployment are pending concrete approval gates.
-- Typed content gateway tests cover exact before/candidate/migration/descriptor hashes, the PHP public signing vector, separate content QA signatures, normal and rollback paths, revoked membership during backup, concurrent approval, stale public content and lost-response lock retention. Protected runner source `6551079` passed [disposable runtime CI](https://github.com/mrnwebdesigns/mrn-code-qa-runner/actions/runs/38581916586): actual HTTP dependency parity before/after QA, page/title/post/rollback, mandatory API/browser/accessibility/performance checks, and invalid-candidate/cross-record-parity denial. Actual provider child transport and real-site profiles remain blocked. No production content profile is implied.
+- Typed content gateway tests cover exact before/candidate/migration/descriptor hashes, the PHP public signing vector, separate content QA signatures, normal and rollback paths, revoked membership during backup, concurrent approval, stale public content and lost-response lock retention. Protected runner source `6551079` passed [disposable runtime CI](https://github.com/mrnwebdesigns/mrn-code-qa-runner/actions/runs/38581916586): actual HTTP dependency parity before/after QA, page/title/post/rollback, mandatory API/browser/accessibility/performance checks, and invalid-candidate/cross-record-parity denial. The later native gateway proof above qualifies disposable Child transport only; real-site profiles remain blocked. No production content profile is implied.
 - Runner helper update `0fd0ff7` pins provider `27ac5bc` and SHA-256 `66110c269fe347648885fd12bce178e4ec73bc476dfdae80a4166064e15389ba`. Its 41 tests and staged PHP lint/WPCS/compatibility/PHPStan/secrets checks passed. [Run 38593836989, attempt 2](https://github.com/mrnwebdesigns/mrn-code-qa-runner/actions/runs/38593836989/attempts/2) passed contracts and both disposable isolation jobs, including required report uploads. The owner-approved $5/month Actions budget, with cutoff and alerts preserved, resolved the initial artifact-quota failure. Downloaded artifacts `11910930605` and `11909304607` bind the same source and contain four code and four content QA reports plus two independent HTTP parity manifests. All eight reports pass mandatory API runtime, browser, accessibility and performance checks; code edit/rollback and failed-candidate denial pass, and content/title/post/rollback plus unsafe-HTML, unnormalized-title, stale-render, wrong-parity and cross-record-baseline rejection pass. The page/post parity digests remain distinct (`38dcf1b6…` / `6b4a0b45…`). Inapplicable static rows and remote Fleet inventory/license/rollout checks remain explicitly skipped within these isolated fixture profiles; they are not production release coverage. No evidence, retention setting or report gate was changed. Live provider transport and real-site rendering qualification remain separate gates.
 - Native REST content reads repeat live staff authorization after both identity and content responses, and again at the service return boundary. Controlled revocation during identity resolution, record retrieval, search and service completion discards the result without retrying. Fixed allowlisted MainWP error mappings preserve content/profile/QA/backup/lock/uncertainty and Directory blockers through the pinned MCP transport, without reflecting upstream messages or credentials. Safe Mode remains a hard stop; uncertain outcomes never claim that no mutation occurred.
 - The existing read-only `get_operation` tool can explicitly refresh retained code/content provider metadata. Controlled tests include actual HTTP tool dispatch, exact plan/site/target/hash checks, revocation before/after dispatch, bounded output and the unchanged local lock/status even when the provider reports completion or owner-side resolution. The read does not inspect current child state, retry a mutation, reconcile an operation or authorize rollback. Real hosted-provider status acceptance remains open.

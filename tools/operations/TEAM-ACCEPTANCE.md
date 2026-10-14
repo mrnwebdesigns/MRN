@@ -65,6 +65,15 @@ passes the first URL read and dispatches the HTTP sync, then fails the fresh
 same-URL readback. No gateway content mutation ran. The provider's passing
 CLI-context native sequence does not close this HTTP integration failure.
 
+The later gateway `7105c15` with provider `47de880` passes
+[run 38617704685](https://github.com/mrnwebdesigns/MRN/actions/runs/38617704685).
+All ten authorization checks and all six native Child groups pass, including
+approved page-title editing, exact snapshot/public HTML/provider-status readback,
+separately approved rollback to the original state and individual audit.
+Artifact `11919998889` was downloaded and verified. This closes the disposable
+native transport failure. Its synthetic OAuth/Directory, QA and backup inputs
+remain explicit; every live acceptance row above remains open.
+
 Protected runner `0fd0ff7` separately passed disposable code/content QA and both
 required report uploads in [run 38593836989, attempt 2](https://github.com/mrnwebdesigns/mrn-code-qa-runner/actions/runs/38593836989/attempts/2).
 The eight downloaded reports and two HTTP parity manifests verify fixture
