@@ -6,6 +6,7 @@ const response = error => ({ isError: true, content: [{ type: 'text', text: JSON
 
 test('native provider blockers retain a safe actionable class through the pinned MCP error envelope', () => {
   const cases = [
+    ['mrn_delegation_target', 'TARGET_MISMATCH'],
     ['mrn_content_disabled', 'CONTENT_DISABLED'], ['mrn_content_profile', 'CONTENT_PROFILE_UNQUALIFIED'],
     ['mrn_content_precondition', 'CONTENT_PRECONDITION'], ['mrn_content_qa', 'CONTENT_QA_REQUIRED'],
     ['mrn_content_backup', 'BACKUP_UNVERIFIED'], ['mrn_content_locked', 'SITE_LOCKED'],

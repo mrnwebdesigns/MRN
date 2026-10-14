@@ -36,6 +36,7 @@ export function withoutSecrets(value) {
 
 const providerBlockers = Object.freeze({
   SAFE_MODE_BLOCKED: ['SAFE_MODE_BLOCKED', 'MainWP Safe Mode blocked this action. MRN services must review the restriction; do not retry through another route.'],
+  mrn_delegation_target: ['TARGET_MISMATCH', 'MainWP could not bind this request to one exact permitted website. Resolve its exact URL again; do not substitute a different target or access route.'],
   mrn_content_disabled: ['CONTENT_DISABLED', 'Content editing is not enabled in MRN services. Staff do not need another account or enrollment.'],
   mrn_content_profile: ['CONTENT_PROFILE_UNQUALIFIED', 'MRN services have not qualified the current rendering dependencies for this exact content target. This change remains blocked.'],
   mrn_content_ownership: ['CONTENT_OWNERSHIP', 'The content owner or rendering adapter is not qualified. ACF and builder content require their own supported workflow.'],

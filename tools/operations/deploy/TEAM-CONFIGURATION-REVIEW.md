@@ -52,7 +52,7 @@ CI repository grant and Actions budget change are recorded below.
 
 Prepare a dedicated service-owned Google OAuth web client for the existing
 Auth0 connection, preserving the MainWP pilot and Cloudflare clients. This is
-backend setup for the same team plugin. Its proposed name is `MRN Auth0 Staff
+backend setup for the same team plugin. Its proposed name is `MRN Auth0
 Sign-in`, origin `https://dev-bhbm2z074birs7aj.us.auth0.com`, and sole redirect
 `https://dev-bhbm2z074birs7aj.us.auth0.com/login/callback`, following
 [Auth0's Google connection contract](https://auth0.com/docs/authenticate/identity-providers/social-identity-providers/google).
@@ -66,9 +66,24 @@ this shared connection's production client. Do not change the project's
 audience, reuse the pilot secret, or silently narrow another application's
 users. Read-only inspection of the deployed `MRN Client Review Email Claim`
 Action shows verified-email claim mapping without a domain restriction; that
-Action alone therefore cannot prove Client Review is staff-only. Its backend
-access rules still need verification. The release review must name the shared
-connection impact and its approved resolution.
+Action alone therefore cannot prove Client Review is staff-only. Read-only
+inspection of Client Review source `0c1a4319dca86dcb98e185df94cd67b77156beda`
+confirms that `server/mcp.mjs:verifyOauthRequest` resolves the verified claim to
+an existing application user without an MRN-domain restriction. That is source
+evidence, not a census of deployed users, but it rules out assuming that the
+shared connection can safely become staff-only.
+
+The proposed resolution is to preserve the shared connection's audience with
+an External production Google client in a separately reviewed service project,
+leaving `mrn-infrastructure-access` Internal. Operations still denies outsiders
+through its resource-specific Google Action, pinned connection, exact MRN domain
+and live Directory customer/membership checks. An external Google sign-in
+audience does not grant Operations access. Do not create a duplicate standard
+Google connection as a shortcut: [Auth0 documents identity collisions across
+multiple standard connections for the same provider](https://support.auth0.com/center/s/article/how-to-prevent-duplicate-users-when-using-multiple-social-connections).
+The project, client and any required [Google production branding verification](https://developers.google.com/identity/protocols/oauth2/production-readiness/brand-verification)
+must be named and reviewed before activation. No project, audience, client,
+connection or access grant has been changed by this assessment.
 Any new client credential must remain in the approved central secret store and
 Auth0; no staff credential collection or client secret in ChatGPT is needed.
 

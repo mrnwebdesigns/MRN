@@ -148,6 +148,12 @@ try {
   }
   const output = native ? process.env.MRN_GATEWAY_NATIVE_REPORT : process.env.MRN_GATEWAY_REPORT;
   assert.ok(output); writeFileSync(output, `${JSON.stringify({ ...report, result: 'PASS' }, null, 2)}\n`);
+} catch (error) {
+  // Test-only bounded diagnostics: known paths, status, symbolic error codes
+  // and audit event names. Never emit arguments, receipts, keys or bodies.
+  process.stdout.write(`${JSON.stringify({ phase: native ? 'native' : 'authorization', lastTransport: network().slice(-12),
+    lastAudit: store.db.prepare('SELECT event,outcome FROM audit ORDER BY rowid DESC LIMIT 12').all() })}\n`);
+  throw error;
 } finally {
   await new Promise(resolve => server.close(resolve));
   await Promise.allSettled([...clients].map(client => client.close()));

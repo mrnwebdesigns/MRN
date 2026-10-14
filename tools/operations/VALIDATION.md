@@ -25,7 +25,7 @@ preserving all prior 28, and unchanged read-only code/metadata permissions. The
 passed source-token creation, both pinned checkouts and builds. Its old provider
 pin passed 34 HTTP, 23 content and 13 parity checks; the job then failed because
 that pin has no gateway hook and the mandatory gateway report was absent. No
-alternative credential was used. The integration now pins provider
+alternative credential was used. That integration checkpoint pinned provider
 `27ac5bc1371db01db7c0d5cf5c418ef776e23e1e`, including the CI-only hook. Its
 [complete CI](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38593325241)
 passed 34 native HTTP, 26 content, 13 parity, 12 profile-context and 25 controller
@@ -44,6 +44,30 @@ and `codeWriteVerified: false`. Its ten checks cover the identities, denials,
 nonce/route enforcement and private audit described above. The empty synthetic
 portfolio does not prove real-site discovery, content/code writes or ChatGPT
 acceptance. Documentation checkpoint `a0f8521` also passed all Operations CI checks and the Code gate at the unchanged runtime source.
+
+Gateway source `a3b55ea888ff0a4c92834bf74ea9fd5655aca850` adds the actual
+MainWP Child lifecycle through HTTP MCP and pins provider
+`e615e988cade54f2ceb3493e561094341c91c053`. The provider's own
+[CI run 38608084539](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38608084539)
+passes native content edit, exact rollback and hook/source refusal checks.
+The combined [gateway run 38608469036](https://github.com/mrnwebdesigns/MRN/actions/runs/38608469036)
+passes controlled contracts and the ten authorization transport cases, then
+discovers the one real disposable Child. It fails before any gateway content
+mutation: delegated `get-site-v1` rejects the exact URL because the provider's
+target guard only accepts numeric IDs. The gateway retains URL resolution,
+one-site sync and fresh exact readback; substituting a cached numeric ID is not
+an accepted fix. The [Code gate](https://github.com/mrnwebdesigns/MRN/actions/runs/38608469081)
+passes at this same source. Native gateway content acceptance remains failed.
+
+The new six-group lifecycle harness will require exact snapshot and public HTML
+verification after the approved edit and separate rollback, with individual
+audit attribution and approval/revocation refusals. Only the two backup calls
+are substituted with explicitly synthetic provider-consumable receipts; QA
+uses a synthetic signer while exercising the real receipt verifier. OAuth and
+Directory are synthetic too. Private credentials, receipts and fixture files
+are never uploaded. A future passing report must still state that protected QA,
+remote backup creation, live Google, code editing and ChatGPT acceptance are
+unverified.
 
 - Verified canonical MainWP status on wpcontrol.mrndev.io: connected, 107 provider abilities, 52 exposed by a fresh configured connection at 15:06 UTC (previously 48). The abilities resource is policy-filtered too; the unexposed 55 are not enumerated or qualified. Last verified live provider 0.13.4 retains the company-only code policy and QA scope. Native REST post/page reads succeeded using the separately authorized Production Hub bearer lookup; no site write was attempted.
 - Added per-request Google identity delegation, strict cross-language signed claims, POST-only metadata checks, active-membership authorization, audit identity migration, expanded portfolio/site reads, exact native content reads, code inspection, central GitHub source handling and protected QA/code lifecycle adapters.
