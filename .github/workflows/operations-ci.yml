@@ -87,8 +87,11 @@ jobs:
       - name: Exercise actual gateway, MCP and WordPress authorization
         env:
           MRN_DISPOSABLE_API_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/provider-hook.sh
+          MRN_DISPOSABLE_NATIVE_CHILD: '1'
+          MRN_DISPOSABLE_NATIVE_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/native-hook.sh
           MRN_GATEWAY_MCP_SOURCE: ${{ github.workspace }}/.runtime/transport
           MRN_GATEWAY_REPORT: ${{ runner.temp }}/gateway-provider-report.json
+          MRN_GATEWAY_NATIVE_REPORT: ${{ runner.temp }}/gateway-native-content-report.json
         run: |
           .runtime/provider/tests/runtime/run-dashboard-api.sh
           node --input-type=module <<'JS'
@@ -99,11 +102,20 @@ jobs:
           assert.equal(proof.passed.length, 10);
           assert.equal(proof.productionCredentials, false);
           assert.equal(proof.chatgptAcceptanceVerified, false);
+          const native = JSON.parse(readFileSync(process.env.MRN_GATEWAY_NATIVE_REPORT, 'utf8'));
+          assert.equal(native.result, 'PASS');
+          assert.equal(native.passed.length, 6);
+          assert.equal(native.scope, 'disposable-native-child-only');
+          assert.equal(native.managedSites, 1);
+          for (const field of ['contentWriteVerified', 'contentRollbackVerified', 'publicHtmlVerified']) assert.equal(native[field], true);
+          for (const field of ['productionCredentials', 'liveGoogleVerified', 'protectedQaVerified', 'productionQaVerified', 'remoteBackupVerified', 'chatgptAcceptanceVerified', 'codeWriteVerified']) assert.equal(native[field], false);
           JS
       - name: Retain bounded integration evidence only
         uses: actions/upload-artifact@v4
         with:
           name: gateway-provider-transport
-          path: ${{ runner.temp }}/gateway-provider-report.json
+          path: |
+            ${{ runner.temp }}/gateway-provider-report.json
+            ${{ runner.temp }}/gateway-native-content-report.json
           if-no-files-found: error
           retention-days: 14
