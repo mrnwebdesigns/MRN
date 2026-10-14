@@ -1,12 +1,12 @@
 {
   "schema": 1,
   "repository": "mrnwebdesigns/mrn-mainwp-operations-api",
-  "commit": "6f21c21b9363b643930aa62455c1eb47c781c7d5",
+  "commit": "402991371ce0d9f258af60319c85b1848a7fa40a",
   "files": [
     {
       "source": "contracts/content-qualification-v1.json",
       "local": "contracts/content-qualification-v1.json",
-      "sha256": "0dace215ff1ea0930b02183c38303c65f64fc0e27e86f5eacd9e4198468e379f"
+      "sha256": "9c8d3fa9e27d7e4aa36109ccb33d76f7babf5bc6aea4f3661fcfd6e26ab62e03"
     },
     {
       "source": "contracts/content-recipe-catalog-v1.json",

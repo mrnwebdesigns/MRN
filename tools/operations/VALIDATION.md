@@ -129,8 +129,8 @@ qualification endpoint is enabled, and static profile trust is unchanged. The
 cross-consumer target binding still needs explicit signed claims, purpose,
 audiences, revision and expiry semantics before consumer wiring.
 
-The corrected provider contract checkpoint `6f21c21b9363b643930aa62455c1eb47c781c7d5`
-passes [all four CI jobs](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38621281791).
+The corrected provider contract checkpoint `402991371ce0d9f258af60319c85b1848a7fa40a`
+passes [all four CI jobs](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38621727078).
 The gateway retains exact qualification, recipe and target-binding schemas plus
 independent canonical structural vectors with source-blob SHA-256 checksums.
 All 41 definitions compile and all eight vectors match; all 246 gateway tests
@@ -146,7 +146,7 @@ has its own purpose, all consumer audiences, actual published revision and
 bounded expiry. New-target consumer trust requires a separately versioned output
 and accepted issuance/verification. These files do not enable queue dispatch,
 registrar runtime, signed-profile trust, new site eligibility or staff access.
-The integration fixture now pins `6f21c21`; its gateway rerun remains a separate
+The integration fixture now pins `4029913`; its gateway rerun remains a separate
 check from the provider's passing contract/runtime CI.
 
 The passing six-group lifecycle harness requires exact snapshot and public HTML
