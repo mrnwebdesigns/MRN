@@ -76,7 +76,7 @@ export class Discovery {
     };
     let directory = { sites: [], issues: [] }; let local = { records: [], issues: [] }; const coverage = [];
     if (sources.includes('mainwp') || exactUrls.length) {
-      authorize(); const client = await this.connect();
+      authorize(); const client = await this.connect(actor);
       try { directory = await mainwpDirectory(client, guarded, sources.includes('mainwp') ? null : exactUrls); coverage.push({ source: 'mainwp', status: 'discovered', sites: directory.sites.length,
         scope: 'Directory identities only. Runtime, inventory and health require exact-site sync.' }); }
       finally { await client.close().catch(() => {}); }

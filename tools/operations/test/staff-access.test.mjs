@@ -81,12 +81,54 @@ test('machine tokens, duplicate identities and domain write grants fail closed',
 
 test('Auth0 Action adds verified claims only for Operations, preserving other applications', async () => {
   const action = createRequire(import.meta.url)('../deploy/auth0-post-login-action.cjs').onExecutePostLogin;
-  const values = {}; const api = { accessToken: { setCustomClaim: (key, value) => { values[key] = value; } } };
+  const values = {}; const denied = []; const api = { accessToken: { setCustomClaim: (key, value) => { values[key] = value; } }, access: { deny: message => denied.push(message) } };
   for (const resource of ['https://qaengine.mrndev.io/google-mcp', 'https://clientreview.mrnwebdesigns.com/mcp', undefined]) {
     await action({ resource_server: { identifier: resource }, user: { email: 'staff@mrnwebdesigns.com', email_verified: true } }, api);
   }
   await action({ resource_server: { identifier: audience }, user: { email: 'staff@mrnwebdesigns.com', email_verified: false } }, api);
   assert.deepEqual(values, {});
-  await action({ resource_server: { identifier: audience }, user: { email: 'STAFF@mrnwebdesigns.com', email_verified: true } }, api);
-  assert.deepEqual(values, claims('staff@mrnwebdesigns.com'));
+  assert.equal(denied.length, 1);
+  await action({ resource_server: { identifier: audience }, connection: { strategy: 'google-oauth2', id: 'con_MRNGoogle' }, user: { user_id: 'google-oauth2|123456789', email: 'STAFF@mrnwebdesigns.com', email_verified: true } }, api);
+  assert.deepEqual(values, { ...claims('staff@mrnwebdesigns.com'), [`${audience}/identity_provider`]: 'google-oauth2', [`${audience}/google_sub`]: '123456789', [`${audience}/google_connection`]: 'con_MRNGoogle' });
+});
+
+test('Google-only admission checks active membership on every authenticated request', async () => {
+  const keys = await generateKeyPair('RS256');
+  const keySet = createLocalJWKSet({ keys: [{ ...await exportJWK(keys.publicKey), kid: 'staff', alg: 'RS256' }] });
+  const config = { issuer, audience, verifiedEmailClaims: true, googleWorkspace: { connectionId: 'con_MRNGoogle' } };
+  const valid = { ...claims(), [`${audience}/identity_provider`]: 'google-oauth2', [`${audience}/google_sub`]: '123456789', [`${audience}/google_connection`]: 'con_MRNGoogle' };
+  const sign = (payload, subject = 'google-oauth2|123456789') => new SignJWT({ scope: 'mrn:operations', ...payload }).setProtectedHeader({ alg: 'RS256', kid: 'staff' }).setIssuer(issuer).setAudience(audience).setSubject(subject).setIssuedAt().setExpirationTime('10m').sign(keys.privateKey);
+  let checks = 0; let active = true;
+  const auth = createAuthenticator(config, keySet, async actor => { checks++; assert.equal(actor.googleSubject, '123456789'); if (!active) throw new Error('suspended or revoked'); });
+  for (const [payload, subject] of [
+    [claims()], [{ ...valid, [`${audience}/identity_provider`]: 'auth0' }],
+    [{ ...valid, [`${audience}/google_connection`]: 'con_Other' }],
+    [{ ...valid, [`${audience}/google_sub`]: 'different' }],
+    [{ ...valid, ...claims('staff@outside.test') }],
+    [valid, 'auth0|linked-primary'], [valid, 'google-oauth2|987654321'],
+  ]) await assert.rejects(() => sign(payload, subject).then(token => auth(`Bearer ${token}`)), { code: 'AUTH_REQUIRED' });
+  assert.equal(checks, 0);
+  const token = await sign(valid);
+  const actor = await auth(`Bearer ${token}`);
+  assert.equal(Object.isFrozen(actor), true);
+  assert.equal(actor.googleConnection, 'con_MRNGoogle');
+  assert.equal(actor.verifiedEmail, 'staff@mrnwebdesigns.com');
+  active = false;
+  await assert.rejects(() => auth(`Bearer ${token}`), { code: 'AUTH_REQUIRED' });
+  assert.equal(checks, 2);
+  await assert.rejects(() => createAuthenticator(config, keySet)(`Bearer ${token}`), { code: 'AUTH_REQUIRED' });
+});
+
+test('Auth0 denies non-Google and outsiders rather than issuing staff claims', async () => {
+  const action = createRequire(import.meta.url)('../deploy/auth0-post-login-action.cjs').onExecutePostLogin;
+  const base = { resource_server: { identifier: audience }, connection: { strategy: 'google-oauth2', id: 'con_MRNGoogle' }, user: { user_id: 'google-oauth2|123456789', email: 'staff@mrnwebdesigns.com', email_verified: true } };
+  for (const event of [
+    { ...base, connection: { strategy: 'auth0', id: 'con_MRNGoogle' } },
+    { ...base, user: { ...base.user, user_id: 'auth0|linked-primary', identities: [{ provider: 'google-oauth2' }] } },
+    ...['staff@outside.test', 'staff@sub.mrnwebdesigns.com', 'staff@mrnwebdesigns.com ', 'staff@@mrnwebdesigns.com'].map(email => ({ ...base, user: { ...base.user, email } })),
+  ]) {
+    let denied = false;
+    await action(event, { access: { deny: () => { denied = true; } }, accessToken: { setCustomClaim: () => assert.fail('Invalid account received staff claims') } });
+    assert.equal(denied, true);
+  }
 });

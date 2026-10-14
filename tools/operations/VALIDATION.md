@@ -1,5 +1,16 @@
 # Operations validation
 
+## Unified Google delegation and guarded code integration — 2026-10-14
+
+This is an unshipped integration candidate. The existing workspace plugin and live service are unchanged. Active MRN Google staff use automatic domain/customer membership; there is no named-user approval or enrollment step.
+
+- Verified canonical MainWP status on wpcontrol.mrndev.io: connected, 107 provider abilities, 48 exposed by the current tool policy. Live provider 0.13.4 retains the company-only code policy and QA scope. Native REST post/page reads succeeded using the separately authorized Production Hub bearer lookup; no site write was attempted.
+- Added per-request Google identity delegation, strict cross-language signed claims, POST-only metadata checks, active-membership authorization, audit identity migration, expanded portfolio/site reads, exact native content reads, code inspection, central GitHub source handling and protected QA/code lifecycle adapters.
+- Full Node 24 suite passed 171 checks before the final documentation checkpoint. Tests include signature/identity forgery, outsider and revoked denial, request isolation, unsafe GET metadata rejection, live-state drift, backup/approval gates, exact snapshot edit/rollback, Git source versus live approvals, lost response lock retention, bounded receipt extraction and token narrowing. These are controlled integration fixtures, not ordinary-member ChatGPT acceptance.
+- Direct ESLint passed. The staged MRN task QA gate is required for the final index. A broader MRN QA invocation resolved the parent monorepo and reported static Pass, with PHPStan missing-stub advisory; it skipped service ESLint/npm rows because no root package exists. Its report is not a substitute for direct Node tests/lint or live provider/runtime checks.
+- WordPress runtime/API, browser, accessibility and performance acceptance have not run for this candidate. There is no new browser UI; the exact candidate code must separately pass the protected MRN release QA runtime before deployment. Central service credentials, runner/App provisioning, automatic access policy, workspace tool refresh and deployment are pending concrete approval gates.
+- Native content edits, typed ACF/menu/media edits, ordinary staff ChatGPT edit/rollback acceptance and live outsider/revoked-account denial remain unverified. Do not call the product complete.
+
 ## PR #256 source integration and hosted readback — 2026-10-13
 
 - Refreshed `main` at `0d5040f09b814994a5c4199fcb6cc670d5051c33` and updated

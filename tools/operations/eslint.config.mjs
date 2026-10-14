@@ -3,7 +3,7 @@ export default [{
   languageOptions: {
     ecmaVersion: 2024,
     sourceType: 'module',
-    globals: Object.fromEntries(['Buffer', 'URL', 'process', 'setTimeout', 'clearTimeout', 'performance', 'fetch'].map(name => [name, 'readonly'])),
+    globals: Object.fromEntries(['AbortSignal', 'Buffer', 'Response', 'URL', 'URLSearchParams', 'structuredClone', 'process', 'setTimeout', 'clearTimeout', 'performance', 'fetch'].map(name => [name, 'readonly'])),
   },
   rules: {
     'no-undef': 'error',

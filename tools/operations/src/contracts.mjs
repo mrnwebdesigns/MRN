@@ -48,11 +48,11 @@ export const registrySchema = z.object({
     }).strict()).min(1),
   }).strict()),
 }).strict();
-export const actions = ['read', 'test', 'repair', 'deploy_development', 'release_production'];
-const portfolioSchema = z.object({ sources: z.array(z.enum(['mainwp', 'local-hub'])).min(1), actions: z.array(z.enum(['read', 'test'])).min(1) }).strict();
+export const actions = ['read', 'test', 'content', 'code', 'repair', 'deploy_development', 'release_production'];
+const portfolioSchema = z.object({ sources: z.array(z.enum(['mainwp', 'local-hub'])).min(1), actions: z.array(z.enum(['read', 'test', 'content', 'code'])).min(1) }).strict();
 export const policySchema = z.object({ version: z.literal(1), members: z.array(z.object({
   subject: z.string().min(1), enabled: z.boolean(),
-  // Directory-wide read/test access is explicit and never grants repair/release.
+  // Team code/content roles require Google proof and their separate execution gates.
   portfolio: portfolioSchema.optional(),
   grants: z.array(z.object({ website: z.union([identifier, httpsUrl]), environments: z.array(z.enum(environmentNames)).min(1), actions: z.array(z.enum(actions)).min(1) }).strict()).default([]),
 }).strict()), emailDomains: z.array(z.object({
@@ -132,6 +132,9 @@ export class Registry {
     const direct = member.grants.some(g => [target.websiteId, target.url].includes(g.website) && g.environments.includes(target.environment) && g.actions.includes(action));
     const portfolio = member.portfolio?.actions.includes(action) && target.sources?.some(s => member.portfolio.sources.includes(s));
     requireThat(direct || portfolio, 'FORBIDDEN', 'Your account does not have this operation permission for this website and environment.');
+    if (['code', 'content'].includes(action)) requireThat(actor.identityProvider === 'google-oauth2'
+      && actor.subject === `google-oauth2|${actor.googleSubject}` && actor.verifiedEmail?.endsWith('@mrnwebdesigns.com'),
+    'AUTH_REQUIRED', 'Content and code changes require a verified individual MRN Google identity.');
     if (!['read', 'test'].includes(action)) requireThat(target.environment !== 'unknown' && !target.knowledgeIssues?.length, 'KNOWLEDGE_REQUIRED', 'Resolve the environment and conflicting website knowledge before preparing a change.');
   }
   resolve(actor, query, environment, action = 'read') {

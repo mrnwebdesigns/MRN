@@ -23,6 +23,11 @@ export function createHttpServer({ service, authenticate, publicUrl, issuer, ori
       }
       if (req.method === 'GET' && req.url === '/healthz') return json(res, 200, { status: 'ok', version: '0.1.0' });
       requireThat(req.url === '/mcp', 'NOT_FOUND', 'Route not found.');
+      // Directory verification may involve a protected backend request. Bound
+      // admission before authentication so valid-token floods cannot spawn an
+      // unbounded number of verification processes.
+      requireThat(active < 16, 'RATE_LIMIT', 'Service capacity reached; retry read-only requests later.');
+      active++; admitted = true;
       const actor = await authenticate(req.headers.authorization);
       if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return json(res, 405, { error: 'Use POST for stateless MCP.' }); }
       requireThat(String(req.headers['content-type'] || '').split(';')[0] === 'application/json', 'BODY_INVALID', 'Use application/json.');
@@ -30,8 +35,7 @@ export function createHttpServer({ service, authenticate, publicUrl, issuer, ori
       for (const [key, value] of rate) if (value.until < now) rate.delete(key);
       const counter = rate.get(actor.subject) || { until: now + 60000, count: 0 };
       counter.count++; rate.set(actor.subject, counter);
-      requireThat(counter.count <= 60 && rate.size <= 10000 && active < 16, 'RATE_LIMIT', 'Service capacity reached; retry read-only requests later.');
-      active++; admitted = true;
+      requireThat(counter.count <= 60 && rate.size <= 10000, 'RATE_LIMIT', 'Service capacity reached; retry read-only requests later.');
       const body = await readBody(req);
       // Never share an MCP server/transport across authenticated requests.
       const mcp = createMcp(service, actor, { publicUrl });
