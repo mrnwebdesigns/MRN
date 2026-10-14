@@ -1,6 +1,7 @@
 import copy
 from datetime import datetime, timezone
 import hashlib
+import io
 import json
 import os
 from pathlib import Path
@@ -8,6 +9,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import urllib.error
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).parents[1]))
@@ -109,6 +111,9 @@ class LiveReadback(unittest.TestCase):
         prefix = 'mrn-assets/freedomhouse-child02/' + 'c' * 64
         self.deployment = {'status': 'public-verified', 'current': {'public_path': prefix}}
         self.receipt = {**self.qualification, 'verified_at': now(), 'asset_prefix': prefix,
+                        'live_rest': {'url': acceptance.URL + '/wp-json/', 'http_status': 200,
+                                      'route_count': 100, 'namespaces': ['wp/v2'], 'body_sha256': 'e' * 64,
+                                      'verified_at': now()},
                         'search': {'query': 'mobile crisis', 'results': 17},
                         'admin': {'selected_form': '2', 'repair_notices': []},
                         'services': {'learn_more_count': 5, 'contrast_ratio': 5.84},
@@ -133,6 +138,9 @@ class LiveReadback(unittest.TestCase):
         row = copy.deepcopy(self.receipt); row['services']['contrast_ratio'] = 2.6; bad.append(row)
         row = copy.deepcopy(self.receipt); row['admin']['repair_notices'] = ['Missing form']; bad.append(row)
         row = copy.deepcopy(self.receipt); row['verified_at'] = '2020-01-01T00:00:00Z'; bad.append(row)
+        row = copy.deepcopy(self.receipt); del row['live_rest']; bad.append(row)
+        row = copy.deepcopy(self.receipt); row['live_rest']['http_status'] = 403; bad.append(row)
+        row = copy.deepcopy(self.receipt); row['live_rest']['route_count'] = 0; bad.append(row)
         for index, receipt in enumerate(bad):
             with self.subTest(index=index), self.assertRaises(ValueError):
                 acceptance.validate_readback(receipt, self.qualification, self.deployment)
@@ -154,6 +162,36 @@ class LiveReadback(unittest.TestCase):
             self.assertIn("inputs.local_qa_acceptance == ''", step)
         self.assertIn("steps.local_readback.outcome == 'failure'", workflow)
         self.assertIn('--rollback-receipt "$RUNNER_TEMP/site-deployment.json"', workflow)
+
+
+class HostedRest(unittest.TestCase):
+    def error(self, headers, body):
+        return urllib.error.HTTPError(acceptance.URL + '/wp-json/', 403, 'Forbidden', headers, io.BytesIO(body))
+
+    def test_cloudflare_challenge_is_retained_and_requires_operator_proof(self):
+        error = self.error({'cf-ray': 'test-ray', 'cf-mitigated': 'challenge'}, b'Cloudflare challenge')
+        with patch.object(acceptance.urllib.request, 'urlopen', side_effect=error):
+            self.assertEqual(acceptance.hosted_rest_check()['status'], 'cloudflare-blocked-requires-operator-rest-proof')
+
+    def test_recognized_cloudflare_html_is_retained(self):
+        error = self.error({'cf-ray': 'test-ray'}, b'<html>Just a moment Cloudflare cf-chl</html>')
+        with patch.object(acceptance.urllib.request, 'urlopen', side_effect=error):
+            self.assertEqual(acceptance.hosted_rest_check()['http_status'], 403)
+
+    def test_wordpress_permission_failure_is_not_a_cloudflare_exception(self):
+        error = self.error({'cf-ray': 'test-ray'}, b'{"code":"rest_forbidden"}')
+        with patch.object(acceptance.urllib.request, 'urlopen', side_effect=error), self.assertRaises(ValueError):
+            acceptance.hosted_rest_check()
+
+    def test_valid_rest_passes_and_invalid_data_fails(self):
+        for body, valid in [(b'{"routes":{"/wp/v2":{}}}', True), (b'{"routes":{}}', False), (b'<html>error</html>', False)]:
+            response = io.BytesIO(body); response.status = 200
+            with patch.object(acceptance.urllib.request, 'urlopen', return_value=response):
+                if valid:
+                    self.assertEqual(acceptance.hosted_rest_check()['status'], 'passed')
+                else:
+                    with self.assertRaises((ValueError, json.JSONDecodeError)):
+                        acceptance.hosted_rest_check()
 
 
 if __name__ == '__main__':

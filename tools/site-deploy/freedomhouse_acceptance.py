@@ -14,6 +14,7 @@ from pathlib import Path
 import re
 import subprocess
 import time
+import urllib.error
 import urllib.request
 import zipfile
 
@@ -114,6 +115,13 @@ def validate_readback(receipt, qualification, deployment):
             receipt.get('services', {}).get('learn_more_count') == 5 and
             receipt['services'].get('contrast_ratio', 0) >= 4.5,
             'Search, admin notice, or Services contrast acceptance failed')
+    rest = receipt.get('live_rest', {})
+    require(rest.get('url') == URL + '/wp-json/' and rest.get('http_status') == 200 and
+            type(rest.get('route_count')) is int and rest['route_count'] > 0 and
+            'wp/v2' in rest.get('namespaces', []) and
+            re.fullmatch('[0-9a-f]{64}', rest.get('body_sha256', '')) is not None,
+            'Fresh valid Live REST index evidence is required')
+    recent(rest['verified_at'], 1800)
     return {**receipt, 'status': 'local-qa-and-live-readback-accepted',
             'hosted_runtime_qa': 'not-run-cloudflare-blocked'}
 
@@ -132,6 +140,29 @@ def api(path):
                                              'Accept': 'application/vnd.github+json'})
     with urllib.request.urlopen(request, timeout=30) as response:
         return json.load(response)
+
+
+def hosted_rest_check():
+    """Keep hosted REST evidence; only a recognized Cloudflare page may defer.
+
+    Operator REST evidence is mandatory even when this hosted request passes.
+    A WordPress permission error, invalid JSON or transport error still fails.
+    """
+    try:
+        with urllib.request.urlopen(URL + '/wp-json/', timeout=30) as response:
+            index = json.load(response)
+            require(response.status == 200 and isinstance(index.get('routes'), dict) and index['routes'],
+                    'Hosted Live REST health failed')
+            return {'status': 'passed', 'http_status': response.status}
+    except urllib.error.HTTPError as error:
+        body = error.read(100000).lower()
+        error.close()
+        challenge = (error.headers.get('cf-mitigated') == 'challenge' or
+                     (error.headers.get('cf-ray') and b'cloudflare' in body and
+                      any(marker in body for marker in (b'cf-chl', b'cf-error-details', b'just a moment'))))
+        require(error.code == 403 and challenge, 'Hosted REST failed without a recognized Cloudflare challenge')
+        return {'status': 'cloudflare-blocked-requires-operator-rest-proof',
+                'http_status': error.code, 'cf_ray': error.headers.get('cf-ray')}
 
 
 def wait_readback(qualification, deployment, timeout=1200):
@@ -184,12 +215,10 @@ def main():
     else:
         qualification = json.loads(Path(args.qualification).read_text())
         deployment = json.loads(Path(args.deployment).read_text())
-        # REST remains a fresh Live check in this acceptance path.
-        with urllib.request.urlopen(URL + '/wp-json/', timeout=30) as response:
-            index = json.load(response)
-            require(response.status == 200 and isinstance(index.get('routes'), dict) and index['routes'], 'Live REST health failed')
+        hosted_rest = hosted_rest_check()
+        Path(args.receipt).with_name('site-hosted-rest.json').write_text(json.dumps(hosted_rest, indent=2) + '\n')
         result = wait_readback(qualification, deployment)
-        result['live_rest'] = 'passed'
+        result['hosted_rest'] = hosted_rest
     Path(args.receipt).write_text(json.dumps(result, indent=2) + '\n')
     print(result.get('status', 'Live readback evidence recorded'))
 

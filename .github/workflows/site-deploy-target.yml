@@ -79,7 +79,7 @@ jobs:
   deploy:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: ${{ inputs.local_qa_acceptance != '' && 65 || 40 }}
     environment:
       name: ${{ inputs.target }}
       deployment: ${{ inputs.mode == 'deploy' }}
@@ -411,6 +411,7 @@ jobs:
             ${{ runner.temp }}/site-runtime-result.json
             ${{ runner.temp }}/site-local-qualification.json
             ${{ runner.temp }}/site-live-readback.json
+            ${{ runner.temp }}/site-hosted-rest.json
             ${{ runner.temp }}/site-browser
             ${{ runner.temp }}/site-layout
           if-no-files-found: warn
