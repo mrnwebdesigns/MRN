@@ -9,7 +9,7 @@ test('capability inventory distinguishes backend counts, connected workflows and
   f.client.listTools = async () => ({ tools: [...(await original()).tools, { name: 'future_mutator_v1', inputSchema: { type: 'object' }, annotations: { readOnlyHint: true } }] });
   const report = await f.service.capabilities(actor);
   assert.equal(report.providerDiscoveredAbilities, 84);
-  assert.equal(report.backendExposedTools, Object.values(toolNames).length + 1);
+  assert.equal(report.backendExposedTools, Object.values(toolNames).length); // v2 absent, plus one unknown tool.
   assert.equal(report.capabilities.find(c => c.capability === 'future_mutator_v1').integration, 'integration_required');
   assert.equal(f.state.calls.length, 0);
 });

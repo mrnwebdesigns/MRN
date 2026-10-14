@@ -8,19 +8,27 @@ import { ContentWorkflow } from '../src/content-workflow.mjs';
 import { toolNames } from '../src/mainwp.mjs';
 import { delegationDigest } from '../src/delegation.mjs';
 import { responseEvidence } from '../src/probe.mjs';
+import { contentContract, contentPolicyContract, contentSchemas } from '../src/content-contract.mjs';
 
 const person = { subject: 'google-oauth2|123456', googleSubject: '123456', identityProvider: 'google-oauth2', verifiedEmail: 'staff@mrnwebdesigns.com', expiresAt: Date.now() + 3600000, scopes: ['mrn:operations', 'mrn:operations:write'] };
 function configured(t) {
   const f = setup(); t.after(f.close); const q = contentQaFixture();
   f.policy.members.push({ subject: person.subject, enabled: true, grants: [{ website: 'example', environments: ['development'], actions: ['read', 'content'] }] });
-  const state = { snapshot: structuredClone(original), prepared: new Map(), qa: 0, applied: 0, approvals: 0, revoked: false, ownership: 'wordpress-post' };
+  const state = { snapshot: structuredClone(original), prepared: new Map(), qa: 0, applied: 0, approvals: 0, revoked: false, ownership: 'wordpress-post', policyRequests: [] };
   f.service.verifyStaff = async () => { if (state.revoked) throw new Error('revoked'); };
   const call = f.client.callTool.bind(f.client);
   f.client.callTool = async request => {
     const { name, arguments: args } = request;
-    if (name === toolNames.contentPolicy) return response({ site_id: 1, site_url: f.state.url, enabled: true, profile,
+    if ([toolNames.contentPolicy, toolNames.contentTargetPolicy].includes(name)) {
+      state.policyRequests.push({ name, args });
+      if (state.policyError) return { isError: true, ...response({ error: { code: state.policyError, message: 'private-sentinel' } }) };
+      const selected = state.policyProfiles && args.target ? state.policyProfiles[`${args.target.post_id}:${args.target.field}`] ?? null : profile;
+      const result = { site_id: 1, site_url: f.state.url, enabled: true, profile: selected,
       qa_keys: [{ id: q.policy.keyId, public_key_base64: q.policy.publicKeyBase64 }], maximum_value_bytes: 8192, maximum_snapshot_bytes: 32768,
-      policy_sha256: '9'.repeat(64), supported_target_kinds: ['post'] });
+      policy_sha256: '9'.repeat(64), supported_target_kinds: ['post'] };
+      if (state.malformedPolicy) delete result.enabled;
+      return response(result);
+    }
     if (name === toolNames.contentInspect) return response({ snapshot: structuredClone(state.snapshot), snapshot_sha256: delegationDigest(state.snapshot), ownership: state.ownership,
       affected_paths: ['/sample-page/'], stable_selector: { post_type: 'page', post_path: 'sample-page' } });
     if ([toolNames.contentPrepare, toolNames.contentRollback].includes(name)) {
@@ -123,4 +131,57 @@ test('parallel approvals claim one content provider approval and cross-operation
   release(); await first; assert.equal(f.contentState.approvals, 1);
   const session = await f.service.session(person, f.registry.resolve(person, 'example'), 'content'); t.after(() => session.close()); await session.fresh();
   await assert.rejects(() => session.call(toolNames.contentExecute, { operation_id: 'caller-chosen', reviewed_digest: '0'.repeat(64) }), { code: 'TARGET_MISMATCH' });
+});
+
+test('target-aware lookup preserves the closed v1 output and requires the entire exact target', () => {
+  assert.deepEqual(contentPolicyContract.output, contentContract.abilities['get-content-policy-v1'].output);
+  const input = { site_id: 1, site_url: original.site_url, target };
+  assert.deepEqual(contentSchemas['get-content-policy-v2'].input.parse(input), input);
+  for (const bad of [{ site_id: 1, site_url: original.site_url }, { ...input, email: 'caller@mrnwebdesigns.com' },
+    { ...input, target: { ...target, post_id: 0 } }, { ...input, target: { ...target, kind: 'acf' } }]) {
+    assert.throws(() => contentSchemas['get-content-policy-v2'].input.parse(bad));
+  }
+});
+
+test('v2 selects separate exact record/field policies on one site; v1 is used only when absent', async t => {
+  const f = configured(t);
+  await f.service.inspectContent(person, { website: 'example', target });
+  assert.deepEqual(f.contentState.policyRequests[0], { name: toolNames.contentPolicy, args: { site_id: 1, site_url: original.site_url } });
+  f.state.contentTargetPolicy = true; f.contentState.policyRequests = [];
+  const another = { ...target, post_id: 77, field: 'post_title' }, alternate = { ...profile, id: 'second-record', sha256: '2'.repeat(64) };
+  f.contentState.policyProfiles = { [`${target.post_id}:${target.field}`]: profile, [`${another.post_id}:${another.field}`]: alternate };
+  const first = await f.service.inspectContent(person, { website: 'example', target }); assert.deepEqual(first.policy.profile, profile);
+  f.contentState.snapshot.target = another;
+  const second = await f.service.inspectContent(person, { website: 'example', target: another }); assert.deepEqual(second.policy.profile, alternate);
+  assert.deepEqual(f.contentState.policyRequests, [target, another].map(selected => ({ name: toolNames.contentTargetPolicy,
+    args: { site_id: 1, site_url: original.site_url, target: selected } })));
+  assert.equal(f.contentState.applied, 0); assert.equal(f.state.backups, 0);
+});
+
+test('v2 denial, malformed output and missing qualification never downgrade to the legacy lookup', async t => {
+  for (const mode of ['denied', 'malformed', 'unqualified']) {
+    const f = configured(t); f.state.contentTargetPolicy = true;
+    if (mode === 'denied') f.contentState.policyError = 'mrn_content_profile';
+    if (mode === 'malformed') f.contentState.malformedPolicy = true;
+    if (mode === 'unqualified') f.contentState.policyProfiles = {};
+    const op = await prepared(f, mode); assert.equal(op.status, 'blocked');
+    assert.deepEqual(f.contentState.policyRequests.map(p => p.name), [toolNames.contentTargetPolicy]);
+    assert.equal(f.contentState.prepared.size, 0); assert.equal(f.contentState.qa, 0); assert.equal(f.state.backups, 0);
+  }
+});
+
+test('v2 qualification cannot substitute an untrusted record profile during preparation', async t => {
+  const f = configured(t); f.state.contentTargetPolicy = true;
+  f.contentState.policyProfiles = { [`${target.post_id}:${target.field}`]: { ...profile, id: 'wrong-record', sha256: '2'.repeat(64) } };
+  const op = await prepared(f); assert.equal(op.status, 'blocked'); assert.equal(op.error.code, 'CONTENT_PROFILE_UNQUALIFIED');
+  assert.equal(f.contentState.prepared.size, 0); assert.equal(f.contentState.qa, 0);
+});
+
+test('target-aware policy supports the unchanged content edit and rollback lifecycle', async t => {
+  const f = configured(t); f.state.contentTargetPolicy = true;
+  const op = await prepared(f); assert.equal(op.status, 'prepared'); assert.equal((await execute(f, op)).status, 'verified');
+  const rollback = await f.service.prepareRollback(person, { operationId: op.id, requestKey: 'v2-rollback' }); await f.service.jobs.get(rollback.id);
+  assert.equal((await execute(f, f.service.get(person, rollback.id))).status, 'verified');
+  assert.deepEqual(f.contentState.snapshot, original);
+  assert.ok(f.contentState.policyRequests.every(p => p.name === toolNames.contentTargetPolicy && p.args.target.post_id === target.post_id && p.args.target.field === target.field));
 });

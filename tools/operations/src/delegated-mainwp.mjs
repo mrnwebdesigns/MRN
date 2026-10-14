@@ -16,6 +16,7 @@ const readAbilities = new Set([
   'inspect-backup-retention-policy', 'inspect-code-file', 'get-code-operation',
   'get-content-policy', 'inspect-content', 'get-content-operation', 'get-content-migration',
 ].map(name => `mrn-mainwp/${name}-v1`)));
+readAbilities.add('mrn-mainwp/get-content-policy-v2');
 const writeAbilities = new Set(['start-database-backup', 'get-database-backup-status', 'qualify-code-storage',
   'prepare-code-change', 'approve-code-change', 'execute-code-change', 'preflight-stack-plugin-update',
   'update-stack-plugin', 'rollback-stack-plugin', 'prepare-content-change', 'approve-content-change', 'execute-content-change', 'prepare-content-rollback'].map(name => `mrn-mainwp/${name}-v1`));
@@ -26,6 +27,7 @@ const accessSchema = actorSchema.extend({ schema: z.literal(1), roles: z.array(z
   portfolio_access: z.boolean(), expires_at: z.number().int(), policy_sha256: sha }).strict();
 const identityMatches = (result, actor) => result.oauth_subject === actor.subject && result.google_sub === actor.googleSubject && result.email === actor.verifiedEmail;
 export function abilityName(tool) {
+  if (tool === 'mrn_mainwp__get_content_policy_v2') return 'mrn-mainwp/get-content-policy-v2';
   requireThat(/^(?:mrn_mainwp__)?[a-z0-9]+(?:_[a-z0-9]+)*_v1$/.test(tool) && !Object.values(delegationTools).includes(tool),
     'CAPABILITY_DENIED', 'Only a native qualified workflow may be delegated.');
   const namespace = tool.startsWith('mrn_mainwp__') ? 'mrn-mainwp' : 'mainwp';

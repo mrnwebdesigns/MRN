@@ -12,7 +12,7 @@ export class FixtureMainwp {
   async readResource() {
     return { contents: [{ uri: 'mainwp://status', text: JSON.stringify({ connected: true, dashboardHost: this.data.host || 'wpcontrol.mrndev.io', abilitiesCount: 84 }) }] };
   }
-  async listTools() { return { tools: [...Object.values(toolNames), ...(this.data.directory ? ['get_sites_basic_v1'] : [])].filter(n => !(this.data.missing || []).includes(n)).map(name => ({ name, inputSchema: { type: 'object', properties: {} } })) }; }
+  async listTools() { return { tools: [...Object.values(toolNames), ...(this.data.directory ? ['get_sites_basic_v1'] : [])].filter(n => !(this.data.missing || []).includes(n) && (n !== toolNames.contentTargetPolicy || this.data.contentTargetPolicy === true)).map(name => ({ name, inputSchema: { type: 'object', properties: {} } })) }; }
   async callTool({ name, arguments: a }) {
     this.data.calls.push(name);
     if (name === this.data.fail) throw new Error('DOWNSTREAM FAILURE private-token-sentinel');
@@ -75,6 +75,6 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const fixture = new FixtureMainwp(state, () => writeFileSync(file, JSON.stringify(state)));
   const server = new McpServer({ name: 'controlled-mainwp-fixture', version: '1.0.0' });
   server.registerResource('status', 'mainwp://status', {}, () => fixture.readResource());
-  for (const name of [...Object.values(toolNames), ...(state.directory ? ['get_sites_basic_v1'] : [])]) server.registerTool(name, { inputSchema: z.object({}).passthrough() }, args => fixture.callTool({ name, arguments: args }));
+  for (const name of [...Object.values(toolNames), ...(state.directory ? ['get_sites_basic_v1'] : [])].filter(n => n !== toolNames.contentTargetPolicy || state.contentTargetPolicy === true)) server.registerTool(name, { inputSchema: z.object({}).passthrough() }, args => fixture.callTool({ name, arguments: args }));
   await server.connect(new StdioServerTransport());
 }

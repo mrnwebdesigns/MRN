@@ -10,7 +10,11 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 export async function inspectContentTarget(session, input) {
   const target = contentTargetSchema.parse(input), site = await session.fresh();
   const args = { site_id: site.id, site_url: site.url };
-  const policy = await contentCall(session, 'get-content-policy-v1', args);
+  // Capability absence alone permits the legacy unambiguous lookup. A failed,
+  // denied or unqualified v2 response must never downgrade to a site-only call.
+  const policy = await session.supports(toolNames.contentTargetPolicy)
+    ? await contentCall(session, 'get-content-policy-v2', { ...args, target })
+    : await contentCall(session, 'get-content-policy-v1', args);
   const inspected = await contentCall(session, 'inspect-content-v1', { ...args, target });
   const snapshot = contentSnapshot(inspected.snapshot);
   requireThat(policy.site_id === site.id && policy.site_url === site.url && snapshot.site_id === site.id && snapshot.site_url === site.url

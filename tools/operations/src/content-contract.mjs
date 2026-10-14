@@ -4,6 +4,7 @@ import { requireThat } from './contracts.mjs';
 import { delegationCanonical, delegationDigest } from './delegation.mjs';
 
 export const contentContract = JSON.parse(readFileSync(new URL('../contracts/content-v1.json', import.meta.url), 'utf8'));
+export const contentPolicyContract = JSON.parse(readFileSync(new URL('../contracts/content-policy-v2.json', import.meta.url), 'utf8'));
 
 // Compile only the small, checked-in schema vocabulary. Unsupported contract
 // changes stop startup instead of silently weakening runtime validation.
@@ -36,6 +37,9 @@ function compile(s) {
   return s.enum ? out.refine(value => s.enum.includes(value), 'Unsupported content enum.') : out;
 }
 export const contentSchemas = Object.fromEntries(Object.entries(contentContract.abilities).map(([name, a]) => [name, { input: compile(a.input), output: compile(a.output) }]));
+requireThat(contentPolicyContract.ability === 'mrn-mainwp/get-content-policy-v2' && contentPolicyContract.role === 'reader'
+  && contentPolicyContract.wrapper === 'read-delegated-operation-v1', 'CONTENT_CONTRACT', 'Unsupported target-aware policy contract.');
+contentSchemas['get-content-policy-v2'] = { input: compile(contentPolicyContract.input), output: compile(contentPolicyContract.output) };
 export const contentTargetSchema = compile(contentContract.abilities['inspect-content-v1'].input.properties.target);
 export const contentProfileSchema = compile(contentContract.abilities['prepare-content-change-v1'].output.properties.profile);
 export const contentSnapshotSchema = compile(contentContract.abilities['inspect-content-v1'].output.properties.snapshot);

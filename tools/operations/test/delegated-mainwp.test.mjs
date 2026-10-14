@@ -96,6 +96,18 @@ test('read-only bearer cannot obtain a delegated write challenge or start a back
   assert.deepEqual(f.state.dispatched.map(d => d.ability), ['mainwp/get-site-v1', 'mainwp/sync-sites-v1']);
 });
 
+test('only the exact qualified v2 policy read uses the signed read wrapper with its target bound', async () => {
+  const f = fixture(); const client = new DelegatedMainwpClient(f.client, { ...f.actor('123'), scopes: ['mrn:operations'] }, f.signer);
+  const args = { site_id: 85, site_url: 'https://example.test', target: { kind: 'post', post_type: 'page', post_id: 42, field: 'post_content' } };
+  await client.callTool({ name: 'mrn_mainwp__get_content_policy_v2', arguments: args });
+  assert.deepEqual(f.state.calls, [delegationTools.challenge, delegationTools.read]);
+  assert.equal(f.state.dispatched[0].ability, 'mrn-mainwp/get-content-policy-v2'); assert.deepEqual(f.state.dispatched[0].args, args);
+  for (const name of ['mrn_mainwp__get_content_policy_v3', 'mrn_mainwp__configure_content_policy_v2', 'mrn_mainwp__register_content_profile_v1']) {
+    await assert.rejects(() => client.callTool({ name, arguments: args }), { code: 'CAPABILITY_DENIED' });
+  }
+  assert.equal(f.state.calls.length, 2);
+});
+
 test('unsafe GET metadata or missing confirmation boundary blocks before sending an identity assertion', async () => {
   for (const name of Object.values(delegationTools)) {
     const f = fixture();
