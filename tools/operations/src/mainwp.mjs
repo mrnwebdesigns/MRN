@@ -5,7 +5,7 @@ import { OpsError, requireThat } from './contracts.mjs';
 
 export const toolNames = {
   site: 'get_site_v1', sync: 'sync_sites_v1', plugins: 'get_site_plugins_v1', themes: 'get_site_themes_v1',
-  security: 'get_site_security_v1', updates: 'get_site_updates_v1', changes: 'get_site_changes_v1',
+  security: 'get_site_security_v1', updates: 'get_site_updates_v1', ignoredUpdates: 'list_ignored_updates_v1', changes: 'get_site_changes_v1',
   runtime: 'mrn_mainwp__get_stack_runtime_report_v1', qualify: 'mrn_mainwp__qualify_stack_site_v1',
   preflight: 'mrn_mainwp__preflight_stack_plugin_update_v1', backup: 'mrn_mainwp__start_database_backup_v1',
   backupStatus: 'mrn_mainwp__get_database_backup_status_v1', update: 'mrn_mainwp__update_stack_plugin_v1',
@@ -115,6 +115,9 @@ export class MainwpSession {
       requireThat(Number.isInteger(this.siteId) && this.siteId > 0, 'TARGET_UNRESOLVED', 'Exact site resolution is required.');
       if (name === toolNames.sync) requireThat(Object.keys(args).length === 1 && Array.isArray(args.site_ids) && args.site_ids.length === 1 && args.site_ids[0] === this.siteId,
         'TARGET_MISMATCH', 'Synchronization requires exactly one resolved site.');
+      else if (name === toolNames.ignoredUpdates) requireThat(Object.keys(args).length === 1
+        && Array.isArray(args.site_ids_or_domains) && args.site_ids_or_domains.length === 1 && args.site_ids_or_domains[0] === this.siteId,
+      'TARGET_MISMATCH', 'Ignored-update inspection requires exactly one resolved site.');
       else if ([toolNames.codeApprove, toolNames.codeExecute, toolNames.codeStatus].includes(name)) requireThat(this.codeOperation && args.operation_id === this.codeOperation.id
         && (name === toolNames.codeStatus || args.reviewed_digest === this.codeOperation.digest), 'TARGET_MISMATCH', 'The provider operation must belong to the exact stored website plan.');
       else requireThat((args.site_id ?? args.site_id_or_domain) === this.siteId && (!args.site_url || normalizeSiteUrl(args.site_url) === this.target.url), 'TARGET_MISMATCH', 'The downstream target differs from the authorized website.');

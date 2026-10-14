@@ -28,7 +28,7 @@ Observed 2026-10-14T10:57:16.039Z. Mapping is against this source checkout; conn
 
 | Backend tool | Hosted workflow | Backend effect |
 | --- | --- | --- |
-| list_sites_v1 | Not yet integrated | Read |
+| list_sites_v1 | read_portfolio_details | Read |
 | get_site_v1 | inspect_website | Read |
 | sync_sites_v1 | inspect_website | Guarded operation |
 | get_site_plugins_v1 | read_website_details | Read |
@@ -42,7 +42,7 @@ Observed 2026-10-14T10:57:16.039Z. Mapping is against this source checkout; conn
 | count_sites_v1 | read_portfolio_details | Read |
 | get_sites_basic_v1 | list_websites | Read |
 | list_updates_v1 | Not yet integrated | Read |
-| list_ignored_updates_v1 | Not yet integrated | Read |
+| list_ignored_updates_v1 | read_website_details | Read |
 | get_site_updates_v1 | read_website_details | Read |
 | list_clients_v1 | read_portfolio_details | Read |
 | count_clients_v1 | read_portfolio_details | Read |
