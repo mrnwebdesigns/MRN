@@ -59,6 +59,14 @@ one-site sync and fresh exact readback; substituting a cached numeric ID is not
 an accepted fix. The [Code gate](https://github.com/mrnwebdesigns/MRN/actions/runs/38608469081)
 passes at this same source. Native gateway content acceptance remains failed.
 
+Provider fix `aeb0f2cfe1d7496e338845ff0c810e206a45a1b0` passes
+[all four CI jobs](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38611997072),
+including real exact-URL resolution, one-site numeric sync and fresh exact URL,
+ID, connection and timestamp readback. URL reads bind one current authorized
+record and recheck the returned identity; malformed/alias/ambiguous/disconnected
+targets and response drift are denied. Sync and mutations stay numeric-only.
+The gateway now pins that immutable fix; its combined lifecycle rerun is pending.
+
 The new six-group lifecycle harness will require exact snapshot and public HTML
 verification after the approved edit and separate rollback, with individual
 audit attribution and approval/revocation refusals. Only the two backup calls
