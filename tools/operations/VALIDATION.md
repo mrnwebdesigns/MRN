@@ -117,6 +117,18 @@ The immutable sources are provider `47de880` and canonical MCP `3249bde`.
 This closes the demonstrated disposable gateway content transport lifecycle,
 not real-site rendering qualification, code editing or team acceptance.
 
+Consumer preparation extracts the existing closed content-schema compiler and
+adds bounded, acyclic local definition references plus semantic unique-item
+checks. External/unknown/cyclic references, unknown schema vocabulary, open
+objects, duplicate records, malformed Unicode and unsafe integers are rejected.
+All 242 controlled tests and direct lint pass with the unchanged frozen v1/v2
+wire. A read-only probe compiles the provider's 30 staged definitions and accepts
+its six structural vectors; it is not an immutable contract acceptance or a
+signature/lifecycle test. No new provider schema is copied into the gateway, no
+qualification endpoint is enabled, and static profile trust is unchanged. The
+cross-consumer target binding still needs explicit signed claims, purpose,
+audiences, revision and expiry semantics before consumer wiring.
+
 The passing six-group lifecycle harness requires exact snapshot and public HTML
 verification after the approved edit and separate rollback, with individual
 audit attribution and approval/revocation refusals. Only the two backup calls

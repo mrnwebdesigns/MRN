@@ -1,41 +1,11 @@
 import { readFileSync } from 'node:fs';
-import { z } from 'zod';
 import { requireThat } from './contracts.mjs';
 import { delegationCanonical, delegationDigest } from './delegation.mjs';
+import { compileContentSchema as compile } from './content-schema.mjs';
 
 export const contentContract = JSON.parse(readFileSync(new URL('../contracts/content-v1.json', import.meta.url), 'utf8'));
 export const contentPolicyContract = JSON.parse(readFileSync(new URL('../contracts/content-policy-v2.json', import.meta.url), 'utf8'));
 
-// Compile only the small, checked-in schema vocabulary. Unsupported contract
-// changes stop startup instead of silently weakening runtime validation.
-function compile(s) {
-  const keys = ['type', 'properties', 'required', 'additionalProperties', 'anyOf', 'enum', 'minimum', 'maximum', 'minLength', 'maxLength', 'pattern', 'items', 'minItems', 'maxItems'];
-  requireThat(Object.keys(s).every(k => keys.includes(k)), 'CONTENT_CONTRACT', 'Unsupported content wire schema.');
-  if (s.anyOf) return z.union(s.anyOf.map(compile));
-  if (Array.isArray(s.type)) return z.union(s.type.map(type => compile({ ...s, type })));
-  let out;
-  if (s.type === 'object') {
-    requireThat(s.additionalProperties === false && Array.isArray(s.required), 'CONTENT_CONTRACT', 'Content objects must be closed.');
-    out = z.object(Object.fromEntries(Object.entries(s.properties).map(([k, v]) => [k, s.required.includes(k) ? compile(v) : compile(v).optional()]))).strict();
-  } else if (s.type === 'array') {
-    out = z.array(compile(s.items));
-    if (s.minItems !== undefined) out = out.min(s.minItems);
-    if (s.maxItems !== undefined) out = out.max(s.maxItems);
-  } else if (s.type === 'string') {
-    out = z.string();
-    if (s.minLength !== undefined) out = out.min(s.minLength);
-    if (s.maxLength !== undefined) out = out.max(s.maxLength);
-    if (s.pattern) out = out.regex(new RegExp(s.pattern));
-    out = out.refine(value => value.isWellFormed() && !value.includes('\0'), 'Invalid content Unicode.');
-  } else if (s.type === 'integer') {
-    out = z.number().int().safe();
-    if (s.minimum !== undefined) out = out.min(s.minimum);
-    if (s.maximum !== undefined) out = out.max(s.maximum);
-  } else if (s.type === 'boolean') out = z.boolean();
-  else if (s.type === 'null') out = z.null();
-  else throw new Error('Unsupported content contract type.');
-  return s.enum ? out.refine(value => s.enum.includes(value), 'Unsupported content enum.') : out;
-}
 export const contentSchemas = Object.fromEntries(Object.entries(contentContract.abilities).map(([name, a]) => [name, { input: compile(a.input), output: compile(a.output) }]));
 requireThat(contentPolicyContract.ability === 'mrn-mainwp/get-content-policy-v2' && contentPolicyContract.role === 'reader'
   && contentPolicyContract.wrapper === 'read-delegated-operation-v1', 'CONTENT_CONTRACT', 'Unsupported target-aware policy contract.');
