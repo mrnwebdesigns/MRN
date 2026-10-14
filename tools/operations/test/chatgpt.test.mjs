@@ -8,6 +8,9 @@ import { createHttpServer } from '../src/http.mjs';
 import { oauthChallenge } from '../src/auth.mjs';
 import { configSchema } from '../src/config.mjs';
 import { actor, setup } from './helpers.mjs';
+import { makePlan } from './fixtures/content.mjs';
+import { response as mainwpResponse } from './fixtures/mainwp.mjs';
+import { toolNames } from '../src/mainwp.mjs';
 
 async function hosted(t, authenticate) {
   const f = setup(); t.after(() => f.close());
@@ -45,6 +48,8 @@ test('ChatGPT receives OAuth declarations on the wire and accurate operation eff
   assert.equal(tools.inspect_website.annotations.idempotentHint, false);
   assert.equal(tools.list_websites.annotations.openWorldHint, false);
   assert.equal(tools.inspect_website.annotations.openWorldHint, true);
+  assert.equal(tools.get_operation.annotations.openWorldHint, true);
+  assert.equal(tools.get_operation.annotations.readOnlyHint, true);
   const inspection = await f.call('tools/call', { name: 'inspect_website', arguments: { website: 'example', environment: 'development' } });
   assert.equal(JSON.parse(inspection.body.result.content[0].text).target.url, f.state.url);
 });
@@ -56,6 +61,25 @@ test('an expired tool identity returns the ChatGPT relinking challenge without a
   assert.deepEqual(response.body.result._meta['mcp/www_authenticate'], [oauthChallenge(`${f.base}/mcp`)]);
   assert.match(response.body.result._meta['mcp/www_authenticate'][0], /error="invalid_token".*error_description=/);
   assert.equal(f.state.calls.length, 0);
+});
+
+test('ChatGPT can request retained provider status using the existing read-only operation tool', async t => {
+  const reader = { ...actor, identityProvider: 'google-oauth2', scopes: ['mrn:operations'] };
+  const f = await hosted(t, async () => reader); f.service.verifyStaff = async () => {};
+  const plan = makePlan().plan, target = f.registry.resolve(reader, 'example', 'development');
+  const record = f.store.create('operation', reader, target, { workflow: 'content', status: 'uncertain', plan: { provider: plan } });
+  let reads = 0; const original = f.client.callTool.bind(f.client);
+  f.client.callTool = async request => {
+    if (request.name !== toolNames.contentStatus) return original(request);
+    reads++; assert.equal(request.arguments.operation_id, plan.operation_id);
+    return mainwpResponse({ ...Object.fromEntries(['operation_id', 'site_id', 'site_url', 'target', 'before_sha256', 'candidate_sha256', 'migration_artifact', 'affected_paths'].map(k => [k, plan[k]])),
+      state: 'completed', current_sha256: plan.candidate_sha256, changed: true, rollback_available: true, error_code: null });
+  };
+  await f.call('tools/call', { name: 'get_operation', arguments: { operationId: record.id } }); assert.equal(reads, 0);
+  const refreshed = await f.call('tools/call', { name: 'get_operation', arguments: { operationId: record.id, refreshProvider: true } });
+  const result = JSON.parse(refreshed.body.result.content[0].text);
+  assert.equal(result.status, 'uncertain'); assert.equal(result.providerStatus.state, 'completed'); assert.equal(result.providerStatus.liveStateVerified, false);
+  assert.equal(reads, 1); assert.equal(f.state.mutations, 0); assert.equal(f.state.backups, 0);
 });
 
 test('every change lifecycle tool refuses a read-only sign-in before work or caller identity hints', async t => {

@@ -43,7 +43,7 @@ export function createMcp(service, actor, { publicUrl } = {}) {
     const annotations = { readOnlyHint: readOnly,
       destructiveHint: ['execute_operation', 'reconcile_operation', 'approve_code_source'].includes(name),
       idempotentHint: readOnly || ['prepare_repair', 'prepare_rollback', 'prepare_code_edit', 'prepare_content_edit', 'approve_operation', 'execute_operation', 'reconcile_operation'].includes(name),
-      openWorldHint: !['list_websites', 'get_operation', 'website_history', 'approve_operation'].includes(name) };
+      openWorldHint: !['list_websites', 'website_history', 'approve_operation'].includes(name) };
     const title = name.replaceAll('_', ' ').replace(/^./, c => c.toUpperCase());
     const securitySchemes = toolSecuritySchemes(name);
     const _meta = { securitySchemes, 'openai/toolInvocation/invoking': 'Working on your MRN request', 'openai/toolInvocation/invoked': 'MRN result received' };
@@ -82,7 +82,8 @@ export function createMcp(service, actor, { publicUrl } = {}) {
   register('prepare_repair', 'Use when asked to fix a recorded finding. Revalidate it and save a concrete repair plan through the established MRN workflow. Does not deploy.', { inspectionId: id, findingId: id, requestKey }, false, args => service.prepare(actor, args));
   register('approve_operation', 'Record explicit existing authorization for the exact prepared plan. Code enforces live Google roles and any independent-approver policy; Fleet enforces environment release permission.', { operationId: id, planDigest: sha }, false, args => service.approve(actor, args));
   register('execute_operation', 'Execute an approved plan under the shared website lock, backup and verification gates. Returns immediately with an operation ID; poll get_operation.', { operationId: id }, false, args => service.execute(actor, args));
-  register('get_operation', 'Read a recorded inspection or operation, including attempted, blocked, uncertain and verified outcomes.', { operationId: id }, true, args => service.get(actor, args.operationId));
+  register('get_operation', 'Read a recorded inspection or operation. For a stored code/content plan, refreshProvider also reads its exact retained MainWP status. This does not retry a change, verify current live state, release locks or upgrade an uncertain outcome.',
+    { operationId: id, refreshProvider: z.boolean().optional() }, true, args => args.refreshProvider ? service.refreshOperation(actor, args.operationId) : service.get(actor, args.operationId));
   register('reconcile_operation', 'Reconcile interrupted Fleet work using operator-enrolled quiescence evidence and fresh runtime/public verification. Does not change WordPress. Releases the local lock only after a qualified exact-code match; requires release permission and cannot force-unlock.', { operationId: id }, false, args => service.reconcile(actor, args));
   register('website_history', 'Read previous inspections and changes for the exact selected environment.', target, true, args => service.history(actor, args.website, args.environment));
   register('prepare_rollback', 'Prepare rollback for a verified content/code edit or verified/reconciled Fleet update using retained exact snapshots or artifacts. Repeat applicable source, QA, approval and backup gates. Content rollback restores the approved record field; this is not a whole database or media restore.', { operationId: id, requestKey }, false, args => service.prepareRollback(actor, args));

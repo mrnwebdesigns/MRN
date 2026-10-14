@@ -20,6 +20,7 @@ const mapped = new Map([
   [toolNames.codeInspect, 'inspect_website_code'],
   [toolNames.codePrepare, 'prepare_code_edit'], [toolNames.codeApprove, 'approve_operation'],
   [toolNames.codeExecute, 'execute_operation'],
+  [toolNames.codeStatus, 'get_operation (refreshProvider)'], [toolNames.contentStatus, 'get_operation (refreshProvider)'],
   [toolNames.contentPolicy, 'inspect_content_record'], [toolNames.contentInspect, 'inspect_content_record'],
   [toolNames.contentPrepare, 'prepare_content_edit'], [toolNames.contentMigration, 'prepare_content_edit'],
   [toolNames.contentApprove, 'approve_operation'], [toolNames.contentExecute, 'execute_operation'], [toolNames.contentRollback, 'prepare_rollback'],

@@ -7,7 +7,7 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
 ## Verified baseline, 2026-10-14
 
 - Existing workspace plugin exposes four hosted tools. This source now registers 21 workflow tools; those new tools are not published or deployed.
-- Canonical MainWP MCP is connected to wpcontrol.mrndev.io. Provider reports 107 discovered abilities; its current tool policy exposes 48. Hidden capabilities remain filtered; this inventory does not bypass that policy.
+- Canonical MainWP MCP is connected to wpcontrol.mrndev.io. The fresh configured connection at 15:06 UTC reports 107 discovered abilities and exposes 52 tools (the earlier connection exposed 48). Its abilities resource is also policy-filtered; the other 55 are counted, not enumerated or qualified here. Hidden capabilities remain filtered; this inventory does not bypass that policy.
 - Live code provider is 0.13.4. Code policy and signed QA are qualified only for the existing company pilot, not the managed portfolio.
 - Provider identity candidate PR #28 passed disposable WordPress/MainWP HTTPS runtime enforcement at source `603c816`: individual principal switching, replay/suspension denial and raw service-route bypass denial. This uses synthetic Directory responses and does not prove live Google OAuth or hosted ingress acceptance.
 - Provider content candidate PR #29 at `c4eb01ff7a52e76b7a19b94a33b24b5ccdf53afa` passed [full CI run 38578290602](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38578290602): 34 native HTTP checks, 23 WordPress/MySQL content checks and 13 filesystem/SQL parity measurements. This supersedes the earlier failed measurer checkpoint. The reusable helper is accepted for those demonstrated CLI-context semantics; the runner's independent HTTP proof is recorded below. Provider controller wiring and real-site qualification remain separate gates. These disposable checks used no production credentials.
@@ -26,11 +26,11 @@ The four-field challenge is nonce/expires_at/authenticated_connection_sha256/pol
 
 The source config keeps legacy deployment behavior until a reviewed migration enables googleWorkspace and delegation together. Failure or absence of the new provider denies authentication; there is no silent fallback. Identity keys are owner-only, non-symlink Ed25519 files. Audit events retain the validated individual subject, Google subject and email without tokens or argument payloads.
 
-Native content reads repeat live staff authorization after each REST response and at the service return boundary. Revocation during a pending read withholds its result. Known MainWP content/QA/backup/lock/Directory blockers retain safe, fixed chat explanations; raw upstream messages are never reflected. Safe Mode and uncertain outcomes remain hard stops with no alternate-route retry. The full gateway suite passes 204 controlled tests; this is source evidence, not live revoked-account acceptance.
+Native content reads repeat live staff authorization after each REST response and at the service return boundary. Revocation during a pending read withholds its result. Known MainWP content/QA/backup/lock/Directory blockers retain safe, fixed chat explanations; raw upstream messages are never reflected. Safe Mode and uncertain outcomes remain hard stops with no alternate-route retry. The full gateway suite passes 212 controlled tests; this is source evidence, not live revoked-account acceptance.
 
 ## Capability mapping
 
-Observed 2026-10-14T10:57:16.039Z. Mapping is against this source checkout; connected_workflow does not mean deployed, write-qualified or workspace-enabled.
+Observed 2026-10-14T15:06:50.092Z through the configured MCP, using the existing SDK/client because the desktop resource response truncated the JSON. Only status, tool discovery and the abilities resource were read; no child call or configuration write occurred. Mapping is against this source checkout; connected_workflow does not mean deployed, write-qualified or workspace-enabled.
 
 | Backend tool | Hosted workflow | Backend effect |
 | --- | --- | --- |
@@ -63,6 +63,7 @@ Observed 2026-10-14T10:57:16.039Z. Mapping is against this source checkout; conn
 | get_batch_job_status_v1 | read_portfolio_details (existing batch_job) | Read |
 | mrn_mainwp__start_database_backup_v1 | approved_operation | Guarded operation |
 | mrn_mainwp__get_database_backup_status_v1 | approved_operation | Guarded operation |
+| mrn_mainwp__install_plugin_package_v1 | Not yet integrated | Guarded operation |
 | mrn_mainwp__get_google_fonts_status_v1 | read_website_details | Read |
 | mrn_mainwp__get_stack_runtime_report_v1 | read_website_details | Read |
 | mrn_mainwp__inspect_backup_retention_policy_v1 | read_website_details | Read |
@@ -70,9 +71,12 @@ Observed 2026-10-14T10:57:16.039Z. Mapping is against this source checkout; conn
 | mrn_mainwp__get_stack_deployment_agent_status_v1 | read_website_details | Read |
 | mrn_mainwp__qualify_stack_site_v1 | read_website_details | Read |
 | mrn_mainwp__preflight_mu_release_v1 | Not yet integrated | Guarded operation |
+| mrn_mainwp__preflight_stack_release_v1 | Not yet integrated | Guarded operation |
 | mrn_mainwp__preview_incomplete_rollout_reconciliation_v1 | Not yet integrated | Read |
 | mrn_mainwp__install_mu_release_v1 | Not yet integrated | Guarded operation |
+| mrn_mainwp__install_stack_release_v1 | Not yet integrated | Guarded operation |
 | mrn_mainwp__rollback_mu_release_v1 | Not yet integrated | Guarded operation |
+| mrn_mainwp__rollback_stack_release_v1 | Not yet integrated | Guarded operation |
 | mrn_mainwp__configure_code_policy_v1 | Not yet integrated | Guarded operation |
 | mrn_mainwp__get_code_access_v1 | Not yet integrated | Guarded operation |
 | mrn_mainwp__inspect_code_file_v1 | inspect_website_code | Read |
@@ -80,7 +84,7 @@ Observed 2026-10-14T10:57:16.039Z. Mapping is against this source checkout; conn
 | mrn_mainwp__prepare_code_change_v1 | prepare_code_edit | Guarded operation |
 | mrn_mainwp__approve_code_change_v1 | approve_operation | Guarded operation |
 | mrn_mainwp__execute_code_change_v1 | execute_operation | Guarded operation |
-| mrn_mainwp__get_code_operation_v1 | Not yet integrated | Read |
+| mrn_mainwp__get_code_operation_v1 | get_operation (refreshProvider) | Read |
 | mrn_mainwp__resolve_code_operation_v1 | Not yet integrated | Guarded operation |
 
 ## Typed content workflow in source
@@ -98,6 +102,8 @@ Runner source `65510797ffb0f0627c31c6cb5b38c7e038aa4b10` pins the accepted provi
 Portfolio updates and existing batch-job status are bounded reads through the same signed identity transport. Updates are explicitly labeled cached Dashboard inventory; they do not trigger bulk child sync or replace exact-site inspection. Batch reads never start/retry a job. Provider-side adapters passed the disposable native HTTP checks noted above, including native batch denial propagation. The provider source remains a draft with content controller qualification outstanding. Real hosted execution remains unverified, and these source mappings are not deployed capabilities.
 
 Live gateway readback reports `publicHtmlContentVerified` with method `exact-selector-html-text` and explicitly reports `liveBrowserVerified: false`. It does not label an HTTP/HTML comparison as live browser visibility. The protected disposable runtime and final team acceptance have their own browser evidence.
+
+`get_operation` accepts optional `refreshProvider: true` for an existing retained content/code plan. It resolves the exact current MainWP directory identity and reads `get-content-operation-v1` or `get-code-operation-v1` under the verified Google actor. It checks the operation, site, target/file and stored plan hashes, withholds results after access revocation, and returns only bounded status metadata. This is a Dashboard audit read, not a child sync or current-live-state check. Provider completion or owner-side resolution never upgrades local uncertainty, retries execution, releases its lock or authorizes rollback. An ordinary local-only operation read remains available when provider status is unavailable. Controlled HTTP-tool and lifecycle tests pass; live end-to-end provider status remains unverified.
 
 ## Guarded code workflow in source
 

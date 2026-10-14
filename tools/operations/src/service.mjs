@@ -5,6 +5,7 @@ import { inspectTarget } from './inspect.mjs';
 import { capabilityInventory, websiteDetails, portfolioDetails } from './capabilities.mjs';
 import { codeInspection } from './code.mjs';
 import { inspectContentTarget } from './content-workflow.mjs';
+import { providerOperationStatus } from './operation-status.mjs';
 
 export class Operations {
   constructor({ registry, store, connect, fleet, publicProbe, writesEnabled = false, qa = null, recoveryEvidence = null, discovery = null, content = null, verifyStaff = null }) {
@@ -53,6 +54,22 @@ export class Operations {
   }
   targetView(t) { return { websiteId: t.websiteId, name: t.name, environment: t.environment, url: t.url }; }
   get(actor, id) { const record = this.store.get(id); this.registry.authorize(actor, record.target, 'read'); return this.view(record); }
+  async refreshOperation(actor, id) {
+    const record = this.store.get(id);
+    const authorize = async () => {
+      this.registry.current(actor, record.target, 'read');
+      requireThat(actor.identityProvider === 'google-oauth2' && this.verifyStaff, 'AUTH_REQUIRED', 'Use your active MRN Google identity to inspect provider operations.');
+      await this.verifyStaff(actor);
+    };
+    await authorize();
+    requireThat(['code', 'content'].includes(record.workflow) && record.plan?.provider, 'OPERATION_STATUS_UNAVAILABLE', 'This operation has no retained MainWP code/content plan to inspect.');
+    const session = await this.session(actor, record.target, 'read', record.id);
+    try {
+      const providerStatus = await providerOperationStatus(session, record);
+      await authorize();
+      return { ...this.get(actor, id), providerStatus };
+    } finally { await session.close(); }
+  }
   async list(actor) {
     await this.discovery?.refresh(actor, { force: true });
     const websites = this.registry.list(actor);
