@@ -7,14 +7,20 @@ This is an unshipped integration candidate. The existing workspace plugin and li
 The new `provider-transport` CI job uses immutable provider/MCP commits in
 `test/runtime/sources.json`, the provider's disposable WordPress/MainWP HTTPS
 harness and the gateway's actual JWT, delegation, HTTP MCP and SQLite audit
-code. Its synthetic OAuth/Directory identities exercise concurrent staff reads,
+code. Its synthetic OAuth/Directory checks cover concurrent staff reads,
 outsider and revoked/suspended denials, read-only scope enforcement, persistent
 nonce replay denial and raw service-route denial. The MCP subprocess trusts only
 the generated fixture CA and routes the Dashboard hostname only to the fixture's
 private address; TLS verification remains enabled. It never loads local MainWP
 configuration or live credentials. Only a bounded pass report is retained, not
-credentials, signed envelopes, requests or private runtime files. Execution is
-pending the provider's accepted hook checkpoint. The empty synthetic portfolio
+credentials, signed envelopes, requests or private runtime files. At source
+`2929578`, [the first CI attempt](https://github.com/mrnwebdesigns/MRN/actions/runs/38591395905/job/115947138549)
+stopped before provider checkout: the existing MRN CI Standalone Repos App
+received HTTP 404 for that repository's installation lookup. No runtime check
+ran, no alternative credential was used and no access grant changed. The
+controlled-contracts and Code gate jobs passed at that exact source. Execution
+requires reviewed CI repository access and the provider's accepted hook
+checkpoint. The empty synthetic portfolio
 does not prove real-site discovery, content/code writes or ChatGPT acceptance.
 
 - Verified canonical MainWP status on wpcontrol.mrndev.io: connected, 107 provider abilities, 52 exposed by a fresh configured connection at 15:06 UTC (previously 48). The abilities resource is policy-filtered too; the unexposed 55 are not enumerated or qualified. Last verified live provider 0.13.4 retains the company-only code policy and QA scope. Native REST post/page reads succeeded using the separately authorized Production Hub bearer lookup; no site write was attempted.

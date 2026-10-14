@@ -45,6 +45,19 @@ The proposed source has 21 tools; this is not workspace publication evidence.
 
 ## Required deployment review
 
+The separate disposable integration test found a CI source-access blocker on
+2026-10-14: the existing **MRN CI Standalone Repos** installation
+`155567409` returned HTTP 404 when requesting a read-only token for
+`mrnwebdesigns/mrn-mainwp-operations-api`. The workflow requests only repository
+contents read access and does not request write/PR/deployment authority. The
+installation was identified in the signed-in MRN GitHub account, but GitHub
+requires passkey confirmation before its selected repositories and current
+permissions can be inspected. No access change has been made. After inspection,
+present the exact single-repository addition for approval and preserve every
+existing selection. Do not broaden this App into the separate production
+source-editing App or substitute a personal token. This is MRN service setup;
+it is unrelated to individual staff access or site enrollment.
+
 Before an activation request, finish the content/provider/runtime qualification
 and present exact source commits, qualified artifacts and rollback artifacts.
 Then review the resource-specific Auth0 Action, production Google client,
