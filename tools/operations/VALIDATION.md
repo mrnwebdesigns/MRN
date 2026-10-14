@@ -4,6 +4,19 @@
 
 This is an unshipped integration candidate. The existing workspace plugin and live service are unchanged. Active MRN Google staff use automatic domain/customer membership; there is no named-user approval or enrollment step.
 
+The new `provider-transport` CI job uses immutable provider/MCP commits in
+`test/runtime/sources.json`, the provider's disposable WordPress/MainWP HTTPS
+harness and the gateway's actual JWT, delegation, HTTP MCP and SQLite audit
+code. Its synthetic OAuth/Directory identities exercise concurrent staff reads,
+outsider and revoked/suspended denials, read-only scope enforcement, persistent
+nonce replay denial and raw service-route denial. The MCP subprocess trusts only
+the generated fixture CA and routes the Dashboard hostname only to the fixture's
+private address; TLS verification remains enabled. It never loads local MainWP
+configuration or live credentials. Only a bounded pass report is retained, not
+credentials, signed envelopes, requests or private runtime files. Execution is
+pending the provider's accepted hook checkpoint. The empty synthetic portfolio
+does not prove real-site discovery, content/code writes or ChatGPT acceptance.
+
 - Verified canonical MainWP status on wpcontrol.mrndev.io: connected, 107 provider abilities, 52 exposed by a fresh configured connection at 15:06 UTC (previously 48). The abilities resource is policy-filtered too; the unexposed 55 are not enumerated or qualified. Last verified live provider 0.13.4 retains the company-only code policy and QA scope. Native REST post/page reads succeeded using the separately authorized Production Hub bearer lookup; no site write was attempted.
 - Added per-request Google identity delegation, strict cross-language signed claims, POST-only metadata checks, active-membership authorization, audit identity migration, expanded portfolio/site reads, exact native content reads, code inspection, central GitHub source handling and protected QA/code lifecycle adapters.
 - Full Node 24 suite passed 218 checks. Tests include signature/identity forgery, outsider and revoked denial, request isolation, unsafe GET metadata rejection, live-state drift, backup/approval gates, exact snapshot edit/rollback, pre-PR QA versus merged-source QA and live approvals, rejection before source publication on failed preliminary QA or disabled writes, lost response lock retention, bounded receipt extraction and token narrowing. Site-directory reads require portfolio access; ignored-update reads reject empty, different-site or expanded selectors. Read-only OAuth consent cannot authorize the eight change-lifecycle tools. These are controlled integration fixtures, not ordinary-member ChatGPT acceptance.

@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "provider": {
+    "repository": "mrnwebdesigns/mrn-mainwp-operations-api",
+    "commit": "c4eb01ff7a52e76b7a19b94a33b24b5ccdf53afa"
+  },
+  "transport": {
+    "repository": "mrnwebdesigns/mainwp-mcp",
+    "commit": "3249bde643f52f29b7b18db41f4c3c7bb88d2434"
+  }
+}

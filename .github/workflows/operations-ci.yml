@@ -28,3 +28,82 @@ jobs:
         run: node --test stack/tests/test_mrn_fleet_update.mjs
       - name: Dependency security audit
         run: npm audit --omit=dev --audit-level=high --prefix tools/operations
+
+  provider-transport:
+    name: Disposable gateway MainWP transport
+    needs: controlled-contracts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Read immutable integration inputs
+        id: sources
+        run: |
+          node --input-type=module <<'JS'
+          import { readFileSync, appendFileSync } from 'node:fs';
+          import assert from 'node:assert/strict';
+          const lock = JSON.parse(readFileSync('tools/operations/test/runtime/sources.json', 'utf8'));
+          assert.equal(lock.schema, 1);
+          for (const [name, repository] of [['provider', 'mrnwebdesigns/mrn-mainwp-operations-api'], ['transport', 'mrnwebdesigns/mainwp-mcp']]) {
+            assert.equal(lock[name].repository, repository);
+            assert.match(lock[name].commit, /^[a-f0-9]{40}$/);
+            appendFileSync(process.env.GITHUB_OUTPUT, `${name}=${lock[name].commit}\n`);
+          }
+          JS
+      - name: Request read-only access to the pinned provider source
+        id: provider-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.MRN_CI_STANDALONE_REPOS_APP_ID }}
+          private-key: ${{ secrets.MRN_CI_STANDALONE_REPOS_PRIVATE_KEY }}
+          owner: mrnwebdesigns
+          repositories: mrn-mainwp-operations-api
+          permission-contents: read
+      - name: Check out the accepted provider checkpoint
+        uses: actions/checkout@v4
+        with:
+          repository: mrnwebdesigns/mrn-mainwp-operations-api
+          ref: ${{ steps.sources.outputs.provider }}
+          token: ${{ steps.provider-token.outputs.token }}
+          path: .runtime/provider
+          persist-credentials: false
+      - name: Check out the canonical MCP transport
+        uses: actions/checkout@v4
+        with:
+          repository: mrnwebdesigns/mainwp-mcp
+          ref: ${{ steps.sources.outputs.transport }}
+          path: .runtime/transport
+          persist-credentials: false
+      - name: Install locked test dependencies and build MCP
+        run: |
+          npm ci --ignore-scripts --prefix tools/operations
+          npm ci --ignore-scripts --prefix .runtime/transport
+          npm run build --prefix .runtime/transport
+      - name: Exercise actual gateway, MCP and WordPress authorization
+        env:
+          MRN_DISPOSABLE_API_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/provider-hook.sh
+          MRN_GATEWAY_MCP_SOURCE: ${{ github.workspace }}/.runtime/transport
+          MRN_GATEWAY_REPORT: ${{ runner.temp }}/gateway-provider-report.json
+        run: |
+          .runtime/provider/tests/runtime/run-dashboard-api.sh
+          node --input-type=module <<'JS'
+          import { readFileSync } from 'node:fs';
+          import assert from 'node:assert/strict';
+          const proof = JSON.parse(readFileSync(process.env.MRN_GATEWAY_REPORT, 'utf8'));
+          assert.equal(proof.result, 'PASS');
+          assert.equal(proof.passed.length, 10);
+          assert.equal(proof.productionCredentials, false);
+          assert.equal(proof.chatgptAcceptanceVerified, false);
+          JS
+      - name: Retain bounded integration evidence only
+        uses: actions/upload-artifact@v4
+        with:
+          name: gateway-provider-transport
+          path: ${{ runner.temp }}/gateway-provider-report.json
+          if-no-files-found: error
+          retention-days: 14
