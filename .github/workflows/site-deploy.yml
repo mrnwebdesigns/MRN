@@ -2,6 +2,10 @@ name: MRN site deployment
 on:
   workflow_call:
     inputs:
+      local_qa_acceptance:
+        description: Approved Freedom House Live local proof; dispatch only
+        type: string
+        default: ''
       qualify_dev:
         description: Exact-commit first Dev qualification; dispatch only
         type: boolean
@@ -55,6 +59,7 @@ on:
         required: false
 permissions:
   contents: read
+  actions: read
 jobs:
   request:
     runs-on: ubuntu-latest
@@ -151,6 +156,7 @@ jobs:
     uses: ./.github/workflows/site-deploy-target.yml
     with:
       target: live
+      local_qa_acceptance: ${{ inputs.local_qa_acceptance }}
       mode: ${{ inputs.mode }}
       source_sha: ${{ needs.request.outputs.source_sha }}
       qa_source_sha: ${{ needs.source-qa.outputs.source_sha }}

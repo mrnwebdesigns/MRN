@@ -3,6 +3,9 @@ name: MRN site deployment target
 on:
   workflow_call:
     inputs:
+      local_qa_acceptance:
+        type: string
+        default: ''
       qualify_dev:
         type: boolean
         default: false
@@ -70,6 +73,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   deploy:
@@ -100,6 +104,7 @@ jobs:
       DEPLOY_READY: ${{ vars.DEPLOY_READY }}
       DEPLOY_ENROLLMENT_SOURCE_SHA: ${{ vars.DEPLOY_ENROLLMENT_SOURCE_SHA }}
       DEPLOY_ENROLLMENT_PRIOR_RELEASE: ${{ vars.DEPLOY_ENROLLMENT_PRIOR_RELEASE }}
+      LOCAL_QA_ACCEPTANCE: ${{ inputs.local_qa_acceptance }}
       QUALIFY_DEV: ${{ inputs.qualify_dev }}
       DEPLOY_VERIFY_PAGES: ${{ vars.DEPLOY_VERIFY_PAGES }}
       MODE: ${{ inputs.mode }}
@@ -182,6 +187,11 @@ jobs:
             --archive "$RUNNER_TEMP/site-release/site-release.tar" --sha256 "$ARTIFACT_SHA256" \
             --source-sha "$SOURCE_SHA" --source-path "$SOURCE_PATH" --slug "$STYLESHEET" \
             --receipt "$RUNNER_TEMP/site-artifact-verification.json"
+      - name: Validate approved local release qualification
+        if: inputs.local_qa_acceptance != ''
+        run: |
+          python3 "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/freedomhouse_acceptance.py" qualify \
+            --receipt "$RUNNER_TEMP/site-local-qualification.json"
       - name: Check out pinned QA engine
         if: inputs.mode == 'deploy'
         uses: actions/checkout@v4
@@ -221,7 +231,7 @@ jobs:
           bash "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/install-qa-python.sh"
           composer global config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
           composer global require --no-interaction --no-progress squizlabs/php_codesniffer:^3.13 wp-coding-standards/wpcs:^3.0 dealerdirect/phpcodesniffer-composer-installer:^1.1
-          echo "$(composer global config bin-dir --absolute)" >> "$GITHUB_PATH"
+          composer global config bin-dir --absolute >> "$GITHUB_PATH"
       - name: MRN source acceptance
         if: inputs.mode == 'deploy' && inputs.qa_source_sha == ''
         shell: bash
@@ -295,7 +305,7 @@ jobs:
             --receipt "$RUNNER_TEMP/site-deployment.json"
       - name: Verify browser-loaded assets and responsive layout contracts
         id: browser
-        if: inputs.mode == 'deploy'
+        if: inputs.mode == 'deploy' && inputs.local_qa_acceptance == ''
         env:
           MRN_QA_ENGINE_ROOT: ${{ runner.temp }}/mrn-qa-engine
         run: |
@@ -323,7 +333,7 @@ jobs:
             --rollback-receipt "$RUNNER_TEMP/site-deployment.json" --receipt "$RUNNER_TEMP/site-rollback.json"
       - name: Run runtime QA
         id: runtime
-        if: success() && inputs.mode == 'deploy'
+        if: success() && inputs.mode == 'deploy' && inputs.local_qa_acceptance == ''
         continue-on-error: ${{ inputs.target == 'dev' && !inputs.qualify_dev }}
         run: |
           set -euo pipefail
@@ -345,21 +355,46 @@ jobs:
         run: |
           python3 "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/atomic_runner.py" \
             --rollback-receipt "$RUNNER_TEMP/site-deployment.json" --receipt "$RUNNER_TEMP/site-rollback.json"
+      - name: Require fresh Live REST and operator browser readback
+        id: local_readback
+        if: success() && inputs.mode == 'deploy' && inputs.local_qa_acceptance != ''
+        run: |
+          echo 'Awaiting release-bound Freedom House Live readback (20 minute deadline).' >> "$GITHUB_STEP_SUMMARY"
+          python3 "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/freedomhouse_acceptance.py" wait \
+            --qualification "$RUNNER_TEMP/site-local-qualification.json" \
+            --deployment "$RUNNER_TEMP/site-deployment.json" \
+            --receipt "$RUNNER_TEMP/site-live-readback.json"
+      - name: Restore the prior release if local acceptance lacks Live readback
+        if: failure() && inputs.mode == 'deploy' && steps.activation.outcome == 'success' && steps.local_readback.outcome == 'failure'
+        env:
+          DEPLOY_KINSTA_API_TOKEN: ${{ secrets.DEPLOY_KINSTA_API_TOKEN }}
+          DEPLOY_KEY_FILE: ${{ runner.temp }}/site-deploy.key
+          DEPLOY_KNOWN_HOSTS_FILE: ${{ runner.temp }}/site-deploy.known_hosts
+        run: |
+          python3 "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/atomic_runner.py" \
+            --rollback-receipt "$RUNNER_TEMP/site-deployment.json" --receipt "$RUNNER_TEMP/site-rollback.json"
       - name: Report deployment and runtime acceptance
         if: always() && inputs.mode == 'deploy' && steps.activation.outcome == 'success'
         env:
           QA_RESULT: ${{ steps.runtime.outcome }}
+          LOCAL_RESULT: ${{ steps.local_readback.outcome }}
         run: |
           python3 - <<'PY'
           import json, os, pathlib
           result = {key: os.environ[name] for key, name in (
               ('outcome', 'QA_RESULT'), ('source_sha', 'SOURCE_SHA'),
               ('environment', 'TARGET'), ('url', 'DEPLOY_URL'))}
+          if os.environ.get('LOCAL_QA_ACCEPTANCE'):
+              result['local_qa_and_live_readback'] = os.environ['LOCAL_RESULT']
+              result['acceptance_mode'] = 'local-qualified-with-live-readback'
           (pathlib.Path(os.environ['RUNNER_TEMP']) / 'site-runtime-result.json').write_text(json.dumps(result) + '\n')
           PY
-          echo "Deployment target: $TARGET." >> "$GITHUB_STEP_SUMMARY"
-          echo "Full runtime QA: $QA_RESULT. Review the retained report before approving any release." >> "$GITHUB_STEP_SUMMARY"
-          if [[ "$QA_RESULT" != success ]]; then
+          {
+            echo "Deployment target: $TARGET."
+            echo "Hosted runtime QA: $QA_RESULT. Review the retained report before approving any release."
+            echo "Local qualification plus Live readback: $LOCAL_RESULT."
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [[ "$QA_RESULT" != success && "$LOCAL_RESULT" != success ]]; then
             echo '::warning::Runtime QA has findings or did not complete. This is not release approval.'
           fi
       - name: Preserve deployment evidence
@@ -374,6 +409,8 @@ jobs:
             ${{ runner.temp }}/site-rollback.json
             ${{ runner.temp }}/site-runtime-qa.md
             ${{ runner.temp }}/site-runtime-result.json
+            ${{ runner.temp }}/site-local-qualification.json
+            ${{ runner.temp }}/site-live-readback.json
             ${{ runner.temp }}/site-browser
             ${{ runner.temp }}/site-layout
           if-no-files-found: warn
