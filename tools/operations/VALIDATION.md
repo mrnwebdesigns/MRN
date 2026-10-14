@@ -17,10 +17,24 @@ credentials, signed envelopes, requests or private runtime files. At source
 `2929578`, [the first CI attempt](https://github.com/mrnwebdesigns/MRN/actions/runs/38591395905/job/115947138549)
 stopped before provider checkout: the existing MRN CI Standalone Repos App
 received HTTP 404 for that repository's installation lookup. No runtime check
-ran, no alternative credential was used and no access grant changed. The
-controlled-contracts and Code gate jobs passed at that exact source. Execution
-requires reviewed CI repository access and the provider's accepted hook
-checkpoint. The empty synthetic portfolio
+ran in that attempt. The controlled-contracts and Code gate jobs passed at that
+exact source. On 2026-10-14 the owner explicitly approved adding the provider to
+the existing read-only CI App. Saved readback verified 29 repository selections,
+preserving all prior 28, and unchanged read-only code/metadata permissions. The
+[rerun at 57d61e4](https://github.com/mrnwebdesigns/MRN/actions/runs/38592055915/job/115951238897)
+passed source-token creation, both pinned checkouts and builds. Its old provider
+pin passed 34 HTTP, 23 content and 13 parity checks; the job then failed because
+that pin has no gateway hook and the mandatory gateway report was absent. No
+alternative credential was used. The integration now pins provider
+`27ac5bc1371db01db7c0d5cf5c418ef776e23e1e`, including the CI-only hook. Its
+[complete CI](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38593325241)
+passed 34 native HTTP, 26 content, 13 parity, 12 profile-context and 25 controller
+lifecycle checks. The controller suite uses real WordPress/MySQL and signed
+individual delegation but a synthetic MainWP child seam, QA signer and backup
+receipt; it does not prove real child transport, protected-runner QA or remote
+backup creation. The fix compares retained selector objects canonically, with a
+reordered-key regression, without weakening exact target or snapshot checks.
+The gateway transport result for this pin is pending. The empty synthetic portfolio
 does not prove real-site discovery, content/code writes or ChatGPT acceptance.
 
 - Verified canonical MainWP status on wpcontrol.mrndev.io: connected, 107 provider abilities, 52 exposed by a fresh configured connection at 15:06 UTC (previously 48). The abilities resource is policy-filtered too; the unexposed 55 are not enumerated or qualified. Last verified live provider 0.13.4 retains the company-only code policy and QA scope. Native REST post/page reads succeeded using the separately authorized Production Hub bearer lookup; no site write was attempted.

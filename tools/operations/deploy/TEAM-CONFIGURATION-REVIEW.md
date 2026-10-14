@@ -45,18 +45,20 @@ The proposed source has 21 tools; this is not workspace publication evidence.
 
 ## Required deployment review
 
-The separate disposable integration test found a CI source-access blocker on
-2026-10-14: the existing **MRN CI Standalone Repos** installation
-`155567409` returned HTTP 404 when requesting a read-only token for
-`mrnwebdesigns/mrn-mainwp-operations-api`. The workflow requests only repository
-contents read access and does not request write/PR/deployment authority. The
-installation was identified in the signed-in MRN GitHub account, but GitHub
-requires passkey confirmation before its selected repositories and current
-permissions can be inspected. No access change has been made. After inspection,
-present the exact single-repository addition for approval and preserve every
-existing selection. Do not broaden this App into the separate production
-source-editing App or substitute a personal token. This is MRN service setup;
-it is unrelated to individual staff access or site enrollment.
+The CI source-access blocker was resolved on 2026-10-14 with the owner's
+explicit approval. The existing **MRN CI Standalone Repos** installation
+`155567409` now includes `mrnwebdesigns/mrn-mainwp-operations-api`: all 28 prior
+repository selections were preserved, with 29 selections verified after saving.
+Its existing read-only code and metadata permissions are unchanged. The
+[rerun at source 57d61e4](https://github.com/mrnwebdesigns/MRN/actions/runs/38592055915/job/115951238897)
+successfully obtained the repository-scoped read token and checked out both
+pinned sources. The old provider pin passed its own runtime checks but did not
+invoke the new gateway hook; the required gateway report was absent and the job
+correctly failed. Provider checkpoint `27ac5bc` subsequently passed its disposable
+runtime CI and supplies that hook; gateway transport qualification is pending.
+This CI grant supplies no write, PR, deployment or production
+source-editing authority, and is unrelated to individual staff access or site
+enrollment. No personal token was substituted.
 
 Before an activation request, finish the content/provider/runtime qualification
 and present exact source commits, qualified artifacts and rollback artifacts.
