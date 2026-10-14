@@ -64,7 +64,11 @@ to the Workspace. Operations requires that restriction, but existing allowed
 audiences for the other applications still need verification before choosing
 this shared connection's production client. Do not change the project's
 audience, reuse the pilot secret, or silently narrow another application's
-users. The release review must name that impact and its approved resolution.
+users. Read-only inspection of the deployed `MRN Client Review Email Claim`
+Action shows verified-email claim mapping without a domain restriction; that
+Action alone therefore cannot prove Client Review is staff-only. Its backend
+access rules still need verification. The release review must name the shared
+connection impact and its approved resolution.
 Any new client credential must remain in the approved central secret store and
 Auth0; no staff credential collection or client secret in ChatGPT is needed.
 
