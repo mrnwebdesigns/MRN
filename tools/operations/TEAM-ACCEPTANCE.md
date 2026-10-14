@@ -52,6 +52,12 @@ uses synthetic OAuth/Directory identities, zero managed sites and no production
 credentials. It improves backend integration evidence; every live acceptance row
 above remains open.
 
+Protected runner `0fd0ff7` separately passed disposable code/content QA and both
+required report uploads in [run 38593836989, attempt 2](https://github.com/mrnwebdesigns/mrn-code-qa-runner/actions/runs/38593836989/attempts/2).
+The eight downloaded reports and two HTTP parity manifests verify fixture
+evidence retention after the approved Actions budget change. They do not prove
+ordinary-member login, real-site content/code changes or live denial behavior.
+
 ## Evidence and signoff
 
 For each actual run retain timestamp, immutable release/config references, operation IDs, exact site/record/path, approved preview digest, QA report/receipt IDs, backup verification, resulting checksums/readback and rollback result. Keep the individual Google identity in restricted audit storage; user-visible reports can reference the operation ID. Never record tokens, cookies, private keys or backend passwords.

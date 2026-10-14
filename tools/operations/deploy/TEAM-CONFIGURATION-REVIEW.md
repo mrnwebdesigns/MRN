@@ -1,7 +1,8 @@
 # Team configuration review
 
-Read-only observations from 2026-10-14. This is evidence for a later concrete
-deployment/access review; none of the settings below were changed.
+Configuration evidence from 2026-10-14. Identity and production settings were
+inspected read-only for a later deployment/access review. The separately approved
+CI repository grant and Actions budget change are recorded below.
 
 ## Existing identity infrastructure
 
@@ -63,17 +64,26 @@ This CI grant supplies no write, PR, deployment or production
 source-editing authority, and is unrelated to individual staff access or site
 enrollment. No personal token was substituted.
 
-The runner's subsequent CI run `38593836989` passed its actual code/content test
+The runner's CI run `38593836989` initially passed its actual code/content test
 steps but failed both required report uploads at the account artifact quota.
-Authenticated read-only billing inspection found 2 GB used / 2 GB included and
-an existing account-wide Actions budget of $0 with usage blocked. No budget,
-retention policy or evidence was changed. Restoring artifact uploads requires a
-separately approved billing change or an explicitly reviewed retention action;
-then rerun the failed jobs and verify retained reports. Do not make report upload
-optional, delete qualification evidence or treat the failed workflow as green.
-GitHub documents that storage accounting can take 6–12 hours to update and that
-artifact deletion does not remove already-accrued usage in the billing cycle:
-[Actions billing](https://docs.github.com/en/billing/concepts/product-billing/github-actions).
+Authenticated billing inspection found 2 GB used / 2 GB included and the existing
+account-wide Actions budget at $0 with usage blocked. On 2026-10-14 the owner
+explicitly approved increasing only that budget to **$5/month**, preserving
+**Stop usage when budget limit is reached** and **Receive budget threshold
+alerts**. The existing budget `3c5a3885-2781-462e-b1fd-ad24f95ea9ee` was saved,
+then independently reopened to verify the amount and both checked controls.
+The budget list showed $0.00 / $5.00; the four other product budgets stayed at $0.
+This is an account-wide Actions spending limit, not production authorization.
+No artifact, retention setting or required report gate was changed.
+
+Only the failed jobs were rerun at the same immutable runner source `0fd0ff7`.
+Both isolation jobs passed, including their required report uploads. The code
+bundle `11910930605` and content bundle `11909304607` bind that same source and
+were downloaded and checked: eight QA reports passed their API runtime, browser,
+accessibility and performance rows, and two distinct HTTP parity manifests were
+retained. [Attempt 2](https://github.com/mrnwebdesigns/mrn-code-qa-runner/actions/runs/38593836989/attempts/2)
+is fully green. This resolves CI evidence retention; it does not qualify native
+MainWP child transport, production rendering dependencies or team acceptance.
 
 Before an activation request, finish the content/provider/runtime qualification
 and present exact source commits, qualified artifacts and rollback artifacts.
