@@ -120,7 +120,7 @@ export async function sourceFile(api, commit, path) {
 
 export class CodeSource {
   constructor(github) { this.github = github; }
-  async propose({ repository, branch, path, expectedSha256, content, operationId, reason, actor, requiredBase }, authorize, checkpoint) {
+  async propose({ repository, branch, path, expectedSha256, content, operationId, reason, actor, requiredBase, reviewProof }, authorize, checkpoint) {
     requireThat(/^[a-f0-9-]{36}$/.test(operationId) && content.isWellFormed() && Buffer.byteLength(content) <= 32768
       && typeof reason === 'string' && reason.length <= 512 && actor?.identityProvider === 'google-oauth2', 'SOURCE_INPUT', 'An exact bounded change and verified actor are required.');
     const api = await this.github.scoped(repository, 'source', authorize);
@@ -129,6 +129,13 @@ export class CodeSource {
     requireThat(old.sha256 === expectedSha256, 'SOURCE_DRIFT', 'Live bytes and merged source differ; reconcile them before preparing a PR.');
     const bytes = Buffer.from(content); const newSha256 = digest(bytes);
     requireThat(newSha256 !== expectedSha256, 'NO_CHANGE', 'The proposed code is unchanged.');
+    // This internal proof is returned only by the protected receipt verifier.
+    // It is never accepted in an MCP tool's arguments.
+    const review = reviewProof?.claims;
+    requireThat(reviewProof?.status === 'qualified' && ['source_review', 'rollback_source_review'].includes(review?.kind)
+      && review.expected_sha256 === expectedSha256 && review.new_sha256 === newSha256 && review.expires_at * 1000 > Date.now()
+      && review.source?.mode === 'git' && review.source.repository === `https://github.com/${repository}` && review.source.branch === branch
+      && review.source.commit === base && review.source.repository_path === path, 'SOURCE_QA_REQUIRED', 'A fresh protected source-review receipt must cover these exact bytes and merged baseline before publishing a PR.');
     const ref = `codex/mrn-ops/${operationId}`;
     // Persist intent before the first mutation. Lost responses never cause retries.
     await checkpoint({ status: 'source_dispatching', repository, branch, path, base, ref, expectedSha256, newSha256 });
@@ -136,12 +143,12 @@ export class CodeSource {
     requireThat(hash(blob.sha), 'SOURCE_BLOB', 'GitHub did not return a source blob.');
     const tree = await api('/git/trees', 'POST', { base_tree: old.tree, tree: [{ path, mode: old.mode, type: 'blob', sha: blob.sha }] }, 201);
     requireThat(hash(tree.sha), 'SOURCE_TREE', 'GitHub did not return a source tree.');
-    const commit = await api('/git/commits', 'POST', { message: `MRN ${operationId}: ${reason}\n\nRequested by verified Google identity ${actor.subject} (${actor.verifiedEmail}).`, tree: tree.sha, parents: [base] }, 201);
+    const commit = await api('/git/commits', 'POST', { message: `MRN ${operationId}: ${reason}\n\nIndividual attribution is retained in the private MRN operation audit.`, tree: tree.sha, parents: [base] }, 201);
     requireThat(hash(commit.sha), 'SOURCE_COMMIT', 'GitHub did not return a source commit.');
     await api('/git/refs', 'POST', { ref: `refs/heads/${ref}`, sha: commit.sha }, 201);
     await checkpoint({ status: 'source_branch_created', repository, branch, path, base, ref, head: commit.sha, expectedSha256, newSha256 });
     const pr = await api('/pulls', 'POST', { title: `MRN code change: ${path}`, head: ref, base: branch,
-      body: `${reason}\n\nOperation: ${operationId}\nRequested by: ${actor.verifiedEmail} (${actor.subject})\nExact file: ${path}\nBefore SHA-256: ${expectedSha256}\nAfter SHA-256: ${newSha256}\n\nThis PR does not deploy. Merged-source QA, exact live-change approval and verified backup remain required.` }, 201);
+      body: `${reason}\n\nOperation: ${operationId}\nIndividual attribution: private MRN operation audit\nExact file: ${path}\nBefore SHA-256: ${expectedSha256}\nAfter SHA-256: ${newSha256}\n\nThis PR does not deploy. Merged-source QA, exact live-change approval and verified backup remain required.` }, 201);
     requireThat(Number.isSafeInteger(pr.number) && pr.number > 0 && pr.head?.sha === commit.sha && pr.base?.ref === branch
       && pr.html_url === `https://github.com/${repository}/pull/${pr.number}`, 'SOURCE_PR', 'The created PR does not match the prepared source.');
     return { repository, branch, path, base, ref, head: commit.sha, number: pr.number, url: pr.html_url, expectedSha256, newSha256 };

@@ -49,10 +49,9 @@ export class CodeWorkflow {
         const roots = Object.keys(profile.source.paths).filter(root => input.path.startsWith(root));
         requireThat(roots.length === 1, 'SOURCE_PATH', 'The source mapping is missing or ambiguous.');
         const path = profile.source.paths[roots[0]] + input.path.slice(roots[0].length);
-        op.plan.proposal = await this.source.propose({ repository: profile.source.repository.slice('https://github.com/'.length), branch: profile.source.branch,
-          path, expectedSha256: before.sha256, content: input.content, operationId: op.id, reason: input.reason, actor, requiredBase: profile.sourceAutomation.baseCommit }, authorize,
-        state => { op.sourceProgress = state; s.store.save(op); });
-        op.status = 'source_review'; op.planDigest = digest({ target, plan: op.plan }); op.expiresAt = Date.now() + 3600000; s.store.save(op);
+        op.plan.repositoryPath = path;
+        op.plan.source = { mode: 'git', repository: profile.source.repository, branch: profile.source.branch, commit: profile.sourceAutomation.baseCommit };
+        s.store.save(op); this.startQualification(actor, op, true);
       } else {
         s.store.save(op); this.startQualification(actor, op);
       }
@@ -83,13 +82,13 @@ export class CodeWorkflow {
     } catch (error) { op.status = 'source_uncertain'; op.error = safeError(error); s.store.save(op); }
     return s.view(s.store.get(op.id));
   }
-  startQualification(actor, op) {
+  startQualification(actor, op, sourceReview = false) {
     requireThat(!this.service.jobs.has(op.id), 'OPERATION_ACTIVE', 'Qualification is already running.');
-    op.status = 'qualifying'; this.service.store.save(op);
-    const job = this.qualify(actor, op).finally(() => this.service.jobs.delete(op.id));
+    op.status = sourceReview ? 'source_qualifying' : 'qualifying'; this.service.store.save(op);
+    const job = this.qualify(actor, op, sourceReview).finally(() => this.service.jobs.delete(op.id));
     this.service.jobs.set(op.id, job);
   }
-  async qualify(actor, op) {
+  async qualify(actor, op, sourceReview = false) {
     const s = this.service; const authorize = this.authorize(actor, op.target); let session;
     try {
       await authorize(); const profile = this.profile(op.target, op.plan.path);
@@ -99,21 +98,35 @@ export class CodeWorkflow {
       const current = await codeInspection(session, op.plan.path);
       requireThat(current.sha256 === op.plan.beforeSha256 && current.site.id === op.plan.site.id, 'CODE_PRECONDITION', 'Live state changed before QA.');
       const request = { schema: 1, request_id: randomUUID().replaceAll('-', ''), site_id: current.site.id, site_url: current.site.url + '/',
-        kind: op.plan.rollbackOf ? 'rollback' : 'file', path: op.plan.path, repository_path: op.plan.proposal?.path || op.plan.path,
+        kind: sourceReview ? (op.plan.rollbackOf ? 'rollback_source_review' : 'source_review') : (op.plan.rollbackOf ? 'rollback' : 'file'),
+        path: op.plan.path, repository_path: op.plan.repositoryPath || op.plan.path,
         expected_sha256: op.plan.beforeSha256, new_sha256: op.plan.newSha256, rollback_operation_id: op.plan.rollbackOf,
         runtime_url: profile.runtimeUrl, source: op.plan.source, payload_base64: Buffer.from(op.plan.content).toString('base64') };
-      op.qaRequest = request; s.store.save(op);
-      op.qaTicket = await this.qa.dispatch(request, authorize, state => { op.qaProgress = state; s.store.save(op); }); s.store.save(op);
+      const prefix = sourceReview ? 'sourceQa' : 'qa';
+      op[`${prefix}Request`] = request; s.store.save(op);
+      op[`${prefix}Ticket`] = await this.qa.dispatch(request, authorize, state => { op[`${prefix}Progress`] = state; s.store.save(op); }); s.store.save(op);
       const deadline = Date.now() + 20 * 60000; let proof;
       while (Date.now() < deadline) {
-        proof = await this.qa.receipt(op.qaTicket, request, authorize);
+        proof = await this.qa.receipt(op[`${prefix}Ticket`], request, authorize);
         if (proof.status === 'qualified') break;
         await this.delay(10000);
       }
       requireThat(proof?.status === 'qualified', 'QA_PENDING', 'QA did not produce a fresh signed receipt within the qualification window. No live change was attempted.');
       const after = await codeInspection(session, op.plan.path);
-      requireThat(after.sha256 === op.plan.beforeSha256, 'CODE_PRECONDITION', 'Live state changed while QA was running.');
-      op.qaProof = proof;
+      requireThat(after.sha256 === op.plan.beforeSha256 && after.site.id === op.plan.site.id, 'CODE_PRECONDITION', 'Live state changed while QA was running.');
+      op[`${prefix}Proof`] = proof;
+      if (sourceReview) {
+        await authorize();
+        requireThat(s.writesEnabled, 'WRITES_DISABLED', 'Source writes remain disabled until the reviewed service rollout is enabled.');
+        requireThat(profile.sourceAutomation.expiresAt > Date.now(), 'SOURCE_AUTOMATION_UNQUALIFIED', 'Source automation qualification expired during QA.');
+        op.plan.proposal = await this.source.propose({ repository: profile.source.repository.slice('https://github.com/'.length), branch: profile.source.branch,
+          path: request.repository_path, expectedSha256: op.plan.beforeSha256, content: op.plan.content, operationId: op.id, reason: op.plan.description, actor,
+          requiredBase: profile.sourceAutomation.baseCommit, reviewProof: proof }, authorize,
+        state => { op.sourceProgress = state; s.store.save(op); });
+        op.status = 'source_review'; op.planDigest = digest({ target: op.target, plan: op.plan });
+        op.expiresAt = Math.min(profile.sourceAutomation.expiresAt, proof.claims.expires_at * 1000);
+        s.store.audit(actor, op.target, op.id, 'code:source-prepare', 'prepared'); s.store.save(op); return;
+      }
       const input = { site_id: current.site.id, site_url: current.site.url + '/', kind: request.kind, path: op.plan.path,
         expected_sha256: op.plan.beforeSha256, reason: op.plan.description, qa_evidence_sha256: proof.claims.qa_report_sha256,
         qa_receipt_json: JSON.stringify(proof.envelope), ...(op.plan.rollbackOf ? { rollback_operation_id: op.plan.rollbackOf }
@@ -128,7 +141,7 @@ export class CodeWorkflow {
       op.expiresAt = Math.min(plan.expires_at, proof.claims.expires_at) * 1000;
       requireThat(op.expiresAt > Date.now(), 'PLAN_EXPIRED', 'The provider plan expired before review.');
       s.store.audit(actor, op.target, op.id, 'code:prepare', 'prepared'); s.store.save(op);
-    } catch (error) { op.status = 'blocked'; op.error = safeError(error); s.store.save(op); }
+    } catch (error) { op.status = sourceReview && op.sourceProgress ? 'source_uncertain' : 'blocked'; op.error = safeError(error); s.store.save(op); }
     finally { await session?.close().catch(() => {}); }
   }
   bind(session, op) { session.codeOperation = { id: op.plan.provider.operation_id, digest: op.plan.provider.digest }; }

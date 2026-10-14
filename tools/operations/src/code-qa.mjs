@@ -18,12 +18,12 @@ export const codePolicySchema = z.object({ version: z.literal(1), repository: z.
   }).strict()).min(1),
 }).strict();
 export const codeQaRequest = z.object({ schema: z.literal(1), request_id: z.string().regex(/^[a-f0-9]{32}$/), site_id: z.number().int().positive().safe(),
-  site_url: z.string().url(), kind: z.enum(['file', 'rollback']), path: codePath, repository_path: z.string().min(1).max(512),
+  site_url: z.string().url(), kind: z.enum(['file', 'rollback', 'source_review', 'rollback_source_review']), path: codePath, repository_path: z.string().min(1).max(512),
   expected_sha256: snapshot, new_sha256: snapshot, rollback_operation_id: z.string(), runtime_url: z.string().url(), source,
   payload_base64: z.string().max(43692) }).strict();
 const claimsSchema = z.object({ schema: z.literal(1), issuer: z.literal('mrn-qa-engine'), audience: z.literal('https://wpcontrol.mrndev.io'),
   result: z.literal('Pass'), mode: z.literal('release'), smoke_strict: z.literal(true), issued_at: z.number().int(), expires_at: z.number().int(),
-  receipt_id: z.string().regex(/^[a-f0-9]{32}$/), site_id: z.number().int().positive(), site_url: z.string(), kind: z.enum(['file', 'rollback']),
+  receipt_id: z.string().regex(/^[a-f0-9]{32}$/), site_id: z.number().int().positive(), site_url: z.string(), kind: z.enum(['file', 'rollback', 'source_review', 'rollback_source_review']),
   path: z.string(), expected_sha256: snapshot, new_sha256: snapshot, rollback_operation_id: z.string(), qa_report_sha256: sha, engine_commit: commit,
   runtime_url: z.string(), runtime_sha256: snapshot, source: z.union([z.object({ mode: z.literal('unversioned') }).strict(),
     z.object({ mode: z.literal('git'), repository: z.string(), branch: z.string(), commit, repository_path: z.string(), clean: z.literal(true), remote_verified: z.literal(true) }).strict()]) }).strict();
@@ -55,7 +55,8 @@ export class ProtectedCodeQa {
     const request = codeQaRequest.parse(input); const bytes = Buffer.from(request.payload_base64, 'base64');
     requireThat(bytes.toString('base64') === request.payload_base64 && bytes.length <= 32768
       && (request.new_sha256 === 'absent' ? request.kind === 'rollback' && bytes.length === 0 : digest(bytes) === request.new_sha256), 'QA_PAYLOAD', 'QA must receive the exact bounded candidate bytes.');
-    requireThat(request.kind === 'rollback' ? /^[a-f0-9-]{36}$/.test(request.rollback_operation_id) : request.rollback_operation_id === '', 'QA_ROLLBACK', 'Rollback qualification requires the exact completed provider operation.');
+    requireThat(['rollback', 'rollback_source_review'].includes(request.kind) ? /^[a-f0-9-]{36}$/.test(request.rollback_operation_id) : request.rollback_operation_id === '', 'QA_ROLLBACK', 'Rollback qualification requires the exact completed provider operation.');
+    requireThat(!request.kind.endsWith('source_review') || request.source.mode === 'git', 'QA_SOURCE', 'Preliminary source review requires an exact Git baseline.');
     const profiles = this.policy.profiles.filter(p => p.siteUrl === request.site_url && p.paths.includes(request.path));
     requireThat(profiles.length === 1, 'QA_PROFILE_UNQUALIFIED', 'No qualified protected runtime profile covers this site and file. Company pilot QA cannot be applied to other sites.');
     const profile = profiles[0];

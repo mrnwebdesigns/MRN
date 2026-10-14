@@ -12,7 +12,7 @@ const path = 'wp-content/themes/fixture/file.php';
 function configured(t) {
   const f = setup(); t.after(f.close);
   f.policy.members.push({ subject: person.subject, enabled: true, grants: [{ website: 'example', environments: ['development'], actions: ['read', 'code'] }] });
-  const state = { content: '<?php // original\n', prepared: new Map(), applications: 0, qa: 0, revoked: false };
+  const state = { content: '<?php // original\n', prepared: new Map(), applications: 0, qa: 0, qaKinds: [], revoked: false };
   f.service.verifyStaff = async () => { if (state.revoked) throw new Error('revoked'); };
   const call = f.client.callTool.bind(f.client);
   f.client.callTool = async request => {
@@ -37,7 +37,7 @@ function configured(t) {
     return call(request);
   };
   const qa = { policy: { profiles: [{ siteUrl: f.state.url + '/', paths: [path], runtimeUrl: 'https://runtime.invalid', source: { mode: 'unversioned' } }] },
-    dispatch: async () => { state.qa++; return { runId: state.qa, url: 'https://github.com/mrnwebdesigns/qa/actions/runs/1' }; },
+    dispatch: async request => { state.qa++; state.qaKinds.push(request.kind); return { runId: state.qa, url: 'https://github.com/mrnwebdesigns/qa/actions/runs/1' }; },
     receipt: async (_ticket, request) => {
       if (state.failQa) throw new Error('QA failed');
       return { status: 'qualified', envelope: { fixture: true }, claims: { qa_report_sha256: 'e'.repeat(64), expires_at: Math.floor(Date.now() / 1000) + 600, new_sha256: request.new_sha256 } };
@@ -96,18 +96,31 @@ test('Git source approval is separate from live approval and unqualified source 
   const source = { mode: 'git', repository: 'https://github.com/mrnwebdesigns/example', branch: 'main', paths: { 'wp-content/themes/fixture/': 'theme/' } };
   wf.qa.policy.profiles[0].source = source;
   wf.source = {
-    propose: async () => { proposals++; return { repository: 'mrnwebdesigns/example', path: 'theme/file.php', branch: 'main', head: 'c'.repeat(40), number: 1, url: 'https://github.com/mrnwebdesigns/example/pull/1' }; },
+    propose: async input => { assert.equal(input.reviewProof.status, 'qualified'); assert.equal(f.codeState.qa, 1); proposals++; return { repository: 'mrnwebdesigns/example', path: 'theme/file.php', branch: 'main', head: 'c'.repeat(40), number: 1, url: 'https://github.com/mrnwebdesigns/example/pull/1' }; },
     merge: async () => { merges++; return { mode: 'git', repository: source.repository, branch: 'main', commit: 'd'.repeat(40) }; },
     merged: async () => ({ mode: 'git', repository: source.repository, branch: 'main', commit: 'd'.repeat(40) }),
   };
   const blocked = await prepared(f, 'source-blocked'); assert.equal(blocked.status, 'blocked'); assert.equal(proposals, 0);
   wf.qa.policy.profiles[0].sourceAutomation = { deploymentDisabled: true, baseCommit: 'a'.repeat(40), expiresAt: Date.now() + 3600000, evidenceRef: 'fixture-proof' };
-  const op = await prepared(f, 'source-ready'); assert.equal(op.status, 'source_review'); assert.equal(proposals, 1); assert.equal(f.codeState.qa, 0);
+  const op = await prepared(f, 'source-ready'); assert.equal(op.status, 'source_review'); assert.equal(proposals, 1); assert.equal(f.codeState.qa, 1);
   await assert.rejects(() => f.service.approveCodeSource(person, { operationId: op.id, planDigest: '0'.repeat(64) }), { code: 'PLAN_CHANGED' });
   assert.equal(merges, 0);
   await f.service.approveCodeSource(person, { operationId: op.id, planDigest: op.planDigest }); await f.service.jobs.get(op.id);
-  const qualified = f.service.get(person, op.id); assert.equal(qualified.status, 'prepared'); assert.equal(merges, 1); assert.equal(f.codeState.qa, 1);
+  const qualified = f.service.get(person, op.id); assert.equal(qualified.status, 'prepared'); assert.equal(merges, 1); assert.equal(f.codeState.qa, 2);
+  assert.deepEqual(f.codeState.qaKinds, ['source_review', 'file']);
   assert.notEqual(qualified.planDigest, op.planDigest); assert.equal(f.codeState.applications, 0);
   await assert.rejects(() => f.service.execute(person, { operationId: op.id }), { code: 'APPROVAL_REQUIRED' });
   assert.equal((await apply(f, qualified)).status, 'verified');
+});
+
+test('failed preliminary QA or disabled writes cannot publish a Git source PR', async t => {
+  const f = configured(t); const wf = f.service.codeWorkflow; let proposals = 0;
+  wf.qa.policy.profiles[0].source = { mode: 'git', repository: 'https://github.com/mrnwebdesigns/example', branch: 'main', paths: { 'wp-content/themes/fixture/': 'theme/' } };
+  wf.qa.policy.profiles[0].sourceAutomation = { deploymentDisabled: true, baseCommit: 'a'.repeat(40), expiresAt: Date.now() + 3600000, evidenceRef: 'fixture-proof' };
+  wf.source = { propose: async () => { proposals++; } };
+  f.codeState.failQa = true;
+  assert.equal((await prepared(f, 'qa-fails')).status, 'blocked');
+  f.codeState.failQa = false; f.service.writesEnabled = false;
+  assert.equal((await prepared(f, 'writes-off')).error.code, 'WRITES_DISABLED');
+  assert.equal(proposals, 0); assert.equal(f.codeState.prepared.size, 0);
 });

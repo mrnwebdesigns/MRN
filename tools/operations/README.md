@@ -1,13 +1,11 @@
 # MRN Website Operations MCP
 
-Working first version of the shared MRN operations service. This is an HTTP MCP
-backend for conversational clients, not a WordPress plugin or a new MainWP
-implementation. It is **not yet hosted or team-ready**. Real writes default off.
+The shared MRN HTTP MCP backend is hosted at `https://operations.mrnwebdesigns.com/mcp` and published as one ChatGPT workspace plugin. The deployed version supports read-only inspection. This source contains the unshipped unified integration; content/code/team acceptance is not complete, and writes remain disabled live. See [current integration and open gates](UNIFIED-INTEGRATION.md).
 
 ## Team experience and acceptance
 
 The team-facing product must be: **add the MRN plugin in ChatGPT,
-sign in with an individual MRN account, and ask for website work in ordinary
+sign in with an active MRN Google Workspace account, and ask for website work in ordinary
 language**. Team members must not need Codex, a terminal, a local repository,
 manual MCP configuration, API keys or a personal background service. Existing
 website access follows their account permissions; they do not register sites
@@ -17,8 +15,7 @@ Service hosting, credentials, source connections and operational administration
 are MRN operator responsibilities. The operator setup below is not team
 onboarding. ChatGPT is the selected platform. The portable plugin manifest and
 package builder are in `chatgpt/`; per-tool OAuth declarations and reconnect
-challenges are exposed by the service. The hosted endpoint, real MRN identity
-provider, workspace publishing and ChatGPT acceptance remain outstanding. See
+challenges are exposed by the service. The hosted endpoint, existing identity provider and workspace plugin are already in use. The new Google-only delegation and change workflows require their own deployment and acceptance. See
 [ChatGPT delivery and setup](CHATGPT.md).
 
 Acceptance requires an ordinary team member, using only ChatGPT, to
@@ -42,8 +39,7 @@ stdio MCP child process and individually authenticated HTTP MCP clients.
 
 ## Existing capabilities and genuine gaps
 
-The implementation was based on merged MRN source at `2c486af` and the following
-existing contracts. No client site, component catalog or release lock was changed.
+The service reuses the following MRN contracts. No client site, component catalog or release lock was changed.
 
 | Authority | Reused behavior / boundary |
 | --- | --- |
@@ -65,8 +61,8 @@ service-wide per-site locks, and an MCP interface over those services.
 
 | Capability | Implemented | Verification / limit |
 | --- | --- | --- |
-| Individual HTTP authentication | Issuer/JWKS/audience/expiry/algorithm/scope checks; no shared-user bypass | Real signed-token local HTTP tests; actual team identity provider not configured |
-| Site/operation authorization | Explicit subject, site and environment grants, checked before every downstream call | Revocation, denied roles, inaccessible sites and cross-site requests tested |
+| Individual HTTP authentication | Issuer/JWKS/audience/expiry/algorithm/scope checks; no shared-user bypass | Existing Auth0 login is live; new Google-only connection binding, active Directory checks and signed delegation are fixture-tested but unshipped |
+| Site/operation authorization | Automatic active-MRN Google portfolio access, explicit revocation overrides and separate qualified operation roles, checked before every downstream call | Revocation, denied roles, inaccessible sites and cross-site requests tested |
 | Discovery | Paginated MainWP basic directory, exact-URL grants, optional Local Hub record enrichment; no duplicate website list | Authenticated HTTP/stdio tests start from an empty registry. Live basic-directory response schema verified; directory identity is separate from fresh runtime inventory |
 | Website knowledge | Exact-URL joins, explicit local/remote links, source/freshness, repository/provider facts, unknown/conflicting metadata | Reads a narrow allowlist from existing `.mrn-site.json` files; no credentials, SSH targets, notes or commands imported. Production Hub provider API and site deployment record adapters remain future work |
 | Inspection | Runtime inventory, installed-plugin catalog comparison, qualification cases, named pending updates with installed/available versions and separate type totals, public checks and history | Update names, versions and types are allowlisted; raw package URLs and credentials are excluded. Unknown, inconsistent or truncated details remain explicit. Availability is not compatibility or authorization; security/themes/change queries remain limited inventory |
@@ -77,15 +73,13 @@ service-wide per-site locks, and an MCP interface over those services.
 | Locks/retries | SQLite transactions, one canonical URL lock across operation kinds, durable idempotency, no repeated mutations after uncertain outcomes | Concurrent stores and database reopen tested; external writers are not yet enrolled |
 | Interrupted-operation recovery | `reconcile_operation` checks exact runtime and public assets under operator-enrolled quiescence evidence, then atomically records the outcome and releases the lock | Controlled lost-response, restart, concurrent recovery, late-worker and stale-evidence tests; no automatic retry, force unlock or retrospective backup claim |
 | Forms | Explicit unrun coverage, recorded procedure references | Rendering/validation/submission/delivery/CRM/payment workflows remain unimplemented; no real form was submitted |
-| Other repairs | Explanatory routing boundary | Source authoring, content/media migrations, provider repairs and arbitrary configuration changes are not implemented |
-| Site releases / full Stack | Ownership preserved by rejecting unsupported routes | No GitHub dispatch, child-theme deployment, full Stack install or native Kinsta Fleet adapter in this version |
+| Content | Exact-site native MainWP posts/pages search and read | Typed content writes, ACF/menu/media qualification and real ChatGPT acceptance remain open |
+| Guarded code | Exact preview, central source PR/merged commit, protected QA, approval, backup, apply/readback and exact rollback | Controlled snapshot and Git lifecycle tests pass; central App provisioning, isolated provider/runtime and live ChatGPT acceptance remain open |
+| Other repairs | Explicit integration boundaries | Arbitrary configuration/provider changes remain outside qualified adapters |
+| Site releases / full Stack | Ownership preserved by rejecting unsupported routes | Guarded code uses protected GitHub QA dispatch; full site/Stack installation and native Kinsta Fleet remain separate unsupported adapters |
 | Fleet assessment | 1–25 explicit accessible environments, per-site results | Assessment never authorizes updates; empty/all-site selection rejected |
 
-REST API v2 is not used in v1: the implemented workflow is already exposed by
-MainWP MCP. Missing capability, authentication and identity failures are reported;
-there is no silent REST/SSH credential fallback. A future REST adapter must use
-the existing approved MRN client and Production Hub's `MAINWP_REST_API_KEY`
-contract, not the MCP application password.
+The native post/page reader uses the official MainWP REST v2 routes with the centrally protected `MAINWP_REST_API_KEY` supplied through Production Hub. This is an explicit read adapter, not an authentication fallback. Mutating code uses the canonical MCP provider with request-bound Google delegation. Missing capabilities or failed authentication stop the workflow; no REST/SSH or credential fallback is attempted.
 
 A missing tool is an integration limitation, not proof that MainWP lacks the
 product capability. Before admitting another route, assess both primary routes
@@ -156,15 +150,13 @@ the source of validation for ZIP/source/baseline construction.
    optional and reserved for reviewed missing-fact corrections or operation
    prerequisites; `websites.example.json` is intentionally empty. Never copy the
    MainWP inventory into it. See [discovery and knowledge](DISCOVERY.md).
-7. Assign immutable IdP subjects explicit grants, or configure an approved
-   `emailDomains` read/test policy with `auth.verifiedEmailClaims: true`. Only
+7. Use the automatic active-MRN Google domain policy in `config/permissions.team.example.json`; do not enroll or approve individual staff. Enable `auth.googleWorkspace` and request delegation together, with the verified connection/customer/service-key policy. Explicit subject overrides are reserved for revocation or narrower exceptions. Legacy Fleet grants remain separate until its portfolio write adapter is qualified. The earlier read-only deployment uses an `emailDomains` policy with `auth.verifiedEmailClaims: true`. Only
    signed `${audience}/email` and boolean `${audience}/email_verified` claims
    qualify, after full signature/issuer/audience validation. Match the exact
    domain, never a suffix or subdomain. Explicit subject entries override domain
-   access, including `enabled: false` revocation. Domain policies cannot grant
-   repair or release. See [MRN Apps staff policy](deploy/MRN-APPS.md).
+   access, including `enabled: false` revocation. Domain policies can grant guarded `content` and `code` roles only with verified Google identity; legacy Fleet repair/release grants remain separate. See [MRN Apps staff policy](deploy/MRN-APPS.md).
    Actions are independent:
-   `read`, `test`, `repair`, `deploy_development`, `release_production`. A normal
+   `read`, `test`, `content`, `code`, `repair`, `deploy_development`, `release_production`. A normal
    repairer needs `read` + `repair`; production execution additionally needs
    `release_production`. `portfolio` can grant read/test access to MainWP and/or
    Local Hub sources, including future discovered sites, without listing each
@@ -188,14 +180,12 @@ the source of validation for ZIP/source/baseline construction.
    after approval. Service locks protect workflows admitted to this service, not
    independently running tools. This is an outstanding hosting acceptance gate.
 10. Qualify a controlled environment's update and recovery with provider-correct
-    backups. Updraft Fleet is the only write route currently admitted. Kinsta
+    backups. Updraft Fleet and qualified provider code operations have separate adapters. Kinsta
     native backups are implemented in existing site tooling but are not connected
     to this Fleet adapter: it refuses that route. Local content/code workflows
     will use the documented Local Hub exception once implemented.
 
-The initial MRN Apps host, existing Auth0 identity provider and staff read policy
-are selected. OAuth registration, service credential provisioning, deployment and
-real ChatGPT acceptance remain delivery work. Artifact provisioning and writer
+The MRN Apps host, Auth0 identity provider, centralized MainWP credentials and staff read policy are deployed. The unified source candidate has not been deployed; its Google-only delegation, source service, content/code workflows and real ChatGPT acceptance remain delivery work. Artifact provisioning and writer
 coordination apply later when qualifying executable changes. Passing code tests
 does not establish any of these live acceptance steps.
 

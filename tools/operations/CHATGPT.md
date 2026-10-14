@@ -45,6 +45,12 @@ listing, inspection, recorded results and history; repairs and deployment are
 disabled. See `VALIDATION.md` for remaining acceptance limits. This workspace
 publication does not imply public-directory approval or a full Stack release.
 
+## Unified integration candidate
+
+Active MRN Google staff receive automatic portfolio membership; there is no individual approval or enrollment step. Existing signed-in users are still checked for active Directory membership and revocation. Change approvals remain in chat.
+
+The source candidate registers 19 tools, including expanded details/content reads, code inspection, code preparation and source approval. These new tools have not replaced the deployed four-tool workspace surface. Refresh and publish this same existing plugin only after the reviewed provider/service migration; do not create a second connector. See [the integration inventory and acceptance gates](UNIFIED-INTEGRATION.md).
+
 ## MRN operator delivery
 
 Use a workspace-published plugin for the team. The operator creates the remote

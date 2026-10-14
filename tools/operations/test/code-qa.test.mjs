@@ -71,3 +71,12 @@ test('receipt availability requires exact successful workflow, app actor and imm
   for (changed of [{ actor: { login: 'outsider' } }, { display_title: 'MRN QA other' }, { run_attempt: 2 }, { conclusion: 'failure' }, { head_sha: '0'.repeat(40) }])
     await assert.rejects(() => qa.status(ticket, async () => {}));
 });
+
+test('preliminary source receipts cannot satisfy live-deployment QA and require Git ownership', () => {
+  const source = { mode: 'git', repository: 'https://github.com/mrnwebdesigns/example', branch: 'main', commit: 'f'.repeat(40) };
+  const preliminary = { ...request, kind: 'source_review', source };
+  const proof = { ...claims, kind: preliminary.kind, source: { ...source, repository_path: request.repository_path, clean: true, remote_verified: true } };
+  assert.equal(verifyCodeReceipt(envelope(proof), preliminary, policy, 7).claims.kind, 'source_review');
+  assert.throws(() => verifyCodeReceipt(envelope(proof), { ...preliminary, kind: 'file' }, policy, 7), { code: 'QA_CONTEXT' });
+  assert.throws(() => new ProtectedCodeQa(null, policy).qualifyRequest({ ...request, kind: 'source_review' }), { code: 'QA_SOURCE' });
+});

@@ -21,6 +21,7 @@ export class Operations {
     if (record.workflow === 'code') return { id: record.id, type: record.type, workflow: 'code', target: this.targetView(record.target), status: record.status,
       requestedBy: record.requestedBy, approvedBy: record.approvedBy, executedBy: record.executedBy, planDigest: record.planDigest, expiresAt: record.expiresAt,
       error: record.error, result: record.result, qa: record.qaTicket && { url: record.qaTicket.url, runId: record.qaTicket.runId },
+      sourceQa: record.sourceQaTicket && { url: record.sourceQaTicket.url, runId: record.sourceQaTicket.runId },
       preview: record.plan && { path: record.plan.path, beforeSha256: record.plan.beforeSha256, afterSha256: record.plan.newSha256,
         before: record.plan.beforeContent, after: record.plan.content, reason: record.plan.description, source: record.plan.source,
         pullRequest: record.plan.proposal?.url, rollbackOf: record.plan.rollbackOf || undefined },

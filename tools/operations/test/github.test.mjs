@@ -9,6 +9,8 @@ const key = generateKeyPairSync('rsa', { modulusLength: 2048 });
 const json = (value, status = 200) => new Response(JSON.stringify(value), { status, headers: { 'content-type': 'application/json' } });
 const old = Buffer.from('<?php // old\n'); const fresh = '<?php // new\n';
 const hashes = { base: 'a'.repeat(40), tree: 'b'.repeat(40), blob: 'c'.repeat(40), newBlob: 'd'.repeat(40), newTree: 'e'.repeat(40), head: 'f'.repeat(40) };
+const reviewProof = { status: 'qualified', claims: { kind: 'source_review', expected_sha256: digest(old), new_sha256: digest(fresh), expires_at: Math.floor(Date.now() / 1000) + 600,
+  source: { mode: 'git', repository: `https://github.com/${repository}`, branch: 'main', commit: hashes.base, repository_path: 'file.php' } } };
 function sourceApi() {
   const calls = [];
   const api = async (path, method = 'GET', body) => {
@@ -61,12 +63,14 @@ test('extra repository access, broader permissions and redirects fail closed', a
 test('source PR preserves original tree, exact live precondition and verified attribution without deploying', async () => {
   const { api, calls } = sourceApi(); const checkpoints = [];
   const source = new CodeSource({ scoped: async () => api });
-  const input = { repository, branch: 'main', path: 'file.php', requiredBase: hashes.base, expectedSha256: digest(old), content: fresh,
+  const input = { repository, branch: 'main', path: 'file.php', requiredBase: hashes.base, reviewProof, expectedSha256: digest(old), content: fresh,
     operationId: '12345678-1234-4234-8234-123456789abc', reason: 'Correct scoped code', actor: { identityProvider: 'google-oauth2', subject: 'google-oauth2|123', verifiedEmail: 'staff@mrnwebdesigns.com' } };
   const proposal = await source.propose(input, async () => {}, state => checkpoints.push(state));
   assert.equal(proposal.newSha256, digest(fresh)); assert.equal(proposal.number, 7);
   assert.deepEqual(calls.find(c => c.path === '/git/trees').body, { base_tree: hashes.tree, tree: [{ path: 'file.php', mode: '100644', type: 'blob', sha: hashes.newBlob }] });
-  assert.match(calls.find(c => c.path === '/git/commits').body.message, /google-oauth2\|123/);
+  assert.match(calls.find(c => c.path === '/git/commits').body.message, new RegExp(input.operationId));
+  assert.equal(JSON.stringify(calls).includes(input.actor.subject), false);
+  assert.equal(JSON.stringify(calls).includes(input.actor.verifiedEmail), false);
   assert.deepEqual(checkpoints.map(c => c.status), ['source_dispatching', 'source_branch_created']);
   assert.equal(calls.some(c => /merge|dispatch/.test(c.path)), false);
   const before = calls.length;
@@ -81,7 +85,7 @@ test('source paths reject symlinks, truncated trees, changed bytes and never ret
   }
   const { api } = sourceApi(); let mutations = 0; let intent;
   const source = new CodeSource({ scoped: async () => async (path, method, ...args) => { if (method === 'POST') { mutations++; throw new Error('lost response'); } return api(path, method, ...args); } });
-  await assert.rejects(() => source.propose({ repository, branch: 'main', path: 'file.php', requiredBase: hashes.base, expectedSha256: digest(old), content: fresh,
+  await assert.rejects(() => source.propose({ repository, branch: 'main', path: 'file.php', requiredBase: hashes.base, reviewProof, expectedSha256: digest(old), content: fresh,
     operationId: '12345678-1234-4234-8234-123456789abc', reason: 'Test', actor: { identityProvider: 'google-oauth2' } }, async () => {}, state => { intent = state; }), /lost response/);
   assert.equal(mutations, 1); assert.equal(intent.status, 'source_dispatching');
 });
@@ -102,4 +106,15 @@ test('receipt downloads strip authorization at the redirect and reject unknown a
   const api = await app.scoped(repository, 'qaRead', async () => {});
   assert.equal((await api.artifact(7)).toString(), 'bounded archive');
   badHost = true; await assert.rejects(() => api.artifact(7), { code: 'QA_ARTIFACT_HOST' }); assert.equal(storageCalls, 1);
+});
+
+test('source publication rejects absent, expired, wrong-purpose or mismatched preliminary QA without mutation', async () => {
+  const { api, calls } = sourceApi(); const source = new CodeSource({ scoped: async () => api });
+  const input = { repository, branch: 'main', path: 'file.php', requiredBase: hashes.base, expectedSha256: digest(old), content: fresh,
+    operationId: '12345678-1234-4234-8234-123456789abc', reason: 'Test', actor: { identityProvider: 'google-oauth2' } };
+  for (const claims of [null, { ...reviewProof.claims, kind: 'file' }, { ...reviewProof.claims, expires_at: 1 },
+    { ...reviewProof.claims, new_sha256: '0'.repeat(64) }, { ...reviewProof.claims, source: { ...reviewProof.claims.source, commit: '0'.repeat(40) } }]) {
+    await assert.rejects(() => source.propose({ ...input, reviewProof: claims ? { status: 'qualified', claims } : null }, async () => {}, () => {}), { code: 'SOURCE_QA_REQUIRED' });
+  }
+  assert.equal(calls.some(c => c.method !== 'GET'), false);
 });
