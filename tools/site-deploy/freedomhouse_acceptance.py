@@ -14,7 +14,6 @@ from pathlib import Path
 import re
 import subprocess
 import time
-import urllib.error
 import urllib.request
 import zipfile
 
@@ -142,29 +141,6 @@ def api(path):
         return json.load(response)
 
 
-def hosted_rest_check():
-    """Keep hosted REST evidence; only a recognized Cloudflare page may defer.
-
-    Operator REST evidence is mandatory even when this hosted request passes.
-    A WordPress permission error, invalid JSON or transport error still fails.
-    """
-    try:
-        with urllib.request.urlopen(URL + '/wp-json/', timeout=30) as response:
-            index = json.load(response)
-            require(response.status == 200 and isinstance(index.get('routes'), dict) and index['routes'],
-                    'Hosted Live REST health failed')
-            return {'status': 'passed', 'http_status': response.status}
-    except urllib.error.HTTPError as error:
-        body = error.read(100000).lower()
-        error.close()
-        challenge = (error.headers.get('cf-mitigated') == 'challenge' or
-                     (error.headers.get('cf-ray') and b'cloudflare' in body and
-                      any(marker in body for marker in (b'cf-chl', b'cf-error-details', b'just a moment'))))
-        require(error.code == 403 and challenge, 'Hosted REST failed without a recognized Cloudflare challenge')
-        return {'status': 'cloudflare-blocked-requires-operator-rest-proof',
-                'http_status': error.code, 'cf_ray': error.headers.get('cf-ray')}
-
-
 def wait_readback(qualification, deployment, timeout=1200):
     # The attestation workflow is selected by trusted GitHub metadata, not user artifacts/code.
     deadline = time.monotonic() + timeout
@@ -215,10 +191,11 @@ def main():
     else:
         qualification = json.loads(Path(args.qualification).read_text())
         deployment = json.loads(Path(args.deployment).read_text())
-        hosted_rest = hosted_rest_check()
-        Path(args.receipt).with_name('site-hosted-rest.json').write_text(json.dumps(hosted_rest, indent=2) + '\n')
+        # public-verified is emitted only after host_controller.public_check
+        # passes exact-target Live REST health and public asset verification.
+        require(deployment.get('status') == 'public-verified', 'Controller REST/public acceptance is required')
         result = wait_readback(qualification, deployment)
-        result['hosted_rest'] = hosted_rest
+        result['controller_rest'] = 'passed-in-public-verification'
     Path(args.receipt).write_text(json.dumps(result, indent=2) + '\n')
     print(result.get('status', 'Live readback evidence recorded'))
 

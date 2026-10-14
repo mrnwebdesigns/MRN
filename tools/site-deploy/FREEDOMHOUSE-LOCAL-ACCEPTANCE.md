@@ -12,10 +12,11 @@ It compares the qualified commit with the selected commit across the entire chil
 theme and all QA inputs. A squash or workflow pin may differ; qualified code and
 QA configuration may not.
 
-After activation, fresh Live REST health from the operator and ordinary Chrome
-readback are required. The hosted REST result is also retained. Only a recognized
-Cloudflare challenge page may defer that hosted probe; WordPress permission errors,
-invalid JSON and transport failures still trigger rollback.
+The existing host controller verifies Live REST health before reporting
+`public-verified` activation; a REST failure enters its existing recovery path.
+After activation, an additional fresh anonymous Live REST response from the
+operator Mac and ordinary Chrome readback are required. No duplicate GitHub REST
+client is used in this opt-in path.
 The operator records all four deployment routes at desktop, tablet and mobile,
 applied immutable stylesheet URLs, screenshots, overflow/errors, Services contrast,
 native search results and the admin form/notices. A separate main-only

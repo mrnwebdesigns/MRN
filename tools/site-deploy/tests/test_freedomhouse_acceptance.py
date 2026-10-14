@@ -1,7 +1,6 @@
 import copy
 from datetime import datetime, timezone
 import hashlib
-import io
 import json
 import os
 from pathlib import Path
@@ -9,8 +8,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
-import urllib.error
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 sys.path.insert(0, str(Path(__file__).parents[1]))
 import freedomhouse_acceptance as acceptance
@@ -164,34 +162,19 @@ class LiveReadback(unittest.TestCase):
         self.assertIn('--rollback-receipt "$RUNNER_TEMP/site-deployment.json"', workflow)
 
 
-class HostedRest(unittest.TestCase):
-    def error(self, headers, body):
-        return urllib.error.HTTPError(acceptance.URL + '/wp-json/', 403, 'Forbidden', headers, io.BytesIO(body))
-
-    def test_cloudflare_challenge_is_retained_and_requires_operator_proof(self):
-        error = self.error({'cf-ray': 'test-ray', 'cf-mitigated': 'challenge'}, b'Cloudflare challenge')
-        with patch.object(acceptance.urllib.request, 'urlopen', side_effect=error):
-            self.assertEqual(acceptance.hosted_rest_check()['status'], 'cloudflare-blocked-requires-operator-rest-proof')
-
-    def test_recognized_cloudflare_html_is_retained(self):
-        error = self.error({'cf-ray': 'test-ray'}, b'<html>Just a moment Cloudflare cf-chl</html>')
-        with patch.object(acceptance.urllib.request, 'urlopen', side_effect=error):
-            self.assertEqual(acceptance.hosted_rest_check()['http_status'], 403)
-
-    def test_wordpress_permission_failure_is_not_a_cloudflare_exception(self):
-        error = self.error({'cf-ray': 'test-ray'}, b'{"code":"rest_forbidden"}')
-        with patch.object(acceptance.urllib.request, 'urlopen', side_effect=error), self.assertRaises(ValueError):
-            acceptance.hosted_rest_check()
-
-    def test_valid_rest_passes_and_invalid_data_fails(self):
-        for body, valid in [(b'{"routes":{"/wp/v2":{}}}', True), (b'{"routes":{}}', False), (b'<html>error</html>', False)]:
-            response = io.BytesIO(body); response.status = 200
-            with patch.object(acceptance.urllib.request, 'urlopen', return_value=response):
-                if valid:
-                    self.assertEqual(acceptance.hosted_rest_check()['status'], 'passed')
-                else:
-                    with self.assertRaises((ValueError, json.JSONDecodeError)):
-                        acceptance.hosted_rest_check()
+class ControllerRest(unittest.TestCase):
+    def test_controller_rest_failure_prevents_public_verified_activation(self):
+        import host_controller
+        store = MagicMock()
+        plan = {'host_provider': 'wpengine', 'url': acceptance.URL, 'pages': [acceptance.URL + '/']}
+        pointer = {'release_id': 'a' * 64, 'public_path': 'mrn-assets/child/' + 'b' * 64}
+        with patch.object(host_controller, 'html_cache', return_value={}), \
+                patch.object(host_controller, 'http_check', side_effect=ValueError('REST failed')) as check:
+            with self.assertRaisesRegex(ValueError, 'REST failed'):
+                host_controller.public_check(plan, store, pointer)
+            check.assert_called_once_with(acceptance.URL + '/wp-json/', rest=True)
+        store.release.assert_not_called()
+        store.verify_public_snapshot.assert_not_called()
 
 
 if __name__ == '__main__':
