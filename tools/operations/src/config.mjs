@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { isAbsolute } from 'node:path';
 import { readJson, Registry, requireThat } from './contracts.mjs';
+import { codePolicySchema } from './code-qa.mjs';
+import { contentQaPolicySchema } from './content-qa.mjs';
 
 const absolute = z.string().refine(isAbsolute, 'Use an absolute service path.');
 const secureUrl = z.string().url().refine(s => { const u = new URL(s); return u.protocol === 'https:' && !u.username && !u.password && !u.search && !u.hash; });
@@ -37,5 +39,15 @@ export function loadConfig(file) {
   requireThat(new URL(config.auth.jwksUrl).origin === new URL(config.auth.issuer).origin, 'AUTH_CONFIG', 'Pin JWKS to the configured issuer origin.');
   const registry = new Registry(() => config.registryPath ? readJson(config.registryPath) : { version: 1, websites: [] }, () => readJson(config.policyPath));
   registry.data();
-  return { config, registry };
+  // Preflight and startup must validate the same files before any state is opened.
+  const workflowPolicies = {
+    code: config.code ? codePolicySchema.parse(readJson(config.code.policyPath)) : null,
+    content: config.contentEdits ? contentQaPolicySchema.parse(readJson(config.contentEdits.policyPath)) : null,
+  };
+  const repositories = new Set(Object.values(workflowPolicies).filter(Boolean).map(policy => policy.repository));
+  for (const profile of workflowPolicies.code?.profiles || [])
+    if (profile.source.mode === 'git') repositories.add(profile.source.repository.slice('https://github.com/'.length));
+  for (const repository of repositories)
+    requireThat(Object.hasOwn(config.github.repositories, repository), 'GITHUB_CONFIG', 'Pin every configured workflow and source repository identity.');
+  return { config, registry, workflowPolicies };
 }

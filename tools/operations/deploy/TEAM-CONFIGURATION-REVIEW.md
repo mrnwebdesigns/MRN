@@ -32,9 +32,50 @@ CI repository grant and Actions budget change are recorded below.
   Replacing these with an MRN-owned production Google OAuth client needs a
   reviewed credential/configuration change and regression checks for the other
   apps sharing this connection. It does not require another team plugin.
+- Readback of the connection's Applications tab shows five enabled applications:
+  Default App, MRN Client Review MCP (Test Application), MRN Client Review MCP
+  OAuth, MRN Google Reporting MCP (Test Application), and MRN Website Operations
+  (Test Application). Basic and extended profile are selected; additional Google
+  scopes and offline Google access are not selected. Preserve those settings
+  and application selections unless a separate change is reviewed.
+- After administrator reauthentication, Google Cloud project
+  `mrn-infrastructure-access` (`535170757354`) reports **Internal** audience.
+  Its existing `MRN MainWP Code Access` client is
+  `535170757354-1dbvdmkck66u1lkkdd25jq4143gllbln.apps.googleusercontent.com`.
+  It allows the JavaScript origin `https://wpcontrol.mrndev.io` and has no
+  authorized redirect URI. The other existing client is MRN Cloudflare Access.
+  The existing Directory reader is
+  `mrn-mainwp-directory@mrn-infrastructure-access.iam.gserviceaccount.com`.
+  No client, audience, secret, callback or service-account setting was changed.
+
+### Google production-client proposal, not activated
+
+Prepare a dedicated service-owned Google OAuth web client for the existing
+Auth0 connection, preserving the MainWP pilot and Cloudflare clients. This is
+backend setup for the same team plugin. Its proposed name is `MRN Auth0 Staff
+Sign-in`, origin `https://dev-bhbm2z074birs7aj.us.auth0.com`, and sole redirect
+`https://dev-bhbm2z074birs7aj.us.auth0.com/login/callback`, following
+[Auth0's Google connection contract](https://auth0.com/docs/authenticate/identity-providers/social-identity-providers/google).
+The ChatGPT connector callback remains on the existing Auth0 OAuth application;
+it is not this Google-to-Auth0 callback. Keep profile/email scopes only.
+
+An Internal Google client would constrain **all five connected applications**
+to the Workspace. Operations requires that restriction, but existing allowed
+audiences for the other applications still need verification before choosing
+this shared connection's production client. Do not change the project's
+audience, reuse the pilot secret, or silently narrow another application's
+users. The release review must name that impact and its approved resolution.
+Any new client credential must remain in the approved central secret store and
+Auth0; no staff credential collection or client secret in ChatGPT is needed.
 
 The Google customer and Auth0 connection IDs are public policy identifiers,
 not credentials. No client secret, token or private key was retrieved or saved.
+
+The candidate's `check:config` and startup now share code/content QA-policy
+loading. Missing, malformed or interchanged policies and missing central
+repository identity pins fail before SQLite state is opened. A passing preflight
+reports profile counts only; it does not verify credentials, Google membership,
+App permissions, hosted health or production rendering qualification.
 
 ## Observed service state
 

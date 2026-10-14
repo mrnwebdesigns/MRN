@@ -16,14 +16,14 @@ import { IdentitySigner, readIdentityKey } from './delegation.mjs';
 import { DelegatedMainwpClient } from './delegated-mainwp.mjs';
 import { NativeContentReader } from './content.mjs';
 import { GithubApp, CodeSource, readGithubKey } from './github.mjs';
-import { ProtectedCodeQa, codePolicySchema } from './code-qa.mjs';
+import { ProtectedCodeQa } from './code-qa.mjs';
 import { CodeWorkflow } from './code-workflow.mjs';
 import { ContentWorkflow } from './content-workflow.mjs';
-import { ProtectedContentQa, contentQaPolicySchema } from './content-qa.mjs';
+import { ProtectedContentQa } from './content-qa.mjs';
 
 process.umask(0o077);
 try {
-  const { config, registry } = loadConfig(process.env.MRN_OPERATIONS_CONFIG || '/etc/mrn-operations/service.json');
+  const { config, registry, workflowPolicies } = loadConfig(process.env.MRN_OPERATIONS_CONFIG || '/etc/mrn-operations/service.json');
   const store = new Store(join(config.stateDir, 'operations.sqlite'));
   const qualifications = new Qualifications(() => readJson(config.qualificationsPath));
   const fleet = new FleetAdapter({ root: config.repositoryRoot, stateDir: config.stateDir, artifactRoots: config.artifactRoots, sourceRepositories: config.sourceRepositories, publicProbe: probe, qualifications });
@@ -44,8 +44,8 @@ try {
   const service = new Operations({ registry, store, fleet, qa, recoveryEvidence, discovery, content, verifyStaff: signer ? verifyStaff : null, publicProbe: probe, writesEnabled: config.writesEnabled, connect });
   if (config.github) {
     const github = new GithubApp({ ...config.github, privateKey: readGithubKey(config.github.privateKeyPath) });
-    if (config.code) service.codeWorkflow = new CodeWorkflow(service, { source: new CodeSource(github), qa: new ProtectedCodeQa(github, codePolicySchema.parse(readJson(config.code.policyPath))) });
-    if (config.contentEdits) service.contentWorkflow = new ContentWorkflow(service, { qa: new ProtectedContentQa(github, contentQaPolicySchema.parse(readJson(config.contentEdits.policyPath))) });
+    if (workflowPolicies.code) service.codeWorkflow = new CodeWorkflow(service, { source: new CodeSource(github), qa: new ProtectedCodeQa(github, workflowPolicies.code) });
+    if (workflowPolicies.content) service.contentWorkflow = new ContentWorkflow(service, { qa: new ProtectedContentQa(github, workflowPolicies.content) });
   }
   const server = createHttpServer({ service, authenticate: createAuthenticator(config.auth, undefined, verifyStaff), publicUrl: config.publicUrl, issuer: config.auth.issuer, origins: config.allowedOrigins });
   // Durable running records/locks are deliberately not reset on restart.
