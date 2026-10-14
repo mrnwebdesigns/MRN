@@ -55,10 +55,25 @@ successfully obtained the repository-scoped read token and checked out both
 pinned sources. The old provider pin passed its own runtime checks but did not
 invoke the new gateway hook; the required gateway report was absent and the job
 correctly failed. Provider checkpoint `27ac5bc` subsequently passed its disposable
-runtime CI and supplies that hook; gateway transport qualification is pending.
+runtime CI and supplies that hook. Gateway source `a6eccc2` then passed all ten
+actual MCP/WordPress transport checks in [run 38593686429](https://github.com/mrnwebdesigns/MRN/actions/runs/38593686429/job/115955067868).
+Those checks use synthetic OAuth/Directory identities and an empty managed-site
+directory; live sign-in and site edits remain unverified.
 This CI grant supplies no write, PR, deployment or production
 source-editing authority, and is unrelated to individual staff access or site
 enrollment. No personal token was substituted.
+
+The runner's subsequent CI run `38593836989` passed its actual code/content test
+steps but failed both required report uploads at the account artifact quota.
+Authenticated read-only billing inspection found 2 GB used / 2 GB included and
+an existing account-wide Actions budget of $0 with usage blocked. No budget,
+retention policy or evidence was changed. Restoring artifact uploads requires a
+separately approved billing change or an explicitly reviewed retention action;
+then rerun the failed jobs and verify retained reports. Do not make report upload
+optional, delete qualification evidence or treat the failed workflow as green.
+GitHub documents that storage accounting can take 6–12 hours to update and that
+artifact deletion does not remove already-accrued usage in the billing cycle:
+[Actions billing](https://docs.github.com/en/billing/concepts/product-billing/github-actions).
 
 Before an activation request, finish the content/provider/runtime qualification
 and present exact source commits, qualified artifacts and rollback artifacts.

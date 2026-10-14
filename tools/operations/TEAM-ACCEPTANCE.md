@@ -42,6 +42,16 @@ All results and necessary decisions must appear in chat. Any request for a WordP
 
 Use already-authorized test identities or separately reviewed administrative test changes. Do not suspend a real staff member, weaken a policy, forge a production identity or grant an outsider access to manufacture test evidence. A local negative test is not a live denial result.
 
+The disposable integration at gateway `a6eccc2` with provider `27ac5bc` and MCP
+`3249bde` passed ten actual HTTP/MCP/WordPress transport checks, including
+identity switching, concurrent reads, outsider/non-Google/missing-Directory
+denial, existing-token suspension/revocation, read-only scope, nonce replay and
+raw-service-route denial, and individual SQLite audit attribution.
+[Run 38593686429](https://github.com/mrnwebdesigns/MRN/actions/runs/38593686429/job/115955067868)
+uses synthetic OAuth/Directory identities, zero managed sites and no production
+credentials. It improves backend integration evidence; every live acceptance row
+above remains open.
+
 ## Evidence and signoff
 
 For each actual run retain timestamp, immutable release/config references, operation IDs, exact site/record/path, approved preview digest, QA report/receipt IDs, backup verification, resulting checksums/readback and rollback result. Keep the individual Google identity in restricted audit storage; user-visible reports can reference the operation ID. Never record tokens, cookies, private keys or backend passwords.
