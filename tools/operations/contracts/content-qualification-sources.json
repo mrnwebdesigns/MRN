@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "repository": "mrnwebdesigns/mrn-mainwp-operations-api",
+  "commit": "6f21c21b9363b643930aa62455c1eb47c781c7d5",
+  "files": [
+    {
+      "source": "contracts/content-qualification-v1.json",
+      "local": "contracts/content-qualification-v1.json",
+      "sha256": "0dace215ff1ea0930b02183c38303c65f64fc0e27e86f5eacd9e4198468e379f"
+    },
+    {
+      "source": "contracts/content-recipe-catalog-v1.json",
+      "local": "contracts/content-recipe-catalog-v1.json",
+      "sha256": "f50689675056aafdebacf22cb4b3f0c09d4e9247c61e73f2bd03b8b1d2850057"
+    },
+    {
+      "source": "contracts/content-target-binding-v1.json",
+      "local": "contracts/content-target-binding-v1.json",
+      "sha256": "5433dcd0da6558088d785f0055b4602c8fc9563ede46a83fb87980c5519f31a4"
+    },
+    {
+      "source": "tests/fixtures/content-qualification-v1.json",
+      "local": "test/fixtures/content-qualification-contract.json",
+      "sha256": "903a1a4f42e2edad45d33ff8126fb179068219c213a96a5ec3d38198e10d02c2"
+    },
+    {
+      "source": "contracts/content-policy-v2-proposal.json",
+      "local": "test/fixtures/content-policy-v2-provider.json",
+      "sha256": "82fb9cf0804228d4f9b97901391ea09c99bbe4b521475ef578ce5123f3d7c58f"
+    }
+  ]
+}

@@ -1,0 +1,311 @@
+{
+  "description": "Structural schema/canonical vectors only. No signed qualification, protected key, source receipt or production eligibility.",
+  "cases": [
+    {
+      "contract": "content-qualification-v1.json",
+      "definition": "request_input",
+      "value": {
+        "site_id": 73,
+        "site_url": "https://pages.fixture.example.invalid",
+        "target": {
+          "kind": "post",
+          "post_type": "page",
+          "post_id": 900,
+          "field": "post_title"
+        },
+        "expected_snapshot_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+        "reason": "Requested existing record qualification",
+        "idempotency_key": "12345678-1234-4123-8123-123456789abc"
+      },
+      "canonical": "{\"expected_snapshot_sha256\":\"5555555555555555555555555555555555555555555555555555555555555555\",\"idempotency_key\":\"12345678-1234-4123-8123-123456789abc\",\"reason\":\"Requested existing record qualification\",\"site_id\":73,\"site_url\":\"https://pages.fixture.example.invalid\",\"target\":{\"field\":\"post_title\",\"kind\":\"post\",\"post_id\":900,\"post_type\":\"page\"}}",
+      "sha256": "ed1c63b510eb05457a61e16ef84dc502703937db4cdeb64dbde4d4c0f1c760d5"
+    },
+    {
+      "contract": "content-qualification-v1.json",
+      "definition": "capture_claims",
+      "value": {
+        "schema": 1,
+        "issuer": "mrn-content-qualification",
+        "audience": "https://wpcontrol.mrndev.io",
+        "issued_at": 1700000000,
+        "expires_at": 1700000300,
+        "request_id": "12345678-1234-4123-8123-123456789abc",
+        "nonce": "3333333333333333333333333333333333333333333333333333333333333333",
+        "authorization_policy_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+        "catalog_epoch": 1,
+        "qualification_job_id": "23456789-1234-4123-8123-123456789abc",
+        "expected_snapshot_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+        "requester_binding_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+        "site_id": 73,
+        "site_url": "https://pages.fixture.example.invalid",
+        "target": {
+          "kind": "post",
+          "post_type": "page",
+          "post_id": 900,
+          "field": "post_title"
+        },
+        "recipe_catalog_sha256": "7777777777777777777777777777777777777777777777777777777777777777",
+        "recipe_id": "fixture-title",
+        "recipe_sha256": "8888888888888888888888888888888888888888888888888888888888888888",
+        "action": "capture",
+        "expected_target_revision": 0
+      },
+      "canonical": "{\"action\":\"capture\",\"audience\":\"https://wpcontrol.mrndev.io\",\"authorization_policy_sha256\":\"4444444444444444444444444444444444444444444444444444444444444444\",\"catalog_epoch\":1,\"expected_snapshot_sha256\":\"5555555555555555555555555555555555555555555555555555555555555555\",\"expected_target_revision\":0,\"expires_at\":1700000300,\"issued_at\":1700000000,\"issuer\":\"mrn-content-qualification\",\"nonce\":\"3333333333333333333333333333333333333333333333333333333333333333\",\"qualification_job_id\":\"23456789-1234-4123-8123-123456789abc\",\"recipe_catalog_sha256\":\"7777777777777777777777777777777777777777777777777777777777777777\",\"recipe_id\":\"fixture-title\",\"recipe_sha256\":\"8888888888888888888888888888888888888888888888888888888888888888\",\"request_id\":\"12345678-1234-4123-8123-123456789abc\",\"requester_binding_sha256\":\"6666666666666666666666666666666666666666666666666666666666666666\",\"schema\":1,\"site_id\":73,\"site_url\":\"https://pages.fixture.example.invalid\",\"target\":{\"field\":\"post_title\",\"kind\":\"post\",\"post_id\":900,\"post_type\":\"page\"}}",
+      "sha256": "f1a759b1dcf5fe932d54ea56d58927e792bb92201a92588262550707da0858c0"
+    },
+    {
+      "contract": "content-qualification-v1.json",
+      "definition": "publication_claims",
+      "value": {
+        "schema": 1,
+        "issuer": "mrn-content-qualification",
+        "audience": "https://wpcontrol.mrndev.io",
+        "issued_at": 1700000000,
+        "expires_at": 1700000300,
+        "request_id": "12345678-1234-4123-8123-123456789abc",
+        "nonce": "3333333333333333333333333333333333333333333333333333333333333333",
+        "authorization_policy_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+        "catalog_epoch": 1,
+        "qualification_job_id": "23456789-1234-4123-8123-123456789abc",
+        "expected_snapshot_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+        "requester_binding_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+        "site_id": 73,
+        "site_url": "https://pages.fixture.example.invalid",
+        "target": {
+          "kind": "post",
+          "post_type": "page",
+          "post_id": 900,
+          "field": "post_title"
+        },
+        "recipe_catalog_sha256": "7777777777777777777777777777777777777777777777777777777777777777",
+        "recipe_id": "fixture-title",
+        "recipe_sha256": "8888888888888888888888888888888888888888888888888888888888888888",
+        "action": "publish",
+        "capture_artifact_sha256": "9999999999999999999999999999999999999999999999999999999999999999",
+        "expected_target_revision": 0,
+        "profile": {
+          "site_id": 73,
+          "site_url": "https://pages.fixture.example.invalid",
+          "target": {
+            "kind": "post",
+            "post_type": "page",
+            "post_id": 900,
+            "field": "post_title"
+          },
+          "stable_selector": {
+            "post_type": "page",
+            "post_path": "fixture"
+          },
+          "affected_paths": [
+            "/fixture/"
+          ],
+          "runtime_profile": "profiles/synthetic.json",
+          "runtime_profile_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+          "qa_path": "wp-content/themes/fixture/index.php",
+          "selector": ".fixture-title",
+          "wordpress_version": "6.9.4",
+          "php_minor": "8.3",
+          "parity_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+          "render_options": [
+            "blogname"
+          ],
+          "descriptor": {
+            "id": "synthetic-title-fixture",
+            "sha256": "8ba4e506fa56f8469b147e7cd4932b6341ae1c00494dd556df9c6044a05d1c0b",
+            "runtime_url": "https://mrn-qa.internal:9443",
+            "runtime_context_sha256": "d4656f88f97a642244f0b077ae2bce66446086d196669a95bd8ef4df437b248a",
+            "ownership": "wordpress-post",
+            "covered_fields": [
+              "post_title"
+            ],
+            "requires_render_assertions": true
+          }
+        },
+        "profile_sha256": "8ba4e506fa56f8469b147e7cd4932b6341ae1c00494dd556df9c6044a05d1c0b",
+        "parity_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+        "qualification_report_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "provider_source_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      "canonical": "{\"action\":\"publish\",\"audience\":\"https://wpcontrol.mrndev.io\",\"authorization_policy_sha256\":\"4444444444444444444444444444444444444444444444444444444444444444\",\"capture_artifact_sha256\":\"9999999999999999999999999999999999999999999999999999999999999999\",\"catalog_epoch\":1,\"expected_snapshot_sha256\":\"5555555555555555555555555555555555555555555555555555555555555555\",\"expected_target_revision\":0,\"expires_at\":1700000300,\"issued_at\":1700000000,\"issuer\":\"mrn-content-qualification\",\"nonce\":\"3333333333333333333333333333333333333333333333333333333333333333\",\"parity_sha256\":\"2222222222222222222222222222222222222222222222222222222222222222\",\"profile\":{\"affected_paths\":[\"/fixture/\"],\"descriptor\":{\"covered_fields\":[\"post_title\"],\"id\":\"synthetic-title-fixture\",\"ownership\":\"wordpress-post\",\"requires_render_assertions\":true,\"runtime_context_sha256\":\"d4656f88f97a642244f0b077ae2bce66446086d196669a95bd8ef4df437b248a\",\"runtime_url\":\"https://mrn-qa.internal:9443\",\"sha256\":\"8ba4e506fa56f8469b147e7cd4932b6341ae1c00494dd556df9c6044a05d1c0b\"},\"parity_sha256\":\"2222222222222222222222222222222222222222222222222222222222222222\",\"php_minor\":\"8.3\",\"qa_path\":\"wp-content/themes/fixture/index.php\",\"render_options\":[\"blogname\"],\"runtime_profile\":\"profiles/synthetic.json\",\"runtime_profile_sha256\":\"1111111111111111111111111111111111111111111111111111111111111111\",\"selector\":\".fixture-title\",\"site_id\":73,\"site_url\":\"https://pages.fixture.example.invalid\",\"stable_selector\":{\"post_path\":\"fixture\",\"post_type\":\"page\"},\"target\":{\"field\":\"post_title\",\"kind\":\"post\",\"post_id\":900,\"post_type\":\"page\"},\"wordpress_version\":\"6.9.4\"},\"profile_sha256\":\"8ba4e506fa56f8469b147e7cd4932b6341ae1c00494dd556df9c6044a05d1c0b\",\"provider_source_sha\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"qualification_job_id\":\"23456789-1234-4123-8123-123456789abc\",\"qualification_report_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"recipe_catalog_sha256\":\"7777777777777777777777777777777777777777777777777777777777777777\",\"recipe_id\":\"fixture-title\",\"recipe_sha256\":\"8888888888888888888888888888888888888888888888888888888888888888\",\"request_id\":\"12345678-1234-4123-8123-123456789abc\",\"requester_binding_sha256\":\"6666666666666666666666666666666666666666666666666666666666666666\",\"schema\":1,\"site_id\":73,\"site_url\":\"https://pages.fixture.example.invalid\",\"target\":{\"field\":\"post_title\",\"kind\":\"post\",\"post_id\":900,\"post_type\":\"page\"}}",
+      "sha256": "45ce8ddcc7f0a52f1a41c4c0216c28f734731e77dc55e4209f986bb49ae0cb37"
+    },
+    {
+      "contract": "content-qualification-v1.json",
+      "definition": "worker_failure_claims",
+      "value": {
+        "schema": 1,
+        "issuer": "mrn-content-qualification",
+        "audience": "https://wpcontrol.mrndev.io",
+        "issued_at": 1700000000,
+        "expires_at": 1700000300,
+        "request_id": "12345678-1234-4123-8123-123456789abc",
+        "nonce": "3333333333333333333333333333333333333333333333333333333333333333",
+        "authorization_policy_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+        "catalog_epoch": 1,
+        "qualification_job_id": "23456789-1234-4123-8123-123456789abc",
+        "expected_snapshot_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+        "requester_binding_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+        "site_id": 73,
+        "site_url": "https://pages.fixture.example.invalid",
+        "target": {
+          "kind": "post",
+          "post_type": "page",
+          "post_id": 900,
+          "field": "post_title"
+        },
+        "recipe_catalog_sha256": "7777777777777777777777777777777777777777777777777777777777777777",
+        "recipe_id": "fixture-title",
+        "recipe_sha256": "8888888888888888888888888888888888888888888888888888888888888888",
+        "action": "fail",
+        "reason_code": "runtime_unqualified"
+      },
+      "canonical": "{\"action\":\"fail\",\"audience\":\"https://wpcontrol.mrndev.io\",\"authorization_policy_sha256\":\"4444444444444444444444444444444444444444444444444444444444444444\",\"catalog_epoch\":1,\"expected_snapshot_sha256\":\"5555555555555555555555555555555555555555555555555555555555555555\",\"expires_at\":1700000300,\"issued_at\":1700000000,\"issuer\":\"mrn-content-qualification\",\"nonce\":\"3333333333333333333333333333333333333333333333333333333333333333\",\"qualification_job_id\":\"23456789-1234-4123-8123-123456789abc\",\"reason_code\":\"runtime_unqualified\",\"recipe_catalog_sha256\":\"7777777777777777777777777777777777777777777777777777777777777777\",\"recipe_id\":\"fixture-title\",\"recipe_sha256\":\"8888888888888888888888888888888888888888888888888888888888888888\",\"request_id\":\"12345678-1234-4123-8123-123456789abc\",\"requester_binding_sha256\":\"6666666666666666666666666666666666666666666666666666666666666666\",\"schema\":1,\"site_id\":73,\"site_url\":\"https://pages.fixture.example.invalid\",\"target\":{\"field\":\"post_title\",\"kind\":\"post\",\"post_id\":900,\"post_type\":\"page\"}}",
+      "sha256": "042020ee8a2209f1e4ff174e325b643c3dba6120f234ef8210f5d42555486431"
+    },
+    {
+      "contract": "content-qualification-v1.json",
+      "definition": "job_output",
+      "value": {
+        "site_id": 73,
+        "site_url": "https://pages.fixture.example.invalid",
+        "target": {
+          "kind": "post",
+          "post_type": "page",
+          "post_id": 900,
+          "field": "post_title"
+        },
+        "qualification_job_id": "23456789-1234-4123-8123-123456789abc",
+        "state": "queued",
+        "reason_code": "none",
+        "acceptance_scope": "provider-only",
+        "authorization_policy_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+        "expected_snapshot_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+        "capture_artifact_sha256": null,
+        "profile_sha256": null,
+        "target_revision": null,
+        "qualification_report_sha256": null,
+        "recipe_catalog_sha256": null,
+        "recipe_sha256": null,
+        "qualification_binding": null,
+        "expires_at": 1700003600,
+        "is_current": false,
+        "current_target_revision": null,
+        "current_profile_sha256": null,
+        "current_binding_sha256": null
+      },
+      "canonical": "{\"acceptance_scope\":\"provider-only\",\"authorization_policy_sha256\":\"4444444444444444444444444444444444444444444444444444444444444444\",\"capture_artifact_sha256\":null,\"current_binding_sha256\":null,\"current_profile_sha256\":null,\"current_target_revision\":null,\"expected_snapshot_sha256\":\"5555555555555555555555555555555555555555555555555555555555555555\",\"expires_at\":1700003600,\"is_current\":false,\"profile_sha256\":null,\"qualification_binding\":null,\"qualification_job_id\":\"23456789-1234-4123-8123-123456789abc\",\"qualification_report_sha256\":null,\"reason_code\":\"none\",\"recipe_catalog_sha256\":null,\"recipe_sha256\":null,\"site_id\":73,\"site_url\":\"https://pages.fixture.example.invalid\",\"state\":\"queued\",\"target\":{\"field\":\"post_title\",\"kind\":\"post\",\"post_id\":900,\"post_type\":\"page\"},\"target_revision\":null}",
+      "sha256": "a85eb7f9ea5a58330621a713c2943ccb3f8fc2053a3fa65b866f0ea07079514c"
+    },
+    {
+      "contract": "content-recipe-catalog-v1.json",
+      "definition": "catalog_claims",
+      "value": {
+        "schema": 1,
+        "issuer": "mrn-content-recipe-authority",
+        "audiences": [
+          "mrn-mainwp-provider",
+          "mrn-operations-gateway",
+          "mrn-code-qa-runner"
+        ],
+        "issued_at": 1700000000,
+        "expires_at": 1700000300,
+        "catalog_epoch": 1,
+        "catalog_revision": 1,
+        "recipes": [
+          {
+            "recipe_id": "fixture-title",
+            "adapter_version": "1",
+            "origin_scope": "reserved-example-invalid",
+            "eligible_post_types": [
+              "page",
+              "post"
+            ],
+            "eligible_fields": [
+              "post_title"
+            ],
+            "ownership": "wordpress-post",
+            "provider_source_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "capture_template_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mutation_template_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "parity_helper_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "runtime_profile_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "renderer_source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "ownership_constraints_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mutation_hook_policy_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "normalization_policy_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "render_assertions_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        ]
+      },
+      "canonical": "{\"audiences\":[\"mrn-mainwp-provider\",\"mrn-operations-gateway\",\"mrn-code-qa-runner\"],\"catalog_epoch\":1,\"catalog_revision\":1,\"expires_at\":1700000300,\"issued_at\":1700000000,\"issuer\":\"mrn-content-recipe-authority\",\"recipes\":[{\"adapter_version\":\"1\",\"capture_template_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"eligible_fields\":[\"post_title\"],\"eligible_post_types\":[\"page\",\"post\"],\"mutation_hook_policy_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"mutation_template_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"normalization_policy_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"origin_scope\":\"reserved-example-invalid\",\"ownership\":\"wordpress-post\",\"ownership_constraints_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"parity_helper_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"provider_source_sha\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"recipe_id\":\"fixture-title\",\"render_assertions_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"renderer_source_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"runtime_profile_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}],\"schema\":1}",
+      "sha256": "996f859deed468e44c655a1f312e85ee8f4f7d6f30b6ea85d57a2d796557f473"
+    },
+    {
+      "contract": "content-target-binding-v1.json",
+      "definition": "claims",
+      "value": {
+        "schema": 1,
+        "issuer": "mrn-content-qualification",
+        "audiences": [
+          "mrn-mainwp-provider",
+          "mrn-operations-gateway",
+          "mrn-code-qa-runner"
+        ],
+        "binding_id": "34567890-1234-4123-8123-123456789abc",
+        "qualification_job_id": "23456789-1234-4123-8123-123456789abc",
+        "requester_binding_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+        "site_id": 73,
+        "site_url": "https://pages.fixture.example.invalid",
+        "target": {
+          "kind": "post",
+          "post_type": "page",
+          "post_id": 900,
+          "field": "post_title"
+        },
+        "qualification_snapshot_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+        "capture_artifact_sha256": "9999999999999999999999999999999999999999999999999999999999999999",
+        "profile_sha256": "8ba4e506fa56f8469b147e7cd4932b6341ae1c00494dd556df9c6044a05d1c0b",
+        "parity_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+        "qualification_report_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "recipe_catalog_sha256": "7777777777777777777777777777777777777777777777777777777777777777",
+        "recipe_id": "fixture-title",
+        "recipe_sha256": "8888888888888888888888888888888888888888888888888888888888888888",
+        "provider_source_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "target_revision": 1,
+        "authorization_policy_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+        "catalog_epoch": 1,
+        "issued_at": 1700000300,
+        "expires_at": 1700003600
+      },
+      "canonical": "{\"audiences\":[\"mrn-mainwp-provider\",\"mrn-operations-gateway\",\"mrn-code-qa-runner\"],\"authorization_policy_sha256\":\"4444444444444444444444444444444444444444444444444444444444444444\",\"binding_id\":\"34567890-1234-4123-8123-123456789abc\",\"capture_artifact_sha256\":\"9999999999999999999999999999999999999999999999999999999999999999\",\"catalog_epoch\":1,\"expires_at\":1700003600,\"issued_at\":1700000300,\"issuer\":\"mrn-content-qualification\",\"parity_sha256\":\"2222222222222222222222222222222222222222222222222222222222222222\",\"profile_sha256\":\"8ba4e506fa56f8469b147e7cd4932b6341ae1c00494dd556df9c6044a05d1c0b\",\"provider_source_sha\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"qualification_job_id\":\"23456789-1234-4123-8123-123456789abc\",\"qualification_report_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"qualification_snapshot_sha256\":\"5555555555555555555555555555555555555555555555555555555555555555\",\"recipe_catalog_sha256\":\"7777777777777777777777777777777777777777777777777777777777777777\",\"recipe_id\":\"fixture-title\",\"recipe_sha256\":\"8888888888888888888888888888888888888888888888888888888888888888\",\"requester_binding_sha256\":\"6666666666666666666666666666666666666666666666666666666666666666\",\"schema\":1,\"site_id\":73,\"site_url\":\"https://pages.fixture.example.invalid\",\"target\":{\"field\":\"post_title\",\"kind\":\"post\",\"post_id\":900,\"post_type\":\"page\"},\"target_revision\":1}",
+      "sha256": "faa20309283083a15e16f3f53106ffa06b2905d6514a59cabb34226970d3e183"
+    },
+    {
+      "contract": "content-qualification-v1.json",
+      "definition": "job_context",
+      "value": {
+        "schema": 1,
+        "qualification_job_id": "23456789-1234-4123-8123-123456789abc",
+        "site_id": 73,
+        "site_url": "https://pages.fixture.example.invalid",
+        "target": {
+          "kind": "post",
+          "post_type": "page",
+          "post_id": 900,
+          "field": "post_title"
+        },
+        "requester_binding_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+        "authorization_policy_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+        "catalog_epoch": 1,
+        "expected_target_revision": 0,
+        "expected_snapshot_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+        "recipe_catalog_sha256": "7777777777777777777777777777777777777777777777777777777777777777",
+        "expires_at": 1700003600,
+        "state": "queued",
+        "capture_artifact_sha256": null
+      },
+      "canonical": "{\"authorization_policy_sha256\":\"4444444444444444444444444444444444444444444444444444444444444444\",\"capture_artifact_sha256\":null,\"catalog_epoch\":1,\"expected_snapshot_sha256\":\"5555555555555555555555555555555555555555555555555555555555555555\",\"expected_target_revision\":0,\"expires_at\":1700003600,\"qualification_job_id\":\"23456789-1234-4123-8123-123456789abc\",\"recipe_catalog_sha256\":\"7777777777777777777777777777777777777777777777777777777777777777\",\"requester_binding_sha256\":\"6666666666666666666666666666666666666666666666666666666666666666\",\"schema\":1,\"site_id\":73,\"site_url\":\"https://pages.fixture.example.invalid\",\"state\":\"queued\",\"target\":{\"field\":\"post_title\",\"kind\":\"post\",\"post_id\":900,\"post_type\":\"page\"}}",
+      "sha256": "759bc748ffefac44f2fa6f8518f1221b4bbf8cc2faf39c9648862247224d6ae1"
+    }
+  ]
+}

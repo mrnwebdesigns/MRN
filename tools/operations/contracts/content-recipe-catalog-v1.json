@@ -1,0 +1,262 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "schema": 1,
+  "status": "frozen trust-contract checkpoint; static consumer inventories remain unchanged",
+  "definitions": {
+    "hash": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64,
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "key": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "public_key_base64": {
+          "type": "string",
+          "minLength": 44,
+          "maxLength": 44,
+          "pattern": "^[A-Za-z0-9+/]{43}=$"
+        }
+      },
+      "required": [
+        "id",
+        "public_key_base64"
+      ],
+      "additionalProperties": false
+    },
+    "signed_envelope": {
+      "type": "object",
+      "properties": {
+        "key_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "payload_base64": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 131072,
+          "pattern": "^[A-Za-z0-9+/]+={0,2}$"
+        },
+        "signature_base64": {
+          "type": "string",
+          "minLength": 88,
+          "maxLength": 88,
+          "pattern": "^[A-Za-z0-9+/]{86}==$"
+        }
+      },
+      "required": [
+        "key_id",
+        "payload_base64",
+        "signature_base64"
+      ],
+      "additionalProperties": false
+    },
+    "schema_one": {
+      "type": "integer",
+      "enum": [
+        1
+      ]
+    },
+    "recipe": {
+      "type": "object",
+      "properties": {
+        "recipe_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "adapter_version": {
+          "type": "string",
+          "enum": [
+            "1"
+          ]
+        },
+        "origin_scope": {
+          "type": "string",
+          "enum": [
+            "reserved-example-invalid"
+          ]
+        },
+        "eligible_post_types": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "post",
+              "page"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 2,
+          "uniqueItems": true
+        },
+        "eligible_fields": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "post_title",
+              "post_excerpt",
+              "post_content"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 3,
+          "uniqueItems": true
+        },
+        "ownership": {
+          "type": "string",
+          "enum": [
+            "wordpress-post"
+          ]
+        },
+        "provider_source_sha": {
+          "type": "string",
+          "minLength": 40,
+          "maxLength": 40,
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "capture_template_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "mutation_template_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "parity_helper_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "runtime_profile_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "renderer_source_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "ownership_constraints_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "mutation_hook_policy_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "normalization_policy_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "render_assertions_sha256": {
+          "$ref": "#/definitions/hash"
+        }
+      },
+      "required": [
+        "recipe_id",
+        "adapter_version",
+        "origin_scope",
+        "eligible_post_types",
+        "eligible_fields",
+        "ownership",
+        "provider_source_sha",
+        "capture_template_sha256",
+        "mutation_template_sha256",
+        "parity_helper_sha256",
+        "runtime_profile_sha256",
+        "renderer_source_sha256",
+        "ownership_constraints_sha256",
+        "mutation_hook_policy_sha256",
+        "normalization_policy_sha256",
+        "render_assertions_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "catalog_claims": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "$ref": "#/definitions/schema_one"
+        },
+        "issuer": {
+          "type": "string",
+          "enum": [
+            "mrn-content-recipe-authority"
+          ]
+        },
+        "audiences": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "mrn-mainwp-provider",
+              "mrn-operations-gateway",
+              "mrn-code-qa-runner"
+            ]
+          },
+          "minItems": 3,
+          "maxItems": 3,
+          "uniqueItems": true
+        },
+        "issued_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "expires_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "catalog_epoch": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "catalog_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "recipes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/recipe"
+          },
+          "minItems": 1,
+          "maxItems": 100,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "schema",
+        "issuer",
+        "audiences",
+        "issued_at",
+        "expires_at",
+        "catalog_epoch",
+        "catalog_revision",
+        "recipes"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "envelope_schema": {
+    "$ref": "#/definitions/signed_envelope"
+  },
+  "payload_schema": {
+    "$ref": "#/definitions/catalog_claims"
+  },
+  "purpose_prefix": "mrn-content-recipe-catalog-v1:",
+  "max_payload_utf8_bytes": 98304,
+  "invariants": [
+    "Owner-reviewed recipe authority is independent of registrar, identity and QA signers. Registrar cannot invent recipes or widen eligibility.",
+    "Each consumer validates same signed catalog/epoch/recipe/source/assertion hashes and separately verifies target binding; provider publication alone is insufficient.",
+    "Unique recipe IDs and canonical sorted recipe order; unique sorted eligibility lists; correct own audience and all required consumers.",
+    "Reject stale/revoked/unknown epoch, unreviewed key/catalog digest, source/runtime/assertion drift, extra fields and caller-selected substitutions.",
+    "Explicit separately reviewed migration from static target inventory to signed recipe+binding trust; no silent production trust change.",
+    "Reserved-origin/current-post scope only; no staff enrollment or per-record credentials."
+  ]
+}
