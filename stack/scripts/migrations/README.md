@@ -6,6 +6,11 @@ New installations use `stack/manifests/plugins.txt`. Existing sites need a revie
 
 `retire-duplicate-editors.php` removes the four redundant editors from the active plugin set: SEO Helper, ACF Character Count, AI Assist and Editor Enhancements. It preserves their files, options, tables, original post metadata and Schema Bridge overrides. Native SEOPress receives missing title, description and target-keyword values. A differing or ambiguous native value stops the entire apply for review.
 
+Historical revisions and autosaves are excluded from copy targets and retain
+their metadata. WordPress redirects revision metadata writes to the parent;
+migrating those records would otherwise overwrite current post metadata or
+fail after deactivating the retired plugins.
+
 1. Qualify the exact site through MainWP, refresh its inventory, and confirm both native SEOPress plugins are active. Complete SEOPress's supported SmartCrawl import and independently verify titles, descriptions, canonical/robots, social data, taxonomy metadata, redirects, schema and sitemap parity before retiring the former provider. This script deliberately refuses an active SmartCrawl installation.
 2. Run `wp eval-file <script> plan`. Review the exact home URL, deactivations, metadata count, conflicts and SHA-256. The plan is read-only and its hash includes the plugin versions, active set and inspected metadata.
 3. Immediately before a remote mutation, use the approved deployment workflow to create and verify a labeled database-only Updraft backup at its configured remote destination. Preserve the backup receipt with the migration record. Local Hub qualification fixtures are exempt. The PHP script does not manufacture a backup receipt or bypass this gate.

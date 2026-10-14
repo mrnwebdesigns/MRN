@@ -104,6 +104,11 @@ if ( $wpdb->last_error ) {
 	WP_CLI::error( 'Metadata inventory failed.' );
 }
 foreach ( $ids as $id ) {
+	// WordPress redirects revision metadata writes to the parent post. Historical
+	// revision values must remain unchanged and must never seed current SEO data.
+	if ( wp_is_post_revision( (int) $id ) ) {
+		continue;
+	}
 	foreach ( $map as $source => $target ) {
 		$old = get_post_meta( $id, $source, false );
 		$new = get_post_meta( $id, $target, false );
