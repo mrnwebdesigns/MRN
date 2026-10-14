@@ -5,7 +5,7 @@
 Once MRN has made the plugin available in its ChatGPT workspace:
 
 1. Install **MRN Website Operations** from the workspace's plugins.
-2. Connect it and sign in with the approved individual MRN account.
+2. Connect it and sign in with your active `@mrnwebdesigns.com` Google Workspace account.
 3. Select the plugin in chat and ask, for example, “Inspect this website and tell
    me what needs attention.”
 
@@ -126,7 +126,7 @@ evidence but must not change site code/content or submit forms.
 Only after that succeeds should a controlled environment exercise a specifically
 authorized repair, verified backup, execution, post-change verification and
 recovery through the same conversation. Existing QA, backup, lock and release
-gates remain required. The local HTTP/stdio fixtures do not replace this test.
+gates remain required. The local HTTP/stdio fixtures do not replace this test. The [team acceptance record](TEAM-ACCEPTANCE.md) tracks the unified release without a named tester or individual onboarding approval.
 
 The host, existing MRN identity provider and staff audience are identified.
 The host, Operations OAuth registration and MRN workspace publication are active.
