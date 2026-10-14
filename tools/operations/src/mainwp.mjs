@@ -17,8 +17,12 @@ export const toolNames = {
   codeInspect: 'mrn_mainwp__inspect_code_file_v1',
   codePrepare: 'mrn_mainwp__prepare_code_change_v1', codeApprove: 'mrn_mainwp__approve_code_change_v1',
   codeExecute: 'mrn_mainwp__execute_code_change_v1', codeStatus: 'mrn_mainwp__get_code_operation_v1',
+  contentPolicy: 'mrn_mainwp__get_content_policy_v1', contentInspect: 'mrn_mainwp__inspect_content_v1',
+  contentPrepare: 'mrn_mainwp__prepare_content_change_v1', contentApprove: 'mrn_mainwp__approve_content_change_v1',
+  contentExecute: 'mrn_mainwp__execute_content_change_v1', contentStatus: 'mrn_mainwp__get_content_operation_v1',
+  contentRollback: 'mrn_mainwp__prepare_content_rollback_v1', contentMigration: 'mrn_mainwp__get_content_migration_v1',
 };
-const readTools = new Set(Object.entries(toolNames).filter(([k]) => !['preflight', 'backup', 'backupStatus', 'update', 'rollback', 'codePrepare', 'codeApprove', 'codeExecute'].includes(k)).map(([,v]) => v));
+const readTools = new Set(Object.entries(toolNames).filter(([k]) => !['preflight', 'backup', 'backupStatus', 'update', 'rollback', 'codePrepare', 'codeApprove', 'codeExecute', 'contentPrepare', 'contentApprove', 'contentExecute', 'contentRollback'].includes(k)).map(([,v]) => v));
 export function withoutSecrets(value) {
   if (Array.isArray(value)) return value.map(withoutSecrets);
   if (typeof value === 'string' && /^https?:\/\//i.test(value)) {
@@ -109,6 +113,7 @@ export class MainwpSession {
     if ([toolNames.backup, toolNames.backupStatus].includes(name)) requireThat(canWrite || ['code', 'content'].includes(this.action), 'CAPABILITY_DENIED', 'Change permission is required before a backup.');
     if ([toolNames.update, toolNames.rollback].includes(name)) requireThat(canWrite, 'CAPABILITY_DENIED', 'Release permission is required before a Fleet mutation.');
     if ([toolNames.codePrepare, toolNames.codeApprove, toolNames.codeExecute].includes(name)) requireThat(this.action === 'code', 'CAPABILITY_DENIED', 'Verified code-change permission is required.');
+    if ([toolNames.contentPrepare, toolNames.contentApprove, toolNames.contentExecute, toolNames.contentRollback].includes(name)) requireThat(this.action === 'content', 'CAPABILITY_DENIED', 'Verified content-change permission is required.');
     if (name === toolNames.site) {
       requireThat(args.site_id_or_domain === this.target.url, 'TARGET_MISMATCH', 'Resolve the exact registered URL before using a site ID.');
     } else {
@@ -120,10 +125,12 @@ export class MainwpSession {
       'TARGET_MISMATCH', 'Ignored-update inspection requires exactly one resolved site.');
       else if ([toolNames.codeApprove, toolNames.codeExecute, toolNames.codeStatus].includes(name)) requireThat(this.codeOperation && args.operation_id === this.codeOperation.id
         && (name === toolNames.codeStatus || args.reviewed_digest === this.codeOperation.digest), 'TARGET_MISMATCH', 'The provider operation must belong to the exact stored website plan.');
+      else if ([toolNames.contentApprove, toolNames.contentExecute, toolNames.contentStatus, toolNames.contentMigration, toolNames.contentRollback].includes(name)) requireThat(this.contentOperation && args.operation_id === this.contentOperation.id
+        && (![toolNames.contentApprove, toolNames.contentExecute].includes(name) || args.reviewed_digest === this.contentOperation.digest), 'TARGET_MISMATCH', 'The content operation must belong to the exact stored website plan.');
       else requireThat((args.site_id ?? args.site_id_or_domain) === this.siteId && (!args.site_url || normalizeSiteUrl(args.site_url) === this.target.url), 'TARGET_MISMATCH', 'The downstream target differs from the authorized website.');
     }
     if ([toolNames.backup, toolNames.update, toolNames.rollback].includes(name) && (name === toolNames.backup || args.user_confirmed === true)) this.onMutation();
-    if (name === toolNames.codeExecute) this.onMutation();
+    if ([toolNames.codeExecute, toolNames.contentExecute].includes(name)) this.onMutation();
     const result = await this.guarded(`mainwp:${name}`, () => this.client.callTool(request, schema, { timeout: 120000, ...options }));
     if (name === toolNames.site) {
       const site = payload(result); const id = Number(site.id ?? site.site_id);

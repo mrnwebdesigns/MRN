@@ -28,7 +28,7 @@ async function hosted(t, authenticate) {
 test('ChatGPT receives OAuth declarations on the wire and accurate operation effects', async t => {
   const f = await hosted(t, async () => actor);
   const { status, body } = await f.call('tools/list'); assert.equal(status, 200);
-  assert.equal(body.result.tools.length, 19);
+  assert.equal(body.result.tools.length, 21);
   for (const tool of body.result.tools) {
     assert.deepEqual(tool.securitySchemes, [{ type: 'oauth2', scopes: ['mrn:operations'] }]);
     assert.deepEqual(tool._meta.securitySchemes, tool.securitySchemes);

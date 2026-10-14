@@ -6,7 +6,7 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
 
 ## Verified baseline, 2026-10-14
 
-- Existing workspace plugin exposes four hosted tools. This source now registers 19 workflow tools; those new tools are not published or deployed.
+- Existing workspace plugin exposes four hosted tools. This source now registers 21 workflow tools; those new tools are not published or deployed.
 - Canonical MainWP MCP is connected to wpcontrol.mrndev.io. Provider reports 107 discovered abilities; its current tool policy exposes 48. Hidden capabilities remain filtered; this inventory does not bypass that policy.
 - Live code provider is 0.13.4. Code policy and signed QA are qualified only for the existing company pilot, not the managed portfolio.
 - MainWP REST key was found through the Production Hub mainwp provider and authenticated successfully against the expected Dashboard. Fresh company-site sync and exact REST identity readback succeeded. The installed REST route index exposes native post/page CRUD; exact-site page search/detail reads succeeded. No content write was attempted.
@@ -76,6 +76,14 @@ Observed 2026-10-14T10:57:16.039Z. Mapping is against this source checkout; conn
 | mrn_mainwp__execute_code_change_v1 | execute_operation | Guarded operation |
 | mrn_mainwp__get_code_operation_v1 | Not yet integrated | Read |
 | mrn_mainwp__resolve_code_operation_v1 | Not yet integrated | Guarded operation |
+
+## Typed content workflow in source
+
+The frozen `contracts/content-v1.json` matches the provider contract. The gateway supports inspection and preparation of one existing published post/page title, excerpt or content field. It verifies full semantic snapshots, one-field changes, the canonical plan descriptor and an immutable replayable migration retained centrally. There is no caller PHP, arbitrary metadata, create/delete/status change or per-site repository requirement.
+
+The protected content receipt has its own signature prefix and binds the exact record, before/candidate hashes, plan, migration, qualified profile/runtime context and affected public paths. Code or preliminary source receipts cannot authorize content. Approval and execution require live Google membership; original-operator execution repeats current policy and baseline checks after the verified remote DB backup. Fresh full snapshot and exact public HTML text at a trusted selector must match after execution. A stale public page or uncertain response retains the lock; Fleet recovery cannot release it. Rollback requires new QA, approval and backup.
+
+The gateway has controlled fixture coverage only. The `content-qa.yml` workflow, protected runtime and production record profiles still need implementation/qualification. Browser visibility, accessibility and performance remain mandatory runtime checks. Typed ACF, menu and media adapters remain required follow-up work; this phase does not make them available.
 
 ## Guarded code workflow in source
 

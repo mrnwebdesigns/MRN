@@ -49,7 +49,7 @@ publication does not imply public-directory approval or a full Stack release.
 
 Active MRN Google staff receive automatic portfolio membership; there is no individual approval or enrollment step. Existing signed-in users are still checked for active Directory membership and revocation. Change approvals remain in chat.
 
-The source candidate registers 19 tools, including expanded details/content reads, code inspection, code preparation and source approval. These new tools have not replaced the deployed four-tool workspace surface. Refresh and publish this same existing plugin only after the reviewed provider/service migration; do not create a second connector. See [the integration inventory and acceptance gates](UNIFIED-INTEGRATION.md).
+The source candidate registers 21 tools, including expanded details/content reads, typed content inspection/preparation, code inspection, code preparation and source approval. These new tools have not replaced the deployed four-tool workspace surface. Refresh and publish this same existing plugin only after the reviewed provider/service migration; do not create a second connector. See [the integration inventory and acceptance gates](UNIFIED-INTEGRATION.md).
 
 ## MRN operator delivery
 

@@ -21,6 +21,7 @@ export const configSchema = z.object({
   github: z.object({ appId: z.string().regex(/^[0-9]+$/), installationId: z.number().int().positive().safe(), privateKeyPath: absolute,
     repositories: z.record(z.string().regex(/^mrnwebdesigns\/[A-Za-z0-9_-]+$/), z.number().int().positive().safe()) }).strict().optional(),
   code: z.object({ policyPath: absolute }).strict().optional(),
+  contentEdits: z.object({ policyPath: absolute }).strict().optional(),
   mainwp: z.object({ command: absolute, args: z.array(z.string()).min(1), cwd: absolute,
     envRefs: z.record(z.string(), z.object({ env: z.string() }).strict()) }).strict(),
   qa: z.object({ executable: absolute }).strict().optional(),
@@ -29,8 +30,8 @@ export const configSchema = z.object({
     { path: ['delegation'], message: 'Google-only membership and request delegation must be enabled together with verified resource-bound claims.' })
   .refine(config => !config.content || Boolean(config.auth.googleWorkspace),
     { path: ['content'], message: 'Native content access requires Google-only live staff authorization.' })
-  .refine(config => Boolean(config.code) === Boolean(config.github) && (!config.code || Boolean(config.auth.googleWorkspace)),
-    { path: ['code'], message: 'Code workflows require Google delegation and the central GitHub App configuration together.' });
+  .refine(config => Boolean(config.code || config.contentEdits) === Boolean(config.github) && (!(config.code || config.contentEdits) || Boolean(config.auth.googleWorkspace)),
+    { path: ['code'], message: 'Code/content workflows require Google delegation and the central GitHub App configuration together.' });
 export function loadConfig(file) {
   const config = configSchema.parse(readJson(file));
   requireThat(new URL(config.auth.jwksUrl).origin === new URL(config.auth.issuer).origin, 'AUTH_CONFIG', 'Pin JWKS to the configured issuer origin.');

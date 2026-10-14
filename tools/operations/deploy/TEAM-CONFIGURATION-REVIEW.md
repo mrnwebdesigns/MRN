@@ -30,7 +30,7 @@ The MRN Apps Operations service was active at source
 `a41d1ba7ce2374fed10f110e7682eacaf4f2b49d`. Its configuration still has writes
 disabled and no new Google Workspace delegation, code workflow or content
 configuration. The existing workspace plugin still exposes four hosted tools.
-The proposed source has 19 tools; this is not workspace publication evidence.
+The proposed source has 21 tools; this is not workspace publication evidence.
 
 ## Required deployment review
 

@@ -14,10 +14,11 @@ const readAbilities = new Set([
 ].map(name => `mainwp/${name}-v1`).concat([
   'get-stack-runtime-report', 'qualify-stack-site', 'get-stack-deployment-agent-status', 'get-google-fonts-status',
   'inspect-backup-retention-policy', 'inspect-code-file', 'get-code-operation',
+  'get-content-policy', 'inspect-content', 'get-content-operation', 'get-content-migration',
 ].map(name => `mrn-mainwp/${name}-v1`)));
 const writeAbilities = new Set(['start-database-backup', 'get-database-backup-status', 'qualify-code-storage',
   'prepare-code-change', 'approve-code-change', 'execute-code-change', 'preflight-stack-plugin-update',
-  'update-stack-plugin', 'rollback-stack-plugin'].map(name => `mrn-mainwp/${name}-v1`));
+  'update-stack-plugin', 'rollback-stack-plugin', 'prepare-content-change', 'approve-content-change', 'execute-content-change', 'prepare-content-rollback'].map(name => `mrn-mainwp/${name}-v1`));
 const actorSchema = z.object({ oauth_subject: z.string(), google_sub: z.string(), email: z.string() }).strict();
 const resultSchema = z.object({ schema: z.literal(1), request_id: z.string().uuid(), ability: z.string(),
   actor: actorSchema, result: z.unknown(), policy_sha256: sha }).strict();

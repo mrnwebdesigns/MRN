@@ -18,6 +18,8 @@ import { NativeContentReader } from './content.mjs';
 import { GithubApp, CodeSource, readGithubKey } from './github.mjs';
 import { ProtectedCodeQa, codePolicySchema } from './code-qa.mjs';
 import { CodeWorkflow } from './code-workflow.mjs';
+import { ContentWorkflow } from './content-workflow.mjs';
+import { ProtectedContentQa, contentQaPolicySchema } from './content-qa.mjs';
 
 process.umask(0o077);
 try {
@@ -40,9 +42,10 @@ try {
   const discovery = config.discovery ? new Discovery({ registry, store, connect, ...config.discovery }) : null;
   const content = config.content ? new NativeContentReader({ token: () => process.env[config.content.restKeyEnv] }) : null;
   const service = new Operations({ registry, store, fleet, qa, recoveryEvidence, discovery, content, verifyStaff: signer ? verifyStaff : null, publicProbe: probe, writesEnabled: config.writesEnabled, connect });
-  if (config.code) {
+  if (config.github) {
     const github = new GithubApp({ ...config.github, privateKey: readGithubKey(config.github.privateKeyPath) });
-    service.codeWorkflow = new CodeWorkflow(service, { source: new CodeSource(github), qa: new ProtectedCodeQa(github, codePolicySchema.parse(readJson(config.code.policyPath))) });
+    if (config.code) service.codeWorkflow = new CodeWorkflow(service, { source: new CodeSource(github), qa: new ProtectedCodeQa(github, codePolicySchema.parse(readJson(config.code.policyPath))) });
+    if (config.contentEdits) service.contentWorkflow = new ContentWorkflow(service, { qa: new ProtectedContentQa(github, contentQaPolicySchema.parse(readJson(config.contentEdits.policyPath))) });
   }
   const server = createHttpServer({ service, authenticate: createAuthenticator(config.auth, undefined, verifyStaff), publicUrl: config.publicUrl, issuer: config.auth.issuer, origins: config.allowedOrigins });
   // Durable running records/locks are deliberately not reset on restart.

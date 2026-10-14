@@ -51,6 +51,9 @@ export function verifyCodeReceipt(envelope, request, policy, runId, now = Date.n
 
 export class ProtectedCodeQa {
   constructor(github, policy) { this.github = github; this.policy = policy; }
+  workflowFile() { return 'code-qa.yml'; }
+  runName(requestId) { return `MRN QA ${requestId}`; }
+  verifyReceipt(envelope, request, runId) { return verifyCodeReceipt(envelope, request, this.policy, runId); }
   qualifyRequest(input) {
     const request = codeQaRequest.parse(input); const bytes = Buffer.from(request.payload_base64, 'base64');
     requireThat(bytes.toString('base64') === request.payload_base64 && bytes.length <= 32768
@@ -72,11 +75,12 @@ export class ProtectedCodeQa {
     const request = this.qualifyRequest(input); const api = await this.github.scoped(this.policy.repository, 'qa', authorize);
     const head = await branchHead(api, 'main');
     requireThat(head === this.policy.workflowCommit, 'QA_RUNNER_CHANGED', 'The protected workflow changed and needs service qualification.');
-    const workflow = await api('/actions/workflows/code-qa.yml');
-    requireThat(workflow.path === '.github/workflows/code-qa.yml' && workflow.state === 'active' && Number.isSafeInteger(workflow.id), 'QA_WORKFLOW', 'The expected protected workflow is unavailable.');
+    const workflowFile = this.workflowFile();
+    const workflow = await api(`/actions/workflows/${workflowFile}`);
+    requireThat(workflow.path === `.github/workflows/${workflowFile}` && workflow.state === 'active' && Number.isSafeInteger(workflow.id), 'QA_WORKFLOW', 'The expected protected workflow is unavailable.');
     const encoded = Buffer.from(JSON.stringify(request)); requireThat(encoded.length <= 48000, 'QA_SIZE', 'The qualification request is too large.');
     await checkpoint({ status: 'qa_dispatching', requestId: request.request_id, workflowCommit: head, workflowId: workflow.id });
-    const run = await api('/actions/workflows/code-qa.yml/dispatches', 'POST', { ref: 'main', inputs: { request: encoded.toString('base64'), request_id: request.request_id } });
+    const run = await api(`/actions/workflows/${workflowFile}/dispatches`, 'POST', { ref: 'main', inputs: { request: encoded.toString('base64'), request_id: request.request_id } });
     requireThat(Number.isSafeInteger(run.workflow_run_id) && run.workflow_run_id > 0
       && run.html_url === `https://github.com/${this.policy.repository}/actions/runs/${run.workflow_run_id}`, 'QA_DISPATCH_UNKNOWN', 'QA dispatch did not return a verifiable run identity. Do not redispatch.');
     return { runId: run.workflow_run_id, url: run.html_url, requestId: request.request_id, workflowCommit: head, workflowId: workflow.id };
@@ -87,8 +91,8 @@ export class ProtectedCodeQa {
     requireThat(run.id === ticket.runId && run.run_attempt === 1 && run.repository?.id === this.github.repositories[this.policy.repository]
       && run.repository?.full_name === this.policy.repository && run.head_repository?.id === run.repository.id
       && run.event === 'workflow_dispatch' && run.head_branch === 'main' && run.head_sha === ticket.workflowCommit
-      && run.workflow_id === ticket.workflowId && run.path === '.github/workflows/code-qa.yml'
-      && run.display_title === `MRN QA ${ticket.requestId}` && run.actor?.login === this.policy.actor && run.triggering_actor?.login === this.policy.actor,
+      && run.workflow_id === ticket.workflowId && run.path === `.github/workflows/${this.workflowFile()}`
+      && run.display_title === this.runName(ticket.requestId) && run.actor?.login === this.policy.actor && run.triggering_actor?.login === this.policy.actor,
     'QA_PROVENANCE', 'QA status belongs to another run, actor, workflow or request.');
     if (run.status !== 'completed') return { status: 'running', url: ticket.url };
     requireThat(run.conclusion === 'success', 'QA_FAILED', 'The protected QA workflow did not pass. No live change is permitted.');
@@ -105,7 +109,7 @@ export class ProtectedCodeQa {
     if (result.status !== 'receipt_available') return result;
     const api = await this.github.scoped(this.policy.repository, 'qaRead', authorize);
     const envelope = receiptFromZip(await api.artifact(result.artifactId));
-    const verified = verifyCodeReceipt(envelope, request, this.policy, ticket.runId);
+    const verified = this.verifyReceipt(envelope, request, ticket.runId);
     return { status: 'qualified', ...verified, url: ticket.url };
   }
 }

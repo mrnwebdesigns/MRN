@@ -4,6 +4,7 @@ import { MainwpSession } from './mainwp.mjs';
 import { inspectTarget } from './inspect.mjs';
 import { capabilityInventory, websiteDetails, portfolioDetails } from './capabilities.mjs';
 import { codeInspection } from './code.mjs';
+import { inspectContentTarget } from './content-workflow.mjs';
 
 export class Operations {
   constructor({ registry, store, connect, fleet, publicProbe, writesEnabled = false, qa = null, recoveryEvidence = null, discovery = null, content = null, verifyStaff = null }) {
@@ -18,6 +19,17 @@ export class Operations {
   }
   view(record) {
     if (record.type === 'inspection') return { ...record, target: this.targetView(record.target) };
+    if (record.workflow === 'content') {
+      const p = record.plan?.provider;
+      return { id: record.id, type: record.type, workflow: 'content', target: this.targetView(record.target), status: record.status,
+        requestedBy: record.requestedBy, approvedBy: record.approvedBy, executedBy: record.executedBy, planDigest: record.planDigest, expiresAt: record.expiresAt,
+        error: record.error, result: record.result, qa: record.qaTicket && { url: record.qaTicket.url, runId: record.qaTicket.runId },
+        preview: p && { target: p.target, before: p.before_snapshot[p.target.field], after: p.candidate_snapshot[p.target.field],
+          beforeSha256: p.before_sha256, afterSha256: p.candidate_sha256, reason: record.plan.description, affectedPaths: p.affected_paths,
+          migration: p.migration_artifact, requestedValueNormalized: record.plan.requestedValueNormalized, rollbackOf: p.rollback_operation_id || undefined },
+        next: record.status === 'prepared' ? 'Review the exact QA-qualified content preview, then approve_operation and execute_operation.'
+          : ['uncertain', 'approval_uncertain'].includes(record.status) ? 'The provider outcome needs qualified reconciliation. Do not retry or clear locks.' : undefined };
+    }
     if (record.workflow === 'code') return { id: record.id, type: record.type, workflow: 'code', target: this.targetView(record.target), status: record.status,
       requestedBy: record.requestedBy, approvedBy: record.approvedBy, executedBy: record.executedBy, planDigest: record.planDigest, expiresAt: record.expiresAt,
       error: record.error, result: record.result, qa: record.qaTicket && { url: record.qaTicket.url, runId: record.qaTicket.runId },
@@ -99,6 +111,21 @@ export class Operations {
     const session = await this.session(actor, target, 'read');
     try { return await codeInspection(session, path); } finally { await session.close(); }
   }
+  async inspectContent(actor, { website, environment, target: contentTarget }) {
+    requireThat(actor.identityProvider === 'google-oauth2', 'AUTH_REQUIRED', 'Use your verified MRN Google identity.');
+    await this.discovery?.refresh(actor);
+    const target = this.registry.resolve(actor, website, environment);
+    const session = await this.session(actor, target, 'read');
+    try {
+      const { site, policy, inspected } = await inspectContentTarget(session, contentTarget);
+      return { site, ...inspected, policy: { enabled: policy.enabled, profile: policy.profile, policySha256: policy.policy_sha256 },
+        qualification: 'Ownership and a readable snapshot alone do not approve a change. Use prepare_content_edit for protected QA and the exact preview.' };
+    } finally { await session.close(); }
+  }
+  async prepareContent(actor, input) {
+    requireThat(this.contentWorkflow, 'CONTENT_WORKFLOW_UNAVAILABLE', 'The protected content workflow is not configured.');
+    return this.contentWorkflow.prepare(actor, input);
+  }
   async prepareCode(actor, input) {
     requireThat(this.codeWorkflow, 'CODE_WORKFLOW_UNAVAILABLE', 'The protected code workflow is not provisioned on this service.');
     return this.codeWorkflow.prepare(actor, input);
@@ -154,13 +181,15 @@ export class Operations {
     await this.discovery?.refresh(actor);
     const op = this.store.get(operationId);
     if (op.workflow === 'code') { requireThat(this.codeWorkflow, 'CODE_WORKFLOW_UNAVAILABLE', 'Code workflow is unavailable.'); return this.codeWorkflow.approve(actor, op, planDigest); }
+    if (op.workflow === 'content') { requireThat(this.contentWorkflow, 'CONTENT_WORKFLOW_UNAVAILABLE', 'Content workflow is unavailable.'); return this.contentWorkflow.approve(actor, op, planDigest); }
     this.registry.current(actor, op.target, writeAction(op.target));
     return this.view(this.store.approve(operationId, actor, planDigest));
   }
   async execute(actor, { operationId }) {
     await this.discovery?.refresh(actor);
-    const op = this.store.get(operationId); this.registry.current(actor, op.target, op.workflow === 'code' ? 'code' : writeAction(op.target));
+    const op = this.store.get(operationId); this.registry.current(actor, op.target, ['code', 'content'].includes(op.workflow) ? op.workflow : writeAction(op.target));
     if (op.workflow === 'code') requireThat(this.codeWorkflow && op.requestedBy === actor.subject, 'CODE_OPERATOR', 'The original verified operator must execute this code workflow.');
+    if (op.workflow === 'content') requireThat(this.contentWorkflow && op.requestedBy === actor.subject, 'CONTENT_OPERATOR', 'The original verified operator must execute this content workflow.');
     requireThat(this.writesEnabled, 'WRITES_DISABLED', 'Hosted write execution is disabled until service qualification and operating acceptance are complete.');
     requireThat(op.target.coordination?.exclusiveWriter === 'mrn-operations' && Date.parse(op.target.coordination.validUntil) > Date.now(), 'COORDINATION_REQUIRED', 'Enroll all writers in the same site lock or disable competing deployment routes before enabling this website.');
     requireThat(op.planDigest === digest({ target: op.target, plan: op.plan }), 'PLAN_CHANGED', 'The stored plan does not match its approval.');
@@ -174,10 +203,11 @@ export class Operations {
   async run(actor, op) {
     let session; let mutationAttempted = false;
     try {
-      const action = op.workflow === 'code' ? 'code' : writeAction(op.target);
+      const action = ['code', 'content'].includes(op.workflow) ? op.workflow : writeAction(op.target);
       this.registry.current(actor, op.target, action);
       session = await this.session(actor, op.target, action, op.id, () => { mutationAttempted = true; }, () => this.store.assertRunning(op.id));
-      const result = op.workflow === 'code' ? await this.codeWorkflow.execute(actor, op, session) : await this.fleet.execute(op, session);
+      const result = op.workflow === 'code' ? await this.codeWorkflow.execute(actor, op, session)
+        : op.workflow === 'content' ? await this.contentWorkflow.execute(actor, op, session) : await this.fleet.execute(op, session);
       this.store.finish(op.id, 'verified', { result }, actor);
     } catch (error) {
       // A reconciled record belongs to the recovery path. Never overwrite it
@@ -189,7 +219,7 @@ export class Operations {
   async reconcile(actor, { operationId }) {
     await this.discovery?.refresh(actor);
     const op = this.store.get(operationId);
-    requireThat(op.workflow !== 'code', 'RECOVERY_UNAVAILABLE', 'Code outcomes require the provider’s qualified reconciliation; Fleet recovery cannot release this lock.');
+    requireThat(!['code', 'content'].includes(op.workflow), 'RECOVERY_UNAVAILABLE', 'Code/content outcomes require the provider’s qualified reconciliation; Fleet recovery cannot release this lock.');
     const target = this.registry.recoveryCurrent(actor, op.target, writeAction(op.target));
     const authorize = () => this.registry.current(actor, target, writeAction(target));
     authorize();
@@ -222,6 +252,7 @@ export class Operations {
     await this.discovery?.refresh(actor);
     const previous = this.store.get(operationId);
     if (previous.workflow === 'code') { requireThat(this.codeWorkflow, 'CODE_WORKFLOW_UNAVAILABLE', 'Code workflow is unavailable.'); return this.codeWorkflow.rollback(actor, { operationId, requestKey }); }
+    if (previous.workflow === 'content') { requireThat(this.contentWorkflow, 'CONTENT_WORKFLOW_UNAVAILABLE', 'Content workflow is unavailable.'); return this.contentWorkflow.rollback(actor, { operationId, requestKey }); }
     const target = previous.status === 'reconciled' ? this.registry.recoveryCurrent(actor, previous.target, 'repair') : this.registry.current(actor, previous.target, 'repair');
     const updatePresent = previous.status === 'verified' || (previous.status === 'reconciled' && previous.reconciliation?.outcome === 'intended_code_verified');
     requireThat(updatePresent && previous.plan?.direction === 'update', 'ROLLBACK_UNAVAILABLE', 'Choose a verified or reconciled update with retained code recovery evidence.');

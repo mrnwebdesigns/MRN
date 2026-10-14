@@ -1,0 +1,2028 @@
+{
+  "schema": 1,
+  "status": "frozen phase-one wire contract; source implementation and runtime qualification pending",
+  "namespace": "mrn-mainwp/",
+  "encoding": "delegation-v1 strict canonical UTF8 JSON, ASCII sorted keys, safe integers, preserve objects/arrays; no duplicates/floats/invalid Unicode",
+  "normalization": "site_url is exact normalized HTTPS MainWP URL without trailing slash, credentials, query or fragment; child-derived affected_paths remain exact origin-relative URLs, no foreign origin, secrets or unbounded crawl",
+  "caps": {
+    "new_value_utf8_bytes": 8192,
+    "snapshot_canonical_utf8_bytes": 32768,
+    "native_template_code_bytes": 60000,
+    "signed_receipt_envelope_bytes": 16384,
+    "delegated_arguments_json_bytes": 98304
+  },
+  "abilities": {
+    "get-content-policy-v1": {
+      "role": "reader",
+      "wrapper": "read-delegated-operation-v1",
+      "input": {
+        "type": "object",
+        "properties": {
+          "site_id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "site_url": {
+            "type": "string",
+            "maxLength": 512
+          }
+        },
+        "required": [
+          "site_id",
+          "site_url"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "site_id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "site_url": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "profile": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "maxLength": 120
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "runtime_url": {
+                    "type": "string",
+                    "maxLength": 512
+                  },
+                  "runtime_context_sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "ownership": {
+                    "type": "string",
+                    "enum": [
+                      "wordpress-post",
+                      "unknown",
+                      "builder"
+                    ]
+                  },
+                  "covered_fields": {
+                    "type": "array",
+                    "maxItems": 3,
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "post_title",
+                        "post_excerpt",
+                        "post_content"
+                      ]
+                    }
+                  },
+                  "requires_render_assertions": {
+                    "type": "boolean",
+                    "enum": [
+                      true
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "sha256",
+                  "runtime_url",
+                  "runtime_context_sha256",
+                  "ownership",
+                  "covered_fields",
+                  "requires_render_assertions"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "qa_keys": {
+            "type": "array",
+            "maxItems": 10,
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "public_key_base64": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "public_key_base64"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "maximum_value_bytes": {
+            "type": "integer",
+            "enum": [
+              8192
+            ]
+          },
+          "maximum_snapshot_bytes": {
+            "type": "integer",
+            "enum": [
+              32768
+            ]
+          },
+          "policy_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "supported_target_kinds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "post"
+              ]
+            }
+          }
+        },
+        "required": [
+          "site_id",
+          "site_url",
+          "enabled",
+          "profile",
+          "qa_keys",
+          "maximum_value_bytes",
+          "maximum_snapshot_bytes",
+          "policy_sha256",
+          "supported_target_kinds"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "inspect-content-v1": {
+      "role": "reader",
+      "wrapper": "read-delegated-operation-v1",
+      "input": {
+        "type": "object",
+        "properties": {
+          "site_id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "site_url": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "target": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "post"
+                ]
+              },
+              "post_type": {
+                "type": "string",
+                "enum": [
+                  "post",
+                  "page"
+                ]
+              },
+              "post_id": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "field": {
+                "type": "string",
+                "enum": [
+                  "post_title",
+                  "post_excerpt",
+                  "post_content"
+                ]
+              }
+            },
+            "required": [
+              "kind",
+              "post_type",
+              "post_id",
+              "field"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "site_id",
+          "site_url",
+          "target"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "snapshot": {
+            "type": "object",
+            "properties": {
+              "site_id": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "site_url": {
+                "type": "string",
+                "maxLength": 512
+              },
+              "schema": {
+                "type": "integer",
+                "enum": [
+                  1
+                ]
+              },
+              "target": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "post"
+                    ]
+                  },
+                  "post_type": {
+                    "type": "string",
+                    "enum": [
+                      "post",
+                      "page"
+                    ]
+                  },
+                  "post_id": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "field": {
+                    "type": "string",
+                    "enum": [
+                      "post_title",
+                      "post_excerpt",
+                      "post_content"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind",
+                  "post_type",
+                  "post_id",
+                  "field"
+                ],
+                "additionalProperties": false
+              },
+              "post_status": {
+                "type": "string",
+                "enum": [
+                  "publish"
+                ]
+              },
+              "post_name": {
+                "type": "string",
+                "maxLength": 512
+              },
+              "post_title": {
+                "type": "string",
+                "maxLength": 8192
+              },
+              "post_excerpt": {
+                "type": "string",
+                "maxLength": 8192
+              },
+              "post_content": {
+                "type": "string",
+                "maxLength": 8192
+              }
+            },
+            "required": [
+              "site_id",
+              "site_url",
+              "schema",
+              "target",
+              "post_status",
+              "post_name",
+              "post_title",
+              "post_excerpt",
+              "post_content"
+            ],
+            "additionalProperties": false
+          },
+          "snapshot_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "ownership": {
+            "type": "string",
+            "enum": [
+              "wordpress-post",
+              "unknown",
+              "builder"
+            ]
+          },
+          "affected_paths": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512,
+              "pattern": "^/(?!/)"
+            }
+          },
+          "stable_selector": {
+            "type": "object",
+            "properties": {
+              "post_type": {
+                "type": "string",
+                "enum": [
+                  "post",
+                  "page"
+                ]
+              },
+              "post_path": {
+                "type": "string",
+                "maxLength": 512
+              }
+            },
+            "required": [
+              "post_type",
+              "post_path"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "snapshot",
+          "snapshot_sha256",
+          "ownership",
+          "affected_paths",
+          "stable_selector"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "prepare-content-change-v1": {
+      "role": "preparer",
+      "wrapper": "run-delegated-operation-v1",
+      "input": {
+        "type": "object",
+        "properties": {
+          "site_id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "site_url": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "target": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "post"
+                ]
+              },
+              "post_type": {
+                "type": "string",
+                "enum": [
+                  "post",
+                  "page"
+                ]
+              },
+              "post_id": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "field": {
+                "type": "string",
+                "enum": [
+                  "post_title",
+                  "post_excerpt",
+                  "post_content"
+                ]
+              }
+            },
+            "required": [
+              "kind",
+              "post_type",
+              "post_id",
+              "field"
+            ],
+            "additionalProperties": false
+          },
+          "expected_snapshot_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "new_value": {
+            "type": "string",
+            "maxLength": 8192
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "site_id",
+          "site_url",
+          "target",
+          "expected_snapshot_sha256",
+          "new_value",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+          },
+          "digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "site_id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "site_url": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "target": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "post"
+                ]
+              },
+              "post_type": {
+                "type": "string",
+                "enum": [
+                  "post",
+                  "page"
+                ]
+              },
+              "post_id": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "field": {
+                "type": "string",
+                "enum": [
+                  "post_title",
+                  "post_excerpt",
+                  "post_content"
+                ]
+              }
+            },
+            "required": [
+              "kind",
+              "post_type",
+              "post_id",
+              "field"
+            ],
+            "additionalProperties": false
+          },
+          "before_snapshot": {
+            "type": "object",
+            "properties": {
+              "site_id": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "site_url": {
+                "type": "string",
+                "maxLength": 512
+              },
+              "schema": {
+                "type": "integer",
+                "enum": [
+                  1
+                ]
+              },
+              "target": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "post"
+                    ]
+                  },
+                  "post_type": {
+                    "type": "string",
+                    "enum": [
+                      "post",
+                      "page"
+                    ]
+                  },
+                  "post_id": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "field": {
+                    "type": "string",
+                    "enum": [
+                      "post_title",
+                      "post_excerpt",
+                      "post_content"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind",
+                  "post_type",
+                  "post_id",
+                  "field"
+                ],
+                "additionalProperties": false
+              },
+              "post_status": {
+                "type": "string",
+                "enum": [
+                  "publish"
+                ]
+              },
+              "post_name": {
+                "type": "string",
+                "maxLength": 512
+              },
+              "post_title": {
+                "type": "string",
+                "maxLength": 8192
+              },
+              "post_excerpt": {
+                "type": "string",
+                "maxLength": 8192
+              },
+              "post_content": {
+                "type": "string",
+                "maxLength": 8192
+              }
+            },
+            "required": [
+              "site_id",
+              "site_url",
+              "schema",
+              "target",
+              "post_status",
+              "post_name",
+              "post_title",
+              "post_excerpt",
+              "post_content"
+            ],
+            "additionalProperties": false
+          },
+          "candidate_snapshot": {
+            "type": "object",
+            "properties": {
+              "site_id": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "site_url": {
+                "type": "string",
+                "maxLength": 512
+              },
+              "schema": {
+                "type": "integer",
+                "enum": [
+                  1
+                ]
+              },
+              "target": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "post"
+                    ]
+                  },
+                  "post_type": {
+                    "type": "string",
+                    "enum": [
+                      "post",
+                      "page"
+                    ]
+                  },
+                  "post_id": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "field": {
+                    "type": "string",
+                    "enum": [
+                      "post_title",
+                      "post_excerpt",
+                      "post_content"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind",
+                  "post_type",
+                  "post_id",
+                  "field"
+                ],
+                "additionalProperties": false
+              },
+              "post_status": {
+                "type": "string",
+                "enum": [
+                  "publish"
+                ]
+              },
+              "post_name": {
+                "type": "string",
+                "maxLength": 512
+              },
+              "post_title": {
+                "type": "string",
+                "maxLength": 8192
+              },
+              "post_excerpt": {
+                "type": "string",
+                "maxLength": 8192
+              },
+              "post_content": {
+                "type": "string",
+                "maxLength": 8192
+              }
+            },
+            "required": [
+              "site_id",
+              "site_url",
+              "schema",
+              "target",
+              "post_status",
+              "post_name",
+              "post_title",
+              "post_excerpt",
+              "post_content"
+            ],
+            "additionalProperties": false
+          },
+          "before_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "candidate_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "affected_paths": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512,
+              "pattern": "^/(?!/)"
+            }
+          },
+          "stable_selector": {
+            "type": "object",
+            "properties": {
+              "post_type": {
+                "type": "string",
+                "enum": [
+                  "post",
+                  "page"
+                ]
+              },
+              "post_path": {
+                "type": "string",
+                "maxLength": 512
+              }
+            },
+            "required": [
+              "post_type",
+              "post_path"
+            ],
+            "additionalProperties": false
+          },
+          "migration_artifact": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string",
+                "pattern": "^mrn-content://migrations/[a-f0-9-]{36}$"
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "ref",
+              "sha256"
+            ],
+            "additionalProperties": false
+          },
+          "profile": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "maxLength": 120
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "runtime_url": {
+                "type": "string",
+                "maxLength": 512
+              },
+              "runtime_context_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "ownership": {
+                "type": "string",
+                "enum": [
+                  "wordpress-post",
+                  "unknown",
+                  "builder"
+                ]
+              },
+              "covered_fields": {
+                "type": "array",
+                "maxItems": 3,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "post_title",
+                    "post_excerpt",
+                    "post_content"
+                  ]
+                }
+              },
+              "requires_render_assertions": {
+                "type": "boolean",
+                "enum": [
+                  true
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "sha256",
+              "runtime_url",
+              "runtime_context_sha256",
+              "ownership",
+              "covered_fields",
+              "requires_render_assertions"
+            ],
+            "additionalProperties": false
+          },
+          "rollback_operation_id": {
+            "type": "string",
+            "maxLength": 36
+          },
+          "expires_at": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "operation_id",
+          "digest",
+          "site_id",
+          "site_url",
+          "target",
+          "before_snapshot",
+          "candidate_snapshot",
+          "before_sha256",
+          "candidate_sha256",
+          "affected_paths",
+          "stable_selector",
+          "migration_artifact",
+          "profile",
+          "rollback_operation_id",
+          "expires_at"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "approve-content-change-v1": {
+      "role": "approver",
+      "wrapper": "run-delegated-operation-v1",
+      "input": {
+        "type": "object",
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+          },
+          "reviewed_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "qa_receipt_json": {
+            "type": "string",
+            "maxLength": 16384
+          },
+          "qa_evidence_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "operation_id",
+          "reviewed_digest",
+          "qa_receipt_json",
+          "qa_evidence_sha256"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+          },
+          "digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "approved_by": {
+            "type": "string"
+          },
+          "expires_at": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "operation_id",
+          "digest",
+          "approved_by",
+          "expires_at"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "execute-content-change-v1": {
+      "role": "executor",
+      "wrapper": "run-delegated-operation-v1",
+      "input": {
+        "type": "object",
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+          },
+          "reviewed_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "confirm": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "backup_receipt": {
+            "type": "object",
+            "properties": {
+              "site_id": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "nonce": {
+                "type": "string",
+                "maxLength": 128
+              },
+              "receipt": {
+                "type": "string",
+                "maxLength": 2048
+              }
+            },
+            "required": [
+              "site_id",
+              "nonce",
+              "receipt"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "operation_id",
+          "reviewed_digest",
+          "confirm",
+          "backup_receipt"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "prepared",
+              "approved",
+              "dispatching",
+              "completed",
+              "failed",
+              "uncertain"
+            ]
+          },
+          "site_id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "site_url": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "target": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "post"
+                ]
+              },
+              "post_type": {
+                "type": "string",
+                "enum": [
+                  "post",
+                  "page"
+                ]
+              },
+              "post_id": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "field": {
+                "type": "string",
+                "enum": [
+                  "post_title",
+                  "post_excerpt",
+                  "post_content"
+                ]
+              }
+            },
+            "required": [
+              "kind",
+              "post_type",
+              "post_id",
+              "field"
+            ],
+            "additionalProperties": false
+          },
+          "before_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "candidate_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "current_sha256": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "changed": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "migration_artifact": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string",
+                "pattern": "^mrn-content://migrations/[a-f0-9-]{36}$"
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "ref",
+              "sha256"
+            ],
+            "additionalProperties": false
+          },
+          "affected_paths": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512,
+              "pattern": "^/(?!/)"
+            }
+          },
+          "rollback_available": {
+            "type": "boolean"
+          },
+          "error_code": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "operation_id",
+          "state",
+          "site_id",
+          "site_url",
+          "target",
+          "before_sha256",
+          "candidate_sha256",
+          "current_sha256",
+          "changed",
+          "migration_artifact",
+          "affected_paths",
+          "rollback_available",
+          "error_code"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "get-content-operation-v1": {
+      "role": "reader",
+      "wrapper": "read-delegated-operation-v1",
+      "input": {
+        "type": "object",
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+          }
+        },
+        "required": [
+          "operation_id"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "prepared",
+              "approved",
+              "dispatching",
+              "completed",
+              "failed",
+              "uncertain"
+            ]
+          },
+          "site_id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "site_url": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "target": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "post"
+                ]
+              },
+              "post_type": {
+                "type": "string",
+                "enum": [
+                  "post",
+                  "page"
+                ]
+              },
+              "post_id": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "field": {
+                "type": "string",
+                "enum": [
+                  "post_title",
+                  "post_excerpt",
+                  "post_content"
+                ]
+              }
+            },
+            "required": [
+              "kind",
+              "post_type",
+              "post_id",
+              "field"
+            ],
+            "additionalProperties": false
+          },
+          "before_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "candidate_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "current_sha256": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "changed": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "migration_artifact": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string",
+                "pattern": "^mrn-content://migrations/[a-f0-9-]{36}$"
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "ref",
+              "sha256"
+            ],
+            "additionalProperties": false
+          },
+          "affected_paths": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512,
+              "pattern": "^/(?!/)"
+            }
+          },
+          "rollback_available": {
+            "type": "boolean"
+          },
+          "error_code": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "operation_id",
+          "state",
+          "site_id",
+          "site_url",
+          "target",
+          "before_sha256",
+          "candidate_sha256",
+          "current_sha256",
+          "changed",
+          "migration_artifact",
+          "affected_paths",
+          "rollback_available",
+          "error_code"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "prepare-content-rollback-v1": {
+      "role": "preparer",
+      "wrapper": "run-delegated-operation-v1",
+      "input": {
+        "type": "object",
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+          },
+          "expected_snapshot_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "operation_id",
+          "expected_snapshot_sha256",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+          },
+          "digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "site_id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "site_url": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "target": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "post"
+                ]
+              },
+              "post_type": {
+                "type": "string",
+                "enum": [
+                  "post",
+                  "page"
+                ]
+              },
+              "post_id": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "field": {
+                "type": "string",
+                "enum": [
+                  "post_title",
+                  "post_excerpt",
+                  "post_content"
+                ]
+              }
+            },
+            "required": [
+              "kind",
+              "post_type",
+              "post_id",
+              "field"
+            ],
+            "additionalProperties": false
+          },
+          "before_snapshot": {
+            "type": "object",
+            "properties": {
+              "site_id": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "site_url": {
+                "type": "string",
+                "maxLength": 512
+              },
+              "schema": {
+                "type": "integer",
+                "enum": [
+                  1
+                ]
+              },
+              "target": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "post"
+                    ]
+                  },
+                  "post_type": {
+                    "type": "string",
+                    "enum": [
+                      "post",
+                      "page"
+                    ]
+                  },
+                  "post_id": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "field": {
+                    "type": "string",
+                    "enum": [
+                      "post_title",
+                      "post_excerpt",
+                      "post_content"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind",
+                  "post_type",
+                  "post_id",
+                  "field"
+                ],
+                "additionalProperties": false
+              },
+              "post_status": {
+                "type": "string",
+                "enum": [
+                  "publish"
+                ]
+              },
+              "post_name": {
+                "type": "string",
+                "maxLength": 512
+              },
+              "post_title": {
+                "type": "string",
+                "maxLength": 8192
+              },
+              "post_excerpt": {
+                "type": "string",
+                "maxLength": 8192
+              },
+              "post_content": {
+                "type": "string",
+                "maxLength": 8192
+              }
+            },
+            "required": [
+              "site_id",
+              "site_url",
+              "schema",
+              "target",
+              "post_status",
+              "post_name",
+              "post_title",
+              "post_excerpt",
+              "post_content"
+            ],
+            "additionalProperties": false
+          },
+          "candidate_snapshot": {
+            "type": "object",
+            "properties": {
+              "site_id": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "site_url": {
+                "type": "string",
+                "maxLength": 512
+              },
+              "schema": {
+                "type": "integer",
+                "enum": [
+                  1
+                ]
+              },
+              "target": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "post"
+                    ]
+                  },
+                  "post_type": {
+                    "type": "string",
+                    "enum": [
+                      "post",
+                      "page"
+                    ]
+                  },
+                  "post_id": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "field": {
+                    "type": "string",
+                    "enum": [
+                      "post_title",
+                      "post_excerpt",
+                      "post_content"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind",
+                  "post_type",
+                  "post_id",
+                  "field"
+                ],
+                "additionalProperties": false
+              },
+              "post_status": {
+                "type": "string",
+                "enum": [
+                  "publish"
+                ]
+              },
+              "post_name": {
+                "type": "string",
+                "maxLength": 512
+              },
+              "post_title": {
+                "type": "string",
+                "maxLength": 8192
+              },
+              "post_excerpt": {
+                "type": "string",
+                "maxLength": 8192
+              },
+              "post_content": {
+                "type": "string",
+                "maxLength": 8192
+              }
+            },
+            "required": [
+              "site_id",
+              "site_url",
+              "schema",
+              "target",
+              "post_status",
+              "post_name",
+              "post_title",
+              "post_excerpt",
+              "post_content"
+            ],
+            "additionalProperties": false
+          },
+          "before_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "candidate_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "affected_paths": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512,
+              "pattern": "^/(?!/)"
+            }
+          },
+          "stable_selector": {
+            "type": "object",
+            "properties": {
+              "post_type": {
+                "type": "string",
+                "enum": [
+                  "post",
+                  "page"
+                ]
+              },
+              "post_path": {
+                "type": "string",
+                "maxLength": 512
+              }
+            },
+            "required": [
+              "post_type",
+              "post_path"
+            ],
+            "additionalProperties": false
+          },
+          "migration_artifact": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string",
+                "pattern": "^mrn-content://migrations/[a-f0-9-]{36}$"
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "ref",
+              "sha256"
+            ],
+            "additionalProperties": false
+          },
+          "profile": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "maxLength": 120
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "runtime_url": {
+                "type": "string",
+                "maxLength": 512
+              },
+              "runtime_context_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "ownership": {
+                "type": "string",
+                "enum": [
+                  "wordpress-post",
+                  "unknown",
+                  "builder"
+                ]
+              },
+              "covered_fields": {
+                "type": "array",
+                "maxItems": 3,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "post_title",
+                    "post_excerpt",
+                    "post_content"
+                  ]
+                }
+              },
+              "requires_render_assertions": {
+                "type": "boolean",
+                "enum": [
+                  true
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "sha256",
+              "runtime_url",
+              "runtime_context_sha256",
+              "ownership",
+              "covered_fields",
+              "requires_render_assertions"
+            ],
+            "additionalProperties": false
+          },
+          "rollback_operation_id": {
+            "type": "string",
+            "maxLength": 36
+          },
+          "expires_at": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "operation_id",
+          "digest",
+          "site_id",
+          "site_url",
+          "target",
+          "before_snapshot",
+          "candidate_snapshot",
+          "before_sha256",
+          "candidate_sha256",
+          "affected_paths",
+          "stable_selector",
+          "migration_artifact",
+          "profile",
+          "rollback_operation_id",
+          "expires_at"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "get-content-migration-v1": {
+      "role": "reader",
+      "wrapper": "read-delegated-operation-v1",
+      "input": {
+        "type": "object",
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+          }
+        },
+        "required": [
+          "operation_id"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "migration_artifact": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string",
+                "pattern": "^mrn-content://migrations/[a-f0-9-]{36}$"
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "ref",
+              "sha256"
+            ],
+            "additionalProperties": false
+          },
+          "bundle": {
+            "type": "object",
+            "properties": {
+              "schema": {
+                "type": "integer",
+                "enum": [
+                  1
+                ]
+              },
+              "migration_id": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+              },
+              "site_url": {
+                "type": "string"
+              },
+              "target": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "post"
+                    ]
+                  },
+                  "post_type": {
+                    "type": "string",
+                    "enum": [
+                      "post",
+                      "page"
+                    ]
+                  },
+                  "post_id": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "field": {
+                    "type": "string",
+                    "enum": [
+                      "post_title",
+                      "post_excerpt",
+                      "post_content"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind",
+                  "post_type",
+                  "post_id",
+                  "field"
+                ],
+                "additionalProperties": false
+              },
+              "stable_selector": {
+                "type": "object",
+                "properties": {
+                  "post_type": {
+                    "type": "string",
+                    "enum": [
+                      "post",
+                      "page"
+                    ]
+                  },
+                  "post_path": {
+                    "type": "string",
+                    "maxLength": 512
+                  }
+                },
+                "required": [
+                  "post_type",
+                  "post_path"
+                ],
+                "additionalProperties": false
+              },
+              "expected_snapshot_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "candidate_snapshot": {
+                "type": "object",
+                "properties": {
+                  "site_id": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "site_url": {
+                    "type": "string",
+                    "maxLength": 512
+                  },
+                  "schema": {
+                    "type": "integer",
+                    "enum": [
+                      1
+                    ]
+                  },
+                  "target": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "post"
+                        ]
+                      },
+                      "post_type": {
+                        "type": "string",
+                        "enum": [
+                          "post",
+                          "page"
+                        ]
+                      },
+                      "post_id": {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      "field": {
+                        "type": "string",
+                        "enum": [
+                          "post_title",
+                          "post_excerpt",
+                          "post_content"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "post_type",
+                      "post_id",
+                      "field"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "post_status": {
+                    "type": "string",
+                    "enum": [
+                      "publish"
+                    ]
+                  },
+                  "post_name": {
+                    "type": "string",
+                    "maxLength": 512
+                  },
+                  "post_title": {
+                    "type": "string",
+                    "maxLength": 8192
+                  },
+                  "post_excerpt": {
+                    "type": "string",
+                    "maxLength": 8192
+                  },
+                  "post_content": {
+                    "type": "string",
+                    "maxLength": 8192
+                  }
+                },
+                "required": [
+                  "site_id",
+                  "site_url",
+                  "schema",
+                  "target",
+                  "post_status",
+                  "post_name",
+                  "post_title",
+                  "post_excerpt",
+                  "post_content"
+                ],
+                "additionalProperties": false
+              },
+              "candidate_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "affected_paths": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 1,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 512,
+                  "pattern": "^/(?!/)"
+                }
+              },
+              "rollback_snapshot_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "adapter_version": {
+                "type": "string",
+                "enum": [
+                  "1"
+                ]
+              }
+            },
+            "required": [
+              "schema",
+              "migration_id",
+              "site_url",
+              "target",
+              "stable_selector",
+              "expected_snapshot_sha256",
+              "candidate_snapshot",
+              "candidate_sha256",
+              "affected_paths",
+              "rollback_snapshot_sha256",
+              "adapter_version"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "migration_artifact",
+          "bundle"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "qa": {
+    "envelope": {
+      "type": "object",
+      "properties": {
+        "key_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{1,64}$"
+        },
+        "payload_base64": {
+          "type": "string",
+          "maxLength": 16384
+        },
+        "signature_base64": {
+          "type": "string",
+          "maxLength": 88
+        }
+      },
+      "required": [
+        "key_id",
+        "payload_base64",
+        "signature_base64"
+      ],
+      "additionalProperties": false
+    },
+    "signature_prefix": "mrn-content-qa-v1:",
+    "canonical_payload": true,
+    "ttl_seconds": 900,
+    "claims": [
+      "schema",
+      "issuer",
+      "audience",
+      "kind",
+      "result",
+      "mode",
+      "smoke_strict",
+      "issued_at",
+      "expires_at",
+      "receipt_id",
+      "site_id",
+      "site_url",
+      "target",
+      "before_sha256",
+      "candidate_sha256",
+      "plan_digest",
+      "rollback_operation_id",
+      "qa_report_sha256",
+      "engine_commit",
+      "runtime_url",
+      "runtime_context_sha256",
+      "profile_sha256",
+      "affected_paths",
+      "migration_artifact_sha256"
+    ],
+    "fixed": {
+      "schema": 1,
+      "issuer": "mrn-qa-engine",
+      "audience": "https://wpcontrol.mrndev.io",
+      "kind": "content",
+      "result": "Pass",
+      "mode": "release",
+      "smoke_strict": true
+    },
+    "required": "Trusted protected runner independently binds exact plan, profile/runtime context, before/candidate snapshots, affected render paths, migration and report. Required applicable API/browser/a11y/performance/render-ownership checks may not be skipped. Existing file/source-review receipts never qualify content."
+  },
+  "operation_states": [
+    "prepared",
+    "approved",
+    "dispatching",
+    "completed",
+    "failed",
+    "uncertain"
+  ],
+  "plan_ttl_seconds": 900,
+  "approval": "Same-person approval allowed under current single-person policy; execute requires original preparer, active staff, exact digest and fresh independently verified QA/backup",
+  "lock": "Existing private MRN_MainWP_Site_Lock with mrn_code_site_lock_<id>; preserve uncertainty/consumed operations; no automatic mutation retry or public force-unlock",
+  "cas": "Child-side supported transactional engine, authoritative row locking/re-read plus fixed typed WordPress update. Reject unqualified engines/hooks/records. Verify after exact semantic snapshot. Direct native REST lacks CAS and is not a fallback.",
+  "migration": "Immutable encrypted authenticated central bundle, public opaque ref+hash, exact live ID plus stable post_type/post_path selector. Already-applied candidate is a verified no-op. Another-environment replay requires fresh resolution, QA, approval, backup and new operation. No per-site repository/staff token/caller PHP.",
+  "errors": [
+    "mrn_content_disabled",
+    "mrn_content_profile",
+    "mrn_content_target",
+    "mrn_content_ownership",
+    "mrn_content_size",
+    "mrn_content_precondition",
+    "mrn_content_qa",
+    "mrn_content_approval",
+    "mrn_content_backup",
+    "mrn_content_locked",
+    "mrn_content_consumed",
+    "mrn_content_uncertain",
+    "mrn_content_unsupported"
+  ],
+  "error_transport": "Standard WordPress WP_Error before dispatch; after attempted mutation report status.state=failed or uncertain. Never imply failed means safe retry. Uncertain retains lock and receipt consumption.",
+  "roadmap": [
+    "Qualified ACF scalar field/reference CAS; no raw post_custom/repeaters/builders",
+    "Qualified menu item/term/link CAS",
+    "Qualified attachment title/caption/alt metadata; file import/replacement separately qualified"
+  ],
+  "activation": "Content policy is owner-provisioned and default disabled. get-content-policy reports absent/unqualified runtime profiles honestly. No production enrollment/access/credential changes performed by this contract.",
+  "plan_digest": {
+    "algorithm": "SHA256(delegation-v1 canonical JSON of descriptor)",
+    "descriptor_fields": [
+      "schema",
+      "operation_id",
+      "site_id",
+      "site_url",
+      "target",
+      "before_sha256",
+      "candidate_sha256",
+      "affected_paths",
+      "stable_selector",
+      "migration_artifact_sha256",
+      "profile_sha256",
+      "rollback_operation_id",
+      "adapter_version"
+    ],
+    "fixed": {
+      "schema": 1,
+      "adapter_version": "1"
+    },
+    "exclusions": "No volatile timestamps, signatures, backup receipts, caller identity or raw snapshots in descriptor; their hashes/immutable stored authorization bind them separately."
+  },
+  "rollback_hash_semantics": "Every migration bundle rollback_snapshot_sha256 equals that operation before_sha256. For forward A->B it is A; for qualified rollback B->A it is B. rollback_operation_id is empty for forward, and the original completed forward UUID for rollback. Recursive rollback is not initially qualified."
+}
