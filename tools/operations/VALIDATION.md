@@ -149,6 +149,17 @@ registrar runtime, signed-profile trust, new site eligibility or staff access.
 The integration fixture now pins `4029913`; its gateway rerun remains a separate
 check from the provider's passing contract/runtime CI.
 
+The internal recipe-catalog verifier adds 11 controlled tests covering distinct
+root/registrar/identity/QA keys, purpose-bound Ed25519 signatures, exact canonical
+JSON/base64, duplicate fields, payload bounds, approved digest/epoch, date
+boundaries, all three audiences, unique sorted recipe IDs and eligibility,
+independent source/runtime/assertion pins, and reserved-origin/field restrictions.
+These use the accepted provider's structural catalog vector and ephemeral local
+signing keys. They prove verifier behavior only. No application workflow imports
+the module, no target binding is accepted, and static target inventories remain
+authoritative. Catalog installation and worker preflight/handoff have reviewed
+additive source contracts but no gateway runtime or live activation evidence.
+
 The passing six-group lifecycle harness requires exact snapshot and public HTML
 verification after the approved edit and separate rollback, with individual
 audit attribution and approval/revocation refusals. Only the two backup calls
@@ -160,7 +171,7 @@ creation, live Google, code editing and ChatGPT acceptance remain unverified.
 
 - Verified canonical MainWP status on wpcontrol.mrndev.io: connected, 107 provider abilities, 52 exposed by a fresh configured connection at 15:06 UTC (previously 48). The abilities resource is policy-filtered too; the unexposed 55 are not enumerated or qualified. Last verified live provider 0.13.4 retains the company-only code policy and QA scope. Native REST post/page reads succeeded using the separately authorized Production Hub bearer lookup; no site write was attempted.
 - Added per-request Google identity delegation, strict cross-language signed claims, POST-only metadata checks, active-membership authorization, audit identity migration, expanded portfolio/site reads, exact native content reads, code inspection, central GitHub source handling and protected QA/code lifecycle adapters.
-- Full Node 24 suite passed 246 checks. Tests include signature/identity forgery, outsider and revoked denial, request isolation, unsafe GET metadata rejection, live-state drift, backup/approval gates, exact snapshot edit/rollback, pre-PR QA versus merged-source QA and live approvals, rejection before source publication on failed preliminary QA or disabled writes, lost response lock retention, bounded receipt extraction and token narrowing. Site-directory reads require portfolio access; ignored-update reads reject empty, different-site or expanded selectors. Read-only OAuth consent cannot authorize the eight change-lifecycle tools. These are controlled integration fixtures, not ordinary-member ChatGPT acceptance.
+- Full Node 24 suite passed 257 checks. Tests include signature/identity forgery, outsider and revoked denial, request isolation, unsafe GET metadata rejection, live-state drift, backup/approval gates, exact snapshot edit/rollback, pre-PR QA versus merged-source QA and live approvals, rejection before source publication on failed preliminary QA or disabled writes, lost response lock retention, bounded receipt extraction and token narrowing. Site-directory reads require portfolio access; ignored-update reads reject empty, different-site or expanded selectors. Read-only OAuth consent cannot authorize the eight change-lifecycle tools. These are controlled integration fixtures, not ordinary-member ChatGPT acceptance.
 - Configuration preflight and startup use the same QA-policy loader before opening SQLite state. Fourteen CLI/loader regressions cover legacy read-only, code-only, content-only and combined configurations; missing, malformed and interchanged policy files; central QA/source repository pins; bounded non-secret output; and rejection before state creation. Snapshot workflows require no source repository. This is static configuration validation, not credential, hosted-runtime or live Google acceptance.
 - Direct ESLint passed. The staged MRN task QA gate is required for the final index. A broader MRN QA invocation resolved the parent monorepo and reported static Pass, with PHPStan missing-stub advisory; it skipped service ESLint/npm rows because no root package exists. Its report is not a substitute for direct Node tests/lint or live provider/runtime checks.
 - There is no new browser UI in the gateway. Its hosted WordPress/API, browser, accessibility and performance acceptance remains unverified; the separate disposable provider/runner evidence below does not establish live gateway acceptance. Central service credentials, runner/App provisioning, automatic access policy, workspace tool refresh and deployment are pending concrete approval gates.
