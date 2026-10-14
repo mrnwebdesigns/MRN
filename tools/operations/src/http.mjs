@@ -2,7 +2,8 @@ import { createServer } from 'node:http';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { createMcp } from './mcp.mjs';
 import { OpsError, requireThat, safeError } from './contracts.mjs';
-import { operationsScope, oauthChallenge } from './auth.mjs';
+import { oauthChallenge } from './auth.mjs';
+import { operationsScopes } from './scopes.mjs';
 
 async function readBody(req) {
   let size = 0; const chunks = [];
@@ -19,7 +20,7 @@ export function createHttpServer({ service, authenticate, publicUrl, issuer, ori
       requireThat(req.headers.host === canonical.host, 'HOST_DENIED', 'Unexpected Host header.');
       requireThat(!req.headers.origin || origins.includes(req.headers.origin), 'ORIGIN_DENIED', 'Origin is not allowed.');
       if (req.method === 'GET' && ['/.well-known/oauth-protected-resource', '/.well-known/oauth-protected-resource/mcp'].includes(req.url)) {
-        return json(res, 200, { resource: publicUrl, authorization_servers: [issuer], scopes_supported: [operationsScope], bearer_methods_supported: ['header'] });
+        return json(res, 200, { resource: publicUrl, authorization_servers: [issuer], scopes_supported: operationsScopes, bearer_methods_supported: ['header'] });
       }
       if (req.method === 'GET' && req.url === '/healthz') return json(res, 200, { status: 'ok', version: '0.1.0' });
       requireThat(req.url === '/mcp', 'NOT_FOUND', 'Route not found.');

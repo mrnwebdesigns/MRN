@@ -114,10 +114,12 @@ the source of validation for ZIP/source/baseline construction.
 
 ## Operator setup for the hosted service
 
-1. The owner selected the existing DigitalOcean MRN Apps server. The proposed
-   `operations.mrnwebdesigns.com` is a placeholder, not a provisioned service.
-   Select the MRN identity provider's issuer, JWKS endpoint and audience. It must
-   support MCP-client OAuth authorization, PKCE and `mrn:operations` access tokens.
+1. Reuse the existing DigitalOcean MRN Apps service at
+   `https://operations.mrnwebdesigns.com/mcp` and its Auth0 issuer, JWKS and audience.
+   OAuth uses PKCE and `mrn:operations` for reads; the unified candidate requires
+   additional `mrn:operations:write` consent for guarded changes. The new scope's
+   live grant and workspace metadata update remain a concrete access-review gate;
+   see `deploy/TEAM-CONFIGURATION-REVIEW.md`.
    This service is a protected resource, not an authorization server.
 2. Install this reviewed MRN checkout and exact npm lockfile under
    `/opt/mrn-operations/MRN`. Use a dedicated `mrn-operations` OS account. Install

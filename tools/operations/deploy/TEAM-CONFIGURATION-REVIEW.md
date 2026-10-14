@@ -12,6 +12,17 @@ deployment/access review; none of the settings below were changed.
   `R0GQ8FV2XEOD3T8Ym1bkLF4pl9OUEprl`, currently named MRN Client Review MCP OAuth.
 - That application's callback allowlist contains the existing Operations
   ChatGPT callback `https://chatgpt.com/connector/oauth/MbAPpAv-mkG3`.
+- The existing Operations API is `6ac7d75a0699732d6ed78674`, with exact audience
+  `https://operations.mrnwebdesigns.com/mcp`, RS256 and 3600-second token lifetime.
+  User-delegated access is per-app; machine and anonymous access are disabled.
+  Offline access is enabled, RBAC is off, and consent skipping is unchecked.
+- The shared OAuth application currently has the API's one permission,
+  `mrn:operations`, described as "Read MRN website information allowed by your
+  staff account". The candidate retains that scope for reads and requires the
+  additional `mrn:operations:write` for preparation, approvals, source merge,
+  execution and recovery. Existing read-only tokens cannot gain write authority
+  from staff roles, tool arguments or metadata. The new scope and grant are
+  **not configured live**.
 - Both Google and Username-Password-Authentication are enabled on this shared
   application. Operations must enforce its Google-only resource-specific
   Action and verified gateway/provider claims without globally disabling
@@ -41,6 +52,17 @@ customer/connection pins, distinct backend service credential fingerprint,
 identity signer, Directory availability, central GitHub Apps and protected QA
 actor/policy. Compare the service fingerprint with the owner/global MCP and
 independent workflows before restricting it; never pin a reused credential.
+
+The access review must include adding `mrn:operations:write` ("Prepare, approve
+and execute guarded MRN website changes") to this existing API and only its
+Operations user-delegated grant for the existing OAuth client. Update the same
+workspace plugin's tool metadata and Google OAuth scope request to include both
+Operations scopes. Do not grant machine access or change another API's grants.
+Verify that an existing read-only token still reads but receives an
+`insufficient_scope` reconnect challenge for all eight change-lifecycle tools;
+newly consented tokens must still pass Google membership, policy, QA, approval
+and backup gates. This is OAuth consent for the existing plugin, not individual
+staff approval or a second connector.
 
 All active verified MRN staff receive domain/customer-based portfolio roles.
 There is no named-member allowlist or enrollment approval. Staff revocation,

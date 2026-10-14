@@ -9,7 +9,7 @@ function fixture() {
   const { privateKey, publicKey } = generateKeyPairSync('ed25519');
   const signer = new IdentitySigner({ keyId: 'fixture-only', privateKey, connectionId: 'con_MRNGoogle' });
   const state = { calls: [], dispatched: [], consumed: new Set(), challenges: new Map(), revoked: new Set(), corrupt: null };
-  const actor = id => Object.freeze({ subject: `google-oauth2|${id}`, googleSubject: id, verifiedEmail: `staff${id}@mrnwebdesigns.com`, expiresAt: Date.now() + 300000, identityProvider: 'google-oauth2', googleConnection: 'con_MRNGoogle', hostedDomain: 'mrnwebdesigns.com' });
+  const actor = id => Object.freeze({ subject: `google-oauth2|${id}`, googleSubject: id, verifiedEmail: `staff${id}@mrnwebdesigns.com`, expiresAt: Date.now() + 300000, identityProvider: 'google-oauth2', googleConnection: 'con_MRNGoogle', hostedDomain: 'mrnwebdesigns.com', scopes: ['mrn:operations', 'mrn:operations:write'] });
   const client = {
     async readResource() { return { contents: [{ text: JSON.stringify({ connected: true, dashboardHost: 'wpcontrol.mrndev.io', abilitiesCount: 110 }) }] }; },
     async listTools() { return { tools: Object.values(delegationTools).map(name => ({ name, annotations: { readOnlyHint: false, destructiveHint: name === delegationTools.run } })) }; },
@@ -81,6 +81,19 @@ test('write confirmation reuses its exact envelope; reads and single-site sync d
   assert.equal(f.state.calls.at(-1), delegationTools.sync);
   await assert.rejects(() => client.callTool({ name: 'sync_sites_v1', arguments: { site_ids: [] } }), { code: 'TARGET_MISMATCH' });
   await assert.rejects(() => client.callTool({ name: 'mrn_mainwp__configure_code_policy_v1', arguments: {} }), { code: 'CAPABILITY_DENIED' });
+});
+
+test('read-only bearer cannot obtain a delegated write challenge or start a backup', async () => {
+  const f = fixture();
+  const client = new DelegatedMainwpClient(f.client, { ...f.actor('123'), scopes: ['mrn:operations'] }, f.signer);
+  for (const name of ['start_database_backup', 'prepare_code_change', 'approve_code_change', 'execute_code_change',
+    'prepare_content_change', 'approve_content_change', 'execute_content_change', 'prepare_content_rollback', 'update_stack_plugin']) {
+    await assert.rejects(() => client.callTool({ name: `mrn_mainwp__${name}_v1`, arguments: {} }), { code: 'INSUFFICIENT_SCOPE' });
+  }
+  assert.equal(f.state.calls.length, 0);
+  await client.callTool({ name: 'get_site_v1', arguments: { site_id_or_domain: 'https://example.test' } });
+  await client.callTool({ name: 'sync_sites_v1', arguments: { site_ids: [85] } });
+  assert.deepEqual(f.state.dispatched.map(d => d.ability), ['mainwp/get-site-v1', 'mainwp/sync-sites-v1']);
 });
 
 test('unsafe GET metadata or missing confirmation boundary blocks before sending an identity assertion', async () => {

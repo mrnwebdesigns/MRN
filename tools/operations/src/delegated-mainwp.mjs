@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { requireThat, sha } from './contracts.mjs';
+import { requireThat, requireWriteScope, sha } from './contracts.mjs';
 import { payload, validateStatus } from './mainwp.mjs';
 import { delegationCanonical, delegationDigest } from './delegation.mjs';
 
@@ -73,6 +73,7 @@ export class DelegatedMainwpClient {
     const ability = abilityName(name);
     requireThat(readAbilities.has(ability) || writeAbilities.has(ability) || ability === 'mainwp/sync-sites-v1',
       'CAPABILITY_DENIED', 'No qualified delegated adapter exists for this operation.');
+    if (writeAbilities.has(ability)) requireWriteScope(this.actor);
     if (ability === 'mainwp/sync-sites-v1') requireThat(Object.keys(args).length === 1
       && Array.isArray(args.site_ids) && args.site_ids.length === 1 && Number.isSafeInteger(args.site_ids[0]) && args.site_ids[0] > 0,
     'TARGET_MISMATCH', 'Delegated sync requires one exact resolved site.');

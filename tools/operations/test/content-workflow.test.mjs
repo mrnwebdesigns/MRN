@@ -9,7 +9,7 @@ import { toolNames } from '../src/mainwp.mjs';
 import { delegationDigest } from '../src/delegation.mjs';
 import { responseEvidence } from '../src/probe.mjs';
 
-const person = { subject: 'google-oauth2|123456', googleSubject: '123456', identityProvider: 'google-oauth2', verifiedEmail: 'staff@mrnwebdesigns.com', expiresAt: Date.now() + 3600000 };
+const person = { subject: 'google-oauth2|123456', googleSubject: '123456', identityProvider: 'google-oauth2', verifiedEmail: 'staff@mrnwebdesigns.com', expiresAt: Date.now() + 3600000, scopes: ['mrn:operations', 'mrn:operations:write'] };
 function configured(t) {
   const f = setup(); t.after(f.close); const q = contentQaFixture();
   f.policy.members.push({ subject: person.subject, enabled: true, grants: [{ website: 'example', environments: ['development'], actions: ['read', 'content'] }] });

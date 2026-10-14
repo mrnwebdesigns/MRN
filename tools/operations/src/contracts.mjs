@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { z } from 'zod';
 import { normalizeSiteUrl } from '../../../stack/scripts/mrn-fleet-update.mjs';
+import { operationsScopes } from './scopes.mjs';
 
 export const digest = value => createHash('sha256').update(typeof value === 'string' || Buffer.isBuffer(value) ? value : canonical(value)).digest('hex');
 export function canonical(value) {
@@ -14,6 +15,10 @@ export class OpsError extends Error {
 }
 export function requireThat(condition, code, message) {
   if (!condition) throw new OpsError(code, message);
+}
+export function requireWriteScope(actor) {
+  requireThat(Array.isArray(actor?.scopes) && operationsScopes.every(scope => actor.scopes.includes(scope)),
+    'INSUFFICIENT_SCOPE', 'Reconnect MRN Website Operations to authorize guarded changes. Your current sign-in permits inspection only.');
 }
 export const safeError = error => error instanceof OpsError
   ? { code: error.code, message: error.message }
@@ -132,6 +137,7 @@ export class Registry {
     const direct = member.grants.some(g => [target.websiteId, target.url].includes(g.website) && g.environments.includes(target.environment) && g.actions.includes(action));
     const portfolio = member.portfolio?.actions.includes(action) && target.sources?.some(s => member.portfolio.sources.includes(s));
     requireThat(direct || portfolio, 'FORBIDDEN', 'Your account does not have this operation permission for this website and environment.');
+    if (!['read', 'test'].includes(action)) requireWriteScope(actor);
     if (['code', 'content'].includes(action)) requireThat(actor.identityProvider === 'google-oauth2'
       && actor.subject === `google-oauth2|${actor.googleSubject}` && actor.verifiedEmail?.endsWith('@mrnwebdesigns.com'),
     'AUTH_REQUIRED', 'Content and code changes require a verified individual MRN Google identity.');

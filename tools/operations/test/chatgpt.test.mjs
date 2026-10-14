@@ -29,8 +29,10 @@ test('ChatGPT receives OAuth declarations on the wire and accurate operation eff
   const f = await hosted(t, async () => actor);
   const { status, body } = await f.call('tools/list'); assert.equal(status, 200);
   assert.equal(body.result.tools.length, 21);
+  const writeNames = ['prepare_repair', 'prepare_rollback', 'prepare_code_edit', 'prepare_content_edit',
+    'approve_code_source', 'approve_operation', 'execute_operation', 'reconcile_operation'];
   for (const tool of body.result.tools) {
-    assert.deepEqual(tool.securitySchemes, [{ type: 'oauth2', scopes: ['mrn:operations'] }]);
+    assert.deepEqual(tool.securitySchemes, [{ type: 'oauth2', scopes: writeNames.includes(tool.name) ? ['mrn:operations', 'mrn:operations:write'] : ['mrn:operations'] }]);
     assert.deepEqual(tool._meta.securitySchemes, tool.securitySchemes);
     assert.equal(tool.inputSchema.type, 'object'); assert.ok(tool.title);
   }
@@ -54,6 +56,28 @@ test('an expired tool identity returns the ChatGPT relinking challenge without a
   assert.deepEqual(response.body.result._meta['mcp/www_authenticate'], [oauthChallenge(`${f.base}/mcp`)]);
   assert.match(response.body.result._meta['mcp/www_authenticate'][0], /error="invalid_token".*error_description=/);
   assert.equal(f.state.calls.length, 0);
+});
+
+test('every change lifecycle tool refuses a read-only sign-in before work or caller identity hints', async t => {
+  const f = await hosted(t, async () => ({ ...actor, scopes: ['mrn:operations'] }));
+  const id = '00000000-0000-4000-8000-000000000001'; const hash = 'a'.repeat(64);
+  const calls = [
+    ['prepare_repair', { inspectionId: id, findingId: id, requestKey: 'scope-test' }],
+    ['prepare_rollback', { operationId: id, requestKey: 'scope-test' }],
+    ['prepare_code_edit', { website: 'example', path: 'wp-content/themes/child/style.css', expectedSha256: hash, content: 'body {}', reason: 'Scope test', requestKey: 'scope-test' }],
+    ['prepare_content_edit', { website: 'example', target: { kind: 'post', post_type: 'page', post_id: 123, field: 'post_content' }, expectedSnapshotSha256: hash, newValue: 'Text', reason: 'Scope test', requestKey: 'scope-test' }],
+    ['approve_code_source', { operationId: id, planDigest: hash }],
+    ['approve_operation', { operationId: id, planDigest: hash }],
+    ['execute_operation', { operationId: id }],
+    ['reconcile_operation', { operationId: id }],
+  ];
+  for (const [name, args] of calls) {
+    const { body } = await f.call('tools/call', { name, arguments: args, _meta: { scopes: ['mrn:operations:write'] } });
+    assert.equal(body.result?.isError, true, name);
+    assert.equal(JSON.parse(body.result.content[0].text).error.code, 'INSUFFICIENT_SCOPE', name);
+    assert.deepEqual(body.result._meta['mcp/www_authenticate'], [oauthChallenge(`${f.base}/mcp`, true)], name);
+  }
+  assert.equal(f.state.calls.length, 0); assert.equal(f.state.backups, 0); assert.equal(f.state.mutations, 0);
 });
 
 test('ChatGPT receives named update versions and type totals over HTTP, with private package metadata excluded', async t => {

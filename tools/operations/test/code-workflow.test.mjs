@@ -7,7 +7,7 @@ import { CodeWorkflow } from '../src/code-workflow.mjs';
 import { toolNames } from '../src/mainwp.mjs';
 import { digest } from '../src/contracts.mjs';
 
-const person = { subject: 'google-oauth2|123456', googleSubject: '123456', identityProvider: 'google-oauth2', verifiedEmail: 'staff@mrnwebdesigns.com', expiresAt: Date.now() + 3600000 };
+const person = { subject: 'google-oauth2|123456', googleSubject: '123456', identityProvider: 'google-oauth2', verifiedEmail: 'staff@mrnwebdesigns.com', expiresAt: Date.now() + 3600000, scopes: ['mrn:operations', 'mrn:operations:write'] };
 const path = 'wp-content/themes/fixture/file.php';
 function configured(t) {
   const f = setup(); t.after(f.close);

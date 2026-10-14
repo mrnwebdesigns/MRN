@@ -73,7 +73,7 @@ settings in `service.json` and the chosen identity provider:
 | --- | --- |
 | Public resource | Approved HTTPS URL ending in `/mcp`; also use it as token audience |
 | Issuer and JWKS | Actual MRN authorization server; exact issuer match and published signing keys |
-| OAuth | Authorization code with PKCE S256 and scope `mrn:operations` |
+| OAuth | Authorization code with PKCE S256; `mrn:operations` for reads and additional `mrn:operations:write` for guarded changes (new scope activation pending review) |
 | Client registration | The provider's supported CIMD, DCR or predefined client route |
 | Callback | Copy the exact URI shown by ChatGPT into the provider's allowlist |
 | Member policy | Verified MRN email-domain read access; explicit subject overrides and write permissions |

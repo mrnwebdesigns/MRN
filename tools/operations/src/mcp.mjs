@@ -2,8 +2,9 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { toJsonSchemaCompat } from '@modelcontextprotocol/sdk/server/zod-json-schema-compat.js';
 import { z } from 'zod';
-import { safeError, sha, environmentNames } from './contracts.mjs';
-import { securitySchemes, oauthChallenge } from './auth.mjs';
+import { safeError, sha, environmentNames, requireWriteScope } from './contracts.mjs';
+import { oauthChallenge } from './auth.mjs';
+import { toolNeedsWriteScope, toolSecuritySchemes } from './scopes.mjs';
 import { detailSections, portfolioSections } from './capabilities.mjs';
 import { contentKinds } from './content.mjs';
 import { contentTargetSchema } from './content-contract.mjs';
@@ -44,14 +45,19 @@ export function createMcp(service, actor, { publicUrl } = {}) {
       idempotentHint: readOnly || ['prepare_repair', 'prepare_rollback', 'prepare_code_edit', 'prepare_content_edit', 'approve_operation', 'execute_operation', 'reconcile_operation'].includes(name),
       openWorldHint: !['list_websites', 'get_operation', 'website_history', 'approve_operation'].includes(name) };
     const title = name.replaceAll('_', ' ').replace(/^./, c => c.toUpperCase());
+    const securitySchemes = toolSecuritySchemes(name);
     const _meta = { securitySchemes, 'openai/toolInvocation/invoking': 'Working on your MRN request', 'openai/toolInvocation/invoked': 'MRN result received' };
     descriptors.push({ name, title, description, inputSchema: toJsonSchemaCompat(z.object(schema), { strictUnions: true, pipeStrategy: 'input' }), annotations, securitySchemes, _meta });
     server.registerTool(name, { title, description, inputSchema: schema, annotations, _meta }, async args => {
-      try { const result = await fn(args); return { content: [{ type: 'text', text: JSON.stringify(result) }] }; }
+      try {
+        if (toolNeedsWriteScope(name)) requireWriteScope(actor);
+        const result = await fn(args); return { content: [{ type: 'text', text: JSON.stringify(result) }] };
+      }
       catch (error) {
         const safe = safeError(error);
         return { isError: true, content: [{ type: 'text', text: JSON.stringify({ error: safe }) }],
-          ...(safe.code === 'AUTH_REQUIRED' && publicUrl ? { _meta: { 'mcp/www_authenticate': [oauthChallenge(publicUrl)] } } : {}) };
+          ...(['AUTH_REQUIRED', 'INSUFFICIENT_SCOPE'].includes(safe.code) && publicUrl
+            ? { _meta: { 'mcp/www_authenticate': [oauthChallenge(publicUrl, safe.code === 'INSUFFICIENT_SCOPE')] } } : {}) };
       }
     });
   };

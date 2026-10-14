@@ -35,9 +35,10 @@ All results and necessary decisions must appear in chat. Any request for a WordP
 | Suspended, archived or removed Workspace member | Existing session denied by current Directory read before dispatch | Controlled fixtures pass; live unverified |
 | Explicitly revoked access | Existing valid token is insufficient; revocation persists through automatic membership checks | Controlled fixtures pass; live unverified |
 | Revoked during an operation | Next protected step stops; no further write is dispatched | Controlled fixtures pass; live unverified |
-| Stale content or file snapshot | Fresh preparation required; no silent overwrite | Controlled fixtures pass for code; content pending |
-| Failed QA, missing backup or missing exact approval | No site mutation; failure is explained in chat | Controlled fixtures pass for code; content pending |
-| Lost mutation response | Uncertain outcome and retained lock; no automatic retry | Controlled fixtures pass for code; content pending |
+| Existing read-only OAuth token | Reads still work; preparing, approving, executing or recovering a change requires the additional guarded-write consent | Controlled JWT/HTTP/delegation fixtures pass; live unverified |
+| Stale content or file snapshot | Fresh preparation required; no silent overwrite | Controlled fixtures pass for code and content; live unverified |
+| Failed QA, missing backup or missing exact approval | No site mutation; failure is explained in chat | Controlled fixtures pass for code and content; live unverified |
+| Lost mutation response | Uncertain outcome and retained lock; no automatic retry | Controlled fixtures pass for code and content; live unverified |
 
 Use already-authorized test identities or separately reviewed administrative test changes. Do not suspend a real staff member, weaken a policy, forge a production identity or grant an outsider access to manufacture test evidence. A local negative test is not a live denial result.
 
