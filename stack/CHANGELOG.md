@@ -1,5 +1,14 @@
 # Stack Changelog
 
+## 2026.10.14-fleet-auto-3e360e04df7d
+
+- Automatic cumulative release from accepted source vector `4eafefc29473711112643f5560d3a1e4e71afed1c620bb9801cc76e11bbf4ed0`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## Unreleased — parent 1.5.17
+
+- Keep saved Tabbed Layout content editable when ACF loads the panel field before Page Content. Hydrate only eligible panel source layouts to avoid caching an incomplete recursive field tree; preserve saved rows, cloned field keys, copy, media and links.
+
 ## 2026.10.13-fleet-auto-bfa726f6abd7
 
 - Automatic cumulative release from accepted source vector `68b543202ae0412f7b52d8e8afecbde2f313e33c440a7b7c895d1c7e835a1def`.
