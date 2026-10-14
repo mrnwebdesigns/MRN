@@ -135,20 +135,40 @@ function mrn_base_stack_register_cloned_acf_field_key( $field_key ) {
  * field through the heavier runtime path.
  *
  * @param array<string, mixed> $field ACF flexible-content field definition.
+ * @param array<int, string>   $layout_names Optional source layouts to hydrate.
  * @return array<string, array<string, mixed>>
  */
-function mrn_base_stack_get_hydrated_local_flexible_layouts( array $field ) {
+function mrn_base_stack_get_hydrated_local_flexible_layouts( array $field, array $layout_names = array() ) {
 	if ( empty( $field['layouts'] ) || ! is_array( $field['layouts'] ) || ! function_exists( 'acf_get_fields' ) ) {
 		return array();
 	}
-	if ( function_exists( 'mrn_base_stack_get_initial_builder_source_layouts' ) ) {
+	if ( empty( $layout_names ) && function_exists( 'mrn_base_stack_get_initial_builder_source_layouts' ) ) {
 		$initial_layouts = mrn_base_stack_get_initial_builder_source_layouts( $field );
 		if ( null !== $initial_layouts ) {
 			return $initial_layouts;
 		}
 	}
 
-	$sub_fields = acf_get_fields( $field );
+	if ( ! empty( $layout_names ) && ! empty( $field['key'] ) && function_exists( 'acf_get_local_fields' ) ) {
+		// Do not hydrate the enclosing Tabbed Layout while building its panel
+		// catalog: ACF would cache a reentrant, incomplete panel field in Tabs.
+		$layout_keys = array();
+		foreach ( $field['layouts'] as $layout ) {
+			if ( is_array( $layout ) && in_array( $layout['name'] ?? '', $layout_names, true ) && ! empty( $layout['key'] ) ) {
+				$layout_keys[ $layout['key'] ] = true;
+			}
+		}
+		$sub_fields = array();
+		foreach ( (array) acf_get_local_fields( $field['key'] ) as $child ) {
+			if ( is_array( $child ) && isset( $layout_keys[ $child['parent_layout'] ?? '' ] ) ) {
+				$sub_fields[] = acf_get_field( $child['key'] );
+			}
+		}
+		// Preserve ACF's seamless clone expansion and normal field filters.
+		$sub_fields = apply_filters( 'acf/load_fields', $sub_fields, $field );
+	} else {
+		$sub_fields = acf_get_fields( $field );
+	}
 	if ( ! is_array( $sub_fields ) ) {
 		return array();
 	}
@@ -1497,6 +1517,11 @@ function mrn_base_stack_get_tabbed_layout_nested_layouts() {
 	$field = function_exists( 'mrn_base_stack_get_builder_layout_allowlist_field_definition' )
 		? mrn_base_stack_get_builder_layout_allowlist_field_definition( 'page_content_rows' )
 		: array();
+	$allowed_names     = mrn_base_stack_get_tabbed_layout_source_names();
+	$used_nested_names = $post_id > 0 ? mrn_base_stack_get_tabbed_layout_used_nested_layout_names( $post_id ) : array();
+	if ( is_array( $field ) && ! mrn_base_stack_builder_field_has_complete_layouts( $field ) ) {
+		$field['layouts'] = mrn_base_stack_get_hydrated_local_flexible_layouts( $field, array_values( array_unique( array_merge( $allowed_names, $used_nested_names ) ) ) );
+	}
 
 	$has_complete_layouts = mrn_base_stack_builder_field_has_complete_layouts( $field );
 
@@ -1513,9 +1538,7 @@ function mrn_base_stack_get_tabbed_layout_nested_layouts() {
 		return $layouts_cache[ $cache_key ];
 	}
 
-	$allowed_names       = mrn_base_stack_get_tabbed_layout_source_names();
 	$base_allowed_lookup = ! empty( $allowed_names ) ? array_fill_keys( $allowed_names, true ) : array();
-	$used_nested_names   = $post_id > 0 ? mrn_base_stack_get_tabbed_layout_used_nested_layout_names( $post_id ) : array();
 	$existing_only_names = array_values(
 		array_diff(
 			array_filter(
