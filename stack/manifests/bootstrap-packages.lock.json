@@ -304,15 +304,15 @@
       "name": "MRN Universal Sticky Bar",
       "package": "mrn-universal-sticky-bar.zip",
       "profile": "all",
-      "sha256": "c70ee886eae47113c89cc4df47cd1c26b0a7ecd2df4bd622b0d591db89ceb2db",
-      "size_bytes": 14791,
+      "sha256": "4ced6eae2dfebf60dc08a53d4c53508946db6d3515a4f8b320470030877eaf46",
+      "size_bytes": 18827,
       "slug": "mrn-universal-sticky-bar",
       "source": {
-        "commit": "5e6be56d5f0c39a3fd7d478c7a17fc4a17d8b7ab",
+        "commit": "3d6cad1a3bc8c5fce9c4f1ebfd8d85cfa5a1e930",
         "repository": "mrn-universal-sticky-bar",
         "type": "git"
       },
-      "version": "1.2.3"
+      "version": "1.3.0"
     },
     {
       "main_file": "post-duplicator/m4c-postduplicator.php",
@@ -513,7 +513,7 @@
       "version": "0.1.4"
     }
   ],
-  "release_id": "2026.10.14-fleet-auto-3e360e04df7d",
+  "release_id": "2026.10.14-fleet-auto-b2d095968e00",
   "schema_version": 1,
   "scope": "new-site-bootstrap-inputs",
   "stack_plugin_count": 33
