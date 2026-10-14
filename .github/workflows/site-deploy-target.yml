@@ -384,8 +384,9 @@ jobs:
           result = {key: os.environ[name] for key, name in (
               ('outcome', 'QA_RESULT'), ('source_sha', 'SOURCE_SHA'),
               ('environment', 'TARGET'), ('url', 'DEPLOY_URL'))}
-          result['local_qa_and_live_readback'] = os.environ['LOCAL_RESULT']
-          result['acceptance_mode'] = 'local-qualified-with-live-readback' if os.environ['LOCAL_QA_ACCEPTANCE'] else 'hosted'
+          if os.environ.get('LOCAL_QA_ACCEPTANCE'):
+              result['local_qa_and_live_readback'] = os.environ['LOCAL_RESULT']
+              result['acceptance_mode'] = 'local-qualified-with-live-readback'
           (pathlib.Path(os.environ['RUNNER_TEMP']) / 'site-runtime-result.json').write_text(json.dumps(result) + '\n')
           PY
           {
