@@ -306,6 +306,163 @@
       },
       "canonical": "{\"authorization_policy_sha256\":\"4444444444444444444444444444444444444444444444444444444444444444\",\"capture_artifact_sha256\":null,\"catalog_epoch\":1,\"expected_snapshot_sha256\":\"5555555555555555555555555555555555555555555555555555555555555555\",\"expected_target_revision\":0,\"expires_at\":1700003600,\"qualification_job_id\":\"23456789-1234-4123-8123-123456789abc\",\"recipe_catalog_sha256\":\"7777777777777777777777777777777777777777777777777777777777777777\",\"requester_binding_sha256\":\"6666666666666666666666666666666666666666666666666666666666666666\",\"schema\":1,\"site_id\":73,\"site_url\":\"https://pages.fixture.example.invalid\",\"state\":\"queued\",\"target\":{\"field\":\"post_title\",\"kind\":\"post\",\"post_id\":900,\"post_type\":\"page\"}}",
       "sha256": "759bc748ffefac44f2fa6f8518f1221b4bbf8cc2faf39c9648862247224d6ae1"
+    },
+    {
+      "contract": "content-qualification-v1.json",
+      "definition": "capture_artifact",
+      "value": {
+        "schema": 1,
+        "authorization_policy_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+        "catalog_epoch": 1,
+        "qualification_job_id": "23456789-1234-4123-8123-123456789abc",
+        "expected_snapshot_sha256": "92e8ccfc7b9b30edca1bc851ceaa26966627b6648a2fc62582c806acd080fa95",
+        "requester_binding_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+        "site_id": 73,
+        "site_url": "https://pages.fixture.example.invalid",
+        "target": {
+          "kind": "post",
+          "post_type": "page",
+          "post_id": 900,
+          "field": "post_title"
+        },
+        "recipe_catalog_sha256": "7777777777777777777777777777777777777777777777777777777777777777",
+        "recipe_id": "fixture-title",
+        "recipe_sha256": "8888888888888888888888888888888888888888888888888888888888888888",
+        "expected_target_revision": 0,
+        "snapshot": {
+          "schema": 1,
+          "site_id": 73,
+          "site_url": "https://pages.fixture.example.invalid",
+          "target": {
+            "kind": "post",
+            "post_type": "page",
+            "post_id": 900,
+            "field": "post_title"
+          },
+          "post_status": "publish",
+          "post_name": "about",
+          "post_title": "About MRN",
+          "post_excerpt": "",
+          "post_content": "<p>Fixture content only.</p>"
+        },
+        "snapshot_sha256": "92e8ccfc7b9b30edca1bc851ceaa26966627b6648a2fc62582c806acd080fa95",
+        "stable_selector": {
+          "post_type": "page",
+          "post_path": "about"
+        },
+        "affected_paths": [
+          "/about/"
+        ],
+        "parity_manifest": {
+          "schema": 1,
+          "wordpress_version": "6.9.4",
+          "php_version": "8.3.99-fixture",
+          "php_extensions": [
+            {
+              "name": "Core",
+              "version": "8.3.99-fixture"
+            },
+            {
+              "name": "json",
+              "version": "8.3.99-fixture"
+            }
+          ],
+          "stylesheet": "fixture-child",
+          "template": "fixture-parent",
+          "active_plugins": [
+            "fixture/fixture.php"
+          ],
+          "mu_plugins": [
+            "fixture.php"
+          ],
+          "core_php": [
+            {
+              "path": "index.php",
+              "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+            },
+            {
+              "path": "wp-includes/post.php",
+              "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+            }
+          ],
+          "roots": [
+            {
+              "path": "wp-content/mu-plugins/",
+              "kind": "directory",
+              "present": true,
+              "files": [
+                {
+                  "path": "wp-content/mu-plugins/fixture.php",
+                  "sha256": "3333333333333333333333333333333333333333333333333333333333333333"
+                }
+              ]
+            },
+            {
+              "path": "wp-content/plugins/fixture/",
+              "kind": "directory",
+              "present": true,
+              "files": [
+                {
+                  "path": "wp-content/plugins/fixture/fixture.php",
+                  "sha256": "4444444444444444444444444444444444444444444444444444444444444444"
+                }
+              ]
+            },
+            {
+              "path": "wp-content/themes/fixture-child/",
+              "kind": "directory",
+              "present": true,
+              "files": [
+                {
+                  "path": "wp-content/themes/fixture-child/style.css",
+                  "sha256": "5555555555555555555555555555555555555555555555555555555555555555"
+                }
+              ]
+            },
+            {
+              "path": "wp-content/themes/fixture-parent/",
+              "kind": "directory",
+              "present": true,
+              "files": [
+                {
+                  "path": "wp-content/themes/fixture-parent/index.php",
+                  "sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+                }
+              ]
+            }
+          ],
+          "render_options": [
+            {
+              "key": "blogdescription",
+              "present": false,
+              "value": null
+            },
+            {
+              "key": "blogname",
+              "present": true,
+              "value": {
+                "type": "string",
+                "sha256": "0ac604fdb44557009ba96e6db60606dff9c809dc016c7e092e0e9f64c31faab8"
+              }
+            }
+          ],
+          "target_meta": [
+            {
+              "key": "fixture_label",
+              "values": [
+                {
+                  "type": "string",
+                  "sha256": "285d633852c4526725165aef74db0215371e04037d6b1f99d30aa99152400202"
+                }
+              ]
+            }
+          ],
+          "render_dependencies": "owner-qualified-native-post"
+        },
+        "parity_sha256": "a684c17801b336318c3e763132c0ab5b8c2b8861ce661e89ff6127a703aeade9"
+      },
+      "canonical": "{\"affected_paths\":[\"/about/\"],\"authorization_policy_sha256\":\"4444444444444444444444444444444444444444444444444444444444444444\",\"catalog_epoch\":1,\"expected_snapshot_sha256\":\"92e8ccfc7b9b30edca1bc851ceaa26966627b6648a2fc62582c806acd080fa95\",\"expected_target_revision\":0,\"parity_manifest\":{\"active_plugins\":[\"fixture/fixture.php\"],\"core_php\":[{\"path\":\"index.php\",\"sha256\":\"1111111111111111111111111111111111111111111111111111111111111111\"},{\"path\":\"wp-includes/post.php\",\"sha256\":\"2222222222222222222222222222222222222222222222222222222222222222\"}],\"mu_plugins\":[\"fixture.php\"],\"php_extensions\":[{\"name\":\"Core\",\"version\":\"8.3.99-fixture\"},{\"name\":\"json\",\"version\":\"8.3.99-fixture\"}],\"php_version\":\"8.3.99-fixture\",\"render_dependencies\":\"owner-qualified-native-post\",\"render_options\":[{\"key\":\"blogdescription\",\"present\":false,\"value\":null},{\"key\":\"blogname\",\"present\":true,\"value\":{\"sha256\":\"0ac604fdb44557009ba96e6db60606dff9c809dc016c7e092e0e9f64c31faab8\",\"type\":\"string\"}}],\"roots\":[{\"files\":[{\"path\":\"wp-content/mu-plugins/fixture.php\",\"sha256\":\"3333333333333333333333333333333333333333333333333333333333333333\"}],\"kind\":\"directory\",\"path\":\"wp-content/mu-plugins/\",\"present\":true},{\"files\":[{\"path\":\"wp-content/plugins/fixture/fixture.php\",\"sha256\":\"4444444444444444444444444444444444444444444444444444444444444444\"}],\"kind\":\"directory\",\"path\":\"wp-content/plugins/fixture/\",\"present\":true},{\"files\":[{\"path\":\"wp-content/themes/fixture-child/style.css\",\"sha256\":\"5555555555555555555555555555555555555555555555555555555555555555\"}],\"kind\":\"directory\",\"path\":\"wp-content/themes/fixture-child/\",\"present\":true},{\"files\":[{\"path\":\"wp-content/themes/fixture-parent/index.php\",\"sha256\":\"6666666666666666666666666666666666666666666666666666666666666666\"}],\"kind\":\"directory\",\"path\":\"wp-content/themes/fixture-parent/\",\"present\":true}],\"schema\":1,\"stylesheet\":\"fixture-child\",\"target_meta\":[{\"key\":\"fixture_label\",\"values\":[{\"sha256\":\"285d633852c4526725165aef74db0215371e04037d6b1f99d30aa99152400202\",\"type\":\"string\"}]}],\"template\":\"fixture-parent\",\"wordpress_version\":\"6.9.4\"},\"parity_sha256\":\"a684c17801b336318c3e763132c0ab5b8c2b8861ce661e89ff6127a703aeade9\",\"qualification_job_id\":\"23456789-1234-4123-8123-123456789abc\",\"recipe_catalog_sha256\":\"7777777777777777777777777777777777777777777777777777777777777777\",\"recipe_id\":\"fixture-title\",\"recipe_sha256\":\"8888888888888888888888888888888888888888888888888888888888888888\",\"requester_binding_sha256\":\"6666666666666666666666666666666666666666666666666666666666666666\",\"schema\":1,\"site_id\":73,\"site_url\":\"https://pages.fixture.example.invalid\",\"snapshot\":{\"post_content\":\"<p>Fixture content only.</p>\",\"post_excerpt\":\"\",\"post_name\":\"about\",\"post_status\":\"publish\",\"post_title\":\"About MRN\",\"schema\":1,\"site_id\":73,\"site_url\":\"https://pages.fixture.example.invalid\",\"target\":{\"field\":\"post_title\",\"kind\":\"post\",\"post_id\":900,\"post_type\":\"page\"}},\"snapshot_sha256\":\"92e8ccfc7b9b30edca1bc851ceaa26966627b6648a2fc62582c806acd080fa95\",\"stable_selector\":{\"post_path\":\"about\",\"post_type\":\"page\"},\"target\":{\"field\":\"post_title\",\"kind\":\"post\",\"post_id\":900,\"post_type\":\"page\"}}",
+      "sha256": "a23b1d63d030aebb0b477b48a25c5359ac3691f4e55090ba9ec5825d38af0271"
     }
   ]
 }

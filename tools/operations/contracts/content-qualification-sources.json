@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "repository": "mrnwebdesigns/mrn-mainwp-operations-api",
-  "commit": "402991371ce0d9f258af60319c85b1848a7fa40a",
+  "commit": "792226abd7b3ed28532b661aca385f0d917a81c3",
   "files": [
     {
       "source": "contracts/content-qualification-v1.json",
@@ -19,9 +19,19 @@
       "sha256": "5433dcd0da6558088d785f0055b4602c8fc9563ede46a83fb87980c5519f31a4"
     },
     {
+      "source": "contracts/content-recipe-install-v1.json",
+      "local": "contracts/content-recipe-install-v1.json",
+      "sha256": "9d1cd1afaf58b748d9981a88df85735d22d9ef6b8b08b5e0f8bcc05eb8408216"
+    },
+    {
+      "source": "contracts/content-qualification-handoff-v1.json",
+      "local": "contracts/content-qualification-handoff-v1.json",
+      "sha256": "400149d7164dc67b89d58a443f1eeabeba4b5241018ab544426566c1c5be826f"
+    },
+    {
       "source": "tests/fixtures/content-qualification-v1.json",
       "local": "test/fixtures/content-qualification-contract.json",
-      "sha256": "903a1a4f42e2edad45d33ff8126fb179068219c213a96a5ec3d38198e10d02c2"
+      "sha256": "515fbff54171b59e493adb6ef9fbfccc51cddfc0e1dc9e9a9374c8508b98e818"
     },
     {
       "source": "contracts/content-policy-v2-proposal.json",
