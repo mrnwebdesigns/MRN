@@ -262,7 +262,7 @@
         "state": "confirmed"
       },
       "target_tier": "platform-required",
-      "version": "0.6.0"
+      "version": "0.6.1"
     },
     {
       "classification": "platform-policy",
@@ -498,7 +498,7 @@
         "state": "confirmed"
       },
       "target_tier": "platform-required",
-      "version": "0.6.0"
+      "version": "0.6.1"
     },
     {
       "classification": "platform-loader",

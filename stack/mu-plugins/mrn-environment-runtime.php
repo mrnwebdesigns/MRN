@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MRN Environment Runtime
  * Description: Loads the MRN environment runtime MU plugin from its subfolder.
- * Version: 0.6.0
+ * Version: 0.6.1
  */
 
 defined( 'ABSPATH' ) || exit;
