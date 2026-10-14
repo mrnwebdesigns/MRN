@@ -7,7 +7,7 @@ import { requireThat, digest } from './contracts.mjs';
 export function publicAddress(address) {
   try { const parsed = ipaddr.process(address); return parsed.range() === 'unicast'; } catch { return false; }
 }
-export const visibleContentText = html => load(html, null, false).root().text().replace(/\s+/gu, ' ').trim();
+export const htmlContentText = html => load(html, null, false).root().text().replace(/\s+/gu, ' ').trim();
 export function responseEvidence(url, status, body, timing, { references = [], checkRest = false, contentAssertions = [] } = {}) {
   const html = body.toString('utf8');
   const linked = [...html.matchAll(/<(?:script|link)\b[^>]*\b(?:src|href)\s*=\s*["']([^"']+)["']/gi)].map(m => { try { return new URL(m[1], url).href; } catch { return ''; } });

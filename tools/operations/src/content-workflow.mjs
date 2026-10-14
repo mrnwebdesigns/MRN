@@ -4,7 +4,7 @@ import { delegationDigest } from './delegation.mjs';
 import { contentTargetSchema, contentCall, contentSnapshot, contentSame, contentPaths, validateContentPlan, validateContentMigration } from './content-contract.mjs';
 import { contentQaInput } from './content-qa.mjs';
 import { toolNames } from './mainwp.mjs';
-import { visibleContentText } from './probe.mjs';
+import { htmlContentText } from './probe.mjs';
 
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 export async function inspectContentTarget(session, input) {
@@ -149,7 +149,7 @@ export class ContentWorkflow {
     'CONTENT_OUTCOME_UNVERIFIED', 'Content execution did not verify the exact outcome. Retain the lock and do not retry.');
     const after = await inspectContentTarget(session, p.target); this.qualifyPolicy(after, p.target);
     requireThat(contentSame(after.inspected.snapshot, p.candidate_snapshot) && contentSame(after.inspected.affected_paths, p.affected_paths), 'CONTENT_READBACK', 'Fresh content readback differs from the approved result.');
-    const render = this.qa.profile(p.site_url, p.target, p.profile), expectedText = visibleContentText(p.candidate_snapshot[p.target.field]);
+    const render = this.qa.profile(p.site_url, p.target, p.profile), expectedText = htmlContentText(p.candidate_snapshot[p.target.field]);
     for (const path of p.affected_paths) {
       await authorize();
       const publicResult = await s.publicProbe(new URL(path, p.site_url).href, () => session.authorize(), { contentAssertions: [{ selector: render.selector, expectedText }] });
@@ -159,7 +159,8 @@ export class ContentWorkflow {
     const rest = await s.publicProbe(p.site_url + '/wp-json/', () => session.authorize(), { checkRest: true });
     requireThat(rest.status === 200 && rest.restHealthy === true, 'PUBLIC_VERIFICATION', 'Post-change WordPress API health is unverified.');
     return { providerOperationId: p.operation_id, snapshotSha256: p.candidate_sha256, backupVerified: true, contentSnapshotVerified: true,
-      frontendContentVerified: true, qaReportSha256: op.qaProof.claims.qa_report_sha256, migration: p.migration_artifact, rollbackAvailable: true };
+      publicHtmlContentVerified: true, publicVerificationMethod: 'exact-selector-html-text', liveBrowserVerified: false,
+      qaReportSha256: op.qaProof.claims.qa_report_sha256, migration: p.migration_artifact, rollbackAvailable: true };
   }
   async rollback(actor, { operationId, requestKey }) {
     const previous = this.service.store.get(operationId), p = previous.plan?.provider;

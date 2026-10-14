@@ -9,6 +9,7 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
 - Existing workspace plugin exposes four hosted tools. This source now registers 21 workflow tools; those new tools are not published or deployed.
 - Canonical MainWP MCP is connected to wpcontrol.mrndev.io. Provider reports 107 discovered abilities; its current tool policy exposes 48. Hidden capabilities remain filtered; this inventory does not bypass that policy.
 - Live code provider is 0.13.4. Code policy and signed QA are qualified only for the existing company pilot, not the managed portfolio.
+- Provider identity candidate PR #28 passed disposable WordPress/MainWP HTTPS runtime enforcement at source `603c816`: individual principal switching, replay/suspension denial and raw service-route bypass denial. This uses synthetic Directory responses and does not prove live Google OAuth or hosted ingress acceptance.
 - MainWP REST key was found through the Production Hub mainwp provider and authenticated successfully against the expected Dashboard. Fresh company-site sync and exact REST identity readback succeeded. The installed REST route index exposes native post/page CRUD; exact-site page search/detail reads succeeded. No content write was attempted.
 - Generic post metadata does not establish qualified ACF, menu or media editing. The current native detail response omits title/modified time and may have empty post_content for builder pages. Typed inspect/precondition adapters are required.
 
@@ -83,7 +84,9 @@ The frozen `contracts/content-v1.json` matches the provider contract. The gatewa
 
 The protected content receipt has its own signature prefix and binds the exact record, before/candidate hashes, plan, migration, qualified profile/runtime context and affected public paths. Code or preliminary source receipts cannot authorize content. Approval and execution require live Google membership; original-operator execution repeats current policy and baseline checks after the verified remote DB backup. Fresh full snapshot and exact public HTML text at a trusted selector must match after execution. A stale public page or uncertain response retains the lock; Fleet recovery cannot release it. Rollback requires new QA, approval and backup.
 
-The gateway has controlled fixture coverage only. The `content-qa.yml` workflow, protected runtime and production record profiles still need implementation/qualification. Browser visibility, accessibility and performance remain mandatory runtime checks. Typed ACF, menu and media adapters remain required follow-up work; this phase does not make them available.
+The gateway has controlled fixture coverage only. The separate runner draft PR #4 now implements `content-qa.yml`, a fixed typed WordPress replay adapter, before/after visible-text browser checks and a separate content signer. Production content policy remains disabled with no profiles or service actors. Cross-service receipt verification passes, but the first isolated content runtime run stopped at its WordPress replay gate; runtime qualification is still open. Browser visibility, accessibility and performance remain mandatory runtime checks. A passing synthetic run will not prove current production rendering dependencies match a pinned profile. Typed ACF, menu and media adapters remain required follow-up work; this phase does not make them available.
+
+Live gateway readback reports `publicHtmlContentVerified` with method `exact-selector-html-text` and explicitly reports `liveBrowserVerified: false`. It does not label an HTTP/HTML comparison as live browser visibility. The protected disposable runtime and final team acceptance have their own browser evidence.
 
 ## Guarded code workflow in source
 

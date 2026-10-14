@@ -79,7 +79,8 @@ test('content preview, approved edit and separate rollback verify snapshots and 
   const f = configured(t), op = await prepared(f);
   assert.equal(op.status, 'prepared'); assert.equal(op.preview.before, original.post_content); assert.equal(f.contentState.applied, 0);
   assert.equal(JSON.stringify(op).includes('signature_base64'), false); assert.equal(JSON.stringify(op).includes('before_snapshot'), false);
-  const result = await execute(f, op); assert.equal(result.status, 'verified'); assert.equal(result.result.frontendContentVerified, true); assert.equal(f.contentState.applied, 1);
+  const result = await execute(f, op); assert.equal(result.status, 'verified'); assert.equal(result.result.publicHtmlContentVerified, true);
+  assert.equal(result.result.liveBrowserVerified, false); assert.equal(result.result.publicVerificationMethod, 'exact-selector-html-text'); assert.equal(f.contentState.applied, 1);
   const rollback = await f.service.prepareRollback(person, { operationId: op.id, requestKey: 'content-rollback' }); await f.service.jobs.get(rollback.id);
   const rolled = await execute(f, f.service.get(person, rollback.id));
   assert.equal(rolled.status, 'verified'); assert.deepEqual(f.contentState.snapshot, original); assert.equal(f.state.backups, 2); assert.equal(f.contentState.qa, 2);
