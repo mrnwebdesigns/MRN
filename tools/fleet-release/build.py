@@ -14,7 +14,7 @@ import urllib.request
 import zipfile
 
 from common import (ReleaseError, assembly, canonical, digest, distribution,
-                    file_hash, fleet, git, lock_tool, read, relative, roster,
+                    file_hash, fleet, git, lock_tool, promotion, read, relative, roster,
                     source_files, write, run, clean_main)
 
 BOOTSTRAP_FILES = (
@@ -216,8 +216,10 @@ def snapshot(repo, standalone, policy):
                  for name in BOOTSTRAP_FILES if name not in generated}
     # Accepted deployment/release helpers are also distributed source inputs.
     # Read tracked files only; caches and another task's work never participate.
-    for name in git(repo, 'ls-files', 'stack/scripts', 'stack/tests', 'tools/fleet-release').splitlines():
-        contracts[name] = file_hash(repo / name)
+    for name in git(repo, 'ls-files').splitlines():
+        if (promotion.is_deployment_contract(name)
+                or name.startswith(('stack/tests/', 'tools/fleet-release/'))):
+            contracts[name] = file_hash(repo / name)
     vendor = read(repo / 'stack/manifests/bootstrap-packages.lock.json')
     packages = [{key: item.get(key) for key in ('slug', 'version', 'sha256', 'package', 'source')}
                 for item in vendor['plugins']
