@@ -37,18 +37,23 @@ assert.equal(context.control.callback_path, accessVetoPath);
 assert.equal(context.control.callback_socket, join(directory, 'access-socket/callback.sock'));
 assert.equal(context.control.worker, join(directory, 'access-integration/worker'));
 assert.equal(context.control.route_switch, join(directory, 'access-integration/switch-callback'));
+assert.equal(context.control.acquire_measurements, join(directory, 'node-acquisition/acquire-measurements'));
+assert.equal(context.control.acquisition_request_count, join(directory, 'node-acquisition/acquisition-request-count'));
 assert.deepEqual(context.limits, { hook_seconds: 150, owner_wait_seconds: 170, read_wait_seconds: 15, child_delay_seconds: 6 });
 const transportRoot = resolve(process.env.MRN_GATEWAY_MCP_SOURCE);
 const providerRoot = resolve(process.env.MRN_GATEWAY_PROVIDER_SOURCE);
+const runnerRoot = resolve(process.env.MRN_GATEWAY_RUNNER_SOURCE);
 const lock = JSON.parse(readFileSync(new URL('./sources.json', import.meta.url)));
 const recoveryContract = JSON.parse(readFileSync(new URL('../../contracts/content-capture-read-v1.json', import.meta.url)));
 const recoverySchema = compileContentSchema(recoveryContract.ability.output, recoveryContract.definitions);
 const measurementContract = JSON.parse(readFileSync(new URL('../fixtures/measurement-readback-candidate/schema.json', import.meta.url)));
 const measurementSchema = compileContentSchema(measurementContract.ability.output, measurementContract.definitions);
 const recordSchema = compileContentSchema({ $ref: '#/definitions/measurement_record' }, measurementContract.definitions);
+const transcriptSchema = compileContentSchema({ $ref: '#/definitions/acquisition_transcript' }, measurementContract.definitions);
 const bytesDigest = bytes => createHash('sha256').update(bytes).digest('hex');
 assert.equal(execFileSync('git', ['-C', transportRoot, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), lock.transport.commit);
 assert.equal(execFileSync('git', ['-C', providerRoot, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), lock.provider.commit);
+assert.equal(execFileSync('git', ['-C', runnerRoot, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), lock.runner.commit);
 const expectedSource = { provider_source_sha: lock.provider.commit,
   ...Object.fromEntries([['capture_template_sha256', 'child/content-capture.php'],
     ['mutation_template_sha256', 'child/content-posts.php'], ['parity_helper_sha256', 'child/content-parity.php']]
@@ -97,6 +102,39 @@ const measurements = async (id, expectedHash) => {
   const raw = await run(context.control.worker, ['read-measurements', id, expectedHash], 90000, 100000);
   assert.ok(Buffer.byteLength(raw) <= measurementContract.limits.read_response_utf8_bytes + 64);
   return JSON.parse(raw);
+};
+const acquisitionChecks = [];
+const acquisitionRequestCount = async () => {
+  const value = JSON.parse(await run(context.control.acquisition_request_count, [], 10000, 1024));
+  assert.deepEqual(Object.keys(value).sort(), ['requests', 'schema']); assert.equal(value.schema, 1);
+  assert.ok(Number.isSafeInteger(value.requests) && value.requests >= 0 && value.requests <= 4096);
+  return value.requests;
+};
+const acquireMeasurements = async (id, expectedHash, expectedState = 'clear') => {
+  assert.match(id, /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/);
+  assert.match(expectedHash, /^[a-f0-9]{64}$/);
+  const previous = new Set(store.db.prepare('SELECT id FROM content_access_queries WHERE job=?').all(id).map(row => row.id));
+  const beforeRequests = await acquisitionRequestCount();
+  // The fixed fixture issuer keeps both signing keys private. A separate
+  // pinned Node container receives only its one-use signed handoff, public
+  // bootstrap/source inputs and central test credentials. Its real TLS route
+  // uses internal DNS; no gateway network interception is imported there.
+  const raw = await run(context.control.acquire_measurements, [id, expectedHash], 90000, 98304);
+  assert.equal(await acquisitionRequestCount() - beforeRequests, 3);
+  assert.ok(Buffer.byteLength(raw) <= 98304);
+  const value = JSON.parse(raw), clear = expectedState === 'clear';
+  assert.deepEqual(Object.keys(value).sort(), clear
+    ? ['capture_artifact_sha256', 'ok', 'output', 'qualification_job_id']
+    : ['error_code', 'ok', 'qualification_job_id']);
+  assert.equal(value.qualification_job_id, id); assert.equal(value.ok, clear);
+  if (clear) assert.equal(value.capture_artifact_sha256, expectedHash);
+  else assert.equal(value.error_code, 'fixture_node_acquisition_refused');
+  const queries = store.db.prepare('SELECT * FROM content_access_queries WHERE job=?').all(id)
+    .filter(row => !previous.has(row.id));
+  assert.equal(queries.length, clear ? 2 : 1);
+  assert.ok(queries.every(row => row.state === expectedState && row.revision === (expectedState === 'pending-revocation' ? 2 : 1)));
+  acquisitionChecks.push({ state: expectedState, callbacks: queries.length, http_requests: 3, returned_measurements: Object.hasOwn(value, 'output') });
+  return value.output;
 };
 const raw = async () => { const c = await connectMainwp(config, environment); clients.push(c); return c; };
 const report = { schema: 1, source: lock, scope: 'disposable-native-access-only', passed: [], productionCredentials: false,
@@ -230,6 +268,42 @@ try {
   assert.ok(measuredQueries.every(row => row.state === 'clear' && row.revision === 1));
   assert.deepEqual(await worker('status', first.qualification_job_id), saved);
   pass('Private measurement readback binds original capture and pinned source through two actual Node vetoes');
+  const verifyAcquired = value => {
+    assert.deepEqual(Object.keys(value).sort(), ['binding_sha256', 'group_sha256', 'groups', 'measurement_record_sha256', 'schema', 'state', 'transcript']);
+    assert.equal(value.schema, 1); assert.equal(value.state, 'measured');
+    assert.equal(value.binding_sha256, measuredOutput.binding_sha256);
+    assert.equal(value.measurement_record_sha256, measuredOutput.measurement_record_sha256);
+    const transcript = transcriptSchema.parse(value.transcript);
+    assert.deepEqual(transcript.binding, record.binding);
+    assert.equal(transcript.binding_sha256, measuredOutput.binding_sha256);
+    assert.equal(transcript.measurement_record_sha256, measuredOutput.measurement_record_sha256);
+    assert.ok(Buffer.byteLength(delegationCanonical(transcript)) <= measurementContract.limits.acquisition_transcript_utf8_bytes);
+    const roles = ['anonymous_probe', 'wrong_purpose_probe', 'authorized_read'];
+    const observations = roles.map(role => transcript.observations[role]);
+    for (const [index, observation] of observations.entries()) {
+      assert.equal(observation.sequence, index + 1);
+      assert.equal(observation.correlation_id, transcript.correlation_id);
+      assert.equal(observation.payload_sha256, observations[0].payload_sha256);
+      assert.ok(observation.started_at_ms <= observation.completed_at_ms);
+      assert.ok(observation.completed_at_ms < record.binding.job_expires_at * 1000);
+      assert.ok(observation.completed_at_ms - observation.started_at_ms <= measurementContract.limits.http_timeout_ms);
+      if (index) assert.ok(observation.started_at_ms > observations[index - 1].completed_at_ms);
+    }
+    assert.equal(observations[0].request_body_sha256, observations[2].request_body_sha256);
+    assert.notEqual(observations[1].request_body_sha256, observations[2].request_body_sha256);
+    const groups = ['capture_integrity', 'scope_ownership', 'source_integrity', 'wordpress_api'];
+    assert.deepEqual(Object.keys(value.groups).sort(), groups);
+    assert.deepEqual(Object.keys(value.group_sha256).sort(), groups);
+    for (const name of groups.slice(0, 3)) assert.deepEqual(value.groups[name], record[name]);
+    assert.deepEqual(value.groups.wordpress_api, { inspected_http_status: 200,
+      response_sha256: observations[2].response_body_sha256, anonymous_status: '401',
+      wrong_purpose_code: 'mrn_job_signature', denial_measurement_sha256: delegationDigest(transcript) });
+    for (const name of groups) assert.equal(value.group_sha256[name], delegationDigest(value.groups[name]));
+    return value;
+  };
+  const acquired = verifyAcquired(await acquireMeasurements(first.qualification_job_id, captured.capture_artifact_sha256));
+  assert.deepEqual(await worker('status', first.qualification_job_id), saved);
+  pass('Pinned Node runner measures real anonymous, wrong-purpose and authorized HTTPS outcomes through two actual gateway vetoes');
   // Exercise real authenticated provider readback while local membership stays
   // enabled. No synthetic callback decision and no changes to provider policy.
   for (const change of ['permission', 'environment']) {
@@ -239,9 +313,7 @@ try {
     const withheld = await recover(first.qualification_job_id, captured.capture_artifact_sha256);
     assert.equal(withheld.ok, false); assert.equal(withheld.error_code, 'mrn_capture_read_access');
     assert.equal(Object.hasOwn(withheld, 'output'), false);
-    const withheldMeasurements = await measurements(first.qualification_job_id, captured.capture_artifact_sha256);
-    assert.equal(withheldMeasurements.ok, false); assert.equal(withheldMeasurements.error_code, 'mrn_measurement_unavailable');
-    assert.equal(Object.hasOwn(withheldMeasurements, 'output'), false);
+    assert.equal(await acquireMeasurements(first.qualification_job_id, captured.capture_artifact_sha256, 'denied'), undefined);
     assert.deepEqual(await worker('status', first.qualification_job_id), saved);
     // A removed content grant blocks every new job. An authorized environment
     // reconfiguration blocks this old map, but may admit a separately fresh job.
@@ -252,8 +324,12 @@ try {
   assert.equal(store.db.prepare("SELECT count(*) AS n FROM content_access_audit WHERE job=? AND phase='read-capture' AND state='denied'")
     .get(first.qualification_job_id).n, 4);
   assert.deepEqual((await recover(first.qualification_job_id, captured.capture_artifact_sha256)).output, recoveredOutput);
-  assert.deepEqual((await measurements(first.qualification_job_id, captured.capture_artifact_sha256)).output, measuredOutput);
-  pass('Current local content permission and the original environment independently gate retained capture and measurement reads');
+  const reacquired = verifyAcquired(await acquireMeasurements(first.qualification_job_id, captured.capture_artifact_sha256));
+  for (const name of ['capture_integrity', 'scope_ownership', 'source_integrity']) assert.deepEqual(reacquired.groups[name], acquired.groups[name]);
+  assert.notEqual(reacquired.transcript.correlation_id, acquired.transcript.correlation_id);
+  assert.equal(reacquired.transcript.observations.authorized_read.response_body_sha256, acquired.transcript.observations.authorized_read.response_body_sha256);
+  assert.deepEqual(await worker('status', first.qualification_job_id), saved);
+  pass('Current local content permission and the original environment independently gate retained capture and real Node acquisition');
   const second = await queue();
   assert.equal((await worker('arm-delay', second.qualification_job_id)).armed, true);
   const pendingCapture = worker('capture', second.qualification_job_id).then(value => ({ value }), error => ({ error }));
@@ -277,12 +353,9 @@ try {
   assert.ok(store.db.prepare("SELECT * FROM content_access_audit WHERE job=? AND phase='read-capture' AND event='veto-answered'")
     .all(first.qualification_job_id).some(row => row.state === 'pending-revocation' && row.revision === 2));
   pass('Pending original-requester revocation also withholds a previously completed capture without changing it');
-  const deniedMeasurements = await measurements(first.qualification_job_id, captured.capture_artifact_sha256);
-  assert.equal(deniedMeasurements.ok, false); assert.equal(deniedMeasurements.qualification_job_id, first.qualification_job_id);
-  assert.equal(deniedMeasurements.error_code, 'mrn_measurement_unavailable');
-  assert.equal(Object.hasOwn(deniedMeasurements, 'output'), false);
+  assert.equal(await acquireMeasurements(first.qualification_job_id, captured.capture_artifact_sha256, 'pending-revocation'), undefined);
   assert.deepEqual(await worker('status', first.qualification_job_id), saved);
-  pass('Pending original-requester revocation withholds original measurements without altering the capture');
+  pass('Pending original-requester revocation refuses real Node acquisition without altering the capture');
   await assert.rejects(queue, { code: 'ACCESS_DENIED' });
   const attempts = store.db.prepare('SELECT * FROM content_access_audit WHERE job=?').all(second.qualification_job_id);
   assert.ok(attempts.some(row => row.event === 'revocation-pending'));
@@ -300,6 +373,9 @@ try {
   report.result = 'PASS'; report.captureVerified = true; report.pendingDuringReadVerified = true;
   report.privateLifecycleVerified = true;
   report.measurementReadbackVerified = true; report.measurementSitePermissionVerified = true; report.pendingMeasurementsDenied = true;
+  report.nodeAcquisitionVerified = true; report.nodeAcquisitionDenialsVerified = true;
+  assert.deepEqual(acquisitionChecks.map(row => row.state), ['clear', 'denied', 'denied', 'clear', 'pending-revocation']);
+  report.nodeAcquisition = acquired; report.nodeAcquisitionChecks = acquisitionChecks;
   report.currentSitePermissionVerified = true; report.retainedCaptureRecoveryVerified = true; report.pendingRecoveryDenied = true;
   writeFileSync(process.env.MRN_GATEWAY_ACCESS_REPORT, `${JSON.stringify(report, null, 2)}\n`, { mode: 0o600 });
 } finally {

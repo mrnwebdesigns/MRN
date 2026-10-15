@@ -15,7 +15,7 @@ const schema = (contract, definition) => compileContentSchema({ $ref: `#/definit
 test('qualification contracts and independent vectors are pinned to one provider checkpoint', () => {
   const source = JSON.parse(read('contracts/content-qualification-sources.json'));
   assert.equal(source.schema, 1); assert.equal(source.repository, 'mrnwebdesigns/mrn-mainwp-operations-api');
-  assert.equal(source.commit, 'b83265affd9e2c555f1beb8820acece3d5ffcd82');
+  assert.equal(source.commit, '289ee77ccbedbfb40f6e0b6c0d56a5a465142606');
   const runtime = JSON.parse(read('test/runtime/sources.json'));
   assert.deepEqual(runtime.provider, { repository: source.repository, commit: source.commit },
     'The actual HTTPS integration runtime must exercise the same provider checkpoint as the frozen contracts');
