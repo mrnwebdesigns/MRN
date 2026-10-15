@@ -233,3 +233,23 @@ test('private HTTP callback is bounded, canonical, separate from OAuth and absen
   const absent = await call(pointer, {}, disabled);
   assert.equal(absent.status, 404);
 });
+
+test('a trickled private body cannot extend the total callback deadline or reach readback', { timeout: 6000 }, async t => {
+  let readbacks = 0;
+  const server = createHttpServer({ publicUrl: 'https://operations.mrnwebdesigns.com/mcp',
+    accessVeto: { respond() { readbacks++; throw new Error('Incomplete body reached readback'); } } });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  t.after(() => { server.closeAllConnections(); server.close(); });
+  const began = performance.now();
+  await new Promise((resolve, reject) => {
+    const req = httpRequest({ host: '127.0.0.1', port: server.address().port, method: 'POST', path: accessVetoPath,
+      headers: { host: 'operations.mrnwebdesigns.com', 'content-type': 'application/json' } });
+    t.after(() => req.destroy());
+    req.on('response', () => reject(new Error('Incomplete JSON received a response')));
+    req.on('error', error => { clearInterval(trickle); if (error.code === 'ECONNRESET') resolve(); else reject(error); });
+    req.write('{');
+    const trickle = setInterval(() => req.write(' '), 40);
+    t.after(() => clearInterval(trickle));
+  });
+  assert.ok(performance.now() - began < 5000); assert.equal(readbacks, 0);
+});

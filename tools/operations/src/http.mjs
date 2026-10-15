@@ -24,7 +24,7 @@ export function createHttpServer({ service, authenticate, publicUrl, issuer, ori
   let controlActive = 0, controlCount = 0, controlUntil = 0;
   const json = (res, status, value) => { res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(value)); };
   const server = createServer(async (req, res) => {
-    let admitted = false, controlAdmitted = false;
+    let admitted = false, controlAdmitted = false, controlTimer;
     try {
       requireThat(req.headers.host === canonical.host, 'HOST_DENIED', 'Unexpected Host header.');
       requireThat(!req.headers.origin || origins.includes(req.headers.origin), 'ORIGIN_DENIED', 'Origin is not allowed.');
@@ -39,7 +39,10 @@ export function createHttpServer({ service, authenticate, publicUrl, issuer, ori
         if (now >= controlUntil) { controlUntil = now + 60000; controlCount = 0; }
         requireThat(controlActive < 4 && ++controlCount <= 1024, 'RATE_LIMIT', 'Private control capacity reached.');
         controlActive++; controlAdmitted = true;
-        req.setTimeout(2500, () => req.destroy());
+        // Total callback deadline includes body receipt; trickling bytes cannot
+        // hold a control slot indefinitely by resetting an idle timeout.
+        controlTimer = setTimeout(() => req.destroy(), 2500);
+        controlTimer.unref();
         const body = await readBody(req, { limit: 512, canonical: true });
         // Opaque pointer is not authentication: respond must independently read
         // the stored query from MainWP and resolve the existing requester map.
@@ -70,7 +73,11 @@ export function createHttpServer({ service, authenticate, publicUrl, issuer, ori
       const status = safe.code === 'AUTH_REQUIRED' ? 401 : safe.code === 'NOT_FOUND' ? 404 : safe.code === 'RATE_LIMIT' ? 429 : ['HOST_DENIED', 'ORIGIN_DENIED', 'FORBIDDEN'].includes(safe.code) ? 403 : 400;
       if (status === 401) res.setHeader('WWW-Authenticate', oauthChallenge(publicUrl));
       if (!res.headersSent) json(res, status, { error: safe }); else res.destroy();
-    } finally { if (admitted) active--; if (controlAdmitted) controlActive--; }
+    } finally {
+      clearTimeout(controlTimer);
+      if (admitted) active--;
+      if (controlAdmitted) controlActive--;
+    }
   });
   server.requestTimeout = 30000; server.headersTimeout = 10000;
   return server;
