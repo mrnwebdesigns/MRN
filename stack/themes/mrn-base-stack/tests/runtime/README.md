@@ -155,3 +155,21 @@ reusable Basic Block templates. They cover escaped token values, limited inline
 HTML, multiple and missing tokens, literal shortcode examples, unrelated and
 nested shortcode safety, and the unavailable-plugin fallback. Registrations are
 temporary within the test process; the script does not change saved content.
+## Resource provider posters
+
+The Resource **Use Provider Poster** toggle defaults off. On a native editor or
+authenticated REST save, YouTube/Vimeo oEmbed thumbnails can become normal Media
+Library featured images. Saves reuse the imported image for the same video URL.
+Disabling the option or switching to an upload restores the prior manual image.
+Unavailable/private posters, direct files and Google Drive use the manual image.
+No frontend provider fetches or image imports run during rendering.
+
+After the `resource-video.php` fixture setup, run `resource-video-posters.php`
+with the same `MRN_RESOURCE_VIDEO_STATE`. It checks real WordPress media handling,
+ACF saves, REST authorization, manual restoration, repeated saves, unavailable
+metadata, unsafe URLs and invalid image responses. Provider HTTP responses in
+this suite are explicit offline fixtures, not provider-availability evidence.
+For `resource-video-posters-browser.cjs`, load
+`resource-video-posters-fixture.php` only as a disposable loopback MU fixture;
+pass the existing private browser JSON on stdin. Never install the fixture on
+a client site. Remove its entire private runtime after qualification.
