@@ -53,6 +53,11 @@ export const registrySchema = z.object({
     }).strict()).min(1),
   }).strict()),
 }).strict();
+// Exact service-resolved target retained by private job authorization. Derive
+// environment fields from the registry contract so the two cannot drift.
+export const registryTargetSchema = registrySchema.shape.websites.element.shape.environments.element.extend({
+  websiteId: identifier, name: z.string().min(1).max(160), environment: z.enum(environmentNames),
+});
 export const actions = ['read', 'test', 'content', 'code', 'repair', 'deploy_development', 'release_production'];
 const portfolioSchema = z.object({ sources: z.array(z.enum(['mainwp', 'local-hub'])).min(1), actions: z.array(z.enum(['read', 'test', 'content', 'code'])).min(1) }).strict();
 export const policySchema = z.object({ version: z.literal(1), members: z.array(z.object({

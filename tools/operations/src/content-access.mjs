@@ -84,9 +84,8 @@ export class AccessQueryReader {
 }
 
 export class ContentAccessVeto {
-  constructor({ signer, reader, ledger, checkLocalAccess, now = () => Date.now(), monotonic = () => performance.now() }) {
-    requireThat(typeof checkLocalAccess === 'function', 'ACCESS_UNAVAILABLE', 'Current local access verification is required.');
-    Object.assign(this, { signer, reader, ledger, checkLocalAccess, now, monotonic });
+  constructor({ signer, reader, ledger, now = () => Date.now(), monotonic = () => performance.now() }) {
+    Object.assign(this, { signer, reader, ledger, now, monotonic });
   }
   async respond(input) {
     const pointer = parse(pointerSchema, input), started = this.monotonic();
@@ -103,9 +102,7 @@ export class ContentAccessVeto {
     const deadline = Math.min(claims.expires_at, query.expires_at);
     // Mapping/ledger reread, local denial, one-use consumption and signing share
     // one short transaction, with no network operation inside its lock.
-    const response = this.ledger.answer(query, result.query_sha256, mapping => {
-      return this.checkLocalAccess(mapping.actor); // Synchronous local policy only; provider independently checks Directory.
-    }, (state, revision) => {
+    const response = this.ledger.answer(query, result.query_sha256, (state, revision) => {
       withinDeadline();
       return this.signer.veto(query, result.query_sha256, state, revision, deadline);
     });

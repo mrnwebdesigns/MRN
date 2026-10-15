@@ -12,6 +12,7 @@ import { delegationCanonical, delegationDigest } from '../src/delegation.mjs';
 import { AccessSigner, AccessQueryReader, ContentAccessVeto, accessReadbackTool, accessContract, accessVetoPath } from '../src/content-access.mjs';
 import { ContentAccessLedger, requesterDigest } from '../src/content-access-store.mjs';
 import { createHttpServer } from '../src/http.mjs';
+import { accessRegistry } from './fixtures/access-registry.mjs';
 import { compileContentSchema } from '../src/content-schema.mjs';
 
 const vectors = JSON.parse(readFileSync(new URL('./fixtures/content-qualification-contract.json', import.meta.url)));
@@ -19,17 +20,19 @@ const vector = definition => structuredClone(vectors.cases.find(c => c.definitio
 const h = 'a'.repeat(64);
 const decoded = envelope => JSON.parse(Buffer.from(envelope.payload_base64, 'base64'));
 function fixture(t, file = ':memory:') {
-  const state = { now: 1800000000000, mono: 0, calls: 0, deny: false, localResult: true };
+  const state = { now: 1800000000000, mono: 0, calls: 0 };
   const keys = generateKeyPairSync('ed25519'), signer = new AccessSigner({ keyId: 'gateway-identity', privateKey: keys.privateKey, now: () => state.now });
   const store = new Store(file); t.after(() => { if (!state.closed) store.close(); });
-  const ledger = new ContentAccessLedger(store, { connectionId: 'con_test', now: () => state.now });
   const actor = { subject: 'google-oauth2|123', googleSubject: '123', verifiedEmail: 'staff@mrnwebdesigns.com',
     identityProvider: 'google-oauth2', hostedDomain: 'mrnwebdesigns.com', googleConnection: 'con_test', expiresAt: state.now + 3600000,
     scopes: ['mrn:operations', 'mrn:operations:write'], token: 'must-not-be-stored' };
   const request = vector('request_input'), job = { ...vector('job_output'), expires_at: state.now / 1000 + 300,
     recipe_catalog_sha256: h, recipe_sha256: null };
   const expected = { authorization_policy_sha256: job.authorization_policy_sha256, recipe_catalog_sha256: h, recipe_sha256: h };
-  const map = () => ledger.recordQueued(actor, request, job, expected);
+  const { registry, registryData, policy } = accessRegistry(request.site_url);
+  const ledger = new ContentAccessLedger(store, { connectionId: 'con_test', registry, now: () => state.now });
+  const site = ledger.assertQueueAllowed(actor, request);
+  const map = () => ledger.recordQueued(actor, request, job, expected, site);
   const query = () => ({ schema: 1, issuer: 'https://wpcontrol.mrndev.io', audience: 'https://operations.mrnwebdesigns.com',
     issued_at: state.now / 1000, expires_at: state.now / 1000 + 5, request_id: randomUUID(), nonce: h,
     authorization_policy_sha256: job.authorization_policy_sha256, qualification_job_id: job.qualification_job_id,
@@ -41,12 +44,11 @@ function fixture(t, file = ':memory:') {
     state.onRead?.();
     return state.result || { stored: true, query: state.query, query_sha256: delegationDigest(state.query) };
   } };
-  const veto = new ContentAccessVeto({ signer, reader, ledger, now: () => state.now, monotonic: () => state.mono,
-    checkLocalAccess: () => { if (state.deny) throw new Error('local revocation'); return state.localResult; } });
+  const veto = new ContentAccessVeto({ signer, reader, ledger, now: () => state.now, monotonic: () => state.mono });
   const call = async (q = query()) => {
     state.query = q; return veto.respond({ query_id: q.query_id, provider_query_nonce: q.provider_query_nonce });
   };
-  return { state, signer, keys, store, ledger, actor, request, job, expected, map, query, call, veto };
+  return { state, signer, keys, store, ledger, actor, request, job, expected, site, registry, registryData, policy, map, query, call, veto };
 }
 
 test('candidate access contract is immutable and all closed definitions compile', () => {
@@ -87,19 +89,19 @@ test('queue mappings reject outsiders, expired/read-only identities and mismatch
   const f = fixture(t);
   for (const mutation of [{ verifiedEmail: 'person@outsider.test' }, { identityProvider: 'password' }, { hostedDomain: 'other.test' },
     { subject: 'google-oauth2|456' }, { googleConnection: 'con_other' }, { expiresAt: f.state.now }, { scopes: ['mrn:operations'] }])
-    assert.throws(() => f.ledger.recordQueued({ ...f.actor, ...mutation }, f.request, f.job, f.expected));
+    assert.throws(() => f.ledger.recordQueued({ ...f.actor, ...mutation }, f.request, f.job, f.expected, f.site));
   for (const mutation of [{ site_id: 7 }, { target: { ...f.job.target, field: 'post_content' } }, { state: 'captured' },
     { recipe_sha256: 'b'.repeat(64) }, { authorization_policy_sha256: 'b'.repeat(64) }, { expires_at: 1 }])
-    assert.throws(() => f.ledger.recordQueued(f.actor, f.request, { ...f.job, ...mutation }, f.expected));
+    assert.throws(() => f.ledger.recordQueued(f.actor, f.request, { ...f.job, ...mutation }, f.expected, f.site));
   assert.equal(f.store.db.prepare('SELECT count(*) AS n FROM content_access_jobs').get().n, 0);
   f.map();
-  assert.throws(() => f.ledger.recordQueued({ ...f.actor, verifiedEmail: 'other@mrnwebdesigns.com' }, f.request, f.job, f.expected));
-  const repeated = f.ledger.recordQueued({ ...f.actor, expiresAt: f.actor.expiresAt + 100000 }, f.request, f.job, f.expected);
+  assert.throws(() => f.ledger.recordQueued({ ...f.actor, verifiedEmail: 'other@mrnwebdesigns.com' }, f.request, f.job, f.expected, f.site));
+  const repeated = f.ledger.recordQueued({ ...f.actor, expiresAt: f.actor.expiresAt + 100000 }, f.request, f.job, f.expected, f.site);
   assert.equal(repeated.actor.expiresAt, f.actor.expiresAt);
-  assert.throws(() => f.ledger.recordQueued(f.actor, f.request, f.job, { ...f.expected, recipe_sha256: 'e'.repeat(64) }), { code: 'ACCESS_MAPPING' });
+  assert.throws(() => f.ledger.recordQueued(f.actor, f.request, f.job, { ...f.expected, recipe_sha256: 'e'.repeat(64) }, f.site), { code: 'ACCESS_MAPPING' });
   const withProfile = { ...f.job, qualification_job_id: randomUUID(), current_target_revision: 2, current_profile_sha256: h };
-  assert.deepEqual(f.ledger.recordQueued(f.actor, f.request, withProfile, f.expected).job, withProfile);
-  assert.throws(() => f.ledger.recordQueued(f.actor, f.request, { ...withProfile, current_profile_sha256: null }, f.expected), { code: 'ACCESS_MAPPING' });
+  assert.deepEqual(f.ledger.recordQueued(f.actor, f.request, withProfile, f.expected, f.site).job, withProfile);
+  assert.throws(() => f.ledger.recordQueued(f.actor, f.request, { ...withProfile, current_profile_sha256: null }, f.expected, f.site), { code: 'ACCESS_MAPPING' });
 });
 
 test('changed scope, identity, policy, query digest or extra readback data fails closed', async t => {
@@ -132,7 +134,7 @@ test('pending revocation survives restart and overrides every job for the origin
   const dir = mkdtempSync(join(tmpdir(), 'mrn-access-')); t.after(() => rmSync(dir, { recursive: true, force: true }));
   const file = join(dir, 'test.sqlite'), f = fixture(t, file); f.map();
   const another = { ...f.job, qualification_job_id: randomUUID() };
-  f.ledger.recordQueued(f.actor, f.request, another, f.expected);
+  f.ledger.recordQueued(f.actor, f.request, another, f.expected, f.site);
   const pending = f.ledger.recordPendingRevocation(f.job.qualification_job_id);
   assert.deepEqual(pending, { state: 'pending-revocation', revision: 2, committed_denial: false });
   assert.deepEqual(f.ledger.recordPendingRevocation(f.job.qualification_job_id), pending);
@@ -140,7 +142,7 @@ test('pending revocation survives restart and overrides every job for the origin
   const consumed = f.query(); await f.call(consumed);
   f.store.close(); f.state.closed = true;
   const reopened = new Store(file); t.after(() => reopened.close());
-  f.veto.ledger = new ContentAccessLedger(reopened, { connectionId: 'con_test', now: () => f.state.now });
+  f.veto.ledger = new ContentAccessLedger(reopened, { connectionId: 'con_test', registry: f.registry, now: () => f.state.now });
   await assert.rejects(() => f.call(consumed), { code: 'ACCESS_REPLAY' });
   for (const job of [f.job, another]) {
     const answer = decoded((await f.call({ ...f.query(), qualification_job_id: job.qualification_job_id })).signed_veto);
@@ -149,18 +151,79 @@ test('pending revocation survives restart and overrides every job for the origin
 });
 
 test('local revocation, asynchronous policy lookup and expired original login cannot return clear', async t => {
-  const f = fixture(t); f.map(); f.state.deny = true;
+  const f = fixture(t); f.map(); f.policy.emailDomains[0].enabled = false;
   assert.equal(decoded((await f.call()).signed_veto).state, 'denied');
-  f.state.deny = false; f.state.localResult = Promise.resolve(true);
+  f.policy.emailDomains[0].enabled = true;
+  const current = f.registry.current.bind(f.registry);
+  f.registry.current = () => Promise.resolve(f.site);
   assert.equal(decoded((await f.call()).signed_veto).state, 'denied');
-  f.state.localResult = undefined;
+  f.registry.current = () => undefined;
   assert.equal(decoded((await f.call()).signed_veto).state, 'denied');
-  f.state.localResult = true;
+  f.registry.current = current;
   const row = f.store.db.prepare('SELECT body FROM content_access_jobs').get(), body = JSON.parse(row.body);
   body.actor.expiresAt = f.state.now - 1;
   const bytes = JSON.stringify(body);
   f.store.db.prepare('UPDATE content_access_jobs SET body=?,digest=?').run(bytes, digest(bytes));
   assert.equal(decoded((await f.call()).signed_veto).state, 'denied');
+});
+
+test('current site permission and configuration are required even while membership remains active', async t => {
+  const mutations = [
+    f => { f.policy.emailDomains[0].portfolio.actions = ['read']; },
+    f => { f.policy.emailDomains[0].portfolio.sources = ['local-hub']; },
+    f => { f.policy.members.push({ subject: f.actor.subject, enabled: true, grants: [] }); },
+    f => { f.registryData.websites[0].environments[0].name = 'staging'; },
+    f => { f.registryData.websites[0].environments[0].backup = 'kinsta'; },
+    f => { f.registryData.websites[0].environments[0].sources = []; },
+    f => { f.registryData.websites[0].environments[0].knowledgeIssues = ['Environment conflict']; },
+    f => { f.registryData.websites[0].id = 'different-site'; },
+    f => { f.registryData.websites = []; },
+  ];
+  for (const mutate of mutations) {
+    const f = fixture(t); f.map(); mutate(f);
+    assert.equal(f.registry.member(f.actor).enabled, true);
+    assert.equal(decoded((await f.call()).signed_veto).state, 'denied');
+    assert.throws(f.map);
+    assert.equal(f.store.db.prepare('SELECT count(*) AS n FROM content_access_jobs').get().n, 1);
+  }
+});
+
+test('exact per-site content grants stay scoped and unchanged observation refresh is permitted', async t => {
+  const f = fixture(t);
+  f.policy.members = [{ subject: f.actor.subject, enabled: true,
+    grants: [{ website: f.request.site_url, environments: ['production'], actions: ['content'] }] }];
+  f.map(); assert.equal(decoded((await f.call()).signed_veto).state, 'clear');
+  f.registryData.websites[0].environments[0].facts = [{ key: 'observed', value: 'new reading', source: 'fixture', kind: 'observed',
+    observedAt: new Date().toISOString(), expiresAt: new Date(Date.now() + 60000).toISOString() }];
+  assert.equal(decoded((await f.call()).signed_veto).state, 'clear');
+  f.policy.members[0].grants[0].website = 'https://other.example.invalid';
+  assert.equal(decoded((await f.call()).signed_veto).state, 'denied');
+});
+
+test('discovery-only queue maps deny expired, missing, changed or differently authorized discovery', async t => {
+  for (const change of ['expired', 'missing', 'policy', 'configuration', 'another-person']) {
+    const f = fixture(t);
+    const snapshot = { websites: f.registry.data().websites, expiresAt: Date.now() + 60000, policyDigest: digest(f.registry.member(f.actor)) };
+    f.registryData.websites = []; f.registry.discovered.set(f.actor.subject, snapshot); f.map();
+    assert.equal(decoded((await f.call()).signed_veto).state, 'clear');
+    if (change === 'expired') snapshot.expiresAt = Date.now() - 1;
+    if (change === 'missing') f.registry.discovered.delete(f.actor.subject);
+    if (change === 'policy') f.policy.emailDomains[0].portfolio.actions.push('test');
+    if (change === 'configuration') snapshot.websites[0].environments[0].backup = 'kinsta';
+    if (change === 'another-person') {
+      f.registry.discovered.delete(f.actor.subject); f.registry.discovered.set('google-oauth2|456', snapshot);
+    }
+    assert.equal(decoded((await f.call()).signed_veto).state, 'denied');
+  }
+});
+
+test('legacy maps cannot reconstruct missing site authorization from a callback', async t => {
+  const f = fixture(t); f.map();
+  const body = JSON.parse(f.store.db.prepare('SELECT body FROM content_access_jobs').get().body);
+  delete body.site; const bytes = JSON.stringify(body);
+  f.store.db.prepare('UPDATE content_access_jobs SET body=?,digest=?').run(bytes, digest(bytes));
+  await assert.rejects(() => f.call(), { code: 'ACCESS_MAPPING' });
+  assert.equal(f.store.db.prepare('SELECT count(*) AS n FROM content_access_queries').get().n, 0);
 });
 
 test('same query/check cannot answer twice, including after restart or lost response', async t => {

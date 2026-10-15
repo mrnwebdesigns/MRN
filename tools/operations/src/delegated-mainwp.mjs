@@ -110,16 +110,16 @@ export class DelegatedMainwpClient {
     requireWriteScope(this.actor);
     requireThat(ledger && typeof admit === 'function', 'QUALIFICATION_WORKER_UNAVAILABLE', 'Protected qualification dispatch is not configured.');
     const args = qualificationRequestSchema.parse(input);
-    ledger.assertQueueAllowed(this.actor);
+    const admittedSite = ledger.assertQueueAllowed(this.actor, args);
     const expected = validateQueuePins(await admit(this.actor, structuredClone(args)));
     await this.ready();
     requireThat(this.metadata.get(qualificationQueueTool)?.readOnlyHint === false
       && this.metadata.get(qualificationQueueTool)?.destructiveHint === false,
     'DELEGATION_TRANSPORT', 'Qualification requires the dedicated non-destructive POST queue.');
-    ledger.assertQueueAllowed(this.actor);
+    ledger.assertQueueAllowed(this.actor, args, admittedSite);
     const ability = 'mrn-mainwp/request-content-qualification-v1';
     const { envelope, claims } = await this.envelope(ability, args);
-    ledger.assertQueueAllowed(this.actor);
+    ledger.assertQueueAllowed(this.actor, args, admittedSite);
     const response = resultSchema.parse(payload(await this.client.callTool({ name: qualificationQueueTool,
       arguments: { ability, arguments_json: delegationCanonical(args), delegation: envelope } }, undefined, { timeout: 30000 })));
     requireThat(response.ability === ability && response.request_id === claims.request_id
@@ -127,7 +127,7 @@ export class DelegatedMainwpClient {
     'DELEGATION_MISMATCH', 'Qualification returned a different request or verified person.');
     // A failed/missing durable map forbids subsequent dispatch. No retry or
     // reconstruction from callback data after an uncertain queue response.
-    return ledger.recordQueued(this.actor, args, response.result, expected).job;
+    return ledger.recordQueued(this.actor, args, response.result, expected, admittedSite).job;
   }
   async listTools(params) { return this.client.listTools(params); }
   async readResource(params) {

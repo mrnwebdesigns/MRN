@@ -12,6 +12,7 @@ import { IdentitySigner, delegationCanonical, delegationDigest } from '../../src
 import { DelegatedMainwpClient } from '../../src/delegated-mainwp.mjs';
 import { contentSchemas, contentSnapshot } from '../../src/content-contract.mjs';
 import { AccessSigner, AccessQueryReader, ContentAccessVeto, accessVetoPath } from '../../src/content-access.mjs';
+import { accessRegistry } from '../fixtures/access-registry.mjs';
 import { ContentAccessLedger, requesterDigest } from '../../src/content-access-store.mjs';
 import { compileContentSchema } from '../../src/content-schema.mjs';
 import { createHttpServer } from '../../src/http.mjs';
@@ -55,7 +56,8 @@ const identityKey = createPrivateKey({ key: readFileSync(join(directory, 'identi
 const identity = { keyId: 'disposable-identity-only', privateKey: identityKey };
 const signer = new IdentitySigner({ ...identity, connectionId: 'con_RuntimeFixture' });
 const store = new Store(join(work, 'access.sqlite'));
-const ledger = new ContentAccessLedger(store, { connectionId: 'con_RuntimeFixture' });
+const { registry, registryData, policy } = accessRegistry(context.site.site_url);
+const ledger = new ContentAccessLedger(store, { connectionId: 'con_RuntimeFixture', registry });
 const clients = [], processes = new Set();
 const run = async (file, args, timeout = 90000, maxBuffer = 131072) => {
   // Buffer privately; never print subprocess credentials/claims on failure.
@@ -101,8 +103,7 @@ try {
   const actor = await authenticate(`Bearer ${bearer}`);
   assert.equal(actor.googleSubject, '222222'); assert.equal(actor.verifiedEmail, 'bob@mrnwebdesigns.com');
   const client = new DelegatedMainwpClient(await raw(), actor, signer);
-  const veto = new ContentAccessVeto({ signer: new AccessSigner(identity), reader, ledger,
-    checkLocalAccess: original => original.subject === actor.subject && original.verifiedEmail === actor.verifiedEmail && original.expiresAt > Date.now() });
+  const veto = new ContentAccessVeto({ signer: new AccessSigner(identity), reader, ledger });
   server = createHttpServer({ publicUrl: audience, issuer, accessVeto: veto });
   await new Promise((resolve, reject) => { server.once('error', reject); server.listen(context.control.callback_socket, resolve); });
   await run(context.control.route_switch, ['node'], 10000); routed = true;
@@ -160,6 +161,24 @@ try {
     .all(first.qualification_job_id);
   assert.equal(readAudit.length, 2); assert.ok(readAudit.every(row => row.state === 'clear' && row.revision === 1));
   pass('Retained private capture recovery returns the original artifact through two actual Node access vetoes');
+  // Exercise real authenticated provider readback while local membership stays
+  // enabled. No synthetic callback decision and no changes to provider policy.
+  for (const change of ['permission', 'environment']) {
+    if (change === 'permission') policy.emailDomains[0].portfolio.actions = ['read'];
+    else registryData.websites[0].environments[0].name = 'staging';
+    assert.equal(registry.member(actor).enabled, true);
+    const withheld = await recover(first.qualification_job_id, captured.capture_artifact_sha256);
+    assert.equal(withheld.ok, false); assert.equal(withheld.error_code, 'mrn_capture_read_access');
+    assert.equal(Object.hasOwn(withheld, 'output'), false);
+    assert.deepEqual(await worker('status', first.qualification_job_id), saved);
+    await assert.rejects(queue);
+    policy.emailDomains[0].portfolio.actions = ['read', 'content'];
+    registryData.websites[0].environments[0].name = 'production';
+  }
+  assert.equal(store.db.prepare("SELECT count(*) AS n FROM content_access_audit WHERE job=? AND phase='read-capture' AND state='denied'")
+    .get(first.qualification_job_id).n, 2);
+  assert.deepEqual((await recover(first.qualification_job_id, captured.capture_artifact_sha256)).output, recoveredOutput);
+  pass('Current local content permission and the original environment independently gate retained capture recovery');
   const second = await queue();
   assert.equal((await worker('arm-delay', second.qualification_job_id)).armed, true);
   const pendingCapture = worker('capture', second.qualification_job_id).then(value => ({ value }), error => ({ error }));
@@ -195,7 +214,7 @@ try {
   assert.ok(lookups.every(row => row.method === 'POST' && row.status === 200 && !row.subject));
   pass('Durable original-requester ledger denies subsequent queueing and retains attributable revocation evidence');
   report.result = 'PASS'; report.captureVerified = true; report.pendingDuringReadVerified = true;
-  report.retainedCaptureRecoveryVerified = true; report.pendingRecoveryDenied = true;
+  report.currentSitePermissionVerified = true; report.retainedCaptureRecoveryVerified = true; report.pendingRecoveryDenied = true;
   writeFileSync(process.env.MRN_GATEWAY_ACCESS_REPORT, `${JSON.stringify(report, null, 2)}\n`, { mode: 0o600 });
 } finally {
   for (const child of processes) child?.kill('SIGTERM');

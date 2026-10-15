@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 import { IdentitySigner, delegationDigest, delegationPrefix } from '../src/delegation.mjs';
 import { DelegatedMainwpClient, delegationTools, qualificationQueueTool } from '../src/delegated-mainwp.mjs';
 import { Store } from '../src/store.mjs';
+import { accessRegistry } from './fixtures/access-registry.mjs';
 import { ContentAccessLedger } from '../src/content-access-store.mjs';
 
 const response = value => ({ content: [{ type: 'text', text: JSON.stringify(value) }] });
@@ -52,16 +53,17 @@ function fixture() {
 
 function queueFixture(t) {
   const f = fixture(), store = new Store(':memory:'); t.after(() => store.close());
-  const ledger = new ContentAccessLedger(store, { connectionId: 'con_MRNGoogle' });
   const vectors = JSON.parse(readFileSync(new URL('./fixtures/content-qualification-contract.json', import.meta.url)));
   const request = vectors.cases.find(c => c.definition === 'request_input').value;
+  const { registry, registryData, policy } = accessRegistry(request.site_url);
+  const ledger = new ContentAccessLedger(store, { connectionId: 'con_MRNGoogle', registry });
   const job = { ...vectors.cases.find(c => c.definition === 'job_output').value, expires_at: Math.floor(Date.now() / 1000) + 300,
     recipe_catalog_sha256: 'c'.repeat(64), recipe_sha256: null };
   const expected = { authorization_policy_sha256: job.authorization_policy_sha256, recipe_catalog_sha256: job.recipe_catalog_sha256, recipe_sha256: 'd'.repeat(64) };
   f.state.corrupt = result => { result.result = job; };
   const list = f.client.listTools;
   f.client.listTools = async () => ({ tools: [...(await list()).tools, { name: qualificationQueueTool, annotations: { readOnlyHint: false, destructiveHint: false } }] });
-  return { ...f, store, ledger, request, job, expected, queue: f.delegated('123') };
+  return { ...f, store, ledger, registry, registryData, policy, request, job, expected, queue: f.delegated('123') };
 }
 
 test('private qualification queue binds the verified requester only after service worker admission and exact response', async t => {
@@ -89,6 +91,26 @@ test('missing worker, changed actor, revoked requester or bad pins leave no usab
   await assert.rejects(() => f.queue.queueQualification(f.request, { ledger: f.ledger, admit: async () => ({ ...f.expected, recipe_catalog_sha256: 'e'.repeat(64) }) }), { code: 'ACCESS_MAPPING' });
   f.state.revoked.add('123');
   await assert.rejects(() => f.queue.queueQualification(f.request, { ledger: f.ledger, admit: async () => f.expected }));
+  assert.equal(f.store.db.prepare('SELECT count(*) AS n FROM content_access_jobs').get().n, 0);
+});
+
+test('local content permission and the same environment are rechecked across asynchronous queue admission', async t => {
+  for (const phase of ['before', 'admission', 'response']) {
+    const f = queueFixture(t);
+    const deny = () => { f.policy.emailDomains[0].portfolio.actions = ['read']; };
+    if (phase === 'before') deny();
+    if (phase === 'response') f.state.corrupt = result => { result.result = f.job; deny(); };
+    await assert.rejects(() => f.queue.queueQualification(f.request, { ledger: f.ledger, admit: async () => {
+      if (phase === 'admission') deny(); return f.expected;
+    } }));
+    if (phase !== 'response') assert.equal(f.state.calls.length, 0);
+    assert.equal(f.store.db.prepare('SELECT count(*) AS n FROM content_access_jobs').get().n, 0);
+  }
+  const f = queueFixture(t);
+  await assert.rejects(() => f.queue.queueQualification(f.request, { ledger: f.ledger, admit: async () => {
+    f.registryData.websites[0].environments[0].name = 'staging'; return f.expected;
+  } }));
+  assert.equal(f.state.calls.length, 0);
   assert.equal(f.store.db.prepare('SELECT count(*) AS n FROM content_access_jobs').get().n, 0);
 });
 
