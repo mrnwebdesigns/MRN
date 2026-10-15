@@ -1,8 +1,8 @@
 # Stack Version
 
 ## Candidate Release
-- Stack release: `2026.10.14-fleet-auto-b2d095968e00`
-- Release date: `2026-10-14`
+- Stack release: `2026.10.15-fleet-auto-1a5e4859001b`
+- Release date: `2026-10-15`
 - Status: `source snapshot; qualification/publication evidence establishes Fleet readiness; site rollout separate`
 
 ## Included MRN-Owned Components
@@ -32,7 +32,7 @@
 | `mrn-layout-import-export` | `0.1.3` |
 | `mrn-loader` | `1.6.2` |
 | `mrn-media-bulk-tools` | `0.13.1` |
-| `mrn-mega-menu` | `0.17.2` |
+| `mrn-mega-menu` | `0.17.3` |
 | `mrn-public-security-hardening` | `0.4.4` |
 | `mrn-public-security-hardening-loader` | `0.4.4` |
 | `mrn-recaptcha-enterprise-manager` | `0.2.3` |
