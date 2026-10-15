@@ -56,8 +56,8 @@ function queueFixture(t) {
   const vectors = JSON.parse(readFileSync(new URL('./fixtures/content-qualification-contract.json', import.meta.url)));
   const request = vectors.cases.find(c => c.definition === 'request_input').value;
   const job = { ...vectors.cases.find(c => c.definition === 'job_output').value, expires_at: Math.floor(Date.now() / 1000) + 300,
-    recipe_catalog_sha256: 'c'.repeat(64), recipe_sha256: 'd'.repeat(64) };
-  const expected = Object.fromEntries(['authorization_policy_sha256', 'recipe_catalog_sha256', 'recipe_sha256'].map(k => [k, job[k]]));
+    recipe_catalog_sha256: 'c'.repeat(64), recipe_sha256: null };
+  const expected = { authorization_policy_sha256: job.authorization_policy_sha256, recipe_catalog_sha256: job.recipe_catalog_sha256, recipe_sha256: 'd'.repeat(64) };
   f.state.corrupt = result => { result.result = job; };
   const list = f.client.listTools;
   f.client.listTools = async () => ({ tools: [...(await list()).tools, { name: qualificationQueueTool, annotations: { readOnlyHint: false, destructiveHint: false } }] });
@@ -86,7 +86,7 @@ test('missing worker, changed actor, revoked requester or bad pins leave no usab
   await assert.rejects(() => f.queue.queueQualification(f.request, { ledger: f.ledger, admit: async () => f.expected }), { code: 'DELEGATION_MISMATCH' });
   assert.equal(f.store.db.prepare('SELECT count(*) AS n FROM content_access_jobs').get().n, 0);
   f.state.corrupt = result => { result.result = f.job; };
-  await assert.rejects(() => f.queue.queueQualification(f.request, { ledger: f.ledger, admit: async () => ({ ...f.expected, recipe_sha256: 'e'.repeat(64) }) }), { code: 'ACCESS_MAPPING' });
+  await assert.rejects(() => f.queue.queueQualification(f.request, { ledger: f.ledger, admit: async () => ({ ...f.expected, recipe_catalog_sha256: 'e'.repeat(64) }) }), { code: 'ACCESS_MAPPING' });
   f.state.revoked.add('123');
   await assert.rejects(() => f.queue.queueQualification(f.request, { ledger: f.ledger, admit: async () => f.expected }));
   assert.equal(f.store.db.prepare('SELECT count(*) AS n FROM content_access_jobs').get().n, 0);

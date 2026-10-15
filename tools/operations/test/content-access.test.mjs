@@ -26,8 +26,8 @@ function fixture(t, file = ':memory:') {
     identityProvider: 'google-oauth2', hostedDomain: 'mrnwebdesigns.com', googleConnection: 'con_test', expiresAt: state.now + 3600000,
     scopes: ['mrn:operations', 'mrn:operations:write'], token: 'must-not-be-stored' };
   const request = vector('request_input'), job = { ...vector('job_output'), expires_at: state.now / 1000 + 300,
-    recipe_catalog_sha256: h, recipe_sha256: h };
-  const expected = Object.fromEntries(['authorization_policy_sha256', 'recipe_catalog_sha256', 'recipe_sha256'].map(k => [k, job[k]]));
+    recipe_catalog_sha256: h, recipe_sha256: null };
+  const expected = { authorization_policy_sha256: job.authorization_policy_sha256, recipe_catalog_sha256: h, recipe_sha256: h };
   const map = () => ledger.recordQueued(actor, request, job, expected);
   const query = () => ({ schema: 1, issuer: 'https://wpcontrol.mrndev.io', audience: 'https://operations.mrnwebdesigns.com',
     issued_at: state.now / 1000, expires_at: state.now / 1000 + 5, request_id: randomUUID(), nonce: h,
@@ -65,6 +65,7 @@ test('authenticated queued map yields a purpose-separated exact signed veto with
   assert.equal(verify(null, Buffer.concat([Buffer.from(accessContract.query_readback_purpose_prefix), bytes]), f.keys.publicKey, signature), false);
   const row = f.store.db.prepare('SELECT body FROM content_access_jobs').get();
   assert.equal(row.body.includes('must-not-be-stored'), false); assert.equal(row.body.includes('token'), false);
+  assert.equal(JSON.parse(row.body).job.recipe_sha256, null); assert.equal(JSON.parse(row.body).admission.recipe_sha256, h);
   assert.deepEqual(Object.keys(f.state.readback).sort(), ['action', 'audience', 'expires_at', 'issued_at', 'issuer', 'nonce', 'provider_query_nonce', 'query_id', 'request_id', 'schema'].sort());
 });
 
@@ -94,6 +95,10 @@ test('queue mappings reject outsiders, expired/read-only identities and mismatch
   assert.throws(() => f.ledger.recordQueued({ ...f.actor, verifiedEmail: 'other@mrnwebdesigns.com' }, f.request, f.job, f.expected));
   const repeated = f.ledger.recordQueued({ ...f.actor, expiresAt: f.actor.expiresAt + 100000 }, f.request, f.job, f.expected);
   assert.equal(repeated.actor.expiresAt, f.actor.expiresAt);
+  assert.throws(() => f.ledger.recordQueued(f.actor, f.request, f.job, { ...f.expected, recipe_sha256: 'e'.repeat(64) }), { code: 'ACCESS_MAPPING' });
+  const withProfile = { ...f.job, qualification_job_id: randomUUID(), current_target_revision: 2, current_profile_sha256: h };
+  assert.deepEqual(f.ledger.recordQueued(f.actor, f.request, withProfile, f.expected).job, withProfile);
+  assert.throws(() => f.ledger.recordQueued(f.actor, f.request, { ...withProfile, current_profile_sha256: null }, f.expected), { code: 'ACCESS_MAPPING' });
 });
 
 test('changed scope, identity, policy, query digest or extra readback data fails closed', async t => {

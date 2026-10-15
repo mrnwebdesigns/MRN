@@ -18,7 +18,7 @@ const actorSchema = z.object(actorFields).strict().refine(actor => actor.subject
   && actor.verifiedEmail === actor.verifiedEmail.toLowerCase());
 const expectedSchema = z.object({ authorization_policy_sha256: sha, recipe_catalog_sha256: sha, recipe_sha256: sha }).strict();
 export const validateQueuePins = value => parse(expectedSchema, value);
-const mappingSchema = z.object({ actor: actorSchema, request: requestSchema, job: jobSchema, requester: sha, principal: sha }).strict();
+const mappingSchema = z.object({ actor: actorSchema, request: requestSchema, job: jobSchema, admission: expectedSchema, requester: sha, principal: sha }).strict();
 const parse = (schema, value) => {
   const result = schema.safeParse(value);
   requireThat(result.success, 'ACCESS_MAPPING', 'An exact authenticated queue mapping is required.'); return result.data;
@@ -68,19 +68,24 @@ export class ContentAccessLedger {
     requireThat(job.state === 'queued' && job.reason_code === 'none' && job.acceptance_scope === 'provider-only'
       && job.qualification_binding === null && job.capture_artifact_sha256 === null && job.profile_sha256 === null
       && job.qualification_report_sha256 === null && job.target_revision === null && job.is_current === false
-      && job.current_target_revision === null && job.current_profile_sha256 === null && job.current_binding_sha256 === null
+      && job.current_binding_sha256 === null && job.recipe_sha256 === null
+      && (job.current_target_revision === null) === (job.current_profile_sha256 === null)
       && job.expires_at > Math.floor(this.now() / 1000)
       && ['site_id', 'site_url', 'target', 'expected_snapshot_sha256'].every(k => delegationDigest(job[k]) === delegationDigest(request[k]))
-      && Object.keys(expected).every(k => expected[k] === job[k]),
+      && ['authorization_policy_sha256', 'recipe_catalog_sha256'].every(k => expected[k] === job[k]),
     'ACCESS_MAPPING', 'The authenticated queue result differs from the original target or approved worker inputs.');
-    const mapping = { actor, request, job, requester: requesterDigest(actor), principal: digest(actor.googleSubject) };
+    // Queue pins the catalog; the provider chooses/binds a recipe at capture.
+    // Keep the independently admitted recipe separately, never fabricate it in
+    // the authenticated queued response or treat it as already captured.
+    const mapping = { actor, request, job, admission: expected, requester: requesterDigest(actor), principal: digest(actor.googleSubject) };
     return this.store.transaction(() => {
       this.assertQueueAllowed(actor);
       const existing = this.store.db.prepare('SELECT body,digest FROM content_access_jobs WHERE id=?').get(job.qualification_job_id);
       if (existing) {
         const original = this.decode(existing);
         requireThat(original.requester === mapping.requester && delegationDigest(original.request) === delegationDigest(request)
-          && delegationDigest(original.job) === delegationDigest(job), 'ACCESS_MAPPING', 'An immutable queue mapping cannot be replaced.');
+          && delegationDigest(original.job) === delegationDigest(job) && delegationDigest(original.admission) === delegationDigest(expected),
+        'ACCESS_MAPPING', 'An immutable queue mapping cannot be replaced.');
         return original; // A repeated login cannot renew the original retained identity or lifetime.
       }
       this.store.db.prepare('INSERT OR IGNORE INTO content_access_principals VALUES(?,?,1,?)').run(mapping.principal, mapping.requester, 'clear');
@@ -95,7 +100,9 @@ export class ContentAccessLedger {
     let value; try { value = JSON.parse(row.body); } catch { requireThat(false, 'ACCESS_MAPPING', 'The original queue mapping is corrupt.'); }
     const mapping = parse(mappingSchema, value);
     requireThat(mapping.requester === requesterDigest(mapping.actor) && mapping.principal === digest(mapping.actor.googleSubject)
-      && mapping.actor.googleConnection === this.connectionId, 'ACCESS_MAPPING', 'The original requester binding is invalid.');
+      && mapping.actor.googleConnection === this.connectionId
+      && ['authorization_policy_sha256', 'recipe_catalog_sha256'].every(k => mapping.admission[k] === mapping.job[k]),
+    'ACCESS_MAPPING', 'The original requester binding is invalid.');
     return mapping;
   }
   // Internal deny-first bookkeeping only. Owner authorization and authoritative
