@@ -1,6 +1,6 @@
 {
   "authority": "Checksum- and tree-locked standard-plugin releases available to explicit one-site Stack component plans. Registration never authorizes a site write or changes the immutable Stack release identity.",
-  "catalog_updated": "2026-10-14",
+  "catalog_updated": "2026-10-15",
   "releases": [
     {
       "current_distribution": "standard-bootstrap",
@@ -1569,6 +1569,35 @@
         "preserve_active_state": true
       },
       "version": "1.3.0"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-mega-menu-0.17.3-ac1bfe1ca42d.zip",
+        "main_file": "mrn-mega-menu/mrn-mega-menu.php",
+        "path": "releases/stack-plugins/mrn-mega-menu-0.17.3-ac1bfe1ca42d.zip",
+        "sha256": "b1b1530201b51ad97e4f985f202df6c73ebc734f8e22f7f74263b908d3c248dd",
+        "size_bytes": 67268
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-mega-menu",
+      "source": {
+        "git_commit": "ac1bfe1ca42da22f62e115ab94cf22a1b8c018b6",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-mega-menu",
+        "repository": "mrnwebdesigns/mrn-mega-menu"
+      },
+      "target_tier": "optional-shared",
+      "tree": {
+        "file_count": 23,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "b23d1ee0c0cbf84065ef673e556dd461f1717716d423e1371ecb5e084a14b4d1"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.17.3"
     }
   ],
   "schema_version": 1

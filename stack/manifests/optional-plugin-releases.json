@@ -1,6 +1,6 @@
 {
   "authority": "Checksum-locked independently released plugins available to explicit one-site upgrade plans. A release may remain a standard bootstrap default; registration never authorizes installation or a site write.",
-  "catalog_updated": "2026-10-14",
+  "catalog_updated": "2026-10-15",
   "releases": [
     {
       "current_distribution": "catalog-only",
@@ -358,31 +358,31 @@
     {
       "current_distribution": "standard-bootstrap",
       "package": {
-        "filename": "mrn-mega-menu-0.17.2-de68c999edad.zip",
+        "filename": "mrn-mega-menu-0.17.3-ac1bfe1ca42d.zip",
         "main_file": "mrn-mega-menu/mrn-mega-menu.php",
-        "path": "releases/stack-plugins/mrn-mega-menu-0.17.2-de68c999edad.zip",
-        "sha256": "090c1d19154fb0400124c2a1bb77ce30fc64f788b72a950744feadba7d796508",
-        "size_bytes": 63641
+        "path": "releases/stack-plugins/mrn-mega-menu-0.17.3-ac1bfe1ca42d.zip",
+        "sha256": "b1b1530201b51ad97e4f985f202df6c73ebc734f8e22f7f74263b908d3c248dd",
+        "size_bytes": 67268
       },
       "runtime_type": "standard-plugin",
       "slug": "mrn-mega-menu",
       "source": {
-        "git_commit": "de68c999edade4a4f8c9481c8d2f280d045db6f3",
+        "git_commit": "ac1bfe1ca42da22f62e115ab94cf22a1b8c018b6",
         "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-mega-menu",
         "repository": "mrnwebdesigns/mrn-mega-menu"
       },
       "target_tier": "optional-shared",
       "tree": {
-        "file_count": 20,
+        "file_count": 23,
         "hash_algorithm": "sha256-tree-v1",
-        "sha256": "031fd28fa2ec0a1e1759923d0f2984a01aaa1b85a8fdbdcb624bb145afa112a4"
+        "sha256": "b23d1ee0c0cbf84065ef673e556dd461f1717716d423e1371ecb5e084a14b4d1"
       },
       "update_policy": {
         "mode": "upgrade-only",
         "new_install": "requires-separate-owner-authorization-and-plan",
         "preserve_active_state": true
       },
-      "version": "0.17.2"
+      "version": "0.17.3"
     },
     {
       "current_distribution": "standard-bootstrap",

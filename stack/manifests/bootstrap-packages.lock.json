@@ -224,15 +224,15 @@
       "name": "MRN Mega Menu",
       "package": "mrn-mega-menu.zip",
       "profile": "all",
-      "sha256": "090c1d19154fb0400124c2a1bb77ce30fc64f788b72a950744feadba7d796508",
-      "size_bytes": 63641,
+      "sha256": "b1b1530201b51ad97e4f985f202df6c73ebc734f8e22f7f74263b908d3c248dd",
+      "size_bytes": 67268,
       "slug": "mrn-mega-menu",
       "source": {
-        "commit": "de68c999edade4a4f8c9481c8d2f280d045db6f3",
+        "commit": "ac1bfe1ca42da22f62e115ab94cf22a1b8c018b6",
         "repository": "mrn-mega-menu",
         "type": "git"
       },
-      "version": "0.17.2"
+      "version": "0.17.3"
     },
     {
       "main_file": "mrn-recaptcha-enterprise-manager/mrn-recaptcha-enterprise-manager.php",
@@ -513,7 +513,7 @@
       "version": "0.1.4"
     }
   ],
-  "release_id": "2026.10.14-fleet-auto-b2d095968e00",
+  "release_id": "2026.10.15-fleet-auto-1a5e4859001b",
   "schema_version": 1,
   "scope": "new-site-bootstrap-inputs",
   "stack_plugin_count": 33
