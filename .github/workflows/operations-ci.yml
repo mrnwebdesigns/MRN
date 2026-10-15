@@ -97,6 +97,7 @@ jobs:
           MRN_DISPOSABLE_ACCESS_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/access-hook.sh
           MRN_GATEWAY_MCP_SOURCE: ${{ github.workspace }}/.runtime/transport
           MRN_GATEWAY_REPORT: ${{ runner.temp }}/gateway-provider-report.json
+          MRN_GATEWAY_PROVIDER_SOURCE: ${{ github.workspace }}/.runtime/provider
           MRN_GATEWAY_NATIVE_REPORT: ${{ runner.temp }}/gateway-native-content-report.json
           MRN_GATEWAY_ACCESS_REPORT: ${{ runner.temp }}/gateway-access-report.json
         run: |
@@ -119,9 +120,9 @@ jobs:
           for (const field of ['productionCredentials', 'liveGoogleVerified', 'protectedQaVerified', 'productionQaVerified', 'remoteBackupVerified', 'chatgptAcceptanceVerified', 'codeWriteVerified']) assert.equal(native[field], false);
           const access = JSON.parse(readFileSync(process.env.MRN_GATEWAY_ACCESS_REPORT, 'utf8'));
           assert.equal(access.result, 'PASS');
-          assert.equal(access.passed.length, 8);
+          assert.equal(access.passed.length, 10);
           assert.equal(access.scope, 'disposable-native-access-only');
-          for (const field of ['captureVerified', 'pendingDuringReadVerified', 'retainedCaptureRecoveryVerified', 'pendingRecoveryDenied', 'currentSitePermissionVerified', 'privateLifecycleVerified']) assert.equal(access[field], true);
+          for (const field of ['captureVerified', 'pendingDuringReadVerified', 'retainedCaptureRecoveryVerified', 'pendingRecoveryDenied', 'currentSitePermissionVerified', 'privateLifecycleVerified', 'measurementReadbackVerified', 'measurementSitePermissionVerified', 'pendingMeasurementsDenied']) assert.equal(access[field], true);
           for (const field of ['productionCredentials', 'liveGoogleVerified', 'protectedWorkerVerified', 'chatgptAcceptanceVerified', 'codeWriteVerified', 'contentWriteVerified', 'remoteBackupVerified']) assert.equal(access[field], false);
           const sources = JSON.parse(readFileSync('tools/operations/test/runtime/sources.json', 'utf8'));
           for (const name of ['provider', 'transport']) assert.equal(execFileSync('git', ['-C', `.runtime/${name}`, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), sources[name].commit);

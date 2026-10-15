@@ -1,7 +1,7 @@
 // CI-only real gateway callback/MCP/provider/Child integration. The owner fixture
 // retains all registrar authority; no production credentials or Google session.
 import assert from 'node:assert/strict';
-import { createPrivateKey, randomUUID } from 'node:crypto';
+import { createHash, createPrivateKey, randomUUID } from 'node:crypto';
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { execFile, execFileSync } from 'node:child_process';
@@ -39,10 +39,20 @@ assert.equal(context.control.worker, join(directory, 'access-integration/worker'
 assert.equal(context.control.route_switch, join(directory, 'access-integration/switch-callback'));
 assert.deepEqual(context.limits, { hook_seconds: 150, owner_wait_seconds: 170, read_wait_seconds: 15, child_delay_seconds: 6 });
 const transportRoot = resolve(process.env.MRN_GATEWAY_MCP_SOURCE);
+const providerRoot = resolve(process.env.MRN_GATEWAY_PROVIDER_SOURCE);
 const lock = JSON.parse(readFileSync(new URL('./sources.json', import.meta.url)));
 const recoveryContract = JSON.parse(readFileSync(new URL('../../contracts/content-capture-read-v1.json', import.meta.url)));
 const recoverySchema = compileContentSchema(recoveryContract.ability.output, recoveryContract.definitions);
+const measurementContract = JSON.parse(readFileSync(new URL('../fixtures/measurement-readback-candidate/schema.json', import.meta.url)));
+const measurementSchema = compileContentSchema(measurementContract.ability.output, measurementContract.definitions);
+const recordSchema = compileContentSchema({ $ref: '#/definitions/measurement_record' }, measurementContract.definitions);
+const bytesDigest = bytes => createHash('sha256').update(bytes).digest('hex');
 assert.equal(execFileSync('git', ['-C', transportRoot, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), lock.transport.commit);
+assert.equal(execFileSync('git', ['-C', providerRoot, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), lock.provider.commit);
+const expectedSource = { provider_source_sha: lock.provider.commit,
+  ...Object.fromEntries([['capture_template_sha256', 'child/content-capture.php'],
+    ['mutation_template_sha256', 'child/content-posts.php'], ['parity_helper_sha256', 'child/content-parity.php']]
+    .map(([field, path]) => [field, bytesDigest(execFileSync('git', ['-C', providerRoot, 'show', `${lock.provider.commit}:${path}`]))])) };
 const work = join(directory, 'actual-gateway-access'); mkdirSync(work, { mode: 0o700 });
 const home = join(work, 'home'); mkdirSync(home, { mode: 0o700 });
 const preload = join(work, 'fixture-network.mjs');
@@ -78,6 +88,15 @@ const recover = async (id, expectedHash) => {
   // The private fixture signs one new read; it never retries capture or exports
   // its key/assertion. Only this full-artifact response gets the larger bound.
   return JSON.parse(await run(context.control.worker, ['read-capture', id, expectedHash], 90000, 4500000));
+};
+const measurements = async (id, expectedHash) => {
+  assert.match(id, /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/);
+  assert.match(expectedHash, /^[a-f0-9]{64}$/);
+  // The existing private fixture owns signing and exact HTTP transport. Its
+  // small closed wrapper is the only addition to the response byte ceiling.
+  const raw = await run(context.control.worker, ['read-measurements', id, expectedHash], 90000, 100000);
+  assert.ok(Buffer.byteLength(raw) <= measurementContract.limits.read_response_utf8_bytes + 64);
+  return JSON.parse(raw);
 };
 const raw = async () => { const c = await connectMainwp(config, environment); clients.push(c); return c; };
 const report = { schema: 1, source: lock, scope: 'disposable-native-access-only', passed: [], productionCredentials: false,
@@ -174,6 +193,43 @@ try {
     .all(first.qualification_job_id);
   assert.equal(readAudit.length, 2); assert.ok(readAudit.every(row => row.state === 'clear' && row.revision === 1));
   pass('Retained private capture recovery returns the original artifact through two actual Node access vetoes');
+  const beforeMeasurement = store.db.prepare('SELECT id FROM content_access_queries WHERE job=?').all(first.qualification_job_id);
+  const measured = await measurements(first.qualification_job_id, captured.capture_artifact_sha256);
+  assert.deepEqual(Object.keys(measured).sort(), ['ok', 'output']); assert.equal(measured.ok, true);
+  const measuredOutput = measurementSchema.parse(measured.output);
+  assert.ok(Buffer.byteLength(delegationCanonical(measuredOutput)) <= measurementContract.limits.read_response_utf8_bytes);
+  assert.ok(Buffer.byteLength(measuredOutput.measurement_record_json) <= measurementContract.limits.measurement_record_utf8_bytes);
+  const record = recordSchema.parse(JSON.parse(measuredOutput.measurement_record_json));
+  assert.equal(delegationCanonical(record), measuredOutput.measurement_record_json);
+  assert.equal(delegationDigest(record), measuredOutput.measurement_record_sha256);
+  assert.equal(delegationDigest(record.binding), measuredOutput.binding_sha256);
+  assert.equal(record.binding_sha256, measuredOutput.binding_sha256);
+  assert.equal(measuredOutput.qualification_job_id, first.qualification_job_id);
+  assert.equal(measuredOutput.capture_artifact_sha256, captured.capture_artifact_sha256);
+  for (const field of ['qualification_job_id', 'authorization_policy_sha256', 'catalog_epoch',
+    'requester_binding_sha256', 'site_id', 'site_url', 'target', 'expected_snapshot_sha256',
+    'expected_target_revision', 'recipe_catalog_sha256', 'recipe_id', 'recipe_sha256'])
+    assert.deepEqual(record.binding[field], artifact[field], field);
+  assert.equal(record.binding.capture_artifact_sha256, captured.capture_artifact_sha256);
+  assert.equal(record.binding.job_expires_at, running.output.job_context.expires_at);
+  assert.equal(record.binding.measurement_contract_sha256, bytesDigest(readFileSync(new URL('../fixtures/measurement-readback-candidate/schema.json', import.meta.url))));
+  assert.deepEqual(record.binding.expected_source, expectedSource);
+  for (const [field, value] of Object.entries(expectedSource)) assert.equal(record.source_integrity[field], value);
+  assert.equal(record.capture_integrity.artifact_bytes, Buffer.byteLength(delegationCanonical(artifact)));
+  assert.equal(record.capture_integrity.snapshot_sha256, inspected.snapshot_sha256);
+  assert.equal(record.capture_integrity.capture_artifact_sha256, captured.capture_artifact_sha256);
+  assert.equal(record.capture_integrity.native_output_truncations, 0);
+  assert.equal(record.chunks.length, record.capture_integrity.chunks_received);
+  assert.equal(record.chunks.length, record.decoder.accepted_chunks);
+  assert.equal(record.chunks.length, record.decoder.total_chunks);
+  assert.deepEqual(record.scope_ownership, { ownership: 'wordpress-post', post_status: snapshot.post_status,
+    site_id: snapshot.site_id, site_url: snapshot.site_url, target: snapshot.target });
+  const measuredQueries = store.db.prepare('SELECT * FROM content_access_queries WHERE job=?').all(first.qualification_job_id)
+    .filter(row => !beforeMeasurement.some(previous => previous.id === row.id));
+  assert.equal(measuredQueries.length, 2);
+  assert.ok(measuredQueries.every(row => row.state === 'clear' && row.revision === 1));
+  assert.deepEqual(await worker('status', first.qualification_job_id), saved);
+  pass('Private measurement readback binds original capture and pinned source through two actual Node vetoes');
   // Exercise real authenticated provider readback while local membership stays
   // enabled. No synthetic callback decision and no changes to provider policy.
   for (const change of ['permission', 'environment']) {
@@ -183,6 +239,9 @@ try {
     const withheld = await recover(first.qualification_job_id, captured.capture_artifact_sha256);
     assert.equal(withheld.ok, false); assert.equal(withheld.error_code, 'mrn_capture_read_access');
     assert.equal(Object.hasOwn(withheld, 'output'), false);
+    const withheldMeasurements = await measurements(first.qualification_job_id, captured.capture_artifact_sha256);
+    assert.equal(withheldMeasurements.ok, false); assert.equal(withheldMeasurements.error_code, 'mrn_measurement_unavailable');
+    assert.equal(Object.hasOwn(withheldMeasurements, 'output'), false);
     assert.deepEqual(await worker('status', first.qualification_job_id), saved);
     // A removed content grant blocks every new job. An authorized environment
     // reconfiguration blocks this old map, but may admit a separately fresh job.
@@ -191,9 +250,10 @@ try {
     registryData.websites[0].environments[0].name = 'production';
   }
   assert.equal(store.db.prepare("SELECT count(*) AS n FROM content_access_audit WHERE job=? AND phase='read-capture' AND state='denied'")
-    .get(first.qualification_job_id).n, 2);
+    .get(first.qualification_job_id).n, 4);
   assert.deepEqual((await recover(first.qualification_job_id, captured.capture_artifact_sha256)).output, recoveredOutput);
-  pass('Current local content permission and the original environment independently gate retained capture recovery');
+  assert.deepEqual((await measurements(first.qualification_job_id, captured.capture_artifact_sha256)).output, measuredOutput);
+  pass('Current local content permission and the original environment independently gate retained capture and measurement reads');
   const second = await queue();
   assert.equal((await worker('arm-delay', second.qualification_job_id)).armed, true);
   const pendingCapture = worker('capture', second.qualification_job_id).then(value => ({ value }), error => ({ error }));
@@ -217,6 +277,12 @@ try {
   assert.ok(store.db.prepare("SELECT * FROM content_access_audit WHERE job=? AND phase='read-capture' AND event='veto-answered'")
     .all(first.qualification_job_id).some(row => row.state === 'pending-revocation' && row.revision === 2));
   pass('Pending original-requester revocation also withholds a previously completed capture without changing it');
+  const deniedMeasurements = await measurements(first.qualification_job_id, captured.capture_artifact_sha256);
+  assert.equal(deniedMeasurements.ok, false); assert.equal(deniedMeasurements.qualification_job_id, first.qualification_job_id);
+  assert.equal(deniedMeasurements.error_code, 'mrn_measurement_unavailable');
+  assert.equal(Object.hasOwn(deniedMeasurements, 'output'), false);
+  assert.deepEqual(await worker('status', first.qualification_job_id), saved);
+  pass('Pending original-requester revocation withholds original measurements without altering the capture');
   await assert.rejects(queue, { code: 'ACCESS_DENIED' });
   const attempts = store.db.prepare('SELECT * FROM content_access_audit WHERE job=?').all(second.qualification_job_id);
   assert.ok(attempts.some(row => row.event === 'revocation-pending'));
@@ -233,6 +299,7 @@ try {
   pass('Service lifecycle validates a dedicated control connection and refuses callbacks after shutdown');
   report.result = 'PASS'; report.captureVerified = true; report.pendingDuringReadVerified = true;
   report.privateLifecycleVerified = true;
+  report.measurementReadbackVerified = true; report.measurementSitePermissionVerified = true; report.pendingMeasurementsDenied = true;
   report.currentSitePermissionVerified = true; report.retainedCaptureRecoveryVerified = true; report.pendingRecoveryDenied = true;
   writeFileSync(process.env.MRN_GATEWAY_ACCESS_REPORT, `${JSON.stringify(report, null, 2)}\n`, { mode: 0o600 });
 } finally {

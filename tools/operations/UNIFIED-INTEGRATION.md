@@ -8,12 +8,12 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
 
 The expanded plugin is **not team-ready**. Source and disposable qualification are ahead of the hosted workspace plugin. No production deployment, policy enablement or access change is authorized by these results.
 
-- Gateway `52186df` passed [combined CI 38777729634](https://github.com/mrnwebdesigns/MRN/actions/runs/38777729634) with provider e6b0903: ten identity, six native content, seven actual callback and six transport groups. Gateway `2919b61` adds the disabled-by-default callback lifecycle and passes 302 local tests, ESLint and staged MRN QA; its [combined CI 38780977589](https://github.com/mrnwebdesigns/MRN/actions/runs/38780977589) is an independent lifecycle checkpoint. The new 041150d provider pin requires another combined run. OAuth/Directory, QA and backup authorities remain synthetic.
-- Provider `041150dc5db08e2f61787962baa7fc68e630b097` passes all four [CI 38780634932](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38780634932) jobs. It adds disabled evidence-authority storage and releases retained private database readers under the original 128 MiB gate. All eleven copied gateway contracts/vectors remain unchanged. It includes the previously qualified v2 schema/package boundary but does not implement report admission or activation. The qualified scope and known fixture warning are recorded below.
+- Gateway `0026653ea615074c78b43d05a1e8c9970f7fab99` passes [combined CI 38789295545](https://github.com/mrnwebdesigns/MRN/actions/runs/38789295545) and [MRN QA 38789295714](https://github.com/mrnwebdesigns/MRN/actions/runs/38789295714): 308 Node tests and ten identity, six native content, eight actual callback and six transport groups. Original artifact `11998982836` has ZIP SHA-256 `cb068e6b2ea3508404e8944198d5bc327f3ed56211bdb7be84d5b70108da1441`. The actual merge checkout's Operations subtree and imported Fleet modules match this source. That run pins provider b429137; the new private-reader integration below still requires its own combined run. OAuth/Directory, QA and backup authorities remain synthetic.
+- Provider `b83265affd9e2c555f1beb8820acece3d5ffcd82` passes all four [CI 38804969514](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38804969514) jobs. The actual merge checkout `c02581455429e3dab3921257e8f31118f81fa3fb` has the identical source tree `7c4e1f64e6b78edf231a4eb73f94ddb68179b1e1`. It adds a private original-job measurement reader and fixed disposable adapter, with 138 native checks. All eleven existing copied gateway contracts/vectors and the three reviewed measurement blobs remain byte-identical. Report admission and production activation remain absent.
 
 Runner follow-up `c2c00e29cd0ecf69638a16c5b87ab9223f823c0c` assembles four measured v2 groups against the full candidate profile, exact mutation report and three complete HTTP dependency inventories. It preserves the distinction between full-profile, profile-context and runtime-context hashes, and the output cannot satisfy the required eight-group schema. All 69 Node tests, applicable local MRN QA and all three [CI 38772144951](https://github.com/mrnwebdesigns/mrn-code-qa-runner/actions/runs/38772144951) jobs pass. Eight downloaded reports pass required API, browser, accessibility, performance and Core Web Vitals checks; the exact-profile/group hashes independently recompute, and rollback sabotage is refused. Original content/code archive hashes are `5c537901bdde32e861b12732fd95e047a08f7d59643c9b845861f0e0dc04cb98` and `eb68e47fcdf721ac747816f25265b36fc354ea1d1f481ba30b89c17bdcaff84c`. The preceding [run 38770940388](https://github.com/mrnwebdesigns/mrn-code-qa-runner/actions/runs/38770940388) passed the actual four-group assembly and first two content cases, then failed during title-case startup with TLS alert 80; it does not qualify the full suite. Source review found CA-file existence was the sole proxy-ready signal. The follow-up requires a fresh authenticated fixed-host handshake before QA and disables cross-instance HTTP connection/session reuse. Certificate/hostname/trust errors fail immediately, and failed QA observations are never retried. The original TLS server-side cause remains unproven; the failed run and its original archives are retained privately.
 
-The next provider measurement boundary is explicit: current frozen capture/context/recovery responses do not expose observed chunk counts, truncations or anonymous/wrong-purpose API outcomes. Disposable test logs cannot substitute for authenticated job evidence. An additive protected readback must retain those actual observations, installed-source and ownership evidence, bound to the original job/capture/requester/policy/revision. No successful-artifact inference or default zero/count is acceptable.
+The provider now retains observed packet sizes, hashes, chunk counts, truncations, installed-source and ownership evidence, bound to the original job/capture/requester/policy/revision. Its separate private read requires current access and a purpose-specific signature; it cannot backfill or renew old captures. The gateway pins b83265a and adds actual Node tests for original readback plus permission, environment and pending-revocation denial. These ten callback groups require a passing combined run before adoption is qualified. Protected worker acquisition of actual anonymous/wrong-purpose/authorized HTTP outcomes and independent evidence admission remain unimplemented; disposable logs cannot substitute for that authenticated evidence.
 
 Still required: protected worker dispatch/transport, all eight measured profile-evidence groups with independent signed-run/artifact admission, current-access revocation propagation (optional callback startup is implemented but disabled), service-owned publication/consumer trust, qualified ACF/menu/media workflows and the remaining capability mapping. Production identity/write-scope/key/policy setup and deployment need concrete approval. The existing workspace plugin then needs its published tool refresh and real ChatGPT acceptance: Google sign-in, site discovery, approved content edit/readback, qualified code edit/exact rollback, and outsider/revoked-account denial. Company code policy remains limited to the existing pilot. Staff enrollment or individual access approval is not part of this sequence.
 
@@ -257,7 +257,7 @@ The unchanged-order diagnostic run38783481809 at gateway852f66f records provider
 
 Both reordered combined runs38784024503 (gatewaye66cde7/provider035d401) and38784861698 (gatewayc380c12/provider9cf154e) pass all eight actual Node callback groups, then refuse the subsequent synthetic capture. The delayed Child fixture writes its separate synthetic mirror to pending-revocation/revision100 during Node's slow-read test. Provider candidateb429137850ddd78b611dfbb115921a669bb133c9 restores only the exact pre-barrier mirror file, asserts byte-identical durable requester history across that restoration and retains the no-site-lock assertion. The actual Node pending ledger is untouched. This changes only a fixture; source manifests select it for new standalone and combined qualification. Earlier failed runs and partial artifacts remain retained; no automatic retry, history reset or production change is included.
 
-### Current qualified integration and proposed measurement format
+### Earlier qualified integration and proposed measurement format
 
 Gateway `cdb482c0ec1552fbef1cc936277a3a7563d81477` with provider
 `b429137850ddd78b611dfbb115921a669bb133c9` passes combined
@@ -274,9 +274,10 @@ combined authority checks. The earlier failed runs above remain retained.
 The proposed private measurement contract has separate source provenance under
 `test/fixtures/measurement-readback-candidate`. Its schema, vectors and design are
 exact Git blobs from provider `11956fda5d5029ef7416b3f2368996e708253387`.
-The qualified runtime and existing contract-source manifests both remain at
-`b429137`; the proposed endpoint is unregistered and no service code loads these
-new test files. The gateway's six compatibility tests cover the real schema
+At that checkpoint the qualified runtime and existing contract-source manifests
+both remained at `b429137` and the proposed endpoint was unregistered. The new
+private runtime reader is recorded below; no service code loads these test files.
+The gateway's six compatibility tests cover the real schema
 compiler, canonical bytes, all 26 structural versus semantic negative vectors,
 Ed25519 purpose separation, distinct packet/artifact/record/HTTP byte digests,
 private scope and original assertion/transport time boundaries.
@@ -297,3 +298,30 @@ Protected worker acquisition, independent evidence admission/signing, broader
 content qualification, production deployment and ordinary-member ChatGPT
 acceptance remain open. No Google access, key, policy, connector or production
 runtime is changed by this checkpoint.
+
+### Private measurement reader integration
+
+Provider b83265a adds only the canonical private measurement route, never a
+workspace tool or delegated staff capability. The runtime keeps separate
+eight-use measurement and capture-recovery budgets, original requester/job
+bindings, two fresh access vetoes outside its work transaction, current source
+verification and closed bounded records. Native tests prove exact anonymous
+401 and wrong-purpose 403 denials without claims, concurrent final-slot
+exclusion and no child request during readback.
+
+Independent review of the initial implementation found row locks fetched full
+stored ciphertext before size validation. The correction locks option names
+only and bounds record, budget and capture payload reads in SQL, including
+post-commit readback. Three 8 MiB corruption cases exercise actual query shapes
+under the original 128 MiB memory ceiling. Failed runs 38794600768 and
+38795164062 remain retained: their GET probe incorrectly supplied a string body
+to WordPress Requests. Corrected source bb1a8b0 passes run 38804071980; b83265a
+adds the fixed private worker adapter and passes run 38804969514 with 138 checks.
+
+The combined gateway test independently hashes source helpers from the pinned
+Git blobs and verifies the exact original capture, record and binding. It
+requires two actual Node clearances, then denies readback after local content
+permission removal, environment mismatch and pending original-requester
+revocation, retaining the unchanged capture. This remains disposable evidence;
+protected acquisition, report signing/admission, remote backup and actual
+ChatGPT acceptance are separate open gates.

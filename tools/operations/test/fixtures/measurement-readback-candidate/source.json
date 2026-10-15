@@ -3,7 +3,7 @@
   "repository": "mrnwebdesigns/mrn-mainwp-operations-api",
   "commit": "11956fda5d5029ef7416b3f2368996e708253387",
   "source_only": true,
-  "runtime_provider_commit": "b429137850ddd78b611dfbb115921a669bb133c9",
+  "runtime_provider_commit": "b83265affd9e2c555f1beb8820acece3d5ffcd82",
   "files": [
     {
       "source": "contracts/content-qualification-measurement-read-v1-proposal.json",
