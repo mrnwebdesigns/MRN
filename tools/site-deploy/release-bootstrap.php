@@ -14,7 +14,7 @@ $mrn_release_state_root = realpath( ABSPATH . '__MRN_STATE_RELATIVE__' );
 if ( false === $mrn_release_state_root ) {
 	throw new RuntimeException( 'MRN private release storage is unavailable.' );
 }
-$mrn_release_pointer    = $mrn_release_state_root . '/current.json';
+$mrn_release_pointer = $mrn_release_state_root . '/current.json';
 // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Private atomic deployment pointer.
 $mrn_release_selection = json_decode( file_get_contents( $mrn_release_pointer ), true );
 if ( ! is_array( $mrn_release_selection ) || 1 !== (int) ( $mrn_release_selection['schema'] ?? 0 ) ) {
@@ -65,5 +65,14 @@ if ( ! headers_sent() ) {
 	header( 'X-MRN-Site-Release: ' . $mrn_release_id );
 }
 require $mrn_release_directory . '/functions.php';
-unset( $mrn_release_selection, $mrn_release_directory, $mrn_release_realpath, $mrn_release_pointer,
-	$mrn_release_state_root, $mrn_release_slug, $mrn_release_id, $mrn_release_public_path, $mrn_release_pattern );
+unset(
+	$mrn_release_selection,
+	$mrn_release_directory,
+	$mrn_release_realpath,
+	$mrn_release_pointer,
+	$mrn_release_state_root,
+	$mrn_release_slug,
+	$mrn_release_id,
+	$mrn_release_public_path,
+	$mrn_release_pattern
+);
