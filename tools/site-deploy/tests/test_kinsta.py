@@ -71,3 +71,14 @@ class NativeBackupIdentity(unittest.TestCase):
         adapter.connect.assert_not_called()
         self.assertIsNone(target.password)
         self.assertIn('/private/selector.pub', target.options)
+
+    def test_live_cannot_resolve_staging_or_a_staging_primary_domain(self):
+        adapter = kinsta.Kinsta('test-token', 'a'*36, 'b'*36)
+        config = dict(environment='live', url='https://example.org', root='/www/example/public',
+                      host='host', port='22', user='owner')
+        for name,domain_type in [('staging','staging'),('live','staging')]:
+            response={'site':{'environments':[dict(id='b'*36,name=name,primaryDomain=dict(name='example.org',type=domain_type),web_root=config['root'])]}}
+            with patch.object(adapter,'api',return_value=response) as api:
+                with self.assertRaisesRegex(ValueError,'native Live'):
+                    adapter.connect(config)
+                self.assertEqual(1,api.call_count)

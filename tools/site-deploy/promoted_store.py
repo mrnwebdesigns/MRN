@@ -1,0 +1,222 @@
+"""One-time, backup-gated import of a Kinsta-promoted staging release store.
+
+Keep the promoted source store intact. Only an exact canonical public loader is
+rebound to a fresh, separately bound Live store. No WordPress data is copied.
+"""
+import base64
+import hashlib
+import json
+import os
+from pathlib import Path
+import time
+from urllib.parse import urlsplit
+
+from atomic_store import Store, durable_replace, inventory
+from deploy import check, digest
+from verify_release import verify
+
+
+def validate(plan, promotion):
+    check(plan['slug'], r'[a-z0-9_-]+', 'stylesheet')
+    if (not isinstance(promotion, dict) or set(promotion) != {
+            'schema', 'source_url', 'source_environment_id', 'source_sha', 'pointer', 'public_tree'}
+            or promotion.get('schema') != 1 or plan.get('environment') != 'live'
+            or plan.get('host_provider') != 'kinsta' or plan.get('backup_provider') != 'kinsta'
+            or plan.get('deployment_order') or plan.get('adopt') or plan.get('qualification')
+            or plan.get('bind_imported_source') or plan.get('rollback_to')):
+        raise ValueError('Promoted store import requires an exact manual native Kinsta Live plan')
+    url = urlsplit(promotion['source_url'])
+    if (url.scheme != 'https' or not url.hostname or url.netloc != url.hostname
+            or url.path or url.query or url.fragment or promotion['source_url'] == plan.get('url')):
+        raise ValueError('Reviewed staging source URL is invalid')
+    check(promotion['source_environment_id'], r'[a-f0-9-]{36}', 'source environment')
+    check(promotion['source_sha'], r'[a-f0-9]{40}', 'promoted source SHA')
+    check(promotion['public_tree'], r'[a-f0-9]{64}', 'promoted public tree')
+    pointer = promotion['pointer']
+    if (not isinstance(pointer, dict) or set(pointer) != {'schema', 'slug', 'release_id', 'public_path'}
+            or pointer.get('schema') != 1 or pointer.get('slug') != plan['slug']):
+        raise ValueError('Reviewed promoted pointer is invalid')
+    check(pointer['release_id'], r'[a-f0-9]{64}', 'promoted release')
+    candidate = check(plan.get('artifact_sha256', ''), r'[a-f0-9]{64}', 'candidate artifact')
+    if candidate == pointer['release_id']:
+        raise ValueError('Live qualification must exercise a distinct candidate and rollback pointer')
+    check(pointer['public_path'], r'mrn-assets/' + plan['slug'] + r'/[a-f0-9]{64}', 'promoted asset path')
+    root = Path(plan['root'])
+    expected = root.parent / 'deployments/mrn-site-deploy/live'
+    if Path(plan['state_dir']) != expected:
+        raise ValueError('Live import requires its canonical separate release store')
+    return expected.with_name('staging')
+
+
+def source_binding(plan, promotion):
+    binding = {key: plan[key] for key in ('repository', 'root', 'template', 'slug')}
+    return dict(binding, environment='staging', url=promotion['source_url'])
+
+
+def native_source(adapter, promotion):
+    environments = adapter.api('/sites/' + adapter.site_id + '/environments')['site']['environments']
+    matches = [e for e in environments if e.get('id') == promotion['source_environment_id']
+               and e.get('name') == 'staging' and e.get('primaryDomain', {}).get('type') == 'staging'
+               and 'https://' + e['primaryDomain']['name'] == promotion['source_url']
+               and e['id'] != adapter.environment_id]
+    if len(matches) != 1:
+        raise ValueError('Reviewed staging source is not a sibling native Kinsta environment')
+
+
+def source_artifact(plan, promotion):
+    path = plan.get('promoted_source_archive')
+    if not path:
+        raise ValueError('The original trusted build artifact is required for Live import')
+    return verify(path, promotion['pointer']['release_id'], promotion['source_sha'], plan['source_path'], plan['slug'])
+
+
+def preflight(target, plan, promotion, before):
+    source = validate(plan, promotion)
+    verified = source_artifact(plan, promotion)
+    if (before.get('state') is not None or before.get('target_binding_exists')
+            or before.get('deployment_order') or digest(before['files']) != promotion['public_tree']):
+        raise ValueError('Live import destination or reviewed public tree changed')
+    native_source(target.native_backup, promotion)
+    encoded = base64.b64encode(json.dumps({'source': str(source), 'destination': plan['state_dir'],
+                                          'release': promotion['pointer']['release_id']}).encode()).decode()
+    result = target.php('''
+$c=json_decode(base64_decode('%s'),true);$s=$c['source'];$r=$s.'/releases/'.$c['release'];
+echo 'MRN_RESULT='.wp_json_encode(array(
+ 'environment'=>wp_get_environment_type(),'source_physical'=>realpath($s)===$s,
+ 'source_private'=>is_dir($s) && (fileperms($s)&0077)===0,
+ 'source_no_aliases'=>!is_link($s.'/current.json') && !is_link($s.'/site.json') && !is_link($s.'/adoption.json') && !is_link($r.'/installed.json'),
+ 'destination_exists'=>file_exists($c['destination']) || is_link($c['destination']),
+ 'pointer'=>!is_link($s.'/current.json') && is_file($s.'/current.json')?json_decode(file_get_contents($s.'/current.json'),true):null,
+ 'binding'=>!is_link($s.'/site.json') && is_file($s.'/site.json')?json_decode(file_get_contents($s.'/site.json'),true):null,
+ 'metadata'=>!is_link($r.'/installed.json') && is_file($r.'/installed.json')?json_decode(file_get_contents($r.'/installed.json'),true):null));
+''' % encoded, skip_themes=True)
+    if (result.get('environment') != 'production' or not result.get('source_physical')
+            or not result.get('source_private') or not result.get('source_no_aliases') or result.get('destination_exists')
+            or result.get('pointer') != promotion['pointer']
+            or result.get('binding') != source_binding(plan, promotion)
+            or (result.get('metadata') or {}).get('source_sha') != promotion['source_sha']
+            or (result.get('metadata') or {}).get('theme_files') != verified['theme_files']):
+        raise ValueError('Promoted Live store preflight differs from the reviewed manifest')
+    return {'status': 'promoted-live-import-preflight-verified', 'source_state': str(source),
+            'source_sha': promotion['source_sha'], 'pointer': promotion['pointer'],
+            'public_tree': promotion['public_tree']}
+
+
+def bootstrap(template, store):
+    code = Path(template).read_text()
+    if code.count('__MRN_STATE_RELATIVE__') != 1:
+        raise ValueError('Unexpected bootstrap template')
+    relative = os.path.relpath(str(store.state), str(store.content_root.parent))
+    return code.replace('__MRN_STATE_RELATIVE__', relative).encode()
+
+
+def recognized_bootstraps(template, store):
+    canonical = bootstrap(template, store)
+    relative = os.path.relpath(str(store.state), str(store.content_root.parent))
+    assignment = ("$mrn_release_state_root = realpath( ABSPATH . '" + relative + "' );\n"
+                  "if ( false === $mrn_release_state_root ) {\n"
+                  "\tthrow new RuntimeException( 'MRN private release storage is unavailable.' );\n}\n"
+                  "$mrn_release_pointer = $mrn_release_state_root . '/current.json';")
+    historical = ("$mrn_release_state_root = '" + str(store.state) + "';\n"
+                  "$mrn_release_pointer    = $mrn_release_state_root . '/current.json';")
+    return (canonical, canonical.decode().replace(assignment, historical).encode())
+
+
+def import_store(plan, store, binding, guard, template):
+    promotion = plan['promote_kinsta_staging']
+    source_path = validate(plan, promotion)
+    verified = source_artifact(plan, promotion)
+    store.require_lock()
+    if (store.pointer() is not None or any(p.name not in ('jobs', 'deployment.lock') for p in store.state.iterdir())
+            or plan.get('exercise_rollback') is not True):
+        raise ValueError('Live import requires a fresh destination and rollback exercise')
+    source = Store(source_path, store.public_theme, store.content_root, store.slug)
+    with source.locked_store():
+        metadata_paths = [source.state / name for name in ('current.json', 'site.json', 'adoption.json')]
+        metadata_paths.append(source.releases / promotion['pointer']['release_id'] / 'installed.json')
+        if any(p.is_symlink() for p in metadata_paths):
+            raise ValueError('Promoted private metadata must not be aliased')
+        if ((source.state / 'deployment-order.json').exists()
+                or json.loads((source.state / 'site.json').read_text()) != source_binding(plan, promotion)
+                or source.pointer() != promotion['pointer']):
+            raise ValueError('Promoted staging binding, order or pointer changed')
+        source.verify_public_snapshot()
+        public_files = inventory(source.public_theme)
+        if digest(public_files) != promotion['public_tree']:
+            raise ValueError('Promoted public theme changed before import')
+        original = (source.public_theme / 'functions.php').read_bytes()
+        if original not in recognized_bootstraps(template, source):
+            raise ValueError('Promoted loader is not the exact canonical staging bootstrap')
+        metadata = source.release(promotion['pointer']['release_id'])
+        if (metadata.get('source_sha') != promotion['source_sha']
+                or metadata.get('theme_files') != verified['theme_files']
+                or metadata.get('public_path') != promotion['pointer']['public_path']
+                or inventory(source.content_root / metadata['public_path']) != metadata.get('static_files')):
+            raise ValueError('Promoted private code or public assets differ from reviewed artifact')
+        new_bootstrap = bootstrap(template, store)
+        guard('import-promoted-live-store')
+        # Preserve recovery evidence before publishing a new pointer or loader.
+        durable_replace(store.state / 'promoted-source-bootstrap.php', original)
+        record = {'schema': 1, 'source_state': str(source.state), 'source_binding': source_binding(plan, promotion),
+                  'source_pointer': promotion['pointer'], 'source_sha': promotion['source_sha'],
+                  'public_files': public_files, 'original_bootstrap_sha256': hashlib.sha256(original).hexdigest(),
+                  'live_bootstrap_sha256': hashlib.sha256(new_bootstrap).hexdigest()}
+        durable_replace(store.state / 'promotion.json', (json.dumps(record, sort_keys=True) + '\n').encode())
+        adoption = {'schema': 1, 'slug': store.slug, 'legacy_release_id': metadata['release_id'],
+                    'public_files': public_files, 'bootstrap_sha256': record['original_bootstrap_sha256'],
+                    'imported': True, 'source_sha': promotion['source_sha']}
+        durable_replace(store.state / 'adoption.json', (json.dumps(adoption, sort_keys=True) + '\n').encode())
+        # Rehydrate from the verified original archive, never from mutable
+        # private metadata alone. The existing stager checks every asset byte.
+        store.releases.mkdir(mode=0o700)
+        store.stage(plan['promoted_source_archive'], promotion['pointer']['release_id'], promotion['source_sha'], plan['source_path'])
+        store.select(metadata['release_id'], None)
+        guard('rebind-promoted-live-loader')
+        if inventory(store.public_theme) != public_files or source.pointer() != promotion['pointer']:
+            raise ValueError('Promoted source changed before loader rebind')
+        adoption['bootstrap_sha256'] = record['live_bootstrap_sha256']
+        durable_replace(store.state / 'adoption.json', (json.dumps(adoption, sort_keys=True) + '\n').encode())
+        durable_replace(store.state / 'site.json', (json.dumps(binding, sort_keys=True) + '\n').encode())
+        durable_replace(store.public_theme / 'functions.php', new_bootstrap, 0o644)
+        store.verify_public_snapshot()
+        return {'operation': 'import-promoted-live-store', 'source_state': str(source.state),
+                'current': store.pointer(), 'original_bootstrap_sha256': record['original_bootstrap_sha256'],
+                'live_bootstrap_sha256': record['live_bootstrap_sha256']}
+
+
+def restore_import(plan, store, guard):
+    """Restore the exact original loader; quarantine metadata, never erase code."""
+    store.require_lock()
+    record = json.loads((store.state / 'promotion.json').read_text())
+    promotion = plan['promote_kinsta_staging']
+    source_path = validate(plan, promotion)
+    if (record.get('source_state') != str(source_path)
+            or record.get('source_binding') != source_binding(plan, promotion)
+            or record.get('source_pointer') != promotion['pointer']
+            or digest(record.get('public_files', {})) != promotion['public_tree']):
+        raise ValueError('Promoted recovery record differs from the reviewed plan')
+    original = (store.state / 'promoted-source-bootstrap.php').read_bytes()
+    if hashlib.sha256(original).hexdigest() != record['original_bootstrap_sha256']:
+        raise ValueError('Promoted source recovery snapshot changed')
+    current = inventory(store.public_theme)
+    expected = dict(record['public_files'])
+    current_bootstrap = current.get('functions.php')
+    expected['functions.php'] = current_bootstrap
+    if (current != expected or current_bootstrap not in
+            (record['original_bootstrap_sha256'], record['live_bootstrap_sha256'])):
+        raise ValueError('Public drift blocks promoted loader recovery')
+    source = Store(record['source_state'], store.public_theme, store.content_root, store.slug)
+    with source.locked_store():
+        if (source.pointer() != record['source_pointer']
+                or json.loads((source.state / 'site.json').read_text()) != record['source_binding']):
+            raise ValueError('Original promoted store changed before recovery')
+        source.release(record['source_pointer']['release_id'])
+        guard('restore-promoted-source-loader')
+        durable_replace(store.public_theme / 'functions.php', original, 0o644)
+        source.verify_public_snapshot()
+        stamp = str(int(time.time() * 1000000000))
+        for name in ('current.json', 'adoption.json', 'site.json'):
+            path = store.state / name
+            if path.exists():
+                os.rename(path, store.state / (name + '.failed-' + stamp))
+    return {'status': 'original-promoted-store-restored', 'current': record['source_pointer']}

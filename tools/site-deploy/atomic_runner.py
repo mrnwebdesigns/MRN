@@ -19,7 +19,7 @@ TOOLS = Path(__file__).resolve().parent
 HOST_FILES = ('host_controller.py', 'atomic_store.py', 'cache_policy.py', 'deploy.py',
               'verify_release.py', 'verify_public_assets.py', 'backup.php', 'release-bootstrap.php',
               'host_paths.py', 'html_cache.php', 'kinsta.py', 'kinsta_html_cache.php',
-              'deployment_request.py', 'release_request.py', 'resolve_source.py')
+              'deployment_request.py', 'release_request.py', 'resolve_source.py', 'promoted_store.py')
 
 
 def transfer_backup(target):
@@ -43,6 +43,7 @@ def run(plan, c):
     # require the readiness switch plus the exact existing release pointer.
     native = c.get('host_provider') == 'kinsta' and c['backup_provider'] == 'kinsta'
     importing = bool(plan.get('bind_imported_source'))
+    promotion = plan.get('promote_kinsta_staging')
     activation_environment(plan['environment'], c.get('host_provider', 'cloudpanel'))
     c = dict(c, environment=plan['environment'])
     if plan.get('bind_imported_source') and (not native or plan['environment'] != 'staging'):
@@ -60,10 +61,14 @@ def run(plan, c):
             raise ValueError('Qualification plan requires authorized manual qualification')
     # Readiness disarms forward deployment, not restoration of a retained release.
     # Receipt provenance, exact current pointer and ordering still bind rollback.
-    if not plan.get('adopt') and not qualifying and not importing and not plan.get('rollback_to') and not c.get('ready'):
+    if not plan.get('adopt') and not qualifying and not importing and promotion is None and not plan.get('rollback_to') and not c.get('ready'):
         raise ValueError('DEPLOY_READY must be enabled after qualification')
     if not plan.get('rollback_to'):
         verify(plan['archive'], plan['artifact_sha256'], plan['source_sha'], plan['source_path'], plan['slug'])
+    if promotion is not None:
+        from promoted_store import validate, source_artifact
+        validate(dict(c, **plan), promotion)
+        source_artifact(plan, promotion)
     target = Target(c)
     # Recovery must not execute a potentially broken active child theme. The
     # pointer and raw public identity remain readable with theme loading skipped.
@@ -71,7 +76,10 @@ def run(plan, c):
     if importing and (before.get('target_binding_exists') or before.get('deployment_order')
                       or not before.get('state') or plan.get('exercise_rollback') is not True):
         raise ValueError('Imported staging qualification requires an unbound private release and a rollback exercise')
-    verify_identity(c, before, plan['slug'])
+    verify_identity(c, before, plan['slug'], require_ready=promotion is None)
+    if promotion is not None:
+        from promoted_store import preflight
+        preflight(target, dict(c, **plan), promotion, before)
     verify_state_privacy(c, before)
     if before['git']:
         verify_git_privacy(c, before)
@@ -109,6 +117,12 @@ def run(plan, c):
         target.shell('umask 077\nbase64 -d > ' + shlex.quote(remote_archive) +
                      " <<'MRN_RELEASE_PAYLOAD'\n" + encoded_archive + '\nMRN_RELEASE_PAYLOAD\n')
         remote_plan['archive'] = remote_archive
+        if promotion is not None:
+            original_archive = job + '/promoted-source.tar'
+            encoded_original = base64.b64encode(Path(plan['promoted_source_archive']).read_bytes()).decode()
+            target.shell('umask 077\nbase64 -d > ' + shlex.quote(original_archive) +
+                         " <<'MRN_PROMOTED_SOURCE'\n" + encoded_original + '\nMRN_PROMOTED_SOURCE\n')
+            remote_plan['promoted_source_archive'] = original_archive
     envelope = {'plan': remote_plan}
     if native:
         remote_plan['native_backup_receipt'] = backup

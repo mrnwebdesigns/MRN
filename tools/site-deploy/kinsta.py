@@ -31,6 +31,9 @@ class Kinsta:
         if config.get('environment') == 'staging' and (
                 environment.get('name') != 'staging' or environment.get('primaryDomain', {}).get('type') != 'staging'):
             raise ValueError('Kinsta staging selection must resolve to a native staging environment')
+        if config.get('environment') == 'live' and (
+                environment.get('name') != 'live' or environment.get('primaryDomain', {}).get('type') != 'live'):
+            raise ValueError('Kinsta Live selection must resolve to a native Live environment')
         if ('https://' + environment['primaryDomain']['name'] != config['url']
                 or environment['web_root'] != config['root'] or environment.get('is_blocked')):
             raise ValueError('Kinsta environment URL/root is not the configured target')

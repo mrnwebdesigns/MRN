@@ -61,6 +61,7 @@ $caches = array_values(array_filter($plugins, static function($plugin) {
 echo 'MRN_RESULT=' . wp_json_encode(array(
     'url'=>untrailingslashit(get_option('home')), 'slug'=>get_stylesheet(), 'template'=>get_template(),
     'root'=>realpath(ABSPATH), 'content'=>realpath(WP_CONTENT_DIR),
+    'environment_type'=>wp_get_environment_type(),
     'wp_cache'=>defined('WP_CACHE') && WP_CACHE,
     'advanced_cache'=>file_exists(WP_CONTENT_DIR . '/advanced-cache.php'), 'cache_plugins'=>$caches
 ));
@@ -218,6 +219,12 @@ def public_check(plan, store, pointer):
 
 
 def execute(plan, native_backup=None):
+    promotion = plan.get('promote_kinsta_staging')
+    if promotion is not None:
+        from promoted_store import validate, native_source
+        validate(plan, promotion)
+        if plan.get('exercise_rollback') is not True:
+            raise ValueError('Promoted Live qualification requires rollback verification')
     if plan.get('bind_imported_source') and (plan.get('environment') != 'staging' or plan.get('host_provider') != 'kinsta'):
         raise ValueError('Imported release enrollment is restricted to native Kinsta staging')
     if plan.get('host_provider') == 'kinsta':
@@ -225,6 +232,8 @@ def execute(plan, native_backup=None):
             raise ValueError('Native Kinsta backup identity is required')
         native_backup.identity({'url': plan['url'], 'root': plan['root'], 'host': plan['ssh_host'],
                                 'port': plan['ssh_port'], 'user': plan['ssh_user'], 'environment': plan['environment']})
+        if promotion is not None:
+            native_source(native_backup, promotion)
 
     def guard(operation):
         if plan.get('host_provider') == 'kinsta':
@@ -232,6 +241,8 @@ def execute(plan, native_backup=None):
         return backup(plan['root'], operation)
 
     result, binding, origin = identity(plan)
+    if promotion is not None and result.get('environment_type') != 'production':
+        raise ValueError('Promoted Live qualification requires WordPress production mode')
     store = Store(plan['state_dir'], Path(result['content']) / 'themes' / plan['slug'], result['content'], plan['slug'],
                   protected_state_root=plan.get('_protected_state_root'))
     receipt = {'schema': 1, **binding, 'status': 'in-progress', 'host_provider': plan.get('host_provider', 'cloudpanel'), 'origin_cache': origin, 'steps': []}
@@ -256,10 +267,15 @@ def execute(plan, native_backup=None):
             raise ValueError('Active release differs from the reviewed plan')
         if plan.get('host_provider', 'cloudpanel') == 'cloudpanel':
             verify_uncached_html(plan['url'], plan['pages'])
-        old_assets = legacy_assets(plan) if before is None or before['public_path'] is None else {}
+        old_assets = legacy_assets(plan) if promotion is None and (before is None or before['public_path'] is None) else {}
         adopted = False
         try:
-            if before is None:
+            if promotion is not None:
+                from promoted_store import import_store
+                receipt['promotion'] = import_store(plan, store, binding, guard, TOOLS / 'release-bootstrap.php')
+                before = store.pointer()
+                receipt['imported'] = public_check(plan, store, before)
+            elif before is None:
                 if not plan.get('adopt') or digest(inventory(store.public_theme)) != plan['baseline']:
                     raise ValueError('First adoption requires the exact reviewed legacy tree')
                 receipt['steps'].append({'operation': 'adopt', 'backup': guard('adopt')})
@@ -327,6 +343,15 @@ def execute(plan, native_backup=None):
                             http_check(page)
                         verify_legacy_assets(old_assets)
                         receipt['recovery'] = {'status': 'original-public-bootstrap-restored'}
+            if promotion is not None and (store.state / 'promotion.json').exists():
+                try:
+                    from promoted_store import restore_import
+                    receipt['promotion_recovery'] = restore_import(plan, store, guard)
+                    receipt['recovery_cache'] = html_cache(plan, 'refresh')
+                    for page in plan['pages']:
+                        http_check(page)
+                except Exception as recovery_error:
+                    receipt['promotion_recovery_error'] = str(recovery_error)
             # The receipt must survive failure; the runner treats this status as
             # a failed operation and does not enable deployment readiness.
         receipt_path = store.state / ('receipt-' + str(int(time.time() * 1000000000)) + '.json')
