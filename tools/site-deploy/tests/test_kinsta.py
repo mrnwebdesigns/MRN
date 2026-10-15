@@ -87,7 +87,7 @@ class NativeBackupIdentity(unittest.TestCase):
 class NativeEdgeInvalidation(unittest.TestCase):
     def setUp(self):
         self.adapter = kinsta.Kinsta('test-token', 'a'*36, 'b'*36)
-        self.operation = 'edgeCache:clear-' + 'b'*36
+        self.operation = 'edge-cache:clear-12345678-1234-1234-1234-123456789abc'
 
     def test_exact_url_completion_is_required_without_descendants_or_full_cache(self):
         responses = [{'status':202,'operation_id':self.operation}, {'status':202}, {'status':200},
@@ -111,13 +111,20 @@ class NativeEdgeInvalidation(unittest.TestCase):
                     self.adapter.refresh_edge_html('https://example.org', ['https://example.org/',page])
                 api.assert_not_called()
 
-    def test_missing_mismatched_or_failed_operation_is_not_success(self):
+    def test_missing_malformed_or_failed_operation_is_not_success(self):
         for response in [{}, {'status':200}, {'status':202,'operation_id':'wrong'},
-                         {'status':202,'operation_id':'edgeCache:clear-'+'c'*36}]:
+                         {'status':202,'operation_id':'edge-cache:clear-not-a-uuid'},
+                         {'status':202,'operation_id':'backups:add-manual-12345678-1234-1234-1234-123456789abc'}]:
             with patch.object(self.adapter,'api',return_value=response):
                 with self.assertRaises(RuntimeError):self.adapter.refresh_edge_html('https://example.org',['https://example.org/'])
         with patch.object(self.adapter,'api',side_effect=[{'status':202,'operation_id':self.operation},{'status':500}]):
             with self.assertRaisesRegex(RuntimeError,'failed'):self.adapter.refresh_edge_html('https://example.org',['https://example.org/'])
+
+    def test_documented_legacy_spelling_also_uses_returned_opaque_job_id(self):
+        operation = self.operation.replace('edge-cache:', 'edgeCache:')
+        with patch.object(self.adapter,'api',side_effect=[{'status':202,'operation_id':operation},{'status':200}]) as api:
+            self.adapter.refresh_edge_html('https://example.org',['https://example.org/'])
+        self.assertEqual('/operations/'+operation,api.call_args_list[1].args[0])
 
     def test_pending_operation_is_polled_without_a_second_post(self):
         with patch.object(self.adapter,'api',side_effect=[{'status':202,'operation_id':self.operation}]+[{'status':202}]*60) as api, patch.object(kinsta.time,'sleep'):

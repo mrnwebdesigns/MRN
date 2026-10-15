@@ -44,9 +44,11 @@ class Kinsta:
             started = self.api('/sites/edge-caching/clear', {
                 'environment_id': self.environment_id, 'clear_subdirectories': False, 'url': page})
             operation = started.get('operation_id')
+            # The target is bound by verified native identity and request body.
+            # Live API job IDs are opaque UUIDs, not environment IDs; older
+            # documentation uses the camel-case spelling for the same job type.
             if (started.get('status') != 202 or not isinstance(operation, str)
-                    or not operation.startswith('edgeCache:clear-' + self.environment_id)
-                    or not re.fullmatch(r'[A-Za-z0-9:_-]{1,200}', operation)):
+                    or not re.fullmatch(r'(?:edge-cache|edgeCache):clear-[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}', operation)):
                 raise RuntimeError('Kinsta edge purge did not return a pending operation')
             for _ in range(60):
                 status = self.api('/operations/' + operation).get('status')
