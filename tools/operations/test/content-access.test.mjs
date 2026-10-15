@@ -5,6 +5,7 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { request as httpRequest } from 'node:http';
+import { setInterval, clearInterval } from 'node:timers';
 import { Store } from '../src/store.mjs';
 import { digest } from '../src/contracts.mjs';
 import { delegationCanonical, delegationDigest } from '../src/delegation.mjs';

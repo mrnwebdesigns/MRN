@@ -12,10 +12,10 @@ const contracts = Object.fromEntries(names.map(name => [name, JSON.parse(read(`c
 const fixture = JSON.parse(read('test/fixtures/content-qualification-contract.json'));
 const schema = (contract, definition) => compileContentSchema({ $ref: `#/definitions/${definition}` }, contracts[contract].definitions);
 
-test('qualification contracts and independent vectors are pinned to one accepted provider checkpoint', () => {
+test('qualification contracts and independent vectors are pinned to one provider checkpoint', () => {
   const source = JSON.parse(read('contracts/content-qualification-sources.json'));
   assert.equal(source.schema, 1); assert.equal(source.repository, 'mrnwebdesigns/mrn-mainwp-operations-api');
-  assert.equal(source.commit, '09dac5f4f6f599e5a497f86f92a2b2ca02aeaf1d');
+  assert.equal(source.commit, 'c5d8f36bf0ace4ca27c99b7e4f6469b16513ded4');
   assert.deepEqual(source.files.map(f => f.local), [...names.map(n => `contracts/${n}`),
     'test/fixtures/content-qualification-contract.json', 'test/fixtures/content-policy-v2-provider.json',
     'contracts/content-capture-read-v1.json', 'contracts/content-qualification-report-v1.json',
