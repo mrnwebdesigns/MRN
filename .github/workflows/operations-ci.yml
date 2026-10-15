@@ -94,9 +94,11 @@ jobs:
           MRN_DISPOSABLE_API_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/provider-hook.sh
           MRN_DISPOSABLE_NATIVE_CHILD: '1'
           MRN_DISPOSABLE_NATIVE_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/native-hook.sh
+          MRN_DISPOSABLE_ACCESS_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/access-hook.sh
           MRN_GATEWAY_MCP_SOURCE: ${{ github.workspace }}/.runtime/transport
           MRN_GATEWAY_REPORT: ${{ runner.temp }}/gateway-provider-report.json
           MRN_GATEWAY_NATIVE_REPORT: ${{ runner.temp }}/gateway-native-content-report.json
+          MRN_GATEWAY_ACCESS_REPORT: ${{ runner.temp }}/gateway-access-report.json
         run: |
           .runtime/provider/tests/runtime/run-dashboard-api.sh
           node --input-type=module <<'JS'
@@ -114,6 +116,12 @@ jobs:
           assert.equal(native.managedSites, 1);
           for (const field of ['contentWriteVerified', 'contentRollbackVerified', 'publicHtmlVerified']) assert.equal(native[field], true);
           for (const field of ['productionCredentials', 'liveGoogleVerified', 'protectedQaVerified', 'productionQaVerified', 'remoteBackupVerified', 'chatgptAcceptanceVerified', 'codeWriteVerified']) assert.equal(native[field], false);
+          const access = JSON.parse(readFileSync(process.env.MRN_GATEWAY_ACCESS_REPORT, 'utf8'));
+          assert.equal(access.result, 'PASS');
+          assert.equal(access.passed.length, 4);
+          assert.equal(access.scope, 'disposable-native-access-only');
+          for (const field of ['captureVerified', 'pendingDuringReadVerified']) assert.equal(access[field], true);
+          for (const field of ['productionCredentials', 'liveGoogleVerified', 'protectedWorkerVerified', 'chatgptAcceptanceVerified', 'codeWriteVerified', 'contentWriteVerified', 'remoteBackupVerified']) assert.equal(access[field], false);
           JS
       - name: Retain redacted disposable worker failure
         if: failure()
@@ -131,5 +139,6 @@ jobs:
             ${{ runner.temp }}/gateway-provider-report.json
             ${{ runner.temp }}/gateway-native-content-report.json
             ${{ runner.temp }}/capture-transport-report.json
+            ${{ runner.temp }}/gateway-access-report.json
           if-no-files-found: error
           retention-days: 14

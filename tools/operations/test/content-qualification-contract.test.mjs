@@ -15,7 +15,7 @@ const schema = (contract, definition) => compileContentSchema({ $ref: `#/definit
 test('qualification contracts and independent vectors are pinned to one accepted provider checkpoint', () => {
   const source = JSON.parse(read('contracts/content-qualification-sources.json'));
   assert.equal(source.schema, 1); assert.equal(source.repository, 'mrnwebdesigns/mrn-mainwp-operations-api');
-  assert.equal(source.commit, 'c2abe78e84e340413e88a66f47207dd2caf8d86c');
+  assert.equal(source.commit, '09dac5f4f6f599e5a497f86f92a2b2ca02aeaf1d');
   assert.deepEqual(source.files.map(f => f.local), [...names.map(n => `contracts/${n}`),
     'test/fixtures/content-qualification-contract.json', 'test/fixtures/content-policy-v2-provider.json',
     'contracts/content-capture-read-v1.json', 'contracts/content-qualification-report-v1.json',
