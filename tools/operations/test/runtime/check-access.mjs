@@ -8,11 +8,12 @@ import { execFile, execFileSync } from 'node:child_process';
 import { promisify } from 'node:util';
 import { createLocalJWKSet, exportJWK, generateKeyPair, SignJWT } from 'jose';
 import { createAuthenticator } from '../../src/auth.mjs';
-import { IdentitySigner, delegationDigest } from '../../src/delegation.mjs';
+import { IdentitySigner, delegationCanonical, delegationDigest } from '../../src/delegation.mjs';
 import { DelegatedMainwpClient } from '../../src/delegated-mainwp.mjs';
 import { contentSchemas, contentSnapshot } from '../../src/content-contract.mjs';
 import { AccessSigner, AccessQueryReader, ContentAccessVeto, accessVetoPath } from '../../src/content-access.mjs';
 import { ContentAccessLedger, requesterDigest } from '../../src/content-access-store.mjs';
+import { compileContentSchema } from '../../src/content-schema.mjs';
 import { createHttpServer } from '../../src/http.mjs';
 import { connectMainwp, payload } from '../../src/mainwp.mjs';
 import { Store } from '../../src/store.mjs';
@@ -37,6 +38,8 @@ assert.equal(context.control.route_switch, join(directory, 'access-integration/s
 assert.deepEqual(context.limits, { hook_seconds: 150, owner_wait_seconds: 170, read_wait_seconds: 15, child_delay_seconds: 6 });
 const transportRoot = resolve(process.env.MRN_GATEWAY_MCP_SOURCE);
 const lock = JSON.parse(readFileSync(new URL('./sources.json', import.meta.url)));
+const recoveryContract = JSON.parse(readFileSync(new URL('../../contracts/content-capture-read-v1.json', import.meta.url)));
+const recoverySchema = compileContentSchema(recoveryContract.ability.output, recoveryContract.definitions);
 assert.equal(execFileSync('git', ['-C', transportRoot, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), lock.transport.commit);
 const work = join(directory, 'actual-gateway-access'); mkdirSync(work, { mode: 0o700 });
 const home = join(work, 'home'); mkdirSync(home, { mode: 0o700 });
@@ -54,9 +57,9 @@ const signer = new IdentitySigner({ ...identity, connectionId: 'con_RuntimeFixtu
 const store = new Store(join(work, 'access.sqlite'));
 const ledger = new ContentAccessLedger(store, { connectionId: 'con_RuntimeFixture' });
 const clients = [], processes = new Set();
-const run = async (file, args, timeout = 90000) => {
+const run = async (file, args, timeout = 90000, maxBuffer = 131072) => {
   // Buffer privately; never print subprocess credentials/claims on failure.
-  const promise = promisify(execFile)(file, args, { encoding: 'utf8', timeout, maxBuffer: 131072 });
+  const promise = promisify(execFile)(file, args, { encoding: 'utf8', timeout, maxBuffer });
   processes.add(promise.child);
   try { return (await promise).stdout; }
   catch { throw new Error('Disposable access worker failed; private output withheld.'); }
@@ -66,6 +69,13 @@ const worker = async (mode, id) => {
   assert.ok(['context', 'capture', 'status', 'arm-delay', 'wait-read'].includes(mode));
   assert.match(id, /^[a-f0-9-]{36}$/);
   return JSON.parse(await run(context.control.worker, [mode, id]));
+};
+const recover = async (id, expectedHash) => {
+  assert.match(id, /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/);
+  assert.match(expectedHash, /^[a-f0-9]{64}$/);
+  // The private fixture signs one new read; it never retries capture or exports
+  // its key/assertion. Only this full-artifact response gets the larger bound.
+  return JSON.parse(await run(context.control.worker, ['read-capture', id, expectedHash], 90000, 4500000));
 };
 const raw = async () => { const c = await connectMainwp(config, environment); clients.push(c); return c; };
 const report = { schema: 1, source: lock, scope: 'disposable-native-access-only', passed: [], productionCredentials: false,
@@ -125,6 +135,31 @@ try {
   const answered = store.db.prepare('SELECT * FROM content_access_queries WHERE job=?').all(first.qualification_job_id);
   assert.ok(answered.length >= 3); assert.ok(answered.every(row => row.state === 'clear' && row.revision === 1));
   pass('Native capture passes real HTTPS callback and independently authenticated MCP query readback');
+  const running = await worker('context', first.qualification_job_id);
+  assert.equal(running.ok, true); assert.equal(running.output.job_context.state, 'running');
+  assert.equal(running.output.job_context_sha256, delegationDigest(running.output.job_context));
+  assert.equal(running.output.job_context.capture_artifact_sha256, captured.capture_artifact_sha256);
+  const recovered = await recover(first.qualification_job_id, captured.capture_artifact_sha256);
+  assert.deepEqual(Object.keys(recovered).sort(), ['ok', 'output']); assert.equal(recovered.ok, true);
+  const recoveredOutput = recoverySchema.parse(recovered.output), artifact = recoveredOutput.capture_artifact;
+  assert.equal(recoveredOutput.qualification_job_id, first.qualification_job_id);
+  assert.equal(recoveredOutput.capture_artifact_sha256, captured.capture_artifact_sha256);
+  assert.equal(delegationDigest(artifact), captured.capture_artifact_sha256);
+  assert.ok(Buffer.byteLength(delegationCanonical(artifact)) <= 4400000);
+  for (const field of ['schema', 'qualification_job_id', 'authorization_policy_sha256', 'catalog_epoch',
+    'requester_binding_sha256', 'site_id', 'site_url', 'target', 'expected_snapshot_sha256',
+    'expected_target_revision', 'recipe_catalog_sha256']) assert.deepEqual(artifact[field], running.output.job_context[field]);
+  assert.equal(delegationDigest(artifact.snapshot), inspected.snapshot_sha256);
+  assert.equal(artifact.recipe_sha256, context.expected.recipe_sha256);
+  assert.deepEqual(await worker('status', first.qualification_job_id), saved);
+  const recoveredQueries = store.db.prepare('SELECT * FROM content_access_queries WHERE job=?').all(first.qualification_job_id)
+    .filter(row => !answered.some(previous => previous.id === row.id));
+  assert.equal(recoveredQueries.length, 2);
+  assert.ok(recoveredQueries.every(row => row.state === 'clear' && row.revision === 1));
+  const readAudit = store.db.prepare("SELECT * FROM content_access_audit WHERE job=? AND phase='read-capture' AND event='veto-answered'")
+    .all(first.qualification_job_id);
+  assert.equal(readAudit.length, 2); assert.ok(readAudit.every(row => row.state === 'clear' && row.revision === 1));
+  pass('Retained private capture recovery returns the original artifact through two actual Node access vetoes');
   const second = await queue();
   assert.equal((await worker('arm-delay', second.qualification_job_id)).armed, true);
   const pendingCapture = worker('capture', second.qualification_job_id).then(value => ({ value }), error => ({ error }));
@@ -140,6 +175,14 @@ try {
   assert.equal(stopped.state, 'failed'); assert.equal(stopped.capture_authenticated, false); assert.equal(stopped.retained_state_matches, true);
   assert.ok(store.db.prepare('SELECT * FROM content_access_queries WHERE job=?').all(second.qualification_job_id).some(row => row.state === 'pending-revocation' && row.revision === 2));
   pass('Pending gateway revocation during a real delayed Child read prevents complete capture retention');
+  const deniedRecovery = await recover(first.qualification_job_id, captured.capture_artifact_sha256);
+  assert.equal(deniedRecovery.ok, false); assert.equal(deniedRecovery.qualification_job_id, first.qualification_job_id);
+  assert.equal(Object.hasOwn(deniedRecovery, 'output'), false);
+  assert.equal(deniedRecovery.error_code, 'mrn_capture_read_access');
+  assert.deepEqual(await worker('status', first.qualification_job_id), saved);
+  assert.ok(store.db.prepare("SELECT * FROM content_access_audit WHERE job=? AND phase='read-capture' AND event='veto-answered'")
+    .all(first.qualification_job_id).some(row => row.state === 'pending-revocation' && row.revision === 2));
+  pass('Pending original-requester revocation also withholds a previously completed capture without changing it');
   await assert.rejects(queue, { code: 'ACCESS_DENIED' });
   const attempts = store.db.prepare('SELECT * FROM content_access_audit WHERE job=?').all(second.qualification_job_id);
   assert.ok(attempts.some(row => row.event === 'revocation-pending'));
@@ -152,6 +195,7 @@ try {
   assert.ok(lookups.every(row => row.method === 'POST' && row.status === 200 && !row.subject));
   pass('Durable original-requester ledger denies subsequent queueing and retains attributable revocation evidence');
   report.result = 'PASS'; report.captureVerified = true; report.pendingDuringReadVerified = true;
+  report.retainedCaptureRecoveryVerified = true; report.pendingRecoveryDenied = true;
   writeFileSync(process.env.MRN_GATEWAY_ACCESS_REPORT, `${JSON.stringify(report, null, 2)}\n`, { mode: 0o600 });
 } finally {
   for (const child of processes) child?.kill('SIGTERM');
