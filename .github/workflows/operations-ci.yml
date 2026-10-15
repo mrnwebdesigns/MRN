@@ -49,20 +49,22 @@ jobs:
           import assert from 'node:assert/strict';
           const lock = JSON.parse(readFileSync('tools/operations/test/runtime/sources.json', 'utf8'));
           assert.equal(lock.schema, 1);
-          for (const [name, repository] of [['provider', 'mrnwebdesigns/mrn-mainwp-operations-api'], ['transport', 'mrnwebdesigns/mainwp-mcp']]) {
+          for (const [name, repository] of [['provider', 'mrnwebdesigns/mrn-mainwp-operations-api'], ['transport', 'mrnwebdesigns/mainwp-mcp'], ['runner', 'mrnwebdesigns/mrn-code-qa-runner']]) {
             assert.equal(lock[name].repository, repository);
             assert.match(lock[name].commit, /^[a-f0-9]{40}$/);
             appendFileSync(process.env.GITHUB_OUTPUT, `${name}=${lock[name].commit}\n`);
           }
           JS
-      - name: Request read-only access to the pinned provider source
+      - name: Request existing read-only access to pinned provider and runner sources
         id: provider-token
         uses: actions/create-github-app-token@v2
         with:
           app-id: ${{ secrets.MRN_CI_STANDALONE_REPOS_APP_ID }}
           private-key: ${{ secrets.MRN_CI_STANDALONE_REPOS_PRIVATE_KEY }}
           owner: mrnwebdesigns
-          repositories: mrn-mainwp-operations-api
+          repositories: |
+            mrn-mainwp-operations-api
+            mrn-code-qa-runner
           permission-contents: read
       - name: Check out the accepted provider checkpoint
         uses: actions/checkout@v4
@@ -78,6 +80,14 @@ jobs:
           repository: mrnwebdesigns/mainwp-mcp
           ref: ${{ steps.sources.outputs.transport }}
           path: .runtime/transport
+          persist-credentials: false
+      - name: Check out the qualified acquisition runner
+        uses: actions/checkout@v4
+        with:
+          repository: mrnwebdesigns/mrn-code-qa-runner
+          ref: ${{ steps.sources.outputs.runner }}
+          token: ${{ steps.provider-token.outputs.token }}
+          path: .runtime/runner
           persist-credentials: false
       - name: Install locked test dependencies and build MCP
         run: |
@@ -98,6 +108,7 @@ jobs:
           MRN_GATEWAY_MCP_SOURCE: ${{ github.workspace }}/.runtime/transport
           MRN_GATEWAY_REPORT: ${{ runner.temp }}/gateway-provider-report.json
           MRN_GATEWAY_PROVIDER_SOURCE: ${{ github.workspace }}/.runtime/provider
+          MRN_GATEWAY_RUNNER_SOURCE: ${{ github.workspace }}/.runtime/runner
           MRN_GATEWAY_NATIVE_REPORT: ${{ runner.temp }}/gateway-native-content-report.json
           MRN_GATEWAY_ACCESS_REPORT: ${{ runner.temp }}/gateway-access-report.json
         run: |
@@ -125,7 +136,7 @@ jobs:
           for (const field of ['captureVerified', 'pendingDuringReadVerified', 'retainedCaptureRecoveryVerified', 'pendingRecoveryDenied', 'currentSitePermissionVerified', 'privateLifecycleVerified', 'measurementReadbackVerified', 'measurementSitePermissionVerified', 'pendingMeasurementsDenied']) assert.equal(access[field], true);
           for (const field of ['productionCredentials', 'liveGoogleVerified', 'protectedWorkerVerified', 'chatgptAcceptanceVerified', 'codeWriteVerified', 'contentWriteVerified', 'remoteBackupVerified']) assert.equal(access[field], false);
           const sources = JSON.parse(readFileSync('tools/operations/test/runtime/sources.json', 'utf8'));
-          for (const name of ['provider', 'transport']) assert.equal(execFileSync('git', ['-C', `.runtime/${name}`, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), sources[name].commit);
+          for (const name of ['provider', 'transport', 'runner']) assert.equal(execFileSync('git', ['-C', `.runtime/${name}`, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), sources[name].commit);
           for (const report of [proof, native, access]) assert.deepEqual(report.source, sources);
           JS
       - name: Retain redacted disposable worker failure

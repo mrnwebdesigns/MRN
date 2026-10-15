@@ -7,5 +7,9 @@
   "transport": {
     "repository": "mrnwebdesigns/mainwp-mcp",
     "commit": "3249bde643f52f29b7b18db41f4c3c7bb88d2434"
+  },
+  "runner": {
+    "repository": "mrnwebdesigns/mrn-code-qa-runner",
+    "commit": "d9f2eba47efd27bcc3e5ee04c3c7eeaf0b3d11a1"
   }
 }
