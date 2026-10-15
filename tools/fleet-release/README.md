@@ -18,7 +18,10 @@ unchanged. Unrelated repository documents remain outside the release material.
 
 `launcher.py` fetches the current accepted controller into its own clean mirror.
 `install.py` installs an owner-local LaunchAgent at five minute intervals. It
-runs while the owner is logged in and this Mac is awake. Its GitHub CLI account
+runs with Standard launchd scheduling to give native browser timing qualification
+regular CPU and I/O scheduling. Existing Background definitions must be preserved
+and reinstalled once; the installer refuses to overwrite a different definition.
+The service runs while the owner is logged in and this Mac is awake. Its GitHub CLI account
 and business 1Password SSH agent must remain available; authentication failure
 blocks publication without credential fallback. This is not an always-on hosted
 runner. Public MRN Actions run read-only contract/Code gates; licensed packages

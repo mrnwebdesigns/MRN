@@ -13,8 +13,10 @@ LABEL = 'com.mrn.fleet-source'
 
 
 def definition(python, launcher, config, state, executable_path):
+    # Native timing qualification inherits this process policy. Use regular
+    # scheduling so CPU/I/O throttling does not distort its browser metrics.
     return {'Label': LABEL, 'ProgramArguments': [str(python), str(launcher), str(config)],
-            'RunAtLoad': True, 'StartInterval': 300, 'ProcessType': 'Background',
+            'RunAtLoad': True, 'StartInterval': 300, 'ProcessType': 'Standard',
             'EnvironmentVariables': {'PATH': executable_path, 'GIT_TERMINAL_PROMPT': '0'},
             'StandardOutPath': str(state / 'service.log'),
             'StandardErrorPath': str(state / 'service-errors.log')}
