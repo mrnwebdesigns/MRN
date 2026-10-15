@@ -28,6 +28,9 @@ class Kinsta:
         if len(matches) != 1:
             raise ValueError('Kinsta environment does not belong to the configured site')
         environment = matches[0]
+        if config.get('environment') == 'staging' and (
+                environment.get('name') != 'staging' or environment.get('primaryDomain', {}).get('type') != 'staging'):
+            raise ValueError('Kinsta staging selection must resolve to a native staging environment')
         if ('https://' + environment['primaryDomain']['name'] != config['url']
                 or environment['web_root'] != config['root'] or environment.get('is_blocked')):
             raise ValueError('Kinsta environment URL/root is not the configured target')

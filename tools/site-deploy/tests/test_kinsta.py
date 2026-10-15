@@ -46,3 +46,28 @@ class NativeBackupIdentity(unittest.TestCase):
         with patch.object(adapter, 'api', return_value={'environment':{'backups':[]}}):
             with self.assertRaises(RuntimeError):
                 adapter.verify_transaction_backup(receipt, 'activate')
+
+    def test_staging_cannot_resolve_live_or_a_custom_domain_before_ssh_access(self):
+        adapter = kinsta.Kinsta('test-token', 'a'*36, 'b'*36)
+        config = dict(environment='staging', url='https://stg-example.kinsta.cloud',
+                      root='/www/example/public', host='host', port='22', user='owner')
+        for name, domain_type in [('live', 'live'), ('staging', 'live')]:
+            response = {'site': {'environments': [dict(id='b'*36, name=name,
+                        primaryDomain=dict(name='stg-example.kinsta.cloud', type=domain_type),
+                        web_root=config['root'])]}}
+            with patch.object(adapter, 'api', return_value=response) as api:
+                with self.assertRaisesRegex(ValueError, 'native staging'): adapter.connect(config)
+                self.assertEqual(1, api.call_count)
+
+    def test_explicit_agent_identity_validates_native_target_without_requesting_a_password(self):
+        from deploy import Target
+        from unittest.mock import Mock
+        config = dict(backup_provider='kinsta', key_file='/private/selector.pub', port='22',
+                      known_hosts_file='/private/known_hosts', user='owner', host='host', environment='staging')
+        adapter = Mock()
+        with patch('kinsta.Kinsta', return_value=adapter):
+            target = Target(config)
+        adapter.identity.assert_called_once_with(config)
+        adapter.connect.assert_not_called()
+        self.assertIsNone(target.password)
+        self.assertIn('/private/selector.pub', target.options)
