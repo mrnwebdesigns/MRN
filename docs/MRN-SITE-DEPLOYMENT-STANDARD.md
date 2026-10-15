@@ -364,6 +364,26 @@ asset manifest. Undeclared paths still require `style.css`. HTML and browser
 checks require an applied stylesheet from the declared alternatives and verify
 its normal public URL and exact bytes; a preload alone does not qualify.
 
+Optional `stylesheet_contexts`, `stylesheet_subsets`, and `stylesheet_bundles`
+extend that existing route declaration. A context names required and absent
+WordPress body classes. A subset removes only selectors proven impossible by
+a positive, absent body class in the leftmost compound; descendant classes,
+negations, interactive states, uncertain syntax, declarations and retained rule
+order stay intact. Sites must establish that the declared classes are body-owned,
+not arbitrary component/state classes. Unknown contexts keep their full sheet.
+`mrn_site_release_stylesheet_matches_body()` checks the immutable context against
+the current `get_body_class()` result; it does not select a route automatically.
+
+Bundles concatenate declared CSS sources in order, within the same directory,
+so relative dependency URLs keep their meaning. Imports, charset directives,
+missing sources, existing-file collisions and unsafe paths fail the build.
+Generated editable-form derivatives, minified counterparts, checksums and the
+context declaration travel in one immutable artifact. The original full CSS
+remains available. A site adopting a bundle must preserve native dependency and
+inline-style ordering, qualify fallback behavior, and compare full-page and
+interactive rendering at phone, tablet and desktop widths. This contract does
+not permit purging CSS from initial-load coverage or asynchronous overlay styles.
+
 The Dev adapter snapshots the original child theme and changes only its public
 `functions.php` to a stable loader. Original public assets remain byte-for-byte
 unchanged. New code is stored privately; new static assets use immutable public
