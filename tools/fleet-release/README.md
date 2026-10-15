@@ -10,6 +10,12 @@ opens a promotion PR, waits for its normal Code gate, qualifies clean merged
 source, publishes private/public distributions, and verifies their checksums.
 The QA Engine revision participates in the source/material fingerprint and is checked against the actual qualification toolchain. Engine merges therefore trigger fresh qualification automatically. Unpublished legacy jobs without that binding are superseded through the existing receipt-safe recovery path. It never calls MainWP, site installers, site deployment, or provider APIs.
 
+The publisher uses the promotion gate's deployment-contract classifier for its
+tracked source fingerprint. This includes Stack scripts/configuration and the
+shared `tools/site-deploy/release-bootstrap.php` child loader. A change to that
+loader requires fresh qualification even when the parent/plugin bytes are
+unchanged. Unrelated repository documents remain outside the release material.
+
 `launcher.py` fetches the current accepted controller into its own clean mirror.
 `install.py` installs an owner-local LaunchAgent at five minute intervals. It
 runs while the owner is logged in and this Mac is awake. Its GitHub CLI account

@@ -37,6 +37,10 @@ DEPLOYMENT_CONTRACT_PREFIXES = (
     "stack/scripts/",
     "stack/server-config/",
 )
+DEPLOYMENT_CONTRACT_PATHS = {
+    # Installed into site-owned child functions.php by the shared deployer.
+    "tools/site-deploy/release-bootstrap.php",
+}
 RELEASE_METADATA_PATHS = {
     "stack/CHANGELOG.md",
     "stack/STACK_VERSION.md",
@@ -130,6 +134,12 @@ def path_matches(path, source_path):
     return bool(normalized) and (path == normalized or path.startswith(normalized + "/"))
 
 
+def is_deployment_contract(path):
+    return path in DEPLOYMENT_CONTRACT_PATHS or any(
+        path_matches(path, prefix) for prefix in DEPLOYMENT_CONTRACT_PREFIXES
+    )
+
+
 def catalog_sources(catalog):
     sources = []
     for entry in catalog.get("components") or []:
@@ -216,7 +226,7 @@ def classify_changes(paths, catalog, lock_payload):
             record["changed_files"].append(path)
         elif path in RELEASE_METADATA_PATHS:
             metadata.append(path)
-        elif any(path_matches(path, prefix) for prefix in DEPLOYMENT_CONTRACT_PREFIXES):
+        elif is_deployment_contract(path):
             contracts.append(path)
         elif path == "stack/mu-plugins/README.md":
             # The directory index documents MU loaders; it is not a runtime unit.

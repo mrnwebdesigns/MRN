@@ -177,6 +177,47 @@ class QualificationContracts(unittest.TestCase):
             self.assertNotEqual(first['material_sha256'], second['material_sha256'])
             self.assertNotEqual(first['source_vector_sha256'], second['source_vector_sha256'])
 
+    def test_shared_loader_and_canonical_deployment_contract_changes_trigger_release(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary); repo = root / 'MRN'; repo.mkdir()
+            (root / 'MRN-qa-engine').mkdir()
+            tracked = ('tools/site-deploy/release-bootstrap.php',
+                       'stack/server-config/headers.conf', 'notes/unrelated.md')
+            for name in tracked:
+                path = repo / name; path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text('original')
+
+            def git(_root, *args):
+                if args[0] != 'ls-files':
+                    return 'a' * 40
+                scopes = args[1:]
+                return '\n'.join(name for name in tracked if not scopes or any(
+                    build.promotion.path_matches(name, scope) for scope in scopes))
+
+            with patch.object(build, 'BOOTSTRAP_FILES', ()), \
+                 patch.object(build, 'roster', return_value=[]), \
+                 patch.object(build.lock_tool, 'parse_theme_manifest', return_value=[]), \
+                 patch.object(build, 'git', side_effect=git), \
+                 patch.object(build, 'read', return_value={'plugins': []}), \
+                 patch.object(build, 'clean_main', return_value='b' * 40):
+                first = build.snapshot(repo, root / 'plugins', {'held_defaults': {}})
+                self.assertEqual(set(first['material']['contracts']), set(tracked[:2]))
+                (repo / tracked[2]).write_text('unrelated documentation changed')
+                docs = build.snapshot(repo, root / 'plugins', {'held_defaults': {}})
+                self.assertEqual(first['material_sha256'], docs['material_sha256'])
+                previous = docs
+                for name in tracked[:2]:
+                    (repo / name).write_text('accepted deployment contract changed')
+                    changed = build.snapshot(repo, root / 'plugins', {'held_defaults': {}})
+                    self.assertNotEqual(previous['material_sha256'], changed['material_sha256'])
+                    self.assertEqual(first['material']['units'], changed['material']['units'])
+                    previous = changed
+
+            classified = build.promotion.classify_changes(list(tracked), {'components': []},
+                                                          {'components': [], 'themes': []})
+            self.assertEqual(classified['deployment_contracts'], sorted(tracked[:2]))
+            self.assertEqual(classified['other_changes'], [tracked[2]])
+
     def test_mainwp_recipe_preserves_qualified_runtime_and_rejects_tooling_or_changed_bytes(self):
         with tempfile.TemporaryDirectory() as temporary:
             base = Path(temporary); source = base / 'mrn-mainwp-operations-api'
