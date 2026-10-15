@@ -130,6 +130,18 @@ try {
   assert.equal(ctx.output.job_context_sha256, delegationDigest(ctx.output.job_context));
   pass('Actual delegated queue and protected context bind the verified original Google requester');
   const captured = await worker('capture', first.qualification_job_id);
+  if (captured.ok !== true) {
+    // Closed failure-only diagnostics: no actor, signed input, nonce, body or
+    // artifact. A refusal must remain a failure, never a retry/alternate route.
+    const queries = store.db.prepare('SELECT phase,state FROM content_access_audit WHERE job=? AND event=?')
+      .all(first.qualification_job_id, 'veto-answered');
+    process.stderr.write(`${JSON.stringify({ access_capture_failure: {
+      provider_error_code: /^mrn_[a-z0-9_]{1,64}$/.test(captured.error_code) ? captured.error_code : 'unclassified',
+      http_status: Number.isInteger(captured.http_status) && captured.http_status >= 0 && captured.http_status <= 599 ? captured.http_status : null,
+      callback_answers: queries.length, clear_answers: queries.filter(row => row.state === 'clear').length,
+      refused_answers: queries.filter(row => ['denied', 'pending-revocation'].includes(row.state)).length,
+    } })}\n`);
+  }
   assert.equal(captured.ok, true); assert.equal(captured.state, 'running'); assert.match(captured.capture_artifact_sha256, /^[a-f0-9]{64}$/);
   const saved = await worker('status', first.qualification_job_id);
   assert.equal(saved.ok, true); assert.equal(saved.capture_present, true); assert.equal(saved.capture_authenticated, true); assert.equal(saved.retained_state_matches, true);
