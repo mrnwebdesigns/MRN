@@ -115,6 +115,14 @@ jobs:
           for (const field of ['contentWriteVerified', 'contentRollbackVerified', 'publicHtmlVerified']) assert.equal(native[field], true);
           for (const field of ['productionCredentials', 'liveGoogleVerified', 'protectedQaVerified', 'productionQaVerified', 'remoteBackupVerified', 'chatgptAcceptanceVerified', 'codeWriteVerified']) assert.equal(native[field], false);
           JS
+      - name: Retain redacted disposable worker failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gateway-provider-worker-failure
+          path: .runtime/provider/reports/native-job-worker-failure.json
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Retain bounded integration evidence only
         uses: actions/upload-artifact@v4
         with:

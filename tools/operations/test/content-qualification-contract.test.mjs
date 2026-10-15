@@ -15,9 +15,11 @@ const schema = (contract, definition) => compileContentSchema({ $ref: `#/definit
 test('qualification contracts and independent vectors are pinned to one accepted provider checkpoint', () => {
   const source = JSON.parse(read('contracts/content-qualification-sources.json'));
   assert.equal(source.schema, 1); assert.equal(source.repository, 'mrnwebdesigns/mrn-mainwp-operations-api');
-  assert.equal(source.commit, 'acbd75bee9255b6766c80606760d83b59064a92b');
+  assert.equal(source.commit, '6b09350f1111be23394f0c0a50f3055cd0ea75eb');
   assert.deepEqual(source.files.map(f => f.local), [...names.map(n => `contracts/${n}`),
-    'test/fixtures/content-qualification-contract.json', 'test/fixtures/content-policy-v2-provider.json']);
+    'test/fixtures/content-qualification-contract.json', 'test/fixtures/content-policy-v2-provider.json',
+    'contracts/content-capture-read-v1.json', 'contracts/content-qualification-report-v1.json',
+    'test/fixtures/content-qualification-additive-v1.json']);
   for (const file of source.files) assert.equal(createHash('sha256').update(read(file.local)).digest('hex'), file.sha256);
   const dependencies = contracts[names[0]].frozen_dependencies;
   assert.equal(createHash('sha256').update(read('contracts/content-v1.json')).digest('hex'), dependencies['content-v1.json']);
