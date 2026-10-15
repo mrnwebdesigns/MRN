@@ -4,6 +4,9 @@ import re
 import time
 import urllib.error
 import urllib.request
+from urllib.parse import urlsplit
+
+from cache_policy import canonical_pages
 
 
 class Kinsta:
@@ -21,6 +24,43 @@ class Kinsta:
                 return json.load(response)
         except urllib.error.HTTPError as error:
             raise RuntimeError('Kinsta API request failed (HTTP ' + str(error.code) + ')') from None
+
+    def refresh_edge_html(self, site_url, pages):
+        """Purge only the reviewed canonical HTML URLs, then verify completion.
+
+        The MU plugin's origin purge can finish before Edge Cache invalidation.
+        Never broaden this request to descendants, the whole environment, CDN
+        assets, or an object cache. Public byte verification remains mandatory.
+        """
+        pages = canonical_pages(site_url, pages)
+        for page in pages:
+            path = urlsplit(page).path
+            if (re.search(r'[%*\\\s]', path)
+                    or re.search(r'^/(?:wp-admin|wp-json|wp-content|wp-includes)(?:/|$)', path)
+                    or re.search(r'\.(?:css|m?js|json|xml|jpe?g|png|webp|svg|pdf|woff2?)/?$', path, re.I)):
+                raise ValueError('Kinsta edge purge requires exact public HTML URLs')
+        operations = []
+        for page in pages:
+            started = self.api('/sites/edge-caching/clear', {
+                'environment_id': self.environment_id, 'clear_subdirectories': False, 'url': page})
+            operation = started.get('operation_id')
+            if (started.get('status') != 202 or not isinstance(operation, str)
+                    or not operation.startswith('edgeCache:clear-' + self.environment_id)
+                    or not re.fullmatch(r'[A-Za-z0-9:_-]{1,200}', operation)):
+                raise RuntimeError('Kinsta edge purge did not return a pending operation')
+            for _ in range(60):
+                status = self.api('/operations/' + operation).get('status')
+                if status == 200:
+                    break
+                if status != 202:
+                    raise RuntimeError('Kinsta edge purge failed; inspect operation ' + operation)
+                time.sleep(2)
+            else:
+                raise RuntimeError('Kinsta edge purge is still pending; inspect operation ' + operation)
+            operations.append({'url': page, 'operation_id': operation, 'status': 'complete'})
+        return {'provider': 'kinsta', 'environment_id': self.environment_id,
+                'status': 'exact-html-edge-purge-verified', 'clear_subdirectories': False,
+                'operations': operations}
 
     def identity(self, config):
         environments = self.api('/sites/' + self.site_id + '/environments')['site']['environments']
