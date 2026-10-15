@@ -243,7 +243,7 @@ The entrypoint now uses a shared service lifecycle factory for optional private 
 
 ### Qualified disabled-authority provider source
 
-The current development integration pins provider `041150dc5db08e2f61787962baa7fc68e630b097` in both the runtime and copied-contract manifests. All eleven copied contracts/vectors are byte-identical to the previous e6b0903 checkpoint. All four provider [CI jobs in run 38780634932](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38780634932) pass. The native run verifies 263 private-reader checks (64 released), 212 requester checks, 58 retained-recovery checks, 179 disabled-authority checks and two 96-counter isolation groups under the unchanged 128 MiB limit. Memory remains 67,633,152 bytes through the original authority races and 76,021,760 after recovery. Both earlier out-of-memory runs remain retained.
+The first disabled-authority checkpoint selected provider `041150dc5db08e2f61787962baa7fc68e630b097` in both the runtime and copied-contract manifests. All eleven copied contracts/vectors are byte-identical to the previous e6b0903 checkpoint. All four provider [CI jobs in run 38780634932](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38780634932) pass. The native run verifies 263 private-reader checks (64 released), 212 requester checks, 58 retained-recovery checks, 179 disabled-authority checks and two 96-counter isolation groups under the unchanged 128 MiB limit. Memory remains 67,633,152 bytes through the original authority races and 76,021,760 after recovery. Both earlier out-of-memory runs remain retained.
 
 This fixes retained private database readers and adds disabled evidence-authority storage; it does not activate policy or report admission. The provider workflow has no success artifact upload: evidence is its original completed CI log and source-bound installed-package checks, with a separately reproduced package. A legacy fixture warning reads a deliberately malformed synthetic audit without a job ID; the unchanged predicate still requires exactly one audit matching the real original job/requester/key/capture hash. It is documented, not suppressed or treated as a runtime waiver. This new provider pin requires separate combined gateway qualification; no deployed provider or access setting changes.
 
@@ -256,3 +256,44 @@ The candidate provider035d401f6320a541567e754d240f7ca7a09c4413 changes only two 
 The unchanged-order diagnostic run38783481809 at gateway852f66f records provider `mrn_access_veto`, HTTP500, one clear actual callback and zero refused callback answers; no complete capture report is produced. Candidate035d401 then failed its new direct-check assertion in provider run38783689448 because it expected the outer capture error instead of `Access::check`'s exact `mrn_access_replay`. Candidate9cf154e9bea679eae36dc8de762ec938b6f3abad corrects that one fixture expectation, retains both revision100 predicates, and emits a closed passing summary only after they hold. Current integration manifests select9cf for independent qualification. No runtime authorization predicate, history, limit or production state is changed; these failed runs remain evidence.
 
 Both reordered combined runs38784024503 (gatewaye66cde7/provider035d401) and38784861698 (gatewayc380c12/provider9cf154e) pass all eight actual Node callback groups, then refuse the subsequent synthetic capture. The delayed Child fixture writes its separate synthetic mirror to pending-revocation/revision100 during Node's slow-read test. Provider candidateb429137850ddd78b611dfbb115921a669bb133c9 restores only the exact pre-barrier mirror file, asserts byte-identical durable requester history across that restoration and retains the no-site-lock assertion. The actual Node pending ledger is untouched. This changes only a fixture; source manifests select it for new standalone and combined qualification. Earlier failed runs and partial artifacts remain retained; no automatic retry, history reset or production change is included.
+
+### Current qualified integration and proposed measurement format
+
+Gateway `cdb482c0ec1552fbef1cc936277a3a7563d81477` with provider
+`b429137850ddd78b611dfbb115921a669bb133c9` passes combined
+[CI 38786103167](https://github.com/mrnwebdesigns/MRN/actions/runs/38786103167)
+and [MRN QA 38786103075](https://github.com/mrnwebdesigns/MRN/actions/runs/38786103075).
+Original artifact `11998137725` has ZIP SHA-256
+`f677d9655697031cfd7286e1eececb502f300c7745c61e882990a61bddabd750`.
+All four downloaded source-bound reports pass: ten identity, six native content,
+eight actual Node access/lifecycle and six bounded transport groups. The original
+log verifies prepared epoch 4, exact synthetic mirror restoration with unchanged
+provider history, rejection of signed revision 1 after revision 100, and 185
+combined authority checks. The earlier failed runs above remain retained.
+
+The proposed private measurement contract has separate source provenance under
+`test/fixtures/measurement-readback-candidate`. Its schema, vectors and design are
+exact Git blobs from provider `11956fda5d5029ef7416b3f2368996e708253387`.
+The qualified runtime and existing contract-source manifests both remain at
+`b429137`; the proposed endpoint is unregistered and no service code loads these
+new test files. The gateway's six compatibility tests cover the real schema
+compiler, canonical bytes, all 26 structural versus semantic negative vectors,
+Ed25519 purpose separation, distinct packet/artifact/record/HTTP byte digests,
+private scope and original assertion/transport time boundaries.
+
+Review of preceding provider `4422781` reproduced a fixture verifier accepting
+observations before assertion issuance or after assertion expiry while the job
+remained valid. The corrected verifier and six new negative vectors reject both
+counterexamples, exact expiry, job expiry and requests exceeding 20 seconds.
+Inclusive issuance, one millisecond before expiry and exactly 20 seconds remain
+valid. All nine provider Python test groups pass. The schema and design hashes
+are unchanged; the corrected vector hash is
+`81af70d88420b1856b8d062c4c5ba4e62876db35b5a4fa3ba610c8d617c185c1`.
+Exact provider qualification is tracked in
+[CI 38788996097](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38788996097).
+Synthetic schema/signature vectors do not prove actual measurement acquisition.
+
+Protected worker acquisition, independent evidence admission/signing, broader
+content qualification, production deployment and ordinary-member ChatGPT
+acceptance remain open. No Google access, key, policy, connector or production
+runtime is changed by this checkpoint.
