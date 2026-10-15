@@ -171,7 +171,9 @@ try {
     assert.equal(withheld.ok, false); assert.equal(withheld.error_code, 'mrn_capture_read_access');
     assert.equal(Object.hasOwn(withheld, 'output'), false);
     assert.deepEqual(await worker('status', first.qualification_job_id), saved);
-    await assert.rejects(queue);
+    // A removed content grant blocks every new job. An authorized environment
+    // reconfiguration blocks this old map, but may admit a separately fresh job.
+    if (change === 'permission') await assert.rejects(queue);
     policy.emailDomains[0].portfolio.actions = ['read', 'content'];
     registryData.websites[0].environments[0].name = 'production';
   }

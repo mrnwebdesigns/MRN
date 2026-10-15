@@ -114,6 +114,13 @@ test('local content permission and the same environment are rechecked across asy
   assert.equal(f.store.db.prepare('SELECT count(*) AS n FROM content_access_jobs').get().n, 0);
 });
 
+test('a fresh queue may bind a newly configured authorized environment', async t => {
+  const f = queueFixture(t); f.registryData.websites[0].environments[0].name = 'staging';
+  assert.deepEqual(await f.queue.queueQualification(f.request, { ledger: f.ledger, admit: async () => f.expected }), f.job);
+  const mapping = JSON.parse(f.store.db.prepare('SELECT body FROM content_access_jobs').get().body);
+  assert.equal(mapping.site.environment, 'staging'); assert.equal(mapping.site.url, f.request.site_url);
+});
+
 test('shared backend connection keeps parallel people isolated with no caller-supplied identity', async () => {
   const f = fixture(); const alice = f.delegated('123'), bob = f.delegated('456');
   await Promise.all([alice.verifyStaff(), bob.verifyStaff()]);
