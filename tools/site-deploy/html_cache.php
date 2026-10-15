@@ -109,7 +109,11 @@ if ( 'inspect' === $mrn_cache_action ) {
 	// Cache providers address paths; include every cached query variant of each
 	// discovered HTML path. Public acceptance still uses canonical query-free URLs.
 	$mrn_cache_urls = array_map(
-		static function ( $url ) { return preg_replace( '/[?#].*$/', '', $url ); },
+		static function ( $url ) {
+			$url = preg_replace( '/[?#].*$/', '', $url );
+			// WordPress can return the front-page permalink as the bare origin.
+			return wp_parse_url( $url, PHP_URL_PATH ) ? $url : trailingslashit( $url );
+		},
 		$mrn_cache_urls
 	);
 }

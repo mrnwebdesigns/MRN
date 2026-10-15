@@ -46,6 +46,14 @@ class ScopedHTMLCache(unittest.TestCase):
         self.assertEqual([], receipt['refreshed_urls'])
         self.assertEqual([], json.loads(response.stdout.split('CALLS=')[1]))
 
+    def test_inventory_normalizes_wordpress_bare_front_page_to_root_path(self):
+        response = self.invoke('kinsta', 'inspect', BARE_HOME='1')
+        self.assertEqual(0, response.returncode, response.stderr)
+        receipt = json.loads(response.stdout.splitlines()[0][11:])
+        self.assertEqual(1, receipt['urls'].count('https://example.org/'))
+        self.assertNotIn('https://example.org', receipt['urls'])
+        self.assertEqual([], json.loads(response.stdout.split('CALLS=')[1]))
+
     def test_siteground_never_purges_child_paths(self):
         response = self.invoke('siteground')
         self.assertEqual(0, response.returncode, response.stderr)

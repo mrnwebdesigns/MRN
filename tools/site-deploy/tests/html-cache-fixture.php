@@ -23,7 +23,7 @@ namespace {
  function get_option($key) { return $key === 'siteground_optimizer_enable_cache' ? '1' : getenv('FILE_CACHE') === '1'; }
  function get_post_types($a,$b) { return ['page'=>'page','post'=>'post','attachment'=>'attachment']; }
  function get_posts($a) { return [1,2]; }
- function get_permalink($i) { return home_url('/page-'.$i.'/'); }
+ function get_permalink($i) { return getenv('BARE_HOME') === '1' && $i === 1 ? home_url() : home_url('/page-'.$i.'/'); }
  function get_post_type_archive_link($t) { return $t === 'post' ? home_url('/news/') : false; }
  function get_taxonomies($a) { return ['category']; }
  function get_terms($a) { return ['topic']; }
