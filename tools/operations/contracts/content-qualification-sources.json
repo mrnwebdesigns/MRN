@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "repository": "mrnwebdesigns/mrn-mainwp-operations-api",
-  "commit": "9cf154e9bea679eae36dc8de762ec938b6f3abad",
+  "commit": "b429137850ddd78b611dfbb115921a669bb133c9",
   "files": [
     {
       "source": "contracts/content-qualification-v1.json",
