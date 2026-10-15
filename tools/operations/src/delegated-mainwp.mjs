@@ -2,6 +2,9 @@ import { z } from 'zod';
 import { requireThat, requireWriteScope, sha } from './contracts.mjs';
 import { payload, validateStatus } from './mainwp.mjs';
 import { delegationCanonical, delegationDigest } from './delegation.mjs';
+import { qualificationRequestSchema, validateQueuePins } from './content-access-store.mjs';
+
+export const qualificationQueueTool = 'mrn_mainwp__queue_delegated_qualification_v1';
 
 export const delegationTools = Object.freeze({ challenge: 'mrn_mainwp__get_delegation_challenge_v1',
   access: 'mrn_mainwp__get_team_access_v1', read: 'mrn_mainwp__read_delegated_operation_v1',
@@ -54,6 +57,7 @@ export class DelegatedMainwpClient {
       && metadata.get(n)?.destructiveHint === (n === delegationTools.run)), 'DELEGATION_TRANSPORT',
     'Delegation requires POST-only metadata and the explicit write-confirmation boundary. Assertions must never enter GET access logs.');
     this.transportVerified = true;
+    this.metadata = metadata;
   }
   async envelope(ability, args) {
     if (!this.transportVerified) await this.ready();
@@ -98,6 +102,32 @@ export class DelegatedMainwpClient {
       && result.policy_sha256 === claims.policy_sha256 && identityMatches(result.actor, this.actor),
     'DELEGATION_MISMATCH', 'MainWP returned a result for a different request or verified person.');
     return { content: [{ type: 'text', text: JSON.stringify(result.result) }] };
+  }
+  // Private source integration only: no workspace exposure or worker dispatch.
+  // The service-owned readiness adapter must verify protected worker, exact
+  // recipe/source pins and fresh target before this can create a job.
+  async queueQualification(input, { ledger, admit } = {}) {
+    requireWriteScope(this.actor);
+    requireThat(ledger && typeof admit === 'function', 'QUALIFICATION_WORKER_UNAVAILABLE', 'Protected qualification dispatch is not configured.');
+    const args = qualificationRequestSchema.parse(input);
+    ledger.assertQueueAllowed(this.actor);
+    const expected = validateQueuePins(await admit(this.actor, structuredClone(args)));
+    await this.ready();
+    requireThat(this.metadata.get(qualificationQueueTool)?.readOnlyHint === false
+      && this.metadata.get(qualificationQueueTool)?.destructiveHint === false,
+    'DELEGATION_TRANSPORT', 'Qualification requires the dedicated non-destructive POST queue.');
+    ledger.assertQueueAllowed(this.actor);
+    const ability = 'mrn-mainwp/request-content-qualification-v1';
+    const { envelope, claims } = await this.envelope(ability, args);
+    ledger.assertQueueAllowed(this.actor);
+    const response = resultSchema.parse(payload(await this.client.callTool({ name: qualificationQueueTool,
+      arguments: { ability, arguments_json: delegationCanonical(args), delegation: envelope } }, undefined, { timeout: 30000 })));
+    requireThat(response.ability === ability && response.request_id === claims.request_id
+      && response.policy_sha256 === claims.policy_sha256 && identityMatches(response.actor, this.actor),
+    'DELEGATION_MISMATCH', 'Qualification returned a different request or verified person.');
+    // A failed/missing durable map forbids subsequent dispatch. No retry or
+    // reconstruction from callback data after an uncertain queue response.
+    return ledger.recordQueued(this.actor, args, response.result, expected).job;
   }
   async listTools(params) { return this.client.listTools(params); }
   async readResource(params) {

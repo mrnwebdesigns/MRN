@@ -1,8 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { generateKeyPairSync, randomBytes, verify } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { IdentitySigner, delegationDigest, delegationPrefix } from '../src/delegation.mjs';
-import { DelegatedMainwpClient, delegationTools } from '../src/delegated-mainwp.mjs';
+import { DelegatedMainwpClient, delegationTools, qualificationQueueTool } from '../src/delegated-mainwp.mjs';
+import { Store } from '../src/store.mjs';
+import { ContentAccessLedger } from '../src/content-access-store.mjs';
 
 const response = value => ({ content: [{ type: 'text', text: JSON.stringify(value) }] });
 function fixture() {
@@ -20,7 +23,7 @@ function fixture() {
         const challenge = { nonce: randomBytes(32).toString('hex'), expires_at: Math.floor(Date.now() / 1000) + 60, authenticated_connection_sha256: 'a'.repeat(64), policy_sha256: 'b'.repeat(64) };
         state.challenges.set(challenge.nonce, args); return response(challenge);
       }
-      assert.ok([delegationTools.access, delegationTools.run, delegationTools.read, delegationTools.sync].includes(name), 'Never call a raw privileged backend ability');
+      assert.ok([delegationTools.access, delegationTools.run, delegationTools.read, delegationTools.sync, qualificationQueueTool].includes(name), 'Never call a raw privileged backend ability');
       if (name === delegationTools.run && !args.user_confirmed) {
         assert.equal(args.confirm, true); state.preview = structuredClone(args);
         return response({ status: 'CONFIRMATION_REQUIRED', confirmation_token: 'fixture-confirmation' });
@@ -46,6 +49,48 @@ function fixture() {
   };
   return { state, actor, client, signer, delegated: id => new DelegatedMainwpClient(client, actor(id), signer) };
 }
+
+function queueFixture(t) {
+  const f = fixture(), store = new Store(':memory:'); t.after(() => store.close());
+  const ledger = new ContentAccessLedger(store, { connectionId: 'con_MRNGoogle' });
+  const vectors = JSON.parse(readFileSync(new URL('./fixtures/content-qualification-contract.json', import.meta.url)));
+  const request = vectors.cases.find(c => c.definition === 'request_input').value;
+  const job = { ...vectors.cases.find(c => c.definition === 'job_output').value, expires_at: Math.floor(Date.now() / 1000) + 300,
+    recipe_catalog_sha256: 'c'.repeat(64), recipe_sha256: 'd'.repeat(64) };
+  const expected = Object.fromEntries(['authorization_policy_sha256', 'recipe_catalog_sha256', 'recipe_sha256'].map(k => [k, job[k]]));
+  f.state.corrupt = result => { result.result = job; };
+  const list = f.client.listTools;
+  f.client.listTools = async () => ({ tools: [...(await list()).tools, { name: qualificationQueueTool, annotations: { readOnlyHint: false, destructiveHint: false } }] });
+  return { ...f, store, ledger, request, job, expected, queue: f.delegated('123') };
+}
+
+test('private qualification queue binds the verified requester only after service worker admission and exact response', async t => {
+  const f = queueFixture(t); let admission = 0;
+  const output = await f.queue.queueQualification(f.request, { ledger: f.ledger, admit: async (actor, request) => {
+    admission++; assert.equal(actor.googleSubject, '123'); assert.deepEqual(request, f.request); return f.expected;
+  } });
+  assert.deepEqual(output, f.job); assert.equal(admission, 1);
+  assert.deepEqual(f.state.calls, [delegationTools.challenge, qualificationQueueTool]);
+  const mapping = JSON.parse(f.store.db.prepare('SELECT body FROM content_access_jobs').get().body);
+  assert.equal(mapping.actor.subject, 'google-oauth2|123'); assert.equal(mapping.actor.verifiedEmail, 'staff123@mrnwebdesigns.com');
+  assert.equal(f.store.db.prepare('SELECT event FROM content_access_audit').get().event, 'queue-mapped');
+  await assert.rejects(() => f.queue.callTool({ name: qualificationQueueTool, arguments: f.request }), { code: 'CAPABILITY_DENIED' });
+});
+
+test('missing worker, changed actor, revoked requester or bad pins leave no usable qualification map', async t => {
+  const f = queueFixture(t);
+  await assert.rejects(() => f.queue.queueQualification(f.request), { code: 'QUALIFICATION_WORKER_UNAVAILABLE' });
+  await assert.rejects(() => f.queue.queueQualification(f.request, { ledger: f.ledger, admit: async () => { throw new Error('worker unavailable'); } }));
+  assert.equal(f.state.calls.length, 0);
+  f.state.corrupt = result => { result.result = f.job; result.actor.email = 'other@mrnwebdesigns.com'; };
+  await assert.rejects(() => f.queue.queueQualification(f.request, { ledger: f.ledger, admit: async () => f.expected }), { code: 'DELEGATION_MISMATCH' });
+  assert.equal(f.store.db.prepare('SELECT count(*) AS n FROM content_access_jobs').get().n, 0);
+  f.state.corrupt = result => { result.result = f.job; };
+  await assert.rejects(() => f.queue.queueQualification(f.request, { ledger: f.ledger, admit: async () => ({ ...f.expected, recipe_sha256: 'e'.repeat(64) }) }), { code: 'ACCESS_MAPPING' });
+  f.state.revoked.add('123');
+  await assert.rejects(() => f.queue.queueQualification(f.request, { ledger: f.ledger, admit: async () => f.expected }));
+  assert.equal(f.store.db.prepare('SELECT count(*) AS n FROM content_access_jobs').get().n, 0);
+});
 
 test('shared backend connection keeps parallel people isolated with no caller-supplied identity', async () => {
   const f = fixture(); const alice = f.delegated('123'), bob = f.delegated('456');

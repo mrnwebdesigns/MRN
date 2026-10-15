@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "repository": "mrnwebdesigns/mrn-mainwp-operations-api",
-  "commit": "6b09350f1111be23394f0c0a50f3055cd0ea75eb",
+  "commit": "c2abe78e84e340413e88a66f47207dd2caf8d86c",
   "files": [
     {
       "source": "contracts/content-qualification-v1.json",
@@ -52,6 +52,11 @@
       "source": "tests/fixtures/content-qualification-additive-v1.json",
       "local": "test/fixtures/content-qualification-additive-v1.json",
       "sha256": "0fab947e147d1a9a0aa795123e6b1514fe12ff4fd25d6ad8b04fa9601e3f2aac"
+    },
+    {
+      "source": "contracts/content-current-access-v1.json",
+      "local": "contracts/content-current-access-v1.json",
+      "sha256": "02fa1caca043f61a92a0e7cfe369db4f271dcebcaf2599b6a4422a3a4885d172"
     }
   ]
 }
