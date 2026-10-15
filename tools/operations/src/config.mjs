@@ -3,6 +3,7 @@ import { isAbsolute } from 'node:path';
 import { readJson, Registry, requireThat } from './contracts.mjs';
 import { codePolicySchema } from './code-qa.mjs';
 import { contentQaPolicySchema } from './content-qa.mjs';
+import { delegationIssuer } from './delegation.mjs';
 
 const absolute = z.string().refine(isAbsolute, 'Use an absolute service path.');
 const secureUrl = z.string().url().refine(s => { const u = new URL(s); return u.protocol === 'https:' && !u.username && !u.password && !u.search && !u.hash; });
@@ -24,6 +25,7 @@ export const configSchema = z.object({
     repositories: z.record(z.string().regex(/^mrnwebdesigns\/[A-Za-z0-9_-]+$/), z.number().int().positive().safe()) }).strict().optional(),
   code: z.object({ policyPath: absolute }).strict().optional(),
   contentEdits: z.object({ policyPath: absolute }).strict().optional(),
+  contentAccess: z.boolean().default(false),
   mainwp: z.object({ command: absolute, args: z.array(z.string()).min(1), cwd: absolute,
     envRefs: z.record(z.string(), z.object({ env: z.string() }).strict()) }).strict(),
   qa: z.object({ executable: absolute }).strict().optional(),
@@ -33,7 +35,10 @@ export const configSchema = z.object({
   .refine(config => !config.content || Boolean(config.auth.googleWorkspace),
     { path: ['content'], message: 'Native content access requires Google-only live staff authorization.' })
   .refine(config => Boolean(config.code || config.contentEdits) === Boolean(config.github) && (!(config.code || config.contentEdits) || Boolean(config.auth.googleWorkspace)),
-    { path: ['code'], message: 'Code/content workflows require Google delegation and the central GitHub App configuration together.' });
+    { path: ['code'], message: 'Code/content workflows require Google delegation and the central GitHub App configuration together.' })
+  .refine(config => !config.contentAccess || (Boolean(config.contentEdits && config.delegation && config.auth.googleWorkspace)
+    && new URL(config.publicUrl).origin === delegationIssuer),
+  { path: ['contentAccess'], message: 'Private content access requires the existing MRN origin, Google delegation and content workflow configuration.' });
 export function loadConfig(file) {
   const config = configSchema.parse(readJson(file));
   requireThat(new URL(config.auth.jwksUrl).origin === new URL(config.auth.issuer).origin, 'AUTH_CONFIG', 'Pin JWKS to the configured issuer origin.');

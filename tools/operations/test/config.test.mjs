@@ -47,12 +47,37 @@ for (const modes of [[], ['code'], ['content'], ['code', 'content']]) {
     assert.equal(result.status, 0, result.stderr);
     const report = JSON.parse(result.stdout), loaded = loadConfig(f.file);
     assert.equal(report.valid, true); assert.equal(report.hostingVerified, false);
+    assert.equal(report.privateContentAccessConfigured, false); assert.equal(loaded.config.contentAccess, false);
     assert.equal(report.codeProfiles, modes.includes('code') ? 1 : 0);
     assert.equal(report.contentProfiles, modes.includes('content') ? 1 : 0);
     assert.deepEqual(loaded.workflowPolicies.code, modes.includes('code') ? f.code : null);
     assert.deepEqual(loaded.workflowPolicies.content, modes.includes('content') ? f.content : null);
     assert.equal(existsSync(f.config.stateDir), false);
     assert.doesNotMatch(result.stdout + result.stderr, /example\.test|runtime\.invalid|publicKeyBase64|unread-app-key/);
+  });
+}
+
+test('private callback configuration reuses Google and content authority without reading keys or opening state', t => {
+  const f = fixture(t, ['content']); f.config.contentAccess = true;
+  const result = f.run(); assert.equal(result.status, 0, result.stderr);
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.privateContentAccessConfigured, true); assert.equal(report.hostingVerified, false);
+  assert.equal(loadConfig(f.file).config.contentAccess, true);
+  assert.equal(existsSync(f.config.stateDir), false);
+});
+
+for (const failure of ['no-content', 'no-google', 'wrong-origin', 'non-boolean']) {
+  test(`private callback ${failure} is rejected before startup creates state`, t => {
+    const f = fixture(t, ['content']); f.config.contentAccess = true;
+    if (failure === 'no-content') { delete f.config.contentEdits; delete f.config.github; }
+    if (failure === 'no-google') { delete f.config.delegation; delete f.config.auth.googleWorkspace; }
+    if (failure === 'wrong-origin') f.config.auth.audience = f.config.publicUrl = 'https://other.example.invalid/mcp';
+    if (failure === 'non-boolean') f.config.contentAccess = 'true';
+    for (const entry of ['check-config.mjs', 'main.mjs']) {
+      const result = f.run(entry); assert.equal(result.status, 1); assert.equal(result.stdout, '');
+      assert.equal(existsSync(f.config.stateDir), false);
+      assert.doesNotMatch(result.stderr, /unread-identity-key|other\.example\.invalid/);
+    }
   });
 }
 

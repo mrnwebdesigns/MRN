@@ -11,9 +11,10 @@ import { createAuthenticator } from '../../src/auth.mjs';
 import { IdentitySigner, delegationCanonical, delegationDigest } from '../../src/delegation.mjs';
 import { DelegatedMainwpClient } from '../../src/delegated-mainwp.mjs';
 import { contentSchemas, contentSnapshot } from '../../src/content-contract.mjs';
-import { AccessSigner, AccessQueryReader, ContentAccessVeto, accessVetoPath } from '../../src/content-access.mjs';
+import { accessVetoPath } from '../../src/content-access.mjs';
+import { createContentAccessRuntime } from '../../src/content-access-runtime.mjs';
 import { accessRegistry } from '../fixtures/access-registry.mjs';
-import { ContentAccessLedger, requesterDigest } from '../../src/content-access-store.mjs';
+import { requesterDigest } from '../../src/content-access-store.mjs';
 import { compileContentSchema } from '../../src/content-schema.mjs';
 import { createHttpServer } from '../../src/http.mjs';
 import { connectMainwp, payload } from '../../src/mainwp.mjs';
@@ -57,7 +58,6 @@ const identity = { keyId: 'disposable-identity-only', privateKey: identityKey };
 const signer = new IdentitySigner({ ...identity, connectionId: 'con_RuntimeFixture' });
 const store = new Store(join(work, 'access.sqlite'));
 const { registry, registryData, policy } = accessRegistry(context.site.site_url);
-const ledger = new ContentAccessLedger(store, { connectionId: 'con_RuntimeFixture', registry });
 const clients = [], processes = new Set();
 const run = async (file, args, timeout = 90000, maxBuffer = 131072) => {
   // Buffer privately; never print subprocess credentials/claims on failure.
@@ -84,9 +84,11 @@ const report = { schema: 1, source: lock, scope: 'disposable-native-access-only'
   liveGoogleVerified: false, protectedWorkerVerified: false, chatgptAcceptanceVerified: false, codeWriteVerified: false,
   contentWriteVerified: false, remoteBackupVerified: false };
 const pass = label => { report.passed.push(label); process.stdout.write(`PASS ${label}\n`); };
-let server, routed = false;
+let server, accessRuntime, routed = false;
 try {
-  const reader = new AccessQueryReader(await raw()); await reader.initialize();
+  accessRuntime = await createContentAccessRuntime({ enabled: true, store, registry, identity,
+    connectionId: 'con_RuntimeFixture', connect: () => connectMainwp(config, environment) });
+  const { ledger, veto } = accessRuntime;
   const audience = 'https://operations.mrnwebdesigns.com/mcp', issuer = 'https://oauth.example.invalid/';
   const keys = await generateKeyPair('RS256');
   const keySet = createLocalJWKSet({ keys: [{ ...await exportJWK(keys.publicKey), alg: 'RS256', kid: 'disposable-access' }] });
@@ -103,7 +105,6 @@ try {
   const actor = await authenticate(`Bearer ${bearer}`);
   assert.equal(actor.googleSubject, '222222'); assert.equal(actor.verifiedEmail, 'bob@mrnwebdesigns.com');
   const client = new DelegatedMainwpClient(await raw(), actor, signer);
-  const veto = new ContentAccessVeto({ signer: new AccessSigner(identity), reader, ledger });
   server = createHttpServer({ publicUrl: audience, issuer, accessVeto: veto });
   await new Promise((resolve, reject) => { server.once('error', reject); server.listen(context.control.callback_socket, resolve); });
   await run(context.control.route_switch, ['node'], 10000); routed = true;
@@ -215,7 +216,11 @@ try {
   assert.equal(lookups.length, store.db.prepare('SELECT count(*) AS n FROM content_access_queries').get().n);
   assert.ok(lookups.every(row => row.method === 'POST' && row.status === 200 && !row.subject));
   pass('Durable original-requester ledger denies subsequent queueing and retains attributable revocation evidence');
+  await accessRuntime.close(); await accessRuntime.close();
+  await assert.rejects(() => veto.respond({ query_id: randomUUID(), provider_query_nonce: 'a'.repeat(64) }), { code: 'ACCESS_UNAVAILABLE' });
+  pass('Service lifecycle validates a dedicated control connection and refuses callbacks after shutdown');
   report.result = 'PASS'; report.captureVerified = true; report.pendingDuringReadVerified = true;
+  report.privateLifecycleVerified = true;
   report.currentSitePermissionVerified = true; report.retainedCaptureRecoveryVerified = true; report.pendingRecoveryDenied = true;
   writeFileSync(process.env.MRN_GATEWAY_ACCESS_REPORT, `${JSON.stringify(report, null, 2)}\n`, { mode: 0o600 });
 } finally {
@@ -223,6 +228,7 @@ try {
   let cleanupError;
   try { if (routed) await run(context.control.route_switch, ['synthetic'], 10000); } catch (error) { cleanupError = error; }
   if (server?.listening) { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); }
+  try { await accessRuntime?.close(); } catch (error) { cleanupError ||= error; }
   await Promise.allSettled(clients.map(client => client.close()));
   store.close();
   if (cleanupError) throw cleanupError;

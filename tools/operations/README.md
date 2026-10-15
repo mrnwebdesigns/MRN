@@ -288,3 +288,5 @@ part of enrollment; do not put secrets in facts or report references.
 See [VALIDATION.md](VALIDATION.md) for the exact tests, live integration boundary,
 MRN QA result and unrun hosting/runtime checks. The CI workflow runs controlled
 service tests, existing Fleet regression and the locked dependency audit on PRs.
+
+The private content authorization callback is disabled by default. An explicitly reviewed `contentAccess: true` service setting requires the existing Operations origin, Google delegation and content workflow configuration. Startup validates a separate MainWP control connection before listening and closes it on setup failure or shutdown. This setting supplies only the callback lifecycle; it does not provision provider authority, admit qualification jobs, activate a protected worker or establish team acceptance. Activation remains part of the concrete deployment review.

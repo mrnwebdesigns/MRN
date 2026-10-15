@@ -8,5 +8,6 @@ try {
   process.stdout.write(JSON.stringify({ valid: true, websiteOverrides: registry.data().websites.length, discoveryEnabled: Boolean(config.discovery), members: policy.members.length,
     emailDomains: policy.emailDomains.length, writesEnabled: config.writesEnabled,
     codeProfiles: workflowPolicies.code?.profiles.length || 0, contentProfiles: workflowPolicies.content?.profiles.length || 0,
+    privateContentAccessConfigured: config.contentAccess,
     hostingVerified: false }) + '\n');
 } catch { process.stderr.write('Configuration validation failed. Check required fields, absolute paths, exact environment identities and issuer URLs.\n'); process.exitCode = 1; }
