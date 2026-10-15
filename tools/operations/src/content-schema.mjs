@@ -15,9 +15,25 @@ export function compileContentSchema(schema, definitions = {}) {
         'Content references must be local, defined and acyclic.');
       return compile(definitions[match[1]], depth + 1, new Set([...references, match[1]]));
     }
-    const keys = ['type', 'properties', 'required', 'additionalProperties', 'anyOf', 'enum', 'minimum', 'maximum', 'minLength', 'maxLength', 'pattern', 'items', 'minItems', 'maxItems', 'uniqueItems'];
+    const keys = ['type', 'properties', 'required', 'additionalProperties', 'anyOf', 'oneOf', 'enum', 'minimum', 'maximum', 'minLength', 'maxLength', 'pattern', 'items', 'minItems', 'maxItems', 'uniqueItems'];
     fail(Object.keys(s).every(k => keys.includes(k)), 'Unsupported content wire schema.');
     const child = value => compile(value, depth + 1, references);
+    if (Object.hasOwn(s, 'oneOf')) {
+      fail(Object.keys(s).length === 1 && Array.isArray(s.oneOf) && s.oneOf.length >= 2 && s.oneOf.length <= 32,
+        'Invalid or excessive exclusive content alternatives.');
+      const alternatives = s.oneOf.map(child);
+      return z.unknown().transform((value, context) => {
+        let matches = 0, parsed;
+        for (const alternative of alternatives) {
+          const result = alternative.safeParse(value);
+          if (result.success) { matches++; parsed = result.data; }
+          if (matches > 1) break;
+        }
+        if (matches === 1) return parsed;
+        context.addIssue({ code: z.ZodIssueCode.custom, message: 'Content must match exactly one alternative.' });
+        return z.NEVER;
+      });
+    }
     if (s.anyOf) {
       fail(Object.keys(s).length === 1 && Array.isArray(s.anyOf) && s.anyOf.length >= 2, 'Invalid content schema alternatives.');
       return z.union(s.anyOf.map(child));

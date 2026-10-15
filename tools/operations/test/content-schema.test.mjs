@@ -54,3 +54,42 @@ test('definition expansion retains strict Unicode, bounded integers and nullable
     assert.equal(schema.safeParse(value).success, false);
   }
 });
+
+test('exclusive content outcomes keep committed and uncertain states separate', () => {
+  const committed = object({ state: { type: 'string', enum: ['committed'] },
+    confirmed: { type: 'boolean', enum: [true] }, evidence: ref('hash') });
+  const pending = object({ state: { type: 'string', enum: ['pending'] },
+    confirmed: { type: 'boolean', enum: [false] }, evidence: { type: 'null' } });
+  const schema = compileContentSchema({ oneOf: [committed, pending] }, definitions);
+  const value = { state: 'committed', confirmed: true, evidence: 'a'.repeat(64) };
+  const parsed = schema.parse(value);
+  assert.deepEqual(parsed, value); assert.notEqual(parsed, value);
+  assert.deepEqual(schema.parse({ state: 'pending', confirmed: false, evidence: null }),
+    { state: 'pending', confirmed: false, evidence: null });
+  for (const bad of [{ ...value, confirmed: false }, { ...value, state: 'pending' },
+    { ...value, evidence: null }, { ...value, actor: 'caller' }, { state: 'pending', confirmed: false }, undefined])
+    assert.equal(schema.safeParse(bad).success, false);
+});
+
+test('oneOf rejects overlapping branches while anyOf still accepts a valid union', () => {
+  const alternatives = [{ type: 'integer', minimum: 0, maximum: 10 }, { type: 'integer', minimum: 5, maximum: 15 }];
+  const exclusive = compileContentSchema({ oneOf: alternatives });
+  assert.equal(exclusive.parse(0), 0); assert.equal(exclusive.parse(15), 15);
+  for (const bad of [5, 7, 10, -1, 16, 5.5, '0']) assert.equal(exclusive.safeParse(bad).success, false);
+  assert.equal(compileContentSchema({ anyOf: alternatives }).parse(7), 7);
+  const nullable = compileContentSchema({ oneOf: [{ type: 'null' }, { type: 'boolean' }] });
+  assert.equal(nullable.parse(null), null); assert.equal(nullable.parse(false), false);
+});
+
+test('exclusive alternatives retain local reference validation and bounded schema complexity', () => {
+  const schema = compileContentSchema(object({ outcome: { oneOf: [ref('target'), { type: 'null' }] } }), definitions);
+  assert.deepEqual(schema.parse({ outcome: { site_id: 1, snapshot: 'a'.repeat(64) } }),
+    { outcome: { site_id: 1, snapshot: 'a'.repeat(64) } });
+  for (const oneOf of [null, [], [{ type: 'null' }], Array(33).fill({ type: 'null' }),
+    [ref('missing'), { type: 'null' }], [{ $ref: 'https://example.invalid/schema' }, { type: 'null' }]])
+    assert.throws(() => compileContentSchema({ oneOf }, definitions), { code: 'CONTENT_CONTRACT' });
+  assert.throws(() => compileContentSchema({ oneOf: [{ type: 'null' }, { type: 'boolean' }], type: 'boolean' }),
+    { code: 'CONTENT_CONTRACT' });
+  assert.throws(() => compileContentSchema(ref('loop'), { loop: { oneOf: [ref('loop'), { type: 'null' }] } }),
+    { code: 'CONTENT_CONTRACT' });
+});
