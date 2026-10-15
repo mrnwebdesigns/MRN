@@ -364,6 +364,11 @@ def deploy(args, c):
     from deployment_request import github_order
     activation_environment(args.environment, c.get('host_provider', 'cloudpanel'))
     c['environment'] = args.environment
+    promotion_file = getattr(args, 'promote_kinsta_staging_manifest', None)
+    promotion = json.loads(Path(promotion_file).read_text()) if promotion_file else None
+    promoted_archive = getattr(args, 'promoted_source_artifact', None)
+    if bool(promotion_file) != bool(promoted_archive):
+        raise ValueError('Promoted store manifest and original trusted artifact are required together')
     imported_source = getattr(args, 'bind_imported_source', None)
     imported_public_tree = getattr(args, 'bind_imported_public_tree', None)
     if bool(imported_source) != bool(imported_public_tree):
@@ -375,6 +380,14 @@ def deploy(args, c):
             raise ValueError('Imported release enrollment is restricted to native Kinsta staging')
     order = github_order(os.environ, args.sha, args.environment, args.mode)
     repository = check(os.environ['GITHUB_REPOSITORY'], r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+', 'repository')
+    promotion_plan = dict(c, repository=repository, slug=args.slug,
+                          bind_imported_source=imported_source, deployment_order=order,
+                          source_path=args.source, promoted_source_archive=promoted_archive,
+                          artifact_sha256=getattr(args, 'artifact_sha256', None))
+    if promotion is not None:
+        from promoted_store import validate, source_artifact
+        validate(promotion_plan, promotion)
+        source_artifact(promotion_plan, promotion)
     qualifying = qualification_request(args, c, os.environ)
     artifact_path = getattr(args, 'artifact', None)
     artifact_sha256 = getattr(args, 'artifact_sha256', None)
@@ -392,8 +405,12 @@ def deploy(args, c):
         files = artifact['theme_files'] if artifact else export_payload(args.sha, args.source, payload)
         target = Target(c)
         before = target.inspect(args.slug, skip_themes=True)
-        verify_identity(c, before, args.slug, require_ready=args.mode != 'preflight')
+        verify_identity(c, before, args.slug, require_ready=args.mode != 'preflight' and promotion is None)
         verify_state_privacy(c, before)
+        promotion_receipt = None
+        if promotion is not None:
+            from promoted_store import preflight
+            promotion_receipt = preflight(target, promotion_plan, promotion, before)
         if c['transport'] == 'git':
             git_destination(c, before, args.source)
             verify_git_privacy(c, before)
@@ -406,18 +423,20 @@ def deploy(args, c):
         receipt['payload_kind'] = 'verified-build-artifact' if artifact else 'source-adoption-inventory'
         if artifact:
             receipt['artifact'] = {key: value for key, value in artifact.items() if key != 'theme_files'}
+        if promotion_receipt:
+            receipt['promotion'] = promotion_receipt
         Path(args.receipt).write_text(json.dumps(receipt, indent=2) + '\n')
         if args.mode == 'preflight':
             print(json.dumps(receipt, indent=2))
             return
-        if not c['ready'] and not qualifying and not imported_source:
+        if not c['ready'] and not qualifying and not imported_source and promotion is None:
             raise ValueError('DEPLOY_READY is not enabled after target qualification')
         native = c.get('host_provider') == 'kinsta' and c.get('backup_provider') == 'kinsta'
         if (c.get('backup_provider') != 'updraft' and not native) or (args.environment == 'live' and c.get('host_provider', 'cloudpanel') == 'cloudpanel'):
             raise ValueError('Runtime writes disabled for Live: its provider adapter is not qualified')
         if qualifying:
             qualification_target(c, before)
-        if not qualifying and (not before['state'] or before['state'].get('schema') != 1):
+        if not qualifying and promotion is None and (not before['state'] or before['state'].get('schema') != 1):
             raise ValueError('Runtime writes disabled: first adoption requires separate host qualification')
         from atomic_runner import run as activate
         from cache_policy import canonical_pages
@@ -429,6 +448,8 @@ def deploy(args, c):
                 'qualification': qualifying, 'deployment_order': order}
         if imported_source:
             plan.update(bind_imported_source=imported_source, bind_imported_public_tree=imported_public_tree, exercise_rollback=True)
+        if promotion is not None:
+            plan.update(promote_kinsta_staging=promotion, promoted_source_archive=promoted_archive, exercise_rollback=True)
         if qualifying:
             plan.update(baseline=c['baseline'], exercise_rollback=True)
         result = activate(plan, c)
@@ -451,6 +472,8 @@ def main():
     p.add_argument('--artifact-sha256', help='Expected SHA-256 supplied independently by the build job')
     p.add_argument('--bind-imported-source', help='Exact retained source SHA for one-time Kinsta staging enrollment and rollback qualification')
     p.add_argument('--bind-imported-public-tree', help='Reviewed public theme tree checksum for the imported staging release')
+    p.add_argument('--promote-kinsta-staging-manifest', help='Reviewed one-time promoted store manifest for native Live qualification')
+    p.add_argument('--promoted-source-artifact', help='Exact trusted original artifact backing the promoted store')
     args = p.parse_args()
     check(args.slug, r'[A-Za-z0-9_-]+', 'stylesheet')
     deploy(args, config(os.environ))
