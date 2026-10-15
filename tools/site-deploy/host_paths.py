@@ -7,6 +7,11 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 
+def activation_environment(environment, provider):
+    if environment not in ('dev', 'live') and not (environment == 'staging' and provider == 'kinsta'):
+        raise ValueError('No qualified activation adapter for this environment/provider')
+
+
 def qualify_provider(plan, wordpress):
     provider = plan.get('host_provider', 'cloudpanel')
     environment = plan.get('environment')
@@ -15,7 +20,8 @@ def qualify_provider(plan, wordpress):
     content = Path(wordpress['content']).resolve()
     state = Path(plan['state_dir']).resolve()
     expected_backup = 'kinsta' if provider == 'kinsta' else 'updraft'
-    if environment not in ('dev', 'live') or plan.get('backup_provider') != expected_backup:
+    activation_environment(environment, provider)
+    if plan.get('backup_provider') != expected_backup:
         raise ValueError('No qualified activation adapter for this environment/backup provider')
     if provider == 'cloudpanel':
         if environment != 'dev' or not host.endswith('.mrndev.io'):
@@ -36,8 +42,10 @@ def qualify_provider(plan, wordpress):
     elif provider == 'kinsta':
         # The native API additionally verifies exact site/environment/root/SSH
         # identity. Only its private sibling of the public web root is allowed.
-        if (root.parent.parent != Path('/www') or root.name != 'public'
-                or state != root.parent / 'private-backups/mrn-site-deploy' / environment):
+        allowed_states = {root.parent / 'deployments/mrn-site-deploy' / environment}
+        if environment != 'staging':
+            allowed_states.add(root.parent / 'private-backups/mrn-site-deploy' / environment)
+        if (root.parent.parent != Path('/www') or root.name != 'public' or state not in allowed_states):
             raise ValueError('Kinsta public/private storage identity does not match')
     else:
         raise ValueError('Unknown host activation adapter')

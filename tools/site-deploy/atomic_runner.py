@@ -13,6 +13,7 @@ import time
 from deploy import Target, check, config, digest, verify_identity, verify_state_privacy, verify_git_privacy, qualification_request, qualification_target
 from deployment_request import check_order, github_order, require_current_push
 from verify_release import verify
+from host_paths import activation_environment
 
 TOOLS = Path(__file__).resolve().parent
 HOST_FILES = ('host_controller.py', 'atomic_store.py', 'cache_policy.py', 'deploy.py',
@@ -41,9 +42,14 @@ def run(plan, c):
     # First adoption is an explicit qualification operation. Routine deployments
     # require the readiness switch plus the exact existing release pointer.
     native = c.get('host_provider') == 'kinsta' and c['backup_provider'] == 'kinsta'
+    importing = bool(plan.get('bind_imported_source'))
+    activation_environment(plan['environment'], c.get('host_provider', 'cloudpanel'))
+    c = dict(c, environment=plan['environment'])
+    if plan.get('bind_imported_source') and (not native or plan['environment'] != 'staging'):
+        raise ValueError('Imported release enrollment is restricted to native Kinsta staging')
     if native and not c.get('native_transaction_backup_approved'):
         raise ValueError('Native transaction backup policy requires explicit owner approval')
-    if (c['backup_provider'] != 'updraft' and not native) or plan['environment'] not in ('dev', 'live'):
+    if c['backup_provider'] != 'updraft' and not native:
         raise ValueError('No qualified activation adapter for this backup provider')
     if c.get('host_provider', 'cloudpanel') == 'cloudpanel' and (plan['environment'] != 'dev' or not c['url'].endswith('.mrndev.io')):
         raise ValueError('Live activation remains disabled for the CloudPanel Dev adapter')
@@ -54,7 +60,7 @@ def run(plan, c):
             raise ValueError('Qualification plan requires authorized manual qualification')
     # Readiness disarms forward deployment, not restoration of a retained release.
     # Receipt provenance, exact current pointer and ordering still bind rollback.
-    if not plan.get('adopt') and not qualifying and not plan.get('rollback_to') and not c.get('ready'):
+    if not plan.get('adopt') and not qualifying and not importing and not plan.get('rollback_to') and not c.get('ready'):
         raise ValueError('DEPLOY_READY must be enabled after qualification')
     if not plan.get('rollback_to'):
         verify(plan['archive'], plan['artifact_sha256'], plan['source_sha'], plan['source_path'], plan['slug'])
@@ -62,6 +68,9 @@ def run(plan, c):
     # Recovery must not execute a potentially broken active child theme. The
     # pointer and raw public identity remain readable with theme loading skipped.
     before = target.inspect(plan['slug'], skip_themes=True)
+    if importing and (before.get('target_binding_exists') or before.get('deployment_order')
+                      or not before.get('state') or plan.get('exercise_rollback') is not True):
+        raise ValueError('Imported staging qualification requires an unbound private release and a rollback exercise')
     verify_identity(c, before, plan['slug'])
     verify_state_privacy(c, before)
     if before['git']:

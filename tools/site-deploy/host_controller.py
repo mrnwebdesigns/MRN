@@ -17,7 +17,7 @@ import traceback
 from urllib.parse import urlsplit, urljoin
 
 from atomic_store import Store, durable_replace, inventory
-from host_paths import qualify_provider
+from host_paths import qualify_provider, activation_environment
 from cache_policy import canonical_pages, head, verify_cloudpanel_origin, verify_uncached_html
 from deploy import check, digest, http_check
 from deployment_request import check_order
@@ -47,6 +47,7 @@ def backup(root, operation):
 
 
 def identity(plan):
+    activation_environment(plan['environment'], plan.get('host_provider', 'cloudpanel'))
     if plan.get('environment') == 'live' and plan.get('host_provider', 'cloudpanel') == 'cloudpanel':
         raise ValueError('Live remains disabled without an explicit production adapter')
     canonical_pages(plan['url'], plan['pages'])
@@ -127,6 +128,61 @@ def verify_legacy_assets(assets):
             raise ValueError('Previously published asset URL changed content: ' + url)
 
 
+def bind_imported_staging(plan, store, binding, guard):
+    """Enroll an exact, already migrated private release without re-adoption."""
+    if (plan.get('environment') != 'staging' or plan.get('host_provider') != 'kinsta'
+            or plan.get('backup_provider') != 'kinsta' or plan.get('adopt')
+            or plan.get('deployment_order') or not plan.get('expected_current')
+            or plan.get('exercise_rollback') is not True):
+        raise ValueError('Imported release enrollment is restricted to manual native Kinsta staging')
+    check(plan['bind_imported_source'], r'[0-9a-f]{40}', 'imported source SHA')
+    reviewed_tree = check(plan.get('bind_imported_public_tree', ''), r'[a-f0-9]{64}', 'reviewed imported public tree')
+    store.require_lock()
+    if store.pointer() != plan['expected_current']:
+        raise ValueError('Imported staging pointer changed before enrollment')
+    metadata = store.release(plan['expected_current']['release_id'])
+    if metadata.get('source_sha') != plan['bind_imported_source'] or not metadata.get('public_path'):
+        raise ValueError('Imported staging release differs from the reviewed source')
+    check(metadata['public_path'], r'mrn-assets/' + store.slug + r'/[a-f0-9]{64}', 'imported public path')
+    if metadata['public_path'] != plan['expected_current'].get('public_path'):
+        raise ValueError('Imported staging asset pointer differs from its release')
+    public_files = inventory(store.public_theme)
+    if digest(public_files) != reviewed_tree:
+        raise ValueError('Imported staging public theme differs from the reviewed tree')
+    adoption_path = store.state / 'adoption.json'
+    if adoption_path.exists():
+        store.verify_public_snapshot()
+    else:
+        relative_state = os.path.relpath(str(store.state), str(store.content_root.parent))
+        bootstrap = (TOOLS / 'release-bootstrap.php').read_text().replace('__MRN_STATE_RELATIVE__', relative_state).encode()
+        # The reviewed manual migration used an absolute path for this one
+        # assignment. Accept only that exact historical bootstrap, bound to
+        # this same store; every other byte must still match the canonical code.
+        canonical_root = ("$mrn_release_state_root = realpath( ABSPATH . '" + relative_state + "' );\n"
+                          "if ( false === $mrn_release_state_root ) {\n"
+                          "\tthrow new RuntimeException( 'MRN private release storage is unavailable.' );\n}\n"
+                          "$mrn_release_pointer = $mrn_release_state_root . '/current.json';")
+        absolute_root = ("$mrn_release_state_root = '" + str(store.state) + "';\n"
+                         "$mrn_release_pointer    = $mrn_release_state_root . '/current.json';")
+        historical = bootstrap.decode().replace(canonical_root, absolute_root).encode()
+        recognized = {hashlib.sha256(code).hexdigest() for code in (bootstrap, historical)}
+        if public_files.get('functions.php') not in recognized:
+            raise ValueError('Imported staging loader is not the verified bootstrap for this private store')
+    if inventory(store.content_root / metadata['public_path']) != metadata.get('static_files'):
+        raise ValueError('Imported staging public assets have drifted')
+    path = store.state / 'site.json'
+    if path.exists():
+        raise ValueError('Imported staging release already has a target binding')
+    receipt = guard('bind-imported-staging')
+    if not adoption_path.exists():
+        record = {'schema': 1, 'slug': store.slug, 'legacy_release_id': plan['expected_current']['release_id'],
+                  'public_files': public_files, 'bootstrap_sha256': public_files['functions.php'],
+                  'imported': True, 'source_sha': plan['bind_imported_source']}
+        durable_replace(adoption_path, (json.dumps(record, sort_keys=True) + '\n').encode())
+    durable_replace(path, (json.dumps(binding, sort_keys=True) + '\n').encode())
+    return {'operation': 'bind-imported-staging', 'backup': receipt}
+
+
 def public_check(plan, store, pointer):
     receipt = {'release_id': pointer['release_id']}
     uncached = plan.get('host_provider', 'cloudpanel') == 'cloudpanel'
@@ -162,11 +218,13 @@ def public_check(plan, store, pointer):
 
 
 def execute(plan, native_backup=None):
+    if plan.get('bind_imported_source') and (plan.get('environment') != 'staging' or plan.get('host_provider') != 'kinsta'):
+        raise ValueError('Imported release enrollment is restricted to native Kinsta staging')
     if plan.get('host_provider') == 'kinsta':
         if native_backup is None:
             raise ValueError('Native Kinsta backup identity is required')
         native_backup.identity({'url': plan['url'], 'root': plan['root'], 'host': plan['ssh_host'],
-                                'port': plan['ssh_port'], 'user': plan['ssh_user']})
+                                'port': plan['ssh_port'], 'user': plan['ssh_user'], 'environment': plan['environment']})
 
     def guard(operation):
         if plan.get('host_provider') == 'kinsta':
@@ -211,7 +269,9 @@ def execute(plan, native_backup=None):
                 receipt['legacy'] = public_check(plan, store, before)
                 verify_legacy_assets(old_assets)
             elif not binding_path.exists():
-                raise ValueError('Missing verified target binding')
+                if not plan.get('bind_imported_source'):
+                    raise ValueError('Missing verified target binding')
+                receipt['steps'].append(bind_imported_staging(plan, store, binding, guard))
             if plan.get('rollback_to'):
                 selected_id = check(plan['rollback_to'], r'[a-f0-9]{64}', 'rollback release')
             else:

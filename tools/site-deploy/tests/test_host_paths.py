@@ -43,3 +43,17 @@ class ProviderIdentity(unittest.TestCase):
                            dict(state_dir='/www/example_123/private-backups/mrn-site-deploy/dev')]:
                 with self.assertRaises(ValueError):
                     qualify_provider(dict(plan, **change), wordpress)
+
+    def test_kinsta_staging_uses_only_the_php_readable_deployment_sibling(self):
+        plan = dict(environment='staging', host_provider='kinsta', backup_provider='kinsta',
+                    url='https://stg-example-migration.kinsta.cloud', root='/www/example_123/public',
+                    state_dir='/www/example_123/deployments/mrn-site-deploy/staging')
+        wordpress = dict(root=plan['root'], content=plan['root']+'/wp-content')
+        with patch.object(Path, 'resolve', lambda path: path):
+            self.assertEqual(plan['state_dir'], qualify_provider(plan, wordpress)['state_dir'])
+            for change in [dict(host_provider='cloudpanel'), dict(backup_provider='updraft'),
+                           dict(state_dir='/www/example_123/private-backups/mrn-site-deploy/staging'),
+                           dict(state_dir='/www/other/deployments/mrn-site-deploy/staging'),
+                           dict(state_dir='/www/example_123/deployments/mrn-site-deploy/live'),
+                           dict(environment='preview')]:
+                with self.assertRaises(ValueError): qualify_provider(dict(plan, **change), wordpress)

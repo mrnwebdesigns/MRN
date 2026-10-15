@@ -13,6 +13,7 @@ import tempfile
 import time
 import urllib.request
 import urllib.error
+from host_paths import activation_environment
 
 EXCLUDED = {"tests", "docs", "scripts", "qa", "node_modules", "vendor", "AGENTS.md", "README.md",
             "composer.json", "composer.lock", "package.json", "package-lock.json", "phpunit.xml.dist"}
@@ -99,6 +100,7 @@ def config(environ):
     c['enrollment_sha'] = environ.get('DEPLOY_ENROLLMENT_SOURCE_SHA', '')
     c['enrollment_prior_release'] = environ.get('DEPLOY_ENROLLMENT_PRIOR_RELEASE', '')
     c['host_provider'] = environ.get('DEPLOY_HOST_PROVIDER', 'cloudpanel') or 'cloudpanel'
+    c['environment'] = environ.get('DEPLOY_ENVIRONMENT', '')
     if c['host_provider'] not in ('cloudpanel', 'nexcess', 'siteground', 'wpengine', 'kinsta'):
         raise ValueError('Unknown host provider')
     if c['host_provider'] == 'kinsta' and c['backup_provider'] != 'kinsta':
@@ -117,7 +119,11 @@ class Target:
             self.native_backup = Kinsta(os.environ.get('DEPLOY_KINSTA_API_TOKEN', ''),
                                         os.environ.get('DEPLOY_KINSTA_SITE_ID', ''),
                                         os.environ.get('DEPLOY_KINSTA_ENVIRONMENT_ID', ''))
-            self.password = self.native_backup.connect(c)
+            if c['key_file'] == 'native-kinsta':
+                self.password = self.native_backup.connect(c)
+            else:
+                # An explicitly selected agent identity needs no password lookup.
+                self.native_backup.identity(c)
         self.options = ['-i', c['key_file'], '-p', c['port'], '-o', 'IdentitiesOnly=yes',
                         '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes',
                         '-o', 'UserKnownHostsFile=' + c['known_hosts_file'], '-o', 'ConnectTimeout=20']
@@ -182,6 +188,7 @@ $services = array_values(array_filter((array) get_option('updraft_service', arra
 global $updraftplus;
 echo 'MRN_RESULT=' . wp_json_encode(array(
     'home' => untrailingslashit(get_option('home')), 'stylesheet' => get_stylesheet(), 'template' => get_template(),
+    'target_binding_exists' => file_exists($c['state'] . '/site.json'),
     'wp_root' => $root_path,
     'theme_url' => set_url_scheme(get_stylesheet_directory_uri(), 'https'),
     'theme' => realpath($theme), 'files' => $files, 'state' => $state,
@@ -355,6 +362,17 @@ def qualification_target(c, before):
 
 def deploy(args, c):
     from deployment_request import github_order
+    activation_environment(args.environment, c.get('host_provider', 'cloudpanel'))
+    c['environment'] = args.environment
+    imported_source = getattr(args, 'bind_imported_source', None)
+    imported_public_tree = getattr(args, 'bind_imported_public_tree', None)
+    if bool(imported_source) != bool(imported_public_tree):
+        raise ValueError('Imported staging enrollment requires both reviewed source and public tree checksums')
+    if imported_source:
+        check(imported_source, r'[0-9a-f]{40}', 'imported source SHA')
+        check(imported_public_tree, r'[a-f0-9]{64}', 'imported public tree')
+        if args.environment != 'staging' or c.get('host_provider') != 'kinsta':
+            raise ValueError('Imported release enrollment is restricted to native Kinsta staging')
     order = github_order(os.environ, args.sha, args.environment, args.mode)
     repository = check(os.environ['GITHUB_REPOSITORY'], r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+', 'repository')
     qualifying = qualification_request(args, c, os.environ)
@@ -392,7 +410,7 @@ def deploy(args, c):
         if args.mode == 'preflight':
             print(json.dumps(receipt, indent=2))
             return
-        if not c['ready'] and not qualifying:
+        if not c['ready'] and not qualifying and not imported_source:
             raise ValueError('DEPLOY_READY is not enabled after target qualification')
         native = c.get('host_provider') == 'kinsta' and c.get('backup_provider') == 'kinsta'
         if (c.get('backup_provider') != 'updraft' and not native) or (args.environment == 'live' and c.get('host_provider', 'cloudpanel') == 'cloudpanel'):
@@ -409,6 +427,8 @@ def deploy(args, c):
                 'source_sha': args.sha, 'source_path': args.source, 'pages': pages,
                 'expected_current': before['state'], 'adopt': qualifying and before['state'] is None,
                 'qualification': qualifying, 'deployment_order': order}
+        if imported_source:
+            plan.update(bind_imported_source=imported_source, bind_imported_public_tree=imported_public_tree, exercise_rollback=True)
         if qualifying:
             plan.update(baseline=c['baseline'], exercise_rollback=True)
         result = activate(plan, c)
@@ -422,13 +442,15 @@ def deploy(args, c):
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--mode', choices=['preflight', 'deploy'], default='preflight')
-    p.add_argument('--environment', choices=['dev', 'live'], required=True)
+    p.add_argument('--environment', choices=['dev', 'live', 'staging'], required=True)
     p.add_argument('--sha', required=True)
     p.add_argument('--source', required=True)
     p.add_argument('--slug', required=True)
     p.add_argument('--receipt', required=True)
     p.add_argument('--artifact', help='Immutable tar from the trusted build job; no target-side rebuild')
     p.add_argument('--artifact-sha256', help='Expected SHA-256 supplied independently by the build job')
+    p.add_argument('--bind-imported-source', help='Exact retained source SHA for one-time Kinsta staging enrollment and rollback qualification')
+    p.add_argument('--bind-imported-public-tree', help='Reviewed public theme tree checksum for the imported staging release')
     args = p.parse_args()
     check(args.slug, r'[A-Za-z0-9_-]+', 'stylesheet')
     deploy(args, config(os.environ))
