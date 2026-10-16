@@ -1,6 +1,6 @@
 {
   "authority": "This file is the authoritative inventory and classification source for MRN-owned WordPress plugins and MU components. Inclusion does not imply installation.",
-  "catalog_updated": "2026-10-15",
+  "catalog_updated": "2026-10-16",
   "components": [
     {
       "classification": "platform",
@@ -738,7 +738,7 @@
         "state": "confirmed-symlinked"
       },
       "target_tier": "optional-shared",
-      "version": "0.2.1"
+      "version": "0.2.2"
     },
     {
       "classification": "integration-adapter",

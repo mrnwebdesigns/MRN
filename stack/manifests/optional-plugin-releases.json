@@ -1,6 +1,6 @@
 {
   "authority": "Checksum-locked independently released plugins available to explicit one-site upgrade plans. A release may remain a standard bootstrap default; registration never authorizes installation or a site write.",
-  "catalog_updated": "2026-10-15",
+  "catalog_updated": "2026-10-16",
   "releases": [
     {
       "current_distribution": "catalog-only",
@@ -97,16 +97,16 @@
     {
       "current_distribution": "standard-bootstrap",
       "package": {
-        "filename": "mrn-reusable-block-library-0.2.1-777efa5ab227.zip",
+        "filename": "mrn-reusable-block-library-0.2.2-d491628c5e93.zip",
         "main_file": "mrn-reusable-block-library/mrn-reusable-block-library.php",
-        "path": "releases/stack-plugins/mrn-reusable-block-library-0.2.1-777efa5ab227.zip",
-        "sha256": "0a9a1b83cab1fa7a02ed3cb35b352d15476d63c59130162ba73397c309695cfd",
-        "size_bytes": 60314
+        "path": "releases/stack-plugins/mrn-reusable-block-library-0.2.2-d491628c5e93.zip",
+        "sha256": "4a87845f8e95810b35ba0dc178f1c0e99199ad2782bf288c994444cc710f4cd8",
+        "size_bytes": 60655
       },
       "runtime_type": "standard-plugin",
       "slug": "mrn-reusable-block-library",
       "source": {
-        "git_commit": "777efa5ab2275c348fc61ae7a5724b6bcbe96e30",
+        "git_commit": "d491628c5e9366721ae56d8383d3b05cd9e95f78",
         "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-reusable-block-library",
         "repository": "mrnwebdesigns/mrn-reusable-block-library"
       },
@@ -114,14 +114,14 @@
       "tree": {
         "file_count": 19,
         "hash_algorithm": "sha256-tree-v1",
-        "sha256": "ec779e5f310419d774a3bf574995b2bf2beccaa840440fc71f0c6b6b18c5c54f"
+        "sha256": "2eb74747a4bec282aaee0897124caf4d9ff794d4a94b5da6c345865f1271fdaf"
       },
       "update_policy": {
         "mode": "upgrade-only",
         "new_install": "requires-separate-owner-authorization-and-plan",
         "preserve_active_state": true
       },
-      "version": "0.2.1"
+      "version": "0.2.2"
     },
     {
       "current_distribution": "catalog-only",
