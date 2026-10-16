@@ -165,10 +165,14 @@ export class DelegatedMainwpClient {
     const admittedSite = ledger.assertQueueAllowed(this.actor, args);
     const expected = await admit(this.actor, structuredClone(args));
     validateManagementQueuePins(expected?.pins);
+    // Team delegation hashes identity policy; content authorization hashes
+    // content plus identity policy. They are distinct provider domains.
+    requireThat(sha.safeParse(expected?.delegationPolicySha256).success,
+      'ACCESS_MAPPING', 'An independently verified team-delegation policy is required.');
     await this.ready();
     ledger.assertQueueAllowed(this.actor, args, admittedSite);
     const response = payload(await this.#dispatch('mrn-mainwp/request-content-edit-qualification-v1', args, delegationTools.run,
-      { timeout: 30000 }, expected.pins.authorization_policy_sha256));
+      { timeout: 30000 }, expected.delegationPolicySha256));
     // Failure to durably map this exact authenticated result forbids dispatch.
     // A callback or fresh login cannot reconstruct or renew a missing mapping.
     return ledger.recordQueued(this.actor, args, response, expected, admittedSite).context;

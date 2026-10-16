@@ -103,6 +103,7 @@ jobs:
         env:
           MRN_DISPOSABLE_API_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/provider-hook.sh
           MRN_DISPOSABLE_NATIVE_CHILD: '1'
+          MRN_DISPOSABLE_MANAGEMENT_TEST: '1'
           MRN_DISPOSABLE_NATIVE_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/native-hook.sh
           MRN_DISPOSABLE_ACCESS_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/access-hook.sh
           MRN_GATEWAY_MCP_SOURCE: ${{ github.workspace }}/.runtime/transport
@@ -111,6 +112,7 @@ jobs:
           MRN_GATEWAY_RUNNER_SOURCE: ${{ github.workspace }}/.runtime/runner
           MRN_GATEWAY_NATIVE_REPORT: ${{ runner.temp }}/gateway-native-content-report.json
           MRN_GATEWAY_ACCESS_REPORT: ${{ runner.temp }}/gateway-access-report.json
+          MRN_GATEWAY_MANAGEMENT_REPORT: ${{ runner.temp }}/gateway-management-report.json
         run: |
           .runtime/provider/tests/runtime/run-dashboard-api.sh
           node --input-type=module <<'JS'
@@ -138,9 +140,18 @@ jobs:
           assert.equal(access.scope, 'disposable-native-access-only');
           for (const field of ['captureVerified', 'pendingDuringReadVerified', 'retainedCaptureRecoveryVerified', 'pendingRecoveryDenied', 'currentSitePermissionVerified', 'privateLifecycleVerified', 'measurementReadbackVerified', 'measurementSitePermissionVerified', 'pendingMeasurementsDenied', 'nodeAcquisitionVerified', 'nodeAcquisitionDenialsVerified']) assert.equal(access[field], true);
           for (const field of ['productionCredentials', 'liveGoogleVerified', 'protectedWorkerVerified', 'chatgptAcceptanceVerified', 'codeWriteVerified', 'contentWriteVerified', 'remoteBackupVerified']) assert.equal(access[field], false);
+          const management = JSON.parse(readFileSync(process.env.MRN_GATEWAY_MANAGEMENT_REPORT, 'utf8'));
+          assert.equal(management.result, 'PASS');
+          assert.equal(management.passed.length, 6);
+          assert.equal(management.scope, 'disposable-native-management-access-only');
+          for (const field of ['managementCallbackVerified', 'originalIntentVerified', 'completeCaptureVerified', 'independentReadbackVerified', 'retainedMeasurementsVerified', 'currentPermissionVerified', 'pendingDuringReadVerified', 'pendingRecoveryDenied', 'childUnchangedVerified']) assert.equal(management[field], true);
+          for (const field of ['productionCredentials', 'liveGoogleVerified', 'protectedWorkerVerified', 'renderedQaVerified', 'consumerBindingIssued', 'contentWriteVerified', 'remoteBackupVerified', 'chatgptAcceptanceVerified']) assert.equal(management[field], false);
+          assert.ok(management.capture.measurements.readback_bytes > 65535);
+          assert.ok(management.capture.measurements.readback_chunks > 1);
+          assert.ok(management.callbackPosts > 0);
           const sources = JSON.parse(readFileSync('tools/operations/test/runtime/sources.json', 'utf8'));
           for (const name of ['provider', 'transport', 'runner']) assert.equal(execFileSync('git', ['-C', `.runtime/${name}`, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), sources[name].commit);
-          for (const report of [proof, native, access]) assert.deepEqual(report.source, sources);
+          for (const report of [proof, native, access, management]) assert.deepEqual(report.source, sources);
           JS
       - name: Retain redacted disposable worker failure
         if: failure()
@@ -160,5 +171,6 @@ jobs:
             ${{ runner.temp }}/gateway-native-content-report.json
             ${{ runner.temp }}/capture-transport-report.json
             ${{ runner.temp }}/gateway-access-report.json
+            ${{ runner.temp }}/gateway-management-report.json
           if-no-files-found: error
           retention-days: 14

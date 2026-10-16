@@ -82,9 +82,10 @@ function queueFixture(t) {
 function managementQueueFixture(t) {
   const f = fixture(), store = new Store(':memory:'); t.after(() => store.close());
   const actor = f.actor('123'), values = managementAccessFixture(actor, Date.now());
-  values.context.binding.authorization_policy_sha256 = 'b'.repeat(64);
+  values.context.binding.authorization_policy_sha256 = 'c'.repeat(64);
   values.context.binding_sha256 = delegationDigest(values.context.binding);
-  values.expected.pins.authorization_policy_sha256 = 'b'.repeat(64);
+  values.expected.pins.authorization_policy_sha256 = 'c'.repeat(64);
+  values.expected.delegationPolicySha256 = 'b'.repeat(64);
   const { registry, registryData, policy } = accessRegistry(values.request.site_url);
   const ledger = new ManagementAccessLedger(store, { connectionId: 'con_MRNGoogle', registry });
   f.state.corrupt = result => { result.result = values.context; };
@@ -126,6 +127,8 @@ test('management queue uses the existing confirmed run with original identity an
   assert.equal(f.state.dispatched[0].person.google_sub, '123');
   const mapping = JSON.parse(f.store.db.prepare('SELECT body FROM management_access_jobs').get().body);
   assert.equal(mapping.context.binding_sha256, f.context.binding_sha256);
+  assert.equal(mapping.pins.authorization_policy_sha256, 'c'.repeat(64));
+  assert.notEqual(mapping.pins.authorization_policy_sha256, f.expected.delegationPolicySha256);
   assert.equal(mapping.actor.subject, f.queue.actor.subject);
   await assert.rejects(() => f.queue.callTool({ name: 'mrn_mainwp__request_content_edit_qualification_v1', arguments: f.request }), { code: 'CAPABILITY_DENIED' });
 });
@@ -136,9 +139,25 @@ test('management qualification refuses unavailable worker, caller identity and c
   await assert.rejects(() => f.queue.queueManagementQualification({ ...f.request, email: 'staff@mrnwebdesigns.com' }, { ledger: f.ledger, admit: async () => f.expected }));
   await assert.rejects(() => f.queue.queueManagementQualification(f.request, { ledger: f.ledger, admit: async () => ({}) }), { code: 'ACCESS_MAPPING' });
   assert.equal(f.state.calls.length, 0);
-  const expected = structuredClone(f.expected); expected.pins.authorization_policy_sha256 = 'e'.repeat(64);
-  await assert.rejects(() => f.queue.queueManagementQualification(f.request, { ledger: f.ledger, admit: async () => expected }), { code: 'DELEGATION_MISMATCH' });
-  assert.deepEqual(f.state.calls, [delegationTools.challenge]);
+  for (const delegationPolicySha256 of [undefined, null, '', 'invalid']) {
+    await assert.rejects(() => f.queue.queueManagementQualification(f.request,
+      { ledger: f.ledger, admit: async () => ({ ...f.expected, delegationPolicySha256 }) }), { code: 'ACCESS_MAPPING' });
+  }
+  assert.equal(f.state.calls.length, 0);
+  for (const delegationPolicySha256 of ['e'.repeat(64), f.expected.pins.authorization_policy_sha256]) {
+    await assert.rejects(() => f.queue.queueManagementQualification(f.request,
+      { ledger: f.ledger, admit: async () => ({ ...f.expected, delegationPolicySha256 }) }), { code: 'DELEGATION_MISMATCH' });
+  }
+  assert.deepEqual(f.state.calls, [delegationTools.challenge, delegationTools.challenge]);
+  assert.equal(f.store.db.prepare('SELECT count(*) AS n FROM management_access_jobs').get().n, 0);
+});
+
+test('valid team delegation cannot substitute for independent content authorization admission', async t => {
+  const f = managementQueueFixture(t), expected = structuredClone(f.expected);
+  expected.pins.authorization_policy_sha256 = expected.delegationPolicySha256;
+  await assert.rejects(() => f.queue.queueManagementQualification(f.request,
+    { ledger: f.ledger, admit: async () => expected }), { code: 'ACCESS_MAPPING' });
+  assert.equal(f.state.dispatched.length, 1);
   assert.equal(f.store.db.prepare('SELECT count(*) AS n FROM management_access_jobs').get().n, 0);
 });
 

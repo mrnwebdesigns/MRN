@@ -25,6 +25,13 @@ helpers are not workspace tools. The optional management callback lifecycle is
 not registered by service startup pending native combined qualification and
 concrete production approval.
 
+Team-delegation and content-authorization policy hashes are distinct. The
+service-owned admission supplies the verified team-policy hash for the signed
+challenge; the retained queue mapping separately checks the content-policy
+hash. A matching team policy cannot substitute for the content policy. The
+initial consumer accidentally compared these domains directly; the regression
+fixtures now use different hashes and require both checks.
+
 Contract/vector inputs now come from provider
 `c0811a8b4269cb2af9a957e0164a6c8e5095ea21`. Its
 [provider run 38919292938](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38919292938)
@@ -36,15 +43,39 @@ A snapshot hash cannot substitute for the complete read-result hash. The
 provider corrected nullable parity-descriptor validation and bounded native
 stdout assembly without repeating a write or raising global transport limits.
 
-The disposable gateway runtime now selects c0811a8; eleven inherited
-qualification blobs remain byte-identical. This checkpoint still needs its
-combined gateway CI and actual Node management-callback proof. Protected
+Gateway `28f3303b412b12a6e873e8d87be9649913e8b7e2` passes 388 source tests,
+ESLint, staged MRN QA and
+[hosted MRN QA 38921337963](https://github.com/mrnwebdesigns/MRN/actions/runs/38921337963).
+Its [combined run 38921338002](https://github.com/mrnwebdesigns/MRN/actions/runs/38921338002)
+fails before callback integration: the legacy requester fixture cannot resolve
+its native site as connected (`mrn_job_sync`, surfaced as `mrn_job_snapshot`).
+The original failed log is retained; the provider's standalone pass does not
+qualify this combined checkpoint. The fixture correction performs one explicit
+individually delegated sync and verifies exact URL and connected state before
+taking the snapshot. It never forces database connection flags or changes the
+production resolver.
+
+The optional actual management harness independently verifies extracted
+provider bytes and the original signed Google intent, then checks large-page
+capture, independent chunked readback, retained measurements, current site
+permission and pending revocation during a real delayed Child read. It runs
+alongside the existing identity, native edit/rollback, access and transport
+groups, with a separate bounded report. Synthetic identity, registrar and owner
+authority remain explicit. Its combined runtime result is still required.
+The runtime pin is now `0e927d69c66074d370c003bd508ac5695c34cdf4`, whose
+[provider CI 38923611471](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38923611471)
+passes all four jobs. The changes since c0811a8 are confined to fixture tests,
+CI and documentation; all sixteen copied qualification, measurement and
+management contract/vector blobs remain exact. The delayed-read fixture handles
+WordPress's slashed request encoding and tests the real six-second interruption.
+
+Protected
 rendered/hook QA, profile admission, new-record capture, production configuration,
 qualified menu/media operations and actual ChatGPT team acceptance remain open.
 The post-ID-zero capture refusal is intentional; no existing record substitutes
 for a draft creation recipe.
 
-## Current structured-content integration, 2026-10-16
+## Earlier structured-content integration, 2026-10-16
 
 The existing `read_website_content` and `search_website_content` tools now select
 the structured MainWP reader when that capability is exposed. They retain the

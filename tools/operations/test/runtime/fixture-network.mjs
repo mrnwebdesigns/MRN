@@ -32,7 +32,7 @@ globalThis.fetch = async (input, options = {}) => {
   assert.equal(url.origin, 'https://wpcontrol.mrndev.io', 'Fixture blocked external HTTP');
   assert.ok(url.pathname.startsWith('/wp-json/'), 'Fixture permits only the disposable REST surface');
   const method = options.method || 'GET';
-  const delegated = /\/mrn-mainwp\/(?:get-delegation-challenge|get-team-access|read-delegated-operation|sync-delegated-site|run-delegated-operation|queue-delegated-qualification|read-access-veto-query)-v1\/run$/.test(url.pathname);
+  const delegated = /\/mrn-mainwp\/(?:get-delegation-challenge|get-team-access|read-delegated-operation|sync-delegated-site|run-delegated-operation|queue-delegated-qualification|read-access-veto-query|read-management-access-veto-query)-v1\/run$/.test(url.pathname);
   if (delegated) { assert.equal(method, 'POST'); assert.equal(url.search, ''); }
   const response = await originalFetch(input, options);
   let errorCode;
