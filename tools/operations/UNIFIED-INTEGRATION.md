@@ -27,11 +27,22 @@ approval because WordPress cannot resolve recursive schema references; b18592d
 adds complete provider validation plus a native-compatible closed projection.
 The original failed run is retained.
 
-The combined gateway harness now requires two additional real read/search
-checks with a read-only OAuth scope, alongside the existing content edit and
-rollback regression. Its new runtime pin still requires its own combined CI
-result. Synthetic Google, QA and backup inputs are not live team acceptance.
-Local company-clone ACF PRO proof is separate from hosted ACF-free proof.
+Gateway `f13ec5d7918500fbb913641c65c3d0d20eee902e` passes all 349 Node tests,
+ESLint and staged MRN QA, plus
+[combined CI 38906299558](https://github.com/mrnwebdesigns/MRN/actions/runs/38906299558)
+and [MRN QA 38906299501](https://github.com/mrnwebdesigns/MRN/actions/runs/38906299501).
+The combined harness passes ten identity, eight native content, eleven current
+access and six transport groups. The native groups include two structured
+read/search checks with a read-only OAuth scope, alongside the existing content
+edit and rollback regression. Original artifact `12048782275` has archive SHA256
+`2c2c29c22b315d86efb8d5c1ed509340d3107401f297750cbe29da27c9b1b3de`.
+Actual CI merge `8719a3ccc0bb102f85f5967c5107d11ea18cd87a` has identical
+Operations, workflow and imported Fleet helper blobs. Measurement group and
+transcript hashes independently recompute. Synthetic Google, QA and backup
+inputs are not live team acceptance. Local company-clone ACF PRO proof is
+separate from hosted ACF-free proof. Static MRN QA skips PHP and browser/API
+runtime rows for this JavaScript-only change; disposable native CI supplies the
+applicable transport regression, without protected management-write admission.
 
 The distinct management write abilities and protected signer are not registered
 in the gateway. A structured read does not qualify a write. Full render/hook
@@ -94,11 +105,12 @@ The historical qualification trail below retains earlier failures and correction
 
 ## Identity and transport
 
-Read-only refresh on 2026-10-15: `mainwp://status` reports `connected: true`,
-`dashboardHost: wpcontrol.mrndev.io` and 115 abilities. The currently serving
-tool list contains 60 tools, including eight newer backup-policy/cleanup tools
-listed below. The abilities resource was truncated, so it cannot establish the
-complete underlying inventory. The separately configured transport upgrade
+Read-only refresh after the restart on 2026-10-16: `mainwp://status` reports
+`connected: true`, `dashboardHost: wpcontrol.mrndev.io` and 115 abilities across
+two catalog pages. This session exposes 67 MainWP tools, including seven
+knowledge tools without a qualified team workflow. The desktop abilities
+resource still truncates its JSON, so that response cannot establish complete
+schemas. The separately configured transport upgrade
 does not prove that this existing connection or the hosted plugin has restarted.
 The existing hosted `/healthz` responds successfully; that is only service
 health, not authentication, editing or team-acceptance proof.

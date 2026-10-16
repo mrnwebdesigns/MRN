@@ -42,6 +42,29 @@ All results and necessary decisions must appear in chat. Any request for a WordP
 
 Use already-authorized test identities or separately reviewed administrative test changes. Do not suspend a real staff member, weaken a policy, forge a production identity or grant an outsider access to manufacture test evidence. A local negative test is not a live denial result.
 
+## Latest disposable evidence, 2026-10-16
+
+Gateway `f13ec5d` with provider `b18592d`, MCP `3249bde` and runner `d9f2eba`
+passes [combined CI 38906299558](https://github.com/mrnwebdesigns/MRN/actions/runs/38906299558)
+and [MRN QA 38906299501](https://github.com/mrnwebdesigns/MRN/actions/runs/38906299501).
+All 349 controlled tests pass. The retained original artifact `12048782275`
+matches SHA256 `2c2c29c22b315d86efb8d5c1ed509340d3107401f297750cbe29da27c9b1b3de`;
+the actual CI checkout's complete Operations subtree, workflow and imported
+Fleet helpers match the committed source.
+
+Its ten identity, eight native content, eleven private-access and six transport
+groups include a structured page read and exact-site status-filtered search with
+read-only OAuth scope, plus the existing approved field edit, independent
+readback and exact rollback. Controlled fixtures separately cover registered
+ACF values and field definitions. The separate management receipt checks
+reject old purposes, mismatched scope/report/run, stale evidence and unrequested
+sibling edits. That verifier is not a registered write workflow. Full management
+qualification/admission and live deployment remain open. The fixture's OAuth,
+Directory, QA signer and backup authority are synthetic; every ordinary-member
+and live-denial row above remains unverified.
+
+## Earlier disposable checkpoints
+
 The disposable integration at gateway `a6eccc2` with provider `27ac5bc` and MCP
 `3249bde` passed ten actual HTTP/MCP/WordPress transport checks, including
 identity switching, concurrent reads, outsider/non-Google/missing-Directory
