@@ -4,7 +4,7 @@ Theme URI: https://mrndev.io/
 Author: MRN Web Designs
 Author URI: https://mrndev.io/
 Description: Stack starter theme for MRN sites. Includes builder-aware templates, reusable-block support, and a clean development shell for site builds.
-Version: 1.5.21
+Version: 1.5.22
 Tested up to: 6.8
 Requires PHP: 8.0
 License: GNU General Public License v2 or later
@@ -3329,6 +3329,55 @@ button.mrn-ui__link--button {
 
 .mrn-content-builder__row--body-text {
 	background: var(--mrn-body-text-row-bg, transparent);
+}
+
+/* Native Body Text list controls affect only lists directly inside the editor. */
+.mrn-ui__text--list-layout > :is(ul, ol) {
+	column-gap: var(--mrn-list-column-gap, 1.5rem);
+	text-align: start;
+}
+
+.mrn-ui__text--list-flow-rows > :is(ul, ol) {
+	display: grid;
+	grid-template-columns: repeat(var(--mrn-list-columns), minmax(0, 1fr));
+}
+
+.mrn-ui__text--list-flow-columns > :is(ul, ol) {
+	column-count: var(--mrn-list-columns);
+}
+
+.mrn-ui__text--list-layout > :is(ul, ol) > li {
+	min-width: 0;
+	break-inside: avoid;
+	overflow-wrap: anywhere;
+}
+
+.mrn-ui__text--list-plain > :is(ul, ol) {
+	padding-inline-start: 0;
+}
+
+/* Empty markers retain native list semantics, including in WebKit. */
+.mrn-ui__text--list-plain > :is(ul, ol) > li::marker {
+	content: '';
+}
+
+.mrn-ui__text--list-align-end > :is(ul, ol),
+.mrn-ui__text--list-align-end-start > :is(ul, ol) {
+	text-align: end;
+}
+
+@media (max-width: 767px) {
+	.mrn-ui__text--list-flow-rows > :is(ul, ol) {
+		grid-template-columns: repeat(var(--mrn-list-columns-mobile), minmax(0, 1fr));
+	}
+
+	.mrn-ui__text--list-flow-columns > :is(ul, ol) {
+		column-count: var(--mrn-list-columns-mobile);
+	}
+
+	.mrn-ui__text--list-align-end-start > :is(ul, ol) {
+		text-align: start;
+	}
 }
 
 .mrn-shell-section--text.mrn-shell-section--width-wide,

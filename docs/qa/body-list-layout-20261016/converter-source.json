@@ -1,0 +1,29 @@
+{
+    "passed": [
+        "Stable read-only planning and existing empty destination handling",
+        "Changed source invalidates apply before any content write",
+        "Unknown populated metadata blocks conversion",
+        "Native zero\/full-width aliases, protected orphan references, and unknown-content refusal",
+        "ACF key references, exact content\/links, semantic readback, verified repeat no-op",
+        "Newer edits block verify\/rollback; qualified rollback restores exact metadata",
+        "Existing Stack content, missing references and nonleading Heroes are protected",
+        "Recursive reusable references are rejected",
+        "Nested native FAQ repeater apply\/readback\/rollback",
+        "One 27-question FAQ with an adjacent CTA, native nested keys\/spacing, repeat and exact rollback",
+        "Native zoom, ordered\/repeated gallery media, editable heights and feature Stats; exact rollback and empty-stage refusal",
+        "Native single-slide rotating Hero, both links, exact colors, nine ordered portfolio images and four timeline steps; spacing, repeat and rollback",
+        "Native responsive Logos: seven\/five\/three\/two views, viewport-limited scroll, media\/link retention, repeat and exact rollback",
+        "Multiple slides, off-palette colors, invalid portfolio media and changed HTML escaping remain explicit blockers",
+        "Native left\/right text compositions, heading reveal and three-column Cards: links, spacing, normalization, repeat, rollback and unsupported-list\/intro refusal",
+        "Native consultation lists: down-column order, repeated inline text\/query links, responsive controls, CTA styles, reveal, repeat and exact rollback",
+        "Disabled interaction and unsafe consultation links remain protected",
+        "Text\/video\/stats\/reusable native fields, migration lock, and complete batch rollback",
+        "Injected ACF write failure is detected and its partial data rolls back",
+        "Existing real RSVP form and confirmation content remain protected",
+        "Two Hero links survive conversion; FAQ overflow blocks planning\/apply without dropping content",
+        "Production identity rejected by the write guard"
+    ],
+    "fixture_count": 34,
+    "fixtures_removed": true,
+    "result": "passed"
+}

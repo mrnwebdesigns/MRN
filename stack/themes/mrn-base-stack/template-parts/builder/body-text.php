@@ -18,6 +18,8 @@ $background_color = isset( $row['background_color'] ) ? trim( (string) $row['bac
 $bottom_accent    = ! empty( $row['bottom_accent'] );
 $accent_slug      = isset( $row['bottom_accent_style'] ) ? (string) $row['bottom_accent_style'] : '';
 $width_layers     = mrn_base_stack_get_section_width_layers( $row['section_width'] ?? '', 'content', 'full-width' );
+$list_contract    = mrn_base_stack_get_body_list_contract( $row );
+$list_style       = mrn_base_stack_get_inline_style_attribute( $list_contract['styles'] );
 
 $allowed_tags = array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'div' );
 if ( ! in_array( $heading_tag, $allowed_tags, true ) ) {
@@ -78,7 +80,7 @@ echo mrn_base_stack_get_builder_anchor_markup( $row ); // phpcs:ignore WordPress
 					<?php endif; ?>
 
 					<?php if ( '' !== trim( $body_text ) ) : ?>
-						<div class="mrn-ui__text">
+						<div class="<?php echo esc_attr( implode( ' ', array_merge( array( 'mrn-ui__text' ), $list_contract['classes'] ) ) ); ?>"<?php echo '' !== $list_style ? ' style="' . esc_attr( $list_style ) . '"' : ''; ?>>
 							<?php echo apply_filters( 'the_content', $body_text ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 						</div>
 					<?php endif; ?>

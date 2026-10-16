@@ -24,6 +24,23 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 			$extra
 		);
 	};
+	if ( 'body_text' === $layout ) {
+		$fields = array(
+			$make( 'list_columns', 'List Columns', 'select', array( 'choices' => array( '' => 'Use Existing Formatting', '1' => 'One', '2' => 'Two', '3' => 'Three' ), 'default_value' => '', 'instructions' => 'Optional layout for top-level ordered and unordered lists in Body Text. Nested lists retain their formatting.' ) ),
+			$make( 'list_columns_mobile', 'List Columns on Small Screens', 'select', array( 'choices' => array( '1' => 'One', '2' => 'Two', '3' => 'Three' ), 'default_value' => '1' ) ),
+			$make( 'list_flow', 'List Reading Flow', 'select', array( 'choices' => array( 'rows' => 'Across Rows', 'columns' => 'Down Columns' ), 'default_value' => 'rows', 'instructions' => 'Down Columns keeps the authored order flowing down the first column, then the next.' ) ),
+			$make( 'list_markers', 'List Markers', 'select', array( 'choices' => array( 'default' => 'Use Existing Markers', 'plain' => 'Hide Markers' ), 'default_value' => 'default' ) ),
+			$make( 'list_alignment', 'List Alignment', 'select', array( 'choices' => array( 'start' => 'Start', 'end' => 'End', 'end-start' => 'End, Start on Small Screens' ), 'default_value' => 'start' ) ),
+			$make( 'list_gap', 'Space Between List Columns', 'text', array( 'instructions' => 'Optional non-negative CSS length, for example 30px. Does not change row margin or padding.' ) ),
+		);
+		foreach ( $fields as &$field ) {
+			if ( 'list_columns' !== $field['name'] ) {
+				$field['conditional_logic'] = array( array( array( 'field' => $seed . '_list_columns', 'operator' => '!=', 'value' => '' ) ) );
+			}
+		}
+		unset( $field );
+		return $fields;
+	}
 	if ( 'logos' === $layout ) {
 		return array(
 			$make( 'slider_breakpoints', 'Responsive Logo Views', 'repeater', array(
@@ -277,6 +294,34 @@ function mrn_base_stack_ensure_presentation_fields( array $fields, $layout, $see
 	}
 	array_splice( $fields, $at, 0, array_values( $extra ) );
 	return $fields;
+}
+
+/**
+ * Build a bounded, opt-in Body Text list presentation.
+ *
+ * @param array $row Native row values.
+ * @return array{classes: string[], styles: string[]}
+ */
+function mrn_base_stack_get_body_list_contract( array $row ) {
+	$columns = (string) ( $row['list_columns'] ?? '' );
+	if ( ! in_array( $columns, array( '1', '2', '3' ), true ) ) {
+		return array( 'classes' => array(), 'styles' => array() );
+	}
+	$mobile = (string) ( $row['list_columns_mobile'] ?? '1' );
+	$mobile = in_array( $mobile, array( '1', '2', '3' ), true ) ? $mobile : '1';
+	$flow = 'columns' === ( $row['list_flow'] ?? '' ) ? 'columns' : 'rows';
+	$alignment = (string) ( $row['list_alignment'] ?? 'start' );
+	$alignment = in_array( $alignment, array( 'start', 'end', 'end-start' ), true ) ? $alignment : 'start';
+	$classes = array( 'mrn-ui__text--list-layout', 'mrn-ui__text--list-flow-' . $flow, 'mrn-ui__text--list-align-' . $alignment );
+	if ( 'plain' === ( $row['list_markers'] ?? '' ) ) {
+		$classes[] = 'mrn-ui__text--list-plain';
+	}
+	$styles = array( '--mrn-list-columns:' . $columns, '--mrn-list-columns-mobile:' . $mobile );
+	$gap = mrn_base_stack_validate_media_height( (string) ( $row['list_gap'] ?? '' ) );
+	if ( '' !== $gap ) {
+		$styles[] = '--mrn-list-column-gap:' . $gap;
+	}
+	return array( 'classes' => $classes, 'styles' => $styles );
 }
 
 /**
