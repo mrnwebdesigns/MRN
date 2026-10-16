@@ -49,7 +49,7 @@ jobs:
           import assert from 'node:assert/strict';
           const lock = JSON.parse(readFileSync('tools/operations/test/runtime/sources.json', 'utf8'));
           assert.equal(lock.schema, 1);
-          for (const [name, repository] of [['provider', 'mrnwebdesigns/mrn-mainwp-operations-api'], ['transport', 'mrnwebdesigns/mainwp-mcp'], ['runner', 'mrnwebdesigns/mrn-code-qa-runner']]) {
+          for (const [name, repository] of [['provider', 'mrnwebdesigns/mrn-mainwp-operations-api'], ['transport', 'mrnwebdesigns/mainwp-mcp'], ['runner', 'mrnwebdesigns/mrn-code-qa-runner'], ['managementWorker', 'mrnwebdesigns/mrn-code-qa-runner']]) {
             assert.equal(lock[name].repository, repository);
             assert.match(lock[name].commit, /^[a-f0-9]{40}$/);
             appendFileSync(process.env.GITHUB_OUTPUT, `${name}=${lock[name].commit}\n`);
@@ -89,6 +89,14 @@ jobs:
           token: ${{ steps.provider-token.outputs.token }}
           path: .runtime/runner
           persist-credentials: false
+      - name: Check out the management context reader candidate
+        uses: actions/checkout@v4
+        with:
+          repository: mrnwebdesigns/mrn-code-qa-runner
+          ref: ${{ steps.sources.outputs.managementWorker }}
+          token: ${{ steps.provider-token.outputs.token }}
+          path: .runtime/management-worker
+          persist-credentials: false
       - name: Install locked test dependencies and build MCP
         run: |
           npm ci --ignore-scripts --prefix tools/operations
@@ -101,7 +109,9 @@ jobs:
         run: node tools/operations/test/runtime/check-capture-transport.mjs
       - name: Verify original dispatch readback between gateway and protected worker
         env:
+          MRN_GATEWAY_MANAGEMENT_RUNNER_SOURCE: ${{ github.workspace }}/.runtime/management-worker
           MRN_GATEWAY_RUNNER_SOURCE: ${{ github.workspace }}/.runtime/runner
+          MRN_GATEWAY_PROVIDER_SOURCE: ${{ github.workspace }}/.runtime/provider
         run: node tools/operations/test/runtime/check-management-worker.mjs
       - name: Exercise actual gateway, MCP and WordPress authorization
         env:

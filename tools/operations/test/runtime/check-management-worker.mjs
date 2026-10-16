@@ -17,9 +17,19 @@ import { ManagementWorkerContext, managementWorkerAudience } from '../../src/man
 import { managementEvidenceFixture } from '../fixtures/management-evidence.mjs';
 
 process.umask(0o077);
-const runner = resolve(process.env.MRN_GATEWAY_RUNNER_SOURCE);
+const runner = resolve(process.env.MRN_GATEWAY_MANAGEMENT_RUNNER_SOURCE);
 const lock = JSON.parse(readFileSync(new URL('./sources.json', import.meta.url)));
-assert.equal(execFileSync('git', ['-C', runner, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), lock.runner.commit);
+assert.equal(execFileSync('git', ['-C', runner, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), lock.managementWorker.commit);
+const provider = resolve(process.env.MRN_GATEWAY_PROVIDER_SOURCE), acquisition = resolve(process.env.MRN_GATEWAY_RUNNER_SOURCE);
+assert.equal(execFileSync('git', ['-C', provider, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), lock.provider.commit);
+assert.equal(execFileSync('git', ['-C', acquisition, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), lock.runner.commit);
+// Fail before the long native test if its independently frozen acquisition
+// runner differs. The new context reader does not replace that source boundary.
+for (const name of ['prepare-node-acquisition.py', 'node-acquisition-control.py']) {
+  const source = execFileSync('git', ['-C', provider, 'show', `${lock.provider.commit}:tests/runtime/${name}`], { encoding: 'utf8' });
+  const matches = [...source.matchAll(/^RUNNER_COMMIT = '([a-f0-9]{40})'$/gm)];
+  assert.equal(matches.length, 1); assert.equal(matches[0][1], lock.runner.commit);
+}
 const { acquireManagementWorkerContext } = await import(pathToFileURL(join(runner, 'src/management-worker-context.mjs')));
 // Compare the imported closed subset against the actual immutable gateway wire.
 const subset = JSON.parse(readFileSync(join(runner, 'contracts/management-worker-context-v1.json')));
@@ -93,7 +103,7 @@ try {
   active = disabled; await assert.rejects(() => request().then(acquireManagementWorkerContext));
   assert.equal(checks, 3); assert.equal(calls, 6); passed.push('production-startup-leaves-route-absent');
   process.stdout.write(JSON.stringify({ result: 'PASS', scope: 'disposable-gateway-runner-context-only', passed,
-    runnerSource: lock.runner.commit, productionCredentials: false, liveGoogleVerified: false,
+    runnerSource: lock.managementWorker.commit, productionCredentials: false, liveGoogleVerified: false,
     hostedOidcVerified: false, contentWriteVerified: false, chatgptAcceptanceVerified: false }) + '\n');
 } finally {
   hook.mock.restore(); for (const socket of sockets) socket.destroy();

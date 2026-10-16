@@ -710,3 +710,13 @@ acquisition, rendered QA, retained-report admission, content-write authority,
 remote backup, deployment or ordinary-member ChatGPT acceptance. Staff access
 continues to require no individual approval; service activation and an approved
 site change remain separate gates.
+
+The first combined run with the new worker, `38939305175`, passed the new
+gateway/worker step and earlier provider/Child checks, then refused preparation
+of the older native acquisition fixture. That fixture independently requires
+runner `d9f2eba`; changing the shared runner pin to `ae27ff4` violated its exact
+source check. The fixture's pin and source guard are preserved. A separate
+immutable `managementWorker` checkout now supplies `ae27ff4` only to the new
+readback test; the existing native acquisition remains on `d9f2eba`. Both
+sources are explicit in the integration lock. No failed gate is waived, and the
+corrected combined run must pass before this source is qualified.
