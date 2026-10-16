@@ -1,6 +1,6 @@
 {
   "authority": "Checksum- and tree-locked standard-plugin releases available to explicit one-site Stack component plans. Registration never authorizes a site write or changes the immutable Stack release identity.",
-  "catalog_updated": "2026-10-15",
+  "catalog_updated": "2026-10-16",
   "releases": [
     {
       "current_distribution": "standard-bootstrap",
@@ -1598,6 +1598,35 @@
         "preserve_active_state": true
       },
       "version": "0.17.3"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-reusable-block-library-0.2.2-d491628c5e93.zip",
+        "main_file": "mrn-reusable-block-library/mrn-reusable-block-library.php",
+        "path": "releases/stack-plugins/mrn-reusable-block-library-0.2.2-d491628c5e93.zip",
+        "sha256": "4a87845f8e95810b35ba0dc178f1c0e99199ad2782bf288c994444cc710f4cd8",
+        "size_bytes": 60655
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-reusable-block-library",
+      "source": {
+        "git_commit": "d491628c5e9366721ae56d8383d3b05cd9e95f78",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-reusable-block-library",
+        "repository": "mrnwebdesigns/mrn-reusable-block-library"
+      },
+      "target_tier": "optional-shared",
+      "tree": {
+        "file_count": 19,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "2eb74747a4bec282aaee0897124caf4d9ff794d4a94b5da6c345865f1271fdaf"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.2.2"
     }
   ],
   "schema_version": 1

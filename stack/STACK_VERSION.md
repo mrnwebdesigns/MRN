@@ -1,8 +1,8 @@
 # Stack Version
 
 ## Candidate Release
-- Stack release: `2026.10.15-fleet-auto-1a5e4859001b`
-- Release date: `2026-10-15`
+- Stack release: `2026.10.16-fleet-auto-242c08c13034`
+- Release date: `2026-10-16`
 - Status: `source snapshot; qualification/publication evidence establishes Fleet readiness; site rollout separate`
 
 ## Included MRN-Owned Components
@@ -12,11 +12,11 @@
 | `mrn-acf-focal-point` | `1.1.2` |
 | `mrn-active-style-guide` | `0.1.7` |
 | `mrn-active-style-guide-loader` | `0.1.7` |
-| `mrn-admin-data-post-types` | `0.2.1` |
-| `mrn-admin-data-post-types-loader` | `0.2.1` |
+| `mrn-admin-data-post-types` | `0.3.0` |
+| `mrn-admin-data-post-types-loader` | `0.3.0` |
 | `mrn-admin-ui-css` | `3.2.4` |
 | `mrn-announcements` | `1.8.2` |
-| `mrn-base-stack` | `1.5.18` |
+| `mrn-base-stack` | `1.5.20` |
 | `mrn-base-stack-child` | `1.1.0` |
 | `mrn-comment-management` | `1.3.0` |
 | `mrn-config-helper` | `0.1.74` |
@@ -36,7 +36,7 @@
 | `mrn-public-security-hardening` | `0.4.4` |
 | `mrn-public-security-hardening-loader` | `0.4.4` |
 | `mrn-recaptcha-enterprise-manager` | `0.2.3` |
-| `mrn-reusable-block-library` | `0.2.1` |
+| `mrn-reusable-block-library` | `0.2.2` |
 | `mrn-schema-bridge` | `0.7.0` |
 | `mrn-schema-bridge-loader` | `0.7.0` |
 | `mrn-shared-assets` | `0.2.2` |

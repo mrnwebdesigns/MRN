@@ -1,5 +1,10 @@
 # Stack Changelog
 
+## 2026.10.16-fleet-auto-242c08c13034
+
+- Automatic cumulative release from accepted source vector `ceaaf42e36c3e22a0bde69401d666fd61a9c4c0b0be7a68ef94ce28c89d39322`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
 ## Unreleased — parent 1.5.20 migration capabilities
 
 - Allow up to 30 questions in one native FAQ/accordion, including seamless and
