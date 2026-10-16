@@ -2,7 +2,8 @@
 
 WordPress plugin release unit for `mrn-updraft-local-retention`.
 
-The MU plugin enforces the non-secret MRN Updraft policy on every stack runtime:
+For sites marked **Yes** for P&P in the MRN Website Information sheet, the MU
+plugin enforces the non-secret MRN Updraft policy:
 
 - daily file and database backups on staging and production;
 - no routine scheduled backups on development/review environments;
@@ -19,6 +20,14 @@ It also recreates missing Updraft file and database cron events after a restore.
 Remote credentials are never created or changed. Administrators receive a
 visible warning unless Amazon S3 uses a unique path ending in
 `sites/<sanitized-hostname>`, using the full hostname with punctuation replaced by hyphens.
+
+Sites without **Yes** for P&P are explicitly excluded through the guarded
+MainWP operation. That operation disables Updraft's remote destinations,
+switches routine file and database schedules to `manual`, and stops MRN
+retention enforcement and notices on that site. It preserves the stored
+destination credentials in a disabled state and does not delete historical
+S3 objects. Historical-object deletion requires its own reviewed site-owned
+manifest and approval.
 
 ## Temporary hostnames and staging
 

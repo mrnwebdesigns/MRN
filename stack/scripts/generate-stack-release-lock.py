@@ -28,7 +28,9 @@ EXCLUDED_DIRECTORIES = {
     "zip",
 }
 ROOT_EXCLUDED_DIRECTORIES = {"vendor"}
+# The Updraft component's local QA profile must never be copied to child sites.
 EXCLUDED_FILES = {".DS_Store", ".git"}
+LOCAL_QA_PROFILE_COMPONENTS = {"mrn-updraft-local-retention"}
 
 
 class ReleaseLockError(RuntimeError):
@@ -94,7 +96,10 @@ def iter_digest_files(source):
             )
         )
         for filename in sorted(files):
-            if filename in EXCLUDED_FILES:
+            if filename in EXCLUDED_FILES or (
+                filename == ".mrn-qa.env"
+                and source.name in LOCAL_QA_PROFILE_COMPONENTS
+            ):
                 continue
             path = root_path / filename
             if path.is_symlink():

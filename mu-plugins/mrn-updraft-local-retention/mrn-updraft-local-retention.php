@@ -3,10 +3,13 @@
  * Plugin Name: MRN Updraft Backup Policy
  * Description: Enforces the MRN Updraft backup policy, limits local backup sets, and repairs missing scheduled events.
  * Author: MRN Web Designs
- * Version: 0.6.1
+ * Version: 0.7.0
  */
 
 defined('ABSPATH') || exit;
+
+require_once __DIR__ . '/includes/class-mrn-updraft-mainwp-policy.php';
+MRN_Updraft_MainWP_Policy::init();
 
 /**
  * Cron hook used for scheduled local backup cleanup.
@@ -27,6 +30,9 @@ const MRN_UPDRAFT_LOCAL_RETENTION_MAX_SETS = 4;
  */
 const MRN_UPDRAFT_REMOTE_FILE_RETENTION_MAX_SETS = 23;
 const MRN_UPDRAFT_REMOTE_DATABASE_RETENTION_MAX_SETS = 100;
+
+/** Option marking sites excluded from the MRN routine backup policy. */
+const MRN_UPDRAFT_BACKUP_POLICY_EXCLUDED_OPTION = 'mrn_updraft_backup_policy_excluded';
 
 /**
  * Maximum age for routine backups under the twelve-period monthly policy.
@@ -174,6 +180,11 @@ function mrn_updraft_backup_policy_setting_matches($current, $desired): bool {
 	return (string) $current === (string) $desired;
 }
 
+/** Determine whether MainWP has explicitly excluded this site from the policy. */
+function mrn_updraft_backup_policy_is_excluded(): bool {
+	return '1' === (string) get_option(MRN_UPDRAFT_BACKUP_POLICY_EXCLUDED_OPTION, '0');
+}
+
 /**
  * Determine whether UpdraftPlus Premium's advanced-retention engine is active.
  */
@@ -205,10 +216,10 @@ function mrn_updraft_backup_policy_can_view_notifications(): bool {
  * separate, always on-demand via `wp updraftplus backup`, and unaffected by
  * this schedule setting on any environment.
  */
-function mrn_updraft_backup_policy_enforce_settings(): void {
+function mrn_updraft_backup_policy_get_desired_settings(): array {
 	$start_time = mrn_updraft_backup_policy_get_start_time();
 	$schedule_interval = mrn_updraft_backup_policy_is_dev_environment() ? 'manual' : 'daily';
-	$desired = array(
+	return array(
 		'updraft_interval'          => $schedule_interval,
 		'updraft_interval_database' => $schedule_interval,
 		'updraft_retain'            => (string) MRN_UPDRAFT_REMOTE_FILE_RETENTION_MAX_SETS,
@@ -224,6 +235,15 @@ function mrn_updraft_backup_policy_enforce_settings(): void {
 		'updraft_starttime_files'   => $start_time,
 		'updraft_starttime_db'      => $start_time,
 	);
+}
+
+/** Enforce the fixed, non-secret policy; leave storage credentials untouched. */
+function mrn_updraft_backup_policy_enforce_settings(): void {
+	if (mrn_updraft_backup_policy_is_excluded()) {
+		return;
+	}
+
+	$desired = mrn_updraft_backup_policy_get_desired_settings();
 	$schedule_changed = false;
 
 	foreach ($desired as $name => $value) {
@@ -258,6 +278,9 @@ add_action('init', 'mrn_updraft_backup_policy_enforce_settings', 15);
  */
 function mrn_updraft_backup_policy_prune_expired_routine_backup($prune_it, $type, $backup_datestamp, $entity, $entity_how_many, $rule, $group_id): bool {
 	unset($type, $entity, $entity_how_many, $rule, $group_id);
+	if (mrn_updraft_backup_policy_is_excluded()) {
+		return (bool) $prune_it;
+	}
 
 	if (!is_numeric($backup_datestamp)) {
 		return (bool) $prune_it;
@@ -318,6 +341,18 @@ function mrn_updraft_backup_policy_get_remote_status(): array {
  * @return array<string,mixed>
  */
 function mrn_updraft_backup_policy_get_retention_status(): array {
+	if (mrn_updraft_backup_policy_is_excluded()) {
+		return array(
+			'policy_version'   => '2026.09',
+			'plugin_version'   => '0.7.0',
+			'management_mode'  => 'excluded',
+			'excluded'         => true,
+			'exclusion_reason' => 'p_and_p_not_yes',
+			'compliant'        => false,
+			'checks'            => array(),
+		);
+	}
+
 	$expected_schedule = mrn_updraft_backup_policy_is_dev_environment() ? 'manual' : 'daily';
 	$expected_rules = mrn_updraft_backup_policy_get_retention_rules();
 	$current_rules = mrn_updraft_backup_policy_get_option('updraft_retain_extrarules', array());
@@ -345,7 +380,7 @@ function mrn_updraft_backup_policy_get_retention_status(): array {
 
 	return array(
 		'policy_version'        => '2026.09',
-		'plugin_version'        => '0.6.1',
+		'plugin_version'        => '0.7.0',
 		'expected_schedule'     => $expected_schedule,
 		'file_retention_cap'    => MRN_UPDRAFT_REMOTE_FILE_RETENTION_MAX_SETS,
 		'database_retention_cap' => MRN_UPDRAFT_REMOTE_DATABASE_RETENTION_MAX_SETS,
@@ -382,7 +417,7 @@ add_filter('mrn_loader_runtime_report', 'mrn_updraft_backup_policy_add_runtime_r
  * Warn administrators when remote backups are missing or share a bucket root.
  */
 function mrn_updraft_backup_policy_remote_notice(): void {
-	if (!mrn_updraft_backup_policy_can_view_notifications()) {
+	if (mrn_updraft_backup_policy_is_excluded() || !mrn_updraft_backup_policy_can_view_notifications()) {
 		return;
 	}
 
@@ -409,7 +444,7 @@ function mrn_updraft_backup_policy_remote_notice(): void {
  * Warn when the Premium advanced-retention engine is unavailable.
  */
 function mrn_updraft_backup_policy_advanced_retention_notice(): void {
-	if (!mrn_updraft_backup_policy_can_view_notifications() || mrn_updraft_backup_policy_has_advanced_retention()) {
+	if (mrn_updraft_backup_policy_is_excluded() || !mrn_updraft_backup_policy_can_view_notifications() || mrn_updraft_backup_policy_has_advanced_retention()) {
 		return;
 	}
 
@@ -426,7 +461,7 @@ function mrn_updraft_backup_policy_advanced_retention_notice(): void {
  * @return array<int, array<string, mixed>>
  */
 function mrn_updraft_backup_policy_dashboard_notifications($notifications): array {
-	if (!mrn_updraft_backup_policy_can_view_notifications()) {
+	if (mrn_updraft_backup_policy_is_excluded() || !mrn_updraft_backup_policy_can_view_notifications()) {
 		return is_array($notifications) ? $notifications : array();
 	}
 
@@ -492,6 +527,10 @@ add_action('plugins_loaded', 'mrn_updraft_backup_policy_register_dashboard_notif
  * @return int|false
  */
 function mrn_updraft_local_retention_get_next_start_time($default_timestamp, string $option_name) {
+	if (mrn_updraft_backup_policy_is_excluded()) {
+		return $default_timestamp;
+	}
+
 	$start_time = get_option($option_name, '');
 	if (!is_string($start_time) || 1 !== preg_match('/^(\d{2}):(\d{2})$/', $start_time, $matches)) {
 		return $default_timestamp;
@@ -538,6 +577,10 @@ add_filter('updraftplus_schedule_firsttime_db', 'mrn_updraft_local_retention_fil
  * Ensure the recurring cleanup event exists.
  */
 function mrn_updraft_local_retention_schedule_cleanup(): void {
+	if (mrn_updraft_backup_policy_is_excluded()) {
+		return;
+	}
+
 	$event = function_exists('wp_get_scheduled_event')
 		? wp_get_scheduled_event(MRN_UPDRAFT_LOCAL_RETENTION_CRON_HOOK)
 		: false;
@@ -573,6 +616,9 @@ add_action('init', 'mrn_updraft_local_retention_schedule_cleanup');
  */
 function mrn_updraft_local_retention_repair_backup_schedules(): void {
 	global $updraftplus;
+	if (mrn_updraft_backup_policy_is_excluded()) {
+		return;
+	}
 
 	if (!is_object($updraftplus)) {
 		return;
@@ -664,6 +710,10 @@ function mrn_updraft_local_retention_get_set_key(string $filename): string {
  * Clean local Updraft backups down to the configured number of sets.
  */
 function mrn_updraft_local_retention_cleanup_local_backups(): void {
+	if (mrn_updraft_backup_policy_is_excluded()) {
+		return;
+	}
+
 	$directory = mrn_updraft_local_retention_get_directory();
 	if ('' === $directory || !is_dir($directory)) {
 		return;

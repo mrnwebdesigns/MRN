@@ -698,7 +698,7 @@
         "state": "confirmed"
       },
       "target_tier": "platform-required",
-      "version": "0.6.1"
+      "version": "0.7.0"
     },
     {
       "classification": "shared-feature",
@@ -1979,7 +1979,7 @@
         "state": "confirmed-independent-dashboard"
       },
       "target_tier": "dashboard-only",
-      "version": "0.13.4"
+      "version": "0.13.7"
     },
     {
       "classification": "operations-policy",

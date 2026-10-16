@@ -22,7 +22,9 @@ EXCLUDED_DIRECTORIES = {
     "test-results",
     "zip",
 }
+# The Updraft component's local QA profile must never be copied to child sites.
 EXCLUDED_FILES = {".DS_Store"}
+LOCAL_QA_PROFILE_COMPONENTS = {"mrn-updraft-local-retention"}
 MU_RUNTIME_TYPES = {"mu-loader", "mu-component"}
 IDENTIFIER_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{2,127}$")
 SHA256_PATTERN = re.compile(r"^[a-f0-9]{64}$")
@@ -69,7 +71,10 @@ def iter_deployable_files(source: Path):
         )
         root_path = Path(root)
         for filename in sorted(files):
-            if filename in EXCLUDED_FILES:
+            if filename in EXCLUDED_FILES or (
+                filename == ".mrn-qa.env"
+                and source.name in LOCAL_QA_PROFILE_COMPONENTS
+            ):
                 continue
             path = root_path / filename
             if path.is_symlink():
