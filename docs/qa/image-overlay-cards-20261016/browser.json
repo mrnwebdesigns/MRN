@@ -1,0 +1,101 @@
+{
+  "desktop": {
+    "cards": [
+      {
+        "cardHeight": 404.890625,
+        "copyDisplay": "none",
+        "imageHeight": 404.890625,
+        "title": "Card 1with editable copy"
+      },
+      {
+        "cardHeight": 404.890625,
+        "copyDisplay": "none",
+        "imageHeight": 404.890625,
+        "title": "Card 2with editable copy"
+      },
+      {
+        "cardHeight": 404.890625,
+        "copyDisplay": "none",
+        "imageHeight": 404.890625,
+        "title": "Card 3with editable copy"
+      }
+    ],
+    "columns": "381.664px 381.664px 381.664px",
+    "hover": true,
+    "overflow": false,
+    "reduced": false,
+    "width": 1280
+  },
+  "focus": {
+    "activeLabel": "Card 2 with editable copy",
+    "activeTag": "ARTICLE",
+    "cards": [
+      {
+        "captionHeight": 155.1875,
+        "cardHeight": 404.890625,
+        "copyDisplay": "none",
+        "copyHeight": 0
+      },
+      {
+        "captionHeight": 219.1875,
+        "cardHeight": 404.890625,
+        "copyDisplay": "block",
+        "copyHeight": 64
+      },
+      {
+        "captionHeight": 155.1875,
+        "cardHeight": 404.890625,
+        "copyDisplay": "none",
+        "copyHeight": 0
+      }
+    ],
+    "outline": "2px"
+  },
+  "tablet": {
+    "columns": "450px 450px",
+    "overflow": false,
+    "width": 1000
+  },
+  "mobile": {
+    "cards": [
+      {
+        "cardHeight": 363.875,
+        "copyHeight": 88,
+        "display": "block"
+      },
+      {
+        "cardHeight": 363.875,
+        "copyHeight": 88,
+        "display": "block"
+      },
+      {
+        "cardHeight": 363.875,
+        "copyHeight": 88,
+        "display": "block"
+      }
+    ],
+    "columns": "343px",
+    "overflow": false,
+    "width": 390
+  },
+  "captionFocus": {
+    "captionVariant": true,
+    "label": "Card 1 with editable copy",
+    "outline": "2px",
+    "transform": "matrix(1, 0, 0, 1, 0, -5)"
+  },
+  "loading": "eager verified after reload",
+  "final": {
+    "captionGap": "12px",
+    "focusedName": "Card 2 with editable copy",
+    "loading": [
+      "eager",
+      "eager",
+      "eager"
+    ],
+    "outline": "2px",
+    "overflow": false,
+    "visibleFocusedCopy": "block",
+    "width": 1280
+  }
+}

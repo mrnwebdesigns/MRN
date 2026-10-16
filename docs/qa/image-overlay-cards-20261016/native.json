@@ -1,0 +1,32 @@
+{
+    "checks": [
+        "Owned local draft created",
+        "Root and nested Cards expose the opt-in image profile",
+        "Root and nested Card Images have unique native ACF keys",
+        "Card introduction retains rich editable content",
+        "Three explicit existing images selected",
+        "Selected image exists locally: 9907",
+        "Selected image exists locally: 10028",
+        "Selected image exists locally: 10036",
+        "Native ACF retains every image in order",
+        "Rich introduction and final nested description survive ACF",
+        "Native aspect ratio, gap and padding survive readback",
+        "Native renderer outputs ordered images and overlay profile",
+        "Native heading-to-copy gap is field controlled",
+        "Native loading control avoids deferring above-fold images",
+        "Unlinked reveal cards have named keyboard focus stops",
+        "Linked cards have a meaningful name and safe new-window relation",
+        "Only authored native geometry reaches escaped styles",
+        "Always-visible caption variant avoids redundant focus stops",
+        "Unset presentation retains standard Card rendering",
+        "Old unrelated content metadata is not activated as a new introduction",
+        "Malformed or negative geometry cannot enter CSS",
+        "Explicit proof destination exists outside authored content",
+        "Proof uses the existing exact caption color",
+        "Static native proof saved without modifying authored pages",
+        "Owned fixture removed"
+    ],
+    "count": 25,
+    "result": "passed",
+    "source_version": "1.5.23"
+}

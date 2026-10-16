@@ -4,7 +4,7 @@ Theme URI: https://mrndev.io/
 Author: MRN Web Designs
 Author URI: https://mrndev.io/
 Description: Stack starter theme for MRN sites. Includes builder-aware templates, reusable-block support, and a clean development shell for site builds.
-Version: 1.5.22
+Version: 1.5.23
 Tested up to: 6.8
 Requires PHP: 8.0
 License: GNU General Public License v2 or later
@@ -5331,6 +5331,89 @@ a.mrn-social-links__link:focus-visible svg {
 
 .mrn-card-row__item--card-deck {
 	align-content: start;
+}
+
+/* Native image Cards retain their editable child row as the caption. */
+.mrn-content-builder__row--image-cards .mrn-card-row__grid {
+	grid-template-columns: repeat(var(--mrn-card-columns, 3), minmax(0, 1fr));
+}
+
+.mrn-content-builder__row--image-cards .mrn-card-row__item {
+	min-width: 0;
+	position: relative;
+	background: transparent;
+}
+
+.mrn-content-builder__row--image-cards .mrn-card-row__image {
+	aspect-ratio: var(--mrn-card-image-ratio, 1/1);
+	min-width: 0;
+}
+
+.mrn-content-builder__row--image-cards .mrn-card-row__image-media {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: center top;
+}
+
+.mrn-content-builder__row--image-cards .mrn-card-row__caption {
+	--mrn-space-stack-xs: var(--mrn-card-caption-gap, 0.75rem);
+	background: var(--mrn-card-item-bg, Canvas);
+	display: grid;
+	gap: var(--mrn-card-caption-gap, 0.75rem);
+	padding: var(--mrn-card-caption-padding, 1.5rem);
+	position: relative;
+	min-width: 0;
+}
+
+.mrn-content-builder__row--image-cards .mrn-card-row__caption :is(.mrn-layout-section, .mrn-layout-container) {
+	width: 100%;
+	max-width: none;
+	padding-inline: 0;
+}
+
+.mrn-content-builder__row--image-card-reveal .mrn-card-row__item--has-image {
+	align-content: stretch;
+}
+
+.mrn-content-builder__row--image-card-reveal .mrn-card-row__item--has-image > :is(.mrn-card-row__image, .mrn-card-row__caption) {
+	grid-area: 1 / 1;
+}
+
+.mrn-content-builder__row--image-card-reveal .mrn-card-row__item--has-image > .mrn-card-row__caption {
+	align-self: end;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) and (min-width: 768px) {
+	.mrn-content-builder__row--image-card-reveal .mrn-card-row__item--has-image:not(:hover):not(:focus-within) .mrn-card-row__content .mrn-ui__text {
+		display: none;
+	}
+
+	.mrn-content-builder__row--image-card-caption .mrn-card-row__item {
+		transition: transform 0.3s ease;
+	}
+
+	.mrn-content-builder__row--image-card-caption .mrn-card-row__item:is(:hover, :focus-within) {
+		transform: translateY(-5px);
+	}
+}
+
+.mrn-content-builder__row--image-cards .mrn-card-row__item:focus-visible,
+.mrn-content-builder__row--image-cards .mrn-card-row__item:focus-within {
+	outline: 2px solid currentColor;
+	outline-offset: 3px;
+}
+
+@media (max-width: 1199px) {
+	.mrn-content-builder__row--image-cards .mrn-card-row__grid {
+		grid-template-columns: repeat(var(--mrn-card-image-tablet-columns, 2), minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 767px) {
+	.mrn-content-builder__row--image-cards .mrn-card-row__grid {
+		grid-template-columns: minmax(0, 1fr);
+	}
 }
 
 .mrn-card-row__item-head {
