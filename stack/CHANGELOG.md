@@ -1,5 +1,13 @@
 # Stack Changelog
 
+## Unreleased — parent 1.6.0 Header Utility Message scheduling
+
+- Add optional dates, repeating weekdays/daily hours, overnight windows,
+  holidays and custom annual dates with a selectable schedule time zone.
+- Preserve manual Active behavior by default. Validate dates through ACF and
+  update scheduled visibility on cached pages without AJAX or cron.
+- Source qualification and publication must pass before site deployment.
+
 ## 2026.10.16-fleet-auto-91bc5a53671c
 
 - Automatic cumulative release from accepted source vector `c23a991efdb77b2ac17ed91bc8ce61ed7db1451a701d6cd2e989816477c9aee2`.
