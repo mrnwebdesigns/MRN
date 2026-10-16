@@ -79,12 +79,13 @@ export class Operations {
     return { websites, sources: snapshot?.coverage || [], issues: snapshot?.issues || [] };
   }
   async capabilities(actor) {
-    const authorize = () => {
+    const authorize = async () => {
       const member = this.registry.member(actor);
       requireThat(member.portfolio?.actions.includes('read') || member.grants.some(g => g.actions.includes('read')), 'FORBIDDEN', 'Website read access is required.');
+      await this.verifyStaff?.(actor);
     };
-    authorize(); const client = await this.connect(actor);
-    try { return await capabilityInventory(client, authorize); } finally { await client.close(); }
+    await authorize(); const client = await this.connect(actor);
+    try { return await capabilityInventory(client, authorize, { nativeContentConfigured: Boolean(this.content) }); } finally { await client.close(); }
   }
   async portfolioDetails(actor, input) {
     const authorize = () => {

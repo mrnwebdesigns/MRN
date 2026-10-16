@@ -15,6 +15,13 @@ No separate staff credential is needed. A denial or malformed result never
 falls back to another route. The existing REST reader remains available only
 when the structured capability is absent; unsupported filters fail explicitly.
 
+Capability discovery reports record-read and search routes separately. A
+missing structured capability with no configured central REST reader is
+unavailable; partial discovery does not imply a complete post/page workflow.
+The inventory describes discovered/configured routes, not current site
+authorization, endpoint health or write qualification, and is withheld if
+access changes during discovery.
+
 Runtime test sources now select provider
 `b18592de3a2c3e8900f538bb753c446c3cba9f51`. All four provider jobs in
 [CI 38903564637](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38903564637)
@@ -77,6 +84,18 @@ callers and schema annotations cannot override either budget. The private
 compiler remains unregistered. A future pinned capture consumer must separately
 validate snapshot, dataset, parity and artifact bounds, original source/access
 bindings and every hash; fitting the outer envelope establishes no authority.
+
+Compiler checkpoint `a214256cdbdbd1c6fad3264605cfc700bdb2759e` passes 355 local
+tests, ESLint and staged MRN QA, plus
+[Operations CI 38909515349](https://github.com/mrnwebdesigns/MRN/actions/runs/38909515349)
+and [MRN QA 38909515525](https://github.com/mrnwebdesigns/MRN/actions/runs/38909515525).
+Original artifact `12049628380` matches archive SHA256
+`4424af87364287151eb41595227909844b4abcd2628cfbd7751790928cbe31d3`;
+group and transcript hashes independently recompute. CI merge
+`55e0e580538bb1b31dfa3bb1f54cfe9b4f4735bd` has identical Operations, workflow
+and imported Fleet helper blobs; unrelated merged MRN files differ. The
+provider runtime pin remains b18592d. Production and ChatGPT acceptance are
+not established by this evidence.
 
 ## Earlier acceptance checkpoint, 2026-10-15
 

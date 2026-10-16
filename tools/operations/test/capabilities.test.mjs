@@ -13,6 +13,52 @@ test('capability inventory distinguishes backend counts, connected workflows and
   assert.equal(report.capabilities.find(c => c.capability === 'future_mutator_v1').integration, 'integration_required');
   assert.equal(report.capabilities.find(c => c.capability === toolNames.contentRecord).workflow, 'read_website_content');
   assert.equal(report.content.acf, 'structured_read_available_editing_requires_qualification');
+  assert.equal(report.content.posts, 'structured_mainwp');
+  assert.equal(report.content.pages, 'structured_mainwp');
+  assert.deepEqual(report.content.readRoutes, { record: 'structured_mainwp', search: 'structured_mainwp' });
+  assert.equal(f.state.calls.length, 0);
+});
+
+test('content inventory does not claim unavailable readers and distinguishes partial discovery from configured REST', async t => {
+  const f = setup(); t.after(f.close); f.state.contentManagement = true;
+  const original = f.client.listTools.bind(f.client);
+  let available = [];
+  f.client.listTools = async () => ({ tools: (await original()).tools
+    .filter(tool => ![toolNames.contentRecord, toolNames.contentRecords].includes(tool.name) || available.includes(tool.name)) });
+  const cases = [
+    [[], false, 'unavailable', 'unavailable', 'unavailable'],
+    [[], true, 'native_rest_route', 'native_rest_route', 'native_rest_route'],
+    [[toolNames.contentRecord], false, 'partially_available', 'structured_mainwp', 'unavailable'],
+    [[toolNames.contentRecords], false, 'partially_available', 'unavailable', 'structured_mainwp'],
+    [[toolNames.contentRecord], true, 'mixed_mainwp_routes', 'structured_mainwp', 'native_rest_route'],
+    [[toolNames.contentRecords], true, 'mixed_mainwp_routes', 'native_rest_route', 'structured_mainwp'],
+  ];
+  for (const [tools, native, availability, record, search] of cases) {
+    available = tools; f.service.content = native ? {} : undefined;
+    const report = await f.service.capabilities(actor);
+    assert.equal(report.content.posts, availability); assert.equal(report.content.pages, availability);
+    assert.deepEqual(report.content.readRoutes, { record, search });
+    assert.equal(report.content.acf, tools.includes(toolNames.contentRecord)
+      ? 'structured_read_available_editing_requires_qualification' : 'qualification_required');
+    assert.match(report.content.scope, /do not prove.*authorization/);
+  }
+  assert.equal(f.state.calls.length, 0);
+});
+
+test('capability discovery withholds its inventory if access is revoked while the directory is pending', async t => {
+  const f = setup(); t.after(f.close);
+  const original = f.client.listTools.bind(f.client);
+  f.client.listTools = async () => { const result = await original(); f.policy.members[0].enabled = false; return result; };
+  await assert.rejects(() => f.service.capabilities(actor), { code: 'FORBIDDEN' });
+  assert.equal(f.state.calls.length, 0);
+  f.policy.members[0].enabled = true;
+  let suspended = false, checkedAfterDirectory = false;
+  f.service.verifyStaff = async () => {
+    if (suspended) { checkedAfterDirectory = true; throw Object.assign(new Error('Current membership denied'), { code: 'STAFF_ACCESS_DENIED' }); }
+  };
+  f.client.listTools = async () => { const result = await original(); suspended = true; return result; };
+  await assert.rejects(() => f.service.capabilities(actor), { code: 'STAFF_ACCESS_DENIED' });
+  assert.equal(checkedAfterDirectory, true);
   assert.equal(f.state.calls.length, 0);
 });
 

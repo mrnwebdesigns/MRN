@@ -29,7 +29,7 @@ const mapped = new Map([
   ...Object.values(portfolioSections).map(name => [name, 'read_portfolio_details']),
 ]);
 
-export async function capabilityInventory(client, authorize) {
+export async function capabilityInventory(client, authorize, { nativeContentConfigured = false } = {}) {
   await authorize();
   const status = validateStatus(await client.readResource({ uri: 'mainwp://status' }));
   const all = []; const names = new Set(); const cursors = new Set(); let cursor;
@@ -45,6 +45,12 @@ export async function capabilityInventory(client, authorize) {
     if (cursor) cursors.add(cursor);
   } while (cursor);
   await authorize();
+  const contentRoutes = {
+    record: names.has(toolNames.contentRecord) ? 'structured_mainwp' : nativeContentConfigured ? 'native_rest_route' : 'unavailable',
+    search: names.has(toolNames.contentRecords) ? 'structured_mainwp' : nativeContentConfigured ? 'native_rest_route' : 'unavailable',
+  };
+  const contentAvailability = contentRoutes.record === contentRoutes.search ? contentRoutes.record
+    : Object.values(contentRoutes).includes('unavailable') ? 'partially_available' : 'mixed_mainwp_routes';
   return { observedAt: new Date().toISOString(), dashboardHost: status.dashboardHost,
     providerDiscoveredAbilities: status.abilitiesCount, backendExposedTools: all.length,
     coverage: 'The backend permission policy filters its tool directory. Hidden abilities are not callable or inferred from the provider count. A listed workflow still requires its operation-specific qualification.',
@@ -52,7 +58,8 @@ export async function capabilityInventory(client, authorize) {
       workflow: mapped.get(t.name) || null, integration: mapped.has(t.name) ? 'connected_workflow' : 'integration_required',
       backendReadOnly: t.annotations?.readOnlyHint === true,
       ...(!mapped.has(t.name) ? { reason: 'No qualified hosted workflow exposes this backend capability yet.' } : {}) })),
-    content: { posts: 'native_rest_route', pages: 'native_rest_route',
+    content: { posts: contentAvailability, pages: contentAvailability, readRoutes: contentRoutes,
+      scope: 'Routes reflect backend discovery and central reader configuration. They do not prove current site authorization, endpoint health or write qualification. A structured-reader denial never falls back to REST.',
       acf: names.has(toolNames.contentRecord) ? 'structured_read_available_editing_requires_qualification' : 'qualification_required',
       menus: 'qualification_required', media: 'qualification_required' },
   };
