@@ -107,6 +107,19 @@ export function compileManagementSchema(wire) {
           return matches === 1;
         });
       }
+      if (Array.isArray(s.type)) {
+        // JSON Schema applies string/list constraints only to those types.
+        // Support the provider's scalar-or-checkbox-value wire explicitly;
+        // unknown keywords still fail rather than being silently discarded.
+        const keysByType = { string: ['minLength', 'maxLength', 'pattern', 'format'],
+          integer: ['minimum', 'maximum'], boolean: [], null: [], array: ['items', 'minItems', 'maxItems', 'uniqueItems'] };
+        fail(s.type.length >= 2 && s.type.length <= 5 && new Set(s.type).size === s.type.length
+          && s.type.every(type => typeof type === 'string' && Object.hasOwn(keysByType, type)), 'Invalid management type alternatives.');
+        only(['type', ...s.type.flatMap(type => keysByType[type])]);
+        const choices = s.type.map(type => child({ type, ...Object.fromEntries(Object.entries(s)
+          .filter(([key]) => keysByType[type].includes(key))) }));
+        return finish((value, state) => choices.some(choice => choice(value, state)));
+      }
       if (s.type === 'object') {
         only(['type', 'properties', 'required', 'additionalProperties', 'propertyNames', 'minProperties', 'maxProperties']);
         const properties = s.properties ?? {}, required = s.required ?? [];

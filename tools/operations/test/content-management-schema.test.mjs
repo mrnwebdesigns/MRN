@@ -136,3 +136,14 @@ test('branch expansion has a total work bound even for acyclic overlapping refer
   for (let i = 1; i < 20; i++) defs['level' + i] = { oneOf: [ref('level' + (i - 1)), ref('level' + (i - 1))] };
   assert.equal(compileManagementSchema({ ...ref('level19'), $defs: defs }).safeParse('mismatch').success, false);
 });
+
+test('scalar-or-checkbox values apply only explicit type-specific bounds without permitting floats or coercion', () => {
+  const wire = { type: ['string', 'integer', 'boolean', 'array', 'null'], maxLength: 5, maxItems: 2,
+    items: { type: 'string', maxLength: 3 } };
+  const schema = compileManagementSchema(wire);
+  for (const value of ['1.5', 1, false, null, [], ['one', 'two']]) assert.deepEqual(schema.parse(value), value);
+  for (const value of [1.5, {}, 'longer', ['long'], ['one', 'two', 'tri'], [1]]) assert.equal(schema.safeParse(value).success, false);
+  for (const bad of [{ ...wire, ignored: true }, { ...wire, type: ['string', 'number'] }, { ...wire, type: ['string', 'string'] },
+    { ...wire, type: ['string', 'boolean'] }, { ...wire, items: { type: 'number' } }])
+    assert.throws(() => compileManagementSchema(bad), { code: 'CONTENT_MANAGEMENT_CONTRACT' });
+});
