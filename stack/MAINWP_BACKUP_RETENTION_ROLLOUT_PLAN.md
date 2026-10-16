@@ -6,15 +6,32 @@ This is an execution plan, not deployment authorization. The policy source and
 MainWP verification contract are prepared in the repository, but no child site
 is changed by this plan or its feature commit.
 
-The read-only Dashboard snapshot taken on 2026-09-22 showed 106 registered
-sites: 104 connected and two disconnected. The disconnected snapshot entries
-were site ID 115 (`https://44ec8d3fc1.nxcli.io/`) and site ID 79
-(`https://eloghomes.tempurl.host/`). These IDs and states are diagnostic only;
-the execution task must re-query the Dashboard and resolve every target from
-its exact current URL instead of reusing this snapshot.
+The read-only MainWP Dashboard snapshot taken on 2026-10-14 showed 104
+registered sites: 102 connected and two disconnected. The authoritative P&P
+roster is MainWP's **Platform & Plugins > Included** field. A direct read of
+that field showed 80 **Yes**, 24 **No**, and no blank values. This count is
+diagnostic only; before execution, re-query the Dashboard and resolve every
+target from its exact current URL instead of reusing this snapshot.
+
+The generated `Platform & Plugins: Yes` tag currently matches the 80 Yes field
+values, but `Platform & Plugins: No` is stale: it is also assigned to 30 Yes
+sites and is missing from four No sites. Use the MainWP Included field as the
+selector, never the generated P&P tags or an external spreadsheet. Do not infer
+a value when the field cannot be read or the MainWP site identity is ambiguous.
 
 ## Target Contract
 
+- Apply the remote backup profile only to sites whose current MainWP
+  **Platform & Plugins > Included** field is **Yes**. Resolve each site by its
+  exact current MainWP URL; do not use generated P&P tags or an external
+  spreadsheet as the roster. Treat No, blank, or any other value as excluded
+  from the routine policy. If the field cannot be read or the URL cannot be
+  uniquely resolved, stop for that site until MainWP data is reconciled.
+- For a site without **Yes**, disable all Updraft remote destinations, set
+  routine file and database schedules to `manual`, and mark the site as
+  excluded from the MRN routine policy. Preserve disabled credentials and
+  historical remote objects; deleting historical objects is a separate
+  reviewed operation requiring its own explicit approval.
 - Staging and production run one combined file/database backup daily.
 - Development/review environments use manual scheduling but retain the same
   mandatory database-only backup gate before every remote write.
@@ -76,7 +93,7 @@ operational batch. Follow the shared state machine in
 6. Immediately before the first write, create a labeled database-only Updraft
    backup, send it to remote storage, and require the successful remote receipt.
 7. Submit the exact guarded install confirmation for that one site and release.
-8. Read the runtime report again. Require plugin and loader version `0.6.0`,
+8. Read the runtime report again. Require plugin and loader version `0.7.0`,
    `backup_policy.compliant=true`, daily or manual scheduling appropriate to the
    environment, file/database caps `23`/`100`, the exact advanced rules, local
    deletion, core exclusion, unique S3 prefix, and advanced-retention activity.
@@ -84,6 +101,11 @@ operational batch. Follow the shared state machine in
    expected site-owned remote objects. Do not use a shared-root remote scan.
 10. Run the applicable public/admin smoke checks and MRN QA, then store the
     preflight, backup receipt, release result, readback, and verification result.
+
+For an excluded site, verify the runtime reports `management_mode=excluded`,
+both routine schedules are `manual`, the Updraft remote-service list is empty,
+and all S3 instances are inactive. Confirm the operation reports that existing
+remote objects were not deleted.
 
 ## Canary and Expansion
 
@@ -106,6 +128,7 @@ is safe.
 ## Completion Criteria
 
 The rollout is complete only when every registered target is either verified
-compliant or explicitly recorded as blocked with an owner, reason, and next
-action. Dashboard connectivity, a successful source merge, or a successful
-package install alone is not compliance proof.
+compliant because P&P is **Yes**, verified excluded because P&P is not **Yes**,
+or explicitly recorded as blocked with an owner, reason, and next action.
+Dashboard connectivity, a successful source merge, or a successful package
+install alone is not compliance proof.

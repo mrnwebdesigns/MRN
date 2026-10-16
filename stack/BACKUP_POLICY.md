@@ -2,6 +2,16 @@
 
 ## Scheduled Backups
 
+- This scheduled remote-backup policy applies only to sites marked **Yes** for
+  P&P in the MRN Website Information source. MainWP targets must be reconciled
+  to that source by exact URL; a site without a verified **Yes** is excluded.
+- For a site without **Yes**, the guarded MainWP decommission operation disables
+  all Updraft remote destinations, sets routine file and database schedules to
+  `manual`, and records an explicit policy-excluded mode so the MU plugin does
+  not re-enable the policy or emit routine-retention warnings. It retains
+  stored destination credentials in a disabled state and never deletes existing
+  remote objects. Historical S3 cleanup is a separate, ownership-verified
+  operation.
 - Run one combined Updraft file and database backup per day on staging and
   production.
 - An explicitly configured WordPress `staging` environment remains daily,

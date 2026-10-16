@@ -1,6 +1,6 @@
 === MRN Updraft Backup Policy ===
 Contributors: mrnwebdesigns
-Stable tag: 0.6.0
+Stable tag: 0.7.0
 Tested up to: 7.1
 Requires PHP: 7.4
 
@@ -14,6 +14,11 @@ Supports the shared Stack loader or the standalone MU bootstrap. See README.md
 for configuration, prerequisites, domain cutover, and verification details.
 
 == Changelog ==
+
+= 0.7.0 =
+* Add guarded MainWP operations for policy inspection, application, and exclusion.
+* Preserve historic remote backup objects when disabling a site's destinations.
+* Verify database-only pre-deployment backups before policy or cleanup writes.
 
 = 0.6.0 =
 * Retain seven daily, four weekly, and twelve thirty-day recovery points.
