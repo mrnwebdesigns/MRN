@@ -86,8 +86,7 @@ delegation hashes. Dispatch-record hashing covers the exact original request,
 context hash, evidence-policy hash, requested/observed timestamps in milliseconds,
 original expiry, App actor and independently observed run ID. A future protected
 producer must obtain that completed original record through authenticated fixed
-readback; it cannot invent its hash or observation time. That producer interface
-and the actual Actions dispatcher are not connected yet.
+readback; it cannot invent its hash or observation time. That producer readback interface is not connected yet.
 
 The optional `/internal/mainwp/management-evidence` handler accepts only a small
 canonical opaque query pointer, reads the query through a separate canonical
@@ -107,6 +106,29 @@ Actual installed source bytes are a remaining requirement: parity inventories
 contain hashes, not a runnable renderer. The provider thread is preparing a
 separate original-job-bound private source acquisition candidate, without
 changing the current company code policy or creating per-site credentials.
+
+## Protected management dispatch candidate, 2026-10-16
+
+The separate, unregistered dispatcher uses the existing central GitHub App
+adapter and the original ledger only. It checks main against the pinned runner
+commit, the active workflow ID/path, and the exact immutable workflow blob
+through regular-file Git trees. It rechecks main before recording the one-use
+request and posting it. The canonical payload contains only the opaque dispatch
+ID and context hash; no staff token, content or caller-selected source is sent.
+
+The documented [GitHub workflow dispatch response](https://docs.github.com/en/rest/actions/workflows?apiVersion=2026-03-10#create-a-workflow-dispatch-event)
+returns the run identity. The dispatcher then independently reads that run and
+checks repository/head repository, workflow, main source, App actor, attempt 1,
+creation time and exact `MRN Management QA <dispatch_id>` run name before
+recording it. One total deadline and original staff/intent expiry cover the
+preflight, POST and readback. Lost responses, late data and failed identity
+checks leave the prepared dispatch consumed; they cannot trigger a duplicate.
+The workflow read helper does not widen the existing site-code edit paths.
+
+The protected producer and its authenticated original-record readback are still
+missing. Tests exercise controlled GitHub responses, not a real management
+workflow dispatch. No Actions credential, staff permission, live policy or
+service route has been activated by this candidate.
 
 ## Management identity integration, 2026-10-16
 

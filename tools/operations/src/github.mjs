@@ -107,6 +107,18 @@ export async function branchHead(api, branch) {
 
 export async function sourceFile(api, commit, path) {
   requireThat(hash(commit) && pathValid(path), 'SOURCE_PATH', 'Use an immutable source commit and exact repository path.');
+  return readSourceFile(api, commit, path);
+}
+
+// Read-only preflight for a source-pinned protected workflow. This does not
+// broaden the path contract used by site source proposals or edits.
+export async function workflowSource(api, commit, path) {
+  requireThat(hash(commit) && typeof path === 'string' && /^\.github\/workflows\/[a-z0-9._-]+\.ya?ml$/.test(path)
+    && !path.includes('..'), 'SOURCE_PATH', 'Use the exact source-pinned protected workflow.');
+  return readSourceFile(api, commit, path);
+}
+
+async function readSourceFile(api, commit, path) {
   const object = await api(`/git/commits/${commit}`);
   requireThat(object.sha === commit && hash(object.tree?.sha), 'SOURCE_IDENTITY', 'Source commit identity does not match.');
   let tree = object.tree.sha; const parts = path.split('/');
