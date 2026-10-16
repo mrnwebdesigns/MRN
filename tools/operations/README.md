@@ -325,3 +325,27 @@ still integration blockers. There is no caller-controlled installation method
 or fallback credential path. Unit and cross-repository codec fixtures do not
 prove live source capture, Google/OIDC acceptance, rendered content QA or team
 readiness. No content write or code policy is activated by these modules.
+
+`ManagementSourceCacheRegistry` adds a closed, source-only owner registry for
+opaque catalog artifact IDs. It defaults to missing-source denial, and accepts
+only the fixed `mrnwebdesigns/mrn-code-qa-runner` central repository with pinned
+numeric repository/artifact/run identity, source commit, archive hash and expiry.
+Registry/catalog changes, duplicates, unknown IDs and stale entries fail before
+credential acquisition. It reuses the existing exact-repository GitHub App grant
+and requests only its existing `qaRead` permission profile; it cannot grant App
+permissions or fall back to a personal token.
+
+The separate cache downloader verifies original artifact metadata and streams
+actual bytes to an exclusive private temporary file in at most 60 seconds under
+the original request expiry. It enforces the catalog archive bound (at most
+512 MiB), verifies the actual archive hash, removes partial files on failure, schedules removal at original expiry and
+never forwards authorization to GitHub's storage redirect. This does not widen
+receipt/evidence limits or extract/execute any ZIP. Complete inventory and source
+verification flags remain false until the protected supervisor independently
+validates all archive paths and bytes against the complete approved root.
+
+No registry is populated or activated. A read-only attempt to inspect App
+installations through the existing CLI returned 403 because that token cannot
+list installations; this neither proves nor grants the App's artifact-read
+permission. Live App access, owner-signed catalog population, safe supervisor
+extraction and encrypted cache delivery remain unverified integration work.

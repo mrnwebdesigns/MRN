@@ -2,6 +2,7 @@ import { createPrivateKey, sign } from 'node:crypto';
 import { constants, openSync, fstatSync, readFileSync, closeSync } from 'node:fs';
 import { requireThat, digest } from './contracts.mjs';
 import { createManagementEvidenceTransport } from './github-management-evidence.mjs';
+import { acquireManagementSourceCache } from './github-management-source-cache.mjs';
 
 const hash = value => typeof value === 'string' && /^[a-f0-9]{40}$/.test(value);
 const pathValid = value => typeof value === 'string' && /^[A-Za-z0-9_][A-Za-z0-9_./-]{0,511}$/.test(value) && !value.includes('..') && !value.includes('//') && !value.endsWith('/');
@@ -67,6 +68,12 @@ export class GithubApp {
   async managementEvidence(repository, authorize, { expiresAt, monotonic } = {}) {
     return createManagementEvidenceTransport({ repository, authorize, expiresAt, monotonic,
       fetchImpl: this.fetchImpl, now: this.now,
+      acquireGrant: request => this.#grant(repository, 'qaRead', authorize, request) });
+  }
+  async managementSourceCache(selection, authorize, { expiresAt, monotonic } = {}) {
+    const repository = 'mrnwebdesigns/mrn-code-qa-runner';
+    requireThat(String(this.repositories[repository]) === selection.repository_id, 'GITHUB_SCOPE', 'The approved central source repository differs.');
+    return acquireManagementSourceCache({ selection, authorize, expiresAt, monotonic, fetchImpl: this.fetchImpl, now: this.now,
       acquireGrant: request => this.#grant(repository, 'qaRead', authorize, request) });
   }
   async scoped(repository, purpose, authorize) {
