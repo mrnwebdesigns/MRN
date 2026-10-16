@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MRN Admin Data Post Types
  * Description: Makes selected custom post types admin/data-only without blocking programmatic queries.
- * Version: 0.2.1
+ * Version: 0.3.0
  * Author: MRN
  */
 
@@ -10,6 +10,9 @@ defined( 'ABSPATH' ) || exit;
 
 const MRN_ADMIN_DATA_POST_TYPES_OPTION = 'mrn_admin_data_post_types_manual';
 const MRN_ADMIN_DATA_POST_TYPES_SEARCH_DESTINATIONS_OPTION = 'mrn_admin_data_post_types_search_destinations';
+
+require_once __DIR__ . '/content-type-state.php';
+require_once __DIR__ . '/seopress.php';
 
 /**
  * Normalize a raw `mrn_admin_data_post_types` filter payload into config shape.
@@ -233,6 +236,14 @@ function mrn_admin_data_post_types_get_post_type_config( $post_type ) {
  * @return array
  */
 function mrn_admin_data_post_types_filter_registration_args( $args, $post_type ) {
+	if ( in_array( $post_type, mrn_admin_data_post_types_get_disabled_selection(), true ) ) {
+		return array_merge(
+			$args,
+			array_fill_keys( array( 'public', 'publicly_queryable', 'show_ui', 'show_in_menu', 'show_in_admin_bar', 'show_in_nav_menus', 'show_in_rest', 'has_archive', 'rewrite', 'query_var' ), false ),
+			array( 'exclude_from_search' => true )
+		);
+	}
+
 	$config = mrn_admin_data_post_types_get_post_type_config( $post_type );
 
 	if ( null === $config ) {
@@ -321,7 +332,7 @@ add_filter( 'get_sample_permalink_html', 'mrn_admin_data_post_types_filter_sampl
  * @return array
  */
 function mrn_admin_data_post_types_filter_sitemap_post_types( $post_types ) {
-	foreach ( array_keys( mrn_admin_data_post_types_get_config() ) as $post_type ) {
+	foreach ( mrn_admin_data_post_types_get_excluded_post_types() as $post_type ) {
 		unset( $post_types[ $post_type ] );
 	}
 
@@ -379,8 +390,8 @@ function mrn_admin_data_post_types_resolve_collection_post_type( $key, $entry ) 
  *
  * SEOPress consumes this shared collection through WordPressData::getPostTypes()
  * for title settings, sitemap settings, setup wizard indexing, metabox
- * registration, and diagnostic notices, so filtering it once here keeps every
- * SEOPress surface aligned.
+ * registration, and diagnostic notices. Sitemap output and audit queries use
+ * separate integration hooks in seopress.php.
  *
  * @param array $post_types SEOPress post-type collection.
  * @return array
@@ -390,7 +401,7 @@ function mrn_admin_data_post_types_filter_seopress_post_types( $post_types ) {
 		return $post_types;
 	}
 
-	$excluded = array_fill_keys( array_keys( mrn_admin_data_post_types_get_config() ), true );
+	$excluded = array_fill_keys( mrn_admin_data_post_types_get_excluded_post_types(), true );
 
 	if ( empty( $excluded ) ) {
 		return $post_types;
@@ -421,6 +432,6 @@ add_filter( 'seopress_post_types', 'mrn_admin_data_post_types_filter_seopress_po
 function mrn_admin_data_post_types_filter_seo_helper_excluded_post_types( $excluded ) {
 	$excluded = is_array( $excluded ) ? $excluded : array();
 
-	return array_values( array_unique( array_merge( $excluded, array_keys( mrn_admin_data_post_types_get_config() ) ) ) );
+	return array_values( array_unique( array_merge( $excluded, mrn_admin_data_post_types_get_excluded_post_types() ) ) );
 }
 add_filter( 'mrn_seo_helper_excluded_post_types', 'mrn_admin_data_post_types_filter_seo_helper_excluded_post_types' );

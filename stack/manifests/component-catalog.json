@@ -73,7 +73,9 @@
         "external_services": [],
         "options": [
           "mrn_admin_data_post_types_manual",
-          "mrn_admin_data_post_types_search_destinations"
+          "mrn_admin_data_post_types_search_destinations",
+          "mrn_disabled_post_types",
+          "mrn_disabled_post_types_rewrite_pending"
         ],
         "routes": [],
         "tables": []
@@ -85,12 +87,13 @@
         "release_group": "mrn-platform",
         "soft": [
           "mrn-config-helper",
-          "mrn-seo-helper"
+          "mrn-seo-helper",
+          "SEOPress"
         ]
       },
       "lifecycle": "supported",
       "name": "MRN Admin Data Post Types",
-      "purpose": "Applies shared admin/data-only policy to selected post types and excludes them from SEOPress post-type discovery.",
+      "purpose": "Defines explicit disabled versus content-only state while preserving menu hiding, and excludes disabled public destinations and exclusive taxonomies from SEOPress discovery and sitemap output.",
       "runtime_type": "mu-component",
       "slug": "mrn-admin-data-post-types",
       "source": {
@@ -99,7 +102,7 @@
         "state": "confirmed"
       },
       "target_tier": "platform-required",
-      "version": "0.2.1"
+      "version": "0.3.0"
     },
     {
       "classification": "platform",
@@ -436,7 +439,7 @@
         "state": "confirmed"
       },
       "target_tier": "platform-required",
-      "version": "0.2.1"
+      "version": "0.3.0"
     },
     {
       "classification": "platform-loader",
