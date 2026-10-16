@@ -741,3 +741,29 @@ The existing access-veto serializer is unchanged. Automatic active-staff access
 is clarified in discovery guidance; no member enrollment or production access
 change is introduced. The new complete source checkpoint still requires its own
 combined CI, protected acquisition/retention, deployment and ChatGPT acceptance.
+
+### Private source handoff candidate
+
+The provider candidate is now `c49b88be6242a7012587df5d93cba3a89c587841`;
+its standalone CI `38960681142` passed all four jobs. All 11 imported
+qualification files were checked byte-for-byte against that exact commit.
+Its additional source-transfer contract is pinned at SHA-256
+`36320f6d2d5dac5523ecc68b0fa463c2fa1246cbf75f81e3209c055aa196f3e9`.
+The legacy acquisition runner remains `d9f2eba`; the management worker test
+candidate is separately pinned to `7d6729470ee85ed2fa0dc1577144dc5c5085bea3`.
+
+The new broker binds one per-run supervisor public key through original OIDC
+and current Google staff verification, persists one-use requests, and returns
+signed encrypted batches. Optional gateway handlers and the independent fixed
+TLS supervisor client pass nine local integration groups. They remain absent
+from production startup. No full source assembly, cache authenticity, rendered
+management QA, report admission or team acceptance is implied.
+
+The first combined candidate run `38963511902` stopped at two provenance-pin
+assertions: the runtime provider advanced but qualification-source and
+measurement-candidate metadata retained `277efdb`. The matching test assertion
+and both metadata records were updated after verifying the actual imported
+bytes; the assertions themselves remain enforced. This failure is retained,
+and candidate acceptance requires a fresh passing combined run. Production
+configuration, access grants, write policies and workspace publication are
+unchanged.
