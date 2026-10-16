@@ -13,6 +13,9 @@ const compile = name => compileContentSchema({ $ref: `#/definitions/${name}` }, 
 const querySchema = compile('query_readback_output'), claimsSchema = compile('veto_claims');
 const pointerSchema = z.object({ query_id: z.string().uuid(), provider_query_nonce: sha }).strict();
 export const accessVetoPath = '/internal/mainwp/access-veto';
+// Distinct fixed transport selection; an opaque query pointer cannot select
+// its signature domain and must never trigger cross-domain readback retries.
+export const managementAccessVetoPath = '/internal/mainwp/management-access-veto';
 export const accessReadbackTool = 'mrn_mainwp__read_access_veto_query_v1';
 const readbackSchema = compile('query_readback_claims');
 const parse = (schema, input) => {

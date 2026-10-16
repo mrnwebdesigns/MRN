@@ -85,6 +85,15 @@ compiler remains unregistered. A future pinned capture consumer must separately
 validate snapshot, dataset, parity and artifact bounds, original source/access
 bindings and every hash; fitting the outer envelope establishes no authority.
 
+Private management callbacks use the fixed
+`/internal/mainwp/management-access-veto` path on the same Operations service.
+The old single-field `/internal/mainwp/access-veto` path remains separate. An
+opaque query pointer cannot choose a signature domain or trigger a fallback
+readback. Both paths share the existing ingress limits. The management handler
+is absent from startup until its separately pinned query reader and original
+requester ledger are integrated and reviewed; routing tests alone establish no
+authenticated access or production activation.
+
 Compiler checkpoint `a214256cdbdbd1c6fad3264605cfc700bdb2759e` passes 355 local
 tests, ESLint and staged MRN QA, plus
 [Operations CI 38909515349](https://github.com/mrnwebdesigns/MRN/actions/runs/38909515349)

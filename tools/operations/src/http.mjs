@@ -4,7 +4,7 @@ import { createMcp } from './mcp.mjs';
 import { OpsError, requireThat, safeError } from './contracts.mjs';
 import { oauthChallenge } from './auth.mjs';
 import { operationsScopes } from './scopes.mjs';
-import { accessVetoPath } from './content-access.mjs';
+import { accessVetoPath, managementAccessVetoPath } from './content-access.mjs';
 import { delegationCanonical, delegationIssuer } from './delegation.mjs';
 
 async function readBody(req, { limit = 65536, canonical = false } = {}) {
@@ -18,9 +18,9 @@ async function readBody(req, { limit = 65536, canonical = false } = {}) {
   }
   catch (e) { if (e instanceof OpsError) throw e; throw new OpsError('BODY_INVALID', 'Invalid JSON request.'); }
 }
-export function createHttpServer({ service, authenticate, publicUrl, issuer, origins = [], accessVeto = null }) {
+export function createHttpServer({ service, authenticate, publicUrl, issuer, origins = [], accessVeto = null, managementAccessVeto = null }) {
   const canonical = new URL(publicUrl); const rate = new Map(); let active = 0;
-  requireThat(!accessVeto || canonical.origin === delegationIssuer, 'ACCESS_TRANSPORT', 'Private access callbacks require the fixed MRN gateway origin.');
+  requireThat(!(accessVeto || managementAccessVeto) || canonical.origin === delegationIssuer, 'ACCESS_TRANSPORT', 'Private access callbacks require the fixed MRN gateway origin.');
   let controlActive = 0, controlCount = 0, controlUntil = 0;
   const json = (res, status, value) => { res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(value)); };
   const server = createServer(async (req, res) => {
@@ -32,7 +32,8 @@ export function createHttpServer({ service, authenticate, publicUrl, issuer, ori
         return json(res, 200, { resource: publicUrl, authorization_servers: [issuer], scopes_supported: operationsScopes, bearer_methods_supported: ['header'] });
       }
       if (req.method === 'GET' && req.url === '/healthz') return json(res, 200, { status: 'ok', version: '0.1.0' });
-      if (req.url === accessVetoPath && accessVeto) {
+      const control = req.url === accessVetoPath ? accessVeto : req.url === managementAccessVetoPath ? managementAccessVeto : null;
+      if (control) {
         requireThat(req.method === 'POST' && !req.headers.origin && !req.headers.authorization
           && req.headers['content-type'] === 'application/json', 'BODY_INVALID', 'Use the private POST query callback.');
         const now = Date.now();
@@ -46,7 +47,7 @@ export function createHttpServer({ service, authenticate, publicUrl, issuer, ori
         const body = await readBody(req, { limit: 512, canonical: true });
         // Opaque pointer is not authentication: respond must independently read
         // the stored query from MainWP and resolve the existing requester map.
-        return json(res, 200, await accessVeto.respond(body));
+        return json(res, 200, await control.respond(body));
       }
       requireThat(req.url === '/mcp', 'NOT_FOUND', 'Route not found.');
       // Directory verification may involve a protected backend request. Bound
