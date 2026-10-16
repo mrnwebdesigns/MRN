@@ -1979,7 +1979,7 @@
         "state": "confirmed-independent-dashboard"
       },
       "target_tier": "dashboard-only",
-      "version": "0.13.7"
+      "version": "0.13.8"
     },
     {
       "classification": "operations-policy",
