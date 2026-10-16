@@ -124,6 +124,14 @@ This CI grant supplies no write, PR, deployment or production
 source-editing authority, and is unrelated to individual staff access or site
 enrollment. No personal token was substituted.
 
+On 2026-10-16 the owner separately approved adding only
+`mrnwebdesigns/mrn-code-qa-runner` to that same read-only installation. Readback
+preserved the 29 existing selections and showed 30 selected repositories.
+The combined gateway run at `233c24f` successfully requested the existing App's
+read token and checked out the pinned provider and runner sources. This grants
+CI source access only; production Actions dispatch/credentials, site policies
+and staff access remain separate gates.
+
 The runner's CI run `38593836989` initially passed its actual code/content test
 steps but failed both required report uploads at the account artifact quota.
 Authenticated billing inspection found 2 GB used / 2 GB included and the existing

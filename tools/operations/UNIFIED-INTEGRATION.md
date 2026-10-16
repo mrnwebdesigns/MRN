@@ -39,6 +39,24 @@ parity, the protected management producer/admission, concrete deployment gates
 and actual ChatGPT team acceptance remain open. Production and staff access are
 unchanged; this is not a team-complete or deployment-ready checkpoint.
 
+The management receipt verifier now checks the distinct
+`mrn-content-management-qa-v1:` signature against the independently reconstructed
+preview and migration. It binds the protected run/request, exact report and QA
+engine, site/record, full baseline, semantic candidate, profile/runtime, affected
+paths and rollback identity. Its lifetime cannot exceed the original preview.
+It rejects older content/code purposes, duplicate/noncanonical claims, other
+signers and even validly signed, rehashed unrequested sibling edits. New drafts
+retain target ID zero until a separate installed read returns WordPress's ID.
+This is signature/context validation only: the verifier is not registered with
+a workflow, and caller-provided run/profile information cannot establish trust.
+
+The existing single-field capture/measurement contracts cannot represent these
+full records or ACF leaf edits. A separate provider management qualification
+bridge is being implemented; it must retain original requester/current-access
+checks, exact source/schema/runtime bindings, protected rendered/hook parity
+and all required measurement groups. Neither native API regression nor local
+ACF proof substitutes for protected profile admission.
+
 ## Earlier acceptance checkpoint, 2026-10-15
 
 The expanded plugin is **not team-ready**. Source and disposable qualification are ahead of the hosted workspace plugin. No production deployment, policy enablement or access change is authorized by these results.
