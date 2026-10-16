@@ -28,7 +28,8 @@ EXCLUDED_DIRECTORIES = {
     "zip",
 }
 ROOT_EXCLUDED_DIRECTORIES = {"vendor"}
-EXCLUDED_FILES = {".DS_Store", ".git"}
+# Local QA profiles must never be copied into a child site's MU plugin tree.
+EXCLUDED_FILES = {".DS_Store", ".git", ".mrn-qa.env"}
 
 
 class ReleaseLockError(RuntimeError):

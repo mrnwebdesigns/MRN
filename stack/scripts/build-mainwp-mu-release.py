@@ -22,7 +22,8 @@ EXCLUDED_DIRECTORIES = {
     "test-results",
     "zip",
 }
-EXCLUDED_FILES = {".DS_Store"}
+# Local QA profiles must never be copied into a child site's MU plugin tree.
+EXCLUDED_FILES = {".DS_Store", ".mrn-qa.env"}
 MU_RUNTIME_TYPES = {"mu-loader", "mu-component"}
 IDENTIFIER_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{2,127}$")
 SHA256_PATTERN = re.compile(r"^[a-f0-9]{64}$")
