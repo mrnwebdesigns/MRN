@@ -314,7 +314,9 @@ batch signature purposes prevent reuse of ordinary context signatures. Batches
 retain the provider's 16-frame/32-KiB geometry and 1-MiB plaintext bound; encrypted
 responses have their own 2-MiB ceiling, without widening existing endpoints.
 
-No source HTTP route or startup configuration is registered. The required
+Optional source HTTP handlers have separate 5-second recipient and 20-second
+batch deadlines, two concurrent slots and 96 requests/minute. Production startup
+provides no source broker, so both routes remain absent there. The required
 `resolveSource` service adapter must obtain an authenticated retained original
 capture and its independently verified current pre-queue owner catalog pin.
 That adapter, provider capture/controller activation, durable capture custody,

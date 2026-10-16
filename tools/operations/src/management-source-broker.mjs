@@ -10,6 +10,8 @@ import { encryptSourceBatch, managementSourceWire, parseSource, sourceBatchPurpo
   sourceRecipientPurpose, validateSourceBatch } from './management-source-transfer.mjs';
 
 export const ManagementSourceReader = createPrivateQueryReader('mrn_mainwp__read_content_edit_qualification_source_v1');
+export const managementSourceRecipientPath = '/internal/mainwp/management-source-recipient';
+export const managementSourceBatchPath = '/internal/mainwp/management-source-batch';
 const check = value => requireThat(value, 'MANAGEMENT_SOURCE_BROKER', 'The original private source handoff is unavailable, consumed or changed.');
 const pointerShape = { dispatch_id: types.uuid, context_sha256: types.hash };
 const enrollSchema = z.object({ ...pointerShape, public_key_base64: z.string().length(60), nonce: types.hash }).strict();
@@ -17,8 +19,8 @@ const readSchema = z.object({ ...pointerShape, recipient_id: types.uuid, batch_i
 const parse = (schema, input) => { const result = schema.safeParse(input); check(result.success); return result.data; };
 const pointer = value => ({ dispatch_id: value.dispatch_id, context_sha256: value.context_sha256 });
 
-// Source-only adapter; no HTTP registration, startup configuration or capture
-// is introduced here. resolveSource must read a service-owned, authenticated,
+// Source-only adapter; production startup supplies no broker or capture
+// configuration. Optional HTTP handlers require explicit construction. resolveSource must read a service-owned, authenticated,
 // retained capture and its current pre-queue owner catalog pin. There is no
 // public method for installing caller-selected slots, catalogs or cache URLs.
 export class ManagementSourceBroker {
@@ -115,18 +117,22 @@ export class ManagementSourceBroker {
         const { original: latest } = this.recipient(request); within();
         check(freshClaims.expires_at * 1000 > this.now() && claims.expires_at * 1000 > this.now()
           && trustDigest === delegationDigest(this.worker.trust()));
+        const completedAt = this.now();
         const header = { schema: 1, issuer: delegationIssuer, audience: recipient.audience, action: 'observe-management-source-batch',
           ...request, dispatch_record_sha256: recipient.dispatch_record_sha256, recipient_key_sha256: digest(Buffer.from(recipient.public_key_base64, 'base64')),
           source_context_sha256: delegationDigest(context), slot_sha256: delegationDigest(slot), request_sha256: delegationDigest(claims),
-          response_sha256: delegationDigest(value), started_at_ms: startedAt, completed_at_ms: this.now(),
-          issued_at: Math.floor(this.now() / 1000), expires_at: Math.min(Math.floor(this.now() / 1000) + 5, recipient.expires_at) };
+          response_sha256: delegationDigest(value), started_at_ms: startedAt, completed_at_ms: completedAt,
+          issued_at: Math.floor(completedAt / 1000), expires_at: Math.min(Math.floor(completedAt / 1000) + 5, recipient.expires_at) };
         const encrypted = encryptSourceBatch(value, recipient, header);
         const response = { header, encrypted, signed_transfer: this.signer.envelope({ ...header, encrypted_sha256: delegationDigest(encrypted) }, sourceBatchPurpose) };
         check(Buffer.byteLength(delegationCanonical(response)) <= 2 * 1024 * 1024);
         this.store.db.prepare('UPDATE management_source_reads SET state=?,response_digest=? WHERE dispatch=? AND nonce=? AND state=?')
           .run('observed', header.response_sha256, request.dispatch_id, request.nonce, 'reading');
         this.ledger.access.audit(latest.context.binding.qualification_job_id, 'source-batch-observed', '', 'clear', latest.revision);
-        this.recipient(request); within(); return response;
+        this.recipient(request); within();
+        check(header.expires_at * 1000 > this.now() && freshClaims.expires_at * 1000 > this.now()
+          && trustDigest === delegationDigest(this.worker.trust()));
+        return response;
       });
     } catch {
       // Retain the spent nonce/batch on every failure. A late transport promise

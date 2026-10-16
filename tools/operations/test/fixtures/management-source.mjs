@@ -11,8 +11,8 @@ import { managementEvidenceFixture } from './management-evidence.mjs';
 const oidc = generateKeyPairSync('rsa',{modulusLength:2048});
 const jwk = {...await exportJWK(oidc.publicKey),alg:'RS256',kid:'fixture-oidc'};
 const keys = createLocalJWKSet({keys:[jwk]});
-export async function sourceBrokerFixture(t, { bindRecipient = true } = {}) {
-  const f = managementEvidenceFixture(t), p = f.dispatch();
+export async function sourceBrokerFixture(t, { bindRecipient = true, now = 1800000000000 } = {}) {
+  const f = managementEvidenceFixture(t, ':memory:', now), p = f.dispatch();
   const identity = {keyId:'fixture-identity',...generateKeyPairSync('ed25519')};
   const registrar = {keyId:'fixture-registrar',...generateKeyPairSync('ed25519')};
   const pointer = {dispatch_id:p.dispatch_id,context_sha256:delegationDigest(f.ledger.captured(f.job).context)};

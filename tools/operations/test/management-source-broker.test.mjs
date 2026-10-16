@@ -8,6 +8,9 @@ import { ManagementSourceBroker } from '../src/management-source-broker.mjs';
 import { sourceBatchPurpose, sourceCipherPurpose, sourceRecipientPurpose } from '../src/management-source-transfer.mjs';
 import { sourceBrokerFixture } from './fixtures/management-source.mjs';
 import { setImmediate } from 'node:timers';
+import { request as httpRequest } from 'node:http';
+import { createHttpServer } from '../src/http.mjs';
+import { managementSourceRecipientPath, managementSourceBatchPath } from '../src/management-source-broker.mjs';
 
 
 test('original OIDC run enrolls one private recipient and observes actual encrypted provider bytes',async t=>{
@@ -76,4 +79,29 @@ test('frozen provider bytes and recipient purpose remain separate from report ad
     '36320f6d2d5dac5523ecc68b0fa463c2fa1246cbf75f81e3209c055aa196f3e9');
   assert.notEqual(sourceRecipientPurpose,sourceBatchPurpose);
   const main=readFileSync(new URL('../src/main.mjs',import.meta.url),'utf8');assert.equal(main.includes('ManagementSourceBroker'),false);
+});
+
+test('optional source HTTP handlers require canonical authenticated POST, stay bounded and are absent at startup',async t=>{
+  const f=await sourceBrokerFixture(t,{bindRecipient:false});
+  const server=createHttpServer({publicUrl:'https://operations.mrnwebdesigns.com/mcp',managementSource:f.broker});
+  const disabled=createHttpServer({publicUrl:'https://operations.mrnwebdesigns.com/mcp'});
+  for(const target of [server,disabled]){await new Promise(resolve=>target.listen(0,'127.0.0.1',resolve));t.after(()=>target.close());}
+  const call=(target,path,body,authorization,extra={})=>new Promise((resolve,reject)=>{
+    const req=httpRequest({host:'127.0.0.1',port:target.address().port,path,method:'POST',agent:false,
+      headers:{Host:'operations.mrnwebdesigns.com','Content-Type':'application/json',...(authorization?{Authorization:authorization}:{}),...extra}},res=>{
+      const chunks=[];res.on('data',c=>chunks.push(c));res.on('end',()=>resolve({status:res.statusCode,headers:res.headers,raw:Buffer.concat(chunks)}));
+    });req.on('error',reject);req.end(body);
+  });
+  const body=delegationCanonical(f.enrollment),token=await f.token();
+  assert.equal((await call(server,managementSourceRecipientPath,body)).status,401);
+  assert.equal((await call(server,managementSourceRecipientPath,' '+body,token)).status,400);
+  assert.equal((await call(server,managementSourceRecipientPath,body,token,{Origin:'https://untrusted.test'})).status,403);
+  assert.equal((await call(server,managementSourceRecipientPath,'x'.repeat(513),token)).status,400);
+  const bound=await call(server,managementSourceRecipientPath,body,token);assert.equal(bound.status,200);
+  assert.equal(bound.headers['cache-control'],'no-store');assert.equal(bound.raw.toString(),delegationCanonical(JSON.parse(bound.raw)));
+  const c=JSON.parse(Buffer.from(JSON.parse(bound.raw).signed_recipient.payload_base64,'base64'));
+  const input={...f.pointer,recipient_id:c.recipient_id,batch_index:0,nonce:'a'.repeat(64)};
+  const read=await call(server,managementSourceBatchPath,delegationCanonical(input),token);assert.equal(read.status,200);
+  assert.ok(read.raw.length<2097152);assert.equal(read.raw.toString(),delegationCanonical(JSON.parse(read.raw)));
+  for(const path of [managementSourceRecipientPath,managementSourceBatchPath])assert.equal((await call(disabled,path,body,token)).status,404);
 });
