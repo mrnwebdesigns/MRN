@@ -720,3 +720,24 @@ immutable `managementWorker` checkout now supplies `ae27ff4` only to the new
 readback test; the existing native acquisition remains on `d9f2eba`. Both
 sources are explicit in the integration lock. No failed gate is waived, and the
 corrected combined run must pass before this source is qualified.
+
+
+The corrected combined run `38940594631` and MRN QA `38940594548` pass
+for gateway `a6c6c3b`, with 434 source tests and all five native report groups.
+Original artifact `12062638917` has verified SHA-256
+`11017e55314bc5f53b438c8cfe97a3d0283105a200a1869ea21431e296c52c81`.
+The original CI log also proves all six actual gateway/worker-context groups.
+Independent retention recomputed report/transcript hashes and compared exact
+runtime blobs with the CI merge checkout; unrelated merged source differs.
+
+The next source checkpoint selects provider `277efdb`, after all four standalone
+provider jobs passed `38941098880`. Its source verifier reads the full 512 MiB
+closure in bounded streams; it does not activate source transfer or storage.
+All twenty copied provider contracts/vectors/design files remain exact Git blobs.
+The two runner roles retain their separate qualified pins. New gateway changes
+explicitly serialize only the management-evidence success response as canonical
+JSON; actual-handler and reversed-order handler tests verify the HTTP bytes.
+The existing access-veto serializer is unchanged. Automatic active-staff access
+is clarified in discovery guidance; no member enrollment or production access
+change is introduced. The new complete source checkpoint still requires its own
+combined CI, protected acquisition/retention, deployment and ChatGPT acceptance.
