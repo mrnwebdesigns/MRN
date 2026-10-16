@@ -94,6 +94,19 @@ is absent from startup until its separately pinned query reader and original
 requester ledger are integrated and reviewed; routing tests alone establish no
 authenticated access or production activation.
 
+The source-only capture consumer imports the exact additive contract and
+synthetic vectors from provider `216d0f11397e1e73e5baa3398b4b1d01153ecbbf`.
+It independently compares capture and measurement reads with the original
+queued context and reconstructed preview/migration. It preserves original
+affected paths and plugin activation order, checks runtime/schema/source
+bindings and every digest/count, and rejects expired or renewed intent. Dataset,
+parity and artifact limits remain smaller than the outer response allowance.
+This consumer is unregistered; matching hashes do not establish authenticated
+acquisition, full rendered/hook parity, profile admission or permission to write.
+Native provider qualification remains a separate required gate. The earlier
+synthetic vector with a job lifetime beyond its review expiry was rejected and
+corrected upstream; no lifetime rule was relaxed to accept it.
+
 Compiler checkpoint `a214256cdbdbd1c6fad3264605cfc700bdb2759e` passes 355 local
 tests, ESLint and staged MRN QA, plus
 [Operations CI 38909515349](https://github.com/mrnwebdesigns/MRN/actions/runs/38909515349)

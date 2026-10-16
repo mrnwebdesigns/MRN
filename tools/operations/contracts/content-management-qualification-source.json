@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "repository": "mrnwebdesigns/mrn-mainwp-operations-api",
+  "commit": "216d0f11397e1e73e5baa3398b4b1d01153ecbbf",
+  "scope": "contract-and-synthetic-vectors-only",
+  "runtimeAdoption": false,
+  "productionQualified": false,
+  "files": {
+    "contracts/content-management-qualification-v1.json": {
+      "path": "contracts/content-management-qualification-v1.json",
+      "sha256": "8520b3f6ac54894f83a46361d2618d5243aea57e8fb5d556fb44acd5c204e65b"
+    },
+    "tests/fixtures/content-management-qualification-v1.json": {
+      "path": "test/fixtures/content-management-qualification-v1.json",
+      "sha256": "b4ba159353c04ef12a9307d39b47e154e07b0369804ab71698e606de590b2ac9"
+    }
+  }
+}
