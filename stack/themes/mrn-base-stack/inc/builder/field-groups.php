@@ -1004,12 +1004,13 @@ function mrn_base_stack_register_acf_field_groups() {
 												'name'     => 'tab_label',
 												'aria-label' => '',
 												'type'     => 'text',
-												'required' => 1,
-												'instructions' => 'Names the tab button. This is not content inside the tab panel.',
+												'required' => 0,
+												'instructions' => 'Names the tab button. For an icon-only tab, leave this empty and supply an Icon-only Tab Name.',
 												'wrapper'  => array(
 													'width' => '50',
 												),
 											),
+											mrn_base_stack_get_inline_text_field( 'field_mrn_tabbed_layout_accessible_label', 'Icon-only Tab Name', 'tab_accessible_label' ),
 											...mrn_base_stack_get_button_link_icon_fields( 'field_mrn_tabbed_layout_tab_icon', 'field_mrn_tabbed_layout_tab_label' ),
 											array(
 												'key'      => 'field_mrn_tabbed_layout_panel_rows',
@@ -1768,7 +1769,8 @@ function mrn_base_stack_register_acf_field_groups() {
 										'aria-label'    => '',
 										'type'          => 'flexible_content',
 										'button_label'  => 'Add Left Layout',
-										'max'           => 1,
+										'instructions'  => 'Choose Stacked Rows in Column Content to display more than the first row. Each child keeps its own Stack spacing.',
+										'max'           => 10,
 										'layouts'       => mrn_base_stack_get_two_column_column_layouts(),
 										'wrapper'       => array(
 											'width' => '50',
@@ -1781,7 +1783,8 @@ function mrn_base_stack_register_acf_field_groups() {
 										'aria-label'    => '',
 										'type'          => 'flexible_content',
 										'button_label'  => 'Add Right Layout',
-										'max'           => 1,
+										'instructions'  => 'Choose Stacked Rows in Column Content to display more than the first row. Each child keeps its own Stack spacing.',
+										'max'           => 10,
 										'layouts'       => mrn_base_stack_get_two_column_column_layouts(),
 										'wrapper'       => array(
 											'width' => '50',

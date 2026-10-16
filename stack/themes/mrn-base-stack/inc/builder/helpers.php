@@ -107,6 +107,14 @@ add_action( 'acf/init', 'mrn_base_stack_register_cloned_acf_ajax_fields', 30 );
  */
 function mrn_base_stack_register_cloned_acf_field_key( $field_key ) {
 
+	if ( preg_match( '/^field_mrn_split_stats_(.+)_field_mrn_stats_/', $field_key, $matches ) && function_exists( 'acf_get_field' ) ) {
+		$column = acf_get_field( $matches[1] );
+		if ( is_array( $column ) ) {
+			mrn_base_stack_populate_split_stats_column_field( $column );
+		}
+		return;
+	}
+
 	$clone_factories = array(
 		'after_content_'           => 'mrn_base_stack_get_after_content_builder_layouts',
 		'field_mrn_hero_'          => 'mrn_base_stack_get_hero_builder_layouts',
@@ -890,6 +898,7 @@ function mrn_base_stack_filter_builder_layout_source_names_for_context( array $n
  */
 function mrn_base_stack_get_tabbed_layout_source_names() {
 	$defaults = array(
+		'two_column_split',
 		'body_text',
 		'basic_block',
 		'cta',
@@ -942,6 +951,7 @@ function mrn_base_stack_get_card_layout_source_names() {
  */
 function mrn_base_stack_get_two_column_column_layout_source_names() {
 	$defaults = array(
+		'stats',
 		'body_text',
 		'basic',
 		'cta',
@@ -961,6 +971,46 @@ function mrn_base_stack_get_two_column_column_layout_source_names() {
 
 	return mrn_base_stack_filter_hidden_builder_layout_source_names( $names );
 }
+
+/**
+ * Add Stats after root registration so shared generated controls cannot collide.
+ *
+ * Hydrate only Stats; never recursively load the enclosing Tabs or Split row.
+ * Each column clone has its own keys, including root, Hero and Tab contexts.
+ *
+ * @param array<string, mixed> $field Split column field.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_populate_split_stats_column_field( $field ) {
+	$key = (string) ( $field['key'] ?? '' );
+	if ( ! preg_match( '/field_mrn_two_column_split_(?:left|right)_column$/D', $key ) || ! in_array( 'stats', mrn_base_stack_get_two_column_column_layout_source_names(), true ) ) {
+		return $field;
+	}
+	$root = function_exists( 'acf_get_local_field' ) ? acf_get_local_field( 'field_mrn_page_content_rows' ) : false;
+	if ( ! is_array( $root ) ) {
+		return $field;
+	}
+	$layouts = mrn_base_stack_get_hydrated_local_flexible_layouts( $root, array( 'stats' ) );
+	foreach ( $layouts as $layout ) {
+		if ( 'stats' !== ( $layout['name'] ?? '' ) ) {
+			continue;
+		}
+		$clone = mrn_base_stack_clone_acf_keys_with_prefix( $layout, 'field_mrn_split_stats_' . $key . '_' );
+		$clone['key'] = 'layout_mrn_nested_stats';
+		foreach ( $clone['sub_fields'] as &$child ) {
+			if ( 'stat_items' === ( $child['name'] ?? '' ) ) {
+				$child['collapsed'] = 'field_mrn_split_stats_' . $key . '_field_mrn_stats_item_value';
+			}
+		}
+		unset( $child );
+		$clones = mrn_base_stack_maybe_finalize_cloned_acf_layouts( array( 'layout_mrn_nested_stats' => $clone ), $key );
+		$field['layouts']['layout_mrn_nested_stats'] = $clones['layout_mrn_nested_stats'];
+		break;
+	}
+	return $field;
+}
+add_filter( 'acf/load_field/name=left_column_rows', 'mrn_base_stack_populate_split_stats_column_field', 25 );
+add_filter( 'acf/load_field/name=right_column_rows', 'mrn_base_stack_populate_split_stats_column_field', 25 );
 
 /**
  * Get optional authored entries for the shared in-page navigation row.

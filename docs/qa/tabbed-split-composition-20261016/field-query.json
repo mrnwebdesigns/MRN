@@ -1,0 +1,10 @@
+{
+    "checks": [
+        "Isolated native icon\/media selector resolves through its column factory: field_mrn_two_column_split_left_column",
+        "Isolated native icon\/media selector resolves through its column factory: field_mrn_two_column_split_right_column",
+        "Isolated native icon\/media selector resolves through its column factory: field_mrn_tabbed_panel_field_mrn_two_column_split_left_column"
+    ],
+    "count": 3,
+    "result": "passed",
+    "writes": false
+}

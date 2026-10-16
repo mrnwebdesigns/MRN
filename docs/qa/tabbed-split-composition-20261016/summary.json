@@ -1,0 +1,41 @@
+{
+  "tabbed-split-composition": {
+    "count": 28
+  },
+  "repeater-limits": {
+    "count": 28
+  },
+  "migration-collections": {
+    "count": 33
+  },
+  "native-presentations": {
+    "count": 40
+  },
+  "body-list-layout": {
+    "count": 19
+  },
+  "image-overlay-cards": {
+    "count": 22
+  },
+  "converter-source": {
+    "groups": 25,
+    "fixtures": 40
+  },
+  "converter-installed": {
+    "groups": 25,
+    "fixtures": 34
+  },
+  "converter-previous": {
+    "groups": 25,
+    "fixtures": 39
+  },
+  "snapshot": {
+    "records": 63
+  },
+  "plan-source": {
+    "records": 63
+  },
+  "plan-installed": {
+    "records": 63
+  }
+}

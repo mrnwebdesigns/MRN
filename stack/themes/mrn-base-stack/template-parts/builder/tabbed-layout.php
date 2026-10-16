@@ -68,7 +68,7 @@ foreach ( $tab_items as $tab_index => $tab_item ) {
 		continue;
 	}
 
-	$accessible_label = $tab_label;
+	$accessible_label = '' !== $tab_label ? wp_strip_all_tags( $tab_label ) : sanitize_text_field( (string) ( $tab_item['tab_accessible_label'] ?? '' ) );
 	if ( '' === $accessible_label ) {
 		/* translators: %d: Tab number. */
 		$accessible_label = sprintf( esc_html__( 'Tab %d', 'mrn-base-stack' ), (int) $tab_index + 1 );

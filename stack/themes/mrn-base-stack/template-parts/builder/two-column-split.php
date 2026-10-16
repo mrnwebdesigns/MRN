@@ -7,6 +7,7 @@
 
 $context                 = is_array( $args ?? null ) ? $args : array();
 $row                     = isset( $context['row'] ) && is_array( $context['row'] ) ? $context['row'] : array();
+$row_index               = isset( $context['index'] ) ? (int) $context['index'] : 0;
 $context_post_id         = isset( $context['post_id'] ) ? (int) $context['post_id'] : get_the_ID();
 $is_hero_context         = isset( $row['__mrn_builder_field_name'] ) && 'page_hero_rows' === (string) $row['__mrn_builder_field_name'];
 $label                   = isset( $row['label'] ) ? trim( (string) $row['label'] ) : '';
@@ -45,8 +46,9 @@ $ratio_map               = array(
 	'67-33' => 'minmax(0, 2fr) minmax(0, 1fr)',
 	'33-67' => 'minmax(0, 1fr) minmax(0, 2fr)',
 );
-$left_row                = ! empty( $left_rows[0] ) && is_array( $left_rows[0] ) ? $left_rows[0] : array();
-$right_row               = ! empty( $right_rows[0] ) && is_array( $right_rows[0] ) ? $right_rows[0] : array();
+$stacked_columns         = 'stack' === ( $row['column_rows_mode'] ?? '' );
+$left_rows               = array_slice( $left_rows, 0, $stacked_columns ? 10 : 1 );
+$right_rows              = array_slice( $right_rows, 0, $stacked_columns ? 10 : 1 );
 
 $allowed_custom_heading_tags = array( 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'div' );
 if ( $is_hero_context ) {
@@ -65,12 +67,16 @@ if ( ! in_array( $subheading_tag, $allowed_tags, true ) ) {
 	$subheading_tag = 'p';
 }
 
-if ( empty( $left_row ) && empty( $right_row ) ) {
+if ( empty( $left_rows ) && empty( $right_rows ) ) {
 	return;
 }
 
 $grid_template  = isset( $ratio_map[ $column_ratio ] ) ? $ratio_map[ $column_ratio ] : $ratio_map['50-50'];
 $section_styles = array( '--mrn-two-column-template: ' . $grid_template );
+$column_gap = mrn_base_stack_validate_media_height( (string) ( $row['column_content_gap'] ?? '' ) );
+if ( $stacked_columns && '' !== $column_gap ) {
+	$section_styles[] = '--mrn-split-content-gap: ' . $column_gap;
+}
 
 if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' ) ) {
 	$section_styles[] = '--mrn-two-column-bg: var(' . mrn_site_colors_get_css_var( $background_color ) . ')';
@@ -124,6 +130,10 @@ $section_attrs    = mrn_base_stack_merge_builder_attributes( $section_attrs, iss
 
 $surface_style = mrn_base_stack_get_inline_style_attribute( $section_styles );
 $grid_styles   = array();
+$column_alignment = (string) ( $row['column_alignment'] ?? '' );
+if ( in_array( $column_alignment, array( 'start', 'center', 'end' ), true ) ) {
+	$grid_styles[] = 'align-items: ' . $column_alignment;
+}
 if ( '' !== $hero_min_height ) {
 	$grid_styles[] = 'min-height: ' . $hero_min_height;
 }
@@ -163,23 +173,23 @@ echo mrn_base_stack_get_builder_anchor_markup( $row ); // phpcs:ignore WordPress
 			<?php endif; ?>
 			<div class="mrn-layout-content mrn-layout-content--column mrn-two-column-split__column mrn-two-column-split__column--left mrn-two-column-split__column--split-shell">
 				<?php
-				if ( ! empty( $left_row ) ) {
-					mrn_base_stack_render_builder_row(
-						$left_row,
-						$context_post_id,
-						0
-					);
+				foreach ( $left_rows as $child_index => $child_row ) {
+					if ( ! is_array( $child_row ) ) {
+						continue;
+					}
+					$child_render_index = $stacked_columns ? mrn_base_stack_get_nested_builder_row_index( $row_index, 0, $child_index ) : 0;
+					mrn_base_stack_render_builder_row( $child_row, $context_post_id, $child_render_index );
 				}
 				?>
 			</div>
 			<div class="mrn-layout-content mrn-layout-content--column mrn-two-column-split__column mrn-two-column-split__column--right mrn-two-column-split__column--split-shell">
 				<?php
-				if ( ! empty( $right_row ) ) {
-					mrn_base_stack_render_builder_row(
-						$right_row,
-						$context_post_id,
-						0
-					);
+				foreach ( $right_rows as $child_index => $child_row ) {
+					if ( ! is_array( $child_row ) ) {
+						continue;
+					}
+					$child_render_index = $stacked_columns ? mrn_base_stack_get_nested_builder_row_index( $row_index, 1, $child_index ) : 0;
+					mrn_base_stack_render_builder_row( $child_row, $context_post_id, $child_render_index );
 				}
 				?>
 			</div>
