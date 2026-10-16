@@ -16,7 +16,9 @@ $subheading       = isset( $row['subheading'] ) ? trim( (string) $row['subheadin
 $subheading_tag   = isset( $row['subheading_tag'] ) ? strtolower( (string) $row['subheading_tag'] ) : 'p';
 $items            = isset( $row['logo_items'] ) && is_array( $row['logo_items'] ) ? $row['logo_items'] : array();
 $display_mode     = isset( $row['display_mode'] ) ? sanitize_key( (string) $row['display_mode'] ) : 'grid';
-$logos_per_page   = isset( $row['per_page'] ) ? max( 3, min( 6, (int) $row['per_page'] ) ) : 6;
+$logos_per_page   = isset( $row['per_page'] ) ? max( 3, min( 7, (int) $row['per_page'] ) ) : 6;
+$responsive       = mrn_base_stack_get_logos_responsive_config( $row );
+$has_responsive   = $logos_per_page > 6 || $responsive['breakpoints'] || $responsive['autoplay_max_width'] || $responsive['continuous'] || '' !== $responsive['gap'];
 $show_arrows      = ! empty( $row['show_arrows'] );
 $show_pagination  = ! empty( $row['show_pagination'] );
 $pause_on_hover   = ! array_key_exists( 'pause_on_hover', $row ) || ! empty( $row['pause_on_hover'] );
@@ -134,6 +136,13 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 				data-delay-start="<?php echo esc_attr( (string) $delay_start ); ?>"
 				data-delay-time="<?php echo esc_attr( (string) $delay_time ); ?>"
 				data-time-on-slide="<?php echo esc_attr( (string) $time_on_slide ); ?>"
+				<?php if ( $has_responsive ) : ?>
+					data-logos-responsive="true"
+					data-slider-breakpoints="<?php echo esc_attr( wp_json_encode( (object) $responsive['breakpoints'] ) ); ?>"
+					data-autoplay-max-width="<?php echo esc_attr( (string) $responsive['autoplay_max_width'] ); ?>"
+					data-continuous-scroll="<?php echo esc_attr( $responsive['continuous'] ? 'true' : 'false' ); ?>"
+					data-slider-gap="<?php echo esc_attr( $responsive['gap'] ); ?>"
+				<?php endif; ?>
 			>
 				<div class="splide__track">
 						<ul class="splide__list mrn-ui__items">
@@ -167,6 +176,9 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 						<?php endforeach; ?>
 					</ul>
 				</div>
+				<?php if ( $has_responsive && $autoplay ) : ?>
+					<button type="button" data-mrn-slider-toggle hidden data-pause-label="<?php esc_attr_e( 'Pause logo slider', 'mrn-base-stack' ); ?>" data-resume-label="<?php esc_attr_e( 'Resume logo slider', 'mrn-base-stack' ); ?>"><?php esc_html_e( 'Pause logo slider', 'mrn-base-stack' ); ?></button>
+				<?php endif; ?>
 			</div>
 		<?php else : ?>
 				<div class="mrn-logos-row__grid mrn-logos-row__grid--logo-wall mrn-logos-row__grid--columns-<?php echo esc_attr( (string) $logos_per_page ); ?> mrn-ui__items">

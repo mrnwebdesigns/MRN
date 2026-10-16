@@ -1,0 +1,25 @@
+{
+  "views": [
+    {
+      "pageOverflow": false,
+      "pauseHidden": false,
+      "viewport": 600,
+      "views": 3
+    },
+    {
+      "pageOverflow": false,
+      "pauseHidden": false,
+      "viewport": 1000,
+      "views": 5
+    },
+    {
+      "pageOverflow": false,
+      "pauseHidden": true,
+      "viewport": 1280,
+      "views": 7
+    }
+  ],
+  "pauseFreezesTransition": true,
+  "keyboardAdvances": true,
+  "reducedMotion": "unit-verified; browser emulation pending"
+}

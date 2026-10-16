@@ -24,6 +24,21 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 			$extra
 		);
 	};
+	if ( 'logos' === $layout ) {
+		return array(
+			$make( 'slider_breakpoints', 'Responsive Logo Views', 'repeater', array(
+				'max' => 4, 'layout' => 'row', 'button_label' => 'Add Viewport',
+				'instructions' => 'Optional overrides at or below each viewport width. Leave empty for the existing responsive views.',
+				'sub_fields' => array(
+					$make( 'slider_breakpoint_width', 'Maximum Viewport Width (px)', 'number', array( 'name' => 'max_width', 'min' => 320, 'max' => 2560, 'required' => 1 ) ),
+					$make( 'slider_breakpoint_count', 'Logos per View', 'select', array( 'name' => 'per_page', 'choices' => array_combine( range( 1, 7 ), range( 1, 7 ) ), 'required' => 1 ) ),
+				),
+			) ),
+			$make( 'autoplay_max_width', 'Autoplay Maximum Viewport Width (px)', 'number', array( 'min' => 320, 'max' => 2560, 'instructions' => 'Optional. With Autoplay on, move logos only at or below this viewport width and when they overflow.' ) ),
+			$make( 'continuous_scroll', 'Continuous Logo Scroll', 'true_false', array( 'ui' => 1, 'default_value' => 0, 'instructions' => 'Loop with linear movement. Autoplay still respects pause, keyboard focus, reduced motion and visibility.' ) ),
+			$make( 'slider_gap', 'Space Between Logos', 'text', array( 'instructions' => 'Optional non-negative CSS length, for example 30px. Leave empty for the existing slider spacing.' ) ),
+		);
+	}
 	if ( in_array( $layout, array( 'basic', 'basic_block', 'cta', 'cta_block' ), true ) ) {
 		$fields = array();
 		foreach ( array( 'one', 'two' ) as $slot ) {
@@ -201,6 +216,33 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 		);
 	}
 	return array();
+}
+
+/**
+ * Normalize optional Logos settings without changing existing slider defaults.
+ *
+ * @param array $row Authored row.
+ * @return array
+ */
+function mrn_base_stack_get_logos_responsive_config( array $row ) {
+	$breakpoints = array();
+	foreach ( array_slice( (array) ( $row['slider_breakpoints'] ?? array() ), 0, 4 ) as $view ) {
+		if ( ! is_array( $view ) ) {
+			continue;
+		}
+		$width = (int) ( $view['max_width'] ?? 0 );
+		$count = (int) ( $view['per_page'] ?? 0 );
+		if ( $width >= 320 && $width <= 2560 && $count >= 1 && $count <= 7 ) {
+			$breakpoints[ $width ] = array( 'perPage' => $count );
+		}
+	}
+	$maximum = (int) ( $row['autoplay_max_width'] ?? 0 );
+	return array(
+		'breakpoints' => $breakpoints,
+		'autoplay_max_width' => $maximum >= 320 && $maximum <= 2560 ? $maximum : 0,
+		'continuous' => ! empty( $row['continuous_scroll'] ),
+		'gap' => mrn_base_stack_validate_media_height( (string) ( $row['slider_gap'] ?? '' ) ),
+	);
 }
 
 /**
