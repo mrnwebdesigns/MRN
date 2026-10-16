@@ -193,3 +193,16 @@ outside the web root. It writes escaped native markup and existing Site Styles
 for separate browser qualification; it does not install code or convert records.
 See `docs/qa/mrnwebdesigns-migration-collections-20261015.md` for the exact source
 qualification boundary and installed-editor/release gates.
+
+### Finite Tabs and stacked Split composition
+
+`tabbed-split-composition.php` requires `MRN_STACK_TEST_HOME` to match an
+explicit administrator-owned `.localhost` runtime. It creates and removes one
+draft, checks the deep native ACF roundtrip and actual component output, keeps
+existing first-row output unless stacking is selected, and validates root/nested
+key isolation. `MRN_SPLIT_PROOF_PATH` optionally writes a static HTML proof outside
+authored content; serve it beside the parent CSS and `js/front-end-tabs.js`.
+
+`split-stats-field-query.php` is read-only and checks isolated media-selector
+field recovery for left, right and Tabbed Split columns on the same guarded
+runtime. It does not submit an admin AJAX request or change any content.

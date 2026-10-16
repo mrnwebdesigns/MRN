@@ -24,6 +24,13 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 			$extra
 		);
 	};
+	if ( 'two_column_split' === $layout ) {
+		return array(
+			$make( 'column_rows_mode', 'Column Content', 'select', array( 'choices' => array( 'single' => 'First Row (Existing Behavior)', 'stack' => 'Stacked Rows' ), 'default_value' => 'single', 'instructions' => 'Stacked Rows displays up to ten rows in each column. Existing rows retain first-row rendering until this is selected.' ) ),
+			$make( 'column_content_gap', 'Space Between Column Rows', 'text', array( 'instructions' => 'Optional non-negative CSS length between stacked children. Each child uses its own row margin and padding fields.' ) ),
+			$make( 'column_alignment', 'Column Vertical Alignment', 'select', array( 'choices' => array( '' => 'Use Existing Alignment', 'start' => 'Top', 'center' => 'Center', 'end' => 'Bottom' ), 'default_value' => '' ) ),
+		);
+	}
 	if ( 'body_text' === $layout ) {
 		$fields = array(
 			$make( 'list_columns', 'List Columns', 'select', array( 'choices' => array( '' => 'Use Existing Formatting', '1' => 'One', '2' => 'Two', '3' => 'Three' ), 'default_value' => '', 'instructions' => 'Optional layout for top-level ordered and unordered lists in Body Text. Nested lists retain their formatting.' ) ),
