@@ -149,6 +149,8 @@ jobs:
           assert.ok(management.capture.measurements.readback_bytes > 65535);
           assert.ok(management.capture.measurements.readback_chunks > 1);
           assert.ok(management.callbackPosts > 0);
+          assert.equal(management.draftRecordReadVerified, true);
+          assert.equal(management.publishedTargetVerified, true);
           const sources = JSON.parse(readFileSync('tools/operations/test/runtime/sources.json', 'utf8'));
           for (const name of ['provider', 'transport', 'runner']) assert.equal(execFileSync('git', ['-C', `.runtime/${name}`, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), sources[name].commit);
           for (const report of [proof, native, access, management]) assert.deepEqual(report.source, sources);

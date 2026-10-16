@@ -39,6 +39,10 @@ assert.ok(Number.isSafeInteger(context.site.site_id) && context.site.site_id > 0
 assert.deepEqual(Object.keys(context.target).sort(), ['kind', 'post_id', 'post_type']);
 assert.equal(context.target.kind, 'wordpress-content'); assert.equal(context.target.post_type, 'page');
 assert.ok(Number.isSafeInteger(context.target.post_id) && context.target.post_id > 0);
+assert.deepEqual(Object.keys(context.read_only_target).sort(), ['kind', 'post_id', 'post_type']);
+assert.equal(context.read_only_target.kind, 'wordpress-content'); assert.equal(context.read_only_target.post_type, 'page');
+assert.ok(Number.isSafeInteger(context.read_only_target.post_id) && context.read_only_target.post_id > 0
+  && context.read_only_target.post_id !== context.target.post_id);
 assert.equal(context.actor.subject, 'google-oauth2|222222'); assert.equal(context.actor.googleSubject, '222222');
 assert.equal(context.actor.verifiedEmail, 'bob@mrnwebdesigns.com'); assert.equal(context.actor.googleConnection, 'con_RuntimeFixture');
 assert.equal(context.actor.hostedDomain, 'mrnwebdesigns.com'); assert.equal(context.actor.identityProvider, 'google-oauth2');
@@ -137,8 +141,15 @@ try {
   const target = registry.resolve(actor, context.site.site_url, undefined, 'content');
   const session = new MainwpSession(client, registry, store, actor, target, { action: 'content' });
   const site = await session.fresh(); assert.equal(site.id, context.site.site_id); assert.equal(site.url, context.site.site_url);
+  const draftArgs = { ...context.site, post_type: context.read_only_target.post_type, post_id: context.read_only_target.post_id };
+  const draft = validateManagementRead(await session.call(toolNames.contentRecord, draftArgs), { site, target: context.read_only_target });
+  assert.equal(draft.snapshot.core.post_status, 'draft');
+  assert.deepEqual(draft.affected_paths, [`/?page_id=${context.read_only_target.post_id}`]);
+  assert.ok(Buffer.byteLength(delegationCanonical(draft)) > 65535);
   const recordArgs = { ...context.site, post_type: context.target.post_type, post_id: context.target.post_id };
   const read = validateManagementRead(await session.call(toolNames.contentRecord, recordArgs), { site, target: context.target });
+  assert.equal(read.snapshot.core.post_status, 'publish');
+  assert.ok(read.affected_paths.length > 0 && read.affected_paths.every(path => !/[?#]/.test(path)));
   assert.ok(Buffer.byteLength(delegationCanonical(read)) > 65535, 'Exercise the native stdout boundary with an actual large page');
   const profileContext = { adapter: 'content-management-v1', runtime: read.snapshot.runtime,
     acf_definitions: read.snapshot.acf_definitions, source: context.profile_source };
@@ -166,7 +177,7 @@ try {
   assert.equal(mapped.context.binding_sha256, first.queuedContext.binding_sha256);
   const originalContext = await worker('context', id); assert.equal(originalContext.ok, true);
   assert.deepEqual(originalContext.output, first.queuedContext);
-  pass('Signed Google delegation binds fresh large-page preview, migration and original management intent');
+  pass('Signed Google delegation reads the exact large draft and binds a separate published-page management intent');
 
   const captured = await worker('capture', id); assert.equal(captured.ok, true);
   const capture = validateManagementCapture(captured.output, first), artifactHash = capture.capture_artifact_sha256;
@@ -227,6 +238,7 @@ try {
   report.completeCaptureVerified = true; report.independentReadbackVerified = true; report.retainedMeasurementsVerified = true;
   report.currentPermissionVerified = true; report.pendingDuringReadVerified = true; report.pendingRecoveryDenied = true;
   report.childUnchangedVerified = true; report.callbackPosts = callbacks.length;
+  report.draftRecordReadVerified = true; report.publishedTargetVerified = true;
   assert.equal(report.passed.length, 6);
   writeFileSync(process.env.MRN_GATEWAY_MANAGEMENT_REPORT, JSON.stringify(report, null, 2) + '\n', { mode: 0o600 });
 } finally {

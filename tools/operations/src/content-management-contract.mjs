@@ -34,7 +34,17 @@ export function validateManagementRead(value, { site, target }) {
   insist(snapshot.site_id === site.id && snapshot.site_url === site.url
     && snapshot.post_type === target.post_type && snapshot.post_id === target.post_id
     && result.snapshot_sha256 === delegationDigest(snapshot));
-  contentPaths(result.affected_paths, site.url);
+  // WordPress drafts and plain permalink installations return an ID query.
+  // Preserve only the exact original record reference as read data. It is
+  // never followed here or accepted as public write-verification evidence.
+  const basePath = new URL(site.url).pathname.replace(/\/$/, '') + '/';
+  const queryKey = target.post_type === 'page' ? 'page_id' : target.post_type === 'post' ? 'p' : null;
+  for (const path of result.affected_paths) {
+    if (path.includes('?')) requireThat(target.post_id > 0 && queryKey !== null
+      && path === `${basePath}?${queryKey}=${target.post_id}`,
+    'CONTENT_PUBLIC_PATH', 'A content read requires the exact same-site WordPress record reference.');
+    else contentPaths([path], site.url);
+  }
   return result;
 }
 
@@ -102,6 +112,7 @@ export function validateManagementEvidence({ review, migration, read }, { site, 
   review = managementTypes.review.parse(review); migration = managementTypes.migration.parse(migration);
   request = managementSchemas['preview-content-edit-v1'].input.parse(request);
   profile = managementTypes.profile.parse(profile); read = validateManagementRead(read, { site, target });
+  contentPaths(read.affected_paths, site.url);
   const descriptor = { ...review }; delete descriptor.digest;
   const expectedRequest = { site_id: request.site_id, site_url: request.site_url, post_type: request.post_type,
     post_id: request.post_id, before_sha256: request.expected_snapshot_sha256,
@@ -132,6 +143,7 @@ export function validateManagementOutcome(value, installedRead, review) {
     && state.rollback_available === (review.target.post_id > 0 && review.rollback_operation_id === ''));
   const read = validateManagementRead(installedRead, { site: { id: review.site_id, url: review.site_url },
     target: { ...review.target, post_id: state.post_id } });
+  contentPaths(read.affected_paths, review.site_url);
   insist(state.installed_sha256 === read.snapshot_sha256 && same(read.snapshot.core, review.candidate_snapshot.core)
     && same(read.snapshot.runtime, review.candidate_snapshot.runtime));
   // Creation can activate new ACF location rules only after WordPress assigns

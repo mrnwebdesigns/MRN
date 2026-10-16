@@ -62,6 +62,24 @@ test('existing search tool preserves explicit page, status, type and result limi
   assert.equal(f.state.rest, 0);
 });
 
+test('draft record queries remain exact read data without REST fallback or write qualification', async t => {
+  const f = fixture(t); f.service.content = null;
+  f.state.wire.snapshot.core.post_status = 'draft';
+  f.state.wire.snapshot_sha256 = delegationDigest(f.state.wire.snapshot);
+  f.state.wire.affected_paths = ['/?page_id=7'];
+  const result = await f.service.readContent(person, f.input);
+  assert.equal(result.fields.post_status, 'draft');
+  assert.deepEqual(result.affectedPaths, ['/?page_id=7']);
+  assert.equal(result.capabilities.acfQualified, false);
+  assert.equal(f.state.rest, 0);
+  for (const path of ['/?page_id=8', '/?p=7', '/?page_id=07', '/?page_id=7&preview=true',
+    '/?page_id=7#other', '//other.test/?page_id=7', '/wp-admin/?page_id=7', '/?page_id=%37']) {
+    f.state.wire.affected_paths = [path];
+    await assert.rejects(() => f.service.readContent(person, f.input));
+  }
+  assert.equal(f.state.rest, 0);
+});
+
 test('provider denial or invalid structured data never downgrades to native REST', async t => {
   const f = fixture(t); f.state.fail = new OpsError('MAINWP_ACCESS', 'Denied.');
   await assert.rejects(() => f.service.readContent(person, f.input), { code: 'MAINWP_ACCESS' });

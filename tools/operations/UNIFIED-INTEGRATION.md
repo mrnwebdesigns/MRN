@@ -4,6 +4,33 @@
 
 One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebdesigns.com/mcp. Active MRN Google Workspace members get automatic portfolio access; there is no individual approval or enrollment step. Necessary approvals apply to concrete site changes. No teammate WordPress account, Application Password, API key, terminal, Codex, SSH or site token.
 
+## Current native integration checkpoint, 2026-10-16
+
+Gateway `87921cb4b7b7a45a82ff1c763db92b25bca1fdf9` passes 389 source tests and
+[MRN QA 38924881952](https://github.com/mrnwebdesigns/MRN/actions/runs/38924881952).
+Its [combined run 38924881741](https://github.com/mrnwebdesigns/MRN/actions/runs/38924881741)
+passes all ten identity, eight native edit/rollback and eleven current-access
+groups, plus six transport groups. It then fails the first management read:
+the large fixture is a draft whose legitimate `?page_id=...` reference does not
+satisfy the public-path verification rule. No management capture is proven.
+
+The reader correction preserves only exact same-site WordPress `page_id`/`p`
+references for the original record as read data. Wrong IDs, extra parameters,
+other paths/hosts and fragments remain denied. Public write evidence and
+installed-outcome verification still require query-free paths. The corrected
+candidate passes 391 local tests. The native fixture now retains that draft for
+a separate read regression and qualifies a distinct published large page. The
+existing native edit/rollback check finishes before the management owner starts,
+so its original 180-second actor/test lifetime covers only its own work.
+
+The candidate runtime pin is `d3d74f25be36457345d96c5770988b597b39d960`; its six
+changed files are fixture tests and documentation only. Sixteen copied blobs
+remain exact. [Provider CI 38927262827](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38927262827)
+and the new combined runtime result remain required. Testing the candidate does
+not accept either gate or activate production. Protected management report
+admission, rendered/hook parity, remaining workflows and ChatGPT acceptance are
+still open.
+
 ## Management identity integration, 2026-10-16
 
 The private management callback now uses an authenticated, independently warmed
@@ -62,7 +89,7 @@ permission and pending revocation during a real delayed Child read. It runs
 alongside the existing identity, native edit/rollback, access and transport
 groups, with a separate bounded report. Synthetic identity, registrar and owner
 authority remain explicit. Its combined runtime result is still required.
-The runtime pin is now `0e927d69c66074d370c003bd508ac5695c34cdf4`, whose
+The preceding runtime pin is `0e927d69c66074d370c003bd508ac5695c34cdf4`, whose
 [provider CI 38923611471](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38923611471)
 passes all four jobs. The changes since c0811a8 are confined to fixture tests,
 CI and documentation; all sixteen copied qualification, measurement and

@@ -29,6 +29,25 @@ test('management schemas and vectors are the exact separately pinned provider fi
   assert.equal(fixtures.fixture_only, true);
 });
 
+test('plain WordPress record references are readable but never substitute for public write verification', () => {
+  for (const post_type of ['page', 'post']) for (const suffix of ['', '/subsite']) {
+    const fixture = copy(fixtures.cases[0]), site = { id: fixture.read.snapshot.site_id, url: 'https://example.invalid' + suffix };
+    Object.assign(fixture.read.snapshot, { site_url: site.url, post_type });
+    fixture.read.snapshot_sha256 = delegationDigest(fixture.read.snapshot);
+    const target = { kind: 'wordpress-content', post_type, post_id: fixture.read.snapshot.post_id };
+    const path = `${suffix}/?${post_type === 'page' ? 'page_id' : 'p'}=${target.post_id}`;
+    fixture.read.affected_paths = [path];
+    assert.deepEqual(validateManagementRead(fixture.read, { site, target }).affected_paths, [path]);
+    fixture.read.affected_paths = ['/another/?' + path.split('?')[1]];
+    assert.throws(() => validateManagementRead(fixture.read, { site, target }), { code: 'CONTENT_PUBLIC_PATH' });
+  }
+  const fixture = copy(fixtures.cases[0]), expected = expectedFor(fixture);
+  fixture.read.affected_paths = [`/?page_id=${fixture.read.snapshot.post_id}`];
+  assert.throws(() => validateManagementEvidence(evidenceFor(fixture), expected), { code: 'CONTENT_PUBLIC_PATH' });
+  fixture.installed_read.affected_paths = [`/?page_id=${fixture.state.post_id}`];
+  assert.throws(() => validateManagementOutcome(fixture.state, fixture.installed_read, fixture.review), { code: 'CONTENT_PUBLIC_PATH' });
+});
+
 for (const fixture of fixtures.cases) {
   test(`${fixture.name}: complete canonical read, preview, migration and installed result agree across PHP and Node`, () => {
     const expected = expectedFor(fixture), evidence = validateManagementEvidence(evidenceFor(fixture), expected);
