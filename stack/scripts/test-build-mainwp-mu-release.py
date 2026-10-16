@@ -28,18 +28,22 @@ class MainwpMuBuilderTest(unittest.TestCase):
         self.root = Path(self.temporary.name)
         loader = self.root / "stack/mu-plugins/mrn-loader.php"
         component = self.root / "mu-plugins/mrn-example/mrn-example.php"
+        updraft_component = self.root / "mu-plugins/mrn-updraft-local-retention/mrn-updraft-local-retention.php"
         wrapper = self.root / "stack/mu-plugins/mrn-example.php"
         loader.parent.mkdir(parents=True)
         component.parent.mkdir(parents=True)
+        updraft_component.parent.mkdir(parents=True)
         loader.write_text("<?php\n/* Version: 1.0.0 */\n", encoding="utf-8")
         component.write_text("<?php\n/* Version: 1.0.0 */\n", encoding="utf-8")
-        (component.parent / ".mrn-qa.env").write_text(
+        updraft_component.write_text("<?php\n/* Version: 0.7.0 */\n", encoding="utf-8")
+        (updraft_component.parent / ".mrn-qa.env").write_text(
             "MRN_QA_PROJECT=local-test-only\n", encoding="utf-8"
         )
         wrapper.write_text("<?php\nrequire __DIR__ . '/mrn-example/mrn-example.php';\n", encoding="utf-8")
 
         loader_hash, loader_count = BUILDER.tree_sha256(loader)
         component_hash, component_count = BUILDER.tree_sha256(component.parent)
+        updraft_hash, updraft_count = BUILDER.tree_sha256(updraft_component.parent)
         self.lock_path = self.root / "stack/manifests/stack-release.lock.json"
         self.lock_path.parent.mkdir(parents=True)
         self.lock_path.write_text(
@@ -69,6 +73,17 @@ class MainwpMuBuilderTest(unittest.TestCase):
                             "source": {
                                 "repository": "MRN",
                                 "path": "mu-plugins/mrn-example",
+                            },
+                        },
+                        {
+                            "slug": "mrn-updraft-local-retention",
+                            "runtime_type": "mu-component",
+                            "deployed_path": "mu-plugins/mrn-updraft-local-retention",
+                            "sha256": updraft_hash,
+                            "file_count": updraft_count,
+                            "source": {
+                                "repository": "MRN",
+                                "path": "mu-plugins/mrn-updraft-local-retention",
                             },
                         },
                         {
@@ -118,7 +133,12 @@ class MainwpMuBuilderTest(unittest.TestCase):
 
         plan = json.loads((self.output / "plan.json").read_text(encoding="utf-8"))
         self.assertEqual(
-            ["mrn-example", "mrn-loader", "mrn-stack-release-lock"],
+            [
+                "mrn-example",
+                "mrn-loader",
+                "mrn-stack-release-lock",
+                "mrn-updraft-local-retention",
+            ],
             [component["slug"] for component in plan["components"]],
         )
         self.assertEqual(
@@ -132,6 +152,7 @@ class MainwpMuBuilderTest(unittest.TestCase):
                     "payload/mu-plugins/mrn-example/mrn-example.php",
                     "payload/mu-plugins/mrn-loader.php",
                     "payload/mu-plugins/mrn-stack-release.lock.json",
+                    "payload/mu-plugins/mrn-updraft-local-retention/mrn-updraft-local-retention.php",
                 },
                 set(archive.namelist()),
             )
@@ -141,7 +162,7 @@ class MainwpMuBuilderTest(unittest.TestCase):
         self.assertEqual(first_hash, BUILDER.file_sha256(package))
 
     def test_lock_and_builder_exclude_local_qa_profiles(self):
-        component = self.root / "mu-plugins/mrn-example"
+        component = self.root / "mu-plugins/mrn-updraft-local-retention"
         self.assertEqual(
             BUILDER.tree_sha256(component),
             LOCK_GENERATOR.tree_sha256(component),
@@ -214,7 +235,11 @@ class MainwpMuBuilderTest(unittest.TestCase):
         plan = json.loads((self.output / "plan.json").read_text(encoding="utf-8"))
         self.assertEqual("site-fork-policy", plan["policy_id"])
         self.assertEqual(
-            ["mrn-loader", "mrn-stack-release-lock"],
+            [
+                "mrn-loader",
+                "mrn-stack-release-lock",
+                "mrn-updraft-local-retention",
+            ],
             [component["slug"] for component in plan["components"]],
         )
         self.assertEqual(
