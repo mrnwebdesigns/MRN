@@ -1,6 +1,6 @@
 # New-site Stack bootstrap release
 
-Platform candidate: `2026.10.15-fleet-auto-1a5e4859001b`; plugin input bundle: `2026.10.15-fleet-auto-1a5e4859001b`. Scope: qualified source installation inputs; site deployment remains separate.
+Platform candidate: `2026.10.16-fleet-auto-41bf427181d6`; plugin input bundle: `2026.10.16-fleet-auto-41bf427181d6`. Scope: qualified source installation inputs; site deployment remains separate.
 
 The Stack profile selects **33 standard plugins**. The plain profile selects **32**, excluding only Reusable Block Library. Community versions are pinned in `plugins.txt`; every plugin archive is checksum-bound in `manifests/bootstrap-packages.lock.json`. The MRN platform lock separately covers the parent/child pair, MU components and shared runtime.
 
@@ -26,7 +26,7 @@ The Stack profile selects **33 standard plugins**. The plain profile selects **3
 | MRN reCAPTCHA Enterprise Manager (`mrn-recaptcha-enterprise-manager`) | 0.2.3 | all |
 | MRN Stack Deployment Agent (`mrn-stack-deployment-agent`) | 0.3.2 | all |
 | MRN Template Inspector (`mrn-template-inspector`) | 0.2.7 | all |
-| MRN Reusable Block Library (`mrn-reusable-block-library`) | 0.2.1 | stack |
+| MRN Reusable Block Library (`mrn-reusable-block-library`) | 0.2.2 | stack |
 | MRN Universal Sticky Bar (`mrn-universal-sticky-bar`) | 1.3.0 | all |
 | Post Duplicator (`post-duplicator`) | 3.0.16 | all |
 | Post Types Order (`post-types-order`) | 2.5.6 | all |
@@ -44,7 +44,7 @@ The Stack profile selects **33 standard plugins**. The plain profile selects **3
 
 ## Environment and ownership
 
-- Activate the MRN Base Stack Child 1.1.0 over parent 1.5.18. Child content remains site-owned.
+- Activate the MRN Base Stack Child 1.1.0 over parent 1.5.20. Child content remains site-owned.
 - Keep SEOPress Free/PRO 10.3 active for native editing. Development disables indexing, tracking and external jobs.
 - Post SMTP 4.0.2 is installed and inactive in development. Provider configuration and verified delivery belong to launch.
 - reCAPTCHA uses qualified 0.1.4. The 0.2.2 Gloves pilot source is accepted, but generic native-controller qualification and broader adoption remain gated.

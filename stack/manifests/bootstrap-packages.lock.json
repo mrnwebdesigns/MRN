@@ -288,15 +288,15 @@
       "name": "MRN Reusable Block Library",
       "package": "mrn-reusable-block-library.zip",
       "profile": "stack",
-      "sha256": "0a9a1b83cab1fa7a02ed3cb35b352d15476d63c59130162ba73397c309695cfd",
-      "size_bytes": 60314,
+      "sha256": "4a87845f8e95810b35ba0dc178f1c0e99199ad2782bf288c994444cc710f4cd8",
+      "size_bytes": 60655,
       "slug": "mrn-reusable-block-library",
       "source": {
-        "commit": "777efa5ab2275c348fc61ae7a5724b6bcbe96e30",
+        "commit": "d491628c5e9366721ae56d8383d3b05cd9e95f78",
         "repository": "mrn-reusable-block-library",
         "type": "git"
       },
-      "version": "0.2.1"
+      "version": "0.2.2"
     },
     {
       "main_file": "mrn-universal-sticky-bar/mrn-universal-sticky-bar.php",
@@ -513,7 +513,7 @@
       "version": "0.1.4"
     }
   ],
-  "release_id": "2026.10.15-fleet-auto-1a5e4859001b",
+  "release_id": "2026.10.16-fleet-auto-41bf427181d6",
   "schema_version": 1,
   "scope": "new-site-bootstrap-inputs",
   "stack_plugin_count": 33
