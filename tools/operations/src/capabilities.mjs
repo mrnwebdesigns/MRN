@@ -23,6 +23,7 @@ const mapped = new Map([
   [toolNames.codeStatus, 'get_operation (refreshProvider)'], [toolNames.contentStatus, 'get_operation (refreshProvider)'],
   [toolNames.contentPolicy, 'inspect_content_record'], [toolNames.contentInspect, 'inspect_content_record'],
   [toolNames.contentTargetPolicy, 'inspect_content_record'],
+  [toolNames.contentRecords, 'search_website_content'], [toolNames.contentRecord, 'read_website_content'],
   [toolNames.contentPrepare, 'prepare_content_edit'], [toolNames.contentMigration, 'prepare_content_edit'],
   [toolNames.contentApprove, 'approve_operation'], [toolNames.contentExecute, 'execute_operation'], [toolNames.contentRollback, 'prepare_rollback'],
   ...Object.values(portfolioSections).map(name => [name, 'read_portfolio_details']),
@@ -51,7 +52,9 @@ export async function capabilityInventory(client, authorize) {
       workflow: mapped.get(t.name) || null, integration: mapped.has(t.name) ? 'connected_workflow' : 'integration_required',
       backendReadOnly: t.annotations?.readOnlyHint === true,
       ...(!mapped.has(t.name) ? { reason: 'No qualified hosted workflow exposes this backend capability yet.' } : {}) })),
-    content: { posts: 'native_rest_route', pages: 'native_rest_route', acf: 'qualification_required', menus: 'qualification_required', media: 'qualification_required' },
+    content: { posts: 'native_rest_route', pages: 'native_rest_route',
+      acf: names.has(toolNames.contentRecord) ? 'structured_read_available_editing_requires_qualification' : 'qualification_required',
+      menus: 'qualification_required', media: 'qualification_required' },
   };
 }
 

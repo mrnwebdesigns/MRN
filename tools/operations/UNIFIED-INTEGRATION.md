@@ -4,7 +4,42 @@
 
 One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebdesigns.com/mcp. Active MRN Google Workspace members get automatic portfolio access; there is no individual approval or enrollment step. Necessary approvals apply to concrete site changes. No teammate WordPress account, Application Password, API key, terminal, Codex, SSH or site token.
 
-## Current acceptance checkpoint, 2026-10-15
+## Current structured-content integration, 2026-10-16
+
+The existing `read_website_content` and `search_website_content` tools now select
+the structured MainWP reader when that capability is exposed. They retain the
+same 21-tool plugin, individual signed Google identity, fresh exact-site sync
+and current-membership checks. Reads include registered ACF field keys, row
+values and layout metadata; searches support explicit pages and post statuses.
+No separate staff credential is needed. A denial or malformed result never
+falls back to another route. The existing REST reader remains available only
+when the structured capability is absent; unsupported filters fail explicitly.
+
+Runtime test sources now select provider
+`b18592de3a2c3e8900f538bb753c446c3cba9f51`. All four provider jobs in
+[CI 38903564637](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38903564637)
+pass, including 65 native WordPress contract checks and 22 MainWP/Child content
+lifecycle checks. The actual CI checkout has the identical complete source
+tree. Eleven existing contract blobs, three measurement blobs and all seventeen
+frozen dependencies are unchanged. The separately imported management contract
+and vectors remain exact `9e0511f` blobs. That earlier source failed native
+approval because WordPress cannot resolve recursive schema references; b18592d
+adds complete provider validation plus a native-compatible closed projection.
+The original failed run is retained.
+
+The combined gateway harness now requires two additional real read/search
+checks with a read-only OAuth scope, alongside the existing content edit and
+rollback regression. Its new runtime pin still requires its own combined CI
+result. Synthetic Google, QA and backup inputs are not live team acceptance.
+Local company-clone ACF PRO proof is separate from hosted ACF-free proof.
+
+The distinct management write abilities and protected signer are not registered
+in the gateway. A structured read does not qualify a write. Full render/hook
+parity, the protected management producer/admission, concrete deployment gates
+and actual ChatGPT team acceptance remain open. Production and staff access are
+unchanged; this is not a team-complete or deployment-ready checkpoint.
+
+## Earlier acceptance checkpoint, 2026-10-15
 
 The expanded plugin is **not team-ready**. Source and disposable qualification are ahead of the hosted workspace plugin. No production deployment, policy enablement or access change is authorized by these results.
 

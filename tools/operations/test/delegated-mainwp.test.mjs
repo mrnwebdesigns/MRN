@@ -51,6 +51,17 @@ function fixture() {
   return { state, actor, client, signer, delegated: id => new DelegatedMainwpClient(client, actor(id), signer) };
 }
 
+test('structured content reads use signed per-person read wrappers without granting write abilities', async () => {
+  const f = fixture(), person = { ...f.actor('123'), scopes: ['mrn:operations'] };
+  const client = new DelegatedMainwpClient(f.client, person, f.signer);
+  for (const name of ['mrn_mainwp__list_content_records_v1', 'mrn_mainwp__read_content_record_v1'])
+    await client.callTool({ name, arguments: { site_id: 73, site_url: 'https://fixture.example.invalid', post_type: 'page' } });
+  assert.ok(f.state.dispatched.every(row => row.person.oauth_subject === person.subject));
+  assert.deepEqual(f.state.dispatched.map(row => row.ability), ['mrn-mainwp/list-content-records-v1', 'mrn-mainwp/read-content-record-v1']);
+  assert.ok(!f.state.calls.includes(delegationTools.run));
+  await assert.rejects(() => client.callTool({ name: 'mrn_mainwp__execute_content_edit_v1', arguments: {} }), { code: 'CAPABILITY_DENIED' });
+});
+
 function queueFixture(t) {
   const f = fixture(), store = new Store(':memory:'); t.after(() => store.close());
   const vectors = JSON.parse(readFileSync(new URL('./fixtures/content-qualification-contract.json', import.meta.url)));

@@ -18,6 +18,7 @@ const readAbilities = new Set([
   'get-stack-runtime-report', 'qualify-stack-site', 'get-stack-deployment-agent-status', 'get-google-fonts-status',
   'inspect-backup-retention-policy', 'inspect-code-file', 'get-code-operation',
   'get-content-policy', 'inspect-content', 'get-content-operation', 'get-content-migration',
+  'list-content-records', 'read-content-record',
 ].map(name => `mrn-mainwp/${name}-v1`)));
 readAbilities.add('mrn-mainwp/get-content-policy-v2');
 const writeAbilities = new Set(['start-database-backup', 'get-database-backup-status', 'qualify-code-storage',

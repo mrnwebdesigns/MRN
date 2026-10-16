@@ -5,7 +5,8 @@ import { contentPaths } from './content-contract.mjs';
 import { compileManagementSchema } from './content-management-schema.mjs';
 
 // A separate adapter, not a replacement for content-v1 or its QA authority.
-// No production route, delegate allowlist or protected signer imports it yet.
+// Structured read workflows enforce it. Management writes and their distinct
+// protected signer remain unregistered until their runtime qualifies.
 export const managementContract = JSON.parse(readFileSync(new URL('../contracts/content-management-v1.json', import.meta.url)));
 requireThat(managementContract.adapter === 'content-management-v1' && managementContract.qa_purpose === 'mrn-content-management-qa-v1:',
   'CONTENT_MANAGEMENT_CONTRACT', 'Unsupported management adapter or QA purpose.');

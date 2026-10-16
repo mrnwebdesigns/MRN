@@ -145,6 +145,21 @@ export async function checkNativeContent({ fixture, token, call, toolResult, pas
   assert.ok(directory.sources.some(s => s.source === 'mainwp' && s.sites === 1 && s.status === 'discovered'));
   assert.equal(directory.websites.length, 1);
   const input = { website: origin, environment: 'development', target: fixture.profile.target };
+  const readOnly = await token('111111');
+  const structured = toolResult(await tools(readOnly, 'read_website_content', { website: origin, environment: 'development', kind: 'pages',
+    recordId: fixture.profile.target.post_id }));
+  assert.equal(structured.site.id, fixture.site.site_id); assert.equal(structured.fields.post_title, 'Original lifecycle title');
+  assert.equal(structured.capabilities.acfReadable, true); assert.equal(structured.capabilities.acfQualified, false);
+  assert.ok(Array.isArray(structured.acf.definitions)); assert.match(structured.snapshotSha256, /^[a-f0-9]{64}$/);
+  pass('Existing gateway read tool obtains the complete typed record through individual Google delegation and native MainWP');
+  const listed = toolResult(await tools(readOnly, 'search_website_content', { website: origin, environment: 'development', kind: 'pages',
+    search: 'Original lifecycle title', maximum: 1, page: 1, statuses: ['publish'] }));
+  assert.equal(listed.site.id, fixture.site.site_id); assert.equal(listed.items.length, 1);
+  assert.equal(listed.items[0].id, fixture.profile.target.post_id); assert.equal(listed.items[0].status, 'publish');
+  const managementReads = network().filter(row => ['mrn-mainwp/read-content-record-v1', 'mrn-mainwp/list-content-records-v1'].includes(row.ability));
+  assert.equal(managementReads.length, 2);
+  assert.ok(managementReads.every(row => row.subject === 'google-oauth2|111111' && row.status === 200));
+  pass('Existing gateway search tool preserves exact native site, status and pagination with no separate REST credential');
   const before = await invoke('inspect_content_record', input);
   assert.equal(before.site.id, fixture.site.site_id); assert.equal(before.snapshot.post_title, 'Original lifecycle title');
   assert.deepEqual(before.policy.profile, fixture.profile.descriptor);
@@ -196,5 +211,6 @@ export async function checkNativeContent({ fixture, token, call, toolResult, pas
   Object.assign(report, { contentWriteVerified: true, scope: 'disposable-native-child-only', liveGoogleVerified: false,
     protectedQaVerified: false, productionQaVerified: false, remoteBackupVerified: false,
     syntheticInputs: ['OAuth', 'Google Directory', 'QA signer and reports', 'remote backup creation'],
-    contentRollbackVerified: true, publicHtmlVerified: true, nativeChecks: 6 });
+    contentRollbackVerified: true, publicHtmlVerified: true, structuredManagementReadsVerified: true,
+    managementReadOnlyScopeVerified: true, managementWritesVerified: false, nativeChecks: 8 });
 }

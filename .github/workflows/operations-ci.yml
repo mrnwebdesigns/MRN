@@ -124,10 +124,13 @@ jobs:
           assert.equal(proof.chatgptAcceptanceVerified, false);
           const native = JSON.parse(readFileSync(process.env.MRN_GATEWAY_NATIVE_REPORT, 'utf8'));
           assert.equal(native.result, 'PASS');
-          assert.equal(native.passed.length, 6);
+          assert.equal(native.passed.length, 8);
           assert.equal(native.scope, 'disposable-native-child-only');
           assert.equal(native.managedSites, 1);
           for (const field of ['contentWriteVerified', 'contentRollbackVerified', 'publicHtmlVerified']) assert.equal(native[field], true);
+          assert.equal(native.structuredManagementReadsVerified, true);
+          assert.equal(native.managementReadOnlyScopeVerified, true);
+          assert.equal(native.managementWritesVerified, false);
           for (const field of ['productionCredentials', 'liveGoogleVerified', 'protectedQaVerified', 'productionQaVerified', 'remoteBackupVerified', 'chatgptAcceptanceVerified', 'codeWriteVerified']) assert.equal(native[field], false);
           const access = JSON.parse(readFileSync(process.env.MRN_GATEWAY_ACCESS_REPORT, 'utf8'));
           assert.equal(access.result, 'PASS');

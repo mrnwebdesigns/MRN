@@ -19,6 +19,7 @@ export const toolNames = {
   codeExecute: 'mrn_mainwp__execute_code_change_v1', codeStatus: 'mrn_mainwp__get_code_operation_v1',
   contentPolicy: 'mrn_mainwp__get_content_policy_v1', contentInspect: 'mrn_mainwp__inspect_content_v1',
   contentTargetPolicy: 'mrn_mainwp__get_content_policy_v2',
+  contentRecords: 'mrn_mainwp__list_content_records_v1', contentRecord: 'mrn_mainwp__read_content_record_v1',
   contentPrepare: 'mrn_mainwp__prepare_content_change_v1', contentApprove: 'mrn_mainwp__approve_content_change_v1',
   contentExecute: 'mrn_mainwp__execute_content_change_v1', contentStatus: 'mrn_mainwp__get_content_operation_v1',
   contentRollback: 'mrn_mainwp__prepare_content_rollback_v1', contentMigration: 'mrn_mainwp__get_content_migration_v1',

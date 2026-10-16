@@ -1,11 +1,12 @@
 import { randomUUID } from 'node:crypto';
 import { digest, requireThat, safeError, writeAction } from './contracts.mjs';
-import { MainwpSession } from './mainwp.mjs';
+import { MainwpSession, toolNames } from './mainwp.mjs';
 import { inspectTarget } from './inspect.mjs';
 import { capabilityInventory, websiteDetails, portfolioDetails } from './capabilities.mjs';
 import { codeInspection } from './code.mjs';
 import { inspectContentTarget } from './content-workflow.mjs';
 import { providerOperationStatus } from './operation-status.mjs';
+import { readManagedContent } from './content-management-read.mjs';
 
 export class Operations {
   constructor({ registry, store, connect, fleet, publicProbe, writesEnabled = false, qa = null, recoveryEvidence = null, discovery = null, content = null, verifyStaff = null }) {
@@ -105,8 +106,7 @@ export class Operations {
     const session = await this.session(actor, target, 'read');
     try { return await websiteDetails(session, section); } finally { await session.close(); }
   }
-  async readContent(actor, { website, environment, kind, recordId, search, maximum }) {
-    requireThat(this.content, 'CONTENT_UNAVAILABLE', 'The central MainWP content integration is not configured.');
+  async readContent(actor, { website, environment, kind, recordId, search, maximum, page, statuses }) {
     await this.discovery?.refresh(actor);
     const target = this.registry.resolve(actor, website, environment);
     const session = await this.session(actor, target, 'read');
@@ -114,7 +114,20 @@ export class Operations {
       const site = await session.fresh();
       this.store.audit(actor, target, '', 'content:read', 'attempted');
       const authorize = async () => { this.registry.current(actor, target, 'read'); await this.verifyStaff?.(actor); };
-      const result = recordId ? await this.content.read(site, kind, recordId, authorize) : await this.content.search(site, kind, search, maximum, authorize);
+      let result;
+      if (await session.supports(recordId === undefined ? toolNames.contentRecords : toolNames.contentRecord)) {
+        requireThat(actor.identityProvider === 'google-oauth2' && this.verifyStaff, 'AUTH_REQUIRED', 'Structured content reads require live verified MRN Google membership.');
+        await authorize();
+        result = await readManagedContent(session, site, { kind, recordId, search, maximum, page, statuses });
+      } else {
+        // Only absent capability permits the existing native REST reader. A
+        // failed or denied management call never switches routes/credentials.
+        requireThat(this.content, 'CONTENT_UNAVAILABLE', 'The central MainWP content integration is not configured.');
+        requireThat((page === undefined || page === 1) && statuses === undefined,
+          'CAPABILITY_MISSING', 'Content pagination and status filters require the structured MainWP adapter.');
+        result = recordId === undefined ? await this.content.search(site, kind, search, maximum, authorize)
+          : await this.content.read(site, kind, recordId, authorize);
+      }
       await authorize();
       this.store.audit(actor, target, '', 'content:read', 'returned');
       return result;

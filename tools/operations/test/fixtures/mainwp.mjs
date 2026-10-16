@@ -12,7 +12,9 @@ export class FixtureMainwp {
   async readResource() {
     return { contents: [{ uri: 'mainwp://status', text: JSON.stringify({ connected: true, dashboardHost: this.data.host || 'wpcontrol.mrndev.io', abilitiesCount: 84 }) }] };
   }
-  async listTools() { return { tools: [...Object.values(toolNames), ...(this.data.directory ? ['get_sites_basic_v1'] : [])].filter(n => !(this.data.missing || []).includes(n) && (n !== toolNames.contentTargetPolicy || this.data.contentTargetPolicy === true)).map(name => ({ name, inputSchema: { type: 'object', properties: {} } })) }; }
+  async listTools() { return { tools: [...Object.values(toolNames), ...(this.data.directory ? ['get_sites_basic_v1'] : [])].filter(n => !(this.data.missing || []).includes(n)
+    && (n !== toolNames.contentTargetPolicy || this.data.contentTargetPolicy === true)
+    && (![toolNames.contentRecords, toolNames.contentRecord].includes(n) || this.data.contentManagement === true)).map(name => ({ name, inputSchema: { type: 'object', properties: {} } })) }; }
   async callTool({ name, arguments: a }) {
     this.data.calls.push(name);
     if (name === this.data.fail) throw new Error('DOWNSTREAM FAILURE private-token-sentinel');
