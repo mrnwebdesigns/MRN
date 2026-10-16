@@ -951,6 +951,7 @@ function mrn_base_stack_get_two_column_column_layout_source_names() {
 		'wpforms',
 		'reusable_block',
 		'faq_jump_nav',
+		'faq',
 	);
 
 	$names = mrn_base_stack_normalize_builder_layout_source_names(
@@ -959,6 +960,93 @@ function mrn_base_stack_get_two_column_column_layout_source_names() {
 	);
 
 	return mrn_base_stack_filter_hidden_builder_layout_source_names( $names );
+}
+
+/**
+ * Get optional authored entries for the shared in-page navigation row.
+ *
+ * An unset source retains automatic FAQ discovery for existing content.
+ *
+ * @param string $key_seed Unique field key prefix.
+ * @return array<int, array<string, mixed>>
+ */
+function mrn_base_stack_get_jump_nav_source_fields( $key_seed ) {
+	return array(
+		array(
+			'key'           => $key_seed . '_source',
+			'name'          => 'jump_nav_source',
+			'label'         => 'Navigation Source',
+			'type'          => 'select',
+			'choices'       => array(
+				'faq'    => 'FAQ sections',
+				'manual' => 'Authored section links',
+			),
+			'default_value' => 'faq',
+		),
+		array(
+			'key'               => $key_seed . '_entries',
+			'name'              => 'jump_nav_entries',
+			'label'             => 'Section Links',
+			'type'              => 'repeater',
+			'max'               => 5,
+			'layout'            => 'block',
+			'button_label'      => 'Add Section Link',
+			'conditional_logic' => array(
+				array(
+					array(
+						'field'    => $key_seed . '_source',
+						'operator' => '==',
+						'value'    => 'manual',
+					),
+				),
+			),
+			'sub_fields'        => array(
+				array(
+					'key'      => $key_seed . '_entry_label',
+					'name'     => 'label',
+					'label'    => 'Link Text',
+					'type'     => 'text',
+					'required' => 1,
+				),
+				array(
+					'key'          => $key_seed . '_entry_anchor',
+					'name'         => 'anchor',
+					'label'        => 'Section Anchor ID',
+					'type'         => 'text',
+					'required'     => 1,
+					'instructions' => 'Use the destination section’s Anchor ID, without #.',
+				),
+			),
+		),
+	);
+}
+
+/**
+ * Resolve navigation entries without changing automatic FAQ discovery.
+ *
+ * @param array<string, mixed> $row Navigation row.
+ * @param int                  $post_id Host post.
+ * @return array<int, array<string, string>>
+ */
+function mrn_base_stack_get_jump_nav_row_entries( array $row, $post_id ) {
+	if ( 'manual' !== ( $row['jump_nav_source'] ?? 'faq' ) ) {
+		return function_exists( 'mrn_base_stack_get_faq_jump_nav_entries' ) ? mrn_base_stack_get_faq_jump_nav_entries( $post_id ) : array();
+	}
+	$entries = array();
+	foreach ( (array) ( $row['jump_nav_entries'] ?? array() ) as $entry ) {
+		if ( ! is_array( $entry ) || ! is_scalar( $entry['anchor'] ?? null ) || ! is_scalar( $entry['label'] ?? null ) ) {
+			continue;
+		}
+		$anchor = mrn_base_stack_normalize_anchor_id( ltrim( trim( (string) $entry['anchor'] ), '#' ) );
+		$label  = trim( wp_strip_all_tags( (string) $entry['label'] ) );
+		if ( '' !== $anchor && '' !== $label ) {
+			$entries[] = array(
+				'anchor' => $anchor,
+				'label'  => $label,
+			);
+		}
+	}
+	return $entries;
 }
 
 /**
@@ -1461,6 +1549,14 @@ function mrn_base_stack_get_hero_builder_layouts() {
 		$cloned_layout          = mrn_base_stack_add_hero_heading_fields_to_layout( $cloned_layout );
 		$cloned_layout          = mrn_base_stack_add_hero_sizing_fields_to_layout( $cloned_layout );
 		$cloned_layout          = mrn_base_stack_add_hero_layout_fields_to_layout( $cloned_layout );
+		// The Hero renderer supports four links; expose the same editable contract.
+		foreach ( $cloned_layout['sub_fields'] as &$hero_field ) {
+			if ( 'links' === ( $hero_field['name'] ?? '' ) && 'repeater' === ( $hero_field['type'] ?? '' ) ) {
+				$hero_field['max']                 = 4;
+				$hero_field['_mrn_repeater_limit'] = 4;
+			}
+		}
+		unset( $hero_field );
 		$cloned_key             = 'layout_mrn_hero_' . $layout_name;
 		$cloned_layout['key']   = $cloned_key;
 		$layouts[ $cloned_key ] = $cloned_layout;
@@ -3101,6 +3197,10 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 	$pre_rendered_markup = apply_filters( 'mrn_base_stack_pre_render_content_list_item', '', $item_post, $args );
 	if ( is_string( $pre_rendered_markup ) && '' !== trim( $pre_rendered_markup ) ) {
 		return $pre_rendered_markup;
+	}
+
+	if ( in_array( $args['record_presentation'] ?? '', array( 'people', 'comparisons' ), true ) && function_exists( 'mrn_base_stack_render_record_presentation' ) ) {
+		return mrn_base_stack_render_record_presentation( $item_post, $args );
 	}
 
 	if ( 'testimonial' === get_post_type( $item_post ) && function_exists( 'mrn_base_stack_render_content_list_testimonial_item' ) ) {
@@ -8247,6 +8347,9 @@ function mrn_base_stack_ensure_builder_layout_tab( array $fields, $layout_name =
 	if ( '' === $seed ) {
 		$seed = '' !== $layout_name ? 'field_mrn_' . $layout_name : 'field_mrn_layout';
 	}
+	if ( function_exists( 'mrn_base_stack_ensure_presentation_fields' ) ) {
+		$fields = mrn_base_stack_ensure_presentation_fields( $fields, $layout_name, $seed );
+	}
 
 	$remaining_fields       = array();
 	$layout_tab             = null;
@@ -9718,6 +9821,9 @@ function mrn_base_stack_dedupe_effects_tab_segments( array $fields ) {
  */
 function mrn_base_stack_with_effects_tabs( array $field_group ) {
 	if ( isset( $field_group['fields'] ) && is_array( $field_group['fields'] ) ) {
+		if ( function_exists( 'mrn_base_stack_register_presentation_field_tree' ) ) {
+			$field_group['fields'] = mrn_base_stack_register_presentation_field_tree( $field_group['fields'] );
+		}
 		$field_group['fields'] = mrn_base_stack_apply_primary_layout_field_contract( $field_group['fields'], false );
 		$field_group['fields'] = mrn_base_stack_relocate_effect_fields( $field_group['fields'] );
 
@@ -12226,6 +12332,24 @@ function mrn_base_stack_get_video_embed( $url, array $options = array() ) {
  */
 function mrn_base_stack_get_two_column_nested_layouts() {
 	return array(
+		'layout_mrn_nested_faq'             => array(
+			'key'        => 'layout_mrn_nested_faq',
+			'name'       => 'faq',
+			'label'      => 'FAQ / Accordion',
+			'display'    => 'block',
+			'sub_fields' => array(
+				array(
+					'key'          => 'field_mrn_nested_faq_fields',
+					'label'        => '',
+					'name'         => '',
+					'type'         => 'clone',
+					'clone'        => array( 'group_mrn_reusable_faq' ),
+					'display'      => 'seamless',
+					'prefix_label' => 0,
+					'prefix_name'  => 0,
+				),
+			),
+		),
 		'layout_mrn_nested_body_text' => array(
 			'key'        => 'layout_mrn_nested_body_text',
 			'name'       => 'body_text',
@@ -13375,6 +13499,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'endpoint'   => 0,
 				),
 				mrn_base_stack_get_anchor_field( 'field_mrn_nested_reusable_block_anchor' ),
+				mrn_base_stack_get_section_width_field( 'field_mrn_nested_reusable_block_section_width', 'section_width', 'wide', 'Block Width' ),
 				array(
 					'key'           => 'field_mrn_nested_reusable_block_include_in_faq_jump_nav',
 					'label'         => 'Include FAQ Block in Jump Nav',
@@ -13422,6 +13547,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 				mrn_base_stack_get_label_tag_field( 'field_mrn_nested_faq_jump_nav_label_tag' ),
 				mrn_base_stack_get_inline_text_field( 'field_mrn_nested_faq_jump_nav_heading', 'Heading', 'heading' ),
 				mrn_base_stack_get_text_tag_field( 'field_mrn_nested_faq_jump_nav_heading_tag', 'heading_tag', 'h2', 'Heading Tag' ),
+				...mrn_base_stack_get_jump_nav_source_fields( 'field_mrn_nested_faq_jump_nav' ),
 				array(
 					'key'        => 'field_mrn_nested_faq_jump_nav_config_tab',
 					'label'      => 'Configs',

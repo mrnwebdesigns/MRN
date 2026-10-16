@@ -7,6 +7,10 @@
 
 $context              = is_array( $args ?? null ) ? $args : array();
 $row                  = isset( $context['row'] ) && is_array( $context['row'] ) ? $context['row'] : array();
+if ( 'timeline' === ( $row['card_presentation'] ?? '' ) ) {
+	get_template_part( 'template-parts/builder/timeline', null, $context );
+	return;
+}
 $context_post_id      = isset( $context['post_id'] ) ? (int) $context['post_id'] : get_the_ID();
 $row_index            = isset( $context['index'] ) ? (int) $context['index'] : 0;
 $label                = isset( $row['label'] ) ? trim( (string) $row['label'] ) : '';

@@ -82,7 +82,7 @@ if ( 'check' === $fixture_mode ) {
 		mrn_performance_expect( 55 === $prepared['max'], 'Legacy repeater rows were restricted.' );
 		$field['value'] = array();
 		$prepared       = acf_prepare_field( $field );
-		mrn_performance_expect( empty( $field['pagination'] ) && 5 === $prepared['max'], 'Repeater ceiling was not applied.' );
+		mrn_performance_expect( empty( $field['pagination'] ) && mrn_base_stack_repeater_limit( $field ) === $prepared['max'], 'Repeater ceiling was not applied.' );
 	}
 	// An inherited paginated definition must lose pagination when nested in a group.
 	acf_get_store( 'local-fields' )->set(

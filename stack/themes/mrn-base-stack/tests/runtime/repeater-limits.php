@@ -1,14 +1,15 @@
 <?php
 /**
- * Local-only integration checks for the five-row ACF write policy.
+ * Local-only integration checks for the bounded ACF collection policy.
  *
  * Run through wp eval-file. All data belongs to disposable draft fixtures.
  *
  * @package mrn-base-stack
  */
 
-if ( ! defined( 'WP_CLI' ) || ! WP_CLI || 'platform.localhost' !== wp_parse_url( home_url(), PHP_URL_HOST ) ) {
-	throw new RuntimeException( 'The Platform Local Hub runtime is required.' );
+$test_host = (string) wp_parse_url( home_url(), PHP_URL_HOST );
+if ( ! defined( 'WP_CLI' ) || ! WP_CLI || ( 'platform.localhost' !== $test_host && ( ! str_ends_with( $test_host, '.localhost' ) || home_url() !== getenv( 'MRN_STACK_TEST_HOME' ) ) ) ) {
+	throw new RuntimeException( 'An explicitly selected Local Hub runtime is required.' );
 }
 
 /**
@@ -64,30 +65,32 @@ $fixture_id = wp_insert_post(
 	array(
 		'post_type'   => 'mrn_reusable_faq',
 		'post_status' => 'draft',
-		'post_title'  => 'MRN five-row repeater QA',
-		'meta_input'  => array( '_mrn_repeater_limit_fixture' => 'five-row' ),
+		'post_title'  => 'MRN bounded repeater QA',
+		'meta_input'  => array( '_mrn_repeater_limit_fixture' => 'bounded' ),
 	),
 	true
 );
 mrn_limit_expect( ! is_wp_error( $fixture_id ), 'Owned draft created' );
 $keep_fixture = 'browser' === ( $args[0] ?? '' );
 try {
-	$key  = 'field_mrn_faq_items';
-	$five = mrn_limit_rows( 5 );
-	$six  = mrn_limit_rows( 6 );
-	mrn_limit_expect( (bool) update_field( $key, $five, $fixture_id ), 'Five rows save through update_field' );
+	$key    = 'field_mrn_faq_items';
+	$thirty = mrn_limit_rows( 30 );
+	$over   = mrn_limit_rows( 31 );
+	mrn_limit_expect( (bool) update_field( $key, mrn_limit_rows( 27 ), $fixture_id ), 'One set of 27 FAQs saves without splitting' );
+	mrn_limit_expect( 27 === count( get_field( $key, $fixture_id ) ), 'All 27 FAQ questions survive readback' );
+	mrn_limit_expect( (bool) update_field( $key, $thirty, $fixture_id ), 'Thirty FAQ rows save through update_field' );
 	$before = get_post_meta( $fixture_id );
-	mrn_limit_expect( false === update_field( $key, $six, $fixture_id ) && get_post_meta( $fixture_id ) === $before, 'Six-row import rejected without any metadata changes' );
+	mrn_limit_expect( false === update_field( $key, $over, $fixture_id ) && get_post_meta( $fixture_id ) === $before, 'FAQ row 31 rejected without any metadata changes' );
 	// ACF's add_row returns the attempted count even when its write is refused.
-	add_row( $key, $six[5], $fixture_id );
-	mrn_limit_expect( get_post_meta( $fixture_id ) === $before, 'add_row cannot bypass the ceiling' );
+	add_row( $key, $over[30], $fixture_id );
+	mrn_limit_expect( get_post_meta( $fixture_id ) === $before, 'add_row cannot bypass the FAQ ceiling' );
 
 	$field = acf_get_field( $key );
 	acf_set_form_data( 'post_id', $fixture_id );
-	mrn_limit_expect( true === mrn_base_stack_validate_repeater_limits( true, $five, $field, 'acf[' . $key . ']' ), 'Editor validation accepts five' );
-	mrn_limit_expect( is_string( mrn_base_stack_validate_repeater_limits( true, $six, $field, 'acf[' . $key . ']' ) ), 'Editor validation reports six before saving' );
+	mrn_limit_expect( true === mrn_base_stack_validate_repeater_limits( true, $thirty, $field, 'acf[' . $key . ']' ), 'Editor validation accepts 30 FAQs' );
+	mrn_limit_expect( is_string( mrn_base_stack_validate_repeater_limits( true, $over, $field, 'acf[' . $key . ']' ) ), 'Editor validation reports FAQ row 31 before saving' );
 	$schema = acf_get_field_type( 'repeater' )->get_rest_schema( $field );
-	mrn_limit_expect( 5 === $schema['maxItems'] && is_wp_error( rest_validate_value_from_schema( $six, $schema ) ), 'REST schema rejects six rows' );
+	mrn_limit_expect( 30 === $schema['maxItems'] && is_wp_error( rest_validate_value_from_schema( $over, $schema ) ), 'REST schema rejects FAQ row 31' );
 	foreach ( array( 1, 2, 5, 20, 0 ) as $configured ) {
 		$definition = mrn_base_stack_limit_repeater_definition(
 			array(
@@ -105,15 +108,15 @@ try {
 	);
 	mrn_limit_expect( mrn_base_stack_limit_repeater_definition( $external ) === $external, 'Non-Stack fields remain unchanged' );
 
-	$seven = mrn_limit_rows( 7 );
-	mrn_limit_seed_legacy( $key, $seven, $fixture_id );
-	$seven[6]['question'] = 'Legacy row seven edited';
-	update_field( $key, $seven, $fixture_id );
-	mrn_limit_expect( 'Legacy row seven edited' === get_field( $key, $fixture_id )[6]['question'], 'Existing seven-row content remains editable' );
+	$legacy = mrn_limit_rows( 32 );
+	mrn_limit_seed_legacy( $key, $legacy, $fixture_id );
+	$legacy[31]['question'] = 'Legacy FAQ row 32 edited';
+	update_field( $key, $legacy, $fixture_id );
+	mrn_limit_expect( 'Legacy FAQ row 32 edited' === get_field( $key, $fixture_id )[31]['question'], 'Existing oversized FAQ content remains editable' );
 	$before = get_post_meta( $fixture_id );
-	mrn_limit_expect( false === update_field( $key, mrn_limit_rows( 8 ), $fixture_id ) && get_post_meta( $fixture_id ) === $before, 'Legacy content cannot grow beyond its saved count' );
-	update_field( $key, $five, $fixture_id );
-	mrn_limit_expect( false === update_field( $key, $six, $fixture_id ), 'Reducing legacy content to five removes the larger allowance' );
+	mrn_limit_expect( false === update_field( $key, mrn_limit_rows( 33 ), $fixture_id ) && get_post_meta( $fixture_id ) === $before, 'Legacy FAQ content cannot grow beyond its saved count' );
+	update_field( $key, $thirty, $fixture_id );
+	mrn_limit_expect( false === update_field( $key, $over, $fixture_id ), 'Reducing legacy FAQs to 30 removes the larger allowance' );
 
 	// Exercise the actual Stack flexible-content field, including atomic refusal.
 	$builder = 'field_mrn_page_content_rows';
@@ -228,6 +231,6 @@ try {
 		delete_field( $options_field['key'], 'option' );
 	}
 	if ( ! $keep_fixture ) {
-		wp_trash_post( $fixture_id );
+		wp_delete_post( $fixture_id, true );
 	}
 }

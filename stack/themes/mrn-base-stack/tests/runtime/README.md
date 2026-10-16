@@ -103,12 +103,21 @@ Do not run this fixture against concurrently edited 404 settings. Keep the
 snapshot until restoration is verified, then archive evidence outside source.
 
 Run `repeater-limits.php` through `wp eval-file` on `platform.localhost` to check
-the five-row write policy against real ACF APIs. It creates an owned draft and
+the bounded collection policy against real ACF APIs. Another `.localhost` runtime
+requires `MRN_STACK_TEST_HOME` to equal its exact `home_url()`. It creates an owned draft and
 private options fixture, checks complete-tree rejection, nested/group/options
-fields, REST schemas, row additions and legacy reorder, then trashes the draft
+fields, REST schemas, row additions and legacy reorder, then deletes the owned draft
 and deletes only its options fixture. The optional `browser` argument retains
-the draft for native editing: attempt Add Item at five rows, edit/save the fifth
-row, and verify it after reload. Move that tagged draft to Trash after readback.
+the draft for native editing: attempt Add Item at 30 FAQ rows, edit/save question
+30, and verify it after reload. Delete that tagged draft after readback. Other
+repeaters retain five rows unless their specific collection contract allows more.
+
+Run `migration-collections.php` with `MRN_STACK_TEST_HOME` set to the exact local
+home URL and `--user=<administrator>`. It checks a single 27-question FAQ, overflow
+refusal in a split-column tree, Hero links, required migration collection sizes,
+reusable placement width/source isolation and manual versus automatic jump links.
+It creates only owned draft fixtures and deletes them in `finally`. Run it against
+the candidate source, never an unrelated runtime still using the previous theme.
 
 ## Reference Content integration checks
 
@@ -173,3 +182,14 @@ For `resource-video-posters-browser.cjs`, load
 `resource-video-posters-fixture.php` only as a disposable loopback MU fixture;
 pass the existing private browser JSON on stdin. Never install the fixture on
 a client site. Remove its entire private runtime after qualification.
+
+## Native presentation source qualification
+
+`native-presentations.php` requires an administrator-owned `.localhost` clone and
+an exact `MRN_STACK_TEST_HOME` match. It creates/deletes its own draft in `finally`,
+uses the candidate parent plus RBL 0.2.2, and checks all eight optional native
+presentations. The optional `MRN_PRESENTATION_PROOF_PATH` must be an HTML path
+outside the web root. It writes escaped native markup and existing Site Styles
+for separate browser qualification; it does not install code or convert records.
+See `docs/qa/mrnwebdesigns-migration-collections-20261015.md` for the exact source
+qualification boundary and installed-editor/release gates.

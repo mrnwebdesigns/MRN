@@ -1,0 +1,36 @@
+{
+  "stack": {
+    "root": "/Users/khofmeyer/.codex/worktrees/mrnwebdesigns-migration-stack/MRN",
+    "branch": "codex/mrnwebdesigns-migration-capabilities",
+    "base_commit": "3c2ae1d92d0741559a352db978295ab4ef17ed4d",
+    "files": {
+      "phpstan.neon.dist": "657b72f8af2151eeb317265b14f6b7132ebf036e90723784cedecdb436c4698b",
+      "stack/themes/mrn-base-stack/inc/builder/presentation.php": "fa1e47d3046fe2876ad379e95c2e10831dfe3240f2651d59f8ff579317691094",
+      "stack/themes/mrn-base-stack/inc/builder/repeater-limits.php": "424f25f8818d0f2db7ff210cb3e00927fb3dc6f0121ab092141bbec3795a236b",
+      "stack/themes/mrn-base-stack/inc/frontend-assets.php": "4638aafb9ec8366de5cd1a11826930111b59095f8ebe3b08fed87dcce7aac05f",
+      "stack/themes/mrn-base-stack/js/presentation.js": "5ecc692da89d879fe906d990a4ee7923e43d63af935696a6de04c8f4905e182d",
+      "stack/themes/mrn-base-stack/css/presentation.css": "d41c0ae5281bb87dbe5beaa7ad5b95aedd0d0db52fb923efebea17b7fb24be5e",
+      "stack/themes/mrn-base-stack/template-parts/builder/timeline.php": "0403bdf89e229660e2ba553defea3b98acae31ad1e6743e38b737b4a362bd11e",
+      "stack/themes/mrn-base-stack/template-parts/builder/video.php": "88bb69ec666ec1308c20ec26f92409583ec2f5322240ca91b193c742d78b0793"
+    }
+  },
+  "rbl": {
+    "root": "/Users/khofmeyer/.codex/worktrees/mrnwebdesigns-migration-rbl/mrn-reusable-block-library",
+    "branch": "codex/mrnwebdesigns-migration-capabilities",
+    "base_commit": "777efa5ab2275c348fc61ae7a5724b6bcbe96e30",
+    "files": {
+      "mrn-reusable-block-library.php": "53ee8297a0d48f70af44995876fec29375d9d744ce2c6dc83fa0f07ee675dd12",
+      "templates/basic-block.php": "c79f914106bf0ef9a0a22315571ca270bab5850b4d19266bbc63a08195e2e2a9",
+      "templates/cta.php": "9f31df366306f84468635824f9ed87669696c3cc46458e1915739139770eb3c1"
+    }
+  },
+  "site": {
+    "root": "/Users/khofmeyer/.codex/worktrees/stack-migration/mrnwebdesigns",
+    "branch": "codex/full-stack-migration",
+    "base_commit": "80a0c898d178d8554804f4486fba92e6ab053721",
+    "files": {
+      "themes/mrnwebdesigns-child/functions.php": "4f14e65c4cca73106ca9490e7a0b83ee8e0cae42b3d78369f69f8cb12b40d2c2",
+      "themes/mrnwebdesigns-child/inc/stack-migration-presentations.php": "4c7f5288a6038e061527d4bc8b26f35a02626c068cd2ec16f6c2b885efcfa938"
+    }
+  }
+}
