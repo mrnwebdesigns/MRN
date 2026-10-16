@@ -9,6 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+require_once __DIR__ . '/header-utility-message-schedule.php';
+
 /**
  * Return the canonical United States state choices.
  *
@@ -3020,6 +3022,7 @@ function mrn_base_stack_register_theme_options_field_groups() {
 					'default_value' => 0,
 					'ui'            => 1,
 				),
+				...mrn_base_stack_get_header_utility_message_schedule_fields(),
 				array(
 					'key'           => 'field_mrn_header_utility_message_text',
 					'label'         => __( 'Message', 'mrn-base-stack' ),

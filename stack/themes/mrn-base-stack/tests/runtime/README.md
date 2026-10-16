@@ -1,5 +1,26 @@
 # Builder integration checks
 
+## Header Utility Message scheduling
+
+Use a disposable loopback WordPress fixture with ACF Pro and the candidate
+parent theme. Pass `url` (http://127.0.0.1 with its port), `username`, `password`
+and an absolute `output` directory to `node header-utility-message-schedule-browser.cjs`
+on stdin. The runner rejects remote URLs. It uses the native ACF options page
+to enable scheduling, choose Los Angeles while the browser uses Tokyo, save
+and reload dates, weekly rules, daily hours and multiline custom dates, and
+reject an incomplete daily window. Read back
+`mrn_base_stack_get_header_utility_message_schedule()` in a separate WordPress
+request to verify the selected zone, UTC timestamps and stored rules. Destroy
+the fixture afterward; this test changes its global Header Utility Message
+options and must never run against a client site. Credentials remain on stdin;
+screenshots and receipts stay outside tracked source.
+
+The standalone PHP harness tests validation, named and fixed-offset zones,
+spring gaps, repeated autumn hours and fractional offsets. The Playwright
+schedule spec executes real helper output against cached HTML and simulated
+clocks, including weekly, overnight, holiday/observed-day, annual/custom-day,
+DST, manual-switch, keyboard and WCAG AA cases.
+
 ## Shortcode / Embed provider output
 
 On an explicitly resolved `.localhost` runtime with WPForms active, set

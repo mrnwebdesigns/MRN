@@ -708,8 +708,14 @@ if ( ! function_exists( 'mrn_base_stack_has_header_utility_message' ) ) :
 	 */
 	function mrn_base_stack_has_header_utility_message() {
 		$options = mrn_base_stack_get_header_utility_message_options();
+		if ( empty( $options['enabled'] ) || ( '' === $options['text'] && '' === $options['link']['url'] ) ) {
+			return false;
+		}
 
-		return ! empty( $options['enabled'] ) && ( '' !== $options['text'] || '' !== $options['link']['url'] );
+		$schedule = mrn_base_stack_get_header_utility_message_schedule();
+
+		// Keep valid scheduled content in cached HTML; the controller handles visibility.
+		return $schedule['valid'];
 	}
 endif;
 

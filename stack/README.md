@@ -60,6 +60,56 @@ ambiguous and fails closed throughout the transition.
 
 ## What this gives you
 
+### Header Utility Message scheduling
+
+The parent theme's **Header Utility Message** settings retain the **Active**
+master switch and add an optional **Schedule** switch and searchable **Schedule
+Time Zone**. The Announcements-style controls include optional **Starts/Ends**,
+**Days of the week**, **US national holidays**, and **Custom days** (one-time
+YYYY-MM-DD or annual MM-DD dates). Optional **Daily On Time/Off Time** add
+recurring hours, including overnight windows. These rules can be combined;
+day rules run inside the outer date window. No selected day rules means every
+day, while selected weekdays, holidays and custom days match with OR logic.
+Holidays include their observed weekdays. Business Information triggers and
+message-token substitution remain Announcements features.
+
+Scheduling is off by default, preserving manual messages. A blank start has
+no start limit and a blank end has no expiry. The start is inclusive and the
+end is exclusive. Both daily times must be set together or left blank for the
+whole day. An off time earlier than the on time continues into the following
+day; that spillover belongs to the selected starting day. Equal daily times
+mean 24 hours from the on time.
+
+Choose a city time zone to follow its daylight saving rules, or use the site's
+WordPress time zone. Enter dates in the selected zone, independently of the
+browser or server zone. Invalid dates, skipped spring-forward times and an end
+at or before the start are rejected through ACF validation. If a time occurs
+twice during the autumn clock change, the first occurrence is used for an
+explicit date boundary. Recurring hours follow the local wall clock, including
+both occurrences of a repeated hour.
+
+Scheduled message markup remains in cached HTML, initially hidden. A small
+inline controller uses the browser clock to reveal it only within the window,
+updates at the next boundary and rechecks restored/foreground tabs. Recurring
+day/hour rules make a small local calculation each minute to follow DST jumps.
+This adds
+no AJAX requests or cron jobs; manual messages load no controller. Scheduled
+messages stay hidden when JavaScript is unavailable. Changing saved content,
+dates or Active still requires the site's normal options-page HTML cache
+invalidation; the controller handles time passing after those settings are
+already present in cached HTML. Child themes overriding the parent's header
+must preserve its schedule attributes and adjacent controller.
+
+Focused checks:
+
+```bash
+php stack/themes/mrn-base-stack/tests/php/header-utility-message-schedule.php
+cd stack/themes/mrn-base-stack
+npx playwright test header-utility-message-schedule.spec.js --workers=2
+```
+
+### Stack components
+
 - A plugin manifest (`manifests/plugins.txt`) for install/activate.
 - A stack release snapshot (`STACK_VERSION.md`) and stack-wide notes (`CHANGELOG.md`).
 - A release versioning strategy (`RELEASE_VERSIONING_STRATEGY.md`) for consistent component version bumps and packaging.

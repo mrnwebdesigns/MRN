@@ -157,9 +157,10 @@
 						return;
 					}
 					?>
-					<div <?php echo $mrn_header_item_attributes( 'header_utility_message', 'header-utility-message', 'mrn-site-header__utility-message-item' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Attribute helper escapes attribute names and values. ?>>
+					<div <?php echo $mrn_header_item_attributes( 'header_utility_message', 'header-utility-message', 'mrn-site-header__utility-message-item' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Attribute helper escapes attribute names and values. ?> <?php echo mrn_base_stack_get_header_utility_message_schedule_attributes(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Schedule helper escapes date attributes. ?>>
 						<?php echo function_exists( 'mrn_base_stack_get_header_utility_message_markup' ) ? mrn_base_stack_get_header_utility_message_markup() : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Helper sanitizes text, URL, target, classes, and link title. ?>
 					</div>
+					<?php echo mrn_base_stack_get_header_utility_message_schedule_script(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Inline script tag wraps trusted local source only. ?>
 					<?php
 					break;
 
