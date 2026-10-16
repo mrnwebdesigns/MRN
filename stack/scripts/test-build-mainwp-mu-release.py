@@ -16,6 +16,10 @@ SCRIPT = Path(__file__).with_name("build-mainwp-mu-release.py")
 SPEC = importlib.util.spec_from_file_location("mrn_mu_builder", SCRIPT)
 BUILDER = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(BUILDER)
+LOCK_SCRIPT = Path(__file__).with_name("generate-stack-release-lock.py")
+LOCK_SPEC = importlib.util.spec_from_file_location("mrn_stack_release_lock", LOCK_SCRIPT)
+LOCK_GENERATOR = importlib.util.module_from_spec(LOCK_SPEC)
+LOCK_SPEC.loader.exec_module(LOCK_GENERATOR)
 
 
 class MainwpMuBuilderTest(unittest.TestCase):
@@ -29,6 +33,9 @@ class MainwpMuBuilderTest(unittest.TestCase):
         component.parent.mkdir(parents=True)
         loader.write_text("<?php\n/* Version: 1.0.0 */\n", encoding="utf-8")
         component.write_text("<?php\n/* Version: 1.0.0 */\n", encoding="utf-8")
+        (component.parent / ".mrn-qa.env").write_text(
+            "MRN_QA_PROJECT=local-test-only\n", encoding="utf-8"
+        )
         wrapper.write_text("<?php\nrequire __DIR__ . '/mrn-example/mrn-example.php';\n", encoding="utf-8")
 
         loader_hash, loader_count = BUILDER.tree_sha256(loader)
@@ -132,6 +139,18 @@ class MainwpMuBuilderTest(unittest.TestCase):
         second = self.run_builder()
         self.assertEqual(0, second.returncode, second.stderr)
         self.assertEqual(first_hash, BUILDER.file_sha256(package))
+
+    def test_lock_and_builder_exclude_local_qa_profiles(self):
+        component = self.root / "mu-plugins/mrn-example"
+        self.assertEqual(
+            BUILDER.tree_sha256(component),
+            LOCK_GENERATOR.tree_sha256(component),
+        )
+        self.assertEqual(
+            1,
+            BUILDER.tree_sha256(component)[1],
+            "The local QA profile must not count as a deployable component file.",
+        )
 
     def test_source_drift_fails_closed(self):
         source = self.root / "mu-plugins/mrn-example/mrn-example.php"
