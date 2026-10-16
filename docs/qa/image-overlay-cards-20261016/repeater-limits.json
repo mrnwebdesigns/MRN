@@ -1,0 +1,33 @@
+{
+    "checks": [
+        "Owned draft created",
+        "One set of 27 FAQs saves without splitting",
+        "All 27 FAQ questions survive readback",
+        "Thirty FAQ rows save through update_field",
+        "FAQ row 31 rejected without any metadata changes",
+        "add_row cannot bypass the FAQ ceiling",
+        "Editor validation accepts 30 FAQs",
+        "Editor validation reports FAQ row 31 before saving",
+        "REST schema rejects FAQ row 31",
+        "Configured maximum 1 is bounded correctly",
+        "Configured maximum 2 is bounded correctly",
+        "Configured maximum 5 is bounded correctly",
+        "Configured maximum 20 is bounded correctly",
+        "Configured maximum 0 is bounded correctly",
+        "Non-Stack fields remain unchanged",
+        "Existing oversized FAQ content remains editable",
+        "Legacy FAQ content cannot grow beyond its saved count",
+        "Reducing legacy FAQs to 30 removes the larger allowance",
+        "Nested five-row repeater saves",
+        "Oversized nested write rejected before any sibling or parent mutation",
+        "update_sub_field cannot bypass the ceiling",
+        "Reordering preserves the correct nested legacy allowance",
+        "A newly added row cannot inherit a legacy allowance",
+        "Nested write allowances expire after the parent save",
+        "Group-wrapped repeater saves five",
+        "Group-wrapped six-row write is atomic and rejected",
+        "Options repeater saves five",
+        "Options repeater rejects six without changing saved values"
+    ],
+    "browser_draft": null
+}

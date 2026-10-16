@@ -11,6 +11,10 @@ if ( 'timeline' === ( $row['card_presentation'] ?? '' ) ) {
 	get_template_part( 'template-parts/builder/timeline', null, $context );
 	return;
 }
+$is_image_card        = 'image-overlay' === ( $row['card_presentation'] ?? '' );
+$reveal_content       = $is_image_card && ! empty( $row['card_reveal_content'] );
+$image_loading        = 'eager' === ( $row['card_image_loading'] ?? '' ) ? 'eager' : 'lazy';
+$introduction         = (string) ( $row['card_intro'] ?? '' );
 $context_post_id      = isset( $context['post_id'] ) ? (int) $context['post_id'] : get_the_ID();
 $row_index            = isset( $context['index'] ) ? (int) $context['index'] : 0;
 $label                = isset( $row['label'] ) ? trim( (string) $row['label'] ) : '';
@@ -58,6 +62,7 @@ foreach ( $items as $item_index => $item ) {
 	$card_rows        = isset( $item['card_rows'] ) && is_array( $item['card_rows'] ) ? $item['card_rows'] : array();
 	$card_row         = ! empty( $card_rows[0] ) && is_array( $card_rows[0] ) ? $card_rows[0] : array();
 	$card_markup      = '';
+	$image_markup     = $is_image_card && ! empty( $item['image'] ) ? mrn_base_stack_get_attachment_image( $item['image'], 'large', array( 'class' => 'mrn-card-row__image-media', 'loading' => $image_loading, 'sizes' => '(max-width: 767px) 100vw, (max-width: 1199px) 50vw, ' . (int) ceil( 100 / max( 1, $cards_per_row ) ) . 'vw' ) ) : '';
 
 	if ( ! empty( $card_row ) ) {
 		$card_row_index = function_exists( 'mrn_base_stack_get_nested_builder_row_index' )
@@ -71,7 +76,7 @@ foreach ( $items as $item_index => $item ) {
 		$card_markup = trim( (string) ob_get_clean() );
 	}
 
-	if ( '' === $card_label && '' === $icon_markup && '' === $item_link_url && '' === $card_markup ) {
+	if ( '' === $card_label && '' === $icon_markup && '' === $item_link_url && '' === $card_markup && '' === $image_markup ) {
 		continue;
 	}
 
@@ -82,6 +87,7 @@ foreach ( $items as $item_index => $item ) {
 		'mrn-card-row__item--card-deck',
 		'mrn-ui__item',
 	);
+	if ( '' !== $image_markup ) { $item_class_names[] = 'mrn-card-row__item--has-image'; }
 
 	if ( '' !== $item_link_url ) {
 		$item_class_names[] = 'mrn-card-row__item--full-link';
@@ -96,6 +102,9 @@ foreach ( $items as $item_index => $item ) {
 		? (string) $item_link_data['text']
 		: ( '' !== $card_label ? $card_label : __( 'View Card', 'mrn-base-stack' ) );
 	$item_link_aria_label = '' !== $card_label ? $card_label : $item_link_label;
+	if ( $is_image_card && '' === $card_label && ! empty( $card_row['heading'] ) ) {
+		$item_link_aria_label = trim( wp_strip_all_tags( (string) preg_replace( '/<br\s*\/?>/i', ' ', (string) $card_row['heading'] ) ) );
+	}
 	$item_style_attr      = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $item_styles ) : implode( '; ', $item_styles );
 
 	$rendered_cards[] = array(
@@ -110,6 +119,8 @@ foreach ( $items as $item_index => $item ) {
 		'link_target'     => $item_link_target,
 		'link_label'      => $item_link_label,
 		'link_aria_label' => $item_link_aria_label,
+		'image_markup'    => $image_markup,
+		'focusable'       => $reveal_content && '' !== $image_markup && '' === $item_link_url && '' !== $card_markup,
 	);
 }
 
@@ -121,7 +132,7 @@ $section_links = function_exists( 'mrn_rbl_get_content_links' )
 		)
 	)
 	: array();
-if ( '' === $label && '' === $heading && '' === $subheading && empty( $rendered_cards ) && empty( $section_links ) ) {
+if ( '' === $label && '' === $heading && '' === $subheading && '' === trim( $introduction ) && empty( $rendered_cards ) && empty( $section_links ) ) {
 	return;
 }
 
@@ -130,6 +141,10 @@ if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' 
 	$section_styles[] = '--mrn-card-row-bg: var(' . mrn_site_colors_get_css_var( $background_color ) . ')';
 }
 $section_styles[] = '--mrn-card-columns: ' . max( 1, min( 6, $cards_per_row ) );
+if ( $is_image_card ) {
+	$section_styles = array_merge( $section_styles, mrn_base_stack_get_image_card_styles( $row ) );
+	$section_styles[] = '--mrn-card-image-tablet-columns:' . max( 1, min( 2, $cards_per_row ) );
+}
 
 $section_classes = array(
 	'mrn-content-builder__row',
@@ -138,6 +153,10 @@ $section_classes = array(
 	'mrn-content-builder__row--card-columns-' . sanitize_html_class( (string) $cards_per_row ),
 	'mrn-content-builder__row--card-stack-align-' . sanitize_html_class( $card_stack_alignment ),
 );
+if ( $is_image_card ) {
+	$section_classes[] = 'mrn-content-builder__row--image-cards';
+	$section_classes[] = $reveal_content ? 'mrn-content-builder__row--image-card-reveal' : 'mrn-content-builder__row--image-card-caption';
+}
 if ( $has_card_links ) {
 	$section_classes[] = 'mrn-content-builder__row--card-full-link';
 }
@@ -168,7 +187,7 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 	<div class="mrn-layout-section mrn-layout-section--card <?php echo esc_attr( $width_layers['section_class'] ); ?><?php echo $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 		<div class="mrn-layout-container <?php echo esc_attr( $width_layers['container_class'] ); ?><?php echo ! $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo ! $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 			<div class="mrn-layout-grid mrn-layout-grid--card mrn-ui__body">
-		<?php if ( '' !== $label || '' !== $heading || '' !== $subheading ) : ?>
+		<?php if ( '' !== $label || '' !== $heading || '' !== $subheading || '' !== trim( $introduction ) ) : ?>
 				<div class="mrn-layout-content mrn-layout-content--text mrn-card-row__head mrn-ui__head">
 					<?php if ( '' !== $label ) : ?>
 						<<?php echo esc_html( $label_tag ); ?> class="mrn-ui__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $label ) : esc_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $label_tag ); ?>>
@@ -181,13 +200,20 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 					<?php if ( '' !== $subheading ) : ?>
 						<<?php echo esc_html( $subheading_tag ); ?> class="mrn-ui__sub"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $subheading ) : esc_html( $subheading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $subheading_tag ); ?>>
 					<?php endif; ?>
+					<?php if ( '' !== trim( $introduction ) ) : ?>
+						<div class="mrn-ui__text"><?php echo apply_filters( 'the_content', $introduction ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Native editable WYSIWYG follows the existing content contract. ?></div>
+					<?php endif; ?>
 				</div>
 		<?php endif; ?>
 
 		<?php if ( ! empty( $rendered_cards ) ) : ?>
 				<div class="mrn-card-row__grid mrn-card-row__grid--card-deck mrn-card-row__grid--layout-<?php echo esc_attr( $card_layout ); ?> mrn-ui__items">
 				<?php foreach ( $rendered_cards as $rendered_card ) : ?>
-					<article class="<?php echo esc_attr( implode( ' ', $rendered_card['classes'] ) ); ?>"<?php echo '' !== $rendered_card['style'] ? ' style="' . esc_attr( $rendered_card['style'] ) . '"' : ''; ?>>
+					<article class="<?php echo esc_attr( implode( ' ', $rendered_card['classes'] ) ); ?>"<?php echo '' !== $rendered_card['style'] ? ' style="' . esc_attr( $rendered_card['style'] ) . '"' : ''; ?><?php echo $rendered_card['focusable'] ? ' tabindex="0" aria-label="' . esc_attr( $rendered_card['link_aria_label'] ) . '"' : ''; ?>>
+						<?php if ( '' !== $rendered_card['image_markup'] ) : ?>
+							<div class="mrn-card-row__image"><?php echo $rendered_card['image_markup']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- WordPress attachment helper escapes image markup. ?></div>
+						<?php endif; ?>
+						<?php if ( $is_image_card ) : ?><div class="mrn-card-row__caption"><?php endif; ?>
 						<?php if ( '' !== $rendered_card['label'] || '' !== $rendered_card['icon_markup'] ) : ?>
 							<header class="mrn-card-row__item-head">
 								<h3 class="mrn-card-row__item-title">
@@ -211,6 +237,7 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 							</div>
 						<?php endif; ?>
 
+						<?php if ( $is_image_card ) : ?></div><?php endif; ?>
 						<?php if ( '' !== $rendered_card['link_url'] ) : ?>
 							<a class="mrn-card-row__item-overlay-link" href="<?php echo esc_url( $rendered_card['link_url'] ); ?>"<?php echo '' !== $rendered_card['link_target'] ? ' target="' . esc_attr( $rendered_card['link_target'] ) . '"' : ''; ?><?php echo '_blank' === $rendered_card['link_target'] ? ' rel="noopener noreferrer"' : ''; ?>>
 								<span class="screen-reader-text"><?php echo esc_html( $rendered_card['link_aria_label'] ); ?></span>

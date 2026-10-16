@@ -163,7 +163,7 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 		);
 	}
 	if ( 'card' === $layout ) {
-		return array(
+		$fields = array(
 			$make(
 				'card_presentation',
 				'Cards Presentation',
@@ -172,10 +172,18 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 					'choices'       => array(
 						'standard' => 'Standard',
 						'timeline' => 'Step Timeline',
+						'image-overlay' => 'Image with Overlay or Caption',
 					),
 					'default_value' => 'standard',
 				)
 			),
+			$make( 'card_intro', 'Introduction', 'wysiwyg', array( 'tabs' => 'all', 'toolbar' => 'full', 'media_upload' => 0 ) ),
+			$make( 'card_reveal_content', 'Reveal Description on Hover or Focus', 'true_false', array( 'ui' => 1, 'default_value' => 0, 'instructions' => 'Image presentation only. Off shows a caption below the image. On overlays the heading and reveals its Body Text description on hover or keyboard focus. Touch screens and reduced motion show the full caption.' ) ),
+			$make( 'card_image_ratio', 'Card Image Aspect Ratio', 'text', array( 'instructions' => 'Image presentation only. Optional positive ratio, for example 4/3 or 1/1.' ) ),
+			$make( 'card_image_loading', 'Card Image Loading', 'select', array( 'choices' => array( 'lazy' => 'Lazy (Below the Fold)', 'eager' => 'Immediate (Above the Fold)' ), 'default_value' => 'lazy', 'instructions' => 'Use Immediate when these images appear in the initial viewport.' ) ),
+			$make( 'card_gap', 'Space Between Image Cards', 'text', array( 'instructions' => 'Image presentation only. Optional non-negative CSS length. Row spacing uses its existing fields.' ) ),
+			$make( 'card_caption_padding', 'Image Caption Padding', 'text', array( 'instructions' => 'Image presentation only. Optional non-negative CSS length.' ) ),
+			$make( 'card_caption_gap', 'Space Between Caption Heading and Copy', 'text', array( 'instructions' => 'Image presentation only. Optional non-negative CSS length.' ) ),
 			$make(
 				'timeline_image',
 				'Timeline Image',
@@ -187,6 +195,15 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 			),
 			$make( 'timeline_skip_label', 'Timeline Skip Link', 'text', array( 'default_value' => 'Skip timeline' ) ),
 		);
+		foreach ( $fields as &$field ) {
+			if ( in_array( $field['name'], array( 'card_reveal_content', 'card_image_ratio', 'card_image_loading', 'card_gap', 'card_caption_padding', 'card_caption_gap' ), true ) ) {
+				$field['conditional_logic'] = array( array( array( 'field' => $seed . '_card_presentation', 'operator' => '==', 'value' => 'image-overlay' ) ) );
+			} elseif ( 'card_intro' === $field['name'] ) {
+				$field['conditional_logic'] = array( array( array( 'field' => $seed . '_card_presentation', 'operator' => '!=', 'value' => 'timeline' ) ) );
+			}
+		}
+		unset( $field );
+		return $fields;
 	}
 	if ( 'content_lists' === $layout ) {
 		return array(
@@ -275,6 +292,14 @@ function mrn_base_stack_ensure_presentation_fields( array $fields, $layout, $see
 	if ( ! empty( $fields[0]['key'] ) ) {
 		$seed = sanitize_key( $fields[0]['key'] ) . '_presentation';
 	}
+	if ( 'card' === $layout ) {
+		foreach ( $fields as &$field ) {
+			if ( 'card_items' === ( $field['name'] ?? '' ) && 'repeater' === ( $field['type'] ?? '' ) && ! in_array( 'image', array_column( $field['sub_fields'] ?? array(), 'name' ), true ) ) {
+				array_splice( $field['sub_fields'], 1, 0, array( array( 'key' => $field['key'] . '_image', 'name' => 'image', 'label' => 'Card Image', 'type' => 'image', 'return_format' => 'id', 'preview_size' => 'medium', 'instructions' => 'Optional media for the Image with Overlay or Caption presentation.' ) ) );
+			}
+		}
+		unset( $field );
+	}
 	$names = array_column( $fields, 'name' );
 	$extra = array_filter(
 		mrn_base_stack_get_presentation_fields( $layout, $seed ),
@@ -322,6 +347,25 @@ function mrn_base_stack_get_body_list_contract( array $row ) {
 		$styles[] = '--mrn-list-column-gap:' . $gap;
 	}
 	return array( 'classes' => $classes, 'styles' => $styles );
+}
+
+/**
+ * Validate optional native image-card geometry without accepting raw CSS.
+ *
+ * @param array $row Native Card row.
+ * @return string[] Inline style declarations.
+ */
+function mrn_base_stack_get_image_card_styles( array $row ) {
+	$styles = array();
+	$ratio = (string) ( $row['card_image_ratio'] ?? '' );
+	if ( preg_match( '/^\s*([1-9][0-9]{0,3})\s*\/\s*([1-9][0-9]{0,3})\s*$/D', $ratio, $parts ) ) {
+		$styles[] = '--mrn-card-image-ratio:' . (int) $parts[1] . '/' . (int) $parts[2];
+	}
+	foreach ( array( 'card_gap' => '--mrn-card-row-gap', 'card_caption_padding' => '--mrn-card-caption-padding', 'card_caption_gap' => '--mrn-card-caption-gap' ) as $name => $property ) {
+		$value = mrn_base_stack_validate_media_height( (string) ( $row[ $name ] ?? '' ) );
+		if ( '' !== $value ) { $styles[] = $property . ':' . $value; }
+	}
+	return $styles;
 }
 
 /**
