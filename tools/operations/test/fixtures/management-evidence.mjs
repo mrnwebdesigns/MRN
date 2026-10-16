@@ -7,8 +7,8 @@ import { ManagementEvidenceLedger } from '../../src/management-evidence-store.mj
 import { managementAccessFixture } from './management-access.mjs';
 import { accessRegistry } from './access-registry.mjs';
 
-export function managementEvidenceFixture(t, file = ':memory:') {
-  const state = { now: 1800000000000, mono: 0, closed: false };
+export function managementEvidenceFixture(t, file = ':memory:', now = 1800000000000) {
+  const state = { now, mono: 0, closed: false };
   const store = new Store(file); t.after(() => { if (!state.closed) store.close(); });
   const actor = { subject: 'google-oauth2|123', googleSubject: '123', verifiedEmail: 'staff@mrnwebdesigns.com',
     identityProvider: 'google-oauth2', hostedDomain: 'mrnwebdesigns.com', googleConnection: 'con_fixture',

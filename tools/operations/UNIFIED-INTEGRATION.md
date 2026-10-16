@@ -677,3 +677,36 @@ permission removal, environment mismatch and pending original-requester
 revocation, retaining the unchanged capture. This remains disposable evidence;
 protected acquisition, report signing/admission, remote backup and actual
 ChatGPT acceptance are separate open gates.
+
+### Protected original-dispatch readback — 2026-10-16
+
+Gateway `84d01f3` passes Operations CI `38936783966` and MRN QA
+`38936783941`, with 434 local tests and all six disposable management groups.
+Original evidence artifact `12062375473` hashes to
+`1db32a31b8b285bbf7bf9b7a8a7f170ede4a23cbfec2e914eb181ca9da30d030`.
+That run pins provider `ddc4e4f`; it does not qualify later source automatically.
+
+The next integration pins provider `3fd7fb2` (all four provider CI jobs pass in
+`38936979198`) and runner `ae27ff4` (draft runner PR #7). All twenty imported
+provider contracts/vectors/design blobs remain exactly equal to their pinned
+Git blobs and hashes. The runner adds a supervisor-only reader for the existing
+Operations original-dispatch endpoint. It verifies the purpose-specific
+signature, opaque context pointer, original record preimages, exact protected
+run and source pins, and original human expiry. It uses one bounded TLS request,
+with no redirect, credential fallback or retry. Its 103 local tests and
+applicable task-scoped static MRN QA pass; hosted isolation CI is separate.
+
+`check-management-worker.mjs` connects the actual gateway HTTP handler and
+runner client over disposable TLS using a synthetic signed GitHub identity.
+Six local integration groups pass: original signed record acceptance, wrong
+run denial, current original staff denial, signed runtime mismatch denial,
+pending revocation denial, and the endpoint remaining absent at default
+startup. It also compares every imported worker schema with the gateway's
+frozen evidence contract. The same test is now required by Operations CI.
+
+These checks use no production credentials or live Google/hosted OIDC session.
+They neither activate a protected workflow nor establish complete source
+acquisition, rendered QA, retained-report admission, content-write authority,
+remote backup, deployment or ordinary-member ChatGPT acceptance. Staff access
+continues to require no individual approval; service activation and an approved
+site change remain separate gates.

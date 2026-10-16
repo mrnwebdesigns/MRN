@@ -99,6 +99,10 @@ jobs:
           MRN_GATEWAY_MCP_SOURCE: ${{ github.workspace }}/.runtime/transport
           MRN_CAPTURE_TRANSPORT_REPORT: ${{ runner.temp }}/capture-transport-report.json
         run: node tools/operations/test/runtime/check-capture-transport.mjs
+      - name: Verify original dispatch readback between gateway and protected worker
+        env:
+          MRN_GATEWAY_RUNNER_SOURCE: ${{ github.workspace }}/.runtime/runner
+        run: node tools/operations/test/runtime/check-management-worker.mjs
       - name: Exercise actual gateway, MCP and WordPress authorization
         env:
           MRN_DISPOSABLE_API_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/provider-hook.sh
