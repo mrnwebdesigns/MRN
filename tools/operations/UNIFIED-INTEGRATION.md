@@ -6,59 +6,37 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
 
 ## Current native integration checkpoint, 2026-10-16
 
-Gateway `70497e4ef540f7352e9529bd69409ef40550a050` passes 391 source tests and
-[MRN QA 38927657765](https://github.com/mrnwebdesigns/MRN/actions/runs/38927657765).
-[Combined run 38927657774](https://github.com/mrnwebdesigns/MRN/actions/runs/38927657774)
-passes the inherited 10 identity, 8 native edit/rollback, 11 current-access and
-6 transport groups. Four new management groups also pass in the original log:
-large draft reading and published-target intent, actual Node callbacks with
-complete capture/readback, retained measurement integrity, and current site
-permission denial. The run then fails because the delayed-read marker is not
-observed. Pending-revocation coverage is not accepted. Original partial artifact
-`12057683248` has SHA-256
-`5ca585b11b983b5bc3f2034f07ee29b5e4d632b4d92031de7ad2822804008adb`;
-its four existing reports pass, but it contains no management report.
+Gateway `69ab28ee8671dcf0425dfebbfa044160eb61fcc7` passes 404 source tests,
+[MRN QA 38930749972](https://github.com/mrnwebdesigns/MRN/actions/runs/38930749972)
+and both jobs in [combined run 38930751194](https://github.com/mrnwebdesigns/MRN/actions/runs/38930751194).
+The original artifact `12059936539` has SHA-256
+`5978ce55ac85d46a096237416265a30e7d13e70a145b4c94c7e835d8d296394b`.
+Its five reports pass 10 identity, 8 native edit/rollback, 11 current-access,
+6 transport and **6 management** groups. The strict retention verifier checked
+the original archive digest, exact member list, source pins and measured hashes.
+The tested merge checkout is `8d518e483662204fd474fad95e6495253967ad0c`;
+Operations, workflow and Fleet runtime blobs match the source commit exactly.
+Unrelated main changes make the complete Git trees different.
 
-The harness now retains an explicitly incomplete report after each management
-group and closed failure diagnostics before the marker assertion. Partial
-evidence never satisfies the six-group runtime gate. Provider candidate
-`b2798f01fa34c342abfce54ad4c035fc733247c1` corrects disposable early-hook JSON
-decoding and adds actual standalone delayed capture proof. Its five changed
-files are tests/documentation, and all sixteen copied contract/vector blobs
-remain exact. None of the original lifetime or access gates is widened.
-[Provider CI 38929939652](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38929939652)
-did not start any job: GitHub reports that an Actions budget prevents further
-use. Native marker proof and the next combined qualification remain pending.
-Read-only billing inspection confirms the existing personal-account Actions
-budget reached $5 of $5. The owner subsequently reported the budget fixed. Readback confirms the saved
-cap is $10, with $5.01 used; the unsaved agent proposal was cancelled. The two
-private-provider checks are being retried once. The public MRN gateway run
-continues separately; none of these scheduled checks is a pass yet.
+Management proof includes the large draft read, separate published-page intent,
+full capture and independently chunked readback, retained measurements, current
+site permission removal, and pending revocation during a real delayed Child
+read without retaining that capture. The original principal also cannot read
+prior evidence or queue new work afterward. The Child record remains unchanged.
+The source pin is provider `b2798f01fa34c342abfce54ad4c035fc733247c1`;
+[provider CI 38929939652](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38929939652)
+passes all four jobs on attempt 2 after the owner fixed the Actions budget.
+Its actual management denial probes are anonymous HTTP 401 with
+`rest_ability_cannot_execute` and wrong-purpose HTTP 500 with
+`mrn_management_qualification`.
 
-Gateway `87921cb4b7b7a45a82ff1c763db92b25bca1fdf9` passes 389 source tests and
-[MRN QA 38924881952](https://github.com/mrnwebdesigns/MRN/actions/runs/38924881952).
-Its [combined run 38924881741](https://github.com/mrnwebdesigns/MRN/actions/runs/38924881741)
-passes all ten identity, eight native edit/rollback and eleven current-access
-groups, plus six transport groups. It then fails the first management read:
-the large fixture is a draft whose legitimate `?page_id=...` reference does not
-satisfy the public-path verification rule. No management capture is proven.
-
-The reader correction preserves only exact same-site WordPress `page_id`/`p`
-references for the original record as read data. Wrong IDs, extra parameters,
-other paths/hosts and fragments remain denied. Public write evidence and
-installed-outcome verification still require query-free paths. The corrected
-candidate passes 391 local tests. The native fixture now retains that draft for
-a separate read regression and qualifies a distinct published large page. The
-existing native edit/rollback check finishes before the management owner starts,
-so its original 180-second actor/test lifetime covers only its own work.
-
-The preceding runtime pin is `d3d74f25be36457345d96c5770988b597b39d960`; its six
-changed files are fixture tests and documentation only. Sixteen copied blobs
-remain exact. All four [provider CI 38927262827](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38927262827)
-jobs pass; the combined result above still fails. Testing the candidate does
-not activate production. Protected management report
-admission, rendered/hook parity, remaining workflows and ChatGPT acceptance are
-still open.
+Earlier combined runs `38927657774`, `38924881741` and `38921338002` remain
+retained failures. The final fixture fix decodes raw early WordPress JSON before
+`wp_magic_quotes`; it preserves the original timing and authorization gates.
+All sixteen copied provider contract/vector blobs remain exact. These disposable
+results use synthetic staff and do not prove live Google status, protected
+management QA, rendered-site qualification, production backups or ChatGPT team
+acceptance. Subsequent source changes require their own checks.
 
 ## Private management evidence reader, 2026-10-16
 
@@ -81,9 +59,9 @@ limit and GitHub-reported digest. Actual downloaded bytes must match that digest
 and size; returned observations contain closed metadata and original byte hashes.
 
 These private helpers are not registered in service startup and confer no
-report admission, dispatch, profile or write authority. Immutable job/dispatch
-mapping, protected producer, provider retention and actual acquisition
-integration remain required. Synthetic transport/metadata tests are not proof
+report admission, dispatch, profile or write authority. The immutable job/dispatch ledger and opt-in callback now have source tests;
+protected producer, provider retention and actual acquisition integration remain
+required. Synthetic transport/metadata tests are not proof
 of authenticated GitHub acquisition or ordinary-member ChatGPT acceptance.
 
 The exact provider report/evidence contracts from `bc320cd` are now copied with
@@ -92,6 +70,43 @@ the returned closed observations and opaque provider query pointers. Original
 signed capture/measurement read requests remain in the companion format for
 independent historical signature/body/timing verification. Every provider
 ability in these imported schemas remains unregistered and non-admitting.
+
+## Original management evidence lifecycle, 2026-10-16
+
+The private ledger validates full capture and measurement bytes against the
+original queue before retaining only their hashes. Dispatch preparation is
+one-use and service-generated; its opaque request contains schema, dispatch ID
+and context hash. The separately recorded run observation fixes the run ID,
+App actor, source policy and original expiry. Callback/report input cannot
+create or replace either mapping, and a new staff login cannot renew it.
+
+The internal `evidence_policy_sha256` is the canonical imported evidence-policy
+hash, matching the context. It is distinct from content authorization and team
+delegation hashes. Dispatch-record hashing covers the exact original request,
+context hash, evidence-policy hash, requested/observed timestamps in milliseconds,
+original expiry, App actor and independently observed run ID. A future protected
+producer must obtain that completed original record through authenticated fixed
+readback; it cannot invent its hash or observation time. That producer interface
+and the actual Actions dispatcher are not connected yet.
+
+The optional `/internal/mainwp/management-evidence` handler accepts only a small
+canonical opaque query pointer, reads the query through a separate canonical
+MainWP POST ability, then joins both immutable mappings. Before/after protected
+reads it rechecks original staff membership, local revocation, current exact-site
+permissions, policy and expiry. It signs a distinct bounded acquisition
+observation with the two actual ZIPs, never a QA pass or report admission.
+Local consumption/signing is atomic; failed and interrupted attempts remain
+consumed across restart. Two evidence slots and a single 60-second deadline do
+not consume or widen the existing 2.5-second access-veto capacity.
+
+Service startup does not construct this lifecycle or register the route.
+Source/HTTP tests use synthetic actors, run metadata and archives; authenticated
+GitHub/provider acquisition, retention and source/rendered qualification are
+still required. The current source contract remains disposable-only and disabled.
+Actual installed source bytes are a remaining requirement: parity inventories
+contain hashes, not a runnable renderer. The provider thread is preparing a
+separate original-job-bound private source acquisition candidate, without
+changing the current company code policy or creating per-site credentials.
 
 ## Management identity integration, 2026-10-16
 
@@ -111,7 +126,7 @@ confirmation boundary. It never falls back to the single-field queue, raw
 backend access or a new identity. Failed or uncertain responses and failed
 mapping commits produce no usable dispatch mapping and are not retried. These
 helpers are not workspace tools. The optional management callback lifecycle is
-not registered by service startup pending native combined qualification and
+not registered by service startup pending the remaining protected QA and
 concrete production approval.
 
 Team-delegation and content-authorization policy hashes are distinct. The
@@ -150,13 +165,13 @@ capture, independent chunked readback, retained measurements, current site
 permission and pending revocation during a real delayed Child read. It runs
 alongside the existing identity, native edit/rollback, access and transport
 groups, with a separate bounded report. Synthetic identity, registrar and owner
-authority remain explicit. Its combined runtime result is still required.
+authority remain explicit. Its combined runtime result is the accepted checkpoint above.
 The preceding runtime pin is `0e927d69c66074d370c003bd508ac5695c34cdf4`, whose
 [provider CI 38923611471](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38923611471)
 passes all four jobs. The changes since c0811a8 are confined to fixture tests,
 CI and documentation; all sixteen copied qualification, measurement and
-management contract/vector blobs remain exact. The delayed-read fixture handles
-WordPress's slashed request encoding and tests the real six-second interruption.
+management contract/vector blobs remain exact. That earlier delayed-read implementation was superseded by the raw early-hook
+JSON correction in b2798f0; only the current combined proof is accepted.
 
 Protected
 rendered/hook QA, profile admission, new-record capture, production configuration,

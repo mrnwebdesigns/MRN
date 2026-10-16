@@ -49,34 +49,7 @@ export function createAccessControl({ contract, compile, readbackTool }) {
     }
   }
 
-  // Own a warmed, separate MCP control connection. Never reuse the session whose
-  // synchronous capture is waiting for this callback, or delegate a fresh actor.
-  class AccessQueryReader {
-    constructor(client) { this.client = client; this.ready = false; }
-    async initialize() {
-      this.ready = false;
-      validateStatus(await this.client.readResource({ uri: 'mainwp://status' }));
-      let cursor, found; const cursors = new Set(); let count = 0;
-      do {
-        const page = await this.client.listTools(cursor ? { cursor } : {});
-        requireThat(Array.isArray(page.tools) && (count += page.tools.length) <= 1000,
-          'ACCESS_TRANSPORT', 'Invalid private control capability directory.');
-        for (const tool of page.tools) if (tool.name === readbackTool) {
-          requireThat(!found, 'ACCESS_TRANSPORT', 'Duplicate private control capability.'); found = tool;
-        }
-        cursor = page.nextCursor;
-        requireThat(!cursor || (typeof cursor === 'string' && !cursors.has(cursor) && cursors.size < 32), 'ACCESS_TRANSPORT', 'Repeated or excessive private capability pages.');
-        if (cursor) cursors.add(cursor);
-      } while (cursor);
-      requireThat(found?.annotations?.readOnlyHint === false && found.annotations.destructiveHint === false,
-        'ACCESS_TRANSPORT', 'Private readback requires the canonical POST-only provider route.');
-      this.ready = true;
-    }
-    async read(envelope) {
-      requireThat(this.ready, 'ACCESS_UNAVAILABLE', 'The independent control connection is not ready.');
-      return payload(await this.client.callTool({ name: readbackTool, arguments: { signed_request: envelope } }, undefined, { timeout: 2000 }));
-    }
-  }
+  const AccessQueryReader = createPrivateQueryReader(readbackTool);
 
   class ContentAccessVeto {
     constructor({ signer, reader, ledger, now = () => Date.now(), monotonic = () => performance.now() }) {
@@ -108,4 +81,35 @@ export function createAccessControl({ contract, compile, readbackTool }) {
     }
   }
   return { AccessSigner, AccessQueryReader, ContentAccessVeto };
+}
+
+// Own a warmed, separate MCP control connection. Never reuse the session whose
+// synchronous capture is waiting for this callback, or delegate a fresh actor.
+export function createPrivateQueryReader(readbackTool) {
+  return class PrivateQueryReader {
+    constructor(client) { this.client = client; this.ready = false; }
+    async initialize() {
+      this.ready = false;
+      validateStatus(await this.client.readResource({ uri: 'mainwp://status' }));
+      let cursor, found; const cursors = new Set(); let count = 0;
+      do {
+        const page = await this.client.listTools(cursor ? { cursor } : {});
+        requireThat(Array.isArray(page.tools) && (count += page.tools.length) <= 1000,
+          'ACCESS_TRANSPORT', 'Invalid private control capability directory.');
+        for (const tool of page.tools) if (tool.name === readbackTool) {
+          requireThat(!found, 'ACCESS_TRANSPORT', 'Duplicate private control capability.'); found = tool;
+        }
+        cursor = page.nextCursor;
+        requireThat(!cursor || (typeof cursor === 'string' && !cursors.has(cursor) && cursors.size < 32), 'ACCESS_TRANSPORT', 'Repeated or excessive private capability pages.');
+        if (cursor) cursors.add(cursor);
+      } while (cursor);
+      requireThat(found?.annotations?.readOnlyHint === false && found.annotations.destructiveHint === false,
+        'ACCESS_TRANSPORT', 'Private readback requires the canonical POST-only provider route.');
+      this.ready = true;
+    }
+    async read(envelope) {
+      requireThat(this.ready, 'ACCESS_UNAVAILABLE', 'The independent control connection is not ready.');
+      return payload(await this.client.callTool({ name: readbackTool, arguments: { signed_request: envelope } }, undefined, { timeout: 2000 }));
+    }
+  };
 }

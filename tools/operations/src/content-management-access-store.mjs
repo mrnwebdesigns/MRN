@@ -99,6 +99,17 @@ export class ManagementAccessLedger {
     let value; try { value = JSON.parse(row.body); } catch { requireThat(false, 'ACCESS_MAPPING', 'The original management mapping is corrupt.'); }
     const mapping = parse(mappingSchema, value); bound(mapping, this.connectionId); return mapping;
   }
+  // Private consumers must reuse the original actor and expiry. A new login,
+  // callback or report cannot replace this mapping or clear pending denial.
+  current(jobId) {
+    const mapping = this.decode(this.store.db.prepare('SELECT body,digest FROM management_access_jobs WHERE id=?').get(jobId));
+    const actor = this.principals.actor(mapping.actor);
+    this.principals.assertAllowed(actor);
+    this.site(actor, mapping.request, mapping.site);
+    requireThat(mapping.context.binding.expires_at > Math.floor(this.now() / 1000),
+      'ACCESS_EXPIRED', 'The original management intent expired.');
+    return { mapping, revision: this.principals.row(mapping.principal, mapping.requester).revision };
+  }
   recordPendingRevocation(jobId) {
     return this.store.transaction(() => {
       const mapping = this.decode(this.store.db.prepare('SELECT body,digest FROM management_access_jobs WHERE id=?').get(jobId));

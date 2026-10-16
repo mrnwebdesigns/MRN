@@ -6,6 +6,7 @@ import { oauthChallenge } from './auth.mjs';
 import { operationsScopes } from './scopes.mjs';
 import { accessVetoPath, managementAccessVetoPath } from './content-access.mjs';
 import { delegationCanonical, delegationIssuer } from './delegation.mjs';
+import { managementEvidencePath } from './management-evidence-callback.mjs';
 
 async function readBody(req, { limit = 65536, canonical = false } = {}) {
   let size = 0; const chunks = [];
@@ -18,13 +19,14 @@ async function readBody(req, { limit = 65536, canonical = false } = {}) {
   }
   catch (e) { if (e instanceof OpsError) throw e; throw new OpsError('BODY_INVALID', 'Invalid JSON request.'); }
 }
-export function createHttpServer({ service, authenticate, publicUrl, issuer, origins = [], accessVeto = null, managementAccessVeto = null }) {
+export function createHttpServer({ service, authenticate, publicUrl, issuer, origins = [], accessVeto = null, managementAccessVeto = null, managementEvidence = null }) {
   const canonical = new URL(publicUrl); const rate = new Map(); let active = 0;
-  requireThat(!(accessVeto || managementAccessVeto) || canonical.origin === delegationIssuer, 'ACCESS_TRANSPORT', 'Private access callbacks require the fixed MRN gateway origin.');
+  requireThat(!(accessVeto || managementAccessVeto || managementEvidence) || canonical.origin === delegationIssuer, 'ACCESS_TRANSPORT', 'Private access callbacks require the fixed MRN gateway origin.');
   let controlActive = 0, controlCount = 0, controlUntil = 0;
+  let evidenceActive = 0, evidenceCount = 0, evidenceUntil = 0;
   const json = (res, status, value) => { res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(value)); };
   const server = createServer(async (req, res) => {
-    let admitted = false, controlAdmitted = false, controlTimer;
+    let admitted = false, controlAdmitted = false, evidenceAdmitted = false, controlTimer;
     try {
       requireThat(req.headers.host === canonical.host, 'HOST_DENIED', 'Unexpected Host header.');
       requireThat(!req.headers.origin || origins.includes(req.headers.origin), 'ORIGIN_DENIED', 'Origin is not allowed.');
@@ -32,6 +34,21 @@ export function createHttpServer({ service, authenticate, publicUrl, issuer, ori
         return json(res, 200, { resource: publicUrl, authorization_servers: [issuer], scopes_supported: operationsScopes, bearer_methods_supported: ['header'] });
       }
       if (req.method === 'GET' && req.url === '/healthz') return json(res, 200, { status: 'ok', version: '0.1.0' });
+      if (managementEvidence && req.url === managementEvidencePath) {
+        requireThat(req.method === 'POST' && !req.headers.origin && !req.headers.authorization
+          && req.headers['content-type'] === 'application/json', 'BODY_INVALID', 'Use the private POST evidence callback.');
+        const now = Date.now();
+        if (now >= evidenceUntil) { evidenceUntil = now + 60000; evidenceCount = 0; }
+        requireThat(evidenceActive < 2 && ++evidenceCount <= 16, 'RATE_LIMIT', 'Private evidence capacity reached.');
+        evidenceActive++; evidenceAdmitted = true;
+        // Separate bounded evidence budget; the old 2.5-second access-veto path
+        // and its slots remain unchanged and available during downloads.
+        controlTimer = setTimeout(() => req.destroy(), 60000); controlTimer.unref();
+        const body = await readBody(req, { limit: 512, canonical: true });
+        const response = await managementEvidence.respond(body);
+        requireThat(Buffer.byteLength(JSON.stringify(response)) <= 1048576, 'BODY_LIMIT', 'The evidence response exceeds its fixed limit.');
+        return json(res, 200, response);
+      }
       const control = req.url === accessVetoPath ? accessVeto : req.url === managementAccessVetoPath ? managementAccessVeto : null;
       if (control) {
         requireThat(req.method === 'POST' && !req.headers.origin && !req.headers.authorization
@@ -78,6 +95,7 @@ export function createHttpServer({ service, authenticate, publicUrl, issuer, ori
       clearTimeout(controlTimer);
       if (admitted) active--;
       if (controlAdmitted) controlActive--;
+      if (evidenceAdmitted) evidenceActive--;
     }
   });
   server.requestTimeout = 30000; server.headersTimeout = 10000;
