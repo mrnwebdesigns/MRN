@@ -21,9 +21,17 @@ its four existing reports pass, but it contains no management report.
 
 The harness now retains an explicitly incomplete report after each management
 group and closed failure diagnostics before the marker assertion. Partial
-evidence never satisfies the six-group runtime gate. The provider is correcting
-the disposable early-hook JSON decoding and adding actual standalone delayed
-capture proof; none of the original lifetime or access gates is widened.
+evidence never satisfies the six-group runtime gate. Provider candidate
+`b2798f01fa34c342abfce54ad4c035fc733247c1` corrects disposable early-hook JSON
+decoding and adds actual standalone delayed capture proof. Its five changed
+files are tests/documentation, and all sixteen copied contract/vector blobs
+remain exact. None of the original lifetime or access gates is widened.
+[Provider CI 38929939652](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38929939652)
+did not start any job: GitHub reports that an Actions budget prevents further
+use. Native marker proof and the next combined qualification remain pending.
+Read-only billing inspection confirms the existing personal-account Actions
+budget reached $5 of $5. A proposed $10 cap retains cutoff and alerts and awaits
+the owner's explicit approval; no billing change is authorized by source tests.
 
 Gateway `87921cb4b7b7a45a82ff1c763db92b25bca1fdf9` passes 389 source tests and
 [MRN QA 38924881952](https://github.com/mrnwebdesigns/MRN/actions/runs/38924881952).
@@ -42,7 +50,7 @@ a separate read regression and qualifies a distinct published large page. The
 existing native edit/rollback check finishes before the management owner starts,
 so its original 180-second actor/test lifetime covers only its own work.
 
-The candidate runtime pin is `d3d74f25be36457345d96c5770988b597b39d960`; its six
+The preceding runtime pin is `d3d74f25be36457345d96c5770988b597b39d960`; its six
 changed files are fixture tests and documentation only. Sixteen copied blobs
 remain exact. All four [provider CI 38927262827](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38927262827)
 jobs pass; the combined result above still fails. Testing the candidate does
@@ -63,10 +71,18 @@ before and after each read, including after bytes arrive.
 
 Qualification and acquisition ZIP limits are 262144 and 196608 bytes; metadata
 is capped at 131072 bytes. The existing 64 KiB receipt reader is unchanged.
+The download verifier independently checks the service-recorded repository,
+workflow path/ID, main branch, source commit, App actor, attempt 1 and successful
+run. It validates the complete exact two-artifact inventory before fetching
+either ZIP, including each artifact's original run/source, expiry, role-specific
+limit and GitHub-reported digest. Actual downloaded bytes must match that digest
+and size; returned observations contain closed metadata and original byte hashes.
+
 These private helpers are not registered in service startup and confer no
-report admission, dispatch, profile or write authority. Independent closed
-metadata verification, immutable job/dispatch mapping, protected producer,
-provider retention and actual acquisition integration remain required.
+report admission, dispatch, profile or write authority. Immutable job/dispatch
+mapping, protected producer, provider retention and actual acquisition
+integration remain required. Synthetic transport/metadata tests are not proof
+of authenticated GitHub acquisition or ordinary-member ChatGPT acceptance.
 
 ## Management identity integration, 2026-10-16
 
