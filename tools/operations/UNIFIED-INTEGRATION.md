@@ -6,15 +6,15 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
 
 ## Current native integration checkpoint, 2026-10-16
 
-Gateway `69ab28ee8671dcf0425dfebbfa044160eb61fcc7` passes 404 source tests,
-[MRN QA 38930749972](https://github.com/mrnwebdesigns/MRN/actions/runs/38930749972)
-and both jobs in [combined run 38930751194](https://github.com/mrnwebdesigns/MRN/actions/runs/38930751194).
-The original artifact `12059936539` has SHA-256
-`5978ce55ac85d46a096237416265a30e7d13e70a145b4c94c7e835d8d296394b`.
+Gateway `51e0366430424533d40dde9a7b8e22b7d316bd5e` passes 423 source tests,
+[MRN QA 38934037523](https://github.com/mrnwebdesigns/MRN/actions/runs/38934037523)
+and both jobs in [combined run 38934038165](https://github.com/mrnwebdesigns/MRN/actions/runs/38934038165).
+The original artifact `12061275338` has SHA-256
+`0f73799beffc054aa0636b4efcef9525643c539ad926ed4c0818c0d5f45ad98c`.
 Its five reports pass 10 identity, 8 native edit/rollback, 11 current-access,
 6 transport and **6 management** groups. The strict retention verifier checked
 the original archive digest, exact member list, source pins and measured hashes.
-The tested merge checkout is `8d518e483662204fd474fad95e6495253967ad0c`;
+The tested merge checkout is `b81b19042ed0f94ba9b906230b8d6454beb41995`;
 Operations, workflow and Fleet runtime blobs match the source commit exactly.
 Unrelated main changes make the complete Git trees different.
 
@@ -86,7 +86,7 @@ delegation hashes. Dispatch-record hashing covers the exact original request,
 context hash, evidence-policy hash, requested/observed timestamps in milliseconds,
 original expiry, App actor and independently observed run ID. A future protected
 producer must obtain that completed original record through authenticated fixed
-readback; it cannot invent its hash or observation time. That producer readback interface is not connected yet.
+readback; it cannot invent its hash or observation time. Its source-only authenticated readback candidate is described below; the protected producer is not connected yet.
 
 The optional `/internal/mainwp/management-evidence` handler accepts only a small
 canonical opaque query pointer, reads the query through a separate canonical
@@ -125,10 +125,43 @@ preflight, POST and readback. Lost responses, late data and failed identity
 checks leave the prepared dispatch consumed; they cannot trigger a duplicate.
 The workflow read helper does not widen the existing site-code edit paths.
 
-The protected producer and its authenticated original-record readback are still
-missing. Tests exercise controlled GitHub responses, not a real management
+The protected producer is still missing; its original-record readback candidate
+is described below and has no production trust configuration. Tests exercise controlled GitHub responses, not a real management
 workflow dispatch. No Actions credential, staff permission, live policy or
 service route has been activated by this candidate.
+
+## Protected worker original-record readback candidate, 2026-10-16
+
+The additive `/internal/mainwp/management-worker-context` reader accepts only
+an opaque dispatch ID and original context digest. Its separate GitHub Actions
+OIDC verifier uses the [official issuer and claims](https://docs.github.com/en/actions/reference/security/oidc),
+RS256 and a fixed public JWKS endpoint with bounded fetching, no redirects and
+a five-minute key cache. It requires the exact independently configured subject,
+protected environment and numeric repository owner ID, plus the original
+repository ID, private visibility, workflow/source SHA, main ref, run ID,
+attempt 1, App actor and GitHub-hosted runner. Reusable workflows are refused
+until an independent reusable-workflow pin is implemented and reviewed.
+
+The original Google identity still comes only from the immutable management
+queue. Its expiry, current membership, site permission, policy and local
+revocation are rechecked before the bounded atomic response. The signed response
+has its own `mrn-content-management-worker-context-v1:` purpose and exact GitHub
+run audience; it supplies the recorded context, provenance and canonical original
+dispatch preimage. It exposes no employee token, email, private key or page body,
+and neither admits evidence nor consumes the later evidence-acquisition slot.
+The five-second HTTP path is optional and remains absent from service startup.
+Tests use cryptographically signed synthetic OIDC tokens and real local HTTP,
+not an actual protected GitHub job or approved production trust configuration.
+
+The next combined test pins provider
+`ddc4e4feb3efa5c9a4bc2fbd15645b192f42fa90`, whose
+[CI 38935085518](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38935085518)
+passes all four jobs. It adds the independent management archive/relation
+verifier and includes its immutable schemas in the disposable runtime package;
+84 relation checks run in actual WordPress with zero SQL. All 20 imported
+contract/vector/design blobs match their original hashes. Provider retention,
+source acquisition and live registration remain unqualified; this source pin
+cannot turn the pure verifier's false authority/admission results into permission.
 
 ## Management identity integration, 2026-10-16
 

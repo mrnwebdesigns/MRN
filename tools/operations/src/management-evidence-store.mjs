@@ -123,10 +123,16 @@ export class ManagementEvidenceLedger {
       && Number.isSafeInteger(o.requested_at) && Number.isSafeInteger(o.observed_at) && o.requested_at <= o.observed_at
       && o.observed_at <= this.now() && o.original_expires_at === Math.min(mapping.actor.expiresAt, context.binding.expires_at * 1000)
       && o.original_expires_at > this.now(), 'The immutable dispatch does not bind the original requester, source and lifetime.');
-    return { ...original, provenance, record: { repository: provenance.repository, repositoryId: provenance.repository_id,
+    return { ...original, provenance, observation: o, record: { repository: provenance.repository, repositoryId: provenance.repository_id,
       workflowId: provenance.workflow_id, runId: provenance.run_id, appActorId: this.appActorId,
       workflowPath: provenance.workflow_path, runnerCommit: provenance.runner_source_sha,
       requestedAt: o.requested_at, originalExpiresAt: o.original_expires_at } };
+  }
+  originalDispatch(dispatchId) {
+    parse(types.uuid, dispatchId);
+    const row = this.store.db.prepare('SELECT job FROM management_evidence_dispatches WHERE id=?').get(dispatchId);
+    check(row, 'The original protected dispatch is unavailable.');
+    return this.dispatch(row.job);
   }
   begin(input) {
     const query = parse(types.query, input);
