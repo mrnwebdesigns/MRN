@@ -68,6 +68,16 @@ checks, exact source/schema/runtime bindings, protected rendered/hook parity
 and all required measurement groups. Neither native API regression nor local
 ACF proof substitutes for protected profile admission.
 
+The private management capture compiler has a separate fixed 5 MiB response,
+depth-48, 200,000-node, 16,384-item and 1,000,000-step budget for complete parity
+inventories. It reuses the checked schema vocabulary and rejects the same
+serialization hooks, ambiguous values and unguarded recursion. Public management
+reads retain their 524,288-byte, depth-32, 20,000-node and 1,000-item limits;
+callers and schema annotations cannot override either budget. The private
+compiler remains unregistered. A future pinned capture consumer must separately
+validate snapshot, dataset, parity and artifact bounds, original source/access
+bindings and every hash; fitting the outer envelope establishes no authority.
+
 ## Earlier acceptance checkpoint, 2026-10-15
 
 The expanded plugin is **not team-ready**. Source and disposable qualification are ahead of the hosted workspace plugin. No production deployment, policy enablement or access change is authorized by these results.

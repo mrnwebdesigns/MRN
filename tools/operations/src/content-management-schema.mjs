@@ -7,6 +7,11 @@ import { compileContentSchema } from './content-schema.mjs';
 // schemas keep their acyclic, closed-object compiler and are not widened.
 export const managementWireLimits = Object.freeze({ depth: 32, nodes: 20000,
   mapEntries: 1000, arrayItems: 1000, bytes: 524288, validationSteps: 250000 });
+// Private capture includes the complete parity inventory. Its separate envelope
+// budget never applies to public read/preview tools or relaxes inner snapshot,
+// dataset or parity limits. This compiler establishes no provenance/admission.
+export const managementCaptureWireLimits = Object.freeze({ depth: 48, nodes: 200000,
+  mapEntries: 1000, arrayItems: 16384, bytes: 5 * 1024 * 1024, validationSteps: 1000000 });
 const unsafe = new Set(['__proto__', 'prototype', 'constructor']);
 const keyAllowed = key => /^[\x20-\x7e]+$/.test(key) && !unsafe.has(key);
 const record = value => value && typeof value === 'object' && !Array.isArray(value)
@@ -14,23 +19,23 @@ const record = value => value && typeof value === 'object' && !Array.isArray(val
 
 // Check before serialization or recursive validation. No getters, toJSON,
 // coercion, sparse lists or hidden properties may influence signed bytes.
-function boundedWire(value) {
+function boundedWire(value, limits) {
   const seen = new Set();
   let nodes = 0, bytes = 0;
-  const count = size => (bytes += size) <= managementWireLimits.bytes;
+  const count = size => (bytes += size) <= limits.bytes;
   const walk = (item, depth) => {
-    if (depth > managementWireLimits.depth || ++nodes > managementWireLimits.nodes) return false;
+    if (depth > limits.depth || ++nodes > limits.nodes) return false;
     if (item === null || typeof item === 'boolean') return count(item === null ? 4 : item ? 4 : 5);
     if (typeof item === 'number') return Number.isSafeInteger(item) && !Object.is(item, -0) && count(String(item).length);
-    if (typeof item === 'string') return item.length <= managementWireLimits.bytes && item.isWellFormed()
+    if (typeof item === 'string') return item.length <= limits.bytes && item.isWellFormed()
       && !item.includes('\0') && count(Buffer.byteLength(JSON.stringify(item)));
     if (!item || typeof item !== 'object' || seen.has(item) || Object.getOwnPropertySymbols(item).length) return false;
     const list = Array.isArray(item);
     if (list ? Object.getPrototypeOf(item) !== Array.prototype : !record(item)) return false;
     const descriptors = Object.getOwnPropertyDescriptors(item);
     const keys = Object.keys(descriptors).filter(key => !list || key !== 'length');
-    if (list ? item.length > managementWireLimits.arrayItems || keys.length !== item.length
-      : keys.length > managementWireLimits.mapEntries) return false;
+    if (list ? item.length > limits.arrayItems || keys.length !== item.length
+      : keys.length > limits.mapEntries) return false;
     if (!count(2 + Math.max(0, keys.length - 1))) return false;
     seen.add(item);
     try {
@@ -48,6 +53,16 @@ function boundedWire(value) {
 }
 
 export function compileManagementSchema(wire) {
+  return compileBoundedManagementSchema(wire, managementWireLimits, 128);
+}
+
+// Explicit service-internal entry point. Limits are fixed in reviewed source,
+// not supplied by a caller, schema annotation or runtime configuration.
+export function compileManagementCaptureSchema(wire) {
+  return compileBoundedManagementSchema(wire, managementCaptureWireLimits, 256);
+}
+
+function compileBoundedManagementSchema(wire, limits, validationDepth) {
   const fail = (condition, message) => requireThat(condition, 'CONTENT_MANAGEMENT_CONTRACT', message);
   fail(record(wire), 'Management schema must be an object.');
   const { $defs: definitions = {}, ...root } = wire;
@@ -57,11 +72,11 @@ export function compileManagementSchema(wire) {
   let nodes = 0;
   const refName = value => typeof value === 'string' && /^#\/\$defs\/([A-Za-z0-9_]{1,128})$/.exec(value)?.[1];
   const bounded = predicate => (value, state) => {
-    if (++state.steps > managementWireLimits.validationSteps) return false;
-    if (++state.depth > 128) { state.depth--; return false; }
+    if (++state.steps > limits.validationSteps) return false;
+    if (++state.depth > validationDepth) { state.depth--; return false; }
     try { return predicate(value, state); } finally { state.depth--; }
   };
-  const validate = (predicate, value) => boundedWire(value) && predicate(value, { steps: 0, depth: 0, fields: 0 });
+  const validate = (predicate, value) => boundedWire(value, limits) && predicate(value, { steps: 0, depth: 0, fields: 0 });
   const compile = (source, depth = 0) => {
     fail(record(source) && depth <= 64 && ++nodes <= 8192 && !activeSchema.has(source), 'Invalid or excessive management schema.');
     activeSchema.add(source);
@@ -100,7 +115,7 @@ export function compileManagementSchema(wire) {
           let matches = 0;
           for (const choice of choices) {
             if (choice(value, state)) matches++;
-            if (state.steps > managementWireLimits.validationSteps) return false;
+            if (state.steps > limits.validationSteps) return false;
             if (kind === 'anyOf' && matches) return true;
             if (matches > 1) return false;
           }
@@ -137,9 +152,9 @@ export function compileManagementSchema(wire) {
           && Number.isSafeInteger(s.maxProperties), 'Management maps require bounded names and entries.');
         const names = s.propertyNames === undefined ? null : child(s.propertyNames);
         const extra = typedMap ? child(s.additionalProperties) : null;
-        const min = s.minProperties ?? 0, max = s.maxProperties ?? managementWireLimits.mapEntries;
+        const min = s.minProperties ?? 0, max = s.maxProperties ?? limits.mapEntries;
         fail(Number.isSafeInteger(min) && min >= 0 && Number.isSafeInteger(max) && max >= min
-          && max <= managementWireLimits.mapEntries, 'Invalid management map bounds.');
+          && max <= limits.mapEntries, 'Invalid management map bounds.');
         return finish((value, state) => {
           if (!record(value)) return false;
           const keys = Object.keys(value);
@@ -149,9 +164,9 @@ export function compileManagementSchema(wire) {
       }
       if (s.type === 'array') {
         only(['type', 'items', 'minItems', 'maxItems', 'uniqueItems']);
-        const min = s.minItems ?? 0, max = s.maxItems ?? managementWireLimits.arrayItems;
+        const min = s.minItems ?? 0, max = s.maxItems ?? limits.arrayItems;
         fail(Number.isSafeInteger(min) && min >= 0 && Number.isSafeInteger(max) && max >= min
-          && max <= managementWireLimits.arrayItems && (s.uniqueItems === undefined || typeof s.uniqueItems === 'boolean'),
+          && max <= limits.arrayItems && (s.uniqueItems === undefined || typeof s.uniqueItems === 'boolean'),
         'Invalid management list bounds.');
         const item = child(s.items);
         return finish((value, state) => Array.isArray(value) && value.length >= min && value.length <= max
