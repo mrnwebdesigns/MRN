@@ -10,12 +10,11 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Resolve an enqueued child asset against this code generation's manifest.
+ * Read the immutable asset manifest once per request.
  *
- * @param string $src Original WordPress asset URL.
- * @return string
+ * @return array<string, mixed>
  */
-function mrn_site_release_asset_url( $src ) {
+function mrn_site_release_asset_manifest() {
 	static $manifest = null;
 	if ( null === $manifest ) {
 		$manifest = json_decode( file_get_contents( __DIR__ . '/mrn-assets.json' ), true ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Local build artifact, read once per request.
@@ -23,6 +22,39 @@ function mrn_site_release_asset_url( $src ) {
 	if ( ! is_array( $manifest ) || 1 !== (int) ( $manifest['schema'] ?? 0 ) || empty( $manifest['assets'] ) || empty( $manifest['public_path'] ) ) {
 		throw new RuntimeException( 'The release asset manifest is unavailable.' );
 	}
+	return $manifest;
+}
+
+/**
+ * Check an opt-in stylesheet's reviewed WordPress body context.
+ *
+ * A site still owns its route, dependency and interaction qualification. This
+ * helper does not infer component absence from initial browser coverage.
+ *
+ * @param string   $name Logical stylesheet name.
+ * @param string[] $body_classes Current WordPress body classes.
+ * @return bool
+ */
+function mrn_site_release_stylesheet_matches_body( $name, array $body_classes ) {
+	$manifest = mrn_site_release_asset_manifest();
+	$context  = $manifest['stylesheet_contexts'][ $name ] ?? null;
+	if ( empty( $manifest['assets'][ $name ] ) || ! is_array( $context )
+		|| empty( $context['required_body_classes'] ) || ! is_array( $context['required_body_classes'] )
+		|| empty( $context['absent_body_classes'] ) || ! is_array( $context['absent_body_classes'] ) ) {
+		return false;
+	}
+	return ! array_diff( $context['required_body_classes'], $body_classes )
+		&& ! array_intersect( $context['absent_body_classes'], $body_classes );
+}
+
+/**
+ * Resolve an enqueued child asset against this code generation's manifest.
+ *
+ * @param string $src Original WordPress asset URL.
+ * @return string
+ */
+function mrn_site_release_asset_url( $src ) {
+	$manifest = mrn_site_release_asset_manifest();
 	$source_path = wp_parse_url( $src, PHP_URL_PATH );
 	$theme_path  = wp_parse_url( get_stylesheet_directory_uri(), PHP_URL_PATH );
 	$source_host = wp_parse_url( $src, PHP_URL_HOST );
