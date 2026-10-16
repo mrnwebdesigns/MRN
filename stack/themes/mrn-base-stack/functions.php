@@ -9,7 +9,7 @@
 
 if ( ! defined( '_S_VERSION' ) ) {
 	// Replace the version number of the theme on each release.
-	define( '_S_VERSION', '1.5.18' );
+	define( '_S_VERSION', '1.5.19' );
 }
 
 /**
@@ -815,6 +815,10 @@ function mrn_base_stack_scripts() {
 	$needs_dashicons       = false;
 	$uses_icon_search      = ! empty( $header_footer_options['header_show_search'] ) && isset( $header_footer_options['header_search_style'] ) && 'icon_only' === $header_footer_options['header_search_style'];
 	$search_icon_source    = isset( $header_footer_options['header_search_icon_source'] ) ? (string) $header_footer_options['header_search_icon_source'] : 'dashicons';
+
+	if ( mrn_base_stack_enqueue_cookie_preferences_style() ) {
+		$needs_fontawesome = true;
+	}
 
 	if ( 'fontawesome' === $search_icon_source && $uses_icon_search ) {
 		$needs_fontawesome = true;
@@ -2501,6 +2505,11 @@ require get_template_directory() . '/inc/content-toc.php';
  * Functions which enhance the theme by hooking into WordPress.
  */
 require get_template_directory() . '/inc/template-functions.php';
+
+/**
+ * Native cookie preferences presentation.
+ */
+require get_template_directory() . '/inc/cookie-preferences.php';
 
 /**
  * Customizer additions.
