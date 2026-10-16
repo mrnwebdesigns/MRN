@@ -39,7 +39,11 @@
     "dataset_nodes": 100000,
     "worker_requests_per_job": 64,
     "requester_jobs": "Existing owner catalog maximum_jobs_per_requester; never above100 unexpired intents",
-    "job_intent_ttl_seconds": 900
+    "job_intent_ttl_seconds": 900,
+    "readback_bytes": 524288,
+    "readback_chunks": 16,
+    "native_calls": 151,
+    "native_stdout_bytes": 65535
   },
   "$defs": {
     "raw_value": {
@@ -2064,8 +2068,8 @@
         },
         "native_calls": {
           "type": "integer",
-          "minimum": 1,
-          "maximum": 136
+          "minimum": 2,
+          "maximum": 151
         },
         "dataset_bytes": {
           "type": "integer",
@@ -2086,6 +2090,19 @@
           "enum": [
             false
           ]
+        },
+        "readback_chunks": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16
+        },
+        "readback_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 524288
+        },
+        "readback_sha256": {
+          "$ref": "#/$defs/hash"
         }
       },
       "required": [
@@ -2103,7 +2120,10 @@
         "dataset_bytes",
         "captured_at",
         "rendered_runtime_qualified",
-        "consumer_binding_issued"
+        "consumer_binding_issued",
+        "readback_chunks",
+        "readback_bytes",
+        "readback_sha256"
       ],
       "additionalProperties": false
     },
@@ -2712,5 +2732,6 @@
     }
   },
   "expiry_semantics": "Persist once at valid human queue commit: min(original review expiry, created_at + owner catalog job_ttl_seconds, created_at + 900). Transport assertion expiry never renews or replaces this retained intent. Each boundary independently rechecks original principal/Directory/policy/source and fresh gateway current-access, including original OAuth expiry. Requeue/context/recovery cannot extend the same intent.",
-  "callback_url": "https://operations.mrnwebdesigns.com/internal/mainwp/management-access-veto"
+  "callback_url": "https://operations.mrnwebdesigns.com/internal/mainwp/management-access-veto",
+  "measurement_semantics": "readback_bytes and readback_sha256 are the canonical complete independently re-read dataset.read bytes and hash; readback_chunks=ceil(readback_bytes/32768); native_calls=chunks_received+readback_chunks, excluding targeted sync and current-access HTTP queries. Each readback slice binds the exact original request and complete result. Apply never redispatches for output slices."
 }

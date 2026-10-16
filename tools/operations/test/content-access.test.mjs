@@ -167,6 +167,13 @@ test('local revocation, asynchronous policy lookup and expired original login ca
   assert.equal(decoded((await f.call()).signed_veto).state, 'denied');
 });
 
+test('single-field clearance also ends at the original OAuth expiry', async t => {
+  const f = fixture(t); f.actor.expiresAt = f.state.now + 2000; f.map();
+  assert.equal(decoded((await f.call()).signed_veto).expires_at, f.actor.expiresAt / 1000);
+  f.state.now += 2000;
+  assert.equal(decoded((await f.call()).signed_veto).state, 'denied');
+});
+
 test('current site permission and configuration are required even while membership remains active', async t => {
   const mutations = [
     f => { f.policy.emailDomains[0].portfolio.actions = ['read']; },

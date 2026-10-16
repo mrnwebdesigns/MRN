@@ -50,7 +50,7 @@ function pluginInventory(dataset) {
     && same(Object.values(plugins).sort(), dataset.parity_manifest.active_plugins));
 }
 
-export function validateManagementCapture(value, { queuedContext, evidence, request, profile, now = Date.now() }) {
+export function validateManagementContext(queuedContext, { evidence, request, profile, now = Date.now() }) {
   const context = managementCaptureTypes.context.parse(queuedContext), b = context.binding;
   const at = Math.floor(now / 1000);
   insist(context.state === 'queued' && context.capture_artifact_sha256 === null && context.binding_sha256 === delegationDigest(b)
@@ -66,6 +66,13 @@ export function validateManagementCapture(value, { queuedContext, evidence, requ
     && b.before_paths_sha256 === delegationDigest(original.read.affected_paths)
     && b.acf_schema_sha256 === delegationDigest(original.read.snapshot.acf_definitions)
     && b.management_contract_sha256 === managementContractHash);
+  return { context, original };
+}
+
+export function validateManagementCapture(value, expected) {
+  const { context, original } = validateManagementContext(expected.queuedContext, expected);
+  const b = context.binding, { review, migration } = original;
+  const at = Math.floor((expected.now ?? Date.now()) / 1000);
   const result = managementCaptureTypes.capture_output.parse(value), artifact = result.capture_artifact;
   insist(size(artifact) <= 5000000 && result.qualification_job_id === b.qualification_job_id
     && same(artifact.binding, b) && artifact.binding_sha256 === context.binding_sha256
@@ -84,7 +91,10 @@ export function validateManagementCapture(value, { queuedContext, evidence, requ
     && measured.dataset_sha256 === artifact.dataset_sha256 && measured.snapshot_sha256 === b.before_sha256
     && measured.acf_schema_sha256 === b.acf_schema_sha256 && measured.parity_sha256 === dataset.parity_sha256
     && measured.source_binding_sha256 === b.source_binding_sha256 && measured.dataset_bytes === size(dataset)
-    && measured.chunks_received === Math.ceil(measured.dataset_bytes / 32768) && measured.native_calls === measured.chunks_received + 1
+    && measured.chunks_received === Math.ceil(measured.dataset_bytes / 32768) && measured.readback_bytes === size(dataset.read)
+    && measured.readback_sha256 === delegationDigest(dataset.read)
+    && measured.readback_chunks === Math.ceil(measured.readback_bytes / 32768)
+    && measured.native_calls === measured.chunks_received + measured.readback_chunks
     && measured.captured_at >= b.created_at && measured.captured_at <= at && measured.captured_at < b.expires_at);
   return result;
 }

@@ -28,7 +28,9 @@ function rehash(value) {
   a.binding_sha256 = delegationDigest(a.binding); value.capture_artifact_sha256 = delegationDigest(a);
   Object.assign(m, { binding_sha256: a.binding_sha256, capture_artifact_sha256: value.capture_artifact_sha256,
     dataset_sha256: a.dataset_sha256, parity_sha256: d.parity_sha256, dataset_bytes: Buffer.byteLength(delegationCanonical(d)) });
-  m.chunks_received = Math.ceil(m.dataset_bytes / 32768); m.native_calls = m.chunks_received + 1;
+  m.chunks_received = Math.ceil(m.dataset_bytes / 32768);
+  m.readback_bytes = Buffer.byteLength(delegationCanonical(d.read)); m.readback_sha256 = delegationDigest(d.read);
+  m.readback_chunks = Math.ceil(m.readback_bytes / 32768); m.native_calls = m.chunks_received + m.readback_chunks;
 }
 
 test('private capture contract and synthetic vectors match immutable source; every ability schema compiles', () => {
@@ -52,6 +54,30 @@ test('complete private capture and independent measurement read match the origin
   assert.equal(value.measurements.rendered_runtime_qualified, false);
   assert.equal(value.measurements.consumer_binding_issued, false);
   assert.deepEqual(value, vectors.capture_output); // Validation does not change retained bytes.
+});
+
+test('large full-record readback has its own measured byte count, digest and multiple chunks', () => {
+  const value = structuredClone(vectors.capture_output), a = value.capture_artifact, d = a.dataset, b = a.binding;
+  d.read.snapshot.core.post_content = 'A long page 🌍 '.repeat(6000);
+  d.read.snapshot_sha256 = delegationDigest(d.read.snapshot);
+  a.migration.request.before_sha256 = d.read.snapshot_sha256;
+  a.migration.rollback_snapshot = structuredClone(d.read.snapshot);
+  a.migration.candidate_snapshot = managementCandidate(d.read.snapshot, a.migration.request);
+  a.migration.candidate_sha256 = managementCandidateHash(a.migration.candidate_snapshot);
+  Object.assign(a.review, { before_snapshot: structuredClone(d.read.snapshot), before_sha256: d.read.snapshot_sha256,
+    candidate_snapshot: structuredClone(a.migration.candidate_snapshot), candidate_sha256: a.migration.candidate_sha256 });
+  a.review.migration_artifact.sha256 = delegationDigest(a.migration);
+  const descriptor = { ...a.review }; delete descriptor.digest; a.review.digest = delegationDigest(descriptor);
+  Object.assign(b, { before_sha256: a.review.before_sha256, candidate_sha256: a.review.candidate_sha256,
+    reviewed_digest: a.review.digest, request_sha256: delegationDigest(a.migration.request), migration_sha256: delegationDigest(a.migration) });
+  value.measurements.snapshot_sha256 = b.before_sha256; rehash(value);
+  const checked = fixture(value);
+  assert.ok(value.measurements.readback_chunks > 1);
+  assert.equal(value.measurements.native_calls, value.measurements.chunks_received + value.measurements.readback_chunks);
+  assert.notEqual(value.measurements.readback_sha256, value.measurements.snapshot_sha256);
+  const truncated = structuredClone(value); truncated.measurements.readback_chunks = 1;
+  truncated.measurements.native_calls = truncated.measurements.chunks_received + 1;
+  assert.throws(() => validateManagementCapture(truncated, checked.expected), { code: 'MANAGEMENT_CAPTURE_MISMATCH' });
 });
 
 test('original plugin activation order and numeric gaps survive a separately sorted parity inventory', () => {
@@ -107,7 +133,8 @@ test('measured counts, time, digests and no-admission claims remain independentl
   const mutations = [m => { m.native_calls++; }, m => { m.chunks_received++; }, m => { m.dataset_bytes++; },
     m => { m.captured_at = 1; }, m => { m.captured_at += 10; }, m => { m.binding_sha256 = 'e'.repeat(64); },
     m => { m.snapshot_sha256 = 'e'.repeat(64); }, m => { m.acf_schema_sha256 = 'e'.repeat(64); },
-    m => { m.source_binding_sha256 = 'e'.repeat(64); }, m => { m.rendered_runtime_qualified = true; }, m => { m.consumer_binding_issued = true; }];
+    m => { m.source_binding_sha256 = 'e'.repeat(64); }, m => { m.readback_bytes++; },
+    m => { m.readback_chunks++; m.native_calls++; }, m => { m.readback_sha256 = m.snapshot_sha256; }, m => { m.rendered_runtime_qualified = true; }, m => { m.consumer_binding_issued = true; }];
   for (const mutate of mutations) {
     const { value, expected } = fixture(); mutate(value.measurements);
     assert.throws(() => validateManagementCapture(value, expected));

@@ -1,15 +1,27 @@
 import { requireThat } from './contracts.mjs';
 import { AccessSigner, AccessQueryReader, ContentAccessVeto } from './content-access.mjs';
 import { ContentAccessLedger } from './content-access-store.mjs';
+import { ManagementAccessSigner, ManagementAccessQueryReader, ManagementAccessVeto } from './content-management-access.mjs';
+import { ManagementAccessLedger } from './content-management-access-store.mjs';
 
 // Service-owned lifecycle only. This neither admits/dispatches qualification
 // jobs nor exposes a workspace tool. Production activation is an explicit gate.
-export async function createContentAccessRuntime({ enabled = false, store, registry, connectionId, identity, connect }) {
+export function createContentAccessRuntime(options = {}) {
+  return createRuntime(options, AccessSigner, AccessQueryReader, ContentAccessVeto, ContentAccessLedger);
+}
+
+// Source-only opt-in for the separate management path. main.mjs does not
+// register it; native callback qualification and production approval are pending.
+export function createManagementAccessRuntime(options = {}) {
+  return createRuntime(options, ManagementAccessSigner, ManagementAccessQueryReader, ManagementAccessVeto, ManagementAccessLedger);
+}
+
+async function createRuntime({ enabled = false, store, registry, connectionId, identity, connect }, Signer, Reader, Veto, Ledger) {
   requireThat(typeof enabled === 'boolean', 'ACCESS_CONFIG', 'Explicit private control configuration is required.');
   if (!enabled) return null;
-  const signer = new AccessSigner(identity || {});
+  const signer = new Signer(identity || {});
   const client = await connect(); // Independent of a site operation waiting on its callback.
-  const reader = new AccessQueryReader(client);
+  const reader = new Reader(client);
   let closing = false, closePromise;
   const close = () => {
     if (!closePromise) {
@@ -20,8 +32,8 @@ export async function createContentAccessRuntime({ enabled = false, store, regis
   };
   try {
     await reader.initialize(); // Correct Dashboard and dedicated POST ability before listening.
-    const ledger = new ContentAccessLedger(store, { connectionId, registry });
-    const handler = new ContentAccessVeto({ signer, reader, ledger });
+    const ledger = new Ledger(store, { connectionId, registry });
+    const handler = new Veto({ signer, reader, ledger });
     const veto = { async respond(input) {
       requireThat(!closing, 'ACCESS_UNAVAILABLE', 'Private access control is closed.');
       const result = await handler.respond(input);

@@ -1,7 +1,7 @@
 {
   "synthetic": true,
   "admission_authority": false,
-  "contract_sha256": "8520b3f6ac54894f83a46361d2618d5243aea57e8fb5d556fb44acd5c204e65b",
+  "contract_sha256": "7c0cd9e6f431f47580f9926e8d228728034f20b71d581c8dfb00b32dcb4f4f91",
   "context": {
     "binding": {
       "schema": 1,
@@ -41,7 +41,7 @@
   },
   "capture_output": {
     "qualification_job_id": "77777777-7777-4777-8777-777777777777",
-    "capture_artifact_sha256": "0402c82851b18664048a9491f6e423598918ca817c4be93db948b73ab73c03db",
+    "capture_artifact_sha256": "642ac7f58c7b966e5f793ccf16671306c6865a8cfac76e2946aecb752d7f2630",
     "capture_artifact": {
       "schema": 1,
       "adapter": "content-management-v1",
@@ -637,54 +637,74 @@
           "mu_plugins": [],
           "core_php": [],
           "roots": [],
-          "render_options": [],
+          "render_options": [
+            {
+              "key": "blogname",
+              "present": true,
+              "value": {
+                "type": "string",
+                "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+              }
+            },
+            {
+              "key": "mainwp_child_recent_custom_cpt_ids_limit",
+              "present": false,
+              "value": null
+            }
+          ],
           "target_meta": [],
           "render_dependencies": "owner-qualified-native-post"
         },
-        "parity_sha256": "4e24fc1d07335cce07c1e85d02298172e8a0f8f343214ec7e96a18587a24cb47",
+        "parity_sha256": "7b176978cf6dea78ba9eca8fb7083b085f136b61dd96e20d0f28dcffee611b71",
         "source_binding_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
         "active_plugins_original_json": "[\"acf/acf.php\"]"
       },
-      "dataset_sha256": "ec07190811bb4ca224f431519f3c4ee91da021164dda17c9abc3791b7e8ab0d8"
+      "dataset_sha256": "05e9ca73ff024acf72dbfe458608040450ecae7fc2755d48c14f574d65326aed"
     },
     "measurements": {
       "schema": 1,
       "adapter": "content-management-v1",
       "binding_sha256": "09f6bb461c71d0f8a11f526a95c5d5549af719c7bc840b64edaad537496c0bd1",
-      "capture_artifact_sha256": "0402c82851b18664048a9491f6e423598918ca817c4be93db948b73ab73c03db",
-      "dataset_sha256": "ec07190811bb4ca224f431519f3c4ee91da021164dda17c9abc3791b7e8ab0d8",
+      "capture_artifact_sha256": "642ac7f58c7b966e5f793ccf16671306c6865a8cfac76e2946aecb752d7f2630",
+      "dataset_sha256": "05e9ca73ff024acf72dbfe458608040450ecae7fc2755d48c14f574d65326aed",
       "snapshot_sha256": "3163c0b54124e69ba78ab55560f696799964fc58d6307d8d3495e37c4d62ad5c",
       "acf_schema_sha256": "09101b9fc78d35496863fb2376c4f2c045684c6ad1ffbd4b0eed9366216807c4",
-      "parity_sha256": "4e24fc1d07335cce07c1e85d02298172e8a0f8f343214ec7e96a18587a24cb47",
+      "parity_sha256": "7b176978cf6dea78ba9eca8fb7083b085f136b61dd96e20d0f28dcffee611b71",
       "source_binding_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "chunks_received": 1,
       "native_calls": 2,
-      "dataset_bytes": 2397,
+      "dataset_bytes": 2612,
       "captured_at": 1700000001,
       "rendered_runtime_qualified": false,
-      "consumer_binding_issued": false
+      "consumer_binding_issued": false,
+      "readback_chunks": 1,
+      "readback_bytes": 1678,
+      "readback_sha256": "5112f1cc83643ed357b75e549e0ae9d8e2964017f9288d9f25a03b577bfe95fa"
     }
   },
   "measurement_output": {
     "qualification_job_id": "77777777-7777-4777-8777-777777777777",
     "binding_sha256": "09f6bb461c71d0f8a11f526a95c5d5549af719c7bc840b64edaad537496c0bd1",
-    "measurement_record_sha256": "44f4139c823278c89e43eea231815eac9ee6741e918e38d3974aaa695dbd6e68",
+    "measurement_record_sha256": "a6b75abb2750f5b85ebf8bcf280df10e4e2d7091eecb780a802ae6bcb30e4c02",
     "measurements": {
       "schema": 1,
       "adapter": "content-management-v1",
       "binding_sha256": "09f6bb461c71d0f8a11f526a95c5d5549af719c7bc840b64edaad537496c0bd1",
-      "capture_artifact_sha256": "0402c82851b18664048a9491f6e423598918ca817c4be93db948b73ab73c03db",
-      "dataset_sha256": "ec07190811bb4ca224f431519f3c4ee91da021164dda17c9abc3791b7e8ab0d8",
+      "capture_artifact_sha256": "642ac7f58c7b966e5f793ccf16671306c6865a8cfac76e2946aecb752d7f2630",
+      "dataset_sha256": "05e9ca73ff024acf72dbfe458608040450ecae7fc2755d48c14f574d65326aed",
       "snapshot_sha256": "3163c0b54124e69ba78ab55560f696799964fc58d6307d8d3495e37c4d62ad5c",
       "acf_schema_sha256": "09101b9fc78d35496863fb2376c4f2c045684c6ad1ffbd4b0eed9366216807c4",
-      "parity_sha256": "4e24fc1d07335cce07c1e85d02298172e8a0f8f343214ec7e96a18587a24cb47",
+      "parity_sha256": "7b176978cf6dea78ba9eca8fb7083b085f136b61dd96e20d0f28dcffee611b71",
       "source_binding_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "chunks_received": 1,
       "native_calls": 2,
-      "dataset_bytes": 2397,
+      "dataset_bytes": 2612,
       "captured_at": 1700000001,
       "rendered_runtime_qualified": false,
-      "consumer_binding_issued": false
+      "consumer_binding_issued": false,
+      "readback_chunks": 1,
+      "readback_bytes": 1678,
+      "readback_sha256": "5112f1cc83643ed357b75e549e0ae9d8e2964017f9288d9f25a03b577bfe95fa"
     }
   },
   "chunks": [
@@ -693,15 +713,15 @@
       "adapter": "content-management-v1",
       "chunk_index": 0,
       "offset_bytes": 0,
-      "total_bytes": 2397,
+      "total_bytes": 2612,
       "total_chunks": 1,
-      "dataset_sha256": "ec07190811bb4ca224f431519f3c4ee91da021164dda17c9abc3791b7e8ab0d8",
+      "dataset_sha256": "05e9ca73ff024acf72dbfe458608040450ecae7fc2755d48c14f574d65326aed",
       "snapshot_sha256": "3163c0b54124e69ba78ab55560f696799964fc58d6307d8d3495e37c4d62ad5c",
       "acf_schema_sha256": "09101b9fc78d35496863fb2376c4f2c045684c6ad1ffbd4b0eed9366216807c4",
-      "parity_sha256": "4e24fc1d07335cce07c1e85d02298172e8a0f8f343214ec7e96a18587a24cb47",
+      "parity_sha256": "7b176978cf6dea78ba9eca8fb7083b085f136b61dd96e20d0f28dcffee611b71",
       "source_binding_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      "chunk_base64": "eyJhY2Zfc2NoZW1hX3NoYTI1NiI6IjA5MTAxYjlmYzc4ZDM1NDk2ODYzZmIyMzc2YzRmMmMwNDU2ODRjNmFkMWZmYmQ0YjBlZWQ5MzY2MjE2ODA3YzQiLCJhY3RpdmVfcGx1Z2luc19vcmlnaW5hbF9qc29uIjoiW1wiYWNmL2FjZi5waHBcIl0iLCJhZGFwdGVyIjoiY29udGVudC1tYW5hZ2VtZW50LXYxIiwib3duZXJzaGlwIjoid29yZHByZXNzLWNvbnRlbnQiLCJwYXJpdHlfbWFuaWZlc3QiOnsiYWN0aXZlX3BsdWdpbnMiOlsiYWNmL2FjZi5waHAiXSwiY29yZV9waHAiOltdLCJtdV9wbHVnaW5zIjpbXSwicGhwX2V4dGVuc2lvbnMiOltdLCJwaHBfdmVyc2lvbiI6IjguNS4wIiwicmVuZGVyX2RlcGVuZGVuY2llcyI6Im93bmVyLXF1YWxpZmllZC1uYXRpdmUtcG9zdCIsInJlbmRlcl9vcHRpb25zIjpbXSwicm9vdHMiOltdLCJzY2hlbWEiOjEsInN0eWxlc2hlZXQiOiJmaXh0dXJlLWNoaWxkIiwidGFyZ2V0X21ldGEiOltdLCJ0ZW1wbGF0ZSI6ImZpeHR1cmUtcGFyZW50Iiwid29yZHByZXNzX3ZlcnNpb24iOiI2LjkuNCJ9LCJwYXJpdHlfc2hhMjU2IjoiNGUyNGZjMWQwNzMzNWNjZTA3YzFlODVkMDIyOTgxNzJlOGEwZjhmMzQzMjE0ZWM3ZTk2YTE4NTg3YTI0Y2I0NyIsInJlYWQiOnsiYWZmZWN0ZWRfcGF0aHMiOlsiL3BhcmVudC9wcml2YWN5LyJdLCJzbmFwc2hvdCI6eyJhY2ZfZGVmaW5pdGlvbnMiOlt7ImtleSI6ImZpZWxkX3Jvd3MiLCJsYXlvdXRzIjpbeyJrZXkiOiJsYXlvdXRfYm9keSIsIm5hbWUiOiJib2R5X3RleHQiLCJzdWJfZmllbGRzIjpbeyJrZXkiOiJmaWVsZF9ib2R5IiwibGFiZWwiOiJCb2R5IiwibmFtZSI6ImJvZHlfdGV4dCIsInR5cGUiOiJ3eXNpd3lnIn0seyJrZXkiOiJmaWVsZF9vdGhlciIsImxhYmVsIjoiT3RoZXIiLCJuYW1lIjoib3RoZXIiLCJ0eXBlIjoidGV4dCJ9LHsia2V5IjoiZmllbGRfbmVzdGVkIiwibmFtZSI6Im5lc3RlZCIsInN1Yl9maWVsZHMiOlt7ImtleSI6ImZpZWxkX2JvZHkiLCJsYWJlbCI6IkJvZHkiLCJuYW1lIjoiYm9keV90ZXh0IiwidHlwZSI6Ind5c2l3eWcifSx7ImtleSI6ImZpZWxkX290aGVyIiwibGFiZWwiOiJPdGhlciIsIm5hbWUiOiJvdGhlciIsInR5cGUiOiJ0ZXh0In1dLCJ0eXBlIjoicmVwZWF0ZXIifV19XSwibmFtZSI6ImNvbnRlbnRfcm93cyIsInR5cGUiOiJmbGV4aWJsZV9jb250ZW50In0seyJrZXkiOiJmaWVsZF91bnRvdWNoZWQiLCJuYW1lIjoidW50b3VjaGVkIiwidHlwZSI6InRleHQifV0sImFjZl92YWx1ZXMiOnsiZmllbGRfcm93cyI6W3siYWNmX2ZjX2xheW91dCI6ImJvZHlfdGV4dCIsImZpZWxkX2JvZHkiOiI8cD5PcmlnaW5hbCAmYW1wOyBwb2xpY3k8L3A+XG4iLCJmaWVsZF9uZXN0ZWQiOlt7ImZpZWxkX2JvZHkiOiJOZXN0ZWQgb3JpZ2luYWwiLCJmaWVsZF9vdGhlciI6Ik5lc3RlZCBrZWVwIn1dLCJmaWVsZF9vdGhlciI6IktlZXAgZm9ybWF0dGluZyJ9LHsiYWNmX2ZjX2xheW91dCI6ImJvZHlfdGV4dCIsImZpZWxkX2JvZHkiOiJTZWNvbmQgcm93IiwiZmllbGRfbmVzdGVkIjpbXSwiZmllbGRfb3RoZXIiOiJTZWNvbmQga2VlcCJ9XSwiZmllbGRfdW50b3VjaGVkIjoiT3V0c2lkZSBidWlsZGVyIn0sImNvcmUiOnsicG9zdF9jb250ZW50IjoiTmF0aXZlIG9yaWdpbmFsIiwicG9zdF9leGNlcnB0IjoiRXhjZXJwdCIsInBvc3RfbmFtZSI6InByaXZhY3kiLCJwb3N0X3N0YXR1cyI6InB1Ymxpc2giLCJwb3N0X3RpdGxlIjoiUHJpdmFjeSJ9LCJwb3N0X2lkIjo3LCJwb3N0X3JlY29yZF9zaGEyNTYiOiI0ZTZjODg1NzVlZjg4ODBjNzg3NzA4NzE0ZDFjNjJiMTgwYTliNGNkMTdlNjc2OGJmZmI2N2UzZTQ3YmFkZjNkIiwicG9zdF90eXBlIjoicGFnZSIsInJ1bnRpbWUiOnsiYWNmIjpudWxsLCJwaHBfbWlub3IiOiI4LjUiLCJwbHVnaW5zX3NoYTI1NiI6IjJmOWI3MDY1YWIxMjM3MzRjZWI1NDY4MDI0ZWQzNmJmMTE0MzEwZjEwZmI4ZTExNTExYWYzODc1MzFjYTNjNzMiLCJzdHlsZXNoZWV0IjoiZml4dHVyZS1jaGlsZCIsInRlbXBsYXRlIjoiZml4dHVyZS1wYXJlbnQiLCJ3b3JkcHJlc3MiOiI2LjkuNCJ9LCJzaXRlX2lkIjo3Mywic2l0ZV91cmwiOiJodHRwczovL2ZpeHR1cmUuZXhhbXBsZS5pbnZhbGlkIiwidW5yZWxhdGVkX21ldGFfc2hhMjU2IjoiZDdlYzBjNzJmY2FlZTEwNzgxMGM1NmZjODFiYzI5ZjgzYWM5NTJmMDYwNTRkNmI2NWY1ZjU4YjE1MjRiYzEwNiJ9LCJzbmFwc2hvdF9zaGEyNTYiOiIzMTYzYzBiNTQxMjRlNjliYTc4YWI1NTU2MGY2OTY3OTk5NjRmYzU4ZDYzMDdkOGQzNDk1ZTM3YzRkNjJhZDVjIiwic3VjY2VzcyI6dHJ1ZX0sInNjaGVtYSI6MSwic291cmNlX2JpbmRpbmdfc2hhMjU2IjoiYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYSJ9"
+      "chunk_base64": "eyJhY2Zfc2NoZW1hX3NoYTI1NiI6IjA5MTAxYjlmYzc4ZDM1NDk2ODYzZmIyMzc2YzRmMmMwNDU2ODRjNmFkMWZmYmQ0YjBlZWQ5MzY2MjE2ODA3YzQiLCJhY3RpdmVfcGx1Z2luc19vcmlnaW5hbF9qc29uIjoiW1wiYWNmL2FjZi5waHBcIl0iLCJhZGFwdGVyIjoiY29udGVudC1tYW5hZ2VtZW50LXYxIiwib3duZXJzaGlwIjoid29yZHByZXNzLWNvbnRlbnQiLCJwYXJpdHlfbWFuaWZlc3QiOnsiYWN0aXZlX3BsdWdpbnMiOlsiYWNmL2FjZi5waHAiXSwiY29yZV9waHAiOltdLCJtdV9wbHVnaW5zIjpbXSwicGhwX2V4dGVuc2lvbnMiOltdLCJwaHBfdmVyc2lvbiI6IjguNS4wIiwicmVuZGVyX2RlcGVuZGVuY2llcyI6Im93bmVyLXF1YWxpZmllZC1uYXRpdmUtcG9zdCIsInJlbmRlcl9vcHRpb25zIjpbeyJrZXkiOiJibG9nbmFtZSIsInByZXNlbnQiOnRydWUsInZhbHVlIjp7InNoYTI1NiI6ImRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGQiLCJ0eXBlIjoic3RyaW5nIn19LHsia2V5IjoibWFpbndwX2NoaWxkX3JlY2VudF9jdXN0b21fY3B0X2lkc19saW1pdCIsInByZXNlbnQiOmZhbHNlLCJ2YWx1ZSI6bnVsbH1dLCJyb290cyI6W10sInNjaGVtYSI6MSwic3R5bGVzaGVldCI6ImZpeHR1cmUtY2hpbGQiLCJ0YXJnZXRfbWV0YSI6W10sInRlbXBsYXRlIjoiZml4dHVyZS1wYXJlbnQiLCJ3b3JkcHJlc3NfdmVyc2lvbiI6IjYuOS40In0sInBhcml0eV9zaGEyNTYiOiI3YjE3Njk3OGNmNmRlYTc4YmE5ZWNhOGZiNzA4M2IwODVmMTM2YjYxZGQ5NmUyMGQwZjI4ZGNmZmVlNjExYjcxIiwicmVhZCI6eyJhZmZlY3RlZF9wYXRocyI6WyIvcGFyZW50L3ByaXZhY3kvIl0sInNuYXBzaG90Ijp7ImFjZl9kZWZpbml0aW9ucyI6W3sia2V5IjoiZmllbGRfcm93cyIsImxheW91dHMiOlt7ImtleSI6ImxheW91dF9ib2R5IiwibmFtZSI6ImJvZHlfdGV4dCIsInN1Yl9maWVsZHMiOlt7ImtleSI6ImZpZWxkX2JvZHkiLCJsYWJlbCI6IkJvZHkiLCJuYW1lIjoiYm9keV90ZXh0IiwidHlwZSI6Ind5c2l3eWcifSx7ImtleSI6ImZpZWxkX290aGVyIiwibGFiZWwiOiJPdGhlciIsIm5hbWUiOiJvdGhlciIsInR5cGUiOiJ0ZXh0In0seyJrZXkiOiJmaWVsZF9uZXN0ZWQiLCJuYW1lIjoibmVzdGVkIiwic3ViX2ZpZWxkcyI6W3sia2V5IjoiZmllbGRfYm9keSIsImxhYmVsIjoiQm9keSIsIm5hbWUiOiJib2R5X3RleHQiLCJ0eXBlIjoid3lzaXd5ZyJ9LHsia2V5IjoiZmllbGRfb3RoZXIiLCJsYWJlbCI6Ik90aGVyIiwibmFtZSI6Im90aGVyIiwidHlwZSI6InRleHQifV0sInR5cGUiOiJyZXBlYXRlciJ9XX1dLCJuYW1lIjoiY29udGVudF9yb3dzIiwidHlwZSI6ImZsZXhpYmxlX2NvbnRlbnQifSx7ImtleSI6ImZpZWxkX3VudG91Y2hlZCIsIm5hbWUiOiJ1bnRvdWNoZWQiLCJ0eXBlIjoidGV4dCJ9XSwiYWNmX3ZhbHVlcyI6eyJmaWVsZF9yb3dzIjpbeyJhY2ZfZmNfbGF5b3V0IjoiYm9keV90ZXh0IiwiZmllbGRfYm9keSI6IjxwPk9yaWdpbmFsICZhbXA7IHBvbGljeTwvcD5cbiIsImZpZWxkX25lc3RlZCI6W3siZmllbGRfYm9keSI6Ik5lc3RlZCBvcmlnaW5hbCIsImZpZWxkX290aGVyIjoiTmVzdGVkIGtlZXAifV0sImZpZWxkX290aGVyIjoiS2VlcCBmb3JtYXR0aW5nIn0seyJhY2ZfZmNfbGF5b3V0IjoiYm9keV90ZXh0IiwiZmllbGRfYm9keSI6IlNlY29uZCByb3ciLCJmaWVsZF9uZXN0ZWQiOltdLCJmaWVsZF9vdGhlciI6IlNlY29uZCBrZWVwIn1dLCJmaWVsZF91bnRvdWNoZWQiOiJPdXRzaWRlIGJ1aWxkZXIifSwiY29yZSI6eyJwb3N0X2NvbnRlbnQiOiJOYXRpdmUgb3JpZ2luYWwiLCJwb3N0X2V4Y2VycHQiOiJFeGNlcnB0IiwicG9zdF9uYW1lIjoicHJpdmFjeSIsInBvc3Rfc3RhdHVzIjoicHVibGlzaCIsInBvc3RfdGl0bGUiOiJQcml2YWN5In0sInBvc3RfaWQiOjcsInBvc3RfcmVjb3JkX3NoYTI1NiI6IjRlNmM4ODU3NWVmODg4MGM3ODc3MDg3MTRkMWM2MmIxODBhOWI0Y2QxN2U2NzY4YmZmYjY3ZTNlNDdiYWRmM2QiLCJwb3N0X3R5cGUiOiJwYWdlIiwicnVudGltZSI6eyJhY2YiOm51bGwsInBocF9taW5vciI6IjguNSIsInBsdWdpbnNfc2hhMjU2IjoiMmY5YjcwNjVhYjEyMzczNGNlYjU0NjgwMjRlZDM2YmYxMTQzMTBmMTBmYjhlMTE1MTFhZjM4NzUzMWNhM2M3MyIsInN0eWxlc2hlZXQiOiJmaXh0dXJlLWNoaWxkIiwidGVtcGxhdGUiOiJmaXh0dXJlLXBhcmVudCIsIndvcmRwcmVzcyI6IjYuOS40In0sInNpdGVfaWQiOjczLCJzaXRlX3VybCI6Imh0dHBzOi8vZml4dHVyZS5leGFtcGxlLmludmFsaWQiLCJ1bnJlbGF0ZWRfbWV0YV9zaGEyNTYiOiJkN2VjMGM3MmZjYWVlMTA3ODEwYzU2ZmM4MWJjMjlmODNhYzk1MmYwNjA1NGQ2YjY1ZjVmNThiMTUyNGJjMTA2In0sInNuYXBzaG90X3NoYTI1NiI6IjMxNjNjMGI1NDEyNGU2OWJhNzhhYjU1NTYwZjY5Njc5OTk2NGZjNThkNjMwN2Q4ZDM0OTVlMzdjNGQ2MmFkNWMiLCJzdWNjZXNzIjp0cnVlfSwic2NoZW1hIjoxLCJzb3VyY2VfYmluZGluZ19zaGEyNTYiOiJhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhIn0="
     }
   ],
-  "dataset_canonical": "{\"acf_schema_sha256\":\"09101b9fc78d35496863fb2376c4f2c045684c6ad1ffbd4b0eed9366216807c4\",\"active_plugins_original_json\":\"[\\\"acf/acf.php\\\"]\",\"adapter\":\"content-management-v1\",\"ownership\":\"wordpress-content\",\"parity_manifest\":{\"active_plugins\":[\"acf/acf.php\"],\"core_php\":[],\"mu_plugins\":[],\"php_extensions\":[],\"php_version\":\"8.5.0\",\"render_dependencies\":\"owner-qualified-native-post\",\"render_options\":[],\"roots\":[],\"schema\":1,\"stylesheet\":\"fixture-child\",\"target_meta\":[],\"template\":\"fixture-parent\",\"wordpress_version\":\"6.9.4\"},\"parity_sha256\":\"4e24fc1d07335cce07c1e85d02298172e8a0f8f343214ec7e96a18587a24cb47\",\"read\":{\"affected_paths\":[\"/parent/privacy/\"],\"snapshot\":{\"acf_definitions\":[{\"key\":\"field_rows\",\"layouts\":[{\"key\":\"layout_body\",\"name\":\"body_text\",\"sub_fields\":[{\"key\":\"field_body\",\"label\":\"Body\",\"name\":\"body_text\",\"type\":\"wysiwyg\"},{\"key\":\"field_other\",\"label\":\"Other\",\"name\":\"other\",\"type\":\"text\"},{\"key\":\"field_nested\",\"name\":\"nested\",\"sub_fields\":[{\"key\":\"field_body\",\"label\":\"Body\",\"name\":\"body_text\",\"type\":\"wysiwyg\"},{\"key\":\"field_other\",\"label\":\"Other\",\"name\":\"other\",\"type\":\"text\"}],\"type\":\"repeater\"}]}],\"name\":\"content_rows\",\"type\":\"flexible_content\"},{\"key\":\"field_untouched\",\"name\":\"untouched\",\"type\":\"text\"}],\"acf_values\":{\"field_rows\":[{\"acf_fc_layout\":\"body_text\",\"field_body\":\"<p>Original &amp; policy</p>\\n\",\"field_nested\":[{\"field_body\":\"Nested original\",\"field_other\":\"Nested keep\"}],\"field_other\":\"Keep formatting\"},{\"acf_fc_layout\":\"body_text\",\"field_body\":\"Second row\",\"field_nested\":[],\"field_other\":\"Second keep\"}],\"field_untouched\":\"Outside builder\"},\"core\":{\"post_content\":\"Native original\",\"post_excerpt\":\"Excerpt\",\"post_name\":\"privacy\",\"post_status\":\"publish\",\"post_title\":\"Privacy\"},\"post_id\":7,\"post_record_sha256\":\"4e6c88575ef8880c787708714d1c62b180a9b4cd17e6768bffb67e3e47badf3d\",\"post_type\":\"page\",\"runtime\":{\"acf\":null,\"php_minor\":\"8.5\",\"plugins_sha256\":\"2f9b7065ab123734ceb5468024ed36bf114310f10fb8e11511af387531ca3c73\",\"stylesheet\":\"fixture-child\",\"template\":\"fixture-parent\",\"wordpress\":\"6.9.4\"},\"site_id\":73,\"site_url\":\"https://fixture.example.invalid\",\"unrelated_meta_sha256\":\"d7ec0c72fcaee107810c56fc81bc29f83ac952f06054d6b65f5f58b1524bc106\"},\"snapshot_sha256\":\"3163c0b54124e69ba78ab55560f696799964fc58d6307d8d3495e37c4d62ad5c\",\"success\":true},\"schema\":1,\"source_binding_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}"
+  "dataset_canonical": "{\"acf_schema_sha256\":\"09101b9fc78d35496863fb2376c4f2c045684c6ad1ffbd4b0eed9366216807c4\",\"active_plugins_original_json\":\"[\\\"acf/acf.php\\\"]\",\"adapter\":\"content-management-v1\",\"ownership\":\"wordpress-content\",\"parity_manifest\":{\"active_plugins\":[\"acf/acf.php\"],\"core_php\":[],\"mu_plugins\":[],\"php_extensions\":[],\"php_version\":\"8.5.0\",\"render_dependencies\":\"owner-qualified-native-post\",\"render_options\":[{\"key\":\"blogname\",\"present\":true,\"value\":{\"sha256\":\"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\",\"type\":\"string\"}},{\"key\":\"mainwp_child_recent_custom_cpt_ids_limit\",\"present\":false,\"value\":null}],\"roots\":[],\"schema\":1,\"stylesheet\":\"fixture-child\",\"target_meta\":[],\"template\":\"fixture-parent\",\"wordpress_version\":\"6.9.4\"},\"parity_sha256\":\"7b176978cf6dea78ba9eca8fb7083b085f136b61dd96e20d0f28dcffee611b71\",\"read\":{\"affected_paths\":[\"/parent/privacy/\"],\"snapshot\":{\"acf_definitions\":[{\"key\":\"field_rows\",\"layouts\":[{\"key\":\"layout_body\",\"name\":\"body_text\",\"sub_fields\":[{\"key\":\"field_body\",\"label\":\"Body\",\"name\":\"body_text\",\"type\":\"wysiwyg\"},{\"key\":\"field_other\",\"label\":\"Other\",\"name\":\"other\",\"type\":\"text\"},{\"key\":\"field_nested\",\"name\":\"nested\",\"sub_fields\":[{\"key\":\"field_body\",\"label\":\"Body\",\"name\":\"body_text\",\"type\":\"wysiwyg\"},{\"key\":\"field_other\",\"label\":\"Other\",\"name\":\"other\",\"type\":\"text\"}],\"type\":\"repeater\"}]}],\"name\":\"content_rows\",\"type\":\"flexible_content\"},{\"key\":\"field_untouched\",\"name\":\"untouched\",\"type\":\"text\"}],\"acf_values\":{\"field_rows\":[{\"acf_fc_layout\":\"body_text\",\"field_body\":\"<p>Original &amp; policy</p>\\n\",\"field_nested\":[{\"field_body\":\"Nested original\",\"field_other\":\"Nested keep\"}],\"field_other\":\"Keep formatting\"},{\"acf_fc_layout\":\"body_text\",\"field_body\":\"Second row\",\"field_nested\":[],\"field_other\":\"Second keep\"}],\"field_untouched\":\"Outside builder\"},\"core\":{\"post_content\":\"Native original\",\"post_excerpt\":\"Excerpt\",\"post_name\":\"privacy\",\"post_status\":\"publish\",\"post_title\":\"Privacy\"},\"post_id\":7,\"post_record_sha256\":\"4e6c88575ef8880c787708714d1c62b180a9b4cd17e6768bffb67e3e47badf3d\",\"post_type\":\"page\",\"runtime\":{\"acf\":null,\"php_minor\":\"8.5\",\"plugins_sha256\":\"2f9b7065ab123734ceb5468024ed36bf114310f10fb8e11511af387531ca3c73\",\"stylesheet\":\"fixture-child\",\"template\":\"fixture-parent\",\"wordpress\":\"6.9.4\"},\"site_id\":73,\"site_url\":\"https://fixture.example.invalid\",\"unrelated_meta_sha256\":\"d7ec0c72fcaee107810c56fc81bc29f83ac952f06054d6b65f5f58b1524bc106\"},\"snapshot_sha256\":\"3163c0b54124e69ba78ab55560f696799964fc58d6307d8d3495e37c4d62ad5c\",\"success\":true},\"schema\":1,\"source_binding_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}"
 }

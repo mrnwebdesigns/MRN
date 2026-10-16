@@ -4,6 +4,46 @@
 
 One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebdesigns.com/mcp. Active MRN Google Workspace members get automatic portfolio access; there is no individual approval or enrollment step. Necessary approvals apply to concrete site changes. No teammate WordPress account, Application Password, API key, terminal, Codex, SSH or site token.
 
+## Management identity integration, 2026-10-16
+
+The private management callback now uses an authenticated, independently warmed
+MainWP connection and the distinct management query/signature domain. Its
+immutable SQLite mapping is created only after the original verified Google
+actor completes the provider's confirmed queue request and the gateway checks
+the exact independently reconstructed preview, source, policy and intent pins.
+The retained map contains identity and hashes, not OAuth tokens or page bodies.
+A new login cannot replace the original actor or extend its expiry. Both content
+protocols share principal revocation history but retain separate query/job maps;
+clearance in either protocol is bounded by the original OAuth expiry. Pending
+revocation remains deny-first local state, not proof of provider propagation.
+
+The private management queue uses the existing `run-delegated-operation-v1`
+confirmation boundary. It never falls back to the single-field queue, raw
+backend access or a new identity. Failed or uncertain responses and failed
+mapping commits produce no usable dispatch mapping and are not retried. These
+helpers are not workspace tools. The optional management callback lifecycle is
+not registered by service startup pending native combined qualification and
+concrete production approval.
+
+Contract/vector inputs now come from provider
+`c0811a8b4269cb2af9a957e0164a6c8e5095ea21`. Its
+[provider run 38919292938](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38919292938)
+passes all four jobs, including 65 native wire checks, 62 ACF-free checks,
+26 management lifecycle checks and 28 management capture checks. The private
+consumer recomputes full independent-read bytes, digest and chunk count; native
+call accounting is the sum of capture and readback chunks, bounded by 151.
+A snapshot hash cannot substitute for the complete read-result hash. The
+provider corrected nullable parity-descriptor validation and bounded native
+stdout assembly without repeating a write or raising global transport limits.
+
+The disposable gateway runtime now selects c0811a8; eleven inherited
+qualification blobs remain byte-identical. This checkpoint still needs its
+combined gateway CI and actual Node management-callback proof. Protected
+rendered/hook QA, profile admission, new-record capture, production configuration,
+qualified menu/media operations and actual ChatGPT team acceptance remain open.
+The post-ID-zero capture refusal is intentional; no existing record substitutes
+for a draft creation recipe.
+
 ## Current structured-content integration, 2026-10-16
 
 The existing `read_website_content` and `search_website_content` tools now select

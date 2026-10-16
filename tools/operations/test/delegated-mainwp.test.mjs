@@ -1,12 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { generateKeyPairSync, randomBytes, verify } from 'node:crypto';
+import { generateKeyPairSync, randomBytes, randomUUID, verify } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { IdentitySigner, delegationDigest, delegationPrefix } from '../src/delegation.mjs';
 import { DelegatedMainwpClient, delegationTools, qualificationQueueTool } from '../src/delegated-mainwp.mjs';
 import { Store } from '../src/store.mjs';
 import { accessRegistry } from './fixtures/access-registry.mjs';
 import { ContentAccessLedger } from '../src/content-access-store.mjs';
+import { ManagementAccessLedger } from '../src/content-management-access-store.mjs';
+import { managementAccessFixture } from './fixtures/management-access.mjs';
 
 const response = value => ({ content: [{ type: 'text', text: JSON.stringify(value) }] });
 function fixture() {
@@ -76,6 +78,89 @@ function queueFixture(t) {
   f.client.listTools = async () => ({ tools: [...(await list()).tools, { name: qualificationQueueTool, annotations: { readOnlyHint: false, destructiveHint: false } }] });
   return { ...f, store, ledger, registry, registryData, policy, request, job, expected, queue: f.delegated('123') };
 }
+
+function managementQueueFixture(t) {
+  const f = fixture(), store = new Store(':memory:'); t.after(() => store.close());
+  const actor = f.actor('123'), values = managementAccessFixture(actor, Date.now());
+  values.context.binding.authorization_policy_sha256 = 'b'.repeat(64);
+  values.context.binding_sha256 = delegationDigest(values.context.binding);
+  values.expected.pins.authorization_policy_sha256 = 'b'.repeat(64);
+  const { registry, registryData, policy } = accessRegistry(values.request.site_url);
+  const ledger = new ManagementAccessLedger(store, { connectionId: 'con_MRNGoogle', registry });
+  f.state.corrupt = result => { result.result = values.context; };
+  return { ...f, ...values, store, registry, registryData, policy, ledger, queue: new DelegatedMainwpClient(f.client, actor, f.signer) };
+}
+
+test('private management preview and migration use the same human delegation without enabling execution', async t => {
+  const f = managementQueueFixture(t);
+  f.state.corrupt = result => { result.result = result.ability === 'mrn-mainwp/preview-content-edit-v1'
+    ? f.expected.evidence.review : f.expected.evidence.migration; };
+  assert.deepEqual(await f.queue.previewManagementEdit(f.expected.request), f.expected.evidence.review);
+  const migrationInput = { site_id: f.request.site_id, site_url: f.request.site_url, operation_id: f.request.operation_id };
+  assert.deepEqual(await f.queue.readManagementMigration(migrationInput), f.expected.evidence.migration);
+  assert.deepEqual(f.state.dispatched.map(row => row.ability), ['mrn-mainwp/preview-content-edit-v1', 'mrn-mainwp/get-content-edit-migration-v1']);
+  assert.ok(f.state.dispatched.every(row => row.person.google_sub === '123'));
+  for (const name of ['preview_content_edit', 'approve_content_edit', 'execute_content_edit'])
+    await assert.rejects(() => f.queue.callTool({ name: `mrn_mainwp__${name}_v1`, arguments: {} }), { code: 'CAPABILITY_DENIED' });
+  const readOnly = new DelegatedMainwpClient(f.client, { ...f.queue.actor, scopes: ['mrn:operations'] }, f.signer);
+  await assert.rejects(() => readOnly.previewManagementEdit(f.expected.request), { code: 'INSUFFICIENT_SCOPE' });
+  await assert.rejects(() => f.queue.previewManagementEdit({ ...f.expected.request, post_id: 0 }), { code: 'CAPABILITY_UNAVAILABLE' });
+});
+
+test('private management preview refuses changed target or migration identity without retry', async t => {
+  const f = managementQueueFixture(t);
+  f.state.corrupt = result => { result.result = { ...f.expected.evidence.review, site_id: f.request.site_id + 1 }; };
+  await assert.rejects(() => f.queue.previewManagementEdit(f.expected.request), { code: 'CONTENT_MANAGEMENT_MISMATCH' });
+  f.state.corrupt = result => { result.result = { ...f.expected.evidence.migration, operation_id: randomUUID() }; };
+  await assert.rejects(() => f.queue.readManagementMigration({ site_id: f.request.site_id, site_url: f.request.site_url, operation_id: f.request.operation_id }), { code: 'CONTENT_MANAGEMENT_MISMATCH' });
+  assert.equal(f.state.dispatched.length, 2);
+});
+
+test('management queue uses the existing confirmed run with original identity and immutable admitted context', async t => {
+  const f = managementQueueFixture(t);
+  const result = await f.queue.queueManagementQualification(f.request, { ledger: f.ledger, admit: async () => f.expected });
+  assert.deepEqual(result, f.context);
+  assert.deepEqual(f.state.calls, [delegationTools.challenge, delegationTools.run, delegationTools.run]);
+  assert.equal(f.state.dispatched.length, 1);
+  assert.equal(f.state.dispatched[0].ability, 'mrn-mainwp/request-content-edit-qualification-v1');
+  assert.equal(f.state.dispatched[0].person.google_sub, '123');
+  const mapping = JSON.parse(f.store.db.prepare('SELECT body FROM management_access_jobs').get().body);
+  assert.equal(mapping.context.binding_sha256, f.context.binding_sha256);
+  assert.equal(mapping.actor.subject, f.queue.actor.subject);
+  await assert.rejects(() => f.queue.callTool({ name: 'mrn_mainwp__request_content_edit_qualification_v1', arguments: f.request }), { code: 'CAPABILITY_DENIED' });
+});
+
+test('management qualification refuses unavailable worker, caller identity and changed policy before queue dispatch', async t => {
+  const f = managementQueueFixture(t);
+  await assert.rejects(() => f.queue.queueManagementQualification(f.request), { code: 'QUALIFICATION_WORKER_UNAVAILABLE' });
+  await assert.rejects(() => f.queue.queueManagementQualification({ ...f.request, email: 'staff@mrnwebdesigns.com' }, { ledger: f.ledger, admit: async () => f.expected }));
+  await assert.rejects(() => f.queue.queueManagementQualification(f.request, { ledger: f.ledger, admit: async () => ({}) }), { code: 'ACCESS_MAPPING' });
+  assert.equal(f.state.calls.length, 0);
+  const expected = structuredClone(f.expected); expected.pins.authorization_policy_sha256 = 'e'.repeat(64);
+  await assert.rejects(() => f.queue.queueManagementQualification(f.request, { ledger: f.ledger, admit: async () => expected }), { code: 'DELEGATION_MISMATCH' });
+  assert.deepEqual(f.state.calls, [delegationTools.challenge]);
+  assert.equal(f.store.db.prepare('SELECT count(*) AS n FROM management_access_jobs').get().n, 0);
+});
+
+test('management queue cannot retain an altered actor, source, preview or environment from an uncertain result', async t => {
+  for (const failure of ['actor', 'source', 'preview', 'permission', 'environment', 'uncertain', 'storage']) {
+    const f = managementQueueFixture(t);
+    f.state.corrupt = result => {
+      result.result = structuredClone(f.context);
+      if (failure === 'actor') result.actor.google_sub = '999';
+      if (failure === 'source') result.result.binding.provider_source_sha = 'e'.repeat(40);
+      if (failure === 'preview') result.result.binding.candidate_sha256 = 'e'.repeat(64);
+      result.result.binding_sha256 = delegationDigest(result.result.binding);
+      if (failure === 'permission') f.policy.emailDomains[0].portfolio.actions = ['read'];
+      if (failure === 'environment') f.registryData.websites[0].environments[0].name = 'staging';
+      if (failure === 'uncertain') throw new Error('response lost');
+      if (failure === 'storage') f.store.db.exec("CREATE TRIGGER reject_management_map BEFORE INSERT ON management_access_jobs BEGIN SELECT RAISE(ABORT,'fixture storage failure'); END");
+    };
+    await assert.rejects(() => f.queue.queueManagementQualification(f.request, { ledger: f.ledger, admit: async () => f.expected }));
+    assert.equal(f.state.dispatched.length, 1); // No automatic retry or fallback.
+    assert.equal(f.store.db.prepare('SELECT count(*) AS n FROM management_access_jobs').get().n, 0);
+  }
+});
 
 test('private qualification queue binds the verified requester only after service worker admission and exact response', async t => {
   const f = queueFixture(t); let admission = 0;

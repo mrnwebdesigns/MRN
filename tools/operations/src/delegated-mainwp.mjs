@@ -3,6 +3,8 @@ import { requireThat, requireWriteScope, sha } from './contracts.mjs';
 import { payload, validateStatus } from './mainwp.mjs';
 import { delegationCanonical, delegationDigest } from './delegation.mjs';
 import { qualificationRequestSchema, validateQueuePins } from './content-access-store.mjs';
+import { managementQualificationRequestSchema, validateManagementQueuePins } from './content-management-access-store.mjs';
+import { managementSchemas } from './content-management-contract.mjs';
 
 export const qualificationQueueTool = 'mrn_mainwp__queue_delegated_qualification_v1';
 
@@ -84,11 +86,16 @@ export class DelegatedMainwpClient {
     if (ability === 'mainwp/sync-sites-v1') requireThat(Object.keys(args).length === 1
       && Array.isArray(args.site_ids) && args.site_ids.length === 1 && Number.isSafeInteger(args.site_ids[0]) && args.site_ids[0] > 0,
     'TARGET_MISMATCH', 'Delegated sync requires one exact resolved site.');
+    const wrapper = readAbilities.has(ability) ? delegationTools.read : ability === 'mainwp/sync-sites-v1' ? delegationTools.sync : delegationTools.run;
+    return this.#dispatch(ability, args, wrapper, options);
+  }
+  async #dispatch(ability, args, wrapper, options, expectedPolicy) {
     const arguments_json = delegationCanonical(args);
     requireThat(Buffer.byteLength(arguments_json) <= 98304, 'DELEGATION_INPUT', 'Delegated request exceeds the supported bound.');
     const { envelope, claims } = await this.envelope(ability, args);
+    requireThat(expectedPolicy === undefined || expectedPolicy === claims.policy_sha256,
+      'DELEGATION_MISMATCH', 'The current delegation policy differs from the admitted worker policy.');
     // No retry and no interactive-lease/raw-service fallback on any failure.
-    const wrapper = readAbilities.has(ability) ? delegationTools.read : ability === 'mainwp/sync-sites-v1' ? delegationTools.sync : delegationTools.run;
     const input = { ability, arguments_json, delegation: envelope, ...(wrapper === delegationTools.run ? { confirm: true } : {}) };
     let response = await this.client.callTool({ name: wrapper, arguments: input }, undefined, options);
     if (wrapper === delegationTools.run) {
@@ -129,6 +136,42 @@ export class DelegatedMainwpClient {
     // A failed/missing durable map forbids subsequent dispatch. No retry or
     // reconstruction from callback data after an uncertain queue response.
     return ledger.recordQueued(this.actor, args, response.result, expected, admittedSite).job;
+  }
+  // Private management intent uses the provider's existing confirmed run
+  // wrapper, never the exclusive single-field qualification queue route.
+  async previewManagementEdit(input) {
+    requireWriteScope(this.actor);
+    const contract = managementSchemas['preview-content-edit-v1'], args = contract.input.parse(input);
+    requireThat(args.post_id > 0, 'CAPABILITY_UNAVAILABLE', 'New-record qualification is not available.');
+    const review = contract.output.parse(payload(await this.#dispatch('mrn-mainwp/preview-content-edit-v1', args,
+      delegationTools.run, { timeout: 90000 })));
+    requireThat(review.site_id === args.site_id && review.site_url === args.site_url
+      && review.target.post_type === args.post_type && review.target.post_id === args.post_id
+      && review.before_sha256 === args.expected_snapshot_sha256,
+    'CONTENT_MANAGEMENT_MISMATCH', 'The preview returned a different website, record or baseline.');
+    return review; // Complete candidate/migration reconstruction still precedes queue admission.
+  }
+  async readManagementMigration(input) {
+    const contract = managementSchemas['get-content-edit-migration-v1'], args = contract.input.parse(input);
+    const migration = contract.output.parse(payload(await this.#dispatch('mrn-mainwp/get-content-edit-migration-v1', args,
+      delegationTools.read, { timeout: 30000 })));
+    requireThat(migration.operation_id === args.operation_id, 'CONTENT_MANAGEMENT_MISMATCH', 'The migration belongs to another operation.');
+    return migration;
+  }
+  async queueManagementQualification(input, { ledger, admit } = {}) {
+    requireWriteScope(this.actor);
+    requireThat(ledger && typeof admit === 'function', 'QUALIFICATION_WORKER_UNAVAILABLE', 'Protected management qualification is not configured.');
+    const args = managementQualificationRequestSchema.parse(input);
+    const admittedSite = ledger.assertQueueAllowed(this.actor, args);
+    const expected = await admit(this.actor, structuredClone(args));
+    validateManagementQueuePins(expected?.pins);
+    await this.ready();
+    ledger.assertQueueAllowed(this.actor, args, admittedSite);
+    const response = payload(await this.#dispatch('mrn-mainwp/request-content-edit-qualification-v1', args, delegationTools.run,
+      { timeout: 30000 }, expected.pins.authorization_policy_sha256));
+    // Failure to durably map this exact authenticated result forbids dispatch.
+    // A callback or fresh login cannot reconstruct or renew a missing mapping.
+    return ledger.recordQueued(this.actor, args, response, expected, admittedSite).context;
   }
   async listTools(params) { return this.client.listTools(params); }
   async readResource(params) {
