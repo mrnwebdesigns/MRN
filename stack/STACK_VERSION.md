@@ -1,7 +1,7 @@
 # Stack Version
 
 ## Candidate Release
-- Stack release: `2026.10.16-fleet-auto-167604ebc995`
+- Stack release: `2026.10.16-fleet-auto-91bc5a53671c`
 - Release date: `2026-10-16`
 - Status: `source snapshot; qualification/publication evidence establishes Fleet readiness; site rollout separate`
 
@@ -16,7 +16,7 @@
 | `mrn-admin-data-post-types-loader` | `0.3.0` |
 | `mrn-admin-ui-css` | `3.2.4` |
 | `mrn-announcements` | `1.8.2` |
-| `mrn-base-stack` | `1.5.22` |
+| `mrn-base-stack` | `1.5.24` |
 | `mrn-base-stack-child` | `1.1.0` |
 | `mrn-comment-management` | `1.3.0` |
 | `mrn-config-helper` | `0.1.74` |
