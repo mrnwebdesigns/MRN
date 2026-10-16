@@ -1,5 +1,9 @@
 # Stack Changelog
 
+## Unreleased — parent 1.5.19
+
+- Show the native SEOPress cookie preferences control as a 48px cookie icon by default, using the Stack icon renderer and shared Font Awesome assets. Preserve the configured accessible label, keyboard activation, native consent behavior, placement and colors. Keep the text control when shared icons are unavailable.
+
 ## 2026.10.15-fleet-auto-1a5e4859001b
 
 - Automatic cumulative release from accepted source vector `487c489def4e141d7f7cb84f82313a119e35886ee329fd993f4b28b232c015ea`.
