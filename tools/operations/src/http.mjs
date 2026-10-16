@@ -26,7 +26,10 @@ export function createHttpServer({ service, authenticate, publicUrl, issuer, ori
   let controlActive = 0, controlCount = 0, controlUntil = 0;
   let evidenceActive = 0, evidenceCount = 0, evidenceUntil = 0;
   let workerActive = 0, workerCount = 0, workerUntil = 0;
-  const json = (res, status, value) => { res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(value)); };
+  const json = (res, status, value, serialize = JSON.stringify) => {
+    const body = serialize(value);
+    res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(body);
+  };
   const server = createServer(async (req, res) => {
     let admitted = false, controlAdmitted = false, evidenceAdmitted = false, workerAdmitted = false, controlTimer;
     try {
@@ -61,8 +64,10 @@ export function createHttpServer({ service, authenticate, publicUrl, issuer, ori
         controlTimer = setTimeout(() => req.destroy(), 60000); controlTimer.unref();
         const body = await readBody(req, { limit: 512, canonical: true });
         const response = await managementEvidence.respond(body);
-        requireThat(Buffer.byteLength(JSON.stringify(response)) <= 1048576, 'BODY_LIMIT', 'The evidence response exceeds its fixed limit.');
-        return json(res, 200, response);
+        requireThat(Buffer.byteLength(delegationCanonical(response)) <= 1048576, 'BODY_LIMIT', 'The evidence response exceeds its fixed limit.');
+        // The provider verifies these exact outer bytes as well as each signed
+        // payload. Do not depend on schema/handler property insertion order.
+        return json(res, 200, response, delegationCanonical);
       }
       const control = req.url === accessVetoPath ? accessVeto : req.url === managementAccessVetoPath ? managementAccessVeto : null;
       if (control) {

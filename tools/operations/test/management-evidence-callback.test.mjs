@@ -138,7 +138,7 @@ function post(server, path, body, headers = {}) {
     const req = httpRequest({ host: '127.0.0.1', port: server.address().port, path, method: 'POST', agent: false,
       headers: { host: 'operations.mrnwebdesigns.com', 'content-type': 'application/json', ...headers } }, res => {
       const chunks = []; res.on('data', c => chunks.push(c));
-      res.on('end', () => resolve({ status: res.statusCode, body: JSON.parse(Buffer.concat(chunks)) }));
+      res.on('end', () => { const raw = Buffer.concat(chunks); resolve({ status: res.statusCode, raw, body: JSON.parse(raw) }); });
     }); req.on('error', reject); req.end(body);
   });
 }
@@ -154,6 +154,8 @@ test('actual HTTP evidence callback is opt-in, canonical, bounded and separate f
   assert.deepEqual(f.calls, []);
   const response = await post(server, managementEvidencePath, body);
   assert.equal(response.status, 200); assert.ok(response.body.signed_acquisition);
+  assert.equal(response.raw.toString('utf8'), delegationCanonical(response.body));
+  assert.ok(response.raw.toString('utf8').startsWith('{"acquisition_zip_base64":'));
   assert.equal((await post(server, managementEvidencePath, body)).status, 400);
   assert.equal((await post(server, '/internal/mainwp/management-access-veto', body)).status, 404);
   const disabled = createHttpServer({ publicUrl: 'https://operations.mrnwebdesigns.com/mcp' });
@@ -167,7 +169,7 @@ test('occupied evidence slots never consume the independent short access-veto ca
   const held = new Promise(resolve => { release = resolve; }), both = new Promise(resolve => { admitted = resolve; });
   const server = createHttpServer({ publicUrl: 'https://operations.mrnwebdesigns.com/mcp',
     managementEvidence: { respond: async () => { if (++count === 2) admitted(); await held; return { observation: 'capacity-fixture' }; } },
-    managementAccessVeto: { respond: async () => ({ capacity: 'independent' }) } });
+    managementAccessVeto: { respond: async () => ({ capacity: 'independent', a: 1 }) } });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve)); t.after(() => server.close());
   const body = delegationCanonical({ query_id: '00000000-0000-4000-8000-000000000001', provider_query_nonce: 'a'.repeat(64) });
   const first = post(server, managementEvidencePath, body), second = post(server, managementEvidencePath, body);
@@ -175,7 +177,20 @@ test('occupied evidence slots never consume the independent short access-veto ca
   assert.equal((await post(server, managementEvidencePath, body)).status, 429);
   const veto = await post(server, '/internal/mainwp/management-access-veto', body);
   assert.equal(veto.status, 200); assert.equal(veto.body.capacity, 'independent');
+  assert.equal(veto.raw.toString('utf8'), '{"capacity":"independent","a":1}');
   release(); assert.equal((await first).status, 200); assert.equal((await second).status, 200);
+});
+
+test('evidence HTTP serialization is canonical independently of handler insertion order', async t => {
+  const value = { signed_acquisition: { signature_base64: 'signature', payload_base64: 'payload', key_id: 'fixture' },
+    qualification_zip_base64: 'qualification', acquisition_zip_base64: 'acquisition' };
+  const server = createHttpServer({ publicUrl: 'https://operations.mrnwebdesigns.com/mcp',
+    managementEvidence: { respond: async () => value } });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve)); t.after(() => server.close());
+  const response = await post(server, managementEvidencePath, '{}');
+  assert.equal(response.status, 200);
+  assert.equal(response.raw.toString('utf8'), delegationCanonical(value));
+  assert.notEqual(response.raw.toString('utf8'), JSON.stringify(value));
 });
 
 test('optional evidence lifecycle warms a separate canonical reader, closes once and is absent by default', async t => {
