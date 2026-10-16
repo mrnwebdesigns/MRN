@@ -48,8 +48,14 @@ content reflected into tool responses.
 
 ## Permissions
 
-An operator assigns immutable team identities once. For directory-wide read
-access, use this member template in the existing permissions policy:
+Active MRN Google Workspace staff receive portfolio access automatically through
+the central domain policy in `config/permissions.team.example.json`, with current
+Google Directory checks and request-bound identity delegation. Staff do not need
+individual registration or approval. Suspension and explicit revocation still
+deny access; domain membership never bypasses a change's qualification gates.
+
+The following explicit member template is for narrower operator-managed
+exceptions and controlled fixtures, not ordinary staff onboarding:
 
 ```json
 {
