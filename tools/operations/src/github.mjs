@@ -1,6 +1,7 @@
 import { createPrivateKey, sign } from 'node:crypto';
 import { constants, openSync, fstatSync, readFileSync, closeSync } from 'node:fs';
 import { requireThat, digest } from './contracts.mjs';
+import { createManagementEvidenceTransport } from './github-management-evidence.mjs';
 
 const hash = value => typeof value === 'string' && /^[a-f0-9]{40}$/.test(value);
 const pathValid = value => typeof value === 'string' && /^[A-Za-z0-9_][A-Za-z0-9_./-]{0,511}$/.test(value) && !value.includes('..') && !value.includes('//') && !value.endsWith('/');
@@ -44,13 +45,13 @@ export class GithubApp {
     }
     try { return JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch { requireThat(false, 'GITHUB_SCHEMA', 'Invalid GitHub JSON response.'); }
   }
-  async scoped(repository, purpose, authorize) {
+  async #grant(repository, purpose, authorize, request = this.request.bind(this)) {
     requireThat(Object.hasOwn(this.repositories, repository) && Object.hasOwn(permissions, purpose), 'GITHUB_SCOPE', 'This source or workflow repository is not configured.');
     await authorize();
     const at = Math.floor(this.now() / 1000);
     const prefix = `${Buffer.from(JSON.stringify({ alg: 'RS256', typ: 'JWT' })).toString('base64url')}.${Buffer.from(JSON.stringify({ iat: at - 60, exp: at + 540, iss: String(this.appId) })).toString('base64url')}`;
     const jwt = `${prefix}.${sign('RSA-SHA256', Buffer.from(prefix), this.privateKey).toString('base64url')}`;
-    const grant = await this.request(`/app/installations/${this.installationId}/access_tokens`, jwt, 'POST',
+    const grant = await request(`/app/installations/${this.installationId}/access_tokens`, jwt, 'POST',
       { repository_ids: [this.repositories[repository]], permissions: permissions[purpose] }, 201);
     requireThat(typeof grant.token === 'string' && grant.token.length > 10 && Date.parse(grant.expires_at) > this.now() + 30000
       && Date.parse(grant.expires_at) <= this.now() + 3660000
@@ -59,6 +60,17 @@ export class GithubApp {
     requireThat(grant.permissions && Object.entries(permissions[purpose]).every(([key, value]) => grant.permissions[key] === value)
       && Object.keys(grant.permissions).every(key => Object.hasOwn(permissions[purpose], key) || (key === 'metadata' && grant.permissions.metadata === 'read')),
     'GITHUB_SCOPE', 'GitHub returned a broader or incomplete permission grant.');
+    return grant;
+  }
+  // Private management acquisition uses the same exact-repository App grant.
+  // This does not configure credentials, dispatch a run or register a tool.
+  async managementEvidence(repository, authorize, { expiresAt, monotonic } = {}) {
+    return createManagementEvidenceTransport({ repository, authorize, expiresAt, monotonic,
+      fetchImpl: this.fetchImpl, now: this.now,
+      acquireGrant: request => this.#grant(repository, 'qaRead', authorize, request) });
+  }
+  async scoped(repository, purpose, authorize) {
+    const grant = await this.#grant(repository, purpose, authorize);
     const api = async (path, method, body, status) => {
       await authorize(); requireThat(Date.parse(grant.expires_at) > this.now(), 'GITHUB_EXPIRED', 'The central installation grant expired.');
       return this.request(`/repos/${repository}${path}`, grant.token, method, body, status);

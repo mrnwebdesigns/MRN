@@ -6,6 +6,25 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
 
 ## Current native integration checkpoint, 2026-10-16
 
+Gateway `70497e4ef540f7352e9529bd69409ef40550a050` passes 391 source tests and
+[MRN QA 38927657765](https://github.com/mrnwebdesigns/MRN/actions/runs/38927657765).
+[Combined run 38927657774](https://github.com/mrnwebdesigns/MRN/actions/runs/38927657774)
+passes the inherited 10 identity, 8 native edit/rollback, 11 current-access and
+6 transport groups. Four new management groups also pass in the original log:
+large draft reading and published-target intent, actual Node callbacks with
+complete capture/readback, retained measurement integrity, and current site
+permission denial. The run then fails because the delayed-read marker is not
+observed. Pending-revocation coverage is not accepted. Original partial artifact
+`12057683248` has SHA-256
+`5ca585b11b983b5bc3f2034f07ee29b5e4d632b4d92031de7ad2822804008adb`;
+its four existing reports pass, but it contains no management report.
+
+The harness now retains an explicitly incomplete report after each management
+group and closed failure diagnostics before the marker assertion. Partial
+evidence never satisfies the six-group runtime gate. The provider is correcting
+the disposable early-hook JSON decoding and adding actual standalone delayed
+capture proof; none of the original lifetime or access gates is widened.
+
 Gateway `87921cb4b7b7a45a82ff1c763db92b25bca1fdf9` passes 389 source tests and
 [MRN QA 38924881952](https://github.com/mrnwebdesigns/MRN/actions/runs/38924881952).
 Its [combined run 38924881741](https://github.com/mrnwebdesigns/MRN/actions/runs/38924881741)
@@ -25,11 +44,29 @@ so its original 180-second actor/test lifetime covers only its own work.
 
 The candidate runtime pin is `d3d74f25be36457345d96c5770988b597b39d960`; its six
 changed files are fixture tests and documentation only. Sixteen copied blobs
-remain exact. [Provider CI 38927262827](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38927262827)
-and the new combined runtime result remain required. Testing the candidate does
-not accept either gate or activate production. Protected management report
+remain exact. All four [provider CI 38927262827](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38927262827)
+jobs pass; the combined result above still fails. Testing the candidate does
+not activate production. Protected management report
 admission, rendered/hook parity, remaining workflows and ChatGPT acceptance are
 still open.
+
+## Private management evidence reader, 2026-10-16
+
+The gateway reuses the existing central GitHub App grant validation for a
+separate fixed read-only evidence facade. It permits one run metadata read, one
+artifact inventory read and two distinct role-bound archive downloads. Run IDs
+cannot change within an acquisition. Credentials never follow GitHub's storage
+redirect. The original human intent expiry and a single 60-second monotonic
+budget include authorization, grant minting, requests and body streaming.
+Failures and uncertain reads cannot retry. Current authorization is checked
+before and after each read, including after bytes arrive.
+
+Qualification and acquisition ZIP limits are 262144 and 196608 bytes; metadata
+is capped at 131072 bytes. The existing 64 KiB receipt reader is unchanged.
+These private helpers are not registered in service startup and confer no
+report admission, dispatch, profile or write authority. Independent closed
+metadata verification, immutable job/dispatch mapping, protected producer,
+provider retention and actual acquisition integration remain required.
 
 ## Management identity integration, 2026-10-16
 

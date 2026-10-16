@@ -113,10 +113,11 @@ const worker = async (mode, id, hash) => {
   assert.ok(Buffer.byteLength(raw) <= 5243008); return JSON.parse(raw);
 };
 const rawClient = async () => { const c = await connectMainwp(config, environment); clients.add(c); return c; };
-const report = { schema: 1, source: lock, scope: 'disposable-native-management-access-only', passed: [], productionCredentials: false,
+const report = { schema: 1, result: 'INCOMPLETE', source: lock, scope: 'disposable-native-management-access-only', passed: [], productionCredentials: false,
   liveGoogleVerified: false, protectedWorkerVerified: false, renderedQaVerified: false, consumerBindingIssued: false,
   contentWriteVerified: false, remoteBackupVerified: false, chatgptAcceptanceVerified: false };
-const pass = label => { report.passed.push(label); process.stdout.write(`PASS ${label}\n`); };
+const saveReport = () => writeFileSync(process.env.MRN_GATEWAY_MANAGEMENT_REPORT, JSON.stringify(report, null, 2) + '\n', { mode: 0o600 });
+const pass = label => { report.passed.push(label); saveReport(); process.stdout.write(`PASS ${label}\n`); };
 let server, runtime, routed = false;
 try {
   runtime = await createManagementAccessRuntime({ enabled: true, store, registry, identity,
@@ -210,8 +211,21 @@ try {
   const armed = await worker('arm-delay', secondId); assert.equal(armed.ok, true); assert.equal(armed.armed, true);
   const started = performance.now(), slow = worker('capture', secondId);
   // Attach immediately so a refused subprocess never becomes an unhandled rejection.
-  const observed = slow.then(value => ({ value }), error => ({ error }));
-  const pending = await worker('wait-read', secondId); assert.equal(pending.ok, true); assert.equal(pending.in_flight, true);
+  let workerState = 'pending';
+  const observed = slow.then(value => { workerState = value.ok === true ? 'succeeded' : 'refused'; return { value }; },
+    error => { workerState = 'unavailable'; return { error }; });
+  const pending = await worker('wait-read', secondId);
+  if (pending.ok !== true || pending.in_flight !== true) {
+    const state = await worker('status', secondId);
+    report.failure = { phase: 'pending-read-marker', markerObserved: false, workerState,
+      captureCompleted: state.state === 'captured', captureRetained: state.capture_present === true,
+      captureAuthenticated: state.capture_authenticated === true,
+      elapsedMs: Math.ceil(performance.now() - started),
+      originalActorRemainingMs: Math.max(0, actor.expiresAt - Date.now()),
+      callbacks: store.db.prepare('SELECT count(*) AS n FROM management_access_queries WHERE job=?').get(secondId).n };
+    saveReport(); process.stdout.write(JSON.stringify({ managementFailure: report.failure }) + '\n');
+  }
+  assert.equal(pending.ok, true); assert.equal(pending.in_flight, true);
   assert.deepEqual(runtime.ledger.recordPendingRevocation(secondId), { state: 'pending-revocation', revision: 2, committed_denial: false });
   const outcome = await observed; if (outcome.error) throw outcome.error;
   assert.equal(outcome.value.ok, false); assert.ok(performance.now() - started >= 5000);
@@ -240,7 +254,7 @@ try {
   report.childUnchangedVerified = true; report.callbackPosts = callbacks.length;
   report.draftRecordReadVerified = true; report.publishedTargetVerified = true;
   assert.equal(report.passed.length, 6);
-  writeFileSync(process.env.MRN_GATEWAY_MANAGEMENT_REPORT, JSON.stringify(report, null, 2) + '\n', { mode: 0o600 });
+  saveReport();
 } finally {
   try { if (routed) await run(context.control.route_switch, ['disabled'], 10000, 4096); }
   finally {
