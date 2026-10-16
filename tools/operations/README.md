@@ -290,3 +290,36 @@ MRN QA result and unrun hosting/runtime checks. The CI workflow runs controlled
 service tests, existing Fleet regression and the locked dependency audit on PRs.
 
 The private content authorization callback is disabled by default. An explicitly reviewed `contentAccess: true` service setting requires the existing Operations origin, Google delegation and content workflow configuration. Startup validates a separate MainWP control connection before listening and closes it on setup failure or shutdown. This setting supplies only the callback lifecycle; it does not provision provider authority, admit qualification jobs, activate a protected worker or establish team acceptance. Activation remains part of the concrete deployment review.
+
+The private source broker is prepared source only. `ManagementSourceBroker`
+reuses `ManagementWorkerContext` to verify the exact original protected GitHub
+OIDC run and recheck the original Google staff member before and after source
+reads. It binds one ephemeral supervisor public key per recorded dispatch in
+SQLite, retains spent nonces and failed attempts across restarts, and signs
+observations of encrypted actual bytes. Worker input cannot choose an email,
+site, catalog, backend route, repository, run or source path. The fixed backend
+read uses `mrn_mainwp__read_content_edit_qualification_source_v1`, with a separate
+registrar key and the provider's frozen `mrn-content-management-source-read-v1:`
+purpose. Existing identity signing and backend credentials remain service-owned.
+
+The provider source contract is byte-pinned at commit
+`c49b88be6242a7012587df5d93cba3a89c587841`, SHA-256
+`36320f6d2d5dac5523ecc68b0fa463c2fa1246cbf75f81e3209c055aa196f3e9`.
+The independent supervisor decoder verifies the signed transcript and decrypts
+X25519/HKDF-SHA256/AES-256-GCM batches. HKDF info is the fixed
+`mrn-content-management-source-broker-aead-v1:` prefix plus the SHA-256 of
+canonical header bytes, the recipient UUID is its salt, and full canonical
+header bytes are authenticated as GCM associated data. Separate recipient and
+batch signature purposes prevent reuse of ordinary context signatures. Batches
+retain the provider's 16-frame/32-KiB geometry and 1-MiB plaintext bound; encrypted
+responses have their own 2-MiB ceiling, without widening existing endpoints.
+
+No source HTTP route or startup configuration is registered. The required
+`resolveSource` service adapter must obtain an authenticated retained original
+capture and its independently verified current pre-queue owner catalog pin.
+That adapter, provider capture/controller activation, durable capture custody,
+approved opaque central cache registry/population and full source assembly are
+still integration blockers. There is no caller-controlled installation method
+or fallback credential path. Unit and cross-repository codec fixtures do not
+prove live source capture, Google/OIDC acceptance, rendered content QA or team
+readiness. No content write or code policy is activated by these modules.
