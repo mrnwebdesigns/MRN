@@ -4,7 +4,7 @@ Theme URI: https://mrndev.io/
 Author: MRN Web Designs
 Author URI: https://mrndev.io/
 Description: Stack starter theme for MRN sites. Includes builder-aware templates, reusable-block support, and a clean development shell for site builds.
-Version: 1.5.20
+Version: 1.5.21
 Tested up to: 6.8
 Requires PHP: 8.0
 License: GNU General Public License v2 or later
@@ -5187,6 +5187,27 @@ a.mrn-social-links__link:focus-visible svg {
 	grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
+.mrn-logos-row__grid--columns-7 {
+	grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.mrn-logos-row__splide[data-logos-responsive="true"] {
+	min-width: 0;
+	max-width: 100%;
+}
+
+.mrn-logos-row__splide[data-logos-responsive="true"]:not(.is-initialized) {
+	visibility: visible;
+}
+
+.mrn-logos-row__splide[data-logos-responsive="true"]:not(.is-initialized) .splide__track {
+	overflow-x: auto;
+}
+
+.mrn-logos-row__splide[data-logos-responsive="true"]:not(.is-initialized) .splide__slide {
+	flex: 0 0 min(12rem, 80vw);
+}
+
 .mrn-logos-row__item {
 	display: flex;
 	align-items: flex-start;
@@ -7484,7 +7505,8 @@ a.mrn-social-links__link:focus-visible svg {
 
 	.mrn-logos-row__grid--columns-4,
 	.mrn-logos-row__grid--columns-5,
-	.mrn-logos-row__grid--columns-6 {
+	.mrn-logos-row__grid--columns-6,
+	.mrn-logos-row__grid--columns-7 {
 		grid-template-columns: repeat(3, minmax(0, 1fr));
 	}
 

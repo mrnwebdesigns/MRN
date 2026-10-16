@@ -1,0 +1,31 @@
+{
+    "checks": [
+        "Owned local draft created",
+        "Root Logos exposes seven views",
+        "Responsive view count is bounded",
+        "Nested Logos exposes seven views",
+        "Root and nested controls have unique native field keys",
+        "Explicit fixture media selection contains six attachment IDs",
+        "Selected fixture image exists locally: 32",
+        "Selected fixture image exists locally: 33",
+        "Selected fixture image exists locally: 157",
+        "Selected fixture image exists locally: 35",
+        "Selected fixture image exists locally: 36",
+        "Selected fixture image exists locally: 37",
+        "Six existing images selected without importing media",
+        "Native ACF write\/readback retains seven and all responsive views",
+        "Native fields retain the viewport condition and gap",
+        "Renderer emits the authored desktop and autoplay conditions",
+        "Renderer emits native gap and continuous mode",
+        "Server provides a named pause control, hidden until JavaScript qualifies movement",
+        "All authored breakpoint widths retain their values",
+        "Invalid optional presentation values cannot escape into output",
+        "Rows without new settings retain the existing renderer contract",
+        "Explicit proof destination is an existing directory",
+        "Native proof document saved outside authored content",
+        "Owned fixture removed"
+    ],
+    "count": 24,
+    "result": "passed",
+    "source_version": "1.5.21"
+}

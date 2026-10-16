@@ -2275,6 +2275,7 @@ function mrn_base_stack_register_acf_field_groups() {
 											'4' => '4',
 											'5' => '5',
 											'6' => '6',
+											'7' => '7',
 										),
 										'default_value' => '6',
 										'ui'            => 1,
