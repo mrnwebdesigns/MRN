@@ -112,7 +112,7 @@ those fields to describe. This is fully automatic (a filter on
 `mrn_seo_helper_excluded_post_types`, mirroring the sitemap exclusion above)
 and needs no site-level action, unlike the opt-in search destination. Scoped
 to `mrn-seo-helper` only, the stack's one first-class SEO integration —
-SEOPress is now filtered automatically through `seopress_post_types`, so its
+SEOPress discovery is filtered through `seopress_post_types`, so its
 titles, sitemap settings, setup wizard indexing choices, metabox registration,
 and diagnostic notices all agree on the same content-only CPT set. Other
 third-party SEO plugins remain site-specific and should still be excluded
@@ -131,3 +131,57 @@ After changing an existing CPT from public to admin/data-only, flush rewrite
 rules once in each environment (for example by re-saving Permalinks or using
 `wp rewrite flush`). Also clear page/object caches and regenerate or clear XML
 sitemap caches so stale URLs disappear.
+
+## Explicit disabled state (0.3.0)
+
+Site Configurations → Admin → Content Types adds **Disabled Content Types**
+through Config Helper's existing render/save extension hooks. Only administrators
+with `manage_options` and a valid form nonce can save this selection. No Config
+Helper or child-theme source change is required.
+
+| State | Canonical input | Public destinations | SEO discovery |
+| --- | --- | --- | --- |
+| Enabled | No overrides | Normal registration | Normal |
+| Menu hidden | Config Helper `disabled_admin_cpts` | Unchanged | Unchanged |
+| Content Only | Existing `mrn_admin_data_post_types` filter/manual option | Existing non-public data contract | Existing type exclusions |
+| Disabled | `mrn_disabled_post_types` option | No admin UI, single/archive, search, nav choices or REST registration | Excluded, including exclusive taxonomies |
+
+`mrn_admin_data_post_types_get_state($slug)` returns `enabled`, `menu_hidden`,
+`content_only` or `disabled`. Disabled takes precedence; menu hiding remains an
+independent preference. Removing a disabled selection restores the existing
+menu/content-only settings. Native saves preserve those prior preferences and
+search destinations while the older controls are unavailable. Empty content counts and `show_ui=false` never
+imply disabled. There is no automatic conversion of legacy settings.
+
+The disabled list persists independently of Config Helper and SEOPress. Reads
+are side-effect free. A deliberate selection change queues one soft rewrite
+rebuild after registration on the next request. Public route guards cover stale
+rewrites, while explicit programmatic queries and uploaded files remain
+available. This is a publication policy, not a private-content access system.
+
+A taxonomy is excluded only if it touches an explicitly disabled type and has
+no enabled, public, viewable associated type. An enabled menu-hidden owner still
+counts. Shared `category`, `post_tag`, attachment associations and unrelated
+orphan taxonomies are preserved. Associations are resolved afresh, including
+late registrations. Content Only taxonomy behavior remains unchanged unless it
+shares a taxonomy with an explicitly disabled type that has no public owner.
+
+SEOPress integration has separate boundaries:
+
+- `seopress_post_types` and `seopress_get_taxonomies_list`: title/description
+  choices, missing-default warnings and normal audit discovery.
+- `option_seopress_xml_sitemap_option_name`: temporary include-list projection
+  for XML index, direct/paginated type and taxonomy sitemaps, Free/PRO consumers.
+- `seopress_sitemaps_html_cpt`: HTML shortcode/block overrides; legacy
+  `seopress_sitemaps_cpt`/`seopress_sitemaps_tax` remain supported.
+- `seopress_site_audit_query` and `seopress_bot_query`: stale saved worker
+  selections cannot reintroduce excluded types or broaden an empty result.
+- News and Video query hooks guard their separate/overridden type selections.
+- `pre_update_option` for titles, sitemap and PRO News groups: preserve excluded entries
+  during native saves, restoring their prior values when re-enabled.
+
+Historical audit rows are retained. Rerun an audit after adoption to refresh its
+coverage; this integration does not rewrite historical results or individual
+manual audit actions.
+
+See [rollout, rollback and regression evidence](../../docs/releases/2026.10.16-disabled-content-types.md).

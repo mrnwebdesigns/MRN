@@ -17,6 +17,10 @@ function add_filter( $hook, $callback, $priority = 10, $accepted_args = 1 ): boo
 	return true;
 }
 
+function add_action( $hook, $callback, $priority = 10, $accepted_args = 1 ): bool {
+	return add_filter( $hook, $callback, $priority, $accepted_args );
+}
+
 function apply_filters( $hook, $value, ...$args ) {
 	if ( isset( $GLOBALS['mrn_test_hooks'][ $hook ] ) ) {
 		$callbacks = $GLOBALS['mrn_test_hooks'][ $hook ];
