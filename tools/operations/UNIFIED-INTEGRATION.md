@@ -776,3 +776,17 @@ The failed run remains unaccepted. Provider diagnostic candidate
 unchanged sync assertion; no status reset, retry or gate relaxation is added.
 All eleven imported qualification blobs still match this exact provider commit.
 Production and real ChatGPT acceptance remain unchanged and unverified.
+
+Gateway candidate `909232a` passed combined Operations CI `38966165117` and
+MRN QA `38966165118`, including the unchanged exact native sync preflight.
+The earlier `cf411cac` sync failure remains retained without a proven root
+cause; a passing new disposable run does not erase that failure.
+The next combined candidate advances only the separate management worker pin
+to `22285241dcf73893fb4800ebcc4ee2b52b2eed17`: 136 local contracts and MRN QA
+pass, with hosted content isolation pending at the time of this pin update.
+The legacy acquisition runner remains `d9f2eba`; current runtime and artifact
+verification must pass before the combined candidate is accepted.
+A fresh read-only canonical MainWP status on 2026-10-16 reports connected,
+Dashboard wpcontrol.mrndev.io, 115 abilities and provider 0.13.8. Its live
+company-site child-theme code policy still contains only Kyle. That field
+release and policy have not been modified by this work.
