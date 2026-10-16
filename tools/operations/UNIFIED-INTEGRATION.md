@@ -767,3 +767,12 @@ bytes; the assertions themselves remain enforced. This failure is retained,
 and candidate acceptance requires a fresh passing combined run. Production
 configuration, access grants, write policies and workspace publication are
 unchanged.
+
+The source/cache candidate `cf411cac` passed 450 controlled tests and all nine
+worker/source TLS groups, but combined native CI `38964476617` failed the exact
+child-sync preflight before requester acquisition. MRN QA `38964476607` passed.
+The failed run remains unaccepted. Provider diagnostic candidate
+`c8e8220500bd01bd3b20afd730a4a9eca81f64ea` adds only failure categories to the
+unchanged sync assertion; no status reset, retry or gate relaxation is added.
+All eleven imported qualification blobs still match this exact provider commit.
+Production and real ChatGPT acceptance remain unchanged and unverified.
