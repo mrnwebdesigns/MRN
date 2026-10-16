@@ -12,6 +12,9 @@ export const managementWireLimits = Object.freeze({ depth: 32, nodes: 20000,
 // dataset or parity limits. This compiler establishes no provenance/admission.
 export const managementCaptureWireLimits = Object.freeze({ depth: 48, nodes: 200000,
   mapEntries: 1000, arrayItems: 16384, bytes: 5 * 1024 * 1024, validationSteps: 1000000 });
+// Original binary evidence uses canonical base64 within a separate private
+// 1 MiB response; this never expands public management or capture limits.
+export const managementEvidenceWireLimits = Object.freeze({ ...managementWireLimits, bytes: 1048576 });
 const unsafe = new Set(['__proto__', 'prototype', 'constructor']);
 const keyAllowed = key => /^[\x20-\x7e]+$/.test(key) && !unsafe.has(key);
 const record = value => value && typeof value === 'object' && !Array.isArray(value)
@@ -60,6 +63,10 @@ export function compileManagementSchema(wire) {
 // not supplied by a caller, schema annotation or runtime configuration.
 export function compileManagementCaptureSchema(wire) {
   return compileBoundedManagementSchema(wire, managementCaptureWireLimits, 256);
+}
+
+export function compileManagementEvidenceSchema(wire) {
+  return compileBoundedManagementSchema(wire, managementEvidenceWireLimits, 128);
 }
 
 function compileBoundedManagementSchema(wire, limits, validationDepth) {

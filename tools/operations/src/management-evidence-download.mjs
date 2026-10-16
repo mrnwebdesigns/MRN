@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { digest, requireThat, sha } from './contracts.mjs';
 import { managementEvidenceLimits } from './github-management-evidence.mjs';
+import { managementEvidenceTypes } from './management-evidence-contract.mjs';
 
 const identifier = z.string().regex(/^[1-9][0-9]{0,19}$/);
 const recordSchema = z.object({ repository: z.string().regex(/^mrnwebdesigns\/[A-Za-z0-9_-]+$/),
@@ -88,6 +89,10 @@ export async function downloadManagementEvidence({ github, record: input, author
     && timing.completedAt - timing.startedAt < managementEvidenceLimits.acquisitionMs
     && timing.completedAt <= now() && now() < record.originalExpiresAt,
   'The acquisition did not complete within the original protected intent.');
+  check(managementEvidenceTypes.run_observation.safeParse(observedRun).success
+    && managementEvidenceTypes.artifact_observation.safeParse(outputs.qualification_artifact).success
+    && managementEvidenceTypes.artifact_observation.safeParse(outputs.acquisition_artifact).success,
+  'The independently acquired evidence does not match the separate provider observation contract.');
   return { observed_run: observedRun, ...outputs, started_at: Math.floor(timing.startedAt / 1000),
     completed_at: Math.floor(timing.completedAt / 1000) };
 }

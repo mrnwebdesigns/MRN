@@ -30,8 +30,10 @@ remain exact. None of the original lifetime or access gates is widened.
 did not start any job: GitHub reports that an Actions budget prevents further
 use. Native marker proof and the next combined qualification remain pending.
 Read-only billing inspection confirms the existing personal-account Actions
-budget reached $5 of $5. A proposed $10 cap retains cutoff and alerts and awaits
-the owner's explicit approval; no billing change is authorized by source tests.
+budget reached $5 of $5. The owner subsequently reported the budget fixed. Readback confirms the saved
+cap is $10, with $5.01 used; the unsaved agent proposal was cancelled. The two
+private-provider checks are being retried once. The public MRN gateway run
+continues separately; none of these scheduled checks is a pass yet.
 
 Gateway `87921cb4b7b7a45a82ff1c763db92b25bca1fdf9` passes 389 source tests and
 [MRN QA 38924881952](https://github.com/mrnwebdesigns/MRN/actions/runs/38924881952).
@@ -83,6 +85,13 @@ report admission, dispatch, profile or write authority. Immutable job/dispatch
 mapping, protected producer, provider retention and actual acquisition
 integration remain required. Synthetic transport/metadata tests are not proof
 of authenticated GitHub acquisition or ordinary-member ChatGPT acceptance.
+
+The exact provider report/evidence contracts from `bc320cd` are now copied with
+immutable hashes and dependency checks. The separate 1 MiB compiler validates
+the returned closed observations and opaque provider query pointers. Original
+signed capture/measurement read requests remain in the companion format for
+independent historical signature/body/timing verification. Every provider
+ability in these imported schemas remains unregistered and non-admitting.
 
 ## Management identity integration, 2026-10-16
 
