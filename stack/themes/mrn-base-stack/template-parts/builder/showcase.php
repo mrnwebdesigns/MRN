@@ -139,6 +139,10 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 		<?php endif; ?>
 
 		<?php if ( ! empty( $valid_items ) ) : ?>
+			<?php if ( 'scroll-strip' === ( $row['showcase_presentation'] ?? '' ) ) : ?>
+				<?php mrn_base_stack_enqueue_presentation(); ?>
+				<div class="mrn-scroll-strip" data-mrn-scroll-strip data-skip-label="<?php echo esc_attr__( 'Skip gallery', 'mrn-base-stack' ); ?>"><div class="mrn-scroll-strip__viewport" role="region" aria-label="<?php echo esc_attr__( 'Image gallery', 'mrn-base-stack' ); ?>" tabindex="0">
+			<?php endif; ?>
 				<div class="mrn-showcase-row__grid mrn-showcase-row__grid--gallery-shell mrn-ui__items">
 				<?php foreach ( $valid_items as $index => $item ) : ?>
 					<?php
@@ -187,6 +191,7 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 					</figure>
 				<?php endforeach; ?>
 			</div>
+			<?php if ( 'scroll-strip' === ( $row['showcase_presentation'] ?? '' ) ) : ?></div></div><?php endif; ?>
 		<?php endif; ?>
 
 		<?php if ( ! empty( $section_links ) ) : ?>

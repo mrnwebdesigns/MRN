@@ -349,6 +349,7 @@ function mrn_base_stack_get_default_front_end_component_needs() {
 		'faq'            => false,
 		'gallery'        => false,
 		'motion'         => false,
+		'presentation'   => false,
 		'slider'         => false,
 		'tabs'           => false,
 		'video_modal'    => false,
@@ -549,6 +550,14 @@ function mrn_base_stack_collect_front_end_component_needs_for_post( $post_id, ar
 			}
 		}
 
+		if ( preg_match( '/(?:^|_)(?:image_presentation|showcase_presentation|card_presentation|record_presentation|video_presentation|rotating_phrases_one|rotating_phrases_two)$/', $meta_key ) ) {
+			foreach ( $meta_values as $presentation_value ) {
+				if ( ! in_array( (string) $presentation_value, array( '', '0', 'standard' ), true ) ) {
+					$needs['presentation'] = true;
+				}
+			}
+		}
+
 		if ( preg_match( '/_(?:background_video|background_video_upload)$/', $meta_key ) ) {
 			foreach ( $meta_values as $meta_value ) {
 				if ( mrn_base_stack_front_end_meta_value_is_enabled( $meta_value ) ) {
@@ -674,6 +683,10 @@ function mrn_base_stack_get_front_end_component_asset_manifest() {
 		'faq'            => array(
 			'scripts' => array( 'mrn-base-stack-front-end-faq' ),
 		),
+		'presentation'   => array(
+			'styles'  => array( 'mrn-base-stack-presentation' ),
+			'scripts' => array( 'mrn-base-stack-presentation' ),
+		),
 		'gallery'        => array(
 			'styles'  => array( 'mrn-base-stack-glightbox' ),
 			'scripts' => array( 'mrn-base-stack-front-end-gallery' ),
@@ -719,6 +732,8 @@ function mrn_base_stack_register_front_end_component_assets() {
 
 	wp_register_style( 'mrn-base-stack-splide', $theme_uri . 'css/vendor/splide.min.css', array(), '4.1.4' );
 	wp_register_style( 'mrn-base-stack-glightbox', $theme_uri . 'css/vendor/glightbox.min.css', array(), '3.3.1' );
+	wp_register_style( 'mrn-base-stack-presentation', $theme_uri . 'css/presentation.css', array(), $version( 'css/presentation.css', _S_VERSION ) );
+	wp_register_script( 'mrn-base-stack-presentation', $theme_uri . 'js/presentation.js', array(), $version( 'js/presentation.js', _S_VERSION ), true );
 
 	wp_register_script( 'mrn-base-stack-motion', $theme_uri . 'js/vendor/motion.js', array(), '12.38.0', true );
 	wp_register_script( 'mrn-base-stack-splide', $theme_uri . 'js/vendor/splide.min.js', array(), '4.1.4', true );

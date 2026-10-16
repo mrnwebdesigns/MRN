@@ -244,11 +244,11 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 			<?php endif; ?>
 
 			<?php if ( '' !== $page_title ) : ?>
-				<h1 class="mrn-hero__heading mrn-hero__page-title"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $page_title ) : esc_html( $page_title ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></h1>
+				<h1 class="mrn-hero__heading mrn-hero__page-title"><?php echo 'custom_title' === ( $heading_contract['mode'] ?? '' ) ? mrn_base_stack_get_rotating_heading_markup( $row, $page_title ) : mrn_base_stack_format_heading_inline_html( $page_title ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped shared heading helpers. ?></h1>
 			<?php endif; ?>
 
 			<?php if ( '' !== $heading ) : ?>
-				<<?php echo esc_html( $heading_tag ); ?> class="mrn-hero__heading mrn-hero__heading--custom"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $heading ) : esc_html( $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $heading_tag ); ?>>
+				<<?php echo esc_html( $heading_tag ); ?> class="mrn-hero__heading mrn-hero__heading--custom"><?php echo mrn_base_stack_get_rotating_heading_markup( $row, $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped by the shared presentation helper. ?></<?php echo esc_html( $heading_tag ); ?>>
 			<?php endif; ?>
 
 			<?php if ( '' !== $subheading ) : ?>

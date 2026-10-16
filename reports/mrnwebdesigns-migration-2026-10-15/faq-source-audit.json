@@ -1,0 +1,64 @@
+{
+  "home": "https://mrnwebdesigns-stack-migration.localhost",
+  "sets": [
+    {
+      "id": 9555,
+      "slug": "e-commerce",
+      "row": 1,
+      "layout": "left_content_with_accordion",
+      "stored_count": 7,
+      "nonempty_questions": 7
+    },
+    {
+      "id": 1142,
+      "slug": "seo-ai-search-optimization",
+      "row": 5,
+      "layout": "left_content_with_accordion",
+      "stored_count": 10,
+      "nonempty_questions": 10
+    },
+    {
+      "id": 1142,
+      "slug": "seo-ai-search-optimization",
+      "row": 6,
+      "layout": "left_content_with_accordion",
+      "stored_count": 5,
+      "nonempty_questions": 5
+    },
+    {
+      "id": 1142,
+      "slug": "seo-ai-search-optimization",
+      "row": 13,
+      "layout": "faq",
+      "stored_count": 4,
+      "nonempty_questions": 4
+    },
+    {
+      "id": 1124,
+      "slug": "frequently-asked-questions",
+      "row": 1,
+      "layout": "faq",
+      "stored_count": 27,
+      "nonempty_questions": 27
+    },
+    {
+      "id": 1017,
+      "slug": "social-media",
+      "row": 2,
+      "layout": "left_content_with_accordion",
+      "stored_count": 7,
+      "nonempty_questions": 7
+    },
+    {
+      "id": 611,
+      "slug": "site-maintenance-and-support",
+      "row": 2,
+      "layout": "left_content_with_accordion",
+      "stored_count": 10,
+      "nonempty_questions": 10
+    }
+  ],
+  "faq_sets": 2,
+  "faq_questions_total": 31,
+  "accordion_items_total": 70
+}

@@ -1,0 +1,25 @@
+{
+  "records_before": 63,
+  "records_after": 63,
+  "builder_metadata_unchanged": true,
+  "changed_ids": [],
+  "template": "mrn-base-stack",
+  "stylesheet": "mrnwebdesigns-child",
+  "installed_release_unchanged": true,
+  "source_candidate_only": true,
+  "source_base_commit": "3c2ae1d92d0741559a352db978295ab4ef17ed4d",
+  "candidate_files_sha256": {
+    "stack/themes/mrn-base-stack/functions.php": "1fb478c720a77d9aa68087c4dcc686ff65e6b1058a70ea9ec0cdd4b2ada229f1",
+    "stack/themes/mrn-base-stack/inc/builder/field-groups.php": "2ce58b81e38c8fdf2e7605729ef55b5940fc15db4d037c6ec31ed6b40f1f0739",
+    "stack/themes/mrn-base-stack/inc/builder/helpers.php": "296866773ea2182eb9446e96201aee310f2b786481c51a40b3ca22c2bda465ba",
+    "stack/themes/mrn-base-stack/inc/builder/repeater-limits.php": "4d0b6138772152dd39bed856549af6c62021877450c4734b726051df8f0d74a3",
+    "stack/themes/mrn-base-stack/readme.txt": "7aa166cf9a49a46e11fa72732ddc331aee8dbbc918a65f0bd1df3608c15aaa3c",
+    "stack/themes/mrn-base-stack/style.css": "5ac9d017d5f0a96e483f103a51d0daca782a0b042e9f693319bfe825d7fd96e0",
+    "stack/themes/mrn-base-stack/template-parts/builder/faq-jump-nav.php": "c579ffbc3cd00b536677b5afc6b8968971c0598b077a1a763dbb61b3acc510c2",
+    "stack/themes/mrn-base-stack/tests/php/frontend-component-assets.php": "c025fe54245e617acd2f72189b833141ebbd7170812e253d6218dc7f4f607132",
+    "stack/themes/mrn-base-stack/tests/runtime/README.md": "af5d444fd7a141312c0f2c0b40d444d559c3b9efae0cd0013d14cda20329f322",
+    "stack/themes/mrn-base-stack/tests/runtime/builder-performance.php": "991141352c6e16b81c34c23d2d7f4acd477c03cdfaa3ccec80c16e1f4f7d3c5a",
+    "stack/themes/mrn-base-stack/tests/runtime/migration-collections.php": "4f02fa23c45cebb75ad202f7ae70949a3ccfedf965baed21c064020172b6ef84",
+    "stack/themes/mrn-base-stack/tests/runtime/repeater-limits.php": "f9425b2b1c7ecfcec31239c42b7ae4427c86149f7b7d459f0e3109775b0110b6"
+  }
+}

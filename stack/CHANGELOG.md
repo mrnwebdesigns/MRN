@@ -1,5 +1,29 @@
 # Stack Changelog
 
+## Unreleased — parent 1.5.20 migration capabilities
+
+- Allow up to 30 questions in one native FAQ/accordion, including seamless and
+  prefixed builder clones. Keep the default five-row policy for other fields;
+  explicitly support 30 logos and 12 showcase, card, grid and slider items.
+  Preserve tighter field limits, atomic overflow refusal and editability of
+  historical oversized collections without permitting further growth.
+- Match Hero authoring to its existing four-link renderer. Keep nested item-link
+  and ordinary Basic block limits unchanged.
+- Register reusable placement width explicitly so editor and API writes preserve
+  instance width independently of the reusable source.
+- Offer a native FAQ inside Two Column Split for FAQ-and-aside compositions.
+  Allow authored in-page links in FAQ Jump Nav while retaining automatic FAQ
+  discovery for existing rows and an appropriate accessible navigation label.
+- Add optional native Image Content zoom/column galleries with editable media
+  heights, Showcase horizontal strips, Cards timelines, Content Lists people and
+  comparison records, and Video expansion/following-surface transitions.
+- Add bounded phrase collections for Hero/Basic/CTA headings, accessible pause
+  controls and static/reduced-motion fallbacks. Pair with Reusable Block Library
+  0.2.2 to render the shared Basic/CTA heading contract. Preserve existing links.
+- Load the dependency-free presentation asset pair only for opted-in content,
+  including nested rows and reusable references. Keep row spacing field-owned.
+- Source qualification and later release publication/adoption remain separate.
+
 ## Unreleased — parent 1.5.19
 
 - Show the native SEOPress cookie preferences control as a 48px cookie icon by default, using the Stack icon renderer and shared Font Awesome assets. Preserve the configured accessible label, keyboard activation, native consent behavior, placement and colors. Keep the text control when shared icons are unavailable.

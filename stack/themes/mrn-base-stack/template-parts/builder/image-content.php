@@ -54,6 +54,9 @@ if ( ! in_array( $image_caption_style, array( 'under', 'inside' ), true ) ) {
 }
 
 $has_image     = function_exists( 'mrn_base_stack_image_has_content' ) ? mrn_base_stack_image_has_content( $image ) : false;
+$column_gallery_markup = mrn_base_stack_get_column_gallery_markup( $row );
+$image_stage_attributes = mrn_base_stack_get_image_stage_attributes( $row );
+$has_image = $has_image || '' !== $column_gallery_markup;
 $image_caption = '';
 
 if ( $has_image && 'attachment' === $image_caption_src && function_exists( 'mrn_base_stack_get_image_attachment_id' ) ) {
@@ -201,8 +204,10 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 
 				<?php if ( $has_image ) : ?>
 					<div class="mrn-layout-content mrn-layout-content--media mrn-layout-content--media-stack-media mrn-image-content-row__media mrn-ui__media">
-						<figure class="<?php echo esc_attr( implode( ' ', $figure_classes ) ); ?>">
+						<figure class="<?php echo esc_attr( implode( ' ', $figure_classes ) ); ?>" <?php echo $image_stage_attributes; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped attribute helper. ?>>
 							<?php echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image( $image, 'mrn-content-media' ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+							<?php echo $column_gallery_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Gallery images escaped by the Stack image helper. ?>
+							<?php if ( ! empty( $row['image_overlay'] ) && '' !== $image_stage_attributes ) : ?><span class="mrn-image-stage__overlay" aria-hidden="true"></span><?php endif; ?>
 							<?php if ( '' !== $image_caption_markup ) : ?>
 								<figcaption class="mrn-image-content-row__caption"><?php echo $image_caption_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></figcaption>
 							<?php endif; ?>

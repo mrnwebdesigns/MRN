@@ -2854,6 +2854,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									mrn_base_stack_get_label_tag_field( 'field_mrn_faq_jump_nav_label_tag' ),
 									mrn_base_stack_get_inline_text_field( 'field_mrn_faq_jump_nav_heading', 'Heading', 'heading' ),
 									mrn_base_stack_get_text_tag_field( 'field_mrn_faq_jump_nav_heading_tag', 'heading_tag', 'h2', 'Heading Tag' ),
+									...mrn_base_stack_get_jump_nav_source_fields( 'field_mrn_faq_jump_nav' ),
 									array(
 										'key'        => 'field_mrn_faq_jump_nav_config_tab',
 										'label'      => 'Configs',
@@ -2897,6 +2898,7 @@ function mrn_base_stack_register_acf_field_groups() {
 										'endpoint'   => 0,
 									),
 									mrn_base_stack_get_anchor_field( 'field_mrn_reusable_block_anchor', 'anchor', 'Placement Anchor ID' ),
+									mrn_base_stack_get_section_width_field( 'field_mrn_reusable_block_section_width', 'section_width', 'wide', 'Block Width' ),
 									array(
 										'key'              => 'field_mrn_reusable_block_include_in_faq_jump_nav',
 										'label'            => 'Include FAQ Block in Jump Nav',
