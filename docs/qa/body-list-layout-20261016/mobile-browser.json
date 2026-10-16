@@ -1,0 +1,80 @@
+{
+  "lists": [
+    {
+      "align": "start",
+      "display": "block",
+      "flow": "2",
+      "items": [
+        {
+          "text": "First service",
+          "x": 64,
+          "y": 294.578125
+        },
+        {
+          "text": "Second service\n\nNested detail\n\n",
+          "x": 64,
+          "y": 318.578125
+        },
+        {
+          "text": "Third service",
+          "x": 226.5,
+          "y": 294.578125
+        },
+        {
+          "text": "Fourth service",
+          "x": 226.5,
+          "y": 318.578125
+        },
+        {
+          "text": "Fifth service",
+          "x": 226.5,
+          "y": 342.578125
+        },
+        {
+          "text": "Sixth service",
+          "x": 226.5,
+          "y": 366.578125
+        }
+      ]
+    },
+    {
+      "align": "start",
+      "display": "grid",
+      "flow": "auto",
+      "items": [
+        {
+          "text": "First service",
+          "x": 64,
+          "y": 473.8515625
+        },
+        {
+          "text": "Second service\n\nNested detail\n\n",
+          "x": 226.5,
+          "y": 473.8515625
+        },
+        {
+          "text": "Third service",
+          "x": 64,
+          "y": 545.8515625
+        },
+        {
+          "text": "Fourth service",
+          "x": 226.5,
+          "y": 545.8515625
+        },
+        {
+          "text": "Fifth service",
+          "x": 64,
+          "y": 569.8515625
+        },
+        {
+          "text": "Sixth service",
+          "x": 226.5,
+          "y": 569.8515625
+        }
+      ]
+    }
+  ],
+  "overflow": false,
+  "width": 390
+}

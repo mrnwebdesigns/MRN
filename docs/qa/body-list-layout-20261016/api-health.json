@@ -1,0 +1,8 @@
+{
+  "url": "https://mrnwebdesigns-stack-migration.localhost/wp-json/",
+  "result": "passed",
+  "routes": 390,
+  "namespaces": 13,
+  "new_endpoints": false,
+  "new_handlers": false
+}

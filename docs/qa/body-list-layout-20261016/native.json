@@ -1,0 +1,28 @@
+{
+    "checks": [
+        "Owned local draft created",
+        "Root\/nested unique editable field: list_columns",
+        "Root\/nested unique editable field: list_columns_mobile",
+        "Root\/nested unique editable field: list_flow",
+        "Root\/nested unique editable field: list_markers",
+        "Root\/nested unique editable field: list_alignment",
+        "Root\/nested unique editable field: list_gap",
+        "Root\/nested conditional controls reference their own opt-in selector",
+        "List columns are bounded and existing formatting remains the default",
+        "Actual ACF root and nested write\/readback retains list settings",
+        "Native WYSIWYG retains nested content and query links",
+        "Renderer emits only bounded native classes and styles",
+        "Output keeps semantic ordered\/unordered list markup",
+        "Actual nested Split renderer uses native list controls",
+        "Invalid\/unset column counts retain prior formatting",
+        "Malformed optional settings cannot escape into CSS or attributes",
+        "Unset controls leave the existing renderer contract unchanged",
+        "Row-major flow is explicitly selectable",
+        "Explicit proof destination exists outside authored content",
+        "Source proof written without changing an authored page",
+        "Owned fixture removed"
+    ],
+    "count": 21,
+    "result": "passed",
+    "source_version": "1.5.22"
+}
