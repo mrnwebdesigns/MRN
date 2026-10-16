@@ -133,6 +133,11 @@ $section_classes = array(
 	'mrn-content-builder__row--content-lists-display-' . ( '' !== $display_mode ? $display_mode : 'row-settings' ),
 );
 
+$record_presentation = $row['record_presentation'] ?? 'standard';
+if ( in_array( $record_presentation, array( 'people', 'comparisons' ), true ) ) {
+	$section_classes[] = 'mrn-record-list--' . $record_presentation;
+}
+
 if ( '' !== $display_style ) {
 	$section_classes[] = 'mrn-content-builder__row--content-lists-style-' . $display_style;
 }
@@ -255,6 +260,7 @@ echo mrn_base_stack_get_builder_anchor_markup( $row ); // phpcs:ignore WordPress
 									$item_post,
 									array(
 										'display_mode'    => $display_mode,
+										'record_presentation' => $record_presentation,
 										'display_style'   => $display_style,
 										'show_featured_image' => $show_featured_image,
 										'show_publish_date' => $show_publish_date,

@@ -1,0 +1,28 @@
+{
+  "parent_versions": {
+    "header": "1.5.19",
+    "readme": "1.5.19",
+    "asset_version": "1.5.19"
+  },
+  "new_module_timeline_fixture_wpcs": {
+    "errors": 0,
+    "warnings": 0,
+    "fixable": 0
+  },
+  "video_wpcs": {
+    "errors": 0,
+    "warnings": 9,
+    "fixable": 9
+  },
+  "video_warnings": "Existing assignment-alignment formatting; no errors.",
+  "native_runtime_checks": 103,
+  "candidate_installed": false,
+  "source_committed_or_published": false,
+  "site_deploy_ready": false,
+  "remaining_gates": [
+    "paired source acceptance and immutable release publication/adoption",
+    "installed Classic Editor and reduced-motion/full-page performance acceptance",
+    "converter mappings and fresh content plans",
+    "case study 10401 blank reusable selection decision"
+  ]
+}

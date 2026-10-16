@@ -1,6 +1,6 @@
 <?php
 /**
- * Enforce a five-item ceiling for Stack repeaters without discarding legacy data.
+ * Enforce bounded Stack collections without discarding legacy data.
  *
  * @package mrn-base-stack
  */
@@ -12,15 +12,37 @@
  * @return int Zero for fields outside this policy.
  */
 function mrn_base_stack_repeater_limit( $field ) {
+	if ( 'gallery' === ( $field['type'] ?? '' ) && false !== strpos( (string) ( $field['key'] ?? '' ), 'field_mrn_' ) && str_ends_with( $field['key'], '_gallery_column_images' ) ) {
+		return 30;
+	}
 	if ( 'repeater' !== ( $field['type'] ?? '' ) || false === strpos( (string) ( $field['key'] ?? '' ), 'field_mrn_' ) ) {
 		return 0;
 	}
+	$key      = (string) $field['key'];
+	$ceiling  = 5;
+	$policies = array(
+		'_rotating_phrases_one'        => 30,
+		'_rotating_phrases_two'        => 30,
+		'field_mrn_faq_items'          => 30,
+		'field_mrn_logos_items'        => 30,
+		'field_mrn_showcase_items'     => 12,
+		'field_mrn_card_items'         => 12,
+		'field_mrn_content_grid_items' => 12,
+		'field_mrn_slider_items'       => 12,
+	);
+	foreach ( $policies as $source_key => $maximum ) {
+		// ACF seamless clones and builder factories prefix the original field key.
+		if ( str_ends_with( $key, $source_key ) ) {
+			$ceiling = $maximum;
+			break;
+		}
+	}
 	$max = (int) ( $field['_mrn_repeater_limit'] ?? $field['max'] ?? 0 );
-	return $max > 0 ? min( 5, $max ) : 5;
+	return $max > 0 ? min( $ceiling, $max ) : $ceiling;
 }
 
 /**
- * Set native editor and REST-schema limits. Five-item fields need no pagination.
+ * Set matching native editor, REST-schema and server-side limits.
  *
  * @param array<string, mixed> $field Field definition.
  * @return array<string, mixed>
@@ -36,6 +58,7 @@ function mrn_base_stack_limit_repeater_definition( $field ) {
 	return $field;
 }
 add_filter( 'acf/load_field/type=repeater', 'mrn_base_stack_limit_repeater_definition', 30 );
+add_filter( 'acf/load_field/type=gallery', 'mrn_base_stack_limit_repeater_definition', 30 );
 
 /**
  * Keep existing oversized collections editable, with no further growth.
@@ -51,6 +74,7 @@ function mrn_base_stack_bound_repeater_editor( $field ) {
 	return $field;
 }
 add_filter( 'acf/prepare_field/type=repeater', 'mrn_base_stack_bound_repeater_editor', 30 );
+add_filter( 'acf/prepare_field/type=gallery', 'mrn_base_stack_bound_repeater_editor', 30 );
 
 /**
  * Identify an exact, prevalidated child write while ACF saves its parent tree.
@@ -80,7 +104,7 @@ function mrn_base_stack_repeater_write_token( $value, $post_id, $field ) {
  */
 function mrn_base_stack_check_repeater_tree( $value, $post_id, $field, $old_name, &$tokens ) {
 	$type = $field['type'] ?? '';
-	if ( ! is_array( $value ) || ! in_array( $type, array( 'repeater', 'flexible_content', 'group' ), true ) ) {
+	if ( ! is_array( $value ) || ! in_array( $type, array( 'repeater', 'flexible_content', 'group', 'gallery' ), true ) ) {
 		return '';
 	}
 	unset( $value['acfcloneindex'] );
@@ -88,7 +112,9 @@ function mrn_base_stack_check_repeater_tree( $value, $post_id, $field, $old_name
 	if ( $limit ) {
 		$stored         = $field;
 		$stored['name'] = $old_name;
-		$maximum        = max( $limit, (int) acf_get_metadata_by_field( $post_id, $stored ) );
+		$old_value      = acf_get_metadata_by_field( $post_id, $stored );
+		$old_count      = 'gallery' === $type && is_array( $old_value ) ? count( $old_value ) : (int) $old_value;
+		$maximum        = max( $limit, $old_count );
 		if ( count( $value ) > $maximum ) {
 			/* translators: 1: Field label, 2: Maximum rows allowed. */
 			return sprintf( __( '%1$s allows at most %2$d rows. Remove the extra rows before saving.', 'mrn-base-stack' ), esc_html( $field['label'] ?? $field['name'] ), $maximum );
@@ -118,7 +144,7 @@ function mrn_base_stack_check_repeater_tree( $value, $post_id, $field, $old_name
 			if ( ! $name || ! array_key_exists( $selector, $row ) ) {
 				continue;
 			}
-			if ( ! is_array( $row[ $selector ] ) || ! in_array( $child['type'] ?? '', array( 'repeater', 'flexible_content', 'group' ), true ) ) {
+			if ( ! is_array( $row[ $selector ] ) || ! in_array( $child['type'] ?? '', array( 'repeater', 'flexible_content', 'group', 'gallery' ), true ) ) {
 				continue;
 			}
 			$child['name'] = $field['name'] . ( 'group' === $type ? '_' : '_' . $position . '_' ) . $name;
@@ -170,7 +196,7 @@ add_filter( 'acf/validate_value', 'mrn_base_stack_validate_repeater_limits', 20,
  * @return mixed
  */
 function mrn_base_stack_guard_repeater_write( $check, $value, $post_id, $field ) {
-	if ( null !== $check || ! is_array( $value ) || ! in_array( $field['type'] ?? '', array( 'repeater', 'flexible_content', 'group' ), true ) || false === strpos( (string) $field['key'], 'field_mrn_' ) ) {
+	if ( null !== $check || ! is_array( $value ) || ! in_array( $field['type'] ?? '', array( 'repeater', 'flexible_content', 'group', 'gallery' ), true ) || false === strpos( (string) $field['key'], 'field_mrn_' ) ) {
 		return $check;
 	}
 	$token = mrn_base_stack_repeater_write_token( $value, $post_id, $field );

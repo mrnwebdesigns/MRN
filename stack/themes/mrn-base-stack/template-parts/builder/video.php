@@ -126,6 +126,15 @@ $section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_clas
 $section_attrs     = isset( $display_contract['attributes'] ) && is_array( $display_contract['attributes'] ) ? $display_contract['attributes'] : array();
 $section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array() );
 $section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
+$expansion_poster = '';
+if ( 'scroll-expand' === ( $row['video_presentation'] ?? '' ) ) {
+	mrn_base_stack_enqueue_presentation();
+	$expansion_poster                       = $has_thumbnail ? mrn_base_stack_get_attachment_image_url( $thumbnail_image, 'mrn-content-media' ) : '';
+	$section_attrs['data-mrn-video-expand'] = 'true';
+	if ( ! empty( $row['video_follow_color'] ) && function_exists( 'mrn_site_colors_get_css_var' ) ) {
+		$section_attrs['data-mrn-follow-color'] = mrn_site_colors_get_css_var( sanitize_key( $row['video_follow_color'] ) );
+	}
+}
 $section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';
 $surface_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $section_styles ) : implode( '; ', $section_styles );
 $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
@@ -181,6 +190,9 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 					data-video-src="<?php echo esc_url( $resolved_video_url ); ?>"
 					data-video-kind="<?php echo esc_attr( $resolved_video_kind ); ?>"
 					data-video-title="<?php echo esc_attr( $video_title ); ?>"
+					<?php if ( 'local' === $resolved_video_kind && '' !== $expansion_poster ) : ?>
+						data-video-poster="<?php echo esc_url( $expansion_poster ); ?>"
+					<?php endif; ?>
 					<?php if ( 'local' === $resolved_video_kind && '' !== $resolved_video_mime ) : ?>
 						data-video-mime="<?php echo esc_attr( $resolved_video_mime ); ?>"
 					<?php endif; ?>

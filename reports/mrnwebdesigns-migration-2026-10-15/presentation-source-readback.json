@@ -1,0 +1,12 @@
+{
+  "records": 63,
+  "all_builder_metadata_unchanged": true,
+  "new_presentation_checks": 42,
+  "preview_sha256": "6869d09fc492e6054551ff193d5b4559a618c709377d6a3344381266208f3d8e",
+  "installed_parent_version": "1.5.18",
+  "installed_rbl_version": "0.2.1",
+  "source_assets": {
+    "css": "d41c0ae5281bb87dbe5beaa7ad5b95aedd0d0db52fb923efebea17b7fb24be5e",
+    "js": "5ecc692da89d879fe906d990a4ee7923e43d63af935696a6de04c8f4905e182d"
+  }
+}

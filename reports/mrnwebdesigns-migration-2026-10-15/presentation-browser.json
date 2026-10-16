@@ -1,0 +1,50 @@
+{
+  "url": "https://mrnwebdesigns-stack-migration.localhost/stack-source-preview-20261015/index.html#mrn-strip-end-1",
+  "desktop": {
+    "viewport": "1280x720",
+    "stripLeft": {
+      "top": 317.953125,
+      "transform": "translateX(0px)"
+    },
+    "stripRight": {
+      "top": -182.046875,
+      "transform": "translateX(-285.396px)"
+    },
+    "video": {
+      "controls": true,
+      "following": "color-mix(in srgb, var(--site-color-red) 100%, rgba(0, 0, 0, 0))",
+      "poster": "https://mrnwebdesigns-stack-migration.localhost/wp-content/uploads/2026/04/018cede4cf18f165eb647580a128625623abb544.png",
+      "scale": "scale(1)"
+    },
+    "timeline": {
+      "active": "3",
+      "open": [
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    "pauseHolds": true,
+    "timelineSkipFocus": "mrn-timeline-end-1",
+    "stripSkipFocus": "mrn-strip-end-1",
+    "hoverVideo": {
+      "startsMutedOnFocus": true,
+      "pausesOnBlur": true
+    }
+  },
+  "mobile": {
+    "viewport": "390x844",
+    "documentOverflow": false,
+    "mediaHeights": [
+      "340px",
+      "340px"
+    ],
+    "timelinePinned": false,
+    "openSteps": 4,
+    "stripPinned": false,
+    "peopleGridColumns": "358px"
+  },
+  "reducedMotion": "Source-reviewed; emulated browser acceptance remains for installed qualification",
+  "consoleErrors": []
+}
