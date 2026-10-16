@@ -7,22 +7,32 @@ import { delegationCanonical } from './delegation.mjs';
 export function compileContentSchema(schema, definitions = {}) {
   let nodes = 0;
   const fail = (condition, message) => requireThat(condition, 'CONTENT_CONTRACT', message);
-  const compile = (s, depth = 0, references = new Set()) => {
-    fail(s && typeof s === 'object' && !Array.isArray(s) && depth <= 64 && ++nodes <= 8192, 'Invalid or excessive content schema.');
+  const compile = (wire, depth = 0, references = new Set()) => {
+    fail(wire && typeof wire === 'object' && !Array.isArray(wire) && depth <= 64 && ++nodes <= 8192, 'Invalid or excessive content schema.');
+    const { description, default: defaultValue, ...s } = wire;
+    if (Object.hasOwn(wire, 'description')) fail(typeof description === 'string' && description.length <= 4096
+      && description.isWellFormed() && !description.includes('\0'), 'Invalid content schema description.');
+    // A default describes the wire. It must validate, but never fills a missing
+    // argument, coerces a value or supplies an operator's confirmation.
+    const finish = out => {
+      if (Object.hasOwn(wire, 'default')) fail(out.safeParse(defaultValue).success, 'Invalid content schema default.');
+      return out;
+    };
     if (Object.hasOwn(s, '$ref')) {
       const match = typeof s.$ref === 'string' && /^#\/definitions\/([A-Za-z0-9_]+)$/.exec(s.$ref);
       fail(Object.keys(s).length === 1 && match && Object.hasOwn(definitions, match[1]) && !references.has(match[1]),
         'Content references must be local, defined and acyclic.');
-      return compile(definitions[match[1]], depth + 1, new Set([...references, match[1]]));
+      return finish(compile(definitions[match[1]], depth + 1, new Set([...references, match[1]])));
     }
-    const keys = ['type', 'properties', 'required', 'additionalProperties', 'anyOf', 'oneOf', 'enum', 'minimum', 'maximum', 'minLength', 'maxLength', 'pattern', 'items', 'minItems', 'maxItems', 'uniqueItems'];
+    const keys = ['type', 'properties', 'required', 'additionalProperties', 'anyOf', 'oneOf', 'enum', 'minimum', 'maximum', 'minLength', 'maxLength', 'pattern', 'format', 'items', 'minItems', 'maxItems', 'uniqueItems'];
     fail(Object.keys(s).every(k => keys.includes(k)), 'Unsupported content wire schema.');
+    if (Object.hasOwn(s, 'format')) fail(s.type === 'string' && s.format === 'uri', 'Unsupported content string format.');
     const child = value => compile(value, depth + 1, references);
     if (Object.hasOwn(s, 'oneOf')) {
       fail(Object.keys(s).length === 1 && Array.isArray(s.oneOf) && s.oneOf.length >= 2 && s.oneOf.length <= 32,
         'Invalid or excessive exclusive content alternatives.');
       const alternatives = s.oneOf.map(child);
-      return z.unknown().transform((value, context) => {
+      return finish(z.unknown().transform((value, context) => {
         let matches = 0, parsed;
         for (const alternative of alternatives) {
           const result = alternative.safeParse(value);
@@ -32,13 +42,13 @@ export function compileContentSchema(schema, definitions = {}) {
         if (matches === 1) return parsed;
         context.addIssue({ code: z.ZodIssueCode.custom, message: 'Content must match exactly one alternative.' });
         return z.NEVER;
-      });
+      }));
     }
     if (s.anyOf) {
       fail(Object.keys(s).length === 1 && Array.isArray(s.anyOf) && s.anyOf.length >= 2, 'Invalid content schema alternatives.');
-      return z.union(s.anyOf.map(child));
+      return finish(z.union(s.anyOf.map(child)));
     }
-    if (Array.isArray(s.type)) return z.union(s.type.map(type => child({ ...s, type })));
+    if (Array.isArray(s.type)) return finish(z.union(s.type.map(type => child({ ...s, type }))));
     let out;
     if (s.type === 'object') {
       fail(s.additionalProperties === false && Array.isArray(s.required) && s.properties && typeof s.properties === 'object' && !Array.isArray(s.properties), 'Content objects must be closed.');
@@ -58,6 +68,8 @@ export function compileContentSchema(schema, definitions = {}) {
       if (s.minLength !== undefined) out = out.min(s.minLength);
       if (s.maxLength !== undefined) out = out.max(s.maxLength);
       if (s.pattern) out = out.regex(new RegExp(s.pattern));
+      if (s.format === 'uri') out = out.url().refine(value => /^[A-Za-z][A-Za-z0-9+.-]*:/.test(value)
+        && !/[\u0000-\u0020\u007f\\]/u.test(value) && !/%(?![0-9a-f]{2})/i.test(value), 'Invalid absolute content URI.');
       out = out.refine(value => value.isWellFormed() && !value.includes('\0'), 'Invalid content Unicode.');
     } else if (s.type === 'integer') {
       out = z.number().int().safe();
@@ -66,7 +78,7 @@ export function compileContentSchema(schema, definitions = {}) {
     } else if (s.type === 'boolean') out = z.boolean();
     else if (s.type === 'null') out = z.null();
     else fail(false, 'Unsupported content contract type.');
-    return s.enum ? out.refine(value => s.enum.includes(value), 'Unsupported content enum.') : out;
+    return finish(s.enum ? out.refine(value => s.enum.includes(value), 'Unsupported content enum.') : out);
   };
   return compile(schema);
 }

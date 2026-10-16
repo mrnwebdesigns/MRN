@@ -29,11 +29,48 @@ test('remote, missing, recursive or ambiguous references cannot compile or load 
 });
 
 test('closed content schema vocabulary rejects unimplemented constraints instead of ignoring them', () => {
-  for (const schema of [{ type: 'string', format: 'uri' }, { type: 'string', oneOf: [] },
+  for (const schema of [{ type: 'string', format: 'email' }, { type: 'string', oneOf: [] },
     { type: 'object', properties: {}, required: [], additionalProperties: true },
     { ...object({}), required: ['missing'] }, { type: 'array', items: { type: 'string' }, uniqueItems: 'true' }]) {
     assert.throws(() => compileContentSchema(schema), { code: 'CONTENT_CONTRACT' });
   }
+});
+
+test('management URI constraints validate absolute addresses without normalizing their bytes', () => {
+  const schema = compileContentSchema(object({ site_url: { type: 'string', format: 'uri', maxLength: 512,
+    description: 'Provider checks canonical HTTPS site identity separately.' } }));
+  const value = { site_url: 'https://fixture.example.invalid/path%20name' };
+  assert.deepEqual(schema.parse(value), value);
+  for (const site_url of ['fixture.example.invalid', '/relative', '//fixture.example.invalid', 'https://', '\ud800', 'https://fixture.example.invalid/\0',
+    ' https://fixture.example.invalid', 'https://fixture.example.invalid/a b', 'https:\\fixture.example.invalid', 'https://fixture.example.invalid/%zz'])
+    assert.equal(schema.safeParse({ site_url }).success, false);
+  for (const wire of [{ type: 'integer', format: 'uri' }, { type: 'string', format: 'url' }, { type: 'string', format: null }])
+    assert.throws(() => compileContentSchema(wire), { code: 'CONTENT_CONTRACT' });
+});
+
+test('checked schema defaults never supply consent, missing required values or type coercion', () => {
+  const schema = compileContentSchema({ ...object({ confirm: { type: 'boolean', default: false },
+    page: { type: 'integer', minimum: 1, maximum: 100, default: 1, description: 'Optional page.' } }), required: ['confirm'] });
+  assert.deepEqual(schema.parse({ confirm: false }), { confirm: false });
+  assert.deepEqual(schema.parse({ confirm: true, page: 2 }), { confirm: true, page: 2 });
+  for (const value of [{}, { confirm: 'false' }, { confirm: false, page: '1' }, { confirm: false, actor: 'caller' }])
+    assert.equal(schema.safeParse(value).success, false);
+  for (const wire of [{ type: 'integer', minimum: 1, default: 0 }, { type: 'boolean', default: 'false' },
+    { type: 'string', enum: ['allowed'], default: 'other' }, { ...object({}), default: { authority: true } },
+    { type: 'string', format: 'uri', default: '/relative' }, { type: 'number', default: 1.5 }])
+    assert.throws(() => compileContentSchema(wire), { code: 'CONTENT_CONTRACT' });
+});
+
+test('schema annotations preserve local-reference and exclusive-union validation', () => {
+  const schema = compileContentSchema({ ...ref('target'), description: 'One exact target.', default: { site_id: 1, snapshot: 'a'.repeat(64) } }, definitions);
+  assert.equal(schema.safeParse(undefined).success, false);
+  assert.throws(() => compileContentSchema({ ...ref('target'), default: { site_id: 1 } }, definitions), { code: 'CONTENT_CONTRACT' });
+  const alternatives = [{ type: 'integer', minimum: 0, maximum: 10 }, { type: 'integer', minimum: 5, maximum: 15 }];
+  assert.throws(() => compileContentSchema({ oneOf: alternatives, description: 'Ambiguous default.', default: 7 }), { code: 'CONTENT_CONTRACT' });
+  assert.equal(compileContentSchema({ oneOf: alternatives, description: 'Exact branch.', default: 0 }).parse(15), 15);
+  for (const description of [null, {}, '\ud800', '\0', 'a'.repeat(4097)])
+    assert.throws(() => compileContentSchema({ type: 'string', description }), { code: 'CONTENT_CONTRACT' });
+  assert.throws(() => compileContentSchema({ ...object({}), description: 'No open objects.', additionalProperties: true }), { code: 'CONTENT_CONTRACT' });
 });
 
 test('unique recipe and consumer lists reject semantic duplicates including reordered object keys', () => {
