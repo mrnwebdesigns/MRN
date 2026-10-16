@@ -10,9 +10,15 @@
 	min-height: 48px;
 	padding: 0;
 	border-radius: 50%;
+	background-image: none;
 	font-size: 24px;
 	line-height: 1;
 	transition: none;
+}
+
+/* Older child themes may have supplied a cookie with a CSS pseudo-element. */
+#seopress-user-consent-edit.mrn-cookie-preferences-button::before {
+	content: none;
 }
 
 #seopress-user-consent-edit.mrn-cookie-preferences-button .mrn-ui__link-icon {
