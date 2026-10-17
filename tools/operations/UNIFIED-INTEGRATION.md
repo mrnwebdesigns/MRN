@@ -12,13 +12,16 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
   original archives and all eight QA reports are independently verified.
 - Gateway `909232a` is the last passing combined checkpoint. Later committed
   `aa2c2fd` failed native MainWP sync authentication. A later passing sync does
-  not resolve that intermittent failure.
+  not resolve that intermittent failure. Candidate `dbf8937` is pushed and its
+  combined run `39043118122` is pending; MRN QA `39043118067` passes.
 - The new gateway source verifies encrypted native batches, cache ZIP extraction,
   complete source reconstruction and independent owner-catalog signatures.
   Production startup does not enable these private adapters.
 - Provider observer `1048e20` failed in a synthetic fixture; `b44831d` then
   failed to collect a matching Dashboard observation. The native sync passed
-  in both runs. Corrected observer `d1144bc` is pending native qualification.
+  in both runs. Corrected observer `d1144bc` passes all four jobs in
+  [CI 39042535495](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/39042535495),
+  including mandatory actual sender/Child signature correlation.
 - Live MainWP was last observed connected to `wpcontrol.mrndev.io` with 115
   abilities and provider 0.13.8. The company code policy remains unchanged.
 - Remaining: authenticated source-context bootstrap and retained source mapping;
@@ -28,6 +31,36 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
 
 The following sections retain individual source checkpoints and their limits.
 They are not evidence of production activation or team readiness.
+
+## Private source capture mapping, 2026-10-17
+
+The gateway reserves one source-capture attempt against the immutable original
+job before any protected read. It requires a service-owned authenticated source
+context reader, equality with the entire original management context, the
+independently pinned signed owner catalog, and current verification of the
+original Google actor. Capture uses the distinct registrar purpose, exact
+context and signed catalog. The result must be a complete bounded native slot;
+it cannot claim complete source, authority or admission.
+
+Context bootstrap has a separate 20-second budget, followed by the unchanged
+120-second native-capture bound. Both include wall and monotonic checks and
+are capped by original actor/intent expiry. Staff, local revocation, policy,
+catalog and slot are checked before the small context/slot mapping is retained.
+Failures, uncertain responses and interruptions leave the attempt consumed
+across restart; no automatic capture retry is possible. Local batch resolution
+rechecks the original ledger and current catalog pin without consuming any of
+the provider's seven status reads. The ledger contains no source bytes or staff
+tokens. This new private adapter is not constructed by production startup.
+
+Nine focused tests cover original identity, exact context/signature, one-use
+capture, concurrent duplicates, persistent failed/interrupted state, revocation
+and catalog changes, invalid slot arithmetic, deadlines and corruption. The
+eleventh gateway/runner integration group connects this retained mapping to the
+actual encrypted broker and independent recipient over disposable TLS, with
+80 local resolutions and no additional provider reads. All 468 source tests and
+eleven local integration groups pass. Provider bootstrap and capture responses
+are synthetic in this fixture; actual native source-capture integration and
+protected rendered QA remain required.
 
 ## Earlier native integration checkpoint, 2026-10-16
 

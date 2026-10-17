@@ -48,6 +48,6 @@ export async function sourceBrokerFixture(t, { bindRecipient = true, now = 18000
   const enrolled=bindRecipient ? JSON.parse(Buffer.from((await enroll()).signed_recipient.payload_base64,'base64')) : null;
   const request=()=>({...pointer,recipient_id:enrolled.recipient_id,batch_index:0,nonce:randomBytes(32).toString('hex')});
   const read=async(input=request())=>broker.read(await token(),input);
-  return {...f,p,identity,registrar,worker,claims,source,options,broker,pair,pointer,enrollment,enrolled,token,enroll,request,read,
+  return {...f,p,identity,registrar,worker,claims,source,frames,options,broker,pair,pointer,enrollment,enrolled,token,enroll,request,read,
     get calls(){return calls;}};
 }

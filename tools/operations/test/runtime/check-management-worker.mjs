@@ -16,6 +16,7 @@ import { createHttpServer } from '../../src/http.mjs';
 import { ManagementWorkerContext, managementWorkerAudience } from '../../src/management-worker-context.mjs';
 import { managementEvidenceFixture } from '../fixtures/management-evidence.mjs';
 import { sourceBrokerFixture } from '../fixtures/management-source.mjs';
+import { retainManagementSourceFixture } from './check-management-source-capture.mjs';
 import { checkManagementCache } from './check-management-cache.mjs';
 
 process.umask(0o077);
@@ -114,6 +115,7 @@ try {
   // source controller remains a synthetic fixture, never a live capture.
   const s = await sourceBrokerFixture({ after: cb => cleanup.push(cb) }, { bindRecipient: false, now: Math.floor(Date.now() / 1000) * 1000 });
   Object.defineProperty(s.state, 'now', { get: () => Date.now() });
+  await retainManagementSourceFixture(s);
   const sourceOriginal = s.ledger.originalDispatch(s.pointer.dispatch_id);
   const recipient = new ManagementSourceRecipient({ original: { state: 'original-record-read', context: sourceOriginal.context,
     recorded_dispatch: sourceOriginal.provenance, dispatch_record: sourceOriginal.observation }, sourceContext: s.source.context,
@@ -135,9 +137,11 @@ try {
   passed.push('original-revocation-after-source-read-withholds-ciphertext');
   const cacheIntegration = await checkManagementCache(runner);
   passed.push('gateway-cache-acquisition-to-independent-full-source-reconstruction');
+  passed.push('retained-original-capture-to-protected-broker-without-status-polling');
   process.stdout.write(JSON.stringify({ result: 'PASS', scope: 'disposable-context-tls-and-source-codec', passed,
     runnerSource: lock.managementWorker.commit, productionCredentials: false, liveGoogleVerified: false,
-    sourceHttpVerified: true, fullSourceClosureVerified: false, hostedOidcVerified: false,
+    sourceHttpVerified: true, sourceCaptureMappingVerified: true, providerSourceBootstrapVerified: false,
+    fullSourceClosureVerified: false, hostedOidcVerified: false,
     ...cacheIntegration,
     contentWriteVerified: false, chatgptAcceptanceVerified: false }) + '\n');
 } finally {
