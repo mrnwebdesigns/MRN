@@ -107,7 +107,7 @@ const owner = json('owner-policy.json', 131072), caches = json('source-cache/ind
 assert.ok(Array.isArray(caches) && caches.length > 0 && caches.length <= 128);
 closed(owner, ['schema', 'enabled', 'policy_epoch', 'evidence_policy', 'performance_budget', 'app_actor_id', 'source_recipe_catalog_sha256']);
 assert.equal(owner.schema, 1); assert.equal(owner.enabled, false); assert.equal(owner.evidence_policy.enabled, false);
-assert.equal(owner.app_actor_id, '40');
+assert.match(owner.app_actor_id, /^[1-9][0-9]{0,29}$/);
 assert.equal(owner.source_recipe_catalog_sha256, delegationDigest(catalog));
 assert.equal(owner.policy_epoch, owner.evidence_policy.policy_epoch);
 assert.equal(delegationDigest(owner.performance_budget), owner.evidence_policy.performance_budget_sha256);
@@ -212,7 +212,7 @@ try {
   assert.equal(delegationDigest(validateManagementCapture(recovered.output, completeExpected)), delegationDigest(capture));
   const measured = await native('read-measurements', job, artifactHash); assert.equal(measured.ok, true);
   const measurements = validateManagementMeasurements(measured.output, capture, completeExpected);
-  const ledger = new ManagementEvidenceLedger(access.ledger, { policy: () => owner.evidence_policy, appActorId: '40' });
+  const ledger = new ManagementEvidenceLedger(access.ledger, { policy: () => owner.evidence_policy, appActorId: owner.app_actor_id });
   ledger.recordCapture(job, capture, measurements, completeExpected);
   pass('fresh-original-Google-intent-and-actual-native-capture-readback');
 
@@ -236,7 +236,7 @@ try {
     return new SignJWT({ iss: 'https://token.actions.githubusercontent.com', aud: managementWorkerAudience, sub: trust.subject,
       iat: at, nbf: at, exp: Math.min(at + 60, Math.floor(actor.expiresAt / 1000)), jti: randomUUID(),
       repository: dispatch.repository, repository_id: dispatch.repository_id, repository_owner: 'mrnwebdesigns', repository_owner_id: '98',
-      repository_visibility: 'private', run_id: dispatch.run_id, run_attempt: '1', actor_id: '40', ref: dispatch.ref, ref_type: 'branch',
+      repository_visibility: 'private', run_id: dispatch.run_id, run_attempt: '1', actor_id: owner.app_actor_id, ref: dispatch.ref, ref_type: 'branch',
       workflow_ref: `${dispatch.repository}/${dispatch.workflow_path}@${dispatch.ref}`, workflow_sha: dispatch.runner_source_sha,
       sha: dispatch.runner_source_sha, event_name: 'workflow_dispatch', environment: trust.environment, runner_environment: 'github-hosted' })
       .setProtectedHeader({ alg: 'RS256', kid: 'fixture-source-oidc' }).sign(oidc.privateKey);
@@ -269,7 +269,7 @@ try {
   const pointer = { dispatch_id: dispatch.dispatch_id, context_sha256: delegationDigest(original.context) };
   const expectedDispatch = { ...Object.fromEntries(['repository_id', 'workflow_id', 'workflow_path', 'workflow_sha256', 'run_id',
     'runner_source_sha', 'engine_commit', 'engine_configuration_sha256', 'runtime_sha256'].map(key => [key, dispatch[key]])),
-  app_actor_id: '40', evidence_policy_sha256: original.context.evidence_policy_sha256 };
+  app_actor_id: owner.app_actor_id, evidence_policy_sha256: original.context.evidence_policy_sha256 };
   const recorded = await acquireManagementWorkerContext({ pointer, expected: expectedDispatch,
     gatewayKeyId: identity.keyId, gatewayPublicKey: identity.publicKey, oidcToken: await token() });
   const metadata = await acquireManagementSourceContext({ original: recorded, gatewayKeyId: identity.keyId,
