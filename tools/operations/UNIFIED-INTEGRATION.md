@@ -54,6 +54,14 @@ They are not evidence of production activation or team readiness.
 
 ## Canonical source bootstrap adapter, 2026-10-17
 
+Gateway checkpoint `fad14c6` passes all 483 source tests, combined run
+`39046936260` and MRN QA `39046936077`. The original five-report archive
+`12105684249` has SHA-256
+`faeb2f0681831bf24bf93d00561b6276799d19a03eaf2e314bde6676f349aeed`.
+Its source pins, measurement hashes, runtime/workflow Git blobs and all twelve
+independent worker integration groups have been verified. This qualifies the
+adapter source; actual native source integration remains a separate check.
+
 The gateway now has an optional lifecycle for the fixed MainWP MCP source-context
 and native-capture abilities. Discovery requires the canonical Dashboard,
 nonzero abilities, and POST-only non-destructive annotations. The dedicated
@@ -79,6 +87,32 @@ adapter tests therefore do not prove actual gateway-to-provider source capture.
 Canonical API registration, a separate fresh native source fixture, central
 cache delivery, protected rendered QA and production/ChatGPT acceptance remain
 required. Production startup does not construct this lifecycle.
+
+## Native source integration hook candidate, 2026-10-17
+
+`test/runtime/source-hook.sh` is an optional, currently unconfigured disposable
+fixture hook. It consumes a closed provider-owned descriptor and private fixture
+files, verifies the installed package against immutable Git, and binds the
+fresh original actor, content preview, capture, owner policy and catalog. Its
+source connection uses the existing 120-second capture bound; the independent
+access callback and ordinary delegated connections retain their defaults.
+
+The candidate exercises canonical MCP source bootstrap/capture/read routes,
+the actual gateway signed metadata and encrypted broker, and the independent
+worker's ZIP extraction and complete source reconstruction. It requires actual
+complete fixture cache archives and native MU frames. A new provider bootstrap
+request must observe pending revocation through the actual callback audit;
+an unused metadata request must also fail. Child content must remain unchanged,
+and private source cleanup must finish before the report may say PASS.
+
+The hook is not enabled in CI because the separate provider API registration
+and source fixture have not passed their native gate. Provider `a45f33a` run
+`39058196093` passed source capture and encrypted storage, then failed source
+context checks; it is not selected by the gateway. This hook's syntax/lint checks
+do not establish that its full native chain works. Its report explicitly
+excludes real Google, hosted OIDC/cache provenance, rendered QA, admission,
+remote backups, content writes and ChatGPT acceptance. There is no production
+startup, policy, credential or workspace publication change.
 
 ## Protected source-context readback, 2026-10-17
 
