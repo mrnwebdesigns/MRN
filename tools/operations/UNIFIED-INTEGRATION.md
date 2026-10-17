@@ -4,7 +4,32 @@
 
 One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebdesigns.com/mcp. Active MRN Google Workspace members get automatic portfolio access; there is no individual approval or enrollment step. Necessary approvals apply to concrete site changes. No teammate WordPress account, Application Password, API key, terminal, Codex, SSH or site token.
 
-## Current native integration checkpoint, 2026-10-16
+## Current delivery state, 2026-10-17
+
+- One existing workspace plugin remains the target. No additional connector,
+  individual enrollment or staff credential requirement has been introduced.
+- Runner `c9135ca` passes all three hosted checks and 143 source tests; both
+  original archives and all eight QA reports are independently verified.
+- Gateway `909232a` is the last passing combined checkpoint. Later committed
+  `aa2c2fd` failed native MainWP sync authentication. A later passing sync does
+  not resolve that intermittent failure.
+- The new gateway source verifies encrypted native batches, cache ZIP extraction,
+  complete source reconstruction and independent owner-catalog signatures.
+  Production startup does not enable these private adapters.
+- Provider observer `1048e20` failed in a synthetic fixture; `b44831d` then
+  failed to collect a matching Dashboard observation. The native sync passed
+  in both runs. Corrected observer `d1144bc` is pending native qualification.
+- Live MainWP was last observed connected to `wpcontrol.mrndev.io` with 115
+  abilities and provider 0.13.8. The company code policy remains unchanged.
+- Remaining: authenticated source-context bootstrap and retained source mapping;
+  central cache delivery; complete protected rendered QA and report admission;
+  concrete deployment/access approval; workspace refresh; ordinary ChatGPT
+  content-edit, code-edit/rollback and outsider/revoked-account acceptance.
+
+The following sections retain individual source checkpoints and their limits.
+They are not evidence of production activation or team readiness.
+
+## Earlier native integration checkpoint, 2026-10-16
 
 Gateway `51e0366430424533d40dde9a7b8e22b7d316bd5e` passes 423 source tests,
 [MRN QA 38934037523](https://github.com/mrnwebdesigns/MRN/actions/runs/38934037523)
@@ -790,3 +815,76 @@ A fresh read-only canonical MainWP status on 2026-10-16 reports connected,
 Dashboard wpcontrol.mrndev.io, 115 abilities and provider 0.13.8. Its live
 company-site child-theme code policy still contains only Kyle. That field
 release and policy have not been modified by this work.
+
+The final `aa2c2fd` combined run `38967513098` reproduced the unchanged native
+sync failure. Failure-only diagnostics classify the stored error as
+authentication; the cause remains unproven. MRN QA `38967513082` passed. Its
+original partial artifact `12075282182` is retained with verified SHA-256
+`c69bb2f785e5df7a3b6ea3c932b0e5717bb9acf04373fb5803448fbf152fb403`.
+No connection reset, credential change, retry or weaker assertion is used.
+
+The management-worker checkpoint is `c9135ca9e8c71481c06d06d609b133807553597b`.
+It adds safe extraction of actual immutable cache ZIPs and has 143 passing
+local tests. All three jobs in hosted CI `38969582135` pass. Original code
+artifact `12076830287` has SHA-256
+`9b428032ca2852b788821a6e3feb10f821b7ce07ca7cbbdc8a8e91f666f79f00`;
+content artifact `12076159823` has SHA-256
+`f791a87d7d72732e2670e18e36ce670de9cff3eb538423edd95d48140b2770ea`.
+All eight original QA reports and their source/profile/context hashes were
+independently verified. The tested merge and worker head have identical trees.
+The preceding cache run failed an existing wall-clock timeout test; that test
+now checks the original bounded timer, actual request destruction and no retry.
+Production timeout behavior is unchanged. The previous fully verified worker
+checkpoint is `2228524` (all three CI jobs and eight original QA reports).
+
+The combined worker check also exercises the gateway's actual closed cache
+acquisition code through the independent runner's archive verification and full
+source reconstruction. Every manifest/native batch is encrypted by the shipping
+gateway codec and opened by the independent runner before reconstruction; a
+second opening of the same nonce is refused. It verifies actual ZIP and complete
+source bytes plus cleanup. GitHub responses, ownership and source data remain
+synthetic, and cached ZIP delivery is local rather than encrypted. Ten integration
+groups are required. Hosted cache provenance, encrypted cache delivery, actual
+provider source capture, rendered management QA and report admission remain
+open; neither this check nor a passing source run enables production editing.
+
+Provider observer candidate `1048e20364c4aa98cd74bb74039ad624a6172443` failed
+hosted CI `38970473379`: its diagnostic called an unavailable MainWP class from
+a later synthetic fixture. The actual native sync passed in this run; that does
+not explain the earlier intermittent authentication failure. Review also found
+that the key-decryption wrapper could lazily migrate a key file, so this observer
+is not accepted as read-only. A corrected observer must independently pass before
+the next combined pin is accepted. All eleven imported qualification blobs are
+unchanged. The combined fixture's diagnostic flag is disposable-only; production
+startup is unaffected.
+
+The replacement observer is provider
+`b44831d83cd83620b39aa23ea6e9e84c7cb75702`. It reads only existing fixture key
+files, skips synthetic senders with no native MainWP runtime, and requires a
+matching actual sender/Child nonce digest, public-key fingerprint and accepted
+signature on the successful native sync path. Its 40 local observer checks pass;
+hosted CI `38997064027` is the independent native gate. All eleven qualification
+blobs remain byte-identical and the four linked provider pins advance together.
+
+The `b44831d` native run failed its required sender/Child correlation because
+the CLI container has a persisted WordPress home URL but no `WP_HOME` constant.
+Provider `d1144bc54d4435d85528c7c2c91e0df2eb480ce5` resolves only the two exact
+fixture origins from that constant or the existing WordPress setting. It retains
+the correlation predicate. Forty-seven observer checks, thirteen actual pinned
+crypto/key-file invariance checks, full static QA and exact staged QA pass;
+hosted native run `39042535495` remains the separate acceptance gate. All eleven
+imported blobs are still exact, with all four linked pins updated atomically.
+The gateway's ten local integration groups pass against this candidate.
+
+The private `ManagementSourceCatalogRegistry` now resolves the provider-observed
+catalog digest against closed service configuration. It verifies the exact
+root-key signature and canonical bytes, refuses key-material aliases across
+root/registrar/identity/QA roles, and requires catalog issuance before the
+original queue with coverage through the original expiry. It rechecks the
+unchanged service registry, original ledger context and pending revocation at
+return. Nine source tests cover substitution, forged/cross-purpose signatures,
+malformed original bytes, changed configuration, lifetime and revocation.
+It neither creates nor approves catalogs; default configuration is missing.
+Production startup does not construct this resolver. Authenticated provider
+source-context bootstrap, capture/slot mapping, central cache publication and
+protected worker orchestration still require their separate integration proofs.

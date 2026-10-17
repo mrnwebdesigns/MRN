@@ -16,6 +16,7 @@ import { createHttpServer } from '../../src/http.mjs';
 import { ManagementWorkerContext, managementWorkerAudience } from '../../src/management-worker-context.mjs';
 import { managementEvidenceFixture } from '../fixtures/management-evidence.mjs';
 import { sourceBrokerFixture } from '../fixtures/management-source.mjs';
+import { checkManagementCache } from './check-management-cache.mjs';
 
 process.umask(0o077);
 const runner = resolve(process.env.MRN_GATEWAY_MANAGEMENT_RUNNER_SOURCE);
@@ -132,9 +133,12 @@ try {
   s.state.backend = () => s.access.recordPendingRevocation(s.job);
   await assert.rejects(() => readManagementSourceBatch({ recipient, batchIndex: 0, oidcToken: token })); recipient.destroy();
   passed.push('original-revocation-after-source-read-withholds-ciphertext');
+  const cacheIntegration = await checkManagementCache(runner);
+  passed.push('gateway-cache-acquisition-to-independent-full-source-reconstruction');
   process.stdout.write(JSON.stringify({ result: 'PASS', scope: 'disposable-context-tls-and-source-codec', passed,
     runnerSource: lock.managementWorker.commit, productionCredentials: false, liveGoogleVerified: false,
     sourceHttpVerified: true, fullSourceClosureVerified: false, hostedOidcVerified: false,
+    ...cacheIntegration,
     contentWriteVerified: false, chatgptAcceptanceVerified: false }) + '\n');
 } finally {
   hook.mock.restore(); for (const socket of sockets) socket.destroy();
