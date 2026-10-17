@@ -5,30 +5,85 @@ import { OpsError, requireThat } from './contracts.mjs';
 
 export const toolNames = {
   site: 'get_site_v1', sync: 'sync_sites_v1', plugins: 'get_site_plugins_v1', themes: 'get_site_themes_v1',
-  security: 'get_site_security_v1', updates: 'get_site_updates_v1', changes: 'get_site_changes_v1',
+  security: 'get_site_security_v1', updates: 'get_site_updates_v1', ignoredUpdates: 'list_ignored_updates_v1', changes: 'get_site_changes_v1',
   runtime: 'mrn_mainwp__get_stack_runtime_report_v1', qualify: 'mrn_mainwp__qualify_stack_site_v1',
   preflight: 'mrn_mainwp__preflight_stack_plugin_update_v1', backup: 'mrn_mainwp__start_database_backup_v1',
   backupStatus: 'mrn_mainwp__get_database_backup_status_v1', update: 'mrn_mainwp__update_stack_plugin_v1',
   rollback: 'mrn_mainwp__rollback_stack_plugin_v1',
+  abandonedPlugins: 'get_abandoned_plugins_v1', abandonedThemes: 'get_abandoned_themes_v1',
+  siteClient: 'get_site_client_v1', siteCosts: 'get_site_costs_v1',
+  fonts: 'mrn_mainwp__get_google_fonts_status_v1', backupPolicy: 'mrn_mainwp__inspect_backup_retention_policy_v1',
+  deploymentAgent: 'mrn_mainwp__get_stack_deployment_agent_status_v1',
+  codeInspect: 'mrn_mainwp__inspect_code_file_v1',
+  codePrepare: 'mrn_mainwp__prepare_code_change_v1', codeApprove: 'mrn_mainwp__approve_code_change_v1',
+  codeExecute: 'mrn_mainwp__execute_code_change_v1', codeStatus: 'mrn_mainwp__get_code_operation_v1',
+  contentPolicy: 'mrn_mainwp__get_content_policy_v1', contentInspect: 'mrn_mainwp__inspect_content_v1',
+  contentTargetPolicy: 'mrn_mainwp__get_content_policy_v2',
+  contentRecords: 'mrn_mainwp__list_content_records_v1', contentRecord: 'mrn_mainwp__read_content_record_v1',
+  contentPrepare: 'mrn_mainwp__prepare_content_change_v1', contentApprove: 'mrn_mainwp__approve_content_change_v1',
+  contentExecute: 'mrn_mainwp__execute_content_change_v1', contentStatus: 'mrn_mainwp__get_content_operation_v1',
+  contentRollback: 'mrn_mainwp__prepare_content_rollback_v1', contentMigration: 'mrn_mainwp__get_content_migration_v1',
 };
-const readTools = new Set(Object.entries(toolNames).filter(([k]) => !['preflight', 'backup', 'backupStatus', 'update', 'rollback'].includes(k)).map(([,v]) => v));
-function withoutSecrets(value) {
+const readTools = new Set(Object.entries(toolNames).filter(([k]) => !['preflight', 'backup', 'backupStatus', 'update', 'rollback', 'codePrepare', 'codeApprove', 'codeExecute', 'contentPrepare', 'contentApprove', 'contentExecute', 'contentRollback'].includes(k)).map(([,v]) => v));
+export function withoutSecrets(value) {
   if (Array.isArray(value)) return value.map(withoutSecrets);
+  if (typeof value === 'string' && /^https?:\/\//i.test(value)) {
+    try { const url = new URL(value); url.username = ''; url.password = ''; url.search = ''; url.hash = ''; return url.href; }
+    catch { return '[invalid URL omitted]'; }
+  }
   if (!value || typeof value !== 'object') return value;
-  return Object.fromEntries(Object.entries(value).filter(([key]) => !/(password|secret|token|credential|authorization|cookie|package_base64|^nonce$|^receipt$)/i.test(key)).map(([key, item]) => [key, withoutSecrets(item)]));
+  return Object.fromEntries(Object.entries(value).filter(([key]) => !/(password|secret|token|credential|authorization|cookie|license.?key|api.?key|private.?key|access.?key|package_base64|^nonce$|^receipt$|^(?:package|download|notes|custom_fields|meta)(?:_url|_link)?$)/i.test(key)).map(([key, item]) => [key, withoutSecrets(item)]));
 }
 
+const providerBlockers = Object.freeze({
+  SAFE_MODE_BLOCKED: ['SAFE_MODE_BLOCKED', 'MainWP Safe Mode blocked this action. MRN services must review the restriction; do not retry through another route.'],
+  mrn_delegation_target: ['TARGET_MISMATCH', 'MainWP could not bind this request to one exact permitted website. Resolve its exact URL again; do not substitute a different target or access route.'],
+  mrn_content_disabled: ['CONTENT_DISABLED', 'Content editing is not enabled in MRN services. Staff do not need another account or enrollment.'],
+  mrn_content_profile: ['CONTENT_PROFILE_UNQUALIFIED', 'MRN services have not qualified the current rendering dependencies for this exact content target. This change remains blocked.'],
+  mrn_content_ownership: ['CONTENT_OWNERSHIP', 'The content owner or rendering adapter is not qualified. ACF and builder content require their own supported workflow.'],
+  mrn_content_target: ['CONTENT_TARGET_MISMATCH', 'The provider could not verify the exact content record or retained operation. Resolve and inspect the target again.'],
+  mrn_content_size: ['CONTENT_SIZE', 'The complete content request exceeds the qualified limit. No content was truncated.'],
+  mrn_content_precondition: ['CONTENT_PRECONDITION', 'The current content no longer matches the reviewed snapshot. Inspect it again and prepare a fresh preview.'],
+  mrn_content_qa: ['CONTENT_QA_REQUIRED', 'The exact content plan lacks a valid protected QA receipt. A new qualifying QA run is required.'],
+  mrn_content_approval: ['CONTENT_APPROVAL', 'The provider could not verify the current operator, exact approval or required execution evidence. Inspect the operation before proceeding.'],
+  mrn_content_backup: ['BACKUP_UNVERIFIED', 'A fresh, verified remote database backup for this exact website is required.'],
+  mrn_content_locked: ['SITE_LOCKED', 'Another code or content operation still holds this website lock. Inspect its outcome; do not force-unlock or retry the change.'],
+  mrn_content_consumed: ['CONTENT_CONSUMED', 'This operation or its evidence has already been consumed. Read its retained outcome; do not execute it again.'],
+  mrn_content_uncertain: ['CONTENT_OUTCOME_UNVERIFIED', 'The provider could not verify the operation outcome. Retain its lock and rollback evidence; do not retry the change.'],
+  mrn_content_unsupported: ['CONTENT_ADAPTER_UNAVAILABLE', 'The required typed MainWP content adapter is unavailable. MRN services must complete the integration.'],
+  mrn_code_operation: ['OPERATION_STATUS_UNAVAILABLE', 'The retained MainWP operation is unavailable. Keep any uncertain outcome and lock until qualified reconciliation.'],
+  mrn_code_directory_inactive: ['STAFF_ACCESS_DENIED', 'The Google Workspace account is inactive, revoked or no longer matches the verified MRN identity. Access is denied.'],
+  mrn_code_directory_unavailable: ['STAFF_VERIFICATION_UNAVAILABLE', 'Current Google Workspace membership could not be verified. Access remains blocked until verification is available.'],
+  mrn_code_directory_setup: ['STAFF_VERIFICATION_UNAVAILABLE', 'MRN services have not configured the Google Workspace membership check. Access remains blocked.'],
+  mrn_code_directory_auth: ['STAFF_VERIFICATION_UNAVAILABLE', 'The central Google Workspace membership check is unavailable. MRN services must restore it.'],
+  mrn_code_directory_key: ['STAFF_VERIFICATION_UNAVAILABLE', 'The central Google Workspace membership check is unavailable. MRN services must restore it.'],
+  mrn_code_directory_integrity: ['STAFF_VERIFICATION_UNAVAILABLE', 'The central Google Workspace membership check is unavailable. MRN services must restore it.'],
+});
 export function integrationError(error) {
   if (error instanceof OpsError) return error;
   // Classify privately, without reflecting arbitrary remote text or credentials.
   const message = String(error?.message || '');
+  // The pinned MCP transport retains WordPress's code in this fixed prefix.
+  // Only recognize exact codes or that prefix, never instructions/substrings in
+  // arbitrary error prose. Caller-visible text comes solely from this table.
+  const code = typeof error?.code === 'string' && Object.hasOwn(providerBlockers, error.code) ? error.code
+    : /^(?:MainWP failed: )?Ability execution failed: ([a-zA-Z0-9_]+) - /.exec(message)?.[1];
+  if (code && Object.hasOwn(providerBlockers, code)) return new OpsError(...providerBlockers[code]);
   if (/timeout|timed out/i.test(message)) return new OpsError('DOWNSTREAM_TIMEOUT', 'MainWP timed out. Read back exact state before retrying any mutation.');
   if (/401|403|authentication|permission|unauthoriz/i.test(message)) return new OpsError('MAINWP_ACCESS', 'MainWP rejected authentication or permission. Repair the approved connection; no fallback was attempted.');
   if (/\bmrn_mainwp_stack_report_unavailable\b/.test(message)) return new OpsError('STACK_REPORT_UNAVAILABLE', 'The child site did not return a Stack runtime report. Read-only qualification may explain what is missing.');
   return new OpsError('MAINWP_FAILED', 'The approved MainWP connection failed or returned an unsupported response.');
 }
 export function payload(result, { allowError = false } = {}) {
-  try { return parseToolResult(result, 'MainWP', { allowError }).payload; } catch (error) { throw integrationError(error); }
+  try {
+    const parsed = parseToolResult(result, 'MainWP', { allowError: true });
+    if (parsed.isError && !allowError) {
+      const remote = parsed.payload?.error;
+      throw integrationError({ code: typeof remote === 'string' ? remote : remote?.code,
+        message: typeof remote?.message === 'string' ? remote.message : parsed.payload?.message ?? (typeof remote === 'string' ? remote : '') });
+    }
+    return parsed.payload;
+  } catch (error) { throw integrationError(error); }
 }
 export function validateStatus(result) {
   let status;
@@ -36,6 +91,17 @@ export function validateStatus(result) {
   requireThat(status.connected === true && status.dashboardHost === 'wpcontrol.mrndev.io' && Number.isInteger(status.abilitiesCount) && status.abilitiesCount > 0,
     'MAINWP_IDENTITY', 'MainWP must be connected to wpcontrol.mrndev.io with nonzero capabilities.');
   return { connected: true, dashboardHost: status.dashboardHost, abilitiesCount: status.abilitiesCount };
+}
+
+function validateSync(result, siteId, siteUrl) {
+  let exact = false;
+  if (Array.isArray(result?.synced) && result.synced.length === 1 && result.synced[0]?.id === siteId
+    && typeof result.synced[0]?.url === 'string') {
+    try { exact = normalizeSiteUrl(result.synced[0].url) === siteUrl; } catch { /* Untrusted URL details stay private. */ }
+  }
+  requireThat(result?.queued === false && result.total_synced === 1 && result.total_errors === 0
+    && Array.isArray(result.errors) && result.errors.length === 0 && exact,
+  'SYNC_UNVERIFIED', 'MainWP did not confirm a successful sync of this exact website. Fresh-state checks remain blocked; do not switch targets or access routes.');
 }
 
 export async function connectMainwp(config, environment = process.env) {
@@ -95,17 +161,31 @@ export class MainwpSession {
     await this.readResource({ uri: 'mainwp://status' });
     if (!readTools.has(name)) requireThat(this.action !== 'read' && this.action !== 'test', 'CAPABILITY_DENIED', 'This operation requires repair or release permissions.');
     const canWrite = ['deploy_development', 'release_production'].includes(this.action);
-    if ([toolNames.backup, toolNames.backupStatus, toolNames.update, toolNames.rollback].includes(name)) requireThat(canWrite, 'CAPABILITY_DENIED', 'Release permission is required before a backup or mutation.');
+    if ([toolNames.backup, toolNames.backupStatus].includes(name)) requireThat(canWrite || ['code', 'content'].includes(this.action), 'CAPABILITY_DENIED', 'Change permission is required before a backup.');
+    if ([toolNames.update, toolNames.rollback].includes(name)) requireThat(canWrite, 'CAPABILITY_DENIED', 'Release permission is required before a Fleet mutation.');
+    if ([toolNames.codePrepare, toolNames.codeApprove, toolNames.codeExecute].includes(name)) requireThat(this.action === 'code', 'CAPABILITY_DENIED', 'Verified code-change permission is required.');
+    if ([toolNames.contentPrepare, toolNames.contentApprove, toolNames.contentExecute, toolNames.contentRollback].includes(name)) requireThat(this.action === 'content', 'CAPABILITY_DENIED', 'Verified content-change permission is required.');
     if (name === toolNames.site) {
       requireThat(args.site_id_or_domain === this.target.url, 'TARGET_MISMATCH', 'Resolve the exact registered URL before using a site ID.');
     } else {
       requireThat(Number.isInteger(this.siteId) && this.siteId > 0, 'TARGET_UNRESOLVED', 'Exact site resolution is required.');
       if (name === toolNames.sync) requireThat(Object.keys(args).length === 1 && Array.isArray(args.site_ids) && args.site_ids.length === 1 && args.site_ids[0] === this.siteId,
         'TARGET_MISMATCH', 'Synchronization requires exactly one resolved site.');
+      else if (name === toolNames.ignoredUpdates) requireThat(Object.keys(args).length === 1
+        && Array.isArray(args.site_ids_or_domains) && args.site_ids_or_domains.length === 1 && args.site_ids_or_domains[0] === this.siteId,
+      'TARGET_MISMATCH', 'Ignored-update inspection requires exactly one resolved site.');
+      else if ([toolNames.codeApprove, toolNames.codeExecute, toolNames.codeStatus].includes(name)) requireThat(this.codeOperation && args.operation_id === this.codeOperation.id
+        && (name === toolNames.codeStatus || args.reviewed_digest === this.codeOperation.digest), 'TARGET_MISMATCH', 'The provider operation must belong to the exact stored website plan.');
+      else if ([toolNames.contentApprove, toolNames.contentExecute, toolNames.contentStatus, toolNames.contentMigration, toolNames.contentRollback].includes(name)) requireThat(this.contentOperation && args.operation_id === this.contentOperation.id
+        && (![toolNames.contentApprove, toolNames.contentExecute].includes(name) || args.reviewed_digest === this.contentOperation.digest), 'TARGET_MISMATCH', 'The content operation must belong to the exact stored website plan.');
       else requireThat((args.site_id ?? args.site_id_or_domain) === this.siteId && (!args.site_url || normalizeSiteUrl(args.site_url) === this.target.url), 'TARGET_MISMATCH', 'The downstream target differs from the authorized website.');
     }
     if ([toolNames.backup, toolNames.update, toolNames.rollback].includes(name) && (name === toolNames.backup || args.user_confirmed === true)) this.onMutation();
+    if ([toolNames.codeExecute, toolNames.contentExecute].includes(name)) this.onMutation();
     const result = await this.guarded(`mainwp:${name}`, () => this.client.callTool(request, schema, { timeout: 120000, ...options }));
+    // Native MainWP can return HTTP 200 with per-site sync errors. A transport
+    // response alone must never count as a successful synchronization.
+    if (name === toolNames.sync) validateSync(payload(result), this.siteId, this.target.url);
     if (name === toolNames.site) {
       const site = payload(result); const id = Number(site.id ?? site.site_id);
       requireThat(Number.isInteger(id) && id > 0 && normalizeSiteUrl(site.url ?? site.site_url ?? '') === this.target.url && site.status === 'connected', 'TARGET_MISMATCH', 'MainWP did not return the exact connected website.');

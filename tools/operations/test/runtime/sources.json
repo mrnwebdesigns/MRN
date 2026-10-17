@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "provider": {
+    "repository": "mrnwebdesigns/mrn-mainwp-operations-api",
+    "commit": "aae87b3dcff39d91aaf7610def7fa5a2d8cfe3c6"
+  },
+  "transport": {
+    "repository": "mrnwebdesigns/mainwp-mcp",
+    "commit": "3249bde643f52f29b7b18db41f4c3c7bb88d2434"
+  },
+  "runner": {
+    "repository": "mrnwebdesigns/mrn-code-qa-runner",
+    "commit": "d9f2eba47efd27bcc3e5ee04c3c7eeaf0b3d11a1"
+  },
+  "managementWorker": {
+    "repository": "mrnwebdesigns/mrn-code-qa-runner",
+    "commit": "fb9a16b1216e4022f15bc29084ab7c97ce3513b3"
+  }
+}

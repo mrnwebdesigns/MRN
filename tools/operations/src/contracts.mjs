@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { z } from 'zod';
 import { normalizeSiteUrl } from '../../../stack/scripts/mrn-fleet-update.mjs';
+import { operationsScopes } from './scopes.mjs';
 
 export const digest = value => createHash('sha256').update(typeof value === 'string' || Buffer.isBuffer(value) ? value : canonical(value)).digest('hex');
 export function canonical(value) {
@@ -14,6 +15,10 @@ export class OpsError extends Error {
 }
 export function requireThat(condition, code, message) {
   if (!condition) throw new OpsError(code, message);
+}
+export function requireWriteScope(actor) {
+  requireThat(Array.isArray(actor?.scopes) && operationsScopes.every(scope => actor.scopes.includes(scope)),
+    'INSUFFICIENT_SCOPE', 'Reconnect MRN Website Operations to authorize guarded changes. Your current sign-in permits inspection only.');
 }
 export const safeError = error => error instanceof OpsError
   ? { code: error.code, message: error.message }
@@ -48,11 +53,16 @@ export const registrySchema = z.object({
     }).strict()).min(1),
   }).strict()),
 }).strict();
-export const actions = ['read', 'test', 'repair', 'deploy_development', 'release_production'];
-const portfolioSchema = z.object({ sources: z.array(z.enum(['mainwp', 'local-hub'])).min(1), actions: z.array(z.enum(['read', 'test'])).min(1) }).strict();
+// Exact service-resolved target retained by private job authorization. Derive
+// environment fields from the registry contract so the two cannot drift.
+export const registryTargetSchema = registrySchema.shape.websites.element.shape.environments.element.extend({
+  websiteId: identifier, name: z.string().min(1).max(160), environment: z.enum(environmentNames),
+});
+export const actions = ['read', 'test', 'content', 'code', 'repair', 'deploy_development', 'release_production'];
+const portfolioSchema = z.object({ sources: z.array(z.enum(['mainwp', 'local-hub'])).min(1), actions: z.array(z.enum(['read', 'test', 'content', 'code'])).min(1) }).strict();
 export const policySchema = z.object({ version: z.literal(1), members: z.array(z.object({
   subject: z.string().min(1), enabled: z.boolean(),
-  // Directory-wide read/test access is explicit and never grants repair/release.
+  // Team code/content roles require Google proof and their separate execution gates.
   portfolio: portfolioSchema.optional(),
   grants: z.array(z.object({ website: z.union([identifier, httpsUrl]), environments: z.array(z.enum(environmentNames)).min(1), actions: z.array(z.enum(actions)).min(1) }).strict()).default([]),
 }).strict()), emailDomains: z.array(z.object({
@@ -132,6 +142,10 @@ export class Registry {
     const direct = member.grants.some(g => [target.websiteId, target.url].includes(g.website) && g.environments.includes(target.environment) && g.actions.includes(action));
     const portfolio = member.portfolio?.actions.includes(action) && target.sources?.some(s => member.portfolio.sources.includes(s));
     requireThat(direct || portfolio, 'FORBIDDEN', 'Your account does not have this operation permission for this website and environment.');
+    if (!['read', 'test'].includes(action)) requireWriteScope(actor);
+    if (['code', 'content'].includes(action)) requireThat(actor.identityProvider === 'google-oauth2'
+      && actor.subject === `google-oauth2|${actor.googleSubject}` && actor.verifiedEmail?.endsWith('@mrnwebdesigns.com'),
+    'AUTH_REQUIRED', 'Content and code changes require a verified individual MRN Google identity.');
     if (!['read', 'test'].includes(action)) requireThat(target.environment !== 'unknown' && !target.knowledgeIssues?.length, 'KNOWLEDGE_REQUIRED', 'Resolve the environment and conflicting website knowledge before preparing a change.');
   }
   resolve(actor, query, environment, action = 'read') {

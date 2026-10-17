@@ -17,7 +17,7 @@ import { Discovery } from '../src/discovery.mjs';
 const issuer = 'https://identity.example.test'; const audience = 'https://ops.example.test/mcp';
 async function identity() {
   const keys = await generateKeyPair('RS256'); const jwk = { ...await exportJWK(keys.publicKey), kid: 'test-key', alg: 'RS256', use: 'sig' };
-  const sign = (subject = actor.subject, overrides = {}) => new SignJWT({ scope: 'mrn:operations', ...overrides }).setProtectedHeader({ alg: 'RS256', kid: jwk.kid })
+  const sign = (subject = actor.subject, overrides = {}) => new SignJWT({ scope: 'mrn:operations mrn:operations:write', ...overrides }).setProtectedHeader({ alg: 'RS256', kid: jwk.kid })
     .setIssuer(issuer).setAudience(audience).setSubject(subject).setIssuedAt().setExpirationTime('10m').sign(keys.privateKey);
   const auth = createAuthenticator({ issuer, audience, jwksUrl: `${issuer}/keys` }, createLocalJWKSet({ keys: [jwk] }));
   return { keys, sign, auth };
@@ -33,6 +33,19 @@ test('JWT identity rejects absent, expired, unsigned, wrong-issuer, wrong-audien
   }
 });
 
+test('OAuth authority comes only from exact verified scope tokens and cannot be mutated', async () => {
+  const { auth, sign } = await identity();
+  const legacy = await auth(`Bearer ${await sign(actor.subject, { scope: 'mrn:operations', permissions: ['mrn:operations:write'], scopes: ['mrn:operations:write'] })}`);
+  assert.deepEqual(legacy.scopes, ['mrn:operations']);
+  assert.throws(() => legacy.scopes.push('mrn:operations:write'), TypeError);
+  assert.throws(() => { legacy.scopes = ['mrn:operations:write']; }, TypeError);
+  assert.deepEqual((await auth(`Bearer ${await sign()}`)).scopes, ['mrn:operations', 'mrn:operations:write']);
+  assert.deepEqual((await auth(`Bearer ${await sign(actor.subject, { scope: 'mrn:operations mrn:operations:write:extra' })}`)).scopes, ['mrn:operations']);
+  for (const scope of [['mrn:operations', 'mrn:operations:write'], 'mrn:operations\tmrn:operations:write', 'mrn:operations:write']) {
+    await assert.rejects(() => sign(actor.subject, { scope }).then(token => auth(`Bearer ${token}`)), { code: 'AUTH_REQUIRED' });
+  }
+});
+
 test('hosted HTTP MCP authenticates each request and keeps concurrent identities isolated', async t => {
   const f = setup(); t.after(() => f.close()); const { sign, auth } = await identity();
   f.state.directory = [{ id: 1, url: f.state.url, name: 'Example' }];
@@ -45,16 +58,18 @@ test('hosted HTTP MCP authenticates each request and keeps concurrent identities
   await new Promise(resolve => server.listen(port, '127.0.0.1', resolve)); t.after(() => new Promise(resolve => server.close(resolve)));
   const headers = {};
   const metadata = await fetch(`${base}/.well-known/oauth-protected-resource/mcp`, { headers }); assert.equal(metadata.status, 200);
-  assert.equal((await metadata.json()).resource, `${base}/mcp`);
+  const discovery = await metadata.json();
+  assert.equal(discovery.resource, `${base}/mcp`);
+  assert.deepEqual(discovery.scopes_supported, ['mrn:operations', 'mrn:operations:write']);
   const unauthorized = await fetch(`${base}/mcp`, { method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}' });
   assert.equal(unauthorized.status, 401); assert.match(unauthorized.headers.get('www-authenticate'), /resource_metadata/);
   assert.match(unauthorized.headers.get('www-authenticate'), /error="invalid_token".*error_description=.*scope="mrn:operations"/);
   assert.equal((await fetch(`http://localhost:${port}/healthz`)).status, 403);
   assert.equal((await fetch(`${base}/healthz`, { headers: { ...headers, Origin: 'https://evil.test' } })).status, 403);
   const clients = [];
-  const connect = async subject => {
+  const connect = async (subject, overrides) => {
     const client = new Client({ name: 'test', version: '1' });
-    await client.connect(new StreamableHTTPClientTransport(new URL(`${base}/mcp`), { requestInit: { headers: { ...headers, Authorization: `Bearer ${await sign(subject)}` } } }));
+    await client.connect(new StreamableHTTPClientTransport(new URL(`${base}/mcp`), { requestInit: { headers: { ...headers, Authorization: `Bearer ${await sign(subject, overrides)}` } } }));
     clients.push(client); return client;
   };
   t.after(async () => { await Promise.all(clients.map(c => c.close())); });
@@ -66,7 +81,16 @@ test('hosted HTTP MCP authenticates each request and keeps concurrent identities
   const recoveryTool = (await owner.listTools()).tools.find(t => t.name === 'reconcile_operation');
   assert.equal(recoveryTool.annotations.readOnlyHint, false); // Can release local locks.
   assert.deepEqual(Object.keys(recoveryTool.inputSchema.properties), ['operationId']);
-  const { op } = await prepared(f); f.state.loseResponse = true; await execute(f, op); enrollRecovery(f, op.id);
+  const { op } = await prepared(f);
+  const legacy = await connect(actor.subject, { scope: 'mrn:operations' });
+  assert.equal((await legacy.callTool({ name: 'list_websites', arguments: {} })).isError, undefined);
+  const beforeLegacy = f.state.calls.length;
+  const legacyDenied = await legacy.callTool({ name: 'execute_operation', arguments: { operationId: op.id },
+    _meta: { scopes: ['mrn:operations:write'], email: 'owner@mrnwebdesigns.com' } });
+  assert.equal(JSON.parse(legacyDenied.content[0].text).error.code, 'INSUFFICIENT_SCOPE');
+  assert.match(legacyDenied._meta['mcp/www_authenticate'][0], /error="insufficient_scope".*scope="mrn:operations mrn:operations:write"/);
+  assert.equal(f.state.calls.length, beforeLegacy); assert.equal(f.state.mutations, 0);
+  f.state.loseResponse = true; await execute(f, op); enrollRecovery(f, op.id);
   const reader = await connect('reader'); const calls = f.state.calls.length;
   const forbidden = await reader.callTool({ name: 'reconcile_operation', arguments: { operationId: op.id } });
   assert.equal(forbidden.isError, true); assert.equal(JSON.parse(forbidden.content[0].text).error.code, 'FORBIDDEN');

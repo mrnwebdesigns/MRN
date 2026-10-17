@@ -1,0 +1,121 @@
+import { createHash } from 'node:crypto';
+import { closeSync, constants, fstatSync, fsyncSync, mkdtempSync, openSync, realpathSync, renameSync, rmSync, writeSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { digest, requireThat } from './contracts.mjs';
+
+const repository = 'mrnwebdesigns/mrn-code-qa-runner';
+let activeCacheReads = 0;
+const check = value => requireThat(value, 'MANAGEMENT_SOURCE_CACHE_ACQUISITION', 'The original approved cache archive could not be verified.');
+const id = value => typeof value === 'string' && /^[1-9][0-9]{0,19}$/.test(value);
+const integerId = value => Number.isSafeInteger(value) && value > 0 ? String(value) : value;
+const time = value => {
+  check(typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.000)?Z$/.test(value));
+  const at = Date.parse(value); check(Number.isSafeInteger(at)
+    && [new Date(at).toISOString(), new Date(at).toISOString().replace('.000Z', 'Z')].includes(value));
+  return at / 1000;
+};
+
+// Separate streaming path: existing 64-KiB receipt and evidence archive limits
+// stay unchanged. This never extracts or executes the downloaded ZIP. The
+// supervisor must verify its complete root inventory before using any bytes.
+export async function acquireManagementSourceCache({ selection, acquireGrant, authorize, expiresAt, fetchImpl = fetch,
+  now = () => Date.now(), monotonic = () => performance.now() }) {
+  const artifact = selection?.catalog_artifact;
+  check(selection && id(selection.repository_id) && id(selection.github_artifact_id) && id(selection.run_id)
+    && /^[a-f0-9]{40}$/.test(selection.source_sha) && artifact?.archive_format === 'zip'
+    && /^[a-f0-9]{64}$/.test(artifact.archive_sha256) && Number.isSafeInteger(artifact.maximum_archive_bytes)
+    && artifact.maximum_archive_bytes > 0 && artifact.maximum_archive_bytes <= 536870912
+    && Number.isSafeInteger(selection.created_at) && Number.isSafeInteger(selection.expires_at)
+    && selection.created_at > 0 && selection.created_at * 1000 <= now() && selection.expires_at > selection.created_at
+    && Number.isSafeInteger(expiresAt) && expiresAt > now() && typeof authorize === 'function');
+  const startedAt = now(), started = monotonic(), controller = new globalThis.AbortController();
+  let directory, fd, succeeded = false, grant, timer;
+  const current = async () => {
+    const elapsed = monotonic() - started;
+    check(!controller.signal.aborted && elapsed >= 0 && elapsed < 60000 && now() >= startedAt
+      && now() < expiresAt && now() < selection.expires_at * 1000);
+    await authorize();
+    check(!controller.signal.aborted && monotonic() - started < 60000 && now() < expiresAt
+      && (!grant || Date.parse(grant.expires_at) > now()));
+  };
+  const headers = token => ({ Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2026-03-10', 'Accept-Encoding': 'identity', 'Content-Type': 'application/json' });
+  const entity = async (response, limit, consume) => {
+    check(response.body && ['', 'identity'].includes(response.headers.get('content-encoding') || ''));
+    const length = response.headers.get('content-length');
+    check(length === null || (/^[1-9][0-9]*$/.test(length) && Number(length) <= limit));
+    const reader = response.body.getReader(); let size = 0, complete = false;
+    try {
+      while (true) {
+        check(!controller.signal.aborted && now() >= startedAt && now() < expiresAt && monotonic() - started >= 0 && monotonic() - started < 60000);
+        const part = await reader.read(); if (part.done) { complete = true; break; }
+        size += part.value.length; check(size <= limit); consume(Buffer.from(part.value));
+      }
+      check(size > 0 && (length === null || size === Number(length))); return size;
+    } finally { if (!complete) void reader.cancel().catch(() => {}); reader.releaseLock(); }
+  };
+  const json = async (path, token, method = 'GET', body, status = 200) => {
+    await current();
+    const response = await fetchImpl(`https://api.github.com${path}`, { method, redirect: 'error', signal: controller.signal,
+      headers: headers(token), ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
+    check(response.status === status && response.headers.get('content-type')?.includes('application/json'));
+    const chunks = []; await entity(response, method === 'POST' ? 32768 : 131072, chunk => chunks.push(chunk));
+    const raw = Buffer.concat(chunks); check(Buffer.from(raw.toString('utf8')).equals(raw));
+    const value = JSON.parse(raw.toString('utf8')); await current(); return { value, sha256: digest(raw) };
+  };
+  check(activeCacheReads < 2); activeCacheReads++;
+  try {
+    const operation = async () => {
+      let granted = false;
+      grant = await acquireGrant(async (path, token, method, body, status) => {
+        check(!granted && /^\/app\/installations\/[1-9][0-9]*\/access_tokens$/.test(path) && method === 'POST' && status === 201);
+        granted = true; return (await json(path, token, method, body, status)).value;
+      });
+      const metadata = await json(`/repos/${repository}/actions/artifacts/${selection.github_artifact_id}`, grant.token), item = metadata.value;
+      check(integerId(item.id) === selection.github_artifact_id && item.expired === false
+        && item.digest === `sha256:${artifact.archive_sha256}` && Number.isSafeInteger(item.size_in_bytes)
+        && item.size_in_bytes > 0 && item.size_in_bytes <= artifact.maximum_archive_bytes
+        && integerId(item.workflow_run?.id) === selection.run_id && integerId(item.workflow_run?.repository_id) === selection.repository_id
+        && item.workflow_run.head_sha === selection.source_sha && time(item.created_at) === selection.created_at
+        && time(item.expires_at) === selection.expires_at);
+      await current();
+      const response = await fetchImpl(`https://api.github.com/repos/${repository}/actions/artifacts/${selection.github_artifact_id}/zip`,
+        { redirect: 'manual', signal: controller.signal, headers: headers(grant.token) });
+      check(response.status === 302); const location = response.headers.get('location');
+      check(typeof location === 'string' && location.length <= 8192); const url = new URL(location);
+      check(url.protocol === 'https:' && !url.username && !url.password && !url.port && !url.hash
+        && /^(?:[a-z0-9-]+\.blob\.core\.windows\.net|[a-z0-9-]+\.actions\.githubusercontent\.com)$/.test(url.hostname));
+      await current();
+      const archive = await fetchImpl(url, { redirect: 'error', signal: controller.signal, headers: { 'Accept-Encoding': 'identity' } });
+      check(archive.status === 200); await current();
+      directory = mkdtempSync(join(realpathSync(tmpdir()), 'mrn-source-cache-'));
+      const partial = join(directory, 'archive.partial'), path = join(directory, 'archive.zip');
+      fd = openSync(partial, constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | constants.O_NOFOLLOW, 0o600);
+      const hash = createHash('sha256');
+      const size = await entity(archive, artifact.maximum_archive_bytes, chunk => {
+        hash.update(chunk);
+        for (let offset = 0; offset < chunk.length;) {
+          check(!controller.signal.aborted && fd !== undefined);
+          const n = writeSync(fd, chunk, offset, Math.min(65536, chunk.length - offset)); check(n > 0); offset += n;
+        }
+      });
+      const stat = fstatSync(fd); check(stat.isFile() && stat.nlink === 1 && (stat.mode & 0o077) === 0 && stat.uid === process.getuid()
+        && stat.size === size && size === item.size_in_bytes && hash.digest('hex') === artifact.archive_sha256);
+      fsyncSync(fd); closeSync(fd); fd = undefined;
+      await current(); renameSync(partial, path); await current(); succeeded = true;
+      const removeAt = Math.min(expiresAt, selection.expires_at * 1000);
+      const expiryTimer = setTimeout(() => rmSync(directory, { recursive: true, force: true }), Math.max(1, removeAt - now()));
+      expiryTimer.unref();
+      return { archivePath: path, archiveSha256: artifact.archive_sha256, bytes: size,
+        metadataSha256: metadata.sha256, inventoryVerified: false, sourceBytesVerified: false, admitted: false,
+        expiresAt: removeAt, cleanup: () => { clearTimeout(expiryTimer); rmSync(directory, { recursive: true, force: true }); } };
+    };
+    const timeout = new Promise((_, reject) => {
+      timer = setTimeout(() => { controller.abort(); reject(new Error('MANAGEMENT_SOURCE_CACHE_TIMEOUT')); },
+        Math.max(1, Math.min(60000, expiresAt - now(), selection.expires_at * 1000 - now())));
+    });
+    return await Promise.race([operation(), timeout]);
+  } catch { controller.abort(); check(false); }
+  finally { activeCacheReads--; clearTimeout(timer); if (fd !== undefined) { closeSync(fd); fd = undefined; } if (directory && !succeeded) rmSync(directory, { recursive: true, force: true }); }
+}

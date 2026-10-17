@@ -1,0 +1,1318 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "contract_version": 1,
+  "status": "candidate source design; no runtime admission or endpoint",
+  "production_enabled": false,
+  "consumer_binding_enabled": false,
+  "frozen_dependencies": {
+    "content-qualification-v1.json": "9c8d3fa9e27d7e4aa36109ccb33d76f7babf5bc6aea4f3661fcfd6e26ab62e03",
+    "content-capture-read-v1.json": "218d8fb98fb99322e2dbfb18ceef150be1d642d5acd6b57939ec21559000e5eb",
+    "content-qualification-report-v1.json": "c502c8b20b1b673f627866bec8787e6e38f39cb4ef39040686e98dd6c4e66bfa"
+  },
+  "design_sha256": "e5d411abab39619f6bdb8783f0e87136ed3fc36b44e5d111b79832d1c5bb223b",
+  "owner_purpose_prefix": "mrn-mainwp-owner-revocation-v1:",
+  "worker_purpose_prefix": "mrn-content-worker-current-access-v1:",
+  "veto_purpose_prefix": "mrn-gateway-pending-revocation-v1:",
+  "http_method": "POST",
+  "limits": {
+    "owner_assertion_ttl_seconds": 60,
+    "worker_assertion_ttl_seconds": 60,
+    "veto_assertion_ttl_seconds": 5,
+    "payload_utf8_bytes": 98304,
+    "envelope_utf8_bytes": 131072,
+    "veto_checks_per_job": 512,
+    "query_ttl_seconds": 5,
+    "query_readback_ttl_seconds": 5
+  },
+  "definitions": {
+    "owner_claims": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1
+        },
+        "issuer": {
+          "type": "string",
+          "enum": [
+            "https://operations.mrnwebdesigns.com"
+          ]
+        },
+        "audience": {
+          "type": "string",
+          "enum": [
+            "https://wpcontrol.mrndev.io"
+          ]
+        },
+        "issued_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "expires_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "request_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "nonce": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "authenticated_connection_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "authorization_policy_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "revoke-principal"
+          ]
+        },
+        "principal_key_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "revocation_intent_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "gateway_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "verified_owner": {
+          "type": "object",
+          "properties": {
+            "google_sub": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[0-9]+$"
+            },
+            "email": {
+              "type": "string",
+              "maxLength": 254,
+              "pattern": "^[^@\\s]+@mrnwebdesigns\\.com$"
+            },
+            "oauth_subject": {
+              "type": "string",
+              "maxLength": 96,
+              "pattern": "^google-oauth2\\|[0-9]+$"
+            },
+            "email_verified": {
+              "type": "boolean",
+              "enum": [
+                true
+              ]
+            },
+            "hosted_domain": {
+              "type": "string",
+              "enum": [
+                "mrnwebdesigns.com"
+              ]
+            },
+            "google_connection": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "required": [
+            "google_sub",
+            "email",
+            "oauth_subject",
+            "email_verified",
+            "hosted_domain",
+            "google_connection"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema",
+        "issuer",
+        "audience",
+        "issued_at",
+        "expires_at",
+        "request_id",
+        "nonce",
+        "authenticated_connection_sha256",
+        "authorization_policy_sha256",
+        "action",
+        "principal_key_sha256",
+        "revocation_intent_id",
+        "gateway_revision",
+        "verified_owner"
+      ],
+      "additionalProperties": false
+    },
+    "worker_claims": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "$ref": "#/definitions/schema_one"
+        },
+        "issuer": {
+          "type": "string",
+          "enum": [
+            "mrn-content-qualification"
+          ]
+        },
+        "audience": {
+          "type": "string",
+          "enum": [
+            "https://wpcontrol.mrndev.io"
+          ]
+        },
+        "issued_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "expires_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "request_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "nonce": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "authorization_policy_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "qualification_job_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "site_id": {
+          "$ref": "#/definitions/site_id"
+        },
+        "site_url": {
+          "$ref": "#/definitions/site_url"
+        },
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "current-access"
+          ]
+        },
+        "requester_binding_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "phase": {
+          "type": "string",
+          "enum": [
+            "capture",
+            "read-capture",
+            "retain-report",
+            "publish"
+          ]
+        },
+        "check_id": {
+          "$ref": "#/definitions/uuid"
+        }
+      },
+      "required": [
+        "schema",
+        "issuer",
+        "audience",
+        "issued_at",
+        "expires_at",
+        "request_id",
+        "nonce",
+        "authorization_policy_sha256",
+        "qualification_job_id",
+        "site_id",
+        "site_url",
+        "target",
+        "action",
+        "requester_binding_sha256",
+        "phase",
+        "check_id"
+      ],
+      "additionalProperties": false
+    },
+    "veto_claims": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "$ref": "#/definitions/schema_one"
+        },
+        "issuer": {
+          "type": "string",
+          "enum": [
+            "https://operations.mrnwebdesigns.com"
+          ]
+        },
+        "audience": {
+          "type": "string",
+          "enum": [
+            "https://wpcontrol.mrndev.io"
+          ]
+        },
+        "issued_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "expires_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "request_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "nonce": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "authorization_policy_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "qualification_job_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "site_id": {
+          "$ref": "#/definitions/site_id"
+        },
+        "site_url": {
+          "$ref": "#/definitions/site_url"
+        },
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "access-veto"
+          ]
+        },
+        "requester_binding_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "phase": {
+          "type": "string",
+          "enum": [
+            "capture",
+            "read-capture",
+            "retain-report",
+            "publish"
+          ]
+        },
+        "check_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "clear",
+            "pending-revocation",
+            "denied"
+          ]
+        },
+        "gateway_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "query_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "provider_query_nonce": {
+          "$ref": "#/definitions/hash"
+        },
+        "query_sha256": {
+          "$ref": "#/definitions/hash"
+        }
+      },
+      "required": [
+        "schema",
+        "issuer",
+        "audience",
+        "issued_at",
+        "expires_at",
+        "request_id",
+        "nonce",
+        "authorization_policy_sha256",
+        "qualification_job_id",
+        "site_id",
+        "site_url",
+        "target",
+        "action",
+        "requester_binding_sha256",
+        "phase",
+        "check_id",
+        "state",
+        "gateway_revision",
+        "query_id",
+        "provider_query_nonce",
+        "query_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "signed_input": {
+      "type": "object",
+      "properties": {
+        "signed_request": {
+          "$ref": "#/definitions/signed_envelope"
+        }
+      },
+      "required": [
+        "signed_request"
+      ],
+      "additionalProperties": false
+    },
+    "uuid": {
+      "type": "string",
+      "minLength": 36,
+      "maxLength": 36,
+      "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+    },
+    "hash": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64,
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "schema_one": {
+      "type": "integer",
+      "enum": [
+        1
+      ]
+    },
+    "site_id": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "site_url": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "^https://[a-z0-9.-]+\\.example\\.invalid(?:/[A-Za-z0-9._~%/@:+-]+)*$"
+    },
+    "target": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "post"
+          ]
+        },
+        "post_type": {
+          "type": "string",
+          "enum": [
+            "post",
+            "page"
+          ]
+        },
+        "post_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "field": {
+          "type": "string",
+          "enum": [
+            "post_title",
+            "post_excerpt",
+            "post_content"
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "post_type",
+        "post_id",
+        "field"
+      ],
+      "additionalProperties": false
+    },
+    "signed_envelope": {
+      "type": "object",
+      "properties": {
+        "key_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "payload_base64": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 131072,
+          "pattern": "^[A-Za-z0-9+/]+={0,2}$"
+        },
+        "signature_base64": {
+          "type": "string",
+          "minLength": 88,
+          "maxLength": 88,
+          "pattern": "^[A-Za-z0-9+/]{86}==$"
+        }
+      },
+      "required": [
+        "key_id",
+        "payload_base64",
+        "signature_base64"
+      ],
+      "additionalProperties": false
+    },
+    "veto_query": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "$ref": "#/definitions/schema_one"
+        },
+        "issuer": {
+          "type": "string",
+          "enum": [
+            "https://wpcontrol.mrndev.io"
+          ]
+        },
+        "audience": {
+          "type": "string",
+          "enum": [
+            "https://operations.mrnwebdesigns.com"
+          ]
+        },
+        "issued_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "expires_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "request_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "nonce": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "authorization_policy_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "qualification_job_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "site_id": {
+          "$ref": "#/definitions/site_id"
+        },
+        "site_url": {
+          "$ref": "#/definitions/site_url"
+        },
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "pending-veto-query"
+          ]
+        },
+        "requester_binding_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "phase": {
+          "type": "string",
+          "enum": [
+            "capture",
+            "read-capture",
+            "retain-report",
+            "publish"
+          ]
+        },
+        "check_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "query_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "provider_query_nonce": {
+          "$ref": "#/definitions/hash"
+        }
+      },
+      "required": [
+        "schema",
+        "issuer",
+        "audience",
+        "issued_at",
+        "expires_at",
+        "request_id",
+        "nonce",
+        "authorization_policy_sha256",
+        "qualification_job_id",
+        "site_id",
+        "site_url",
+        "target",
+        "action",
+        "requester_binding_sha256",
+        "phase",
+        "check_id",
+        "query_id",
+        "provider_query_nonce"
+      ],
+      "additionalProperties": false
+    },
+    "query_readback_claims": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "$ref": "#/definitions/schema_one"
+        },
+        "issuer": {
+          "type": "string",
+          "enum": [
+            "https://operations.mrnwebdesigns.com"
+          ]
+        },
+        "audience": {
+          "type": "string",
+          "enum": [
+            "https://wpcontrol.mrndev.io"
+          ]
+        },
+        "issued_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "expires_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "request_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "nonce": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "read-veto-query"
+          ]
+        },
+        "query_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "provider_query_nonce": {
+          "$ref": "#/definitions/hash"
+        }
+      },
+      "required": [
+        "schema",
+        "issuer",
+        "audience",
+        "issued_at",
+        "expires_at",
+        "request_id",
+        "nonce",
+        "action",
+        "query_id",
+        "provider_query_nonce"
+      ],
+      "additionalProperties": false
+    },
+    "query_readback_output": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "$ref": "#/definitions/veto_query"
+        },
+        "query_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "stored": {
+          "type": "boolean",
+          "enum": [
+            true
+          ]
+        }
+      },
+      "required": [
+        "query",
+        "query_sha256",
+        "stored"
+      ],
+      "additionalProperties": false
+    },
+    "owner_outcome": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1
+            },
+            "request_id": {
+              "$ref": "#/definitions/uuid"
+            },
+            "authorization_policy_sha256": {
+              "$ref": "#/definitions/hash"
+            },
+            "principal_key_sha256": {
+              "$ref": "#/definitions/hash"
+            },
+            "revocation_intent_id": {
+              "$ref": "#/definitions/uuid"
+            },
+            "gateway_revision": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "provider_access_revision": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "state": {
+              "type": "string",
+              "enum": [
+                "committed-denial"
+              ]
+            },
+            "committed_denial": {
+              "type": "boolean",
+              "enum": [
+                true
+              ]
+            },
+            "committed_at": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "readback_sha256": {
+              "$ref": "#/definitions/hash"
+            }
+          },
+          "required": [
+            "schema",
+            "request_id",
+            "authorization_policy_sha256",
+            "principal_key_sha256",
+            "revocation_intent_id",
+            "gateway_revision",
+            "provider_access_revision",
+            "state",
+            "committed_denial",
+            "committed_at",
+            "readback_sha256"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1
+            },
+            "request_id": {
+              "$ref": "#/definitions/uuid"
+            },
+            "authorization_policy_sha256": {
+              "$ref": "#/definitions/hash"
+            },
+            "principal_key_sha256": {
+              "$ref": "#/definitions/hash"
+            },
+            "revocation_intent_id": {
+              "$ref": "#/definitions/uuid"
+            },
+            "gateway_revision": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "provider_access_revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "state": {
+              "type": "string",
+              "enum": [
+                "pending-uncertain"
+              ]
+            },
+            "committed_denial": {
+              "type": "boolean",
+              "enum": [
+                false
+              ]
+            },
+            "committed_at": {
+              "type": "null"
+            },
+            "readback_sha256": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "schema",
+            "request_id",
+            "authorization_policy_sha256",
+            "principal_key_sha256",
+            "revocation_intent_id",
+            "gateway_revision",
+            "provider_access_revision",
+            "state",
+            "committed_denial",
+            "committed_at",
+            "readback_sha256"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "owner_readback_claims": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1
+        },
+        "issuer": {
+          "type": "string",
+          "enum": [
+            "https://operations.mrnwebdesigns.com"
+          ]
+        },
+        "audience": {
+          "type": "string",
+          "enum": [
+            "https://wpcontrol.mrndev.io"
+          ]
+        },
+        "issued_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "expires_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "request_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "nonce": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "authenticated_connection_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "authorization_policy_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "read-revocation"
+          ]
+        },
+        "principal_key_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "revocation_intent_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "gateway_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "verified_owner": {
+          "type": "object",
+          "properties": {
+            "google_sub": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[0-9]+$"
+            },
+            "email": {
+              "type": "string",
+              "maxLength": 254,
+              "pattern": "^[^@\\s]+@mrnwebdesigns\\.com$"
+            },
+            "oauth_subject": {
+              "type": "string",
+              "maxLength": 96,
+              "pattern": "^google-oauth2\\|[0-9]+$"
+            },
+            "email_verified": {
+              "type": "boolean",
+              "enum": [
+                true
+              ]
+            },
+            "hosted_domain": {
+              "type": "string",
+              "enum": [
+                "mrnwebdesigns.com"
+              ]
+            },
+            "google_connection": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "required": [
+            "google_sub",
+            "email",
+            "oauth_subject",
+            "email_verified",
+            "hosted_domain",
+            "google_connection"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema",
+        "issuer",
+        "audience",
+        "issued_at",
+        "expires_at",
+        "request_id",
+        "nonce",
+        "authenticated_connection_sha256",
+        "authorization_policy_sha256",
+        "action",
+        "principal_key_sha256",
+        "revocation_intent_id",
+        "gateway_revision",
+        "verified_owner"
+      ],
+      "additionalProperties": false
+    },
+    "worker_result": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "schema": {
+              "type": "integer",
+              "enum": [
+                1
+              ]
+            },
+            "check_id": {
+              "$ref": "#/definitions/uuid"
+            },
+            "qualification_job_id": {
+              "$ref": "#/definitions/uuid"
+            },
+            "requester_binding_sha256": {
+              "$ref": "#/definitions/hash"
+            },
+            "authorization_policy_sha256": {
+              "$ref": "#/definitions/hash"
+            },
+            "phase": {
+              "type": "string",
+              "enum": [
+                "capture",
+                "read-capture",
+                "retain-report",
+                "publish"
+              ]
+            },
+            "state": {
+              "type": "string",
+              "enum": [
+                "checks-clear"
+              ]
+            },
+            "reason": {
+              "type": "string",
+              "enum": [
+                "none"
+              ]
+            },
+            "gateway_revision": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "expires_at": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "execution_permit": {
+              "type": "boolean",
+              "enum": [
+                false
+              ]
+            }
+          },
+          "required": [
+            "schema",
+            "check_id",
+            "qualification_job_id",
+            "requester_binding_sha256",
+            "authorization_policy_sha256",
+            "phase",
+            "state",
+            "reason",
+            "gateway_revision",
+            "expires_at",
+            "execution_permit"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "schema": {
+              "type": "integer",
+              "enum": [
+                1
+              ]
+            },
+            "check_id": {
+              "$ref": "#/definitions/uuid"
+            },
+            "qualification_job_id": {
+              "$ref": "#/definitions/uuid"
+            },
+            "requester_binding_sha256": {
+              "$ref": "#/definitions/hash"
+            },
+            "authorization_policy_sha256": {
+              "$ref": "#/definitions/hash"
+            },
+            "phase": {
+              "type": "string",
+              "enum": [
+                "capture",
+                "read-capture",
+                "retain-report",
+                "publish"
+              ]
+            },
+            "state": {
+              "type": "string",
+              "enum": [
+                "vetoed"
+              ]
+            },
+            "reason": {
+              "type": "string",
+              "enum": [
+                "pending-revocation",
+                "denied",
+                "unknown-job",
+                "missing-mapping",
+                "unavailable",
+                "expired",
+                "stale-authority",
+                "requester-revoked"
+              ]
+            },
+            "gateway_revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "expires_at": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "execution_permit": {
+              "type": "boolean",
+              "enum": [
+                false
+              ]
+            }
+          },
+          "required": [
+            "schema",
+            "check_id",
+            "qualification_job_id",
+            "requester_binding_sha256",
+            "authorization_policy_sha256",
+            "phase",
+            "state",
+            "reason",
+            "gateway_revision",
+            "expires_at",
+            "execution_permit"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "query_create_claims": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "$ref": "#/definitions/schema_one"
+        },
+        "issuer": {
+          "type": "string",
+          "enum": [
+            "mrn-content-qualification"
+          ]
+        },
+        "audience": {
+          "type": "string",
+          "enum": [
+            "https://wpcontrol.mrndev.io"
+          ]
+        },
+        "issued_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "expires_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "request_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "nonce": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "authorization_policy_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "qualification_job_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "site_id": {
+          "$ref": "#/definitions/site_id"
+        },
+        "site_url": {
+          "$ref": "#/definitions/site_url"
+        },
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "request-veto-query"
+          ]
+        },
+        "requester_binding_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "phase": {
+          "type": "string",
+          "enum": [
+            "capture",
+            "read-capture",
+            "retain-report",
+            "publish"
+          ]
+        },
+        "check_id": {
+          "$ref": "#/definitions/uuid"
+        }
+      },
+      "required": [
+        "schema",
+        "issuer",
+        "audience",
+        "issued_at",
+        "expires_at",
+        "request_id",
+        "nonce",
+        "authorization_policy_sha256",
+        "qualification_job_id",
+        "site_id",
+        "site_url",
+        "target",
+        "action",
+        "requester_binding_sha256",
+        "phase",
+        "check_id"
+      ],
+      "additionalProperties": false
+    },
+    "callback_response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "signed_veto"
+      ],
+      "properties": {
+        "signed_veto": {
+          "$ref": "#/definitions/signed_envelope"
+        }
+      }
+    }
+  },
+  "proposed_abilities": {
+    "revoke-current-access-v1": {
+      "authority": "fresh verified assigned MRN owner; identity key, never registrar",
+      "workspace_exposed": false,
+      "staff_wrapper_allowed": false,
+      "method": "POST",
+      "input": {
+        "$ref": "#/definitions/signed_input"
+      },
+      "signed_payload": {
+        "$ref": "#/definitions/owner_claims"
+      },
+      "output": {
+        "$ref": "#/definitions/owner_outcome"
+      }
+    },
+    "get-worker-current-access-v1": {
+      "authority": "protected registrar; advisory only, never an execution permit",
+      "workspace_exposed": false,
+      "staff_wrapper_allowed": false,
+      "method": "POST",
+      "input": {
+        "$ref": "#/definitions/signed_input"
+      },
+      "signed_payload": {
+        "$ref": "#/definitions/worker_claims"
+      },
+      "output": {
+        "$ref": "#/definitions/worker_result"
+      }
+    },
+    "read-access-veto-query-v1": {
+      "authority": "pinned existing gateway identity authority plus existing Dashboard service connection; read only",
+      "workspace_exposed": false,
+      "staff_wrapper_allowed": false,
+      "method": "POST",
+      "input": {
+        "$ref": "#/definitions/signed_input"
+      },
+      "signed_payload": {
+        "$ref": "#/definitions/query_readback_claims"
+      },
+      "output": {
+        "$ref": "#/definitions/query_readback_output"
+      }
+    },
+    "read-owner-revocation-v1": {
+      "authority": "fresh verified assigned MRN owner plus pinned service connection",
+      "workspace_exposed": false,
+      "staff_wrapper_allowed": false,
+      "method": "POST",
+      "input": {
+        "$ref": "#/definitions/signed_input"
+      },
+      "signed_payload": {
+        "$ref": "#/definitions/owner_readback_claims"
+      },
+      "output": {
+        "$ref": "#/definitions/owner_outcome"
+      }
+    },
+    "create-access-veto-query-v1": {
+      "authority": "protected registrar plus existing pinned Dashboard service connection; original sealed job only",
+      "workspace_exposed": false,
+      "staff_wrapper_allowed": false,
+      "method": "POST",
+      "input": {
+        "$ref": "#/definitions/signed_input"
+      },
+      "signed_payload": {
+        "$ref": "#/definitions/query_create_claims"
+      },
+      "output": {
+        "$ref": "#/definitions/query_readback_output"
+      }
+    }
+  },
+  "invariants": [
+    "Provider principal/offboarding plus operating policy and current Directory is the canonical effective authority. Automatic active-MRN-staff access remains; no per-person onboarding/approval or new credential.",
+    "Owner assertion is independently authenticated identity proof bound to pinned service/current connection/policy; verify assigned owner, primary identity, current Directory and nonce. Signed verified_owner is not a worker-selected actor. Only revoke; no grant, enroll, role change or identity replacement.",
+    "Resolve opaque principal key hash against authoritative retained identity, never caller email/sub. Preserve identity or create only a revocation tombstone. Monotonic gateway revision/intent is locked and audited with principal/authority; acknowledge effective denial only after exact readback.",
+    "Gateway denies and records pending before propagation. Uncertain/failed propagation remains pending and vetoes protected work; provider absence cannot be treated as successful mirror.",
+    "Provider independently reads original sealed job requester and checks current roles/Directory/principal/policy/source/expiry at every protected boundary. Advisory worker check cannot supply or renew a human lease.",
+    "Fixed private gateway veto lookup is nonce/check/job/phase/requester/scope/policy-bound, purpose-signed by pinned identity authority, at most five seconds old, one-use, monotonic revision and no positive cache. It can only veto; clear never grants authority.",
+    "Pending/denied/unavailable/old/replayed/wrong-scope status aborts work. Veto and mirrored access-policy digest/epoch must be implemented before capture-read/report/publication activation.",
+    "Recheck after network work/immediately before signing/storage. Effective revocation and final provider guard serialize on the same principal row; already guarded work may commit before revocation, so UI reports pending until propagation/readback, not instant cancellation.",
+    "Replay/veto records are bounded per job; exhaustion fails closed. Terminal jobs never revive. No arbitrary service URL, actor reconstruction, retry, policy/key provisioning or production activation.",
+    "Provider query is authoritative only after Gateway independently validates its stored one-use nonce/query through authenticated readback. Query/readback/veto expiry is at most five seconds; fresh worker assertion is at most sixty seconds.",
+    "Committed owner outcome must bind exact principal key, intent, requested gateway revision and committed provider revision/readback digest; pending outcome must have committed_denial false and null commit/readback. The body alone cannot create effective revocation.",
+    "Worker checks-clear requires reason none and current verified mapping/ledger; every failure is vetoed. execution_permit is always false. Server-side mapping is created only by the earlier authenticated human queue and verified provider response.",
+    "Each running boundary uses a new registered query and fresh signed veto, including after a native call exceeds five seconds. Old/pre-dispatch receipt is discarded, never reused or extended. A pending response aborts before another packet or complete retention.",
+    "Callback/lookup/validation timeout or expiry fails closed without retry/recapture/continuation. Source/job/capture and human lifetimes never extend.",
+    "Isolated control ledger must be visible to authenticated readback during held work guard without releasing it or blocking on options-table gap locks. Missing implementation/isolation proof blocks activation."
+  ],
+  "query_readback_purpose_prefix": "mrn-mainwp-gateway-access-query-readback-v1:",
+  "owner_readback_purpose_prefix": "mrn-mainwp-owner-revocation-readback-v1:",
+  "handshake": {
+    "direction": "Provider issues veto_query to protected caller in authenticated Dashboard HTTPS response; Gateway independently retrieves stored query from Dashboard before resolving its existing job map. No provider outbound credential is assumed.",
+    "provider_origin": "https://wpcontrol.mrndev.io",
+    "gateway_audience": "https://operations.mrnwebdesigns.com",
+    "provider_transport_auth": "Existing pinned MainWP backend service connection, used only on the Dashboard origin; no cross-origin credential reuse.",
+    "gateway_readback_auth": "Same existing pinned Dashboard service transport plus fresh purpose-signed assertion under pinned existing gateway identity-authority keys.",
+    "veto_response_auth": "Fresh purpose-signed existing gateway identity-authority response, bound to exact stored query ID/nonce/digest/check/job/phase/requester/scope/policy/revision.",
+    "gateway_resolution": "Existing immutable queue-created job-to-original-requester mapping only. Caller-supplied actor, hash or query cannot create a map. Unknown job, missing map/ledger, invalid readback or stale/pending/denied lookup fails closed.",
+    "owner_response_auth": "Authenticated Dashboard HTTPS response and exact owner query/readback bindings; committed denial requires verified provider ledger revision/intent/current principal state. Uncertainty returns pending-uncertain, never effective success.",
+    "no_execution_permit": "Worker result is advisory. Existing protected operations independently perform current provider and veto checks; receipt is not a lease.",
+    "running_boundary_sequence": [
+      "current provider role/Directory/principal/source/expiry checks",
+      "new independently committed query ID/nonce in isolated control ledger",
+      "fixed gateway query-ID callback without cross-origin credential",
+      "gateway authenticated Dashboard readback and immutable job/requester lookup",
+      "fresh signed veto response validation",
+      "immediate five-second/capture deadline and owned-lock check",
+      "sign/retain/commit one boundary only",
+      "discard receipt after network work; new query before next boundary"
+    ],
+    "callback_direction": "Synchronous provider-to-compiled-gateway-origin opaque query-ID/nonce trigger. Gateway authenticates stored query through existing Dashboard service/readback and purpose-signed authority; response independently signed. No actor/context URL or credential forwarded.",
+    "ledger_isolation": "Dedicated private control table and short autocommit connection on same Dashboard DB, independent of held work transaction/authority/principal/job/options gap locks. Separate committed-query readback only; no work COMMIT or unlock. Unimplemented mandatory isolation tests."
+  },
+  "query_create_purpose_prefix": "mrn-content-access-veto-query-create-v1:",
+  "callback_response": {
+    "$ref": "#/definitions/callback_response"
+  }
+}
