@@ -44,4 +44,5 @@ export async function retainManagementSourceFixture(s) {
   s.broker.resolveSource = original => retained.resolve(original);
   for (let n = 0; n < 80; n++) assert.deepEqual(retained.resolve(s.ledger.captured(s.job)), s.source);
   assert.equal(bootstraps, 1); assert.equal(captures, 1);
+  return retained;
 }

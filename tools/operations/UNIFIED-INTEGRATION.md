@@ -10,11 +10,18 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
   individual enrollment or staff credential requirement has been introduced.
 - Runner `c9135ca` passes all three hosted checks and 143 source tests; both
   original archives and all eight QA reports are independently verified.
+  Candidate `fb9a16b` adds authenticated source-context readback and passes
+  148 source tests and all three jobs in hosted run `39045108899`. Both original
+  archives and all eight QA reports are independently verified; the tested merge
+  tree is identical to its source tree.
 - Gateway `dbf8937` passes combined run `39043118122` and MRN QA `39043118067`.
   Its original artifact and all five reports have been independently verified.
   Earlier `aa2c2fd` failed native MainWP sync authentication. Later successful
   syncs do not establish that intermittent failure's cause. Source-capture
-  candidate `5a5eb0b` has passing MRN QA; its combined native run is pending.
+  checkpoint `5a5eb0b` also passes MRN QA and combined run `39043736540`, with
+  its original artifact verified. Request-binding correction `e4c9fe2` passes
+  MRN QA and combined run `39044304560`; its original five-report archive and
+  eleven worker groups are independently verified.
 - The new gateway source verifies encrypted native batches, cache ZIP extraction,
   complete source reconstruction and independent owner-catalog signatures.
   Production startup does not enable these private adapters.
@@ -23,6 +30,12 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
   in both runs. Corrected observer `d1144bc` passes all four jobs in
   [CI 39042535495](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/39042535495),
   including mandatory actual sender/Child signature correlation.
+- Qualified retention provider `aae87b3` passes all four jobs in run
+  `39044539488`, including 28 source-control, 17 native-source and 46 encrypted
+  SQL storage/readback checks. The fresh storage worker peaks at 99,090,432
+  bytes under its unchanged 128-MiB cap. Earlier `92ea0d3` exhausted that cap
+  after unrelated preceding fixtures had retained memory; its failure remains
+  recorded. All eleven copied qualification blobs match the new source exactly.
 - Live MainWP was last observed connected to `wpcontrol.mrndev.io` with 115
   abilities and provider 0.13.8. The company code policy remains unchanged.
 - Remaining: authenticated source-context bootstrap and retained source mapping;
@@ -32,6 +45,34 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
 
 The following sections retain individual source checkpoints and their limits.
 They are not evidence of production activation or team readiness.
+
+## Protected source-context readback, 2026-10-17
+
+The new optional `/internal/mainwp/management-source-context` route reads only
+the saved source mapping for the original protected dispatch. It reuses the
+exact workflow OIDC validation and current original-staff verification. It
+accepts an opaque dispatch/context pointer and fresh nonce, never caller site,
+source, identity or policy fields. Two attempts per original dispatch are
+durably consumed, including failed lookups and lost responses. Local source
+resolution does not consume provider source-status reads or repeat capture.
+
+The distinct `mrn-content-management-source-broker-context-v1:` signature binds
+the original run, dispatch record, complete management context, catalog digest,
+immutable slot and request nonce for at most five seconds and original expiry.
+The separate fixed TLS worker reader verifies that signature against its pinned
+gateway key before constructing the ephemeral source recipient. Existing worker
+context and source-transfer contracts are unchanged. HTTP controls retain the
+fixed origin, canonical 512-byte POST request and separate 32-KiB response bound;
+the route is absent from production startup.
+
+Six gateway groups, five independent worker verifier groups and the worker's
+actual TLS test cover the boundary. All 475 gateway tests, 148 worker tests and
+twelve local gateway/worker integration groups pass. The combined local chain
+now reads the signed original record, obtains signed source metadata, creates
+the independent recipient and opens encrypted native frames. Its provider
+bootstrap and capture remain synthetic; real Google/GitHub OIDC, provider source
+bootstrap, complete live source acquisition, rendered QA, production activation
+and ordinary-member ChatGPT acceptance remain unverified.
 
 ## Source request binding correction, 2026-10-17
 

@@ -14,6 +14,7 @@ import { createLocalJWKSet, exportJWK, SignJWT } from 'jose';
 import { delegationDigest } from '../../src/delegation.mjs';
 import { createHttpServer } from '../../src/http.mjs';
 import { ManagementWorkerContext, managementWorkerAudience } from '../../src/management-worker-context.mjs';
+import { ManagementSourceContext } from '../../src/management-source-context.mjs';
 import { managementEvidenceFixture } from '../fixtures/management-evidence.mjs';
 import { sourceBrokerFixture } from '../fixtures/management-source.mjs';
 import { retainManagementSourceFixture } from './check-management-source-capture.mjs';
@@ -35,7 +36,8 @@ for (const name of ['prepare-node-acquisition.py', 'node-acquisition-control.py'
 }
 const { acquireManagementWorkerContext } = await import(pathToFileURL(join(runner, 'src/management-worker-context.mjs')));
 const { ManagementSourceRecipient } = await import(pathToFileURL(join(runner, 'src/management-source-recipient.mjs')));
-const { bindManagementSourceRecipient, readManagementSourceBatch, managementSourceRecipientUrl, managementSourceBatchUrl }
+const { bindManagementSourceRecipient, readManagementSourceBatch, managementSourceRecipientUrl, managementSourceBatchUrl,
+  acquireManagementSourceContext, managementSourceContextUrl }
   = await import(pathToFileURL(join(runner, 'src/management-source-http.mjs')));
 assert.deepEqual(readFileSync(join(runner, 'contracts/content-management-source-transfer-v1.json')),
   readFileSync(new URL('../../contracts/content-management-source-transfer-v1.json', import.meta.url)));
@@ -70,7 +72,7 @@ server.on('connection', socket => { sockets.add(socket); socket.once('close', ()
 server.listen(0, '127.0.0.1'); await once(server, 'listening');
 const realRequest = https.request;
 const hook = mock.method(https, 'request', (url, options, handler) => {
-  assert.ok([managementWorkerAudience, managementSourceRecipientUrl, managementSourceBatchUrl].includes(url));
+  assert.ok([managementWorkerAudience, managementSourceRecipientUrl, managementSourceBatchUrl, managementSourceContextUrl].includes(url));
   assert.equal(options.rejectUnauthorized, true);
   // Test-only address/CA substitution; the shipping client has no such inputs.
   return realRequest(url, { ...options, hostname: '127.0.0.1', port: server.address().port, ca: readFileSync(cert),
@@ -115,13 +117,22 @@ try {
   // source controller remains a synthetic fixture, never a live capture.
   const s = await sourceBrokerFixture({ after: cb => cleanup.push(cb) }, { bindRecipient: false, now: Math.floor(Date.now() / 1000) * 1000 });
   Object.defineProperty(s.state, 'now', { get: () => Date.now() });
-  await retainManagementSourceFixture(s);
+  const retained = await retainManagementSourceFixture(s);
   const sourceOriginal = s.ledger.originalDispatch(s.pointer.dispatch_id);
-  const recipient = new ManagementSourceRecipient({ original: { state: 'original-record-read', context: sourceOriginal.context,
-    recorded_dispatch: sourceOriginal.provenance, dispatch_record: sourceOriginal.observation }, sourceContext: s.source.context,
-  slot: s.source.slot, gatewayKeyId: s.identity.keyId, gatewayPublicKey: s.identity.publicKey });
-  active = createHttpServer({ publicUrl: 'https://operations.mrnwebdesigns.com/mcp', managementSource: s.broker });
+  const metadataReader = new ManagementSourceContext({ worker: s.worker, source: retained });
+  const sourceServer = createHttpServer({ publicUrl: 'https://operations.mrnwebdesigns.com/mcp',
+    managementWorker: s.worker, managementSource: s.broker, managementSourceContext: metadataReader });
+  active = sourceServer;
   const token = (await s.token()).slice(7);
+  const sourceExpected = { ...Object.fromEntries(['repository_id', 'workflow_id', 'workflow_path', 'workflow_sha256', 'run_id',
+    'runner_source_sha', 'engine_commit', 'engine_configuration_sha256', 'runtime_sha256'].map(name => [name, sourceOriginal.provenance[name]])),
+  app_actor_id: sourceOriginal.observation.app_actor_id, evidence_policy_sha256: sourceOriginal.context.evidence_policy_sha256 };
+  const recorded = await acquireManagementWorkerContext({ pointer: s.pointer, expected: sourceExpected,
+    gatewayKeyId: s.identity.keyId, gatewayPublicKey: s.identity.publicKey, oidcToken: token });
+  const metadataRequest = { original: recorded, gatewayKeyId: s.identity.keyId, gatewayPublicKey: s.identity.publicKey, oidcToken: token };
+  const metadata = await acquireManagementSourceContext(metadataRequest);
+  const recipient = new ManagementSourceRecipient({ original: recorded, sourceContext: metadata.context,
+    slot: metadata.slot, gatewayKeyId: s.identity.keyId, gatewayPublicKey: s.identity.publicKey });
   await bindManagementSourceRecipient({ recipient, oidcToken: token });
   const opened = await readManagementSourceBatch({ recipient, batchIndex: 0, oidcToken: token });
   assert.equal(opened.state, 'partial-source-batch-verified');
@@ -130,17 +141,20 @@ try {
   passed.push('actual-broker-encryption-opened-by-independent-supervisor-over-tls');
   active = disabled;
   await assert.rejects(() => readManagementSourceBatch({ recipient, batchIndex: 0, oidcToken: token }));
+  await assert.rejects(() => acquireManagementSourceContext(metadataRequest));
   passed.push('production-startup-leaves-source-routes-absent');
-  active = createHttpServer({ publicUrl: 'https://operations.mrnwebdesigns.com/mcp', managementSource: s.broker });
+  active = sourceServer;
   s.state.backend = () => s.access.recordPendingRevocation(s.job);
   await assert.rejects(() => readManagementSourceBatch({ recipient, batchIndex: 0, oidcToken: token })); recipient.destroy();
+  await assert.rejects(() => acquireManagementSourceContext(metadataRequest));
   passed.push('original-revocation-after-source-read-withholds-ciphertext');
   const cacheIntegration = await checkManagementCache(runner);
   passed.push('gateway-cache-acquisition-to-independent-full-source-reconstruction');
   passed.push('retained-original-capture-to-protected-broker-without-status-polling');
+  passed.push('authenticated-source-context-constructs-independent-recipient-over-tls');
   process.stdout.write(JSON.stringify({ result: 'PASS', scope: 'disposable-context-tls-and-source-codec', passed,
     runnerSource: lock.managementWorker.commit, productionCredentials: false, liveGoogleVerified: false,
-    sourceHttpVerified: true, sourceCaptureMappingVerified: true, providerSourceBootstrapVerified: false,
+    sourceHttpVerified: true, sourceCaptureMappingVerified: true, sourceContextHttpVerified: true, providerSourceBootstrapVerified: false,
     fullSourceClosureVerified: false, hostedOidcVerified: false,
     ...cacheIntegration,
     contentWriteVerified: false, chatgptAcceptanceVerified: false }) + '\n');
