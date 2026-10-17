@@ -94,6 +94,8 @@ export class ManagementSourceBroker {
       action: 'read-management-source', context, transfer_id: slot.transfer_id,
       transfer_manifest_sha256: slot.transfer_manifest_sha256, batch_index: request.batch_index });
     check(claims.expires_at > at && request.batch_index * 16 < slot.total_frames);
+    const backendRequest = { signed_request: this.registrar.envelope(claims, managementSourceWire.purposes.read) };
+    const requestDigest = delegationDigest(backendRequest);
     this.store.transaction(() => {
       this.recipient(request); within();
       const rows = this.store.db.prepare('SELECT nonce,batch,state FROM management_source_reads WHERE dispatch=?').all(request.dispatch_id);
@@ -101,13 +103,14 @@ export class ManagementSourceBroker {
       const unique = new Set(rows.map(row => row.batch));
       check(!unique.has(request.batch_index) || rows.length - unique.size < 8);
       this.store.db.prepare('INSERT INTO management_source_reads VALUES(?,?,?,?,?,NULL)')
-        .run(request.dispatch_id, request.nonce, request.batch_index, 'reading', delegationDigest(claims));
+        .run(request.dispatch_id, request.nonce, request.batch_index, 'reading', requestDigest);
     });
     try {
-      const result = await bounded(() => this.reader.read(this.registrar.envelope(claims, managementSourceWire.purposes.read)));
+      const result = await bounded(() => this.reader.read(backendRequest.signed_request));
       within(); this.recipient(request);
       check(claims.expires_at * 1000 > this.now());
-      const value = validateSourceBatch(result, context, slot, claims);
+      check(delegationDigest(backendRequest) === requestDigest);
+      const value = validateSourceBatch(result, context, slot, claims, backendRequest);
       const trustDigest = delegationDigest(this.worker.trust());
       const fresh = await bounded(() => this.worker.read(authorization, pointer(request)));
       const freshClaims = JSON.parse(Buffer.from(fresh.signed_context.payload_base64, 'base64'));
@@ -120,7 +123,7 @@ export class ManagementSourceBroker {
         const completedAt = this.now();
         const header = { schema: 1, issuer: delegationIssuer, audience: recipient.audience, action: 'observe-management-source-batch',
           ...request, dispatch_record_sha256: recipient.dispatch_record_sha256, recipient_key_sha256: digest(Buffer.from(recipient.public_key_base64, 'base64')),
-          source_context_sha256: delegationDigest(context), slot_sha256: delegationDigest(slot), request_sha256: delegationDigest(claims),
+          source_context_sha256: delegationDigest(context), slot_sha256: delegationDigest(slot), request_sha256: requestDigest,
           response_sha256: delegationDigest(value), started_at_ms: startedAt, completed_at_ms: completedAt,
           issued_at: Math.floor(completedAt / 1000), expires_at: Math.min(Math.floor(completedAt / 1000) + 5, recipient.expires_at) };
         const encrypted = encryptSourceBatch(value, recipient, header);

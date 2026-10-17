@@ -5,7 +5,7 @@ import { createDecipheriv, createPublicKey, diffieHellman, hkdfSync, verify } fr
 import { digest } from '../src/contracts.mjs';
 import { delegationCanonical, delegationDigest } from '../src/delegation.mjs';
 import { ManagementSourceBroker } from '../src/management-source-broker.mjs';
-import { sourceBatchPurpose, sourceCipherPurpose, sourceRecipientPurpose } from '../src/management-source-transfer.mjs';
+import { sourceBatchPurpose, sourceCipherPurpose, sourceRecipientPurpose, validateSourceBatch } from '../src/management-source-transfer.mjs';
 import { sourceBrokerFixture } from './fixtures/management-source.mjs';
 import { setImmediate } from 'node:timers';
 import { request as httpRequest } from 'node:http';
@@ -14,12 +14,16 @@ import { managementSourceRecipientPath, managementSourceBatchPath } from '../src
 
 
 test('original OIDC run enrolls one private recipient and observes actual encrypted provider bytes',async t=>{
-  const f=await sourceBrokerFixture(t), response=await f.read();
+  const f=await sourceBrokerFixture(t);let expected;
+  f.state.backend=(_,input)=>{expected=delegationDigest(input);};
+  const response=await f.read();
   const signed=Buffer.from(response.signed_transfer.payload_base64,'base64');
   assert.ok(verify(null,Buffer.concat([Buffer.from(sourceBatchPurpose),signed]),f.identity.publicKey,Buffer.from(response.signed_transfer.signature_base64,'base64')));
   assert.deepEqual(JSON.parse(signed),{...response.header,encrypted_sha256:delegationDigest(response.encrypted)});
   assert.equal(response.header.dispatch_record_sha256,f.p.dispatch_record_sha256);
   assert.equal(response.header.source_context_sha256,delegationDigest(f.source.context));
+  assert.equal(response.header.request_sha256,expected);
+  assert.equal(f.store.db.prepare('SELECT request_digest FROM management_source_reads').get().request_digest,expected);
   const encrypted=response.encrypted,publicKey=createPublicKey({key:Buffer.from(encrypted.ephemeral_public_key_base64,'base64'),type:'spki',format:'der'});
   const secret=diffieHellman({privateKey:f.pair.privateKey,publicKey}),aad=Buffer.from(delegationCanonical(response.header));
   const key=Buffer.from(hkdfSync('sha256',secret,Buffer.from(f.enrolled.recipient_id),Buffer.concat([Buffer.from(sourceCipherPurpose),Buffer.from(digest(aad),'hex')]),32));
@@ -31,6 +35,21 @@ test('original OIDC run enrolls one private recipient and observes actual encryp
   const stored=JSON.stringify(f.store.db.prepare('SELECT * FROM management_source_reads').all());
   for(const value of ['data_base64','post_content','never-store-this-token',f.actor.verifiedEmail])assert.equal(stored.includes(value),false);
   secret.fill(0);key.fill(0);plain.fill(0);
+});
+
+test('source read uses the frozen whole signed-input digest and refuses a claims-only substitute',async t=>{
+  const v=JSON.parse(readFileSync(new URL('./fixtures/content-management-source-transfer-v1.json',import.meta.url)));
+  const slot=v.capture_output.slot;
+  assert.equal(v.read_output.request_sha256,delegationDigest(v.read_input));
+  assert.notEqual(v.read_output.request_sha256,delegationDigest(v.read_claims));
+  assert.deepEqual(validateSourceBatch(v.read_output,v.context,slot,v.read_claims,v.read_input),v.read_output);
+  assert.throws(()=>validateSourceBatch({...v.read_output,request_sha256:delegationDigest(v.read_claims)},v.context,slot,v.read_claims,v.read_input));
+  const changed=structuredClone(v.read_input);changed.signed_request.key_id='different';
+  assert.throws(()=>validateSourceBatch(v.read_output,v.context,slot,v.read_claims,changed));
+  assert.throws(()=>validateSourceBatch(v.read_output,v.context,slot,{...v.read_claims,nonce:'e'.repeat(64)},v.read_input));
+  const f=await sourceBrokerFixture(t);
+  f.state.backend=(value,input)=>{value.request_sha256=delegationDigest(JSON.parse(Buffer.from(input.signed_request.payload_base64,'base64')));};
+  await assert.rejects(f.read);assert.equal(f.store.db.prepare('SELECT state FROM management_source_reads').get().state,'failed');
 });
 
 test('one-run recipient cannot be replaced, reset after restart, or supplied by a different OIDC run',async t=>{

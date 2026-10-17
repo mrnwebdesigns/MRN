@@ -38,6 +38,7 @@ function fixture(t, file = ':memory:') {
     } },
     captureReader: { async capture(input) {
       state.nativeReads++;
+      state.requestSha256 = delegationDigest(input);
       const signed = input.signed_request, bytes = Buffer.from(signed.payload_base64, 'base64'), claims = JSON.parse(bytes);
       assert.equal(signed.key_id, 'registrar');
       assert.equal(verify(null, Buffer.concat([Buffer.from(wire.purposes.capture), bytes]), pairs.registrar.publicKey,
@@ -59,6 +60,7 @@ test('authenticated original context and signed catalog produce one immutable so
   const f = fixture(t); const result = await f.run();
   assert.deepEqual(result, { context: f.context, slot: f.slot, ownerCatalogSha256: f.context.source_recipe_catalog_sha256 });
   assert.equal(row(f).state, 'complete');
+  assert.equal(JSON.parse(row(f).body).requestSha256, f.sourceState.requestSha256);
   assert.deepEqual([f.sourceState.contextReads, f.sourceState.nativeReads, f.sourceState.staffReads], [1, 1, 2]);
   const before = f.store.db.prepare('SELECT total_changes() AS n').get().n;
   for (let i = 0; i < 80; i++) assert.deepEqual(f.resolve(), result);

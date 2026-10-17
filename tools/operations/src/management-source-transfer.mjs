@@ -11,7 +11,7 @@ export const managementSourceWire = JSON.parse(bytes);
 export const sourceRecipientPurpose = 'mrn-content-management-source-recipient-v1:';
 export const sourceBatchPurpose = 'mrn-content-management-source-broker-batch-v1:';
 export const sourceCipherPurpose = 'mrn-content-management-source-broker-aead-v1:';
-export const sourceTransferTypes = Object.fromEntries(['source_context', 'slot', 'read_output', 'read_claims'].map(name => [name,
+export const sourceTransferTypes = Object.fromEntries(['source_context', 'slot', 'read_output', 'read_claims', 'read_input'].map(name => [name,
   compileManagementEvidenceSchema({ $ref: `#/$defs/${name}`, $defs: managementSourceWire.$defs })]));
 export function parseSource(name, value) {
   const result = sourceTransferTypes[name].safeParse(value); check(result.success); return result.data;
@@ -25,10 +25,16 @@ export function sourceRecipientKey(encoded) {
   const probe = diffieHellman({ privateKey: generateKeyPairSync('x25519').privateKey, publicKey: key }); probe.fill(0);
   return key;
 }
-export function validateSourceBatch(input, context, slot, request) {
+export function validateSourceBatch(input, context, slot, request, signedInput) {
   const value = parseSource('read_output', input); parseSource('read_claims', request);
+  const originalInput = parseSource('read_input', signedInput);
+  const encoded = originalInput.signed_request.payload_base64, bytes = Buffer.from(encoded, 'base64');
+  // The frozen provider vector binds the entire canonical signed input, not
+  // decoded claims. The exact sent envelope and its claims must both match.
+  check(bytes.length <= managementSourceWire.limits.registrar_decoded_bytes && bytes.toString('base64') === encoded
+    && bytes.equals(Buffer.from(delegationCanonical(request))));
   check(delegationDigest(value.context) === delegationDigest(context) && delegationDigest(value.slot) === delegationDigest(slot)
-    && value.request_sha256 === delegationDigest(request) && value.batch_index === request.batch_index
+    && value.request_sha256 === delegationDigest(originalInput) && value.batch_index === request.batch_index
     && delegationDigest(request.context) === delegationDigest(context) && request.transfer_id === slot.transfer_id
     && request.transfer_manifest_sha256 === slot.transfer_manifest_sha256);
   check(slot.manifest_frames === Math.ceil(slot.manifest_bytes / 32768)

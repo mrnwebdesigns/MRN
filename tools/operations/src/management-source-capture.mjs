@@ -83,8 +83,9 @@ export class ManagementSourceCapture {
       const request = parse('capture_input', { signed_request: this.signer.envelope(claims, wire.purposes.capture),
         signed_source_catalog: catalog.signedCatalog });
       check(Buffer.byteLength(delegationCanonical(request)) <= wire.limits.capture_input_bytes);
+      const requestSha256 = delegationDigest(request);
       const result = parse('capture_output', await native.run(() => this.captureReader.capture(request)));
-      check(same(result.context, context)); slotValid(result.slot);
+      check(delegationDigest(request) === requestSha256 && same(result.context, context)); slotValid(result.slot);
       await native.run(() => this.verifyStaff(this.original(jobId, original.context).mapping.actor));
       return this.store.transaction(() => {
         const current = this.original(jobId, original.context);
@@ -93,7 +94,7 @@ export class ManagementSourceCapture {
         const row = this.store.db.prepare('SELECT state,original_digest FROM management_source_captures WHERE job=?').get(jobId);
         check(row?.state === 'capturing' && row.original_digest === delegationDigest(original.context));
         const value = { context, slot: result.slot, ownerCatalogSha256: catalog.ownerCatalogSha256,
-          catalogRegistrySha256: catalog.registrySha256, requestSha256: delegationDigest(claims), capturedAt: this.now() };
+          catalogRegistrySha256: catalog.registrySha256, requestSha256, capturedAt: this.now() };
         const body = delegationCanonical(value);
         this.store.db.prepare('UPDATE management_source_captures SET state=?,body=?,digest=? WHERE job=? AND state=?')
           .run('complete', body, digest(body), jobId, 'capturing');

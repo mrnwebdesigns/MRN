@@ -10,10 +10,11 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
   individual enrollment or staff credential requirement has been introduced.
 - Runner `c9135ca` passes all three hosted checks and 143 source tests; both
   original archives and all eight QA reports are independently verified.
-- Gateway `909232a` is the last passing combined checkpoint. Later committed
-  `aa2c2fd` failed native MainWP sync authentication. A later passing sync does
-  not resolve that intermittent failure. Candidate `dbf8937` is pushed and its
-  combined run `39043118122` is pending; MRN QA `39043118067` passes.
+- Gateway `dbf8937` passes combined run `39043118122` and MRN QA `39043118067`.
+  Its original artifact and all five reports have been independently verified.
+  Earlier `aa2c2fd` failed native MainWP sync authentication. Later successful
+  syncs do not establish that intermittent failure's cause. Source-capture
+  candidate `5a5eb0b` has passing MRN QA; its combined native run is pending.
 - The new gateway source verifies encrypted native batches, cache ZIP extraction,
   complete source reconstruction and independent owner-catalog signatures.
   Production startup does not enable these private adapters.
@@ -31,6 +32,26 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
 
 The following sections retain individual source checkpoints and their limits.
 They are not evidence of production activation or team readiness.
+
+## Source request binding correction, 2026-10-17
+
+Independent comparison with the immutable provider vector found that the
+gateway's controlled source fixture expected a decoded-claims digest. The
+frozen provider contract instead binds the entire canonical signed read input.
+The gateway now signs once and uses that exact input's digest in its durable
+read record, provider response validation and encrypted transfer header. It
+also checks that the envelope encodes the exact original canonical claims;
+claims-only hashes and substituted envelopes are rejected. The capture audit
+likewise hashes its complete signed request/catalog input before transport.
+No provider contract, vector, signature purpose or authorization rule changed.
+
+Checkpoint `dbf8937` original archive `12104732883` has SHA-256
+`7f5544a332a847e8b1ed8f5c5acacd0d2fc0ec00c8806e68b3faf310741d25f4`.
+All five report bodies, group/measurement/transcript hashes and ten worker groups
+were checked against the actual source pins. CI checkout `fba2208` matches the
+task's runtime/workflow blobs; unrelated main changes make the whole trees
+different. That earlier source does not include the request-binding correction
+or the retained mapping and is not proof of native provider source retention.
 
 ## Private source capture mapping, 2026-10-17
 

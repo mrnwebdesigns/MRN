@@ -39,8 +39,9 @@ export async function sourceBrokerFixture(t, { bindRecipient = true, now = 18000
       calls++; const raw=Buffer.from(envelope.payload_base64,'base64');
       assert.ok(verify(null,Buffer.concat([Buffer.from('mrn-content-management-source-read-v1:'),raw]),registrar.publicKey,Buffer.from(envelope.signature_base64,'base64')));
       const c=JSON.parse(raw); assert.equal(c.issuer,'mrn-content-qualification'); assert.equal(c.audience,'https://wpcontrol.mrndev.io');
-      const value=structuredClone({schema:1,context:source.context,slot:source.slot,request_sha256:delegationDigest(c),batch_index:c.batch_index,frames});
-      await f.state.backend?.(value); return value;
+      const input={signed_request:envelope};
+      const value=structuredClone({schema:1,context:source.context,slot:source.slot,request_sha256:delegationDigest(input),batch_index:c.batch_index,frames});
+      await f.state.backend?.(value,input); return value;
     }}};
   const broker=new ManagementSourceBroker(options), pair=generateKeyPairSync('x25519');
   const enrollment={...pointer,public_key_base64:pair.publicKey.export({type:'spki',format:'der'}).toString('base64'),nonce:'7'.repeat(64)};
