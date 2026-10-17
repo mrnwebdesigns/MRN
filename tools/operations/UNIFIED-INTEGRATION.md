@@ -43,8 +43,42 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
   concrete deployment/access approval; workspace refresh; ordinary ChatGPT
   content-edit, code-edit/rollback and outsider/revoked-account acceptance.
 
+Provider `18922d4` additionally passes all four jobs in run `39045852290`,
+including 34 actual SQL source-context checks. Its tested merge has exact source
+tree equality. The gateway's new private provider adapter consumes those exact
+contract/vector bytes, while its combined-runtime pin remains `aae87b3` until
+the separate private API registration is qualified.
+
 The following sections retain individual source checkpoints and their limits.
 They are not evidence of production activation or team readiness.
+
+## Canonical source bootstrap adapter, 2026-10-17
+
+The gateway now has an optional lifecycle for the fixed MainWP MCP source-context
+and native-capture abilities. Discovery requires the canonical Dashboard,
+nonzero abilities, and POST-only non-destructive annotations. The dedicated
+connection remains separate from the warmed current-access callback connection.
+Source-context requests use their own 20-second deadline; capture uses the
+existing 120-second deadline. The eventual source connection must explicitly
+configure its backend request timeout to support that bound, without extending
+the callback reader or public request limits.
+
+The bootstrap signs only the original job ID and saved management binding.
+It verifies the full signed-input digest, complete returned context and context
+digest, and rechecks the current original Google actor, local access and human
+expiry before returning metadata. It cannot accept caller-selected emails,
+sites, source paths, policies or URLs. Capture then uses the existing independent
+owner-catalog verification and one-use durable mapping. Failed initialization
+closes the connection; a closed lifecycle cannot start another capture.
+
+Eight focused test groups cover independent frozen provider bytes/signature,
+the original Google identity, substituted input/context, revocation, expiry,
+clock reversal, canonical route discovery and one-use lifecycle/shutdown.
+Private source routes remain unregistered in provider `18922d4`. These controlled
+adapter tests therefore do not prove actual gateway-to-provider source capture.
+Canonical API registration, a separate fresh native source fixture, central
+cache delivery, protected rendered QA and production/ChatGPT acceptance remain
+required. Production startup does not construct this lifecycle.
 
 ## Protected source-context readback, 2026-10-17
 
