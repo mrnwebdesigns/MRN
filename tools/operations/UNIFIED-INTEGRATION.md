@@ -21,7 +21,7 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
   35,006,494 bytes, the owner signature, and isolation of private materials from
   Nginx. The tested merge tree equals the source tree. This is export proof;
   it does not prove the complete gateway/worker source chain.
-- This candidate selects `744f15b` in all four linked provider provenance
+- Gateway `4b5b0c4` selects `744f15b` in all four linked provider provenance
   records and requires the new sixth native-source report in combined CI.
   Gateway `4b5b0c4` passes 483 source tests and MRN QA `39081910603`, but
   combined run `39081910595` failed at its first native management capture,
@@ -29,12 +29,20 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
   archive is retained. The fixed worker returned `ok:false`; its underlying
   refusal is not yet classified. A possible collision with the preceding test's
   intentionally retained uncertainty lock remains a hypothesis. No lock is cleared.
-- The combined runtime retains qualified management worker `fb9a16b`, whose
+- The earlier combined runtime uses qualified management worker `fb9a16b`, whose
   148 tests, three hosted jobs and original eight-report archives pass.
   Separately, runner `8465b25` adds strict verification of the outer artifact
   and inner source ZIP; 153 tests and all three jobs in `39081815246` pass.
   Both original archives and all eight reports are independently verified,
   including exact tested tree and recomputed measurement/lifecycle hashes.
+- This diagnostic candidate selects provider `b9c5fa4` in all four provenance
+  records after comparing all 15 imported inputs. All four provider jobs pass
+  in `39125205713`; combined native-source CI remains required. It also selects
+  qualified worker `8465b25` and separates the
+  downloaded GitHub artifact hash/length from the inner source ZIP hash/length.
+  The actual two-layer ZIP test passes gateway acquisition, independent worker
+  envelope verification, source extraction and complete reconstruction; GitHub
+  transport and ownership in that test remain synthetic.
 - Live MainWP was last observed connected to `wpcontrol.mrndev.io` with 115
   abilities and provider 0.13.8. The company code policy remains unchanged.
 - Remaining gates: full native source transfer/reconstruction; protected central

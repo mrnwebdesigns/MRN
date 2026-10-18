@@ -16,8 +16,9 @@ const directories=()=>new Set(readdirSync(tmpdir()).filter(name=>name.startsWith
 function fixture(options={}){
   const now=1800000000000,state={now,denied:false},calls=[],raw=Buffer.alloc(options.size||2097152,65);
   const catalog={artifact_id:'approved-cache-fixture',root_kind:'directory',relative_inventory_sha256:'a'.repeat(64),
-    archive_sha256:digest(raw),archive_format:'zip',maximum_archive_bytes:raw.length};
-  const entry={catalog_artifact:catalog,github_artifact_id:'456',run_id:'123',source_sha:'b'.repeat(40),created_at:now/1000-60,expires_at:now/1000+3600};
+    archive_sha256:digest('distinct inner source archive'),archive_format:'zip',maximum_archive_bytes:raw.length-100};
+  const entry={catalog_artifact:catalog,github_artifact_id:'456',github_artifact_sha256:digest(raw),github_artifact_bytes:raw.length,
+    source_archive_bytes:raw.length-100,run_id:'123',source_sha:'b'.repeat(40),created_at:now/1000-60,expires_at:now/1000+3600};
   const registry={schema:1,repository,repository_id:'789',entries:[entry]};let pin=delegationDigest(registry);
   const metadata={id:456,expired:false,digest:'sha256:'+digest(raw),size_in_bytes:raw.length,
     workflow_run:{id:123,repository_id:789,head_sha:entry.source_sha},created_at:new Date(entry.created_at*1000).toISOString(),expires_at:new Date(entry.expires_at*1000).toISOString()};
@@ -51,10 +52,25 @@ test('approved opaque artifact streams to private storage with actual hash and e
   const f=fixture({size:8388608}),result=await f.acquire();
   try{
     assert.equal(result.archiveSha256,digest(f.raw));assert.deepEqual(readFileSync(result.archivePath),f.raw);assert.equal(result.bytes,f.raw.length);
+    assert.notEqual(result.archiveSha256,f.catalog.archive_sha256);
+    assert.equal(result.sourceArchiveSha256,f.catalog.archive_sha256);assert.equal(result.sourceArchiveBytes,f.entry.source_archive_bytes);
     assert.equal(statSync(result.archivePath).mode&0o777,0o600);assert.equal(result.metadataSha256,digest(JSON.stringify(f.metadata)));
     assert.equal(result.inventoryVerified,false);assert.equal(result.sourceBytesVerified,false);assert.equal(result.admitted,false);
     assert.equal(f.calls.length,4);assert.equal(f.calls.filter(c=>c.request.method==='POST').length,1);
   }finally{result.cleanup();}assert.equal(existsSync(result.archivePath),false);
+});
+
+test('outer artifact and inner source metadata cannot be substituted or inferred from legacy registry entries',async()=>{
+  for(const change of [f=>{delete f.entry.github_artifact_sha256;f.repin();},
+    f=>{delete f.entry.github_artifact_bytes;f.repin();},f=>{delete f.entry.source_archive_bytes;f.repin();},
+    f=>{f.entry.source_archive_bytes=f.catalog.maximum_archive_bytes+1;f.repin();}]){
+    const f=fixture();change(f);await assert.rejects(f.acquire);assert.equal(f.calls.length,0);
+  }
+  for(const change of [f=>{f.metadata.digest='sha256:'+f.catalog.archive_sha256;},
+    f=>{f.metadata.size_in_bytes=f.entry.source_archive_bytes;},
+    f=>{f.entry.github_artifact_sha256=f.catalog.archive_sha256;f.repin();}]){
+    const f=fixture();change(f);await assert.rejects(f.acquire);assert.equal(f.calls.length,2);
+  }
 });
 
 test('unapproved registry edits, duplicate IDs and changed catalog hashes cannot obtain an App grant',async()=>{

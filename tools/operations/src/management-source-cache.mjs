@@ -8,6 +8,8 @@ export const managementSourceRepository = 'mrnwebdesigns/mrn-code-qa-runner';
 const id = z.string().regex(/^[1-9][0-9]{0,19}$/), hash = z.string().regex(/^[a-f0-9]{64}$/);
 const artifact = compileManagementEvidenceSchema({ $ref: '#/$defs/cache_artifact', $defs: managementSourceWire.$defs });
 const entry = z.object({ catalog_artifact: artifact, github_artifact_id: id, run_id: id,
+  github_artifact_sha256: hash, github_artifact_bytes: z.number().int().safe().min(22).max(536870912),
+  source_archive_bytes: z.number().int().safe().min(22).max(536870912),
   source_sha: z.string().regex(/^[a-f0-9]{40}$/), created_at: z.number().int().safe().positive(),
   expires_at: z.number().int().safe().positive() }).strict();
 const registry = z.object({ schema: z.literal(1), repository: z.literal(managementSourceRepository),
@@ -32,7 +34,7 @@ export class ManagementSourceCacheRegistry {
     const value = configured.data, ids = new Set(), githubIds = new Set();
     for (const item of value.entries) {
       check(!ids.has(item.catalog_artifact.artifact_id) && !githubIds.has(item.github_artifact_id)
-        && item.expires_at > item.created_at);
+        && item.expires_at > item.created_at && item.source_archive_bytes <= item.catalog_artifact.maximum_archive_bytes);
       ids.add(item.catalog_artifact.artifact_id); githubIds.add(item.github_artifact_id);
     }
     const matches = value.entries.filter(item => item.catalog_artifact.artifact_id === parsed.data.artifact_id);

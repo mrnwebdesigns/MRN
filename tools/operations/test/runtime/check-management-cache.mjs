@@ -15,13 +15,14 @@ import { encryptSourceBatch, sourceBatchPurpose } from '../../src/management-sou
 
 export async function checkManagementCache(runner) {
   const { extractManagementCacheArchive } = await import(pathToFileURL(join(runner, 'src/management-cache-archive.mjs')));
+  const { extractManagementArtifactEnvelope } = await import(pathToFileURL(join(runner, 'src/management-artifact-envelope.mjs')));
   const { ManagementSourceAssembly } = await import(pathToFileURL(join(runner, 'src/management-source-assembly.mjs')));
   const { sourceAssemblyFixture } = await import(pathToFileURL(join(runner, 'test/fixtures/management-source-assembly.mjs')));
   const { sourceRecipientFixture } = await import(pathToFileURL(join(runner, 'test/fixtures/management-source-recipient.mjs')));
   const f = sourceAssemblyFixture({ cache: true, excluded: true });
   const temporary = realpathSync(mkdtempSync(join(tmpdir(), 'mrn-cache-integration-'))), archive = join(temporary, 'root.zip');
   const theme = f.input.parityManifest.roots.find(root => root.path === 'wp-content/themes/fixture/');
-  let acquired, extracted, assembly, output, transfer;
+  let acquired, envelope, extracted, assembly, output, transfer;
   try {
     execFileSync('python3', ['-I', join(runner, 'test/fixtures/cache-archive.py')], { input: JSON.stringify({ path: archive,
       entries: theme.files.map(file => ({ name: file.path.slice(theme.path.length), base64: f.data.get(file.path).toString('base64') })) }),
@@ -29,11 +30,19 @@ export async function checkManagementCache(runner) {
     chmodSync(archive, 0o600);
     const bytes = readFileSync(archive), artifact = f.input.catalog.artifacts[0];
     artifact.archive_sha256 = digest(bytes); artifact.maximum_archive_bytes = bytes.length;
+    const outerPath = join(temporary, 'artifact.zip');
+    execFileSync('python3', ['-I', join(runner, 'test/fixtures/cache-archive.py')], { input: JSON.stringify({ path: outerPath,
+      entries: [{ name: 'source.zip', base64: bytes.toString('base64') }] }),
+    stdio: ['pipe', 'ignore', 'pipe'], timeout: 5000, maxBuffer: 4096 });
+    chmodSync(outerPath, 0o600);
+    const outerBytes = readFileSync(outerPath);
+    assert.notEqual(digest(outerBytes), artifact.archive_sha256);
     f.input.context.source_recipe_catalog_sha256 = delegationDigest(f.input.catalog); f.reframe();
     const selected = { catalog_artifact: artifact, github_artifact_id: '456', run_id: '123', source_sha: 'b'.repeat(40),
+      github_artifact_sha256: digest(outerBytes), github_artifact_bytes: outerBytes.length, source_archive_bytes: bytes.length,
       created_at: Math.floor(f.now / 1000) - 60, expires_at: Math.floor(f.now / 1000) + 3600 };
     const registry = { schema: 1, repository, repository_id: '789', entries: [selected] }, pin = delegationDigest(registry);
-    const metadata = { id: 456, expired: false, digest: 'sha256:' + digest(bytes), size_in_bytes: bytes.length,
+    const metadata = { id: 456, expired: false, digest: 'sha256:' + digest(outerBytes), size_in_bytes: outerBytes.length,
       workflow_run: { id: 123, repository_id: 789, head_sha: selected.source_sha },
       created_at: new Date(selected.created_at * 1000).toISOString(), expires_at: new Date(selected.expires_at * 1000).toISOString() };
     const json = (value, status = 200) => new Response(JSON.stringify(value), { status, headers: { 'Content-Type': 'application/json' } });
@@ -50,13 +59,18 @@ export async function checkManagementCache(runner) {
         if (address.endsWith('/zip')) return new Response('', { status: 302, headers: { Location: 'https://fixture.blob.core.windows.net/root.zip' } });
         assert.equal(address, 'https://fixture.blob.core.windows.net/root.zip');
         assert.deepEqual(request.headers, { 'Accept-Encoding': 'identity' });
-        return new Response(bytes, { headers: { 'Content-Length': String(bytes.length) } });
+        return new Response(outerBytes, { headers: { 'Content-Length': String(outerBytes.length) } });
       } });
     const cache = new ManagementSourceCacheRegistry({ current: () => registry, expectedSha256: () => pin, github, now: () => f.now });
     acquired = await cache.acquire(artifact, { expiresAt: f.now + 60000, authorize: async () => { authorizations++; } });
     assert.equal(calls, 4); assert.ok(authorizations > 1); assert.equal(acquired.inventoryVerified, false);
+    envelope = extractManagementArtifactEnvelope({ archivePath: acquired.archivePath, artifactSha256: acquired.archiveSha256,
+      artifactBytes: acquired.bytes, sourceArchiveSha256: acquired.sourceArchiveSha256,
+      sourceArchiveBytes: acquired.sourceArchiveBytes, expiresAt: acquired.expiresAt }, () => f.now);
+    assert.equal(envelope.result.source_bytes_verified, false);
+    assert.deepEqual(readFileSync(envelope.archivePath), bytes);
     const inventory = Object.fromEntries(theme.files.map(file => [file.path.slice(theme.path.length), file.sha256]));
-    extracted = extractManagementCacheArchive({ archivePath: acquired.archivePath, artifact, inventory, expiresAt: acquired.expiresAt }, () => f.now);
+    extracted = extractManagementCacheArchive({ archivePath: envelope.archivePath, artifact, inventory, expiresAt: acquired.expiresAt }, () => f.now);
     assert.equal(extracted.result.source_bytes_verified, true); assert.equal(extracted.result.authority_verified, false);
     // A synthetic original record supplies the recipient identity. Encrypt every
     // native/manifest batch with shipping gateway code, then pass only the
@@ -85,9 +99,9 @@ export async function checkManagementCache(runner) {
     assert.equal(output.result.provenance_verified, false); assert.equal(output.result.admitted, false);
     assert.deepEqual(readFileSync(join(output.directory, 'wp-content/themes/fixture/.gitignore')), f.data.get('wp-content/themes/fixture/.gitignore'));
   } finally {
-    transfer?.recipient.destroy(); output?.cleanup(); assembly?.destroy(); extracted?.cleanup(); acquired?.cleanup(); f.close(); rmSync(temporary, { recursive: true, force: true });
+    transfer?.recipient.destroy(); output?.cleanup(); assembly?.destroy(); extracted?.cleanup(); envelope?.cleanup(); acquired?.cleanup(); f.close(); rmSync(temporary, { recursive: true, force: true });
   }
-  for (const path of [output.directory, extracted.directory, acquired.archivePath]) assert.equal(existsSync(path), false);
-  return { cacheAcquisitionAssemblyVerified: true, encryptedNativeAssemblyVerified: true,
+  for (const path of [output.directory, extracted.directory, envelope.directory, acquired.archivePath]) assert.equal(existsSync(path), false);
+  return { cacheAcquisitionAssemblyVerified: true, artifactEnvelopeVerified: true, encryptedNativeAssemblyVerified: true,
     hostedCacheProvenanceVerified: false, encryptedCacheDeliveryVerified: false };
 }

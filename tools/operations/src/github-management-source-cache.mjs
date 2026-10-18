@@ -26,6 +26,10 @@ export async function acquireManagementSourceCache({ selection, acquireGrant, au
     && /^[a-f0-9]{40}$/.test(selection.source_sha) && artifact?.archive_format === 'zip'
     && /^[a-f0-9]{64}$/.test(artifact.archive_sha256) && Number.isSafeInteger(artifact.maximum_archive_bytes)
     && artifact.maximum_archive_bytes > 0 && artifact.maximum_archive_bytes <= 536870912
+    && /^[a-f0-9]{64}$/.test(selection.github_artifact_sha256)
+    && Number.isSafeInteger(selection.github_artifact_bytes) && selection.github_artifact_bytes >= 22 && selection.github_artifact_bytes <= 536870912
+    && Number.isSafeInteger(selection.source_archive_bytes) && selection.source_archive_bytes >= 22
+    && selection.source_archive_bytes <= artifact.maximum_archive_bytes
     && Number.isSafeInteger(selection.created_at) && Number.isSafeInteger(selection.expires_at)
     && selection.created_at > 0 && selection.created_at * 1000 <= now() && selection.expires_at > selection.created_at
     && Number.isSafeInteger(expiresAt) && expiresAt > now() && typeof authorize === 'function');
@@ -74,8 +78,7 @@ export async function acquireManagementSourceCache({ selection, acquireGrant, au
       });
       const metadata = await json(`/repos/${repository}/actions/artifacts/${selection.github_artifact_id}`, grant.token), item = metadata.value;
       check(integerId(item.id) === selection.github_artifact_id && item.expired === false
-        && item.digest === `sha256:${artifact.archive_sha256}` && Number.isSafeInteger(item.size_in_bytes)
-        && item.size_in_bytes > 0 && item.size_in_bytes <= artifact.maximum_archive_bytes
+        && item.digest === `sha256:${selection.github_artifact_sha256}` && item.size_in_bytes === selection.github_artifact_bytes
         && integerId(item.workflow_run?.id) === selection.run_id && integerId(item.workflow_run?.repository_id) === selection.repository_id
         && item.workflow_run.head_sha === selection.source_sha && time(item.created_at) === selection.created_at
         && time(item.expires_at) === selection.expires_at);
@@ -93,7 +96,7 @@ export async function acquireManagementSourceCache({ selection, acquireGrant, au
       const partial = join(directory, 'archive.partial'), path = join(directory, 'archive.zip');
       fd = openSync(partial, constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | constants.O_NOFOLLOW, 0o600);
       const hash = createHash('sha256');
-      const size = await entity(archive, artifact.maximum_archive_bytes, chunk => {
+      const size = await entity(archive, selection.github_artifact_bytes, chunk => {
         hash.update(chunk);
         for (let offset = 0; offset < chunk.length;) {
           check(!controller.signal.aborted && fd !== undefined);
@@ -101,13 +104,16 @@ export async function acquireManagementSourceCache({ selection, acquireGrant, au
         }
       });
       const stat = fstatSync(fd); check(stat.isFile() && stat.nlink === 1 && (stat.mode & 0o077) === 0 && stat.uid === process.getuid()
-        && stat.size === size && size === item.size_in_bytes && hash.digest('hex') === artifact.archive_sha256);
+        && stat.size === size && size === item.size_in_bytes && hash.digest('hex') === selection.github_artifact_sha256);
       fsyncSync(fd); closeSync(fd); fd = undefined;
       await current(); renameSync(partial, path); await current(); succeeded = true;
       const removeAt = Math.min(expiresAt, selection.expires_at * 1000);
       const expiryTimer = setTimeout(() => rmSync(directory, { recursive: true, force: true }), Math.max(1, removeAt - now()));
       expiryTimer.unref();
-      return { archivePath: path, archiveSha256: artifact.archive_sha256, bytes: size,
+      // GitHub wraps uploaded files in its own ZIP. The catalog hash describes
+      // the inner source.zip; only the independent envelope verifier may open it.
+      return { archivePath: path, archiveSha256: selection.github_artifact_sha256, bytes: size,
+        sourceArchiveSha256: artifact.archive_sha256, sourceArchiveBytes: selection.source_archive_bytes,
         metadataSha256: metadata.sha256, inventoryVerified: false, sourceBytesVerified: false, admitted: false,
         expiresAt: removeAt, cleanup: () => { clearTimeout(expiryTimer); rmSync(directory, { recursive: true, force: true }); } };
     };

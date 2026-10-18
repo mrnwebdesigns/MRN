@@ -329,7 +329,10 @@ readiness. No content write or code policy is activated by these modules.
 `ManagementSourceCacheRegistry` adds a closed, source-only owner registry for
 opaque catalog artifact IDs. It defaults to missing-source denial, and accepts
 only the fixed `mrnwebdesigns/mrn-code-qa-runner` central repository with pinned
-numeric repository/artifact/run identity, source commit, archive hash and expiry.
+numeric repository/artifact/run identity, source commit, outer GitHub artifact
+hash and exact byte count, inner source ZIP byte count, and expiry. The inner
+source hash remains independently pinned by the owner catalog. Entries missing
+either layer are refused; the downloader cannot infer one from the other.
 Registry/catalog changes, duplicates, unknown IDs and stale entries fail before
 credential acquisition. It reuses the existing exact-repository GitHub App grant
 and requests only its existing `qaRead` permission profile; it cannot grant App
@@ -337,12 +340,15 @@ permissions or fall back to a personal token.
 
 The separate cache downloader verifies original artifact metadata and streams
 actual bytes to an exclusive private temporary file in at most 60 seconds under
-the original request expiry. It enforces the catalog archive bound (at most
-512 MiB), verifies the actual archive hash, removes partial files on failure, schedules removal at original expiry and
+the original request expiry. It enforces the exact outer artifact byte count
+(at most 512 MiB), verifies its actual hash, removes partial files on failure, schedules removal at original expiry and
 never forwards authorization to GitHub's storage redirect. This does not widen
 receipt/evidence limits or extract/execute any ZIP. Complete inventory and source
 verification flags remain false until the protected supervisor independently
-validates all archive paths and bytes against the complete approved root.
+opens the single inner `source.zip`, validates its separate hash/length and
+catalog bound, then validates all source paths and bytes against the complete
+approved root. The cross-repository byte test exercises both actual ZIP layers;
+its GitHub responses and ownership remain synthetic.
 
 No registry is populated or activated. A read-only attempt to inspect App
 installations through the existing CLI returned 403 because that token cannot
