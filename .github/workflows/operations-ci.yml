@@ -119,15 +119,19 @@ jobs:
           MRN_DISPOSABLE_NATIVE_CHILD: '1'
           MRN_DISPOSABLE_SYNC_AUTH_DIAGNOSTICS: '1'
           MRN_DISPOSABLE_MANAGEMENT_TEST: '1'
+          MRN_DISPOSABLE_SOURCE_TEST: '1'
           MRN_DISPOSABLE_NATIVE_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/native-hook.sh
           MRN_DISPOSABLE_ACCESS_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/access-hook.sh
+          MRN_DISPOSABLE_SOURCE_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/source-hook.sh
           MRN_GATEWAY_MCP_SOURCE: ${{ github.workspace }}/.runtime/transport
           MRN_GATEWAY_REPORT: ${{ runner.temp }}/gateway-provider-report.json
           MRN_GATEWAY_PROVIDER_SOURCE: ${{ github.workspace }}/.runtime/provider
           MRN_GATEWAY_RUNNER_SOURCE: ${{ github.workspace }}/.runtime/runner
+          MRN_GATEWAY_MANAGEMENT_RUNNER_SOURCE: ${{ github.workspace }}/.runtime/management-worker
           MRN_GATEWAY_NATIVE_REPORT: ${{ runner.temp }}/gateway-native-content-report.json
           MRN_GATEWAY_ACCESS_REPORT: ${{ runner.temp }}/gateway-access-report.json
           MRN_GATEWAY_MANAGEMENT_REPORT: ${{ runner.temp }}/gateway-management-report.json
+          MRN_GATEWAY_SOURCE_REPORT: ${{ runner.temp }}/gateway-native-source-report.json
         run: |
           .runtime/provider/tests/runtime/run-dashboard-api.sh
           node --input-type=module <<'JS'
@@ -166,9 +170,29 @@ jobs:
           assert.ok(management.callbackPosts > 0);
           assert.equal(management.draftRecordReadVerified, true);
           assert.equal(management.publishedTargetVerified, true);
+          const source = JSON.parse(readFileSync(process.env.MRN_GATEWAY_SOURCE_REPORT, 'utf8'));
+          assert.equal(source.result, 'PASS');
+          assert.equal(source.scope, 'disposable-native-source-integration');
+          assert.deepEqual(source.passed, [
+            'fresh-original-Google-intent-and-actual-native-capture-readback',
+            'canonical-MCP-bootstrap-and-native-source-capture-retain-one-original-slot',
+            'independent-worker-reads-signed-original-metadata-and-binds-recipient-over-TLS',
+            'actual-provider-native-frames-cross-encrypted-broker-and-independent-decryption',
+            'complete-real-cache-and-native-source-reconstruction-independently-reopened',
+            'original-pending-revocation-denies-provider-bootstrap-and-protected-source',
+            'original-child-content-unchanged-without-candidate-execution',
+          ]);
+          for (const field of ['providerSourceBootstrapVerified', 'nativeSourceCaptureVerified', 'sourceBrokerTlsVerified', 'fullSourceBytesVerified', 'originalRevocationVerified']) assert.equal(source[field], true);
+          for (const field of ['productionCredentials', 'liveGoogleVerified', 'hostedOidcVerified', 'hostedCacheProvenanceVerified', 'protectedRenderedQaVerified', 'consumerBindingIssued', 'contentWriteVerified', 'remoteBackupVerified', 'chatgptAcceptanceVerified']) assert.equal(source[field], false);
+          for (const field of ['manifest_sha256', 'parity_sha256', 'transfer_manifest_sha256']) assert.match(source.sourceClosure[field], /^[a-f0-9]{64}$/);
+          const sourceLimits = JSON.parse(readFileSync('tools/operations/contracts/content-management-source-transfer-v1.json', 'utf8')).limits;
+          for (const [field, maximum] of [['cache_artifacts', 128], ['native_files', sourceLimits.native_files], ['native_bytes', sourceLimits.native_bytes], ['source_frames', sourceLimits.total_frames]]) {
+            assert.ok(Number.isSafeInteger(source.sourceClosure[field]) && source.sourceClosure[field] > 0 && source.sourceClosure[field] <= maximum);
+          }
           const sources = JSON.parse(readFileSync('tools/operations/test/runtime/sources.json', 'utf8'));
           for (const name of ['provider', 'transport', 'runner']) assert.equal(execFileSync('git', ['-C', `.runtime/${name}`, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), sources[name].commit);
-          for (const report of [proof, native, access, management]) assert.deepEqual(report.source, sources);
+          assert.equal(execFileSync('git', ['-C', '.runtime/management-worker', 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), sources.managementWorker.commit);
+          for (const report of [proof, native, access, management, source]) assert.deepEqual(report.source, sources);
           JS
       - name: Retain redacted disposable worker failure
         if: failure()
@@ -189,5 +213,6 @@ jobs:
             ${{ runner.temp }}/capture-transport-report.json
             ${{ runner.temp }}/gateway-access-report.json
             ${{ runner.temp }}/gateway-management-report.json
+            ${{ runner.temp }}/gateway-native-source-report.json
           if-no-files-found: error
           retention-days: 14

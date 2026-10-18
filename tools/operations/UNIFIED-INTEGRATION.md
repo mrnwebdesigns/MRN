@@ -6,48 +6,35 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
 
 ## Current delivery state, 2026-10-17
 
-- One existing workspace plugin remains the target. No additional connector,
-  individual enrollment or staff credential requirement has been introduced.
-- Runner `c9135ca` passes all three hosted checks and 143 source tests; both
-  original archives and all eight QA reports are independently verified.
-  Candidate `fb9a16b` adds authenticated source-context readback and passes
-  148 source tests and all three jobs in hosted run `39045108899`. Both original
-  archives and all eight QA reports are independently verified; the tested merge
-  tree is identical to its source tree.
-- Gateway `dbf8937` passes combined run `39043118122` and MRN QA `39043118067`.
-  Its original artifact and all five reports have been independently verified.
-  Earlier `aa2c2fd` failed native MainWP sync authentication. Later successful
-  syncs do not establish that intermittent failure's cause. Source-capture
-  checkpoint `5a5eb0b` also passes MRN QA and combined run `39043736540`, with
-  its original artifact verified. Request-binding correction `e4c9fe2` passes
-  MRN QA and combined run `39044304560`; its original five-report archive and
-  eleven worker groups are independently verified.
-- The new gateway source verifies encrypted native batches, cache ZIP extraction,
-  complete source reconstruction and independent owner-catalog signatures.
-  Production startup does not enable these private adapters.
-- Provider observer `1048e20` failed in a synthetic fixture; `b44831d` then
-  failed to collect a matching Dashboard observation. The native sync passed
-  in both runs. Corrected observer `d1144bc` passes all four jobs in
-  [CI 39042535495](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/39042535495),
-  including mandatory actual sender/Child signature correlation.
-- Qualified retention provider `aae87b3` passes all four jobs in run
-  `39044539488`, including 28 source-control, 17 native-source and 46 encrypted
-  SQL storage/readback checks. The fresh storage worker peaks at 99,090,432
-  bytes under its unchanged 128-MiB cap. Earlier `92ea0d3` exhausted that cap
-  after unrelated preceding fixtures had retained memory; its failure remains
-  recorded. All eleven copied qualification blobs match the new source exactly.
+- The existing workspace plugin remains the only team connector. Active MRN
+  Google accounts need no individual enrollment or personal backend credentials.
+  Production still provides read-only inspection; team editing is not ready.
+- Gateway `229b950` passes all 483 tests, combined run `39074114613` and MRN QA
+  `39074114593`. Its original five-report artifact and immutable runtime source
+  pins were independently verified.
+- Provider `7e91098` passes all four jobs in `39080756281`, including 37 native
+  source-context checks and actual anonymous/wrong-purpose HTTP refusal.
+  The correction adds only the four exact private POST source abilities to the
+  backend guard; staff scope and other methods remain denied.
+- Provider `744f15b` passes all four jobs in `39080997949`. Its actual Linux
+  export independently verifies three cache archives, 1,865 files and
+  35,006,494 bytes, the owner signature, and isolation of private materials from
+  Nginx. The tested merge tree equals the source tree. This is export proof;
+  it does not prove the complete gateway/worker source chain.
+- This candidate selects `744f15b` in all four linked provider provenance
+  records and requires the new sixth native-source report in combined CI.
+  Local tests and lint pass; the complete native source check is pending.
+- The combined runtime retains qualified management worker `fb9a16b`, whose
+  148 tests, three hosted jobs and original eight-report archives pass.
+  Separately, runner `8465b25` adds strict verification of the outer artifact
+  and inner source ZIP; its 153 local tests pass and hosted CI is pending.
 - Live MainWP was last observed connected to `wpcontrol.mrndev.io` with 115
   abilities and provider 0.13.8. The company code policy remains unchanged.
-- Remaining: authenticated source-context bootstrap and retained source mapping;
-  central cache delivery; complete protected rendered QA and report admission;
-  concrete deployment/access approval; workspace refresh; ordinary ChatGPT
-  content-edit, code-edit/rollback and outsider/revoked-account acceptance.
-
-Provider `18922d4` additionally passes all four jobs in run `39045852290`,
-including 34 actual SQL source-context checks. Its tested merge has exact source
-tree equality. The gateway's new private provider adapter consumes those exact
-contract/vector bytes, while its combined-runtime pin remains `aae87b3` until
-the separate private API registration is qualified.
+- Remaining gates: full native source transfer/reconstruction; protected central
+  cache provenance and delivery; rendered QA and retained report admission;
+  concrete production deployment/access approval; workspace refresh; ordinary
+  ChatGPT content edit/readback, code edit/rollback, outsider and revoked-user
+  acceptance. No production source adapter or new credential is activated.
 
 The following sections retain individual source checkpoints and their limits.
 They are not evidence of production activation or team readiness.
@@ -90,8 +77,8 @@ required. Production startup does not construct this lifecycle.
 
 ## Native source integration hook candidate, 2026-10-17
 
-`test/runtime/source-hook.sh` is an optional, currently unconfigured disposable
-fixture hook. It consumes a closed provider-owned descriptor and private fixture
+`test/runtime/source-hook.sh` is a disposable fixture hook now required by the
+combined CI candidate. It consumes a closed provider-owned descriptor and private fixture
 files, verifies the installed package against immutable Git, and binds the
 fresh original actor, content preview, capture, owner policy and catalog. Its
 source connection uses the existing 120-second capture bound; the independent
@@ -105,14 +92,14 @@ request must observe pending revocation through the actual callback audit;
 an unused metadata request must also fail. Child content must remain unchanged,
 and private source cleanup must finish before the report may say PASS.
 
-The hook is not enabled in CI because the separate provider API registration
-and source fixture have not passed their native gate. Provider `a45f33a` run
-`39058196093` passed source capture and encrypted storage, then failed source
-context checks; it is not selected by the gateway. This hook's syntax/lint checks
-do not establish that its full native chain works. Its report explicitly
-excludes real Google, hosted OIDC/cache provenance, rendered QA, admission,
-remote backups, content writes and ChatGPT acceptance. There is no production
-startup, policy, credential or workspace publication change.
+The provider API and source export gates now pass at `744f15b`, and combined CI
+requires all seven native source groups plus exact source/limit assertions in a
+sixth retained report. Until that actual run succeeds, the complete native chain
+remains unverified. Earlier provider `a45f33a` and diagnostic `2d8b675` failures
+remain recorded; the exact backend route guard correction passed at `7e91098`.
+The source report explicitly excludes real Google, hosted OIDC/cache provenance,
+rendered QA, admission, remote backups, content writes and ChatGPT acceptance.
+There is no production startup, policy, credential or workspace publication change.
 
 ## Protected source-context readback, 2026-10-17
 
