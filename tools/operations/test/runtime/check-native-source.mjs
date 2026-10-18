@@ -163,6 +163,12 @@ const report = { schema: 1, result: 'INCOMPLETE', source: lock, scope: 'disposab
 const reportPath = process.env.MRN_GATEWAY_SOURCE_REPORT; assert.ok(typeof reportPath === 'string' && resolve(reportPath) === reportPath);
 const save = () => writeFileSync(reportPath, JSON.stringify(report, null, 2) + '\n', { mode: 0o600 });
 const pass = name => { report.passed.push(name); save(); process.stdout.write(`PASS ${name}\n`); };
+// Fixed, aggregate fixture diagnostics only. Never retain callback bodies,
+// provider messages, signed inputs, headers, original identities or credentials.
+const callbackObservation = { requests: 0, ok: 0, refused: 0, closed: 0, vetoErrors: {} };
+const callbackCodes = new Set(['ACCESS_INVALID', 'ACCESS_EXPIRED', 'ACCESS_BINDING', 'ACCESS_MAPPING',
+  'ACCESS_REPLAY', 'ACCESS_TRANSPORT', 'ACCESS_UNAVAILABLE']);
+save();
 let access, source, callbackServer, tlsServer, networkHook, routed = false, recipient, assembly, reconstructed;
 const sockets = new Set();
 try {
@@ -184,7 +190,20 @@ try {
     .setSubject(descriptor.actor.subject).setIssuedAt().setExpirationTime(Math.floor(descriptor.actor.expiresAt / 1000)).sign(oauth.privateKey);
   const actor = await authenticate(`Bearer ${bearer}`); assert.equal(actor.expiresAt, descriptor.actor.expiresAt);
   const client = new DelegatedMainwpClient(await rawClient(), actor, signer);
-  callbackServer = createHttpServer({ publicUrl: audience, issuer, managementAccessVeto: access.veto });
+  callbackServer = createHttpServer({ publicUrl: audience, issuer, managementAccessVeto: { async respond(input) {
+    try { return await access.veto.respond(input); }
+    catch (error) {
+      const code = callbackCodes.has(error?.code) ? error.code : 'OTHER';
+      callbackObservation.vetoErrors[code] = (callbackObservation.vetoErrors[code] || 0) + 1;
+      throw error;
+    }
+  } } });
+  callbackServer.on('request', (req, res) => {
+    if (req.method !== 'POST' || req.url !== '/internal/mainwp/management-access-veto') return;
+    callbackObservation.requests++;
+    res.once('finish', () => { callbackObservation[res.statusCode === 200 ? 'ok' : 'refused']++; });
+    res.once('close', () => { if (!res.writableFinished) callbackObservation.closed++; });
+  });
   await new Promise((yes, no) => { callbackServer.once('error', no); callbackServer.listen(join(sourceDir, 'callback.sock'), yes); });
   await run(join(sourceDir, 'switch-callback'), ['node'], 10000, 4096); routed = true;
   const target = registry.resolve(actor, descriptor.site.site_url, undefined, 'content');
@@ -206,7 +225,42 @@ try {
     assert.equal(original.googleSubject, actor.googleSubject); assert.deepEqual(input, queueArgs); return expected;
   } });
   const job = queuedContext.binding.qualification_job_id, completeExpected = { ...expected, queuedContext };
-  const captured = await native('capture', job); assert.equal(captured.ok, true);
+  const captured = await native('capture', job);
+  if (captured.ok !== true) {
+    const state = await native('status', job);
+    assert.equal(state.ok, true);
+    assert.ok(['queued', 'capturing', 'captured', 'failed', 'uncertain'].includes(state.state));
+    for (const key of ['capture_present', 'capture_authenticated', 'retained_state_matches']) assert.equal(typeof state[key], 'boolean');
+    const states = { clear: 0, denied: 0, 'pending-revocation': 0, other: 0 };
+    for (const row of store.db.prepare('SELECT state,count(*) AS n FROM management_access_queries WHERE job=? GROUP BY state').all(job)) {
+      assert.ok(Number.isSafeInteger(row.n) && row.n >= 0 && row.n <= 512);
+      states[Object.hasOwn(states, row.state) ? row.state : 'other'] += row.n;
+    }
+    report.failure = { phase: 'initial-management-capture',
+      workerError: captured.error_code === 'fixture_management_worker_refused' ? captured.error_code : 'REDACTED',
+      nativeState: state.state, capturePresent: state.capture_present,
+      captureAuthenticated: state.capture_authenticated, retainedStateMatches: state.retained_state_matches,
+      callback: callbackObservation, queryStates: states };
+    if (captured.diagnostic) {
+      const value = captured.diagnostic, safe = {};
+      for (const [field, choices] of Object.entries({
+        mode: ['capture'],
+        response_error_code: ['mrn_management_qualification', 'mrn_site_locked', 'mrn_delegation_required', 'mrn_content_access',
+          'rest_ability_cannot_execute', 'rest_ability_invalid_input', 'rest_invalid_param', 'rest_no_route'],
+        management_stage: ['unavailable', 'claim', 'preflight', 'sync', 'native-program', 'native-response', 'native-child',
+          'dataset-schema', 'dataset-plugins', 'dataset-runtime', 'dataset-paths', 'dataset-binding', 'dataset-snapshot',
+          'dataset-identity', 'current-access', 'slice', 'dataset', 'readback', 'artifact', 'retention', 'post-commit'],
+        transport_error: ['none', 'http_request_failed', 'http_request_not_executed'],
+        refusal: ['unavailable', 'key', 'http-status', 'schema', 'deadline', 'content-type', 'content-encoding', 'binding', 'artifact-hash', 'recovery-hash'],
+      })) safe[field] = choices.includes(value[field]) ? value[field] : 'redacted';
+      for (const [field, maximum] of [['http_status', 599], ['elapsed_ms', 125001], ['response_bytes', 5242881]])
+        safe[field] = Number.isSafeInteger(value[field]) && value[field] >= 0 ? Math.min(maximum, value[field]) : 0;
+      for (const field of ['body_decoded', 'schema_valid', 'content_type_valid', 'content_encoding_valid']) safe[field] = value[field] === true;
+      report.failure.workerDiagnostic = safe;
+    }
+    save(); process.stdout.write(JSON.stringify({ source_capture_failure: report.failure }) + '\n');
+  }
+  assert.equal(captured.ok, true);
   const capture = validateManagementCapture(captured.output, completeExpected), artifactHash = capture.capture_artifact_sha256;
   const recovered = await native('read-capture', job, artifactHash); assert.equal(recovered.ok, true);
   assert.equal(delegationDigest(validateManagementCapture(recovered.output, completeExpected)), delegationDigest(capture));

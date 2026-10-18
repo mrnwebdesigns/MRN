@@ -4,7 +4,7 @@
 
 One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebdesigns.com/mcp. Active MRN Google Workspace members get automatic portfolio access; there is no individual approval or enrollment step. Necessary approvals apply to concrete site changes. No teammate WordPress account, Application Password, API key, terminal, Codex, SSH or site token.
 
-## Current delivery state, 2026-10-17
+## Current delivery state, 2026-10-18
 
 - The existing workspace plugin remains the only team connector. Active MRN
   Google accounts need no individual enrollment or personal backend credentials.
@@ -23,11 +23,18 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
   it does not prove the complete gateway/worker source chain.
 - This candidate selects `744f15b` in all four linked provider provenance
   records and requires the new sixth native-source report in combined CI.
-  Local tests and lint pass; the complete native source check is pending.
+  Gateway `4b5b0c4` passes 483 source tests and MRN QA `39081910603`, but
+  combined run `39081910595` failed at its first native management capture,
+  before source bootstrap. The earlier five reports pass and their original
+  archive is retained. The fixed worker returned `ok:false`; its underlying
+  refusal is not yet classified. A possible collision with the preceding test's
+  intentionally retained uncertainty lock remains a hypothesis. No lock is cleared.
 - The combined runtime retains qualified management worker `fb9a16b`, whose
   148 tests, three hosted jobs and original eight-report archives pass.
   Separately, runner `8465b25` adds strict verification of the outer artifact
-  and inner source ZIP; its 153 local tests pass and hosted CI is pending.
+  and inner source ZIP; 153 tests and all three jobs in `39081815246` pass.
+  Both original archives and all eight reports are independently verified,
+  including exact tested tree and recomputed measurement/lifecycle hashes.
 - Live MainWP was last observed connected to `wpcontrol.mrndev.io` with 115
   abilities and provider 0.13.8. The company code policy remains unchanged.
 - Remaining gates: full native source transfer/reconstruction; protected central
@@ -94,8 +101,13 @@ and private source cleanup must finish before the report may say PASS.
 
 The provider API and source export gates now pass at `744f15b`, and combined CI
 requires all seven native source groups plus exact source/limit assertions in a
-sixth retained report. Until that actual run succeeds, the complete native chain
-remains unverified. Earlier provider `a45f33a` and diagnostic `2d8b675` failures
+sixth retained report. The first combined run failed at initial management
+capture before source bootstrap, after the five earlier reports passed. The
+complete native chain remains unverified. The diagnostic candidate saves an
+INCOMPLETE report before work starts, and records only fixed callback counts,
+known error categories, native state booleans and bounded worker metadata on
+failure. It retains no bodies, headers, signatures, credentials or raw messages;
+it does not retry capture, release locks or change any deadline. Earlier provider `a45f33a` and diagnostic `2d8b675` failures
 remain recorded; the exact backend route guard correction passed at `7e91098`.
 The source report explicitly excludes real Google, hosted OIDC/cache provenance,
 rendered QA, admission, remote backups, content writes and ChatGPT acceptance.
