@@ -2,7 +2,7 @@
   "schema": 1,
   "provider": {
     "repository": "mrnwebdesigns/mrn-mainwp-operations-api",
-    "commit": "18bf0d4974e30c3449d900199119e7853cbc5708"
+    "commit": "4929f0d288a924a38a348a6956b5ea02ac7d9414"
   },
   "transport": {
     "repository": "mrnwebdesigns/mainwp-mcp",
@@ -14,6 +14,6 @@
   },
   "managementWorker": {
     "repository": "mrnwebdesigns/mrn-code-qa-runner",
-    "commit": "8465b2540669d2596c7dd154bddf92cd4a866d94"
+    "commit": "cd74e2030c9c090ac287ca5d371165d3c8ccac23"
   }
 }

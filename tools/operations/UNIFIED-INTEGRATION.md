@@ -6,50 +6,57 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
 
 ## Current delivery state, 2026-10-19
 
-- The existing workspace plugin remains the only team connector. Active MRN
-  Google accounts need no individual enrollment or personal backend credentials.
-  Production still provides read-only inspection; team editing is not ready.
-- Accepted gateway checkpoint `ed5dacb` passes all 496 hosted source tests,
-  combined run `39283333559` and MRN QA `39283333346`. All six original reports
-  were independently verified, including seven actual native-source groups,
-  native content edit/public readback/exact rollback, both committed owner
-  cleanup readbacks and the later uncertain capture's original lock/claim.
-  The original artifact `12203650764` has SHA-256
-  `5a71e9894cf17502ba405cdc94bf7ced39e28c6fd6aa8e00f3e1102d0901daf2`.
-  Exact tested runtime/workflow blobs and all pinned dependencies were checked;
-  the whole MRN merge tree also contains unrelated base-branch changes.
-  Completed job logs were retained directly because the aggregated CLI log
-  omitted the native test step; every existing acceptance assertion remains.
-- Provider `6a18afa` isolates the source fixture's local variables from its
-  parent's cleanup list and proves catalog cleanup through committed SQL.
-  All four provider jobs pass in `39266052762`, with identical tested/source
-  trees. The source-before-revocation sequence passes in the combined run.
-  No production authority or lock is reset.
-- All four provider provenance records now select consolidated candidate
-  `18bf0d4`, with all 15 imported inputs unchanged. All four provider jobs pass
-  in `39287071024`; the complete tested merge tree equals source. Both actual
-  report acquisition/retention/readback cases pass 13 checks, including the
-  installed-readback fault case. The original complete native log and all job
-  statuses were independently retained. Current-main field and backup changes
-  are preserved. The gateway's seventh report-custody gate is now enabled and
-  requires a new combined result; the accepted gateway above predates it.
-- Source batches use their frozen twenty-second recovery bound and closed
-  schemas/byte limits; access-veto queries retain their two-second deadline.
-  The successful native transfer above verifies this correction. Errors retain
-  only bounded diagnostic categories and counters, with no automatic retry.
-- Qualified worker `8465b25` passes 153 tests and all three jobs in `39081815246`.
-  Both original archives and eight reports were independently verified. The
-  gateway/worker two-layer ZIP test verifies separate outer GitHub artifact and
-  inner source hashes, exact extraction, reconstruction and cleanup. Its GitHub
-  transport and ownership remain synthetic; hosted cache provenance is open.
-- Live MainWP was last observed connected to `wpcontrol.mrndev.io` with 115
-  abilities and provider 0.13.8. The company code policy remains unchanged.
-- Remaining gates: protected central cache provenance and delivery; rendered
-  QA and retained report admission;
-  concrete production deployment/access approval; workspace refresh; ordinary
-  ChatGPT content edit/readback, code edit/rollback, outsider and revoked-user
-  acceptance. No production source adapter or new credential is activated.
+- The one existing plugin is available to everyone in the MRN ChatGPT workspace.
+  The published directory currently lists 11 tools with four enabled; content
+  and code tools are absent. New tools default to disabled. No individual
+  enrollment or personal backend credentials are required. Team editing is
+  not yet ready.
+- Accepted gateway checkpoint `62a882c` passed 504 tests, combined run
+  `39304368903` and MRN QA `39304368795`. All seven original reports were
+  independently verified, including native content edit/readback/rollback,
+  complete source reconstruction and report custody. The newly selected
+  provider/worker pins require a fresh combined result.
+- Provider `4929f0d` passes all four jobs in `39320662624`; the tested merge
+  tree exactly matches the candidate. The new 46-case native original-selection
+  suite verifies actual SQL/MainWP Child reads, shared requester allowances,
+  revocation races and zero snapshot packets after revocation. Its separate
+  128 MiB worker peaks at 71,827,456 bytes and preserves exact parent authority
+  and allowance state. All later source/control/custody checks pass. The prior
+  failed run remains a failure; no memory or operation deadline was raised.
+  Existing-v2 routes and admission remain unregistered/disabled.
+- Worker `cd74e20` passes 160 tests and all three jobs in `39320436312`. Both
+  original archives and all eight reports were independently verified, with
+  exact edit/restored snapshots and browser/profile/runtime/parity hashes.
+  Explicit v2 source reconstruction shares the bounded byte engine while
+  requiring its own complete binding, fixed contract map and hash domain.
+  Authenticated v2 delivery and protected rendered management QA remain open.
+- Live MainWP was observed at `wpcontrol.mrndev.io` with 115 abilities and
+  provider 0.13.8. The company code pilot remains unchanged. No production,
+  Auth0, Google, workspace-tool or repository-access setting changed.
+- Remaining gates: automatic requester allowance initialization and immutable
+  original-session binding; protected central cache provenance/delivery and
+  full-site rendered QA/report admission; concrete deployment/access approval;
+  refresh of the same workspace plugin; ordinary ChatGPT content edit/readback,
+  qualified code edit/rollback, outsider and revoked-account acceptance.
 
+## Original authorization anchor preparation
+
+`originalAuthorizationAnchor` reads private metadata attached only after the
+existing authenticator verifies the resource JWT and active Google membership.
+It binds a domain-separated hash of the exact verified bearer and its original
+expiry. It retains no bearer, adds no public actor field and rejects cloned or
+caller-created actor objects. A later same-person login gets a different anchor
+and cannot modify the earlier expiry. This is historical binding metadata;
+current principal, Directory, scope and access-veto checks remain mandatory.
+It is not proof that an Auth0 browser session is still active.
+
+The anchor is currently request-local only. The next original-intent adapter
+must persist it with the exact signed preview delegation request ID before
+sending that preview, and then bind only the returned original operation and
+review. It must refuse missing/corrupt local mappings and cannot recreate or
+replace them using a later token, caller hash or MCP session ID. No durable
+session/intent binding, asynchronous v2 dispatch or runtime route is enabled
+by this preparation.
 
 ## Private report transport preparation
 

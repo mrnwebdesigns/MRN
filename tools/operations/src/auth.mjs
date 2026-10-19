@@ -1,7 +1,22 @@
 import { createRemoteJWKSet, jwtVerify } from 'jose';
+import { createHash } from 'node:crypto';
 import { OpsError, requireThat } from './contracts.mjs';
 import { z } from 'zod';
 import { operationsScope, operationsScopes } from './scopes.mjs';
+
+// Only successful JWT + active Google verification may populate this map.
+// Metadata stays outside the public actor/schema and disappears with its actor.
+// A future original-intent ledger must persist it BEFORE preview dispatch;
+// no later actor or supplied session ID can reconstruct that lost intent.
+// This is historical binding metadata, never a substitute for a fresh
+// principal/Directory/current-access check or permission to dispatch.
+const originalAuthorizations = new WeakMap();
+export function originalAuthorizationAnchor(actor) {
+  const value = originalAuthorizations.get(actor);
+  requireThat(value && Number.isSafeInteger(value.expiresAt) && value.expiresAt > Date.now(),
+    'AUTH_REQUIRED', 'The original verified MRN authorization is unavailable or expired.');
+  return value;
+}
 
 export const oauthChallenge = (publicUrl, insufficientScope = false) => `Bearer resource_metadata="${new URL(publicUrl).origin}/.well-known/oauth-protected-resource/mcp", error="${insufficientScope ? 'insufficient_scope' : 'invalid_token'}", error_description="${insufficientScope ? 'Reconnect MRN Website Operations to authorize guarded changes.' : 'Sign in to MRN Website Operations to continue.'}", scope="${insufficientScope ? operationsScopes.join(' ') : operationsScope}"`;
 
@@ -42,6 +57,13 @@ export function createAuthenticator(config, keySet = createRemoteJWKSet(new URL(
       if (config.googleWorkspace) {
         requireThat(typeof verifyStaff === 'function', 'AUTH_REQUIRED', 'Active Google Workspace verification is unavailable.');
         await verifyStaff(actor);
+        if (Number.isSafeInteger(payload.exp) && Number.isSafeInteger(identity.expiresAt) && identity.expiresAt > Date.now()) {
+          // Hash the exact already-verified resource bearer in memory. Never
+          // retain the token or accept a caller-provided token/session hash.
+          originalAuthorizations.set(actor, Object.freeze({ schema: 1,
+            authorizationSha256: createHash('sha256').update('mrn-operations-original-authorization-v1\0').update(header.slice(7)).digest('hex'),
+            expiresAt: identity.expiresAt }));
+        }
       }
       return actor;
     } catch { throw new OpsError('AUTH_REQUIRED', 'The individual access token is invalid, expired or intended for another service.'); }
