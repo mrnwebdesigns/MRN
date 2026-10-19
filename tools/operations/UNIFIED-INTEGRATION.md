@@ -73,6 +73,13 @@ verify both signatures under the intended keys and reject the opposite roles;
 all 494 local gateway tests pass. The successful native report-custody hook is
 still pending, so these controlled signatures do not prove report retention.
 
+Gateway `60e4f65` passes all 493 hosted tests, combined run `39268866792`
+and MRN QA `39268865542` against provider `d44b800`. All six original reports,
+source/cleanup/uncertainty assertions and exact runtime/workflow blobs were
+independently verified. Its native job took 19m39s, so the outer CI job allocation
+is now 25 minutes. Per-request, source-hook, owner, actor and PHP limits remain
+unchanged. The registrar-role correction above is a later candidate.
+
 The following sections retain individual source checkpoints and their limits.
 They are not evidence of production activation or team readiness.
 
