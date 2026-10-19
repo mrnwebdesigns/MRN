@@ -2,7 +2,7 @@
 // rendered, WordPress HTTP and GitHub observations, never production QA.
 import assert from 'node:assert/strict';
 import { createPublicKey, randomBytes, randomUUID, verify } from 'node:crypto';
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { digest } from '../../src/contracts.mjs';
 import { delegationCanonical, delegationDigest } from '../../src/delegation.mjs';
@@ -10,6 +10,7 @@ import { ManagementEvidenceCallback, ManagementEvidenceQueryReader, ManagementEv
 import { managementEvidenceTypes as evidenceTypes, managementEvidenceWire as evidenceWire,
   managementReportTypes as reportTypes, managementReportWire as reportWire } from '../../src/management-evidence-contract.mjs';
 import { createManagementReportTransport } from '../../src/management-report-transport.mjs';
+import { reportFailureDiagnostics } from './report-failure-diagnostics.mjs';
 
 const need = condition => assert.ok(condition, 'Disposable report custody precondition failed; private values withheld');
 const same = (a, b) => need(delegationDigest(a) === delegationDigest(b));
@@ -61,10 +62,11 @@ function githubFixture(packet, original, archives, observations) {
 }
 
 export async function createNativeReportCustody({ source, reportPath, original, identity, registrar, keys, ledger,
-  verifyStaff, connectQuery, connectControl, nativeDispatch, nativePacket }) {
+  verifyStaff, connectQuery, connectControl, nativeDispatch, nativePacket, networkLogPath }) {
   need(process.env.GITHUB_ACTIONS === 'true' && process.env.MRN_DISPOSABLE_SOURCE_TEST === '1'
     && process.env.MRN_DISPOSABLE_REPORT_CUSTODY_TEST === '1');
   need(typeof reportPath === 'string' && resolve(reportPath) === reportPath);
+  need(typeof networkLogPath === 'string' && resolve(networkLogPath) === networkLogPath);
   const report = { schema: 1, result: 'INCOMPLETE', source, scope: 'disposable-native-report-custody', passed: [],
     syntheticObservations: ['rendered_runtime', 'wordpress_http_transcript', 'github_run_and_artifacts'],
     productionCredentials: false, liveGoogleVerified: false, hostedProvenanceVerified: false,
@@ -158,9 +160,21 @@ export async function createNativeReportCustody({ source, reportPath, original, 
       },
       async run() {
         phase('actual-MCP-retain-and-TLS-evidence-callback');
+        const retentionStarted = performance.now();
         let summary;
         try { summary = await transport.retain(packet.retain_input); }
-        catch (error) { failure('retain-response', error); throw error; }
+        catch (error) {
+          // Relative timings diagnose expiry without retaining the signed body,
+          // original identifiers, private context or arbitrary remote messages.
+          const now = Date.now();
+          report.failureTiming = { retentionElapsedMs: Math.round(performance.now() - retentionStarted),
+            originalRemainingMs: original.context.binding.expires_at * 1000 - now,
+            acquisitionAgeMs: acquisition ? now - acquisition.issued_at * 1000 : null,
+            acquisitionRemainingMs: acquisition ? acquisition.expires_at * 1000 - now : null };
+          try { report.providerResponses = reportFailureDiagnostics(readFileSync(networkLogPath, 'utf8')); }
+          catch { report.providerResponses = { available: false, responses: [] }; }
+          failure('retain-response', error); throw error;
+        }
         same(counts, { requests: 1, completed: 1, queryReads: 1 });
         same(observations, ['run', 'inventory', 'qualification', 'acquisition', 'finish']);
         need(summary.qualification_job_id === job && summary.management_context_sha256 === original.context.management_context_sha256

@@ -411,6 +411,7 @@ try {
   if (reportCustodyEnabled) {
     reportCustody = await createNativeReportCustody({ source: lock, reportPath: process.env.MRN_GATEWAY_REPORT_CUSTODY_REPORT,
       original, identity, registrar, keys, ledger, verifyStaff, connectQuery: rawClient, connectControl: sourceClient,
+      networkLogPath: join(work, 'gateway-network.jsonl'),
       nativeDispatch: (id, envelope) => nativeReport('report-dispatch', id, envelope),
       nativePacket: id => nativeReport('report-packet', id) });
     await reportCustody.run();
