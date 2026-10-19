@@ -1,0 +1,133 @@
+{
+  "schema": 2,
+  "qualification_protocol": "content-management-existing-v2",
+  "status": "closed-wire-proposal-unregistered",
+  "production_enabled": false,
+  "consumer_binding_enabled": false,
+  "runtime_registered": false,
+  "paths": {
+    "qualification": "contracts/content-management-existing-qualification-v2.json",
+    "report": "contracts/content-management-existing-report-v2.json",
+    "evidence": "contracts/content-management-existing-evidence-v2.json",
+    "source_transfer": "contracts/content-management-existing-source-transfer-v2.json",
+    "source_context": "contracts/content-management-existing-source-context-v2.json",
+    "wire_registry": "contracts/content-management-existing-wire-v2-proposal.json"
+  },
+  "frozen_inputs_sha256": {
+    "content-management-v1.json": "e164d4bc265096493e6650c0beed42e7d8acbbd013d261a70b63513f591500de",
+    "content-management-qualification-v1.json": "7c0cd9e6f431f47580f9926e8d228728034f20b71d581c8dfb00b32dcb4f4f91",
+    "content-management-report-v1.json": "312b7fb7d7179e419686bed93d51f27adfbbe432c75f1f52db909b4d9f6728e6",
+    "content-management-evidence-v1.json": "6923e15402d99203e297b590145947b6ac1d39552e5cde7bc173e45090a47084",
+    "content-management-source-context-v1.json": "d114207fef098af71299e3c5b5a6b22f3ef36b55115b56efb03bb0d4bcab5418",
+    "content-management-source-transfer-v1.json": "36320f6d2d5dac5523ecc68b0fa463c2fa1246cbf75f81e3209c055aa196f3e9",
+    "content-management-source-api-v1.json": "039b40353aa21602e1a5b9b0f55530baf5edc200935bf2e990e0410297dee0a6",
+    "content-management-report-api-v1.json": "87f1324a03b9dfdec4beb5fe8965f6703622213aca262a104c8948e870802106",
+    "delegation-v1.json": "f88a42a21ad20e2c66b12fe573a88b7e475f68f5cc0d83cc30e61605fbfa526b",
+    "content-current-access-v1.json": "02fa1caca043f61a92a0e7cfe369db4f271dcebcaf2599b6a4422a3a4885d172"
+  },
+  "signature_roles": {
+    "mrn-content-management-existing-qualification-context-v2:": "registrar",
+    "mrn-content-management-existing-qualification-capture-v2:": "registrar",
+    "mrn-content-management-existing-qualification-read-capture-v2:": "registrar",
+    "mrn-content-management-existing-qualification-read-measurements-v2:": "registrar",
+    "mrn-content-management-existing-access-query-readback-v2:": "identity",
+    "mrn-content-management-existing-access-current-access-v2:": "identity",
+    "mrn-content-management-existing-report-retain-v2:": "registrar",
+    "mrn-content-management-existing-report-read-v2:": "registrar",
+    "mrn-content-management-existing-report-qa-report-v2:": "qa",
+    "mrn-content-management-existing-evidence-qa-manifest-v2:": "qa",
+    "mrn-content-management-existing-evidence-acquisition-v2:": "identity",
+    "mrn-content-management-existing-evidence-query-readback-v2:": "registrar",
+    "mrn-content-management-existing-source-catalog-v2:": "root",
+    "mrn-content-management-existing-source-capture-v2:": "registrar",
+    "mrn-content-management-existing-source-status-v2:": "registrar",
+    "mrn-content-management-existing-source-read-v2:": "registrar",
+    "mrn-content-management-existing-source-context-lookup-v2:": "registrar"
+  },
+  "legacy_purposes_denied": [
+    "mrn-content-management-evidence-acquisition-v1:",
+    "mrn-content-management-evidence-manifest-v1:",
+    "mrn-content-management-evidence-query-readback-v1:",
+    "mrn-content-management-qualification-capture-v1:",
+    "mrn-content-management-qualification-context-v1:",
+    "mrn-content-management-qualification-read-capture-v1:",
+    "mrn-content-management-qualification-read-measurements-v1:",
+    "mrn-content-management-qualification-report-v1:",
+    "mrn-content-management-report-read-v1:",
+    "mrn-content-management-report-retain-v1:",
+    "mrn-content-management-source-capture-v1:",
+    "mrn-content-management-source-catalog-v1:",
+    "mrn-content-management-source-context-v1:",
+    "mrn-content-management-source-frame-v1",
+    "mrn-content-management-source-read-v1:",
+    "mrn-content-management-source-status-v1:",
+    "mrn-gateway-management-pending-revocation-v1:",
+    "mrn-mainwp-management-access-query-readback-v1:"
+  ],
+  "versioned_schema_definitions": {
+    "qualification": [
+      "binding",
+      "worker_claims",
+      "veto_claims",
+      "query_readback_claims"
+    ],
+    "report": [
+      "binding",
+      "registrar_claims",
+      "read_claims",
+      "qa_report_claims",
+      "retained_summary"
+    ],
+    "evidence": [
+      "binding",
+      "worker_claims",
+      "manifest_claims",
+      "query_readback_claims",
+      "query",
+      "query_readback_output",
+      "acquisition_claims",
+      "request_context",
+      "acquisition_transcript"
+    ],
+    "source_transfer": [
+      "binding",
+      "source_catalog",
+      "capture_claims",
+      "status_claims",
+      "read_claims",
+      "transfer_manifest",
+      "frame",
+      "slot",
+      "capture_output",
+      "status_output",
+      "read_output"
+    ],
+    "source_context": [
+      "binding",
+      "claims",
+      "output"
+    ]
+  },
+  "source_contracts": {
+    "qualification": "content-management-qualification-v1.json",
+    "report": "content-management-report-v1.json",
+    "evidence": "content-management-evidence-v1.json",
+    "source_transfer": "content-management-source-transfer-v1.json",
+    "source_context": "content-management-source-context-v1.json"
+  },
+  "mandatory_authority_checks": [
+    "exact current MainWP site_id and canonical site_url",
+    "independently canonical child home equality",
+    "current original actor/Directory/owner/policy/source/expiry",
+    "source-selected retained protocol and committed contract map",
+    "URI syntax alone never grants authority"
+  ],
+  "retained_selection": {
+    "source_selected_only": true,
+    "freeze_at_original_creation": true,
+    "cross_version_fallback": false,
+    "cross_version_budget_renewal": false,
+    "caller_paths_or_protocol_selectors": false
+  },
+  "coverage": "Closed qualification/report/evidence/source/context proposal only. Admission, protected producer/rendered QA, runtime dispatch and API registration remain unimplemented; all writes stay blocked."
+}

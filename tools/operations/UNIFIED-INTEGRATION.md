@@ -11,19 +11,24 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
   and code tools are absent. New tools default to disabled. No individual
   enrollment or personal backend credentials are required. Team editing is
   not yet ready.
-- Accepted gateway checkpoint `62a882c` passed 504 tests, combined run
-  `39304368903` and MRN QA `39304368795`. All seven original reports were
+- Accepted gateway checkpoint `d6b101b` passed 508 tests, combined run
+  `39323626552` and MRN QA `39323626632`. All seven original reports were
   independently verified, including native content edit/readback/rollback,
-  complete source reconstruction and report custody. The newly selected
-  provider/worker pins require a fresh combined result.
-- Provider `4929f0d` passes all four jobs in `39320662624`; the tested merge
-  tree exactly matches the candidate. The new 46-case native original-selection
-  suite verifies actual SQL/MainWP Child reads, shared requester allowances,
-  revocation races and zero snapshot packets after revocation. Its separate
-  128 MiB worker peaks at 71,827,456 bytes and preserves exact parent authority
-  and allowance state. All later source/control/custody checks pass. The prior
-  failed run remains a failure; no memory or operation deadline was raised.
-  Existing-v2 routes and admission remain unregistered/disabled.
+  complete source reconstruction and report custody against provider `4929f0d`
+  and worker `cd74e20`. Tested merge `0ce699e5bd6f566e523e7198daea5d1662ede7d2`
+  has identical relevant source/workflow blobs. The subsequent original-preview
+  ledger and shared permission-history fix `1d8bca5` passes 526 tests and MRN QA
+  `39326254417`; its combined run `39326254460` is still pending.
+- Candidate provider `5905258` passes all four jobs in `39325764872`, with
+  exact tested merge tree `638b5dd43a98bdb1018521a65e8c59698ef58dc6` and
+  independently retained original log. Its 38 new native authorization checks
+  prove actual SQL, independent readback, two simultaneous bind processes with
+  one winner, recovery after transport expiry, and unchanged Child/allowance
+  state. The prior 46 original-selection and three 128 MiB isolation checks
+  also pass. Runtime bytes are unchanged from `f2262cf`; its earlier failed
+  fixture run `39324850558` remains recorded. The failure did not recur; a
+  root-cause fix is not claimed. The gateway now pins this provider for its
+  next combined run. Existing-v2 routes and admission remain disabled.
 - Worker `cd74e20` passes 160 tests and all three jobs in `39320436312`. Both
   original archives and all eight reports were independently verified, with
   exact edit/restored snapshots and browser/profile/runtime/parity hashes.
@@ -33,8 +38,8 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
 - Live MainWP was observed at `wpcontrol.mrndev.io` with 115 abilities and
   provider 0.13.8. The company code pilot remains unchanged. No production,
   Auth0, Google, workspace-tool or repository-access setting changed.
-- Remaining gates: automatic requester allowance initialization and immutable
-  original-session binding; protected central cache provenance/delivery and
+- Remaining gates: automatic requester allowance initialization and complete
+  provider-bound original authorization; protected central cache provenance/delivery and
   full-site rendered QA/report admission; concrete deployment/access approval;
   refresh of the same workspace plugin; ordinary ChatGPT content edit/readback,
   qualified code edit/rollback, outsider and revoked-account acceptance.
@@ -83,6 +88,26 @@ helper does not select or qualify the provider's new lifetime domain. Exact
 v2 transport/response admission, provider binding, automatic first-use state
 and asynchronous producer integration remain required. No new runtime route,
 workspace tool, Auth0 session introspection or production write is enabled.
+
+## Existing-record v2 gateway preparation
+
+The gateway imports all six frozen v2 contracts, their unchanged legacy inputs
+and synthetic provider vectors from accepted source `e2413f0`. Fixed hashes,
+closed schemas and distinct purposes preserve v1 behavior. The private parser
+compiles 155 metadata definitions; the complete 20,000-file transfer manifest
+remains with the runner's bounded reconstruction and does not expand gateway
+message limits. Seventeen fixture signatures verify only their intended v2
+purpose and one of the existing four roles. Schema/signature fixtures do not
+prove native relations, hosted provenance or current access.
+
+`validateExistingSourceBatch` uses an explicit v2 entry point and the shared
+bounded frame checker. It binds the exact retained original and context hash,
+complete signed-input digest, immutable slot, frame order/count, bytes and
+checksums. Legacy packets, relabeled packets, changed originals and damaged
+frames fail. This parser issues no signature, reconstructs no missing mapping
+and registers no route. Authenticated v2 recipient/cache delivery, provider
+source capture, complete worker reconstruction and report admission must still
+be connected and qualified before activation.
 
 ## Private report transport preparation
 

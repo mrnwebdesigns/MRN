@@ -3,6 +3,7 @@ import { createCipheriv, createPublicKey, diffieHellman, generateKeyPairSync, hk
 import { digest, requireThat } from './contracts.mjs';
 import { delegationCanonical, delegationDigest } from './delegation.mjs';
 import { compileManagementEvidenceSchema } from './content-management-schema.mjs';
+import { existingManagementTypes, existingManagementWires, validateExistingManagementBinding } from './management-existing-contracts.mjs';
 
 const check = value => requireThat(value, 'MANAGEMENT_SOURCE_TRANSFER', 'The private source transfer is invalid or changed.');
 const bytes = readFileSync(new URL('../contracts/content-management-source-transfer-v1.json', import.meta.url));
@@ -26,12 +27,29 @@ export function sourceRecipientKey(encoded) {
   return key;
 }
 export function validateSourceBatch(input, context, slot, request, signedInput) {
-  const value = parseSource('read_output', input); parseSource('read_claims', request);
-  const originalInput = parseSource('read_input', signedInput);
+  return validateBatch(input, context, slot, request, signedInput, parseSource, managementSourceWire);
+}
+
+// Separate private v2 byte validator. Its expected binding comes from retained
+// original state, never a caller-selected version or translated v1 response.
+// This verifies packet consistency only; signer/transport/current-access and
+// complete runner reconstruction remain mandatory before any source admission.
+export function validateExistingSourceBatch(input, context, slot, request, signedInput, retainedOriginal) {
+  const types = existingManagementTypes.source_transfer;
+  const parse = (name, value) => { const result = types[name].safeParse(value); check(result.success); return result.data; };
+  const expected = parse('source_context', context);
+  validateExistingManagementBinding(expected.management.binding, retainedOriginal);
+  check(expected.management.management_context_sha256 === delegationDigest(expected.management.binding));
+  return validateBatch(input, expected, parse('slot', slot), request, signedInput, parse, existingManagementWires.source_transfer);
+}
+
+function validateBatch(input, context, slot, request, signedInput, parse, wire) {
+  const value = parse('read_output', input); parse('read_claims', request);
+  const originalInput = parse('read_input', signedInput);
   const encoded = originalInput.signed_request.payload_base64, bytes = Buffer.from(encoded, 'base64');
   // The frozen provider vector binds the entire canonical signed input, not
   // decoded claims. The exact sent envelope and its claims must both match.
-  check(bytes.length <= managementSourceWire.limits.registrar_decoded_bytes && bytes.toString('base64') === encoded
+  check(bytes.length <= wire.limits.registrar_decoded_bytes && bytes.toString('base64') === encoded
     && bytes.equals(Buffer.from(delegationCanonical(request))));
   check(delegationDigest(value.context) === delegationDigest(context) && delegationDigest(value.slot) === delegationDigest(slot)
     && value.request_sha256 === delegationDigest(originalInput) && value.batch_index === request.batch_index
@@ -52,7 +70,7 @@ export function validateSourceBatch(input, context, slot, request, signedInput) 
         && (!manifest || frame.bytes === Math.min(32768, slot.manifest_bytes - index * 32768)));
     } finally { decoded.fill(0); }
   }
-  check(Buffer.byteLength(delegationCanonical(value)) <= managementSourceWire.limits.private_response_bytes);
+  check(Buffer.byteLength(delegationCanonical(value)) <= wire.limits.private_response_bytes);
   return value;
 }
 
