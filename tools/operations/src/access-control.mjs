@@ -85,7 +85,9 @@ export function createAccessControl({ contract, compile, readbackTool }) {
 
 // Own a warmed, separate MCP control connection. Never reuse the session whose
 // synchronous capture is waiting for this callback, or delegate a fresh actor.
-export function createPrivateQueryReader(readbackTool) {
+export function createPrivateQueryReader(readbackTool, { readOnlyHint = false, idempotentHint } = {}) {
+  requireThat(typeof readOnlyHint === 'boolean' && (idempotentHint === undefined || typeof idempotentHint === 'boolean'),
+    'ACCESS_TRANSPORT', 'Private capability annotations must be selected by source.');
   return class PrivateQueryReader {
     constructor(client) { this.client = client; this.ready = false; }
     async initialize() {
@@ -103,8 +105,9 @@ export function createPrivateQueryReader(readbackTool) {
         requireThat(!cursor || (typeof cursor === 'string' && !cursors.has(cursor) && cursors.size < 32), 'ACCESS_TRANSPORT', 'Repeated or excessive private capability pages.');
         if (cursor) cursors.add(cursor);
       } while (cursor);
-      requireThat(found?.annotations?.readOnlyHint === false && found.annotations.destructiveHint === false,
-        'ACCESS_TRANSPORT', 'Private readback requires the canonical POST-only provider route.');
+      requireThat(found?.annotations?.readOnlyHint === readOnlyHint && found.annotations.destructiveHint === false
+        && (idempotentHint === undefined || found.annotations.idempotentHint === idempotentHint),
+      'ACCESS_TRANSPORT', 'Private control requires the exact canonical provider capability.');
       this.ready = true;
     }
     async read(envelope) {

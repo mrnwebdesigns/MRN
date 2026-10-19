@@ -44,6 +44,21 @@ Use already-authorized test identities or separately reviewed administrative tes
 
 ## Latest disposable evidence, 2026-10-19
 
+Gateway `1d8bca5` is the latest independently accepted combined checkpoint:
+[CI 39326254460](https://github.com/mrnwebdesigns/MRN/actions/runs/39326254460)
+and [MRN QA 39326254417](https://github.com/mrnwebdesigns/MRN/actions/runs/39326254417)
+pass. All seven original reports and relevant tested source/workflow/Fleet blobs
+match committed source, including actual TLS/MCP report custody, native content
+edit/readback/exact rollback, original revocation denial and source reconstruction.
+Artifact `12224250460` is 10147 bytes, SHA-256
+`04bcaa467bdb4f4c83335d6c2c9e8d9008f44793a6216852492fc28049217afd`.
+The synthetic identity, remote-backup, hosted-provenance and rendered-QA limits
+remain explicit. Later gateway/source contracts and provider authorization work
+do not change any live acceptance row above. Current implementation details and
+pending qualification are maintained in `UNIFIED-INTEGRATION.md`.
+
+## Earlier disposable checkpoints
+
 Gateway `ed5dacb` with provider `d44b800`, MCP `3249bde`, legacy runner `d9f2eba`
 and management worker `8465b25` passes all 496 hosted tests,
 [combined CI 39283333559](https://github.com/mrnwebdesigns/MRN/actions/runs/39283333559)
@@ -65,8 +80,6 @@ gateway provenance records now select it, and the seventh report-custody gate
 is enabled for a new combined run. That gateway result, hosted cache provenance,
 protected rendered QA and report admission remain open.
 Every ordinary-member and live-denial row above remains unverified.
-
-## Earlier disposable checkpoints
 
 Gateway `f13ec5d` with provider `b18592d`, MCP `3249bde` and runner `d9f2eba`
 passes [combined CI 38906299558](https://github.com/mrnwebdesigns/MRN/actions/runs/38906299558)

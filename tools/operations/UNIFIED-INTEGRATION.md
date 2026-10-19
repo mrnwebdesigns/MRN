@@ -108,6 +108,22 @@ asynchronous producer integration still need composition and qualification.
 There is no workspace tool, admission, Auth0 session introspection or production
 write activation in this source slice.
 
+The private `OriginalAuthorizationTransport` uses the exact dispatch schema and
+golden vectors from provider contract-only commit `d55bf64`. It discovers only
+the canonical readiness/bind/read capabilities with their correct annotations
+on the expected Dashboard. Readiness has a five-second call limit, thirty-second
+freshness and exact source/policy/contract checks. Disabled or blocked readiness,
+including a valid but owner-disabled coherence epoch, cannot dispatch a control.
+Each control consumes a genuine in-process readiness observation once, enforces
+the twenty-second call limit and original claim ceiling, and compares the exact
+returned original projection. Lost or altered responses never trigger a retry.
+
+The 549 local tests, lint and focused legacy regressions pass. These source tests
+do not prove an available provider endpoint. The next composition must retain
+the original readiness epoch before preview and the immutable provider binding
+after successful bind/read, then qualify the complete flow over actual MCP.
+Neither this transport nor its optional lifecycle is registered at startup.
+
 ## Existing-record v2 gateway preparation
 
 The gateway imports all six frozen v2 contracts, their unchanged legacy inputs
