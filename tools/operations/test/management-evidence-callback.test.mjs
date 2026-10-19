@@ -82,6 +82,39 @@ test('authenticated evidence callback signs exact independent run and original Z
   await assert.rejects(f.call); assert.equal(f.calls.filter(x => x === 'grant').length, 1);
 });
 
+test('a final staff check crossing a second keeps acquisition issuance within its observed interval', async t => {
+  const f = fixture(t), acquire = f.handler.github.managementEvidence;
+  f.handler.github.managementEvidence = async (...args) => {
+    const api = await acquire(...args), finish = api.finish;
+    api.finish = async () => {
+      const timing = await finish();
+      f.state.duringStaff = () => { f.state.now += 1000; f.state.duringStaff = undefined; };
+      return timing;
+    };
+    return api;
+  };
+  const result = await f.call(), claims = JSON.parse(Buffer.from(result.signed_acquisition.payload_base64, 'base64'));
+  assert.ok(claims.started_at <= claims.issued_at && claims.issued_at <= claims.completed_at);
+  assert.ok(claims.completed_at < f.query.expires_at && claims.expires_at <= f.query.expires_at);
+  assert.equal(claims.issued_at, Math.floor(f.state.now / 1000), 'Do not backdate issuance to the download timestamp');
+  assert.equal(claims.issued_at, claims.completed_at);
+  assert.equal(claims.expires_at, claims.issued_at + 5, 'The existing signature lifetime is unchanged');
+  assert.ok(claims.qualification_artifact.download_completed_at < claims.completed_at);
+  assert.equal(f.calls.filter(value => value === 'grant').length, 1);
+  await assert.rejects(f.call);
+});
+
+test('final acquisition signing refuses future completion or an overlong original interval without retry', async t => {
+  for (const mutate of [observation => { observation.completed_at++; }, observation => { observation.started_at -= 61; }]) {
+    const f = fixture(t), sign = f.signer.acquisition.bind(f.signer);
+    f.signer.acquisition = (lease, original, observation) => { mutate(observation); return sign(lease, original, observation); };
+    await assert.rejects(f.call, { code: 'MANAGEMENT_EVIDENCE_CALLBACK' });
+    assert.equal(f.store.db.prepare('SELECT state FROM management_evidence_acquisitions').get().state, 'acquiring');
+    await assert.rejects(f.call);
+    assert.equal(f.calls.filter(value => value === 'grant').length, 1);
+  }
+});
+
 test('evidence reader requires the exact canonical MainWP POST ability, connected expected Dashboard and no fallback', async t => {
   for (const mutate of [f => { f.status.connected = false; }, f => { f.status.dashboardHost = 'foreign.example'; },
     f => { f.tool.name = 'mrn_mainwp__read_management_access_veto_query_v1'; }, f => { f.tool.annotations.readOnlyHint = true; },

@@ -36,12 +36,19 @@ export class ManagementEvidenceSigner {
     return { claims, envelope: this.envelope(claims, wire.purposes.query_readback) };
   }
   acquisition(lease, original, observation) {
-    const claims = parse(types.acquisition_claims, { ...this.base(Math.min(lease.query.expires_at, Math.floor(original.record.originalExpiresAt / 1000))),
+    // Signing completes the acquisition after the final current-staff check.
+    // Use one actual instant for issuance/completion; retain each download's
+    // original timestamps and the original query/intent and five-second TTL.
+    const window = this.base(Math.min(lease.query.expires_at, Math.floor(original.record.originalExpiresAt / 1000)));
+    check(observation.started_at <= observation.completed_at && observation.completed_at <= window.issued_at
+      && window.issued_at - observation.started_at <= wire.limits.acquisition_seconds,
+    'The complete evidence observation exceeds its original acquisition interval.');
+    const claims = parse(types.acquisition_claims, { ...window,
       action: 'observe-management-evidence-acquisition', query_id: lease.query.query_id,
       provider_query_nonce: lease.query.provider_query_nonce, query_sha256: lease.queryDigest,
       context_sha256: delegationDigest(original.context), recorded_dispatch: original.provenance,
       observed_run: observation.observed_run, qualification_artifact: observation.qualification_artifact,
-      acquisition_artifact: observation.acquisition_artifact, started_at: observation.started_at, completed_at: observation.completed_at });
+      acquisition_artifact: observation.acquisition_artifact, started_at: observation.started_at, completed_at: window.issued_at });
     const response = parse(types.acquisition_response, { signed_acquisition: this.envelope(claims, wire.purposes.acquisition),
       qualification_zip_base64: observation.qualification_zip.toString('base64'), acquisition_zip_base64: observation.acquisition_zip.toString('base64') });
     check(Buffer.byteLength(JSON.stringify(response)) <= wire.limits.http_response_bytes
