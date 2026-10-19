@@ -25,13 +25,14 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
   All four provider jobs pass in `39266052762`, with identical tested/source
   trees. The source-before-revocation sequence passes in the combined run.
   No production authority or lock is reset.
-- All four provider provenance records now select report-API candidate
-  `d44b800`, with all 15 imported inputs unchanged. All four provider jobs pass
-  in `39266689832`; tested merge tree equals source. Actual HTTP rejects
-  anonymous/wrong-purpose requests on all three private report abilities, and
-  65 native store checks plus 26 seeded recovery checks pass. Seeded storage
-  does not prove successful acquisition or raw evidence retention. Combined
-  gateway adoption of this provider passes at the checkpoint above.
+- All four provider provenance records now select consolidated candidate
+  `18bf0d4`, with all 15 imported inputs unchanged. All four provider jobs pass
+  in `39287071024`; the complete tested merge tree equals source. Both actual
+  report acquisition/retention/readback cases pass 13 checks, including the
+  installed-readback fault case. The original complete native log and all job
+  statuses were independently retained. Current-main field and backup changes
+  are preserved. The gateway's seventh report-custody gate is now enabled and
+  requires a new combined result; the accepted gateway above predates it.
 - Source batches use their frozen twenty-second recovery bound and closed
   schemas/byte limits; access-veto queries retain their two-second deadline.
   The successful native transfer above verifies this correction. Errors retain
@@ -80,21 +81,25 @@ Gateway `daa9f2f` qualifies the registrar-role correction against provider
 successful native run took 19m39s. Per-request, source-hook, owner, actor and PHP
 limits remain unchanged.
 
-The seventh report-custody gate is prepared behind the isolated CI-only switch
-`MRN_DISPOSABLE_REPORT_CUSTODY_TEST=0`. It preserves the original signed service
+The seventh report-custody gate is enabled by the isolated CI-only switch
+`MRN_DISPOSABLE_REPORT_CUSTODY_TEST=1`. It preserves the original signed service
 dispatch, calls actual private MCP retain/read routes over separate connections,
 verifies the Node TLS callback and role-separated signatures, compares both
 archive hashes, and checks acquisition replay and fresh revoked-read denial.
 Its GitHub, rendered-runtime and WordPress-HTTP observations are explicitly
-synthetic. The existing seven source groups remain mandatory. The new gate is
-disabled pending an independently qualified provider fixture. Provider `73a509f`
+synthetic. The existing seven source groups remain mandatory. Provider `73a509f`
 fixes absent archive/relations bootstrap imports and passes both native retention
 cases (13 checks each), but its full native run `39284549982` reached the outer
 15-minute CI limit. Consolidated candidate `18bf0d4` preserves current-main
-backup/field work and changes only that outer allocation to 25 minutes; run
-`39287071024` remains pending. No operation deadline or retry rule changed.
-The provider pin remains `d44b800`; the prepared gate does not prove successful
-retention, hosted provenance, QA admission or team acceptance.
+backup/field work and changes only that outer allocation to 25 minutes. Its run
+`39287071024` passes all four jobs, including both native retention cases and
+the final source/export/cleanup probes. Exact tested source tree
+`92697ca0b94c46bbedbad68a607258c988ba8f9e` matches the candidate; the original
+native log has SHA-256
+`49fc5b6a68fa8d49bab95696383c39824835c5365468ab986bf18721bfa31362`.
+No operation deadline or retry rule changed. The provider pin is now `18bf0d4`;
+actual gateway custody still requires its own combined run. Provider success
+does not prove hosted provenance, QA admission or team acceptance.
 
 Two additional gateway regressions preserve the exact signed request when a
 core-only edit omits `acf_patches` or an ACF-only edit omits `changes`. Both

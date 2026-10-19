@@ -123,8 +123,8 @@ jobs:
           MRN_DISPOSABLE_SYNC_AUTH_DIAGNOSTICS: '1'
           MRN_DISPOSABLE_MANAGEMENT_TEST: '1'
           MRN_DISPOSABLE_SOURCE_TEST: '1'
-          # Prepared gate; enable only with an independently qualified custody provider.
-          MRN_DISPOSABLE_REPORT_CUSTODY_TEST: '0'
+          # Qualified provider; actual gateway custody remains a required CI gate.
+          MRN_DISPOSABLE_REPORT_CUSTODY_TEST: '1'
           MRN_DISPOSABLE_NATIVE_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/native-hook.sh
           MRN_DISPOSABLE_ACCESS_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/access-hook.sh
           MRN_DISPOSABLE_SOURCE_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/source-hook.sh

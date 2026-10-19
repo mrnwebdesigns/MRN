@@ -57,8 +57,13 @@ This includes the disposable content edit, public readback and exact rollback,
 ten delegated identity checks, seven actual source groups, twelve worker context
 groups, source-owner cleanup and retention of the later uncertain capture lock.
 The fixture uses synthetic OAuth, Directory, QA and backup authorities.
-The new report-custody gate remains disabled pending provider qualification;
-hosted cache provenance, protected rendered QA and report admission remain open.
+Consolidated provider `18bf0d4` now independently passes all four jobs in
+[provider CI 39287071024](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/39287071024),
+including both native report-retention cases with 13 checks each. Its tested
+merge tree equals source and preserves current-main field/backup work. All four
+gateway provenance records now select it, and the seventh report-custody gate
+is enabled for a new combined run. That gateway result, hosted cache provenance,
+protected rendered QA and report admission remain open.
 Every ordinary-member and live-denial row above remains unverified.
 
 ## Earlier disposable checkpoints
