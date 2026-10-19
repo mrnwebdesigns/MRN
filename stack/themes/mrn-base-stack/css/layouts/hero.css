@@ -43,15 +43,15 @@
 	gap: clamp(2rem, 4vw, 4rem);
 	grid-template-columns: minmax(0, 1fr);
 	margin: 0 auto;
-	max-width: min(78rem, calc(100% - (2 * var(--mrn-shell-gutter))));
+	max-width: min(78rem, calc(100% - (2 * var(--mrn-hero-inner-gutter, var(--mrn-shell-gutter)))));
 	position: relative;
 	z-index: 1;
 }
 
 .mrn-hero__content--hero-shell {
 	display: grid;
-	gap: 1rem;
-	max-width: 40rem;
+	gap: var(--mrn-hero-content-gap, 1rem);
+	max-width: var(--mrn-hero-content-width, 40rem);
 }
 
 .mrn-hero__label {
@@ -63,13 +63,13 @@
 }
 
 .mrn-hero__heading {
-	margin: 0;
-	max-width: 14ch;
+	margin: 0 0 var(--mrn-hero-heading-space-after, 0);
+	max-width: var(--mrn-hero-heading-width, 14ch);
 }
 
 .mrn-hero__text {
 	font-size: clamp(1rem, 1.2vw, 1.125rem);
-	max-width: 60ch;
+	max-width: var(--mrn-hero-text-width, 60ch);
 }
 
 .mrn-hero__text > :last-child {
@@ -80,8 +80,8 @@
 	align-items: flex-start;
 	display: flex;
 	flex-wrap: wrap;
-	gap: 0.75rem;
-	margin-top: 0.5rem;
+	gap: var(--mrn-hero-actions-row-gap, 0.75rem) var(--mrn-hero-actions-column-gap, 0.75rem);
+	margin-top: var(--mrn-hero-actions-space-before, 0.5rem);
 }
 
 .mrn-hero--content-align-center .mrn-hero__content--hero-shell {
@@ -132,8 +132,8 @@
 
 .mrn-hero--width-content .mrn-hero__inner {
 	max-width: min(
-		calc(var(--mrn-shell-content-width) + (2 * var(--mrn-shell-gutter))),
-		calc(100% - (2 * var(--mrn-shell-gutter)))
+		calc(var(--mrn-shell-content-width) + (2 * var(--mrn-hero-inner-gutter, var(--mrn-shell-gutter)))),
+		calc(100% - (2 * var(--mrn-hero-inner-gutter, var(--mrn-shell-gutter))))
 	);
 }
 
@@ -146,14 +146,30 @@
 		grid-template-columns: 1fr;
 	}
 
-	.mrn-hero__content--hero-shell,
-	.mrn-hero__media--hero-shell,
-	.mrn-hero__text,
-	.mrn-hero__heading {
-		max-width: none;
-	}
+	.mrn-hero__content--hero-shell { max-width: var(--mrn-hero-content-width-mobile, none); }
+	.mrn-hero__heading { max-width: var(--mrn-hero-heading-width-mobile, none); }
+	.mrn-hero__text { max-width: var(--mrn-hero-text-width, none); }
+	.mrn-hero__media--hero-shell { max-width: none; }
 
 	.mrn-hero__media--hero-shell {
 		justify-self: stretch;
 	}
+}
+
+/* Opt-in typography controls also apply to paragraphs with global type rules. */
+.mrn-hero.has-hero-text-size .mrn-hero__text,
+.mrn-hero.has-hero-text-size .mrn-hero__text p { font-size: var(--mrn-hero-text-size); }
+.mrn-hero.has-hero-text-line-height .mrn-hero__text,
+.mrn-hero.has-hero-text-line-height .mrn-hero__text p { line-height: var(--mrn-hero-text-line-height); }
+.mrn-hero.has-hero-text-color .mrn-hero__text p { color: var(--mrn-hero-text-color); }
+.mrn-hero.has-hero-paragraph-space-after .mrn-hero__text p { margin-bottom: var(--mrn-hero-paragraph-space-after); }
+.mrn-hero.has-hero-action-icon-height .mrn-hero__link-wrap .mrn-ui__link-icon-image { height: var(--mrn-hero-action-icon-height); }
+@media (max-width: 767px) {
+ .mrn-hero__inner { max-width: min(78rem, calc(100% - (2 * var(--mrn-hero-inner-gutter-mobile, var(--mrn-hero-inner-gutter, var(--mrn-shell-gutter)))))); }
+ .mrn-hero--width-content .mrn-hero__inner { max-width: min(calc(var(--mrn-shell-content-width) + (2 * var(--mrn-hero-inner-gutter-mobile, var(--mrn-hero-inner-gutter, var(--mrn-shell-gutter))))), calc(100% - (2 * var(--mrn-hero-inner-gutter-mobile, var(--mrn-hero-inner-gutter, var(--mrn-shell-gutter)))))); }
+ .mrn-hero__heading { margin-bottom: var(--mrn-hero-heading-space-after-mobile, var(--mrn-hero-heading-space-after, 0)); }
+ .mrn-hero.has-hero-text-size-mobile .mrn-hero__text,
+ .mrn-hero.has-hero-text-size-mobile .mrn-hero__text p { font-size: var(--mrn-hero-text-size-mobile); }
+ .mrn-hero.has-hero-text-line-height-mobile .mrn-hero__text,
+ .mrn-hero.has-hero-text-line-height-mobile .mrn-hero__text p { line-height: var(--mrn-hero-text-line-height-mobile); }
 }

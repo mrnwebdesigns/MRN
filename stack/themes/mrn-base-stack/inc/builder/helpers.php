@@ -1400,6 +1400,7 @@ function mrn_base_stack_apply_hero_spacing_tab_contract( array $fields, $layout_
 	$remaining_fields    = array();
 	$has_hero_sizing     = false;
 	$tab_key_seed        = 'field_mrn_hero_' . $layout_name . '_spacing';
+	$frame_names = 'basic_block' === $layout_name ? array_column( mrn_base_stack_get_hero_frame_fields(), 'name' ) : array();
 
 	foreach ( $fields as $field ) {
 		if ( ! is_array( $field ) ) {
@@ -1420,7 +1421,7 @@ function mrn_base_stack_apply_hero_spacing_tab_contract( array $fields, $layout_
 			continue;
 		}
 
-		if ( in_array( $field_name, array( 'hero_min_height', 'hero_vertical_padding' ), true ) ) {
+		if ( in_array( $field_name, array( 'hero_min_height', 'hero_vertical_padding' ), true ) || in_array( $field_name, $frame_names, true ) ) {
 			$hero_spacing_fields[] = $field;
 			$has_hero_sizing       = true;
 			continue;
@@ -1487,6 +1488,12 @@ function mrn_base_stack_add_hero_sizing_fields_to_layout( array $layout ) {
 
 	if ( ! isset( $layout['sub_fields'] ) || ! is_array( $layout['sub_fields'] ) ) {
 		$layout['sub_fields'] = array();
+	}
+	if ( 'basic_block' === $layout_name ) {
+		$existing_names = array_column( $layout['sub_fields'], 'name' );
+		foreach ( mrn_base_stack_get_hero_frame_fields() as $field ) {
+			if ( ! in_array( $field['name'], $existing_names, true ) ) { $layout['sub_fields'][] = $field; }
+		}
 	}
 
 	foreach ( $layout['sub_fields'] as $field ) {

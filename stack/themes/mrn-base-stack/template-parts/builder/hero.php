@@ -114,6 +114,10 @@ $section_classes = array(
 );
 $section_styles  = array();
 $section_attrs   = array();
+$frame_contract = mrn_base_stack_get_hero_frame_contract( $row );
+$section_styles = array_merge( $section_styles, $frame_contract['styles'] );
+$section_classes = array_merge( $section_classes, $frame_contract['classes'] );
+$heading_style = implode( ';', $frame_contract['heading_styles'] );
 
 if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' ) ) {
 	$section_styles[] = '--mrn-hero-bg: var(' . mrn_site_colors_get_css_var( $background_color ) . ')';
@@ -244,11 +248,11 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 			<?php endif; ?>
 
 			<?php if ( '' !== $page_title ) : ?>
-				<h1 class="mrn-hero__heading mrn-hero__page-title"><?php echo 'custom_title' === ( $heading_contract['mode'] ?? '' ) ? mrn_base_stack_get_rotating_heading_markup( $row, $page_title ) : mrn_base_stack_format_heading_inline_html( $page_title ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped shared heading helpers. ?></h1>
+				<h1 class="mrn-hero__heading mrn-hero__page-title"<?php echo '' !== $heading_style ? ' style="' . esc_attr( $heading_style ) . '"' : ''; ?>><?php echo 'custom_title' === ( $heading_contract['mode'] ?? '' ) ? mrn_base_stack_get_rotating_heading_markup( $row, $page_title ) : mrn_base_stack_format_heading_inline_html( $page_title ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped shared heading helpers. ?></h1>
 			<?php endif; ?>
 
 			<?php if ( '' !== $heading ) : ?>
-				<<?php echo esc_html( $heading_tag ); ?> class="mrn-hero__heading mrn-hero__heading--custom"><?php echo mrn_base_stack_get_rotating_heading_markup( $row, $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped by the shared presentation helper. ?></<?php echo esc_html( $heading_tag ); ?>>
+				<<?php echo esc_html( $heading_tag ); ?> class="mrn-hero__heading mrn-hero__heading--custom"<?php echo '' !== $heading_style ? ' style="' . esc_attr( $heading_style ) . '"' : ''; ?>><?php echo mrn_base_stack_get_rotating_heading_markup( $row, $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped by the shared presentation helper. ?></<?php echo esc_html( $heading_tag ); ?>>
 			<?php endif; ?>
 
 			<?php if ( '' !== $subheading ) : ?>
