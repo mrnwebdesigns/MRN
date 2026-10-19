@@ -29,6 +29,8 @@ function mrn_base_stack_get_hero_frame_fields() {
 		'text_line_height' => 'Body Line Height',
 		'text_line_height_mobile' => 'Small-Screen Body Line Height',
 		'paragraph_space_after' => 'Space After Body Paragraphs',
+		'body_h2_space_before' => 'Space Before Body H2 Headings',
+		'body_h2_space_after' => 'Space After Body H2 Headings',
 	);
 	$fields = array();
 	foreach ( $labels as $suffix => $label ) {
@@ -36,9 +38,23 @@ function mrn_base_stack_get_hero_frame_fields() {
 			'key' => 'field_mrn_hero_basic_block_frame_' . $suffix,
 			'name' => 'hero_' . $suffix, 'label' => $label, 'type' => 'text',
 			'default_value' => '', 'wrapper' => array( 'width' => '50' ),
-			'instructions' => 'Optional; blank retains existing formatting. Use a non-negative CSS length or clamp(minimum, preferred, maximum). Widths accept none; line heights accept unitless numbers. Small-screen widths apply at 960px, heading spacing at 767px.',
+			'instructions' => 'Optional; blank retains existing formatting. Use a non-negative CSS length or clamp(minimum, preferred, maximum). Widths accept none; line heights accept unitless numbers. Small-screen widths apply at 960px, heading spacing at 767px. The gutter has its own breakpoint selector.',
 		);
 	}
+	$fields[] = array(
+		'key' => 'field_mrn_hero_basic_block_frame_inner_gutter_mobile_breakpoint',
+		'name' => 'hero_inner_gutter_mobile_breakpoint', 'label' => 'Small-Screen Gutter Breakpoint', 'type' => 'select',
+		'choices' => array( '' => 'Use Existing Breakpoint (767px)', '767' => '767px', '960' => '960px', '1199' => '1199px' ),
+		'default_value' => '', 'wrapper' => array( 'width' => '50' ),
+		'instructions' => 'The smaller gutter applies at and below this viewport width. Content-width and typography breakpoints remain independent.',
+	);
+	$fields[] = array(
+		'key' => 'field_mrn_hero_basic_block_frame_body_h2_style',
+		'name' => 'hero_body_h2_style', 'label' => 'Body H2 Typography', 'type' => 'select',
+		'choices' => array( '' => 'Use Existing H2 Typography', 'h3' => 'Use H3 Typography' ),
+		'default_value' => '', 'wrapper' => array( 'width' => '50' ),
+		'instructions' => 'Keep semantic H2 headings while choosing the existing H3 type scale. This does not change heading levels or other headings.',
+	);
 	$fields[] = array(
 		'key' => 'field_mrn_hero_basic_block_frame_heading_weight',
 		'name' => 'hero_heading_weight', 'label' => 'Heading Font Weight', 'type' => 'select',
@@ -77,13 +93,19 @@ function mrn_base_stack_validate_hero_frame_dimension( $raw, $allow_none = false
 function mrn_base_stack_get_hero_frame_contract( array $row ) {
 	$result = array( 'styles' => array(), 'heading_styles' => array(), 'classes' => array() );
 	$widths = array( 'content_width', 'content_width_mobile', 'heading_width', 'heading_width_mobile', 'text_width' );
-	foreach ( array_merge( $widths, array( 'inner_gutter', 'inner_gutter_mobile', 'content_gap', 'heading_space_after', 'heading_space_after_mobile', 'actions_space_before', 'actions_row_gap', 'actions_column_gap', 'action_icon_height' ) ) as $name ) {
+	foreach ( array_merge( $widths, array( 'inner_gutter', 'inner_gutter_mobile', 'content_gap', 'heading_space_after', 'heading_space_after_mobile', 'actions_space_before', 'actions_row_gap', 'actions_column_gap', 'action_icon_height', 'body_h2_space_before', 'body_h2_space_after' ) ) as $name ) {
 		$value = mrn_base_stack_validate_hero_frame_dimension( $row[ 'hero_' . $name ] ?? '', in_array( $name, $widths, true ) );
 		if ( '' !== $value ) {
 			$result['styles'][] = '--mrn-hero-' . str_replace( '_', '-', $name ) . ':' . $value;
 			if ( 'action_icon_height' === $name ) { $result['classes'][] = 'has-hero-action-icon-height'; }
+			if ( str_starts_with( $name, 'body_h2_space_' ) ) { $result['classes'][] = 'has-hero-' . str_replace( '_', '-', $name ); }
 		}
 	}
+	$breakpoint = $row['hero_inner_gutter_mobile_breakpoint'] ?? '';
+	if ( is_scalar( $breakpoint ) && in_array( (string) $breakpoint, array( '960', '1199' ), true ) ) {
+		$result['classes'][] = 'has-hero-gutter-at-' . (string) $breakpoint;
+	}
+	if ( 'h3' === ( $row['hero_body_h2_style'] ?? '' ) ) { $result['classes'][] = 'has-hero-body-h2-style-h3'; }
 	foreach ( array( 'heading_size' => 'font-size', 'heading_line_height' => 'line-height' ) as $name => $property ) {
 		$value = mrn_base_stack_validate_hero_frame_dimension( $row[ 'hero_' . $name ] ?? '', false, 'line-height' === $property );
 		if ( '' !== $value ) { $result['heading_styles'][] = $property . ':' . $value; }
