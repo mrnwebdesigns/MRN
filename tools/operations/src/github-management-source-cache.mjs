@@ -46,7 +46,8 @@ export async function acquireManagementSourceCache({ selection, acquireGrant, au
       && (!grant || Date.parse(grant.expires_at) > now()));
   };
   const headers = token => ({ Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json',
-    'X-GitHub-Api-Version': '2026-03-10', 'Accept-Encoding': 'identity', 'Content-Type': 'application/json' });
+    'X-GitHub-Api-Version': '2026-03-10', 'Cache-Control': 'no-cache',
+    'Accept-Encoding': 'identity', 'Content-Type': 'application/json' });
   const entity = async (response, limit, consume) => {
     check(response.body && ['', 'identity'].includes(response.headers.get('content-encoding') || ''));
     const length = response.headers.get('content-length');

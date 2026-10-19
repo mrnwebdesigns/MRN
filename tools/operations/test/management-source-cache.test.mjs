@@ -35,7 +35,9 @@ function fixture(options={}){
         repositories:[{id:789,full_name:repository}],permissions:{contents:'read',actions:'read',metadata:'read'}},201);
     }
     if(options.fetch){const response=await options.fetch(url,request,state,raw,metadata);if(response)return response;}
-    if(url===`https://api.github.com/repos/${repository}/actions/runs/123`){assert.equal(request.headers.Authorization,'Bearer fixture-installation-token');return json(run);}
+    if(url===`https://api.github.com/repos/${repository}/actions/runs/123`){
+      assert.equal(request.headers.Authorization,'Bearer fixture-installation-token');assert.equal(request.headers['Cache-Control'],'no-cache');return json(run);
+    }
     if(url===`https://api.github.com/repos/${repository}/actions/artifacts/456`){assert.equal(request.headers.Authorization,'Bearer fixture-installation-token');return json(metadata);}
     if(url.endsWith('/zip'))return new Response('',{status:302,headers:{location:'https://fixture.blob.core.windows.net/data?signature=synthetic'}});
     assert.equal(url,'https://fixture.blob.core.windows.net/data?signature=synthetic');assert.deepEqual(request.headers,{'Accept-Encoding':'identity'});
