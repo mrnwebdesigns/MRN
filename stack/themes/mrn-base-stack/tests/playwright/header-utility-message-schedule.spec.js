@@ -2,6 +2,7 @@ const { test, expect } = require('@playwright/test');
 const AxeBuilder = require('@axe-core/playwright').default;
 const { execFileSync } = require('node:child_process');
 const path = require('node:path');
+const { readFileSync } = require('node:fs');
 
 const harness = path.resolve(__dirname, '../php/header-utility-message-schedule.php');
 const fixture = mode => execFileSync('php', [harness, '--fixture', mode], { encoding: 'utf8' });
@@ -17,7 +18,13 @@ async function freezeClock(page, time) {
 }
 
 async function loadFixture(page, mode, options = {}) {
-	const html = fixture(mode);
+	let html = fixture(mode);
+	if (options.reregisteredStyle) {
+		// A child can deregister/re-enqueue the parent handle, dropping inline CSS.
+		// Use the actual parent file and a later child display rule in that case.
+		const style = readFileSync(path.resolve(__dirname, '../../style.css'), 'utf8');
+		html = html.replace(/<style>[\s\S]*?<\/style>/, () => `<style>${style}\n.mrn-site-header__utility-message-item{display:flex}</style>`);
+	}
 	const version = html.match(/data-mrn-utility-version="([a-f0-9]+)"/)?.[1];
 	const state = { time: options.time ?? serverTimes.get(page) ?? start, anchor: null, requests: 0, fail: false, current: null };
 	await page.unroute('https://example.test/wp-json/mrn/v1/header-utility-message-clock');
@@ -50,6 +57,20 @@ async function loadFixture(page, mode, options = {}) {
 }
 
 for (const width of [390, 1366]) {
+	test(`re-registered parent stylesheet preserves schedule visibility at ${width}px`, async ({ page }) => {
+		await page.setViewportSize({ width, height: 844 });
+		await freezeClock(page, start - 1000);
+		await loadFixture(page, 'schedule', { reregisteredStyle: true });
+		const item = page.locator('[data-mrn-utility-refresh]');
+		await expect(item).toBeHidden();
+		await page.clock.runFor(1001);
+		await expect(item).toBeVisible();
+		await page.clock.fastForward(end - start);
+		await expect(item).toBeHidden();
+		await loadFixture(page, 'inactive', { reregisteredStyle: true });
+		await expect(item).toBeHidden();
+	});
+
 	test(`cached content switches at both boundaries at ${width}px`, async ({ page }) => {
 		await page.setViewportSize({ width, height: 844 });
 		await freezeClock(page, start - 1000);
