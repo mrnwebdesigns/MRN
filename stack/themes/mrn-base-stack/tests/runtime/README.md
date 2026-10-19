@@ -21,6 +21,15 @@ schedule spec executes real helper output against cached HTML and simulated
 clocks, including weekly, overnight, holiday/observed-day, annual/custom-day,
 DST, manual-switch, keyboard and WCAG AA cases.
 
+For read-only open-page recovery on a resolved `.localhost` site, pipe JSON with
+`url`, an inactive PHP harness `fixture_html`, and an absolute `output` directory
+to `node header-utility-message-refresh-browser.cjs`. The candidate parent must
+already be installed. The runner rejects remote hosts, verifies the real public
+API's changed/unchanged and legacy contracts, then loads stale inactive markup
+and recovers the site's current saved message without changing options. Mobile
+and desktop checks use distant visitor clocks/zones and preserve form input,
+focus and unchanged message DOM. No authentication or database writes occur.
+
 ## Shortcode / Embed provider output
 
 On an explicitly resolved `.localhost` runtime with WPForms active, set

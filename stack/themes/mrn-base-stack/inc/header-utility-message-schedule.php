@@ -388,7 +388,7 @@ function mrn_base_stack_get_header_utility_message_schedule_version() {
  * the random request token also lets the browser reject a replayed response.
  */
 function mrn_base_stack_register_header_utility_message_clock() {
-	// nosemgrep: wp-open-rest-permission-callback -- Intentionally public, read-only UTC and opaque fingerprint; bounded validated token, no content disclosure or writes.
+	// nosemgrep: wp-open-rest-permission-callback -- Public read-only UTC and sanitized active header markup; bounded validated inputs, no disabled content or writes.
 	register_rest_route(
 		'mrn/v1',
 		'/header-utility-message-clock',
@@ -402,6 +402,15 @@ function mrn_base_stack_register_header_utility_message_clock() {
 					'required' => true,
 					'pattern'  => '^[a-f0-9]{32}$',
 				),
+				'refresh' => array(
+					'type'    => 'boolean',
+					'default' => false,
+				),
+				'version' => array(
+					'type'    => 'string',
+					'default' => '',
+					'pattern' => '^(?:[a-f0-9]{64})?$',
+				),
 			),
 		)
 	);
@@ -409,7 +418,7 @@ function mrn_base_stack_register_header_utility_message_clock() {
 add_action( 'rest_api_init', 'mrn_base_stack_register_header_utility_message_clock' );
 
 /**
- * Return current UTC and a settings fingerprint, with no content or writes.
+ * Return current UTC; refresh clients also receive changed public header content.
  * The token is a cache challenge, not an authentication nonce.
  *
  * @param WP_REST_Request $request Validated public clock request.
@@ -418,18 +427,18 @@ add_action( 'rest_api_init', 'mrn_base_stack_register_header_utility_message_clo
 function mrn_base_stack_get_header_utility_message_clock( $request ) {
 	$schedule = mrn_base_stack_get_header_utility_message_schedule();
 	$version  = $schedule['enabled'] && mrn_base_stack_has_header_utility_message() ? mrn_base_stack_get_header_utility_message_schedule_version() : '';
+	$data     = array( 'token' => $request['token'], 'version' => $version );
+	if ( ! empty( $request['refresh'] ) ) {
+		$data['version'] = mrn_base_stack_get_header_utility_message_schedule_version();
+		$data['message'] = $data['version'] === ( $request['version'] ?? '' ) ? null : mrn_base_stack_get_header_utility_message_refresh();
+	}
 	$now      = microtime( true ) * 1000;
 	// PHP records this request's start before WordPress boots. Subtracting
 	// server processing time prevents slow bootstrap from skewing transit estimates.
 	$received = isset( $_SERVER['REQUEST_TIME_FLOAT'] ) ? (float) $_SERVER['REQUEST_TIME_FLOAT'] * 1000 : $now;
 
 	return new WP_REST_Response(
-		array(
-			'token'    => $request['token'],
-			'version'  => $version,
-			'received' => $received,
-			'now'      => $now,
-		),
+		array_merge( $data, array( 'received' => $received, 'now' => $now ) ),
 		200,
 		array(
 			'Cache-Control'     => 'no-store, no-cache, must-revalidate, max-age=0, private',
@@ -442,39 +451,75 @@ function mrn_base_stack_get_header_utility_message_clock( $request ) {
 }
 
 /**
+ * Return public, sanitized content for a changed message. Disabled/invalid
+ * messages return an empty slot, never their saved text, link or schedule.
+ *
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_header_utility_message_refresh() {
+	$enabled  = mrn_base_stack_has_header_utility_message();
+	$schedule = $enabled ? mrn_base_stack_get_header_utility_message_schedule() : array();
+	$styles   = array();
+	if ( $enabled ) {
+		$options = mrn_base_stack_get_header_utility_message_options();
+		$icon    = $options['link_icon'];
+		if ( ! empty( $options['link']['url'] ) && ! empty( $icon['enabled'] ) ) {
+			if ( 'dashicons' === $icon['source'] ) {
+				$styles[] = includes_url( 'css/dashicons.min.css' );
+			} elseif ( 'fontawesome' === $icon['source'] && function_exists( 'mrn_shared_assets_fontawesome_css_url' ) ) {
+				$styles[] = mrn_shared_assets_fontawesome_css_url();
+			}
+		}
+	}
+
+	return array(
+		'enabled'   => $enabled,
+		'scheduled' => $enabled && ! empty( $schedule['enabled'] ),
+		'html'      => $enabled ? mrn_base_stack_get_header_utility_message_markup() : '',
+		'start'     => $schedule['start'] ?? null,
+		'end'       => $schedule['end'] ?? null,
+		'rules'     => mrn_base_stack_get_header_utility_message_browser_rules( $schedule ),
+		'styles'    => array_map( 'esc_url_raw', $styles ),
+	);
+}
+
+/**
+ * Normalize the browser's schedule shape, including inactive/manual slots.
+ *
+ * @param array<string, mixed> $schedule Normalized schedule or empty inactive slot.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_header_utility_message_browser_rules( array $schedule ) {
+	$rules             = mrn_base_stack_normalize_header_utility_message_day_rules( array() )['rules'];
+	$rules             = array_merge( $rules, $schedule['rules'] ?? array() );
+	$rules['timezone'] = ! empty( $schedule['enabled'] ) && ! empty( $schedule['valid'] ) ? $schedule['timezone'] : 'UTC';
+	$rules['offset']   = null;
+	if ( preg_match( '/^[+-]\d{2}:\d{2}$/D', $rules['timezone'] ) ) {
+		$rules['offset'] = ( new DateTimeZone( $rules['timezone'] ) )->getOffset( new DateTimeImmutable( '@0' ) );
+	}
+	return $rules;
+}
+
+/**
  * Return escaped schedule attributes for the header grid item.
  *
  * @return string
  */
 function mrn_base_stack_get_header_utility_message_schedule_attributes() {
 	$schedule = mrn_base_stack_get_header_utility_message_schedule();
-	if ( ! $schedule['enabled'] ) {
-		return '';
-	}
+	$enabled  = mrn_base_stack_has_header_utility_message();
+	$rules    = mrn_base_stack_get_header_utility_message_browser_rules( $enabled ? $schedule : array() );
 
-	// Start hidden so cached HTML never flashes an expired or future message.
-	$rules             = $schedule['rules'];
-	$rules['timezone'] = $schedule['timezone'];
-	$rules['offset']   = null;
-	if ( preg_match( '/^[+-]\d{2}:\d{2}$/D', $schedule['timezone'] ) ) {
-		$rules['offset'] = ( new DateTimeZone( $schedule['timezone'] ) )->getOffset( new DateTimeImmutable( '@0' ) );
-	}
-
-	return 'hidden data-mrn-utility-schedule data-mrn-utility-clock-url="' . esc_url( rest_url( 'mrn/v1/header-utility-message-clock' ) ) . '" data-mrn-utility-version="' . esc_attr( mrn_base_stack_get_header_utility_message_schedule_version() ) . '" data-mrn-utility-start="' . esc_attr( (string) $schedule['start'] ) . '" data-mrn-utility-end="' . esc_attr( (string) $schedule['end'] ) . '" data-mrn-utility-rules="' . esc_attr( wp_json_encode( $rules ) ) . '"';
+	return ( ! $enabled || $schedule['enabled'] ? 'hidden ' : '' ) . 'data-mrn-utility-refresh data-mrn-utility-enabled="' . ( $enabled ? '1' : '0' ) . '" ' . ( $enabled && $schedule['enabled'] ? 'data-mrn-utility-schedule ' : '' ) . 'data-mrn-utility-clock-url="' . esc_url( rest_url( 'mrn/v1/header-utility-message-clock' ) ) . '" data-mrn-utility-version="' . esc_attr( mrn_base_stack_get_header_utility_message_schedule_version() ) . '" data-mrn-utility-start="' . esc_attr( (string) $schedule['start'] ) . '" data-mrn-utility-end="' . esc_attr( (string) $schedule['end'] ) . '" data-mrn-utility-rules="' . esc_attr( wp_json_encode( $rules ) ) . '"';
 }
 
 /**
- * Render the small, synchronous controller beside a scheduled header item.
+ * Render the controller even for an empty slot so open pages discover changes.
  * Fresh server UTC anchors the controller; WordPress cron is not needed.
  *
  * @return string
  */
 function mrn_base_stack_get_header_utility_message_schedule_script() {
-	$schedule = mrn_base_stack_get_header_utility_message_schedule();
-	if ( ! $schedule['enabled'] || ! $schedule['valid'] ) {
-		return '';
-	}
-
 	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Trusted local theme source, inlined to apply cached schedules before paint.
 	$script = file_get_contents( __DIR__ . '/../js/header-utility-message-schedule.js' );
 
@@ -485,8 +530,6 @@ function mrn_base_stack_get_header_utility_message_schedule_script() {
  * Preserve hidden state against the header grid's display declarations.
  */
 function mrn_base_stack_enqueue_header_utility_message_schedule_style() {
-	if ( mrn_base_stack_has_header_utility_message() && mrn_base_stack_get_header_utility_message_schedule()['enabled'] ) {
-		wp_add_inline_style( 'mrn-base-stack-style', '[data-mrn-utility-schedule][hidden]{display:none!important}' );
-	}
+	wp_add_inline_style( 'mrn-base-stack-style', '[data-mrn-utility-refresh][hidden],[data-mrn-utility-schedule][hidden]{display:none!important}' );
 }
 add_action( 'wp_enqueue_scripts', 'mrn_base_stack_enqueue_header_utility_message_schedule_style', 20 );

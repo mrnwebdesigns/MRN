@@ -5,6 +5,7 @@ const path = require('node:path');
 
 const harness = path.resolve(__dirname, '../php/header-utility-message-schedule.php');
 const fixture = mode => execFileSync('php', [harness, '--fixture', mode], { encoding: 'utf8' });
+const refreshFixture = (mode, text = 'Updated message') => JSON.parse(execFileSync('php', [harness, '--refresh-fixture', mode, text], { encoding: 'utf8' }));
 const start = Date.parse('2026-10-16T13:00:00Z');
 const end = Date.parse('2026-10-16T21:00:00Z');
 
@@ -18,7 +19,7 @@ async function freezeClock(page, time) {
 async function loadFixture(page, mode, options = {}) {
 	const html = fixture(mode);
 	const version = html.match(/data-mrn-utility-version="([a-f0-9]+)"/)?.[1];
-	const state = { time: options.time ?? serverTimes.get(page), anchor: null, requests: 0, fail: false };
+	const state = { time: options.time ?? serverTimes.get(page) ?? start, anchor: null, requests: 0, fail: false, current: null };
 	await page.unroute('https://example.test/wp-json/mrn/v1/header-utility-message-clock');
 	await page.route('https://example.test/wp-json/mrn/v1/header-utility-message-clock', async route => {
 		state.requests++;
@@ -26,12 +27,15 @@ async function loadFixture(page, mode, options = {}) {
 		if (state.fail || options.fail) return route.abort('failed');
 		const monotonic = await page.evaluate(() => performance.now());
 		state.anchor ??= monotonic;
-		const token = route.request().postDataJSON().token;
+		const request = route.request().postDataJSON();
+		expect(request.refresh).toBe(true);
+		const token = request.token;
 		await route.fulfill({
 			status: options.status || 200, contentType: 'application/json',
 			headers: { 'Cache-Control': 'no-store', ...(options.age ? { Age: '60' } : {}) },
 			body: JSON.stringify({ token: options.replay ? 'replayed' : token,
-				version: options.stale ? 'old settings' : version,
+				version: options.stale ? 'old settings' : state.current?.version ?? version,
+				message: state.current && request.version !== state.current.version ? state.current.message : null,
 				received: state.time + monotonic - state.anchor,
 				now: options.badTime ? 'invalid' : state.time + monotonic - state.anchor }),
 		}).catch(() => {}); // A pageshow recheck may cancel the initial request.
@@ -40,7 +44,7 @@ async function loadFixture(page, mode, options = {}) {
 	await page.route('https://example.test/fixture', route => route.fulfill({ contentType: 'text/html', body: html }));
 	await page.goto('https://example.test/fixture');
 	if (version && !options.fail && !options.replay && !options.stale && !options.age && !options.badTime && !options.stall && !options.status) {
-		await expect(page.locator('[data-mrn-utility-schedule]')).toHaveAttribute('data-mrn-utility-clock', 'synced');
+		await expect(page.locator('[data-mrn-utility-refresh]')).toHaveAttribute('data-mrn-utility-clock', 'synced');
 	}
 	return state;
 }
@@ -111,10 +115,11 @@ test('long schedule delays survive the browser timeout limit', async ({ page }) 
 	await expect(page.getByText('Scheduled message')).toBeVisible();
 });
 
-test('manual behavior has no scheduling script and invalid or inactive messages do not render', async ({ page }) => {
+test('manual messages and empty slots keep the refresh controller', async ({ page }) => {
 	const manual = fixture('manual');
-	expect(manual).not.toContain('data-mrn-utility-schedule');
-	expect(manual).not.toContain('<script>');
+	expect(manual).not.toMatch(/<div[^>]*data-mrn-utility-schedule/);
+	expect(manual).toContain('data-mrn-utility-refresh');
+	expect(manual).toContain('<script>');
 	await loadFixture(page, 'manual');
 	await expect(page.getByText('Scheduled message')).toBeVisible();
 	for (const mode of ['inactive', 'invalid']) {
@@ -262,4 +267,138 @@ test('initial navigation makes one clock request without cancelling it at pagesh
 	const state = await loadFixture(page, 'schedule');
 	expect(state.requests).toBe(1);
 	await expect(page.getByText('Scheduled message')).toBeVisible();
+});
+
+for (const width of [390, 1366]) {
+	test(`an open inactive page discovers a message without reloading at ${width}px`, async ({ page }) => {
+		await page.setViewportSize({ width, height: 844 });
+		await freezeClock(page, start);
+		const state = await loadFixture(page, 'inactive');
+		const note = page.getByRole('textbox', { name: 'Your note' });
+		await note.fill('Keep my unfinished form');
+		await page.evaluate(() => { window.pageSentinel = 'same document'; });
+		state.current = refreshFixture('schedule');
+		await page.clock.runFor(60001);
+		await expect(page.getByText('Updated message')).toBeVisible();
+		await expect(note).toHaveValue('Keep my unfinished form');
+		await expect(note).toBeFocused();
+		expect(await page.evaluate(() => window.pageSentinel)).toBe('same document');
+		expect(state.requests).toBe(2);
+		await page.clock.resume();
+		const a11y = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
+		expect(a11y.violations).toEqual([]);
+	});
+}
+
+test('changed text, link and icon styles update in place; unchanged checks preserve link focus', async ({ page }) => {
+	await freezeClock(page, start);
+	const state = await loadFixture(page, 'schedule');
+	await page.getByRole('link', { name: 'Shop now' }).focus();
+	await page.evaluate(() => { window.oldLink = document.querySelector('.mrn-site-header__utility-message-link'); });
+	await page.clock.runFor(60001);
+	await expect(page.locator('[data-mrn-utility-refresh]')).toHaveAttribute('data-mrn-utility-clock', 'synced');
+	expect(await page.evaluate(() => window.oldLink === document.activeElement)).toBe(true);
+	state.current = refreshFixture('schedule');
+	state.current.message.html = state.current.message.html.replace('Shop now', 'New link').replace('/shop/', '/new/');
+	state.current.message.styles = ['https://example.test/icon.css'];
+	await page.route('https://example.test/icon.css', route => route.fulfill({ contentType: 'text/css', body: '/* icon fixture */' }));
+	await page.clock.runFor(60001);
+	await expect(page.getByText('Updated message')).toBeVisible();
+	await expect(page.getByRole('link', { name: 'New link' })).toHaveAttribute('href', 'https://example.test/new/');
+	await expect(page.getByRole('link', { name: 'New link' })).toBeFocused();
+	await expect(page.locator('link[href="https://example.test/icon.css"]')).toHaveCount(1);
+	await page.clock.runFor(60001);
+	await expect.poll(() => state.requests).toBe(4);
+	await expect(page.locator('link[href="https://example.test/icon.css"]')).toHaveCount(1);
+});
+
+test('manual, disabled and scheduled transitions work in the same document', async ({ page }) => {
+	await freezeClock(page, start);
+	const state = await loadFixture(page, 'schedule');
+	state.current = refreshFixture('inactive', 'Private inactive content');
+	await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+	await expect(page.getByText('Scheduled message')).toHaveCount(0);
+	await expect(page.locator('[data-mrn-utility-refresh]')).toBeHidden();
+	state.current = refreshFixture('manual');
+	await page.evaluate(() => window.dispatchEvent(new Event('online')));
+	await expect(page.getByText('Updated message')).toBeVisible();
+	await expect(page.locator('[data-mrn-utility-schedule]')).toHaveCount(0);
+	state.current = refreshFixture('weekly', 'New weekly schedule');
+	await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+	await expect(page.getByText('New weekly schedule')).toBeVisible();
+	state.current = refreshFixture('invalid');
+	await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+	await expect(page.getByText('New weekly schedule')).toHaveCount(0);
+});
+
+test('a changed schedule replaces old timers and still switches at the new boundary', async ({ page }) => {
+	await freezeClock(page, start - 1000);
+	const state = await loadFixture(page, 'schedule');
+	state.current = refreshFixture('schedule');
+	state.current.message.start = (start + 1000) / 1000;
+	state.current.message.end = (start + 3000) / 1000;
+	await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+	await expect(page.locator('[data-mrn-utility-refresh]')).toHaveAttribute('data-mrn-utility-version', state.current.version);
+	await page.clock.runFor(1001);
+	await expect(page.getByText('Updated message')).toBeHidden();
+	await page.clock.runFor(1000);
+	await expect(page.getByText('Updated message')).toBeVisible();
+	await page.clock.runFor(2000);
+	await expect(page.getByText('Updated message')).toBeHidden();
+});
+
+test('a changed time zone replaces cached recurrence rules', async ({ page }) => {
+	await freezeClock(page, start);
+	const state = await loadFixture(page, 'daily');
+	state.current = refreshFixture('daily');
+	state.current.message.rules.timezone = 'America/Los_Angeles';
+	await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+	await expect(page.locator('[data-mrn-utility-refresh]')).toHaveAttribute('data-mrn-utility-version', state.current.version);
+	await expect(page.getByText('Updated message')).toBeHidden();
+	await page.clock.fastForward(3 * 3600000 + 1);
+	await expect(page.getByText('Updated message')).toBeVisible();
+});
+
+test('malformed updates hide stale content and recover on the next verified retry', async ({ page }) => {
+	await freezeClock(page, start);
+	const state = await loadFixture(page, 'schedule');
+	const valid = refreshFixture('manual');
+	state.current = { ...valid, message: { ...valid.message, rules: null } };
+	await page.clock.runFor(60001);
+	await expect(page.locator('[data-mrn-utility-refresh]')).toHaveAttribute('data-mrn-utility-clock', 'unavailable');
+	await expect(page.getByText('Scheduled message')).toBeHidden();
+	state.current = valid;
+	await page.clock.runFor(15001);
+	await expect(page.getByText('Updated message')).toBeVisible();
+});
+
+test('background tabs pause checks and discover updates immediately on return', async ({ page }) => {
+	await freezeClock(page, start);
+	const state = await loadFixture(page, 'inactive');
+	await page.evaluate(() => {
+		window.fixtureHidden = true;
+		Object.defineProperty(document, 'hidden', { get: () => window.fixtureHidden });
+		document.dispatchEvent(new Event('visibilitychange'));
+	});
+	state.current = refreshFixture('manual');
+	await page.clock.runFor(180001);
+	expect(state.requests).toBe(1);
+	await page.evaluate(() => {
+		window.fixtureHidden = false;
+		document.dispatchEvent(new Event('visibilitychange'));
+	});
+	await expect(page.getByText('Updated message')).toBeVisible();
+	expect(state.requests).toBe(2);
+});
+
+test('without JavaScript manual content remains visible and inactive slots remain hidden', async ({ browser }) => {
+	const context = await browser.newContext({ javaScriptEnabled: false });
+	const page = await context.newPage();
+	for (const mode of ['manual', 'inactive', 'schedule']) {
+		await page.route('https://example.test/no-js', route => route.fulfill({ contentType: 'text/html', body: fixture(mode) }));
+		await page.goto('https://example.test/no-js');
+		await expect(page.locator('[data-mrn-utility-refresh]')).toBeVisible({ visible: mode === 'manual' });
+		await page.unroute('https://example.test/no-js');
+	}
+	await context.close();
 });

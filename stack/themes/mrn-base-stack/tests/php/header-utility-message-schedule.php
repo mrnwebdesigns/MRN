@@ -44,6 +44,12 @@ function wp_json_encode( $value ) {
 function rest_url( $path ) {
 	return 'https://example.test/wp-json/' . $path;
 }
+function includes_url( $path ) {
+	return 'https://example.test/wp-includes/' . $path;
+}
+function esc_url_raw( $value ) {
+	return $value;
+}
 function register_rest_route( $namespace, $route, $args ) {
 	$GLOBALS['mrn_schedule_route'] = array( $namespace, $route, $args );
 }
@@ -96,7 +102,7 @@ $GLOBALS['mrn_schedule_fields'] = array(
 	'header_utility_message_schedule_end'      => '2026-10-16 17:00:00',
 );
 
-if ( '--fixture' === ( $argv[1] ?? '' ) ) {
+if ( in_array( $argv[1] ?? '', array( '--fixture', '--refresh-fixture' ), true ) ) {
 	$mode = $argv[2] ?? 'schedule';
 	if ( 'manual' === $mode ) {
 		$GLOBALS['mrn_schedule_fields']['header_utility_message_schedule_enabled'] = 0;
@@ -131,12 +137,17 @@ if ( '--fixture' === ( $argv[1] ?? '' ) ) {
 			$GLOBALS['mrn_schedule_fields']['header_utility_message_schedule_daily_end'] = 'dst' === $mode ? '02:00:00' : '17:00:00';
 		}
 	}
+	if ( isset( $argv[3] ) ) {
+		$GLOBALS['mrn_schedule_fields']['header_utility_message_text'] = $argv[3];
+	}
+	if ( '--refresh-fixture' === $argv[1] ) {
+		echo wp_json_encode( array( 'version' => mrn_base_stack_get_header_utility_message_schedule_version(), 'message' => mrn_base_stack_get_header_utility_message_refresh() ) );
+		exit;
+	}
 	$markup = '';
 	mrn_base_stack_enqueue_header_utility_message_schedule_style();
-	if ( mrn_base_stack_has_header_utility_message() ) {
-		$markup = '<div class="mrn-site-header__utility-message-item" ' . mrn_base_stack_get_header_utility_message_schedule_attributes() . '>' . mrn_base_stack_get_header_utility_message_markup() . '</div>' . mrn_base_stack_get_header_utility_message_schedule_script();
-	}
-	echo '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Schedule fixture</title><style>body{font:16px Arial;color:#222;background:#fff}.mrn-site-header__utility-message-item{display:flex}' . ( $GLOBALS['mrn_schedule_style'] ?? '' ) . '</style></head><body><header>' . $markup . '</header><main><h1>Schedule fixture</h1><a href="#next">Next link</a></main></body></html>';
+	$markup = '<div class="mrn-site-header__utility-message-item" ' . mrn_base_stack_get_header_utility_message_schedule_attributes() . '>' . mrn_base_stack_get_header_utility_message_markup() . '</div>' . mrn_base_stack_get_header_utility_message_schedule_script();
+	echo '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Schedule fixture</title><style>body{font:16px Arial;color:#222;background:#fff}.mrn-site-header__utility-message-item{display:flex}' . ( $GLOBALS['mrn_schedule_style'] ?? '' ) . '</style></head><body><header>' . $markup . '</header><main><h1>Schedule fixture</h1><label>Your note <input name="note"></label><a href="#next">Next link</a></main></body></html>';
 	exit;
 }
 
@@ -158,7 +169,16 @@ mrn_schedule_assert( $version !== mrn_base_stack_get_header_utility_message_sche
 $GLOBALS['mrn_schedule_fields']['header_utility_message_text'] = 'Scheduled message';
 $GLOBALS['mrn_schedule_fields']['header_utility_message_enabled'] = 0;
 mrn_schedule_assert( '' === mrn_base_stack_get_header_utility_message_clock( array( 'token' => str_repeat( 'b', 32 ) ) )->data['version'], 'Inactive messages must never receive clock authorization.' );
+$refresh = mrn_base_stack_get_header_utility_message_clock( array( 'token' => str_repeat( 'c', 32 ), 'refresh' => true ) );
+mrn_schedule_assert( false === $refresh->data['message']['enabled'] && '' === $refresh->data['message']['html'] && null === $refresh->data['message']['start'], 'Inactive refreshes must not disclose saved content or schedules.' );
 $GLOBALS['mrn_schedule_fields']['header_utility_message_enabled'] = 1;
+$refresh = mrn_base_stack_get_header_utility_message_clock( array( 'token' => str_repeat( 'c', 32 ), 'refresh' => true, 'version' => $version ) );
+mrn_schedule_assert( null === $refresh->data['message'], 'Unchanged versions must omit replacement markup.' );
+$refresh = mrn_base_stack_get_header_utility_message_clock( array( 'token' => str_repeat( 'c', 32 ), 'refresh' => true, 'version' => str_repeat( '0', 64 ) ) );
+mrn_schedule_assert( $refresh->data['message']['enabled'] && $refresh->data['message']['scheduled'] && str_contains( $refresh->data['message']['html'], 'Scheduled message' ), 'A stale page must receive the current sanitized public message and schedule.' );
+$GLOBALS['mrn_schedule_fields']['header_utility_message_schedule_enabled'] = 0;
+mrn_schedule_assert( ! mrn_base_stack_get_header_utility_message_refresh()['scheduled'] && mrn_base_stack_get_header_utility_message_refresh()['enabled'], 'Manual messages must refresh without schedule limits.' );
+$GLOBALS['mrn_schedule_fields']['header_utility_message_schedule_enabled'] = 1;
 mrn_schedule_assert( strtotime( '2026-10-16T13:00:00Z' ) === $schedule['start'], 'Start uses the selected time zone.' );
 mrn_schedule_assert( strtotime( '2026-10-16T21:00:00Z' ) === $schedule['end'], 'End uses the selected time zone.' );
 
