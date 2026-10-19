@@ -30,7 +30,7 @@
         "state": "confirmed"
       },
       "target_tier": "platform-required",
-      "version": "1.6.3"
+      "version": "1.6.2"
     },
     {
       "classification": "platform",
