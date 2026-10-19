@@ -123,6 +123,8 @@ jobs:
           MRN_DISPOSABLE_SYNC_AUTH_DIAGNOSTICS: '1'
           MRN_DISPOSABLE_MANAGEMENT_TEST: '1'
           MRN_DISPOSABLE_SOURCE_TEST: '1'
+          # Prepared gate; enable only with an independently qualified custody provider.
+          MRN_DISPOSABLE_REPORT_CUSTODY_TEST: '0'
           MRN_DISPOSABLE_NATIVE_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/native-hook.sh
           MRN_DISPOSABLE_ACCESS_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/access-hook.sh
           MRN_DISPOSABLE_SOURCE_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/source-hook.sh
@@ -135,6 +137,7 @@ jobs:
           MRN_GATEWAY_ACCESS_REPORT: ${{ runner.temp }}/gateway-access-report.json
           MRN_GATEWAY_MANAGEMENT_REPORT: ${{ runner.temp }}/gateway-management-report.json
           MRN_GATEWAY_SOURCE_REPORT: ${{ runner.temp }}/gateway-native-source-report.json
+          MRN_GATEWAY_REPORT_CUSTODY_REPORT: ${{ runner.temp }}/gateway-report-custody-report.json
         run: |
           .runtime/provider/tests/runtime/run-dashboard-api.sh
           node --input-type=module <<'JS'
@@ -192,10 +195,31 @@ jobs:
           for (const [field, maximum] of [['cache_artifacts', 128], ['native_files', sourceLimits.native_files], ['native_bytes', sourceLimits.native_bytes], ['source_frames', sourceLimits.total_frames]]) {
             assert.ok(Number.isSafeInteger(source.sourceClosure[field]) && source.sourceClosure[field] > 0 && source.sourceClosure[field] <= maximum);
           }
+          assert.ok(['0', '1'].includes(process.env.MRN_DISPOSABLE_REPORT_CUSTODY_TEST));
+          let custody;
+          if (process.env.MRN_DISPOSABLE_REPORT_CUSTODY_TEST === '1') {
+            custody = JSON.parse(readFileSync(process.env.MRN_GATEWAY_REPORT_CUSTODY_REPORT, 'utf8'));
+            assert.equal(custody.result, 'PASS');
+            assert.equal(custody.scope, 'disposable-native-report-custody');
+            assert.deepEqual(custody.syntheticObservations, ['rendered_runtime', 'wordpress_http_transcript', 'github_run_and_artifacts']);
+            assert.deepEqual(custody.passed, [
+              'signed-native-packet-preserves-original-dispatch-and-separate-QA-authority',
+              'actual-MCP-retention-completes-through-Node-TLS-callback-and-distinct-role-keys',
+              'fresh-MCP-readback-matches-original-report-and-both-archive-hashes',
+              'consumed-acquisition-cannot-retry-or-mint-another-callback',
+              'fresh-original-revocation-denies-unused-report-read',
+            ]);
+            for (const field of ['productionCredentials', 'liveGoogleVerified', 'hostedProvenanceVerified', 'protectedRenderedQaVerified', 'consumerBindingIssued', 'contentWriteVerified', 'remoteBackupVerified', 'chatgptAcceptanceVerified']) assert.equal(custody[field], false);
+            assert.deepEqual(custody.callback, { requests: 1, completed: 1, queryReads: 1 });
+            assert.equal(custody.retained.state, 'retained');
+            assert.equal(custody.retained.consumer_binding_issued, false);
+            assert.equal(custody.retained.production_qualified, false);
+            for (const field of ['management_context_sha256', 'qualification_report_sha256', 'qualification_archive_sha256', 'acquisition_archive_sha256', 'acquisition_observation_sha256', 'evidence_policy_sha256']) assert.match(custody.retained[field], /^[a-f0-9]{64}$/);
+          }
           const sources = JSON.parse(readFileSync('tools/operations/test/runtime/sources.json', 'utf8'));
           for (const name of ['provider', 'transport', 'runner']) assert.equal(execFileSync('git', ['-C', `.runtime/${name}`, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), sources[name].commit);
           assert.equal(execFileSync('git', ['-C', '.runtime/management-worker', 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), sources.managementWorker.commit);
-          for (const report of [proof, native, access, management, source]) assert.deepEqual(report.source, sources);
+          for (const report of [proof, native, access, management, source, ...(custody ? [custody] : [])]) assert.deepEqual(report.source, sources);
           JS
       - name: Retain redacted disposable worker failure
         if: failure()
@@ -217,5 +241,6 @@ jobs:
             ${{ runner.temp }}/gateway-access-report.json
             ${{ runner.temp }}/gateway-management-report.json
             ${{ runner.temp }}/gateway-native-source-report.json
+            ${{ runner.temp }}/gateway-report-custody-report.json
           if-no-files-found: error
           retention-days: 14

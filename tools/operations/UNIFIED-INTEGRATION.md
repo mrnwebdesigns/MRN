@@ -9,13 +9,13 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
 - The existing workspace plugin remains the only team connector. Active MRN
   Google accounts need no individual enrollment or personal backend credentials.
   Production still provides read-only inspection; team editing is not ready.
-- Accepted gateway checkpoint `ecb4b8e` passes all 486 hosted source tests,
-  combined run `39266276490` and MRN QA `39266276194`. All six original reports
+- Accepted gateway checkpoint `daa9f2f` passes all 494 hosted source tests,
+  combined run `39272437042` and MRN QA `39272437161`. All six original reports
   were independently verified, including seven actual native-source groups,
   native content edit/public readback/exact rollback, both committed owner
   cleanup readbacks and the later uncertain capture's original lock/claim.
-  The original artifact `12193129860` has SHA-256
-  `b2edfda97c4c737bb7de58ed0bdbea0b9981f9c7a62875a32c5eecc170e1e72d`.
+  The original artifact `12196842696` has SHA-256
+  `06a9ad183509aa202355f35245d0f2cd68064eaf2cbcb80d5e668a8d18466d39`.
   Exact tested runtime/workflow blobs and all pinned dependencies were checked;
   the whole MRN merge tree also contains unrelated base-branch changes.
 - Provider `6a18afa` isolates the source fixture's local variables from its
@@ -29,7 +29,7 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
   anonymous/wrong-purpose requests on all three private report abilities, and
   65 native store checks plus 26 seeded recovery checks pass. Seeded storage
   does not prove successful acquisition or raw evidence retention. Combined
-  gateway adoption of this newer provider remains required.
+  gateway adoption of this provider passes at the checkpoint above.
 - Source batches use their frozen twenty-second recovery bound and closed
   schemas/byte limits; access-veto queries retain their two-second deadline.
   The successful native transfer above verifies this correction. Errors retain
@@ -73,12 +73,22 @@ verify both signatures under the intended keys and reject the opposite roles;
 all 494 local gateway tests pass. The successful native report-custody hook is
 still pending, so these controlled signatures do not prove report retention.
 
-Gateway `60e4f65` passes all 493 hosted tests, combined run `39268866792`
-and MRN QA `39268865542` against provider `d44b800`. All six original reports,
-source/cleanup/uncertainty assertions and exact runtime/workflow blobs were
-independently verified. Its native job took 19m39s, so the outer CI job allocation
-is now 25 minutes. Per-request, source-hook, owner, actor and PHP limits remain
-unchanged. The registrar-role correction above is a later candidate.
+Gateway `daa9f2f` qualifies the registrar-role correction against provider
+`d44b800`. The outer CI job allocation is 25 minutes because the earlier
+successful native run took 19m39s. Per-request, source-hook, owner, actor and PHP
+limits remain unchanged.
+
+The seventh report-custody gate is prepared behind the isolated CI-only switch
+`MRN_DISPOSABLE_REPORT_CUSTODY_TEST=0`. It preserves the original signed service
+dispatch, calls actual private MCP retain/read routes over separate connections,
+verifies the Node TLS callback and role-separated signatures, compares both
+archive hashes, and checks acquisition replay and fresh revoked-read denial.
+Its GitHub, rendered-runtime and WordPress-HTTP observations are explicitly
+synthetic. The existing seven source groups remain mandatory. The new gate is
+disabled pending an independently qualified provider fixture: provider candidate
+`06e6658` failed native run `39274033435` before its first custody assertion.
+The provider pin remains `d44b800`; the prepared gate does not prove successful
+retention, hosted provenance, QA admission or team acceptance.
 
 The following sections retain individual source checkpoints and their limits.
 They are not evidence of production activation or team readiness.

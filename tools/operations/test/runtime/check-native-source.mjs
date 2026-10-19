@@ -30,10 +30,13 @@ import { ManagementSourceBroker, ManagementSourceReader } from '../../src/manage
 import { ManagementSourceContext } from '../../src/management-source-context.mjs';
 import { Store } from '../../src/store.mjs';
 import { accessRegistry } from '../fixtures/access-registry.mjs';
+import { createNativeReportCustody } from './native-report-custody.mjs';
 
 process.umask(0o077);
 assert.equal(process.env.GITHUB_ACTIONS, 'true');
 assert.equal(process.env.MRN_DISPOSABLE_SOURCE_TEST, '1');
+assert.ok(['0', '1', undefined].includes(process.env.MRN_DISPOSABLE_REPORT_CUSTODY_TEST));
+const reportCustodyEnabled = process.env.MRN_DISPOSABLE_REPORT_CUSTODY_TEST === '1';
 const [directory, certificate, runtimeCli] = process.argv.slice(2);
 assert.equal(process.argv.length, 5); assert.equal(resolve(directory), directory);
 assert.equal(certificate, join(directory, 'tls.crt')); assert.equal(runtimeCli, join(directory, 'wp-fixture-cli'));
@@ -143,11 +146,20 @@ const sourceClient = async () => {
   const client = await connectMainwp(sourceConfig, { ...environment, FIXTURE_MAINWP_REQUEST_TIMEOUT: '120000' });
   clients.add(client); return client;
 };
-const run = async (file, args, timeout, maxBuffer = 5243008) => {
+const run = async (file, args, timeout, maxBuffer = 5243008, input) => {
   const pending = promisify(execFile)(file, args, { encoding: 'utf8', timeout, maxBuffer }); processes.add(pending.child);
+  if (input !== undefined) pending.child.stdin.end(input);
   try { return (await pending).stdout; }
   catch { throw new Error('Disposable source fixture control failed; private output withheld.'); }
   finally { processes.delete(pending.child); }
+};
+const nativeReport = async (mode, id, input) => {
+  assert.ok(['report-dispatch', 'report-packet'].includes(mode));
+  assert.match(id, /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/);
+  const bytes = mode === 'report-dispatch' ? delegationCanonical(input) : undefined;
+  if (bytes !== undefined) assert.ok(Buffer.byteLength(bytes) <= 32768); else assert.equal(input, undefined);
+  const raw = await run(join(sourceDir, 'native-worker'), [mode, id], 25000, 1048576, bytes);
+  const packet = JSON.parse(raw); assert.ok(raw.trimEnd() === delegationCanonical(packet)); return packet;
 };
 const native = async (mode, id, hash) => {
   const recovery = ['read-capture', 'read-measurements'].includes(mode);
@@ -169,7 +181,7 @@ const callbackObservation = { requests: 0, ok: 0, refused: 0, closed: 0, vetoErr
 const callbackCodes = new Set(['ACCESS_INVALID', 'ACCESS_EXPIRED', 'ACCESS_BINDING', 'ACCESS_MAPPING',
   'ACCESS_REPLAY', 'ACCESS_TRANSPORT', 'ACCESS_UNAVAILABLE']);
 save();
-let access, source, callbackServer, tlsServer, networkHook, routed = false, recipient, assembly, reconstructed;
+let access, source, reportCustody, callbackServer, tlsServer, networkHook, routed = false, recipient, assembly, reconstructed;
 const sockets = new Set();
 try {
   access = await createManagementAccessRuntime({ enabled: true, store, registry, identity,
@@ -197,7 +209,9 @@ try {
       callbackObservation.vetoErrors[code] = (callbackObservation.vetoErrors[code] || 0) + 1;
       throw error;
     }
-  } } });
+  } }, ...(reportCustodyEnabled ? { managementEvidence: { respond(input) {
+    assert.ok(reportCustody, 'Disposable report callback is not prepared'); return reportCustody.respond(input);
+  } } } : {}) });
   callbackServer.on('request', (req, res) => {
     if (req.method !== 'POST' || req.url !== '/internal/mainwp/management-access-veto') return;
     callbackObservation.requests++;
@@ -394,6 +408,14 @@ try {
     source_frames: mapped.slot.total_frames };
   pass('complete-real-cache-and-native-source-reconstruction-independently-reopened');
 
+  if (reportCustodyEnabled) {
+    reportCustody = await createNativeReportCustody({ source: lock, reportPath: process.env.MRN_GATEWAY_REPORT_CUSTODY_REPORT,
+      original, identity, registrar, keys, ledger, verifyStaff, connectQuery: rawClient, connectControl: sourceClient,
+      nativeDispatch: (id, envelope) => nativeReport('report-dispatch', id, envelope),
+      nativePacket: id => nativeReport('report-packet', id) });
+    await reportCustody.run();
+  }
+
   const denialReader = new ManagementSourceContextReader(await rawClient()); await denialReader.initialize();
   const issued = Math.floor(Date.now() / 1000), requestSigner = new ManagementEvidenceSigner(registrar);
   const denial = requestSigner.envelope({ schema: 1, issuer: 'mrn-content-qualification', audience: descriptor.dashboard_origin,
@@ -410,6 +432,11 @@ try {
   await assert.rejects(async () => acquireManagementSourceContext({ original: recorded, gatewayKeyId: identity.keyId,
     gatewayPublicKey: identity.publicKey, oidcToken: await token() }));
   pass('original-pending-revocation-denies-provider-bootstrap-and-protected-source');
+  if (reportCustodyEnabled) {
+    const beforeReportDenial = pendingQueries();
+    await reportCustody.revoked();
+    assert.ok(pendingQueries() > beforeReportDenial, 'Unused report read must observe the original pending-revocation callback');
+  }
   const after = validateManagementRead(await session.call(toolNames.contentRecord, args), { site, target: contentTarget });
   assert.equal(after.snapshot_sha256, before.snapshot_sha256);
   pass('original-child-content-unchanged-without-candidate-execution');
@@ -417,6 +444,15 @@ try {
   for (const route of ['read-content-edit-qualification-source-context-v1', 'capture-content-edit-qualification-source-v1', 'read-content-edit-qualification-source-v1']) {
     const calls = network.filter(row => row.path?.endsWith(`/mrn-mainwp/${route}/run`));
     assert.ok(calls.some(row => row.method === 'POST' && row.status === 200));
+    assert.ok(calls.every(row => row.method === 'POST'));
+  }
+  for (const [route, statuses] of reportCustodyEnabled ? [
+    ['retain-content-edit-qualification-report-v1', [200, 500]],
+    ['read-content-edit-qualification-report-v1', [200, 500]],
+    ['read-management-evidence-query-v1', [200]],
+  ] : []) {
+    const calls = network.filter(row => row.path?.endsWith(`/mrn-mainwp/${route}/run`));
+    assert.deepEqual(calls.map(row => row.status), statuses);
     assert.ok(calls.every(row => row.method === 'POST'));
   }
   report.providerSourceBootstrapVerified = true; report.nativeSourceCaptureVerified = true;
@@ -431,7 +467,7 @@ try {
       try { clean(); } catch (error) { cleanupErrors.push(error); }
     }
     for (const socket of sockets) socket.destroy(); for (const child of processes) child.kill('SIGTERM');
-    const closed = await Promise.allSettled([source?.close(), access?.close(), ...[...clients].map(client => client.close()),
+    const closed = await Promise.allSettled([reportCustody?.close(), source?.close(), access?.close(), ...[...clients].map(client => client.close()),
       ...(callbackServer ? [new Promise(done => callbackServer.close(done))] : []),
       ...(tlsServer ? [new Promise(done => tlsServer.close(done))] : [])]);
     cleanupErrors.push(...closed.filter(value => value.status === 'rejected').map(value => value.reason));
@@ -442,3 +478,4 @@ try {
 }
 // A failed cleanup is a failed integration, even if all behavior checks passed.
 report.result = 'PASS'; save();
+reportCustody?.complete();
