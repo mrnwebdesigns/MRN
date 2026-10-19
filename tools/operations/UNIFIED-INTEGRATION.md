@@ -11,14 +11,14 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
   and code tools are absent. New tools default to disabled. No individual
   enrollment or personal backend credentials are required. Team editing is
   not yet ready.
-- Accepted gateway checkpoint `d6b101b` passed 508 tests, combined run
-  `39323626552` and MRN QA `39323626632`. All seven original reports were
+- Accepted gateway checkpoint `1d8bca5` passed 526 tests, combined run
+  `39326254460` and MRN QA `39326254417`. All seven original reports were
   independently verified, including native content edit/readback/rollback,
   complete source reconstruction and report custody against provider `4929f0d`
-  and worker `cd74e20`. Tested merge `0ce699e5bd6f566e523e7198daea5d1662ede7d2`
-  has identical relevant source/workflow blobs. The subsequent original-preview
-  ledger and shared permission-history fix `1d8bca5` passes 526 tests and MRN QA
-  `39326254417`; its combined run `39326254460` is still pending.
+  and worker `cd74e20`. Tested merge `77660eeb7322f217c2cfcd6d64771234a39e5995`
+  has identical gateway, workflow, runtime and Fleet regression blobs. Later
+  existing-v2 preparation `0dd1159` passes 533 local tests, lint and staged MRN
+  QA; combined run `39329470202` and MRN QA `39329470179` are pending.
 - Candidate provider `5905258` passes all four jobs in `39325764872`, with
   exact tested merge tree `638b5dd43a98bdb1018521a65e8c59698ef58dc6` and
   independently retained original log. Its 38 new native authorization checks
@@ -82,12 +82,31 @@ established rows without history require one qualified central migration and
 backup. A staff login cannot perform that migration or clear denial. This is
 service setup, not individual staff enrollment or approval.
 
-This ledger is not constructed by production startup and does not sign
-`original_resource_authorization_current:true`. Its existing-preview signing
-helper does not select or qualify the provider's new lifetime domain. Exact
-v2 transport/response admission, provider binding, automatic first-use state
-and asynchronous producer integration remain required. No new runtime route,
-workspace tool, Auth0 session introspection or production write is enabled.
+The private ledger now issues distinct bind/read controls using the unchanged
+provider original-authorization wire from qualified source `5905258`. It signs
+`original_resource_authorization_current:true` only after rechecking the exact
+reviewed original, genuine current actor, original expiry, current principal,
+policy/site and fresh Directory state. It accepts no caller hash or expiry.
+First bind must fit the original preview transport window. A later signed read
+can recover after that transport expires but preserves the original resource
+expiry. This assertion does not observe an Auth0 browser logout.
+
+One durable bind marker and control count in the original attempt, independent
+append-only control history, and one-shot in-process handles prevent repeated
+binds after concurrency, missing records, restart or uncertain responses.
+Issuance, markers, history and audit commit atomically. Dispatch is marked before
+the signed input can leave the ledger. At most 64 fresh read controls follow one
+bind; no raw token, signature, envelope or content is stored. Surviving control
+history also blocks damaged principal state from being treated as first use.
+
+This is still private source preparation. Production startup does not construct
+the ledger or expose controls. The stable existing preview ability is unchanged;
+only the provider's source-selected coherent readiness may choose its new
+lifetime domain. The v1 review shape cannot prove that choice. Fresh readiness,
+exact successful provider bind/read projection, automatic first-use state and
+asynchronous producer integration still need composition and qualification.
+There is no workspace tool, admission, Auth0 session introspection or production
+write activation in this source slice.
 
 ## Existing-record v2 gateway preparation
 

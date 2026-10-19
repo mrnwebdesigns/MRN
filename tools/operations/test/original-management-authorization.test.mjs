@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createLocalJWKSet, exportJWK, generateKeyPair, SignJWT } from 'jose';
 import { createAuthenticator, originalAuthorizationAnchor } from '../src/auth.mjs';
-import { IdentitySigner, delegationDigest, delegationPrefix } from '../src/delegation.mjs';
+import { IdentitySigner, delegationCanonical, delegationDigest, delegationPrefix } from '../src/delegation.mjs';
 import { digest } from '../src/contracts.mjs';
 import { Store } from '../src/store.mjs';
 import { OriginalManagementAuthorizationLedger } from '../src/original-management-authorization.mjs';
@@ -15,6 +15,7 @@ import { ContentAccessLedger } from '../src/content-access-store.mjs';
 import { requesterDigest } from '../src/access-principal.mjs';
 import { accessRegistry } from './fixtures/access-registry.mjs';
 import { managementAccessFixture } from './fixtures/management-access.mjs';
+import { existingManagementHashes } from '../src/management-existing-contracts.mjs';
 
 const audience = 'https://operations.mrnwebdesigns.com/mcp', issuer = 'https://identity.example.test/';
 async function fixture(t, durable = false) {
@@ -292,4 +293,155 @@ test('intact history for another person permits automatic first use without clea
   const handle = await ledger.prepare(other, f.request, f.challenge, randomUUID());
   assert.equal((await ledger.readCurrent(handle.requestId, other)).mapping.actor.googleSubject, '456');
   assert.equal(f.ledger.principals.row(digest(f.actor.googleSubject), requesterDigest(f.actor)).state, 'pending-revocation');
+});
+
+async function reviewed(t, durable = false) {
+  const f = await fixture(t, durable), handle = await f.prepare();
+  await f.ledger.claimDispatch(handle, f.actor);
+  const { evidence, profile } = f.values.expected;
+  await f.ledger.recordReview(handle.requestId, f.actor, f.request, evidence, profile);
+  return { ...f, original: handle.requestId };
+}
+const controls = f => f.store.db.prepare('SELECT count(*) n FROM original_management_controls').get().n;
+
+test('bind control is signed only from intact verified original authority with the exact frozen provider purpose', async t => {
+  const wireBytes = readFileSync(new URL('../contracts/content-management-original-authorization-v2.json', import.meta.url));
+  assert.equal(digest(wireBytes), '3a77cf8ad2131fd1e2255e74d2a3dcd9ca1d18051e5acc1d51bdb6b7d6fa73c2');
+  const source = JSON.parse(readFileSync(new URL('../contracts/content-management-original-authorization-source.json', import.meta.url)));
+  assert.equal(source.commit, '5905258f2396e6c241611371cfbaabcc00a7b3f5');
+  assert.equal(source.repository, 'mrnwebdesigns/mrn-mainwp-operations-api');
+  assert.equal(source.sha256, digest(wireBytes)); assert.equal(source.runtimeRegistered, false); assert.equal(source.productionQualified, false);
+  const wire = JSON.parse(wireBytes), f = await reviewed(t);
+  const handle = await f.ledger.prepareBind(f.original, f.actor);
+  await assert.rejects(() => f.ledger.prepareRead(f.original, f.actor));
+  const input = await f.ledger.claimControlDispatch(handle, f.actor), envelope = input.signed_request;
+  const bytes = Buffer.from(envelope.payload_base64, 'base64'), c = JSON.parse(bytes), m = (await f.ledger.readCurrent(f.original, f.actor)).mapping;
+  assert.equal(bytes.toString(), delegationCanonical(c));
+  assert.ok(verify(null, Buffer.concat([Buffer.from(wire.purposes.bind), bytes]), f.keys.publicKey, Buffer.from(envelope.signature_base64, 'base64')));
+  for (const purpose of [wire.purposes.read, delegationPrefix, 'mrn-content-management-qa-v1:'])
+    assert.equal(verify(null, Buffer.concat([Buffer.from(purpose), bytes]), f.keys.publicKey, Buffer.from(envelope.signature_base64, 'base64')), false);
+  assert.deepEqual(c.protocol_contracts_sha256, existingManagementHashes);
+  assert.equal(c.lifetime_domain, 'original-resource-authorization-v2');
+  assert.equal(c.original_resource_authorization_current, true);
+  assert.equal(c.original_resource_authorization_sha256, m.authorization.authorizationSha256);
+  assert.equal(c.original_resource_authorization_expires_at * 1000, m.authorization.expiresAt);
+  assert.equal(c.original_delegation_request_id, m.requestId);
+  assert.equal(c.requester_binding_sha256, m.requester);
+  assert.ok(c.expires_at <= Math.floor(m.transportExpiresAt / 1000));
+  const body = f.store.db.prepare('SELECT body FROM original_management_controls').get().body;
+  for (const secret of [f.raw, envelope.payload_base64, envelope.signature_base64, JSON.stringify(f.request.changes)])
+    if (secret) assert.equal(body.includes(secret), false);
+  assert.ok(Object.isFrozen(input) && Object.isFrozen(envelope));
+  await assert.rejects(() => f.ledger.claimControlDispatch(handle, f.actor));
+  await assert.rejects(() => f.ledger.prepareBind(f.original, f.actor));
+});
+
+test('simultaneous bind issuers have one winner and a lost local handle cannot renew the bind', async t => {
+  const f = await reviewed(t, true);
+  const attempts = await Promise.allSettled([f.ledger.prepareBind(f.original, f.actor), f.ledger.prepareBind(f.original, f.actor)]);
+  assert.equal(attempts.filter(v => v.status === 'fulfilled').length, 1); assert.equal(controls(f), 1);
+  const h = attempts.find(v => v.status === 'fulfilled').value, restarted = f.open();
+  await assert.rejects(() => restarted.ledger.prepareBind(f.original, f.actor));
+  await assert.rejects(() => restarted.ledger.claimControlDispatch(h, f.actor));
+  await assert.rejects(() => restarted.ledger.prepareRead(f.original, f.actor));
+  const dispatch = await Promise.allSettled([f.ledger.claimControlDispatch(h, f.actor), f.ledger.claimControlDispatch(h, f.actor)]);
+  assert.equal(dispatch.filter(v => v.status === 'fulfilled').length, 1);
+  const read = await restarted.ledger.prepareRead(f.original, f.actor);
+  assert.ok(await restarted.ledger.claimControlDispatch(read, f.actor));
+  assert.equal(controls(f), 2);
+});
+
+test('fresh read after a lost bind response and transport expiry preserves the original hash and expiration across restart and login', async t => {
+  const f = await reviewed(t, true), next = await f.auth(`Bearer ${await f.token(f.now + 1800)}`);
+  const h = await f.ledger.prepareBind(f.original, f.actor), bind = await f.ledger.claimControlDispatch(h, f.actor);
+  const original = JSON.parse(Buffer.from(bind.signed_request.payload_base64, 'base64'));
+  let at = (f.now + 61) * 1000; t.mock.method(Date, 'now', () => at);
+  const restarted = f.open(), r = await restarted.ledger.prepareRead(f.original, next);
+  const read = await restarted.ledger.claimControlDispatch(r, next), c = JSON.parse(Buffer.from(read.signed_request.payload_base64, 'base64'));
+  assert.equal(c.original_resource_authorization_sha256, original.original_resource_authorization_sha256);
+  assert.equal(c.original_resource_authorization_expires_at, original.original_resource_authorization_expires_at);
+  assert.equal(c.original_delegation_request_id, original.original_delegation_request_id);
+  assert.notEqual(c.request_id, original.request_id); assert.notEqual(c.nonce, original.nonce);
+  const bytes = Buffer.from(read.signed_request.payload_base64, 'base64');
+  assert.ok(verify(null, Buffer.concat([Buffer.from('mrn-content-management-existing-resource-authorization-read-v2:'), bytes]), f.keys.publicKey,
+    Buffer.from(read.signed_request.signature_base64, 'base64')));
+  await assert.rejects(() => restarted.ledger.prepareBind(f.original, next));
+  at = (f.now + 601) * 1000;
+  await assert.rejects(() => restarted.ledger.prepareRead(f.original, next));
+});
+
+test('first bind cannot be created after the original preview transport expires or before exact review reconstruction', async t => {
+  const f = await fixture(t), h = await f.prepare();
+  await assert.rejects(() => f.ledger.prepareBind(h.requestId, f.actor));
+  await f.ledger.claimDispatch(h, f.actor);
+  await assert.rejects(() => f.ledger.prepareBind(h.requestId, f.actor));
+  await f.ledger.recordReview(h.requestId, f.actor, f.request, f.values.expected.evidence, f.values.expected.profile);
+  t.mock.method(Date, 'now', () => (f.now + 61) * 1000);
+  await assert.rejects(() => f.ledger.prepareBind(h.requestId, f.actor));
+  assert.equal(controls(f), 0);
+});
+
+test('lost, corrupt and rolled-back control history cannot authorize retries or fresh recovery signatures', async t => {
+  for (const damage of ['body-missing', 'history-missing', 'both-missing', 'marker-missing', 'counter-reset', 'digest', 'rolled-back-state', 'changed-body-and-hash', 'orphan-history']) {
+    const f = await reviewed(t), h = await f.ledger.prepareBind(f.original, f.actor);
+    await f.ledger.claimControlDispatch(h, f.actor);
+    if (damage === 'body-missing') f.store.db.exec('DELETE FROM original_management_controls');
+    if (damage === 'history-missing') f.store.db.exec('DELETE FROM original_management_control_history');
+    if (damage === 'both-missing') f.store.db.exec('DELETE FROM original_management_controls; DELETE FROM original_management_control_history');
+    if (damage === 'marker-missing') f.store.db.exec("UPDATE original_management_attempts SET bind_control=''");
+    if (damage === 'counter-reset') f.store.db.exec('UPDATE original_management_attempts SET control_count=0');
+    if (damage === 'digest') f.store.db.exec("UPDATE original_management_controls SET digest='bad'");
+    if (damage === 'rolled-back-state') f.store.db.exec("UPDATE original_management_controls SET state='prepared'");
+    if (damage === 'orphan-history') f.store.db.prepare('UPDATE original_management_control_history SET id=?').run(randomUUID());
+    if (damage === 'changed-body-and-hash') {
+      const v = JSON.parse(f.store.db.prepare('SELECT body FROM original_management_controls').get().body);
+      v.claims.original_resource_authorization_expires_at += 300;
+      const body = JSON.stringify(v); f.store.db.prepare('UPDATE original_management_controls SET body=?,digest=?').run(body, digest(body));
+    }
+    await assert.rejects(() => f.ledger.prepareRead(f.original, f.actor), damage);
+    await assert.rejects(() => f.ledger.prepareBind(f.original, f.actor), damage);
+  }
+});
+
+test('fresh staff, principal and policy vetoes deny control issuance and dispatch without asserting renewed access', async t => {
+  for (const stage of ['prepare', 'dispatch']) for (const failure of ['directory', 'revocation', 'policy']) {
+    const f = await reviewed(t), h = stage === 'dispatch' ? await f.ledger.prepareBind(f.original, f.actor) : null;
+    f.state.duringCheck = () => {
+      if (failure === 'directory') throw new Error('Directory unavailable or revoked');
+      if (failure === 'revocation') f.store.transaction(() => f.ledger.principals.pending(digest(f.actor.googleSubject), requesterDigest(f.actor)));
+      if (failure === 'policy') f.pins.authorization_policy_sha256 = 'f'.repeat(64);
+    };
+    await assert.rejects(() => h ? f.ledger.claimControlDispatch(h, f.actor) : f.ledger.prepareBind(f.original, f.actor));
+    assert.equal(controls(f), h ? 1 : 0);
+    assert.equal(f.store.db.prepare("SELECT count(*) n FROM original_management_controls WHERE state='dispatched'").get().n, 0);
+  }
+  const f = await reviewed(t), readOnly = await f.auth(`Bearer ${await f.token(f.now + 600, '123', { scope: 'mrn:operations' })}`);
+  const outsider = await f.auth(`Bearer ${await f.token(f.now + 600, '456')}`);
+  for (const actor of [{ ...f.actor }, readOnly, outsider]) await assert.rejects(() => f.ledger.prepareBind(f.original, actor));
+});
+
+test('a surviving control or control history blocks principal reinitialization across all content writers', async t => {
+  for (const survivor of ['control', 'history']) {
+    const f = await reviewed(t), write = writers(f), h = await f.ledger.prepareBind(f.original, f.actor);
+    await f.ledger.claimControlDispatch(h, f.actor);
+    f.store.db.exec(`DELETE FROM content_access_principals; DELETE FROM content_access_principal_history;
+      DELETE FROM original_management_authorizations; DELETE FROM original_management_attempts; DELETE FROM original_management_reviews;
+      DELETE FROM ${survivor === 'control' ? 'original_management_control_history' : 'original_management_controls'}`);
+    for (const create of Object.values(write)) await assert.rejects(async () => create(), survivor);
+    assert.equal(f.store.db.prepare('SELECT count(*) n FROM content_access_principals').get().n, 0);
+  }
+});
+
+test('control persistence and audit commit atomically before any signature can be dispatched', async t => {
+  const f = await reviewed(t);
+  f.store.db.exec("CREATE TRIGGER fail_control_audit BEFORE INSERT ON audit WHEN NEW.event='original-authorization-bind' BEGIN SELECT RAISE(ABORT,'fixture'); END");
+  await assert.rejects(() => f.ledger.prepareBind(f.original, f.actor));
+  assert.equal(controls(f), 0);
+  assert.equal(f.store.db.prepare('SELECT count(*) n FROM original_management_control_history').get().n, 0);
+  f.store.db.exec('DROP TRIGGER fail_control_audit');
+  const h = await f.ledger.prepareBind(f.original, f.actor);
+  f.store.db.exec("CREATE TRIGGER fail_control_dispatch BEFORE INSERT ON audit WHEN NEW.outcome='dispatched' BEGIN SELECT RAISE(ABORT,'fixture'); END");
+  await assert.rejects(() => f.ledger.claimControlDispatch(h, f.actor));
+  assert.equal(f.store.db.prepare('SELECT state FROM original_management_controls').get().state, 'prepared');
+  assert.equal(f.store.db.prepare('SELECT count(*) n FROM original_management_control_history').get().n, 1);
 });
