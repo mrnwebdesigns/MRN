@@ -21,8 +21,10 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
   overwrote its parent's cleanup list, leaving the activation marker behind.
   Provider candidate `6a18afa` isolates the include and reads committed SQL to
   prove both catalog rows were removed and the original authority restored.
-  Its local and exact staged MRN QA pass; hosted provider and combined gateway
-  acceptance remain required. No production authority or lock is reset.
+  Its local and exact staged MRN QA and all four hosted provider jobs pass in
+  `39266052762`. The tested merge tree equals source, and native SQL readback
+  proves both catalog rows removed and original authority restored. Combined
+  gateway acceptance remains required. No production authority or lock is reset.
 - All four provider provenance records now select `6a18afa`; all 15 imported
   contract/fixture inputs are byte-identical. The preceding provider `57abbc2`
   passed all four jobs in `39175529154` with identical tested/source trees.
@@ -46,6 +48,24 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
   concrete production deployment/access approval; workspace refresh; ordinary
   ChatGPT content edit/readback, code edit/rollback, outsider and revoked-user
   acceptance. No production source adapter or new credential is activated.
+
+
+## Private report transport preparation
+
+The internal `ManagementReportTransport` discovers only the canonical MainWP
+POST retain/read abilities. It accepts closed signed registrar/QA inputs,
+validates non-admitting retained summaries, preserves the frozen ninety-second
+acquisition and twenty-second fresh-read bounds, and never retries acquisition.
+Its optional lifecycle requires a different connection from evidence callbacks,
+closes its own connection on discovery failure, and withholds in-flight results
+after closure. Production startup does not construct this transport.
+
+Seven controlled transport groups and the full 493-test local gateway suite pass.
+These are signature-shape fixtures, not successful provider report acquisition.
+The provider report API candidate must separately qualify before pin adoption;
+actual MCP acquisition, retained raw evidence, fresh summary readback, concurrency
+and fault handling still require native integration proof. This transport neither
+selects a caller's identity/run nor signs or admits a report.
 
 The following sections retain individual source checkpoints and their limits.
 They are not evidence of production activation or team readiness.
