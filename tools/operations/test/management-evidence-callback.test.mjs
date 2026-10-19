@@ -13,8 +13,9 @@ import { managementEvidenceFixture } from './fixtures/management-evidence.mjs';
 function fixture(t) {
   const f = managementEvidenceFixture(t); f.dispatch(); const query = f.query();
   const pointer = { query_id: query.query_id, provider_query_nonce: query.provider_query_nonce };
-  const keys = generateKeyPairSync('ed25519'), state = f.state;
+  const keys = generateKeyPairSync('ed25519'), registrar = generateKeyPairSync('ed25519'), state = f.state;
   const signer = new ManagementEvidenceSigner({ keyId: 'gateway-fixture', privateKey: keys.privateKey, now: () => state.now });
+  const readbackSigner = new ManagementEvidenceSigner({ keyId: 'registrar-fixture', privateKey: registrar.privateKey, now: () => state.now });
   const calls = [], status = { connected: true, dashboardHost: 'wpcontrol.mrndev.io', abilitiesCount: 115 };
   const tool = { name: managementEvidenceReadbackTool, annotations: { readOnlyHint: false, destructiveHint: false } };
   const client = {
@@ -23,7 +24,10 @@ function fixture(t) {
     async callTool(input) {
       calls.push('readback'); assert.equal(input.name, managementEvidenceReadbackTool);
       const envelope = input.arguments.signed_request, bytes = Buffer.from(envelope.payload_base64, 'base64');
-      assert.ok(verify(null, Buffer.concat([Buffer.from(wire.purposes.query_readback), bytes]), keys.publicKey, Buffer.from(envelope.signature_base64, 'base64')));
+      assert.equal(envelope.key_id, 'registrar-fixture');
+      const signed = Buffer.concat([Buffer.from(wire.purposes.query_readback), bytes]), signature = Buffer.from(envelope.signature_base64, 'base64');
+      assert.ok(verify(null, signed, registrar.publicKey, signature));
+      assert.equal(verify(null, signed, keys.publicKey, signature), false);
       assert.equal(JSON.parse(bytes).action, 'read-management-evidence-query');
       await state.duringRead?.();
       return { content: [{ type: 'text', text: JSON.stringify({ query, query_sha256: delegationDigest(query), ...state.readback }) }] };
@@ -52,12 +56,12 @@ function fixture(t) {
       finish: async () => { await authorize(); return { startedAt: startAt, completedAt: state.now }; },
     };
   } };
-  const handler = new ManagementEvidenceCallback({ signer, reader, ledger: f.ledger, github, verifyStaff: async actor => {
+  const handler = new ManagementEvidenceCallback({ signer, readbackSigner, reader, ledger: f.ledger, github, verifyStaff: async actor => {
     assert.equal(actor.googleSubject, f.actor.googleSubject); assert.equal(actor.expiresAt, f.actor.expiresAt);
     await state.duringStaff?.();
   }, now: () => state.now, monotonic: () => state.mono });
   const call = async (input = pointer) => { if (!reader.ready) await reader.initialize(); return handler.respond(input); };
-  return { ...f, query, pointer, keys, signer, reader, status, tool, client, archives, run, artifacts, handler, call, calls };
+  return { ...f, query, pointer, keys, registrar, signer, readbackSigner, reader, status, tool, client, archives, run, artifacts, handler, call, calls };
 }
 
 test('authenticated evidence callback signs exact independent run and original ZIP observations under its separate purpose', async t => {
@@ -65,6 +69,8 @@ test('authenticated evidence callback signs exact independent run and original Z
   const bytes = Buffer.from(envelope.payload_base64, 'base64'), claims = JSON.parse(bytes);
   assert.equal(bytes.toString(), delegationCanonical(claims));
   assert.ok(verify(null, Buffer.concat([Buffer.from(wire.purposes.acquisition), bytes]), f.keys.publicKey, Buffer.from(envelope.signature_base64, 'base64')));
+  assert.equal(envelope.key_id, 'gateway-fixture');
+  assert.equal(verify(null, Buffer.concat([Buffer.from(wire.purposes.acquisition), bytes]), f.registrar.publicKey, Buffer.from(envelope.signature_base64, 'base64')), false);
   assert.equal(verify(null, Buffer.concat([Buffer.from(wire.purposes.qa_manifest), bytes]), f.keys.publicKey, Buffer.from(envelope.signature_base64, 'base64')), false);
   assert.equal(claims.context_sha256, delegationDigest(f.query.context)); assert.equal(claims.query_sha256, delegationDigest(f.query));
   assert.equal(claims.recorded_dispatch.dispatch_id, f.ledger.dispatch(f.job).provenance.dispatch_id);
@@ -197,11 +203,24 @@ test('optional evidence lifecycle warms a separate canonical reader, closes once
   assert.equal(await createManagementEvidenceRuntime(), null);
   const f = fixture(t); let closes = 0; f.client.close = async () => { closes++; };
   const runtime = await createManagementEvidenceRuntime({ enabled: true, access: f.access, policy: () => f.policy, appActorId: '40',
+    registrar: { keyId: 'registrar-fixture', privateKey: f.registrar.privateKey },
     identity: { keyId: 'gateway-fixture', privateKey: f.keys.privateKey }, verifyStaff: async () => {}, connect: async () => f.client });
   await runtime.close(); await runtime.close(); assert.equal(closes, 1);
   await assert.rejects(() => runtime.callback.respond(f.pointer)); assert.deepEqual(f.calls, []);
   f.tool.annotations.readOnlyHint = true;
   await assert.rejects(() => createManagementEvidenceRuntime({ enabled: true, access: f.access, policy: () => f.policy, appActorId: '40',
+    registrar: { keyId: 'registrar-fixture', privateKey: f.registrar.privateKey },
     identity: { keyId: 'gateway-fixture', privateKey: f.keys.privateKey }, verifyStaff: async () => {}, connect: async () => f.client }));
   assert.equal(closes, 2);
+});
+
+test('evidence callback refuses missing or aliased registrar authority without signing or backend reads', t => {
+  const f = fixture(t);
+  for (const readbackSigner of [undefined, f.signer,
+    new ManagementEvidenceSigner({ keyId: 'different-label', privateKey: f.keys.privateKey }),
+    new ManagementEvidenceSigner({ keyId: f.signer.keyId, privateKey: f.registrar.privateKey })]) {
+    assert.throws(() => new ManagementEvidenceCallback({ signer: f.signer, readbackSigner, reader: f.reader,
+      ledger: f.ledger, verifyStaff: async () => {} }), /distinct registrar/);
+  }
+  assert.deepEqual(f.calls, []);
 });

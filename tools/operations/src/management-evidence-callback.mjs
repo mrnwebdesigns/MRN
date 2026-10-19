@@ -1,4 +1,4 @@
-import { randomBytes, randomUUID, sign } from 'node:crypto';
+import { createPublicKey, randomBytes, randomUUID, sign } from 'node:crypto';
 import { requireThat } from './contracts.mjs';
 import { delegationCanonical, delegationDigest, delegationIssuer, delegationAudience } from './delegation.mjs';
 import { createPrivateQueryReader } from './access-control.mjs';
@@ -54,9 +54,13 @@ export class ManagementEvidenceSigner {
 // The opaque caller pointer cannot choose an actor, run, repository, key or URL.
 // These signatures describe independently downloaded bytes, not QA admission.
 export class ManagementEvidenceCallback {
-  constructor({ signer, reader, ledger, github, verifyStaff, now = () => Date.now(), monotonic = () => performance.now() }) {
+  constructor({ signer, readbackSigner, reader, ledger, github, verifyStaff, now = () => Date.now(), monotonic = () => performance.now() }) {
     check(typeof verifyStaff === 'function', 'Fresh original-staff verification is required for evidence acquisition.');
-    Object.assign(this, { signer, reader, ledger, github, verifyStaff, now, monotonic });
+    check(signer instanceof ManagementEvidenceSigner && readbackSigner instanceof ManagementEvidenceSigner
+      && signer.keyId !== readbackSigner.keyId && !createPublicKey(signer.privateKey).export({ type: 'spki', format: 'der' })
+        .equals(createPublicKey(readbackSigner.privateKey).export({ type: 'spki', format: 'der' })),
+    'Use distinct registrar query-readback and identity acquisition-observation keys.');
+    Object.assign(this, { signer, readbackSigner, reader, ledger, github, verifyStaff, now, monotonic });
   }
   async respond(input) {
     const pointer = parse(types.query_pointer, input), start = this.monotonic(), startAt = this.now();
@@ -72,7 +76,7 @@ export class ManagementEvidenceCallback {
         })]);
       } finally { clearTimeout(timer); }
     };
-    const { claims, envelope } = this.signer.readback(pointer);
+    const { claims, envelope } = this.readbackSigner.readback(pointer);
     const result = parse(types.query_readback_output, await bounded(() => this.reader.read(envelope), 2500));
     within();
     check(claims.issued_at <= Math.floor(this.now() / 1000) && claims.expires_at > Math.floor(this.now() / 1000)
@@ -99,10 +103,11 @@ export class ManagementEvidenceCallback {
 // Prepared lifecycle only. Startup still supplies no configuration or route;
 // source/native qualification and concrete production approval are separate.
 export async function createManagementEvidenceRuntime({ enabled = false, access, policy, appActorId,
-  identity, github, verifyStaff, connect } = {}) {
+  identity, registrar, github, verifyStaff, connect } = {}) {
   check(typeof enabled === 'boolean', 'Evidence runtime activation must be explicit.');
   if (!enabled) return null;
   const signer = new ManagementEvidenceSigner(identity || {});
+  const readbackSigner = new ManagementEvidenceSigner(registrar || {});
   const ledger = new ManagementEvidenceLedger(access, { policy, appActorId });
   const client = await connect(), reader = new ManagementEvidenceQueryReader(client);
   let closing = false, closePromise;
@@ -112,7 +117,7 @@ export async function createManagementEvidenceRuntime({ enabled = false, access,
   };
   try {
     await reader.initialize();
-    const handler = new ManagementEvidenceCallback({ signer, reader, ledger, github, verifyStaff });
+    const handler = new ManagementEvidenceCallback({ signer, readbackSigner, reader, ledger, github, verifyStaff });
     return { ledger, close, callback: { async respond(input) {
       check(!closing, 'The private evidence reader is closed.');
       const result = await handler.respond(input);

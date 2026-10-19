@@ -65,6 +65,14 @@ actual successful MCP acquisition, retained raw evidence, fresh summary readback
 and fault handling still require native integration proof. This transport neither
 selects a caller's identity/run nor signs or admits a report.
 
+The evidence callback now uses a distinct registrar key for the provider query
+readback and the identity key only for acquisition observations, matching the
+provider's existing `query_claims` and `observe` checks. Reusing either a key ID
+or public-key material across those roles is refused. Eleven callback groups
+verify both signatures under the intended keys and reject the opposite roles;
+all 494 local gateway tests pass. The successful native report-custody hook is
+still pending, so these controlled signatures do not prove report retention.
+
 The following sections retain individual source checkpoints and their limits.
 They are not evidence of production activation or team readiness.
 
