@@ -12052,8 +12052,17 @@ function mrn_base_stack_get_content_list_pagination_query_arg( $post_id, $index 
 function mrn_base_stack_get_content_list_current_page( $post_id, $index ) {
 	$query_arg = mrn_base_stack_get_content_list_pagination_query_arg( $post_id, $index );
 
-	if ( isset( $_GET[ $query_arg ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended,Generic.WhiteSpace.ScopeIndent.IncorrectExact
-		return max( 1, absint( wp_unslash( $_GET[ $query_arg ] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended,Generic.WhiteSpace.ScopeIndent.IncorrectExact
+	if ( isset( $_GET[ $query_arg ] ) && is_string( $_GET[ $query_arg ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		// Read-only cursor; the strict decimal allowlist below rejects all other input.
+		$value = wp_unslash( $_GET[ $query_arg ] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		if ( preg_match( '/^[0-9]+$/D', $value ) ) {
+			$value = ltrim( $value, '0' );
+			$limit = (string) PHP_INT_MAX;
+			if ( strlen( $value ) > strlen( $limit ) || ( strlen( $value ) === strlen( $limit ) && strcmp( $value, $limit ) > 0 ) ) {
+				return PHP_INT_MAX;
+			}
+			return max( 1, (int) $value );
+		}
 	}
 
 	return 1;

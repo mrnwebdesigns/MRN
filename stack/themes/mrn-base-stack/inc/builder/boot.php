@@ -13,6 +13,10 @@ require_once __DIR__ . '/acf-field-finalization.php';
 
 require_once __DIR__ . '/helpers.php';
 
+require_once __DIR__ . '/list-pagination.php';
+
+require_once __DIR__ . '/list-pagination-seo.php';
+
 require_once __DIR__ . '/presentation.php';
 
 require_once __DIR__ . '/hero-frame.php';
