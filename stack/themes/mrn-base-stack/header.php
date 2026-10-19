@@ -38,7 +38,6 @@
 		$mrn_show_search                   = ! empty( $mrn_header_options['header_show_search'] ) && function_exists( 'mrn_base_stack_has_action' ) && mrn_base_stack_has_action( 'mrn_base_stack_header_search' );
 		$mrn_show_business_phone           = ! empty( $mrn_header_options['header_show_business_phone'] ) && ! empty( $mrn_business_information['phone'] ) && ! empty( $mrn_business_information['phone_uri'] );
 		$mrn_show_business_profile         = ! empty( $mrn_header_options['header_show_business_profile'] ) && ! empty( $mrn_business_information['business_profile'] );
-		$mrn_show_header_utility_message   = function_exists( 'mrn_base_stack_has_header_utility_message' ) && mrn_base_stack_has_header_utility_message();
 		$mrn_has_header_menu_rows          = $mrn_show_secondary_menu;
 		$mrn_business_logo                 = function_exists( 'mrn_base_stack_get_business_logo' ) ? mrn_base_stack_get_business_logo( 'header', $mrn_business_information ) : null;
 		$mrn_has_custom_logo               = function_exists( 'has_custom_logo' ) && has_custom_logo();
@@ -118,7 +117,7 @@
 		);
 		/* translators: %s: Site name. */
 		$mrn_header_home_label  = sprintf( __( '%s home', 'mrn-base-stack' ), get_bloginfo( 'name' ) );
-		$mrn_header_render_item = static function ( $mrn_header_item_key ) use ( $mrn_header_item_attributes, $mrn_has_header_menu_rows, $mrn_header_rows, $mrn_show_header_utility_message, $mrn_business_logo, $mrn_has_custom_logo, $mrn_header_home_label, $mrn_show_header_tagline, $mrn_base_stack_description, $mrn_show_business_profile, $mrn_business_information, $mrn_show_business_phone, $mrn_show_search, $mrn_show_tertiary_menu, $mrn_header_tertiary_location ) {
+		$mrn_header_render_item = static function ( $mrn_header_item_key ) use ( $mrn_header_item_attributes, $mrn_has_header_menu_rows, $mrn_header_rows, $mrn_business_logo, $mrn_has_custom_logo, $mrn_header_home_label, $mrn_show_header_tagline, $mrn_base_stack_description, $mrn_show_business_profile, $mrn_business_information, $mrn_show_business_phone, $mrn_show_search, $mrn_show_tertiary_menu, $mrn_header_tertiary_location ) {
 			switch ( $mrn_header_item_key ) {
 				case 'secondary_menu':
 					if ( ! $mrn_has_header_menu_rows ) {
@@ -153,9 +152,6 @@
 					break;
 
 				case 'header_utility_message':
-					if ( ! $mrn_show_header_utility_message ) {
-						return;
-					}
 					?>
 					<div <?php echo $mrn_header_item_attributes( 'header_utility_message', 'header-utility-message', 'mrn-site-header__utility-message-item' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Attribute helper escapes attribute names and values. ?> <?php echo mrn_base_stack_get_header_utility_message_schedule_attributes(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Schedule helper escapes date attributes. ?>>
 						<?php echo function_exists( 'mrn_base_stack_get_header_utility_message_markup' ) ? mrn_base_stack_get_header_utility_message_markup() : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Helper sanitizes text, URL, target, classes, and link title. ?>

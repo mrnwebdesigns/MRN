@@ -92,8 +92,11 @@ Scheduled message markup remains in cached HTML, initially hidden. The inline
 controller obtains UTC from a same-origin, public, read-only POST endpoint at
 `/wp-json/mrn/v1/header-utility-message-clock`. Browser/CDN no-store headers and
 a random echoed request token prevent cached clock replies from being trusted.
-The response also binds the cached message to the current saved settings; an
-outdated message stays hidden until the page cache is refreshed.
+The response binds the message to the current saved settings. Refresh clients
+send their current fingerprint and receive sanitized replacement markup and
+schedule rules only when settings have changed. Disabled/invalid messages return
+an empty slot without their saved content. The older clock-only contract remains
+available for cached controllers from earlier releases.
 
 The server clock anchors `performance.now()` for exact date boundaries and
 recurring rules in the selected zone. Visitor wall time and browser time zone do
@@ -101,8 +104,14 @@ not decide visibility. The controller excludes server processing time when
 estimating network transit, resynchronizes once per minute while visible and
 whenever the tab regains focus, and discards samples after two minutes. Failed,
 slow or unverified responses hide the message and retry after 15 seconds.
-Messages also stay hidden without JavaScript or before the first verified reply.
-Manual messages make no clock requests. No WordPress cron job is involved.
+Scheduled messages stay hidden without JavaScript or before the first verified
+reply. Manual messages retain server-rendered output without JavaScript. With
+JavaScript, every header message slot checks once per minute while visible,
+including an empty/inactive slot, so an open page can discover a newly enabled
+message. Returning to a tab checks immediately. Unchanged markup is left intact;
+updates replace only the message, preserving forms and the surrounding page.
+Icon stylesheets are loaded on demand when a changed message needs them.
+No WordPress cron job is involved.
 
 Some browsers pause their monotonic counter during OS sleep. Device wall time
 is used only to detect a discontinuity and request fresh server time; it can
@@ -112,10 +121,15 @@ timer scheduling; sleeping/offline browsers cannot promise a simultaneous visual
 change. Use a time-synchronized host clock. The selected city zone still owns
 DST conversion, independently of the server's configured local zone.
 
-Changing saved content, dates or Active requires the site's normal options-page
-HTML cache invalidation. A settings fingerprint prevents stale cached scheduled
-content from being authorized after the next clock check. Child themes overriding
-the parent's header must preserve its schedule attributes and adjacent controller.
+Saving content, dates or Active reaches visible open pages on their next check
+(normally within a minute). A saved schedule already loaded in a page still
+switches at its exact boundaries between checks. Deploying this feature requires
+normal HTML cache invalidation once so pages receive the new controller and empty
+slot; pages opened before deployment need a navigation/reload to receive it.
+Normal cache purges after settings edits keep the initial HTML and no-JavaScript
+manual output current, but updated controllers recover fresh settings without a
+page reload or purge. Child themes overriding the parent's header must preserve
+the message slot, its refresh attributes and adjacent controller even when off.
 
 Focused checks:
 

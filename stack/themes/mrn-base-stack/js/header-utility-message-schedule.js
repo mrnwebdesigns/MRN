@@ -3,12 +3,14 @@
 	'use strict';
 
 	const item = document.currentScript.previousElementSibling;
-	if ( ! item || ! item.hasAttribute( 'data-mrn-utility-schedule' ) ) {
+	if ( ! item || ! item.hasAttribute( 'data-mrn-utility-refresh' ) ) {
 		return;
 	}
 
-	const start = item.dataset.mrnUtilityStart ? Number( item.dataset.mrnUtilityStart ) * 1000 : null;
-	const end = item.dataset.mrnUtilityEnd ? Number( item.dataset.mrnUtilityEnd ) * 1000 : null;
+	let enabled = item.dataset.mrnUtilityEnabled === '1';
+	let scheduled = item.hasAttribute( 'data-mrn-utility-schedule' );
+	let start = item.dataset.mrnUtilityStart ? Number( item.dataset.mrnUtilityStart ) * 1000 : null;
+	let end = item.dataset.mrnUtilityEnd ? Number( item.dataset.mrnUtilityEnd ) * 1000 : null;
 	let rules;
 	let formatter;
 	let clockUrl;
@@ -28,8 +30,8 @@
 		// Invalid or unsupported schedule data stays hidden.
 		return;
 	}
-	const hasDayRules = rules.weekdays.length || rules.holidays.length || rules.custom_days.length;
-	const hasRecurringRules = hasDayRules || rules.daily_start !== null;
+	let hasDayRules = rules.weekdays.length || rules.holidays.length || rules.custom_days.length;
+	let hasRecurringRules = scheduled && ( hasDayRules || rules.daily_start !== null );
 	const dayMilliseconds = 86400000;
 	const holidayCache = new Map();
 	let timer;
@@ -40,6 +42,60 @@
 	let lastMonotonic = performance.now();
 	let lastWallTime = Date.now();
 	const sampleLifetime = 120000;
+
+	function refreshMessage( data ) {
+		if ( data.version === item.dataset.mrnUtilityVersion ) {
+			return false;
+		}
+		const message = data.message;
+		if ( ! message || typeof message.enabled !== 'boolean' || typeof message.scheduled !== 'boolean' || typeof message.html !== 'string' || ! Array.isArray( message.styles ) ||
+			! [ message.start, message.end ].every( value => value === null || Number.isFinite( value ) ) ||
+			! message.rules || ! [ 'weekdays', 'holidays', 'custom_days' ].every( name => Array.isArray( message.rules[ name ] ) ) ||
+			! [ message.rules.daily_start, message.rules.daily_end, message.rules.offset ].every( value => value === null || Number.isFinite( value ) ) ) {
+			throw new Error( 'Invalid message update' );
+		}
+		const nextFormatter = new Intl.DateTimeFormat( 'en-US', {
+			timeZone: message.rules.offset === null ? message.rules.timezone : 'UTC',
+			calendar: 'gregory', numberingSystem: 'latn', hourCycle: 'h23',
+			year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short',
+			hour: '2-digit', minute: '2-digit', second: '2-digit',
+		} );
+		const styles = message.styles.map( href => {
+			const url = new URL( href, window.location.href );
+			if ( ! /^https?:$/.test( url.protocol ) ) {
+				throw new Error( 'Invalid message stylesheet' );
+			}
+			return url.href;
+		} );
+		const restoreFocus = item.contains( document.activeElement );
+		// Markup comes only from the same-origin, read-only endpoint, which uses
+		// the same sanitized/escaped rendering helper as the initial page.
+		item.innerHTML = message.enabled ? message.html : '';
+		enabled = message.enabled;
+		scheduled = enabled && message.scheduled;
+		start = message.start === null ? null : message.start * 1000;
+		end = message.end === null ? null : message.end * 1000;
+		rules = message.rules;
+		formatter = nextFormatter;
+		hasDayRules = rules.weekdays.length || rules.holidays.length || rules.custom_days.length;
+		hasRecurringRules = scheduled && ( hasDayRules || rules.daily_start !== null );
+		holidayCache.clear();
+		item.dataset.mrnUtilityVersion = data.version;
+		item.dataset.mrnUtilityEnabled = enabled ? '1' : '0';
+		item.dataset.mrnUtilityStart = message.start === null ? '' : String( message.start );
+		item.dataset.mrnUtilityEnd = message.end === null ? '' : String( message.end );
+		item.dataset.mrnUtilityRules = JSON.stringify( rules );
+		item.toggleAttribute( 'data-mrn-utility-schedule', scheduled );
+		for ( const href of styles ) {
+			if ( ! Array.from( document.querySelectorAll( 'link[rel="stylesheet"]' ) ).some( link => link.href === href ) ) {
+				const link = document.createElement( 'link' );
+				link.rel = 'stylesheet';
+				link.href = href;
+				document.head.append( link );
+			}
+		}
+		return restoreFocus;
+	}
 
 	function invalidate() {
 		sample = null;
@@ -61,22 +117,26 @@
 			const token = Array.from( crypto.getRandomValues( new Uint32Array( 4 ) ), value => value.toString( 16 ).padStart( 8, '0' ) ).join( '' );
 			const response = await fetch( clockUrl.href, {
 				method: 'POST', cache: 'no-store', credentials: 'omit', redirect: 'error',
-				headers: { 'Content-Type': 'application/json' }, body: JSON.stringify( { token } ), signal: controller.signal,
+				headers: { 'Content-Type': 'application/json' }, body: JSON.stringify( { token, refresh: true, version: item.dataset.mrnUtilityVersion } ), signal: controller.signal,
 			} );
 			const data = await response.json();
 			const received = performance.now();
 			if ( id !== requestId ) {
 				return;
 			}
-			if ( ! response.ok || Number( response.headers.get( 'Age' ) ) > 0 || data.token !== token || data.version !== item.dataset.mrnUtilityVersion || ! Number.isFinite( data.now ) || data.now <= 0 || ! Number.isFinite( data.received ) || data.received > data.now || received - started > 5000 ) {
+			if ( ! response.ok || Number( response.headers.get( 'Age' ) ) > 0 || data.token !== token || ! /^[a-f0-9]{64}$/.test( data.version ) || ! Number.isFinite( data.now ) || data.now <= 0 || ! Number.isFinite( data.received ) || data.received > data.now || received - started > 5000 ) {
 				throw new Error( 'Unverified server clock' );
 			}
+			const restoreFocus = refreshMessage( data );
 			// Exclude WordPress processing time before estimating network transit.
 			// Device wall time never enters this UTC anchor or visibility decisions.
 			const transit = Math.max( 0, received - started - ( data.now - data.received ) );
 			sample = { utc: data.now + transit / 2, monotonic: received };
 			item.dataset.mrnUtilityClock = 'synced';
 			update();
+			if ( restoreFocus && ! item.hidden ) {
+				item.querySelector( 'a' )?.focus( { preventScroll: true } );
+			}
 		} catch ( error ) {
 			if ( id === requestId ) {
 				invalidate();
@@ -181,11 +241,11 @@
 			return;
 		}
 		const now = sample.utc + performance.now() - sample.monotonic;
-		item.hidden =
+		item.hidden = ! enabled || ( scheduled && (
 			( start !== null && ( ! Number.isFinite( start ) || now < start ) ) ||
 			( end !== null && ( ! Number.isFinite( end ) || now >= end ) ) ||
-			( hasRecurringRules && ! matchesRecurringRules( now ) );
-		let next = start !== null && now < start ? start : end;
+			( hasRecurringRules && ! matchesRecurringRules( now ) ) ) );
+		let next = scheduled ? ( start !== null && now < start ? start : end ) : null;
 		if ( hasRecurringRules && ( start === null || now >= start ) && ( end === null || now < end ) ) {
 			// One local computation per minute keeps weekly/holiday rules correct
 			// through DST jumps, including intervals skipped by the clock change.
