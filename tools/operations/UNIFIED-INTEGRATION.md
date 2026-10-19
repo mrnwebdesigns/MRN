@@ -11,14 +11,14 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
   and code tools are absent. New tools default to disabled. No individual
   enrollment or personal backend credentials are required. Team editing is
   not yet ready.
-- Accepted gateway checkpoint `1d8bca5` passed 526 tests, combined run
-  `39326254460` and MRN QA `39326254417`. All seven original reports were
+- Accepted gateway checkpoint `7d69ec5` passed 549 tests, combined run
+  `39332023874` and MRN QA `39332023751`. All seven original reports were
   independently verified, including native content edit/readback/rollback,
-  complete source reconstruction and report custody against provider `4929f0d`
-  and worker `cd74e20`. Tested merge `77660eeb7322f217c2cfcd6d64771234a39e5995`
-  has identical gateway, workflow, runtime and Fleet regression blobs. Later
-  existing-v2 preparation `0dd1159` passes 533 local tests, lint and staged MRN
-  QA; combined run `39329470202` and MRN QA `39329470179` are pending.
+  complete source reconstruction and report custody against provider `5905258`
+  and worker `cd74e20`. Tested merge `55da89aa35a6dc534c0dd5b7d466656414a474ff`
+  has identical gateway, workflow, runtime and Fleet regression blobs.
+  Intermediate checkpoints `0dd1159` and `3c98733` also passed their hosted
+  runs and independent original-archive/source verification.
 - Candidate provider `5905258` passes all four jobs in `39325764872`, with
   exact tested merge tree `638b5dd43a98bdb1018521a65e8c59698ef58dc6` and
   independently retained original log. Its 38 new native authorization checks
@@ -27,8 +27,7 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
   state. The prior 46 original-selection and three 128 MiB isolation checks
   also pass. Runtime bytes are unchanged from `f2262cf`; its earlier failed
   fixture run `39324850558` remains recorded. The failure did not recur; a
-  root-cause fix is not claimed. The gateway now pins this provider for its
-  next combined run. Existing-v2 routes and admission remain disabled.
+  root-cause fix is not claimed. The accepted combined gateway run pins this provider. Existing-v2 routes and admission remain disabled.
 - Worker `cd74e20` passes 160 tests and all three jobs in `39320436312`. Both
   original archives and all eight reports were independently verified, with
   exact edit/restored snapshots and browser/profile/runtime/parity hashes.
@@ -118,11 +117,22 @@ Each control consumes a genuine in-process readiness observation once, enforces
 the twenty-second call limit and original claim ceiling, and compares the exact
 returned original projection. Lost or altered responses never trigger a retry.
 
-The 549 local tests, lint and focused legacy regressions pass. These source tests
+The ledger now retains only a genuine transport observation tied to its exact
+dispatched control and input digest. The complete original projection, observed
+coherence epoch and actor-derived identity have an independent digest marker in
+the original attempt. Receipt, observation history and audit commit atomically.
+A new signed read can recover a lost bind response after restart and transport
+expiry, but cannot replace a retained binding hash/epoch or extend the original
+resource grant. Missing, corrupt or rolled-back history fails closed across all
+content writers. Recovery returns historical metadata, never current admission.
+
+All 556 local tests and lint pass, including 41 focused groups. Independent
+review of the committed issuer/transport found no blocker. These source tests
 do not prove an available provider endpoint. The next composition must retain
-the original readiness epoch before preview and the immutable provider binding
-after successful bind/read, then qualify the complete flow over actual MCP.
-Neither this transport nor its optional lifecycle is registered at startup.
+the original readiness epoch before preview, then qualify the complete flow
+over actual MCP. Neither this transport nor its optional lifecycle is registered
+at startup. Existing production authorization and the company code pilot are
+unchanged.
 
 ## Existing-record v2 gateway preparation
 

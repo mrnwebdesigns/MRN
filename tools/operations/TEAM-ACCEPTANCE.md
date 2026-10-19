@@ -44,18 +44,18 @@ Use already-authorized test identities or separately reviewed administrative tes
 
 ## Latest disposable evidence, 2026-10-19
 
-Gateway `1d8bca5` is the latest independently accepted combined checkpoint:
-[CI 39326254460](https://github.com/mrnwebdesigns/MRN/actions/runs/39326254460)
-and [MRN QA 39326254417](https://github.com/mrnwebdesigns/MRN/actions/runs/39326254417)
+Gateway `7d69ec5` is the latest independently accepted combined checkpoint:
+[CI 39332023874](https://github.com/mrnwebdesigns/MRN/actions/runs/39332023874)
+and [MRN QA 39332023751](https://github.com/mrnwebdesigns/MRN/actions/runs/39332023751)
 pass. All seven original reports and relevant tested source/workflow/Fleet blobs
 match committed source, including actual TLS/MCP report custody, native content
 edit/readback/exact rollback, original revocation denial and source reconstruction.
-Artifact `12224250460` is 10147 bytes, SHA-256
-`04bcaa467bdb4f4c83335d6c2c9e8d9008f44793a6216852492fc28049217afd`.
+Artifact `12225801535` is 10153 bytes, SHA-256
+`8deffe89353797943b91d7815f643c0b6e2c565f57383c210f6c49335ab6b0ad`.
 The synthetic identity, remote-backup, hosted-provenance and rendered-QA limits
-remain explicit. Later gateway/source contracts and provider authorization work
-do not change any live acceptance row above. Current implementation details and
-pending qualification are maintained in `UNIFIED-INTEGRATION.md`.
+remain explicit. Private original-authorization controls and response retention
+have local tests but are not registered provider endpoints or live acceptance.
+Current implementation and remaining qualification are in `UNIFIED-INTEGRATION.md`.
 
 ## Earlier disposable checkpoints
 

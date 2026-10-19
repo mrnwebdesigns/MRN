@@ -8,6 +8,7 @@ import { digest, registryTargetSchema, requireThat, sha } from './contracts.mjs'
 import { managementSchemas, validateManagementEvidence } from './content-management-contract.mjs';
 import { compileManagementEvidenceSchema } from './content-management-schema.mjs';
 import { existingManagementHashes, existingManagementProtocol } from './management-existing-contracts.mjs';
+import { originalBindingObservation, parseOriginalBindingProjection } from './original-authorization-transport.mjs';
 
 const check = (ok, message) => requireThat(ok, 'ORIGINAL_AUTHORIZATION', message);
 const parse = (schema, value) => {
@@ -57,12 +58,15 @@ export class OriginalManagementAuthorizationLedger {
       CREATE UNIQUE INDEX IF NOT EXISTS original_management_single_bind ON original_management_controls(original) WHERE kind='bind';
       CREATE TABLE IF NOT EXISTS original_management_control_history(
       id TEXT NOT NULL, original TEXT NOT NULL, kind TEXT NOT NULL, digest TEXT NOT NULL, principal TEXT NOT NULL,
-      requester TEXT NOT NULL, state TEXT NOT NULL, PRIMARY KEY(id,state));`);
+      requester TEXT NOT NULL, state TEXT NOT NULL, PRIMARY KEY(id,state));
+      CREATE TABLE IF NOT EXISTS original_management_bindings(original TEXT PRIMARY KEY, body TEXT NOT NULL, digest TEXT NOT NULL);`);
     const columns = this.store.db.prepare('PRAGMA table_info(original_management_attempts)').all();
     if (!columns.some(c => c.name === 'bind_control'))
       this.store.db.exec("ALTER TABLE original_management_attempts ADD COLUMN bind_control TEXT NOT NULL DEFAULT ''");
     if (!columns.some(c => c.name === 'control_count'))
       this.store.db.exec('ALTER TABLE original_management_attempts ADD COLUMN control_count INTEGER NOT NULL DEFAULT 0');
+    if (!columns.some(c => c.name === 'binding_digest'))
+      this.store.db.exec("ALTER TABLE original_management_attempts ADD COLUMN binding_digest TEXT NOT NULL DEFAULT ''");
   }
   #actor(value) {
     // Never accept a caller-created actor, hash or session ID at this boundary.
@@ -227,9 +231,10 @@ export class OriginalManagementAuthorizationLedger {
   #controls(current) {
     const m = current.mapping;
     const rows = this.store.db.prepare('SELECT * FROM original_management_controls WHERE original=? LIMIT 66').all(m.requestId);
-    const history = this.store.db.prepare('SELECT * FROM original_management_control_history WHERE original=? LIMIT 131').all(m.requestId);
+    const history = this.store.db.prepare('SELECT * FROM original_management_control_history WHERE original=? LIMIT 196').all(m.requestId);
     const attempt = this.store.db.prepare('SELECT bind_control,control_count FROM original_management_attempts WHERE attempt=?').get(m.attempt);
-    check(rows.length <= 65 && history.length <= 130, 'Original authorization control history exceeds its bound.');
+    const binding = this.#binding(current);
+    check(rows.length <= 65 && history.length <= 195, 'Original authorization control history exceeds its bound.');
     check(Number.isSafeInteger(attempt?.control_count) && attempt.control_count === rows.length,
       'The original attempt has lost control history; do not reconstruct it.');
     const values = rows.map(row => {
@@ -250,7 +255,8 @@ export class OriginalManagementAuthorizationLedger {
           c.original_resource_authorization_expires_at, Math.floor(current.review.expiresAt / 1000),
           control.kind === 'bind' ? Math.floor(m.transportExpiresAt / 1000) : Infinity),
       'Original authorization control differs from retained authority.');
-      const states = row.state === 'prepared' ? ['prepared'] : row.state === 'dispatched' ? ['prepared', 'dispatched'] : [];
+      const states = row.state === 'prepared' ? ['prepared'] : row.state === 'dispatched' ? ['prepared', 'dispatched']
+        : row.state === 'observed' && binding ? ['prepared', 'dispatched', 'observed'] : [];
       const entries = history.filter(entry => entry.id === row.id);
       check(states.length > 0 && entries.length === states.length && states.every(state => entries.some(entry => entry.state === state
         && entry.kind === row.kind && entry.digest === row.digest && entry.principal === m.principal && entry.requester === m.requester)),
@@ -261,6 +267,7 @@ export class OriginalManagementAuthorizationLedger {
     check(values.filter(row => row.kind === 'bind').length <= 1, 'Original bind history is ambiguous.');
     check(attempt.bind_control === (values.find(row => row.kind === 'bind')?.id ?? '')
       && (!values.length || values.some(row => row.kind === 'bind')), 'The original bind marker is missing or inconsistent.');
+    check(!binding || values.some(row => row.state === 'observed'), 'The original provider binding has lost its observation history.');
     return values;
   }
   #appendControlHistory(row, m, state) {
@@ -274,7 +281,7 @@ export class OriginalManagementAuthorizationLedger {
       check(current.state === 'reviewed' && current.digest === before.digest && current.revision === before.revision,
         'Original authority changed before control issuance.');
       const controls = this.#controls(current), bound = controls.find(row => row.kind === 'bind');
-      check(controls.length < 65 && (kind === 'bind' ? !bound : bound?.state === 'dispatched'),
+      check(controls.length < 65 && (kind === 'bind' ? !bound : ['dispatched', 'observed'].includes(bound?.state)),
         'Bind is already issued or unavailable; recovery requires the original dispatched bind.');
       const issued = Math.floor(this.now() / 1000);
       const claims = parse(authorizationClaims, { schema: 2, issuer: delegationIssuer, audience: delegationAudience,
@@ -332,5 +339,69 @@ export class OriginalManagementAuthorizationLedger {
       return input;
     });
     this.#controlHandles.delete(handle); return result;
+  }
+
+  #binding(current) {
+    const m = current.mapping, row = this.store.db.prepare('SELECT body,digest FROM original_management_bindings WHERE original=?').get(m.requestId);
+    const marker = this.store.db.prepare('SELECT binding_digest FROM original_management_attempts WHERE attempt=?').get(m.attempt);
+    check(marker && typeof marker.binding_digest === 'string', 'Original provider binding marker is unavailable.');
+    if (marker.binding_digest === '') { check(!row, 'The original provider binding marker is missing.'); return null; }
+    check(row && digest(row.body) === row.digest && row.digest === marker.binding_digest, 'Original provider binding is missing or corrupt.');
+    let value; try { value = JSON.parse(row.body); } catch { check(false, 'Original provider binding is corrupt.'); }
+    const saved = parse(z.object({ schema: z.literal(1), actor: accessActorSchema, principal: sha, requester: sha,
+      original: z.string().uuid(), projection: z.unknown(), coherenceEpochSha256: sha }).strict(), value);
+    const projection = parseOriginalBindingProjection(saved.projection);
+    check(saved.original === m.requestId && saved.principal === m.principal && saved.requester === m.requester
+      && delegationDigest(saved.actor) === delegationDigest(m.actor), 'Original provider binding belongs to another person.');
+    this.#projection(current, projection);
+    return { ...saved, projection, digest: row.digest };
+  }
+  #projection(current, projection) {
+    const m = current.mapping;
+    check(projection.operation_id === current.review?.operationId && projection.reviewed_digest === current.review?.reviewedDigest
+      && projection.original_delegation_request_id === m.requestId
+      && projection.original_resource_authorization_sha256 === m.authorization.authorizationSha256
+      && projection.original_resource_authorization_expires_at === Math.floor(m.authorization.expiresAt / 1000),
+    'The provider projection does not bind the retained original.');
+  }
+  // The private transport brands the exact authenticated result after checking
+  // its input, readiness, source/policy, deadline and complete response. A plain
+  // object, another control or a deserialized copy cannot create this record.
+  async recordProviderBinding(controlId, actor, response) {
+    const observation = originalBindingObservation(response);
+    check(observation.controlId === controlId, 'The provider response belongs to another control.');
+    const before = await this.readCurrent(observation.originalRequestId, actor);
+    const projection = parseOriginalBindingProjection(response);
+    return this.store.transaction(() => {
+      const current = this.#current(observation.originalRequestId, actor), m = current.mapping;
+      check(current.digest === before.digest && current.revision === before.revision, 'Original authority changed before binding retention.');
+      const control = this.#controls(current).find(row => row.id === controlId);
+      check(control?.state === 'dispatched' && control.control.inputDigest === observation.inputDigest
+        && control.control.claims.expires_at > Math.floor(this.now() / 1000), 'The provider observation is expired, consumed or unrelated.');
+      this.#projection(current, projection);
+      const saved = { schema: 1, actor: m.actor, principal: m.principal, requester: m.requester, original: m.requestId,
+        projection, coherenceEpochSha256: observation.coherenceEpochSha256 }, body = JSON.stringify(saved), hash = digest(body);
+      const existing = this.#binding(current);
+      if (existing) check(existing.digest === hash, 'A fresh read cannot replace the original provider binding or coherence epoch.');
+      else {
+        this.store.db.prepare('INSERT INTO original_management_bindings VALUES(?,?,?)').run(m.requestId, body, hash);
+        check(this.store.db.prepare("UPDATE original_management_attempts SET binding_digest=? WHERE attempt=? AND binding_digest=''")
+          .run(hash, m.attempt).changes === 1, 'The original provider binding marker could not be retained.');
+      }
+      check(this.store.db.prepare("UPDATE original_management_controls SET state='observed' WHERE id=? AND state='dispatched'")
+        .run(controlId).changes === 1, 'Provider observation could not be retained.');
+      this.#appendControlHistory(control, m, 'observed');
+      this.store.audit(m.actor, m.site, m.requestId, 'original-provider-binding', 'observed');
+      this.#controls(current); return this.#binding(current);
+    });
+  }
+  async readProviderBinding(requestId, actor) {
+    const before = await this.readCurrent(requestId, actor);
+    return this.store.transaction(() => {
+      const current = this.#current(requestId, actor);
+      check(current.digest === before.digest && current.revision === before.revision, 'Original authority changed before provider binding recovery.');
+      this.#controls(current); const binding = this.#binding(current);
+      check(binding, 'The original provider binding has not been observed.'); return binding;
+    });
   }
 }

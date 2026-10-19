@@ -16,6 +16,7 @@ import { requesterDigest } from '../src/access-principal.mjs';
 import { accessRegistry } from './fixtures/access-registry.mjs';
 import { managementAccessFixture } from './fixtures/management-access.mjs';
 import { existingManagementHashes } from '../src/management-existing-contracts.mjs';
+import { OriginalAuthorizationTransport, originalBindingObservation } from '../src/original-authorization-transport.mjs';
 
 const audience = 'https://operations.mrnwebdesigns.com/mcp', issuer = 'https://identity.example.test/';
 async function fixture(t, durable = false) {
@@ -444,4 +445,159 @@ test('control persistence and audit commit atomically before any signature can b
   await assert.rejects(() => f.ledger.claimControlDispatch(h, f.actor));
   assert.equal(f.store.db.prepare('SELECT state FROM original_management_controls').get().state, 'prepared');
   assert.equal(f.store.db.prepare('SELECT count(*) n FROM original_management_control_history').get().n, 1);
+});
+
+// The real private transport performs discovery, schema/identity correlation,
+// purpose, freshness and size checks. Only its returned object can be retained.
+async function provider(f) {
+  const raw = readFileSync(new URL('../contracts/content-management-existing-dispatch-v2-proposal.json', import.meta.url));
+  const wire = JSON.parse(raw), names = Object.fromEntries(Object.entries(wire.machine_abilities)
+    .map(([k, v]) => [k, v.name.replace('/', '__').replaceAll('-', '_')]));
+  const state = { epoch: '7'.repeat(64), binding: '8'.repeat(64), calls: [] };
+  const policy = () => ({ provider_source_sha: f.pins.provider_source_sha, authorization_policy_sha256: f.pins.authorization_policy_sha256 });
+  const client = {
+    async readResource() { return { contents: [{ text: JSON.stringify({ connected: true, dashboardHost: 'wpcontrol.mrndev.io', abilitiesCount: 115 }) }] }; },
+    async listTools() { return { tools: Object.entries(wire.machine_abilities).map(([kind, v]) => ({ name: names[kind], annotations: v.annotations })) }; },
+    async callTool({ name, arguments: input }) {
+      state.calls.push(name); let result;
+      if (name === names.readiness) result = { schema: 2, dashboard_origin: 'https://wpcontrol.mrndev.io',
+        qualification_protocol: 'content-management-existing-v2', lifetime_domain: 'original-resource-authorization-v2',
+        protocol_contracts_sha256: existingManagementHashes, ...policy(),
+        original_authorization_contract_sha256: '3a77cf8ad2131fd1e2255e74d2a3dcd9ca1d18051e5acc1d51bdb6b7d6fa73c2',
+        dispatch_contract_sha256: digest(raw), observed_at: Math.floor(Date.now() / 1000), expires_at: Math.floor(Date.now() / 1000) + 30,
+        binding_readiness: 'ready', coherence_ready: true, coherence_epoch_sha256: state.epoch,
+        source_selected_preview_enabled: true, machine_binding_enabled: true, production_qualified: false, consumer_binding_issued: false };
+      else {
+        const e = input.signed_request, bytes = Buffer.from(e.payload_base64, 'base64'), c = JSON.parse(bytes);
+        const kind = name === names.bind ? 'bind' : 'read'; assert.equal(name, names[kind]);
+        assert.ok(verify(null, Buffer.concat([Buffer.from(wire.machine_abilities[kind].purpose), bytes]), f.keys.publicKey, Buffer.from(e.signature_base64, 'base64')));
+        result = { schema: 2, ...Object.fromEntries(['operation_id', 'reviewed_digest', 'qualification_protocol', 'protocol_contracts_sha256',
+          'original_delegation_request_id', 'original_resource_authorization_sha256', 'original_resource_authorization_expires_at'].map(k => [k, c[k]])),
+          state: 'bound-blocked', authorization_binding_sha256: state.binding, production_qualified: false, consumer_binding_issued: false };
+      }
+      return { content: [{ type: 'text', text: JSON.stringify(result) }] };
+    },
+  };
+  const transport = new OriginalAuthorizationTransport(client, { policy }); await transport.initialize();
+  async function observe(kind = 'bind', ledger = f.ledger, actor = f.actor) {
+    const handle = await ledger[kind === 'bind' ? 'prepareBind' : 'prepareRead'](f.original, actor);
+    const input = await ledger.claimControlDispatch(handle, actor), ready = await transport.status();
+    return { handle, input, response: await transport[kind](input, ready) };
+  }
+  return { state, observe, transport };
+}
+
+test('only the exact authenticated provider observation is retained with immutable original metadata and audit', async t => {
+  const f = await reviewed(t), p = await provider(f), { handle, input, response } = await p.observe();
+  for (const value of [{ ...response }, structuredClone(response), null]) {
+    assert.throws(() => originalBindingObservation(value));
+    await assert.rejects(() => f.ledger.recordProviderBinding(handle.controlId, f.actor, value));
+  }
+  await assert.rejects(() => f.ledger.recordProviderBinding(randomUUID(), f.actor, response));
+  const saved = await f.ledger.recordProviderBinding(handle.controlId, f.actor, response);
+  assert.equal(saved.original, f.original); assert.deepEqual(saved.projection, response);
+  assert.equal(saved.coherenceEpochSha256, p.state.epoch);
+  assert.equal(saved.projection.original_resource_authorization_expires_at, f.now + 600);
+  assert.equal(saved.projection.state, 'bound-blocked'); assert.equal(saved.projection.production_qualified, false);
+  assert.equal(saved.projection.consumer_binding_issued, false);
+  assert.deepEqual(await f.ledger.readProviderBinding(f.original, f.actor), saved);
+  await assert.rejects(() => f.ledger.recordProviderBinding(handle.controlId, f.actor, response));
+  assert.equal(f.store.db.prepare('SELECT state FROM original_management_controls').get().state, 'observed');
+  assert.equal(f.store.db.prepare('SELECT count(*) n FROM original_management_control_history').get().n, 3);
+  const body = f.store.db.prepare('SELECT body FROM original_management_bindings').get().body;
+  for (const secret of [f.raw, input.signed_request.payload_base64, input.signed_request.signature_base64, JSON.stringify(f.request.changes)])
+    if (secret) assert.equal(body.includes(secret), false);
+  assert.equal(f.store.db.prepare("SELECT count(*) n FROM audit WHERE event='original-provider-binding'").get().n, 1);
+});
+
+test('a lost bind response is recovered by a fresh read after restart and transport expiry without extending original authority', async t => {
+  const f = await reviewed(t, true), p = await provider(f), lost = await p.observe();
+  const next = await f.auth(`Bearer ${await f.token(f.now + 1800)}`);
+  let at = (f.now + 61) * 1000; t.mock.method(Date, 'now', () => at);
+  const reopened = f.open();
+  await assert.rejects(() => reopened.ledger.readProviderBinding(f.original, next));
+  await assert.rejects(() => reopened.ledger.recordProviderBinding(lost.handle.controlId, next, lost.response));
+  const fresh = await p.observe('read', reopened.ledger, next);
+  const saved = await reopened.ledger.recordProviderBinding(fresh.handle.controlId, next, fresh.response);
+  assert.deepEqual(saved.projection, lost.response);
+  assert.equal(saved.projection.original_resource_authorization_expires_at, f.now + 600);
+  assert.deepEqual(await f.ledger.readProviderBinding(f.original, next), saved);
+  const again = await p.observe('read', f.ledger, next);
+  assert.deepEqual(await f.ledger.recordProviderBinding(again.handle.controlId, next, again.response), saved);
+  await assert.rejects(() => f.ledger.prepareBind(f.original, next));
+  at = (f.now + 601) * 1000;
+  await assert.rejects(() => f.ledger.readProviderBinding(f.original, next));
+});
+
+test('a later provider observation cannot substitute the retained binding hash or observed coherence epoch', async t => {
+  for (const field of ['binding', 'epoch']) {
+    const f = await reviewed(t), p = await provider(f), first = await p.observe();
+    const saved = await f.ledger.recordProviderBinding(first.handle.controlId, f.actor, first.response);
+    p.state[field] = '9'.repeat(64);
+    const next = await p.observe('read');
+    await assert.rejects(() => f.ledger.recordProviderBinding(next.handle.controlId, f.actor, next.response), field);
+    assert.deepEqual(await f.ledger.readProviderBinding(f.original, f.actor), saved);
+    assert.equal(f.store.db.prepare('SELECT state FROM original_management_controls WHERE id=?').get(next.handle.controlId).state, 'dispatched');
+  }
+});
+
+test('missing, corrupt or rolled-back provider receipt history denies recovery and any new controls', async t => {
+  for (const damage of ['body-missing', 'marker-missing', 'body-and-marker-missing', 'digest', 'body-and-hash', 'observation-missing', 'state-rewound']) {
+    const f = await reviewed(t), p = await provider(f), first = await p.observe();
+    await f.ledger.recordProviderBinding(first.handle.controlId, f.actor, first.response);
+    if (damage.includes('body-missing') || damage === 'body-and-marker-missing') f.store.db.exec('DELETE FROM original_management_bindings');
+    if (damage.includes('marker-missing')) f.store.db.exec("UPDATE original_management_attempts SET binding_digest=''");
+    if (damage === 'digest') f.store.db.exec("UPDATE original_management_bindings SET digest='bad'");
+    if (damage === 'body-and-hash') {
+      const saved = JSON.parse(f.store.db.prepare('SELECT body FROM original_management_bindings').get().body);
+      saved.projection.authorization_binding_sha256 = 'a'.repeat(64);
+      const body = JSON.stringify(saved); f.store.db.prepare('UPDATE original_management_bindings SET body=?,digest=?').run(body, digest(body));
+    }
+    if (damage === 'observation-missing') f.store.db.exec("DELETE FROM original_management_control_history WHERE state='observed'");
+    if (damage === 'state-rewound') f.store.db.exec("UPDATE original_management_controls SET state='dispatched'");
+    await assert.rejects(() => f.ledger.readProviderBinding(f.original, f.actor), damage);
+    await assert.rejects(() => f.ledger.prepareRead(f.original, f.actor), damage);
+    await assert.rejects(() => f.ledger.prepareBind(f.original, f.actor), damage);
+  }
+});
+
+test('revoked, unavailable or changed authority withholds binding retention and recovery after fresh verification', async t => {
+  for (const stage of ['retain', 'recover']) for (const failure of ['directory', 'revocation', 'revision', 'policy']) {
+    const f = await reviewed(t), p = await provider(f), first = await p.observe();
+    if (stage === 'recover') await f.ledger.recordProviderBinding(first.handle.controlId, f.actor, first.response);
+    f.state.duringCheck = () => {
+      if (failure === 'directory') throw new Error('Directory unavailable or revoked');
+      if (failure === 'revocation') f.store.transaction(() => f.ledger.principals.pending(digest(f.actor.googleSubject), requesterDigest(f.actor)));
+      if (failure === 'revision') f.store.db.exec('UPDATE content_access_principals SET revision=revision+1');
+      if (failure === 'policy') f.pins.authorization_policy_sha256 = 'f'.repeat(64);
+    };
+    await assert.rejects(() => stage === 'recover' ? f.ledger.readProviderBinding(f.original, f.actor)
+      : f.ledger.recordProviderBinding(first.handle.controlId, f.actor, first.response), `${stage}/${failure}`);
+    assert.equal(f.store.db.prepare('SELECT count(*) n FROM original_management_bindings').get().n, stage === 'recover' ? 1 : 0);
+  }
+});
+
+test('binding retention and observation history are atomic across service instances and persistence failure', async t => {
+  const f = await reviewed(t, true), p = await provider(f), first = await p.observe(), reopened = f.open();
+  f.store.db.exec("CREATE TRIGGER fail_binding BEFORE INSERT ON audit WHEN NEW.event='original-provider-binding' BEGIN SELECT RAISE(ABORT,'fixture'); END");
+  await assert.rejects(() => f.ledger.recordProviderBinding(first.handle.controlId, f.actor, first.response));
+  assert.equal(f.store.db.prepare('SELECT count(*) n FROM original_management_bindings').get().n, 0);
+  assert.equal(f.store.db.prepare('SELECT binding_digest FROM original_management_attempts').get().binding_digest, '');
+  assert.equal(f.store.db.prepare('SELECT state FROM original_management_controls').get().state, 'dispatched');
+  assert.equal(f.store.db.prepare("SELECT count(*) n FROM original_management_control_history WHERE state='observed'").get().n, 0);
+  f.store.db.exec('DROP TRIGGER fail_binding');
+  const results = await Promise.allSettled([f.ledger, reopened.ledger].map(ledger => ledger.recordProviderBinding(first.handle.controlId, f.actor, first.response)));
+  assert.equal(results.filter(v => v.status === 'fulfilled').length, 1);
+  assert.equal(f.store.db.prepare('SELECT count(*) n FROM original_management_bindings').get().n, 1);
+});
+
+test('a surviving provider binding alone forbids principal reinitialization through every content writer', async t => {
+  const f = await reviewed(t), p = await provider(f), first = await p.observe();
+  await f.ledger.recordProviderBinding(first.handle.controlId, f.actor, first.response);
+  const write = writers(f);
+  f.store.db.exec(`DELETE FROM content_access_principals; DELETE FROM content_access_principal_history;
+    DELETE FROM original_management_authorizations; DELETE FROM original_management_attempts; DELETE FROM original_management_reviews;
+    DELETE FROM original_management_controls; DELETE FROM original_management_control_history;`);
+  for (const create of Object.values(write)) await assert.rejects(async () => create());
+  assert.equal(f.store.db.prepare('SELECT count(*) n FROM content_access_principals').get().n, 0);
 });

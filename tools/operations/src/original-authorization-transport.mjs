@@ -24,6 +24,13 @@ const tools = Object.fromEntries(Object.entries(wire.machine_abilities).map(([ke
 const freeze = value => { if (value && typeof value === 'object') { Object.values(value).forEach(freeze); Object.freeze(value); } return value; };
 const projectionFields = ['operation_id', 'reviewed_digest', 'qualification_protocol', 'protocol_contracts_sha256',
   'original_delegation_request_id', 'original_resource_authorization_sha256', 'original_resource_authorization_expires_at'];
+const bindingObservations = new WeakMap();
+export const parseOriginalBindingProjection = value => parse(types.authorization_projection, value);
+// A caller-created projection or serialized copy is not an authenticated
+// transport observation. Retain only bounded hashes/identifiers, never input.
+export function originalBindingObservation(value) {
+  const observation = bindingObservations.get(value); check(observation); return observation;
+}
 
 // Machine-only source adapter. No startup registration, public tool, preview
 // selector or admission. Its successful response still needs durable retention
@@ -85,7 +92,10 @@ export class OriginalAuthorizationTransport {
     check(this.ready && same(admitted, this.#policy()) && claims.expires_at > Math.floor(this.now() / 1000)
       && Buffer.byteLength(delegationCanonical(response)) <= wire.limits.authorization_output_bytes
       && projectionFields.every(field => same(response[field], claims[field])));
-    return freeze(response);
+    const result = freeze(response);
+    bindingObservations.set(result, freeze({ controlId: claims.request_id, originalRequestId: claims.original_delegation_request_id,
+      inputDigest: delegationDigest(input), coherenceEpochSha256: readiness.coherence_epoch_sha256 }));
+    return result;
   }
   bind(input, readiness) { return this.#control('bind', input, readiness); }
   read(input, readiness) { return this.#control('read', input, readiness); }
