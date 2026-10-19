@@ -16,7 +16,8 @@ import { requesterDigest } from '../src/access-principal.mjs';
 import { accessRegistry } from './fixtures/access-registry.mjs';
 import { managementAccessFixture } from './fixtures/management-access.mjs';
 import { existingManagementHashes } from '../src/management-existing-contracts.mjs';
-import { OriginalAuthorizationTransport, originalBindingObservation } from '../src/original-authorization-transport.mjs';
+import { OriginalAuthorizationTransport, originalBindingObservation, originalReadinessObservation } from '../src/original-authorization-transport.mjs';
+import { DelegatedMainwpClient, delegationTools } from '../src/delegated-mainwp.mjs';
 
 const audience = 'https://operations.mrnwebdesigns.com/mcp', issuer = 'https://identity.example.test/';
 async function fixture(t, durable = false) {
@@ -45,9 +46,10 @@ async function fixture(t, durable = false) {
   const open = () => { const store = new Store(file); stores.push(store); return { store, ledger: new OriginalManagementAuthorizationLedger(store, options) }; };
   const current = open(), attempt = randomUUID();
   const challenge = { nonce: 'd'.repeat(64), expires_at: now + 60, authenticated_connection_sha256: 'e'.repeat(64), policy_sha256: pins.delegation_policy_sha256 };
-  const prepare = (value = actor, args = request, id = attempt, c = challenge) => current.ledger.prepare(value, args, c, id);
+  const service = await provider({ pins, keys }), ready = () => service.transport.status();
+  const prepare = async (value = actor, args = request, id = attempt, c = challenge) => current.ledger.prepare(value, args, c, id, await ready());
   return { ...current, values, state, now, actor, request, attempt, prepare, token, raw, auth, open, keys, signer, options,
-    pins, registry, registryData, policy, challenge };
+    pins, registry, registryData, policy, challenge, service, ready };
 }
 const count = f => f.store.db.prepare('SELECT count(*) n FROM original_management_authorizations').get().n;
 
@@ -79,7 +81,7 @@ test('restart and later login recover only the original metadata, never a dispat
   assert.deepEqual(await recovered.ledger.readCurrent(handle.requestId, next), before);
   await assert.rejects(() => recovered.ledger.claimDispatch(handle, next));
   await assert.rejects(() => f.ledger.claimDispatch(handle, next));
-  await assert.rejects(() => recovered.ledger.prepare(next, f.request, f.challenge, f.attempt));
+  await assert.rejects(async () => recovered.ledger.prepare(next, f.request, f.challenge, f.attempt, await f.ready()));
   const changed = await recovered.ledger.readCurrent(handle.requestId, next); changed.mapping.authorization.expiresAt += 600000;
   assert.deepEqual(await recovered.ledger.readCurrent(handle.requestId, next), before);
 });
@@ -167,7 +169,7 @@ test('transport expiry prevents redispatch while original metadata expires at it
 
 test('two service instances cannot reserve or dispatch the same original attempt twice', async t => {
   const f = await fixture(t, true), second = f.open();
-  const outcomes = await Promise.allSettled([f.prepare(), second.ledger.prepare(f.actor, f.request, f.challenge, f.attempt)]);
+  const outcomes = await Promise.allSettled([f.prepare(), second.ledger.prepare(f.actor, f.request, f.challenge, f.attempt, await f.ready())]);
   assert.equal(outcomes.filter(x => x.status === 'fulfilled').length, 1); assert.equal(count(f), 1);
   const index = outcomes.findIndex(x => x.status === 'fulfilled'), ledger = index === 0 ? f.ledger : second.ledger;
   const h = outcomes[index].value, dispatched = await Promise.allSettled([ledger.claimDispatch(h, f.actor), ledger.claimDispatch(h, f.actor)]);
@@ -291,7 +293,7 @@ test('intact history for another person permits automatic first use without clea
   f.store.transaction(() => f.ledger.principals.pending(digest(f.actor.googleSubject), requesterDigest(f.actor)));
   const other = await f.auth(`Bearer ${await f.token(f.now + 600, '456', { [`${audience}/email`]: 'another@mrnwebdesigns.com' })}`);
   const ledger = new OriginalManagementAuthorizationLedger(f.store, { ...f.options, verifyStaff: async actor => assert.equal(actor.googleSubject, '456') });
-  const handle = await ledger.prepare(other, f.request, f.challenge, randomUUID());
+  const handle = await ledger.prepare(other, f.request, f.challenge, randomUUID(), await f.ready());
   assert.equal((await ledger.readCurrent(handle.requestId, other)).mapping.actor.googleSubject, '456');
   assert.equal(f.ledger.principals.row(digest(f.actor.googleSubject), requesterDigest(f.actor)).state, 'pending-revocation');
 });
@@ -303,6 +305,7 @@ async function reviewed(t, durable = false) {
   await f.ledger.recordReview(handle.requestId, f.actor, f.request, evidence, profile);
   return { ...f, original: handle.requestId };
 }
+const readyControl = async (ledger, kind, requestId, actor, f) => ledger[kind === 'bind' ? 'prepareBind' : 'prepareRead'](requestId, actor, await f.ready());
 const controls = f => f.store.db.prepare('SELECT count(*) n FROM original_management_controls').get().n;
 
 test('bind control is signed only from intact verified original authority with the exact frozen provider purpose', async t => {
@@ -313,8 +316,8 @@ test('bind control is signed only from intact verified original authority with t
   assert.equal(source.repository, 'mrnwebdesigns/mrn-mainwp-operations-api');
   assert.equal(source.sha256, digest(wireBytes)); assert.equal(source.runtimeRegistered, false); assert.equal(source.productionQualified, false);
   const wire = JSON.parse(wireBytes), f = await reviewed(t);
-  const handle = await f.ledger.prepareBind(f.original, f.actor);
-  await assert.rejects(() => f.ledger.prepareRead(f.original, f.actor));
+  const handle = await readyControl(f.ledger, 'bind', f.original, f.actor, f);
+  await assert.rejects(() => readyControl(f.ledger, 'read', f.original, f.actor, f));
   const input = await f.ledger.claimControlDispatch(handle, f.actor), envelope = input.signed_request;
   const bytes = Buffer.from(envelope.payload_base64, 'base64'), c = JSON.parse(bytes), m = (await f.ledger.readCurrent(f.original, f.actor)).mapping;
   assert.equal(bytes.toString(), delegationCanonical(c));
@@ -334,30 +337,30 @@ test('bind control is signed only from intact verified original authority with t
     if (secret) assert.equal(body.includes(secret), false);
   assert.ok(Object.isFrozen(input) && Object.isFrozen(envelope));
   await assert.rejects(() => f.ledger.claimControlDispatch(handle, f.actor));
-  await assert.rejects(() => f.ledger.prepareBind(f.original, f.actor));
+  await assert.rejects(() => readyControl(f.ledger, 'bind', f.original, f.actor, f));
 });
 
 test('simultaneous bind issuers have one winner and a lost local handle cannot renew the bind', async t => {
   const f = await reviewed(t, true);
-  const attempts = await Promise.allSettled([f.ledger.prepareBind(f.original, f.actor), f.ledger.prepareBind(f.original, f.actor)]);
+  const attempts = await Promise.allSettled([readyControl(f.ledger, 'bind', f.original, f.actor, f), readyControl(f.ledger, 'bind', f.original, f.actor, f)]);
   assert.equal(attempts.filter(v => v.status === 'fulfilled').length, 1); assert.equal(controls(f), 1);
   const h = attempts.find(v => v.status === 'fulfilled').value, restarted = f.open();
-  await assert.rejects(() => restarted.ledger.prepareBind(f.original, f.actor));
+  await assert.rejects(() => readyControl(restarted.ledger, 'bind', f.original, f.actor, f));
   await assert.rejects(() => restarted.ledger.claimControlDispatch(h, f.actor));
-  await assert.rejects(() => restarted.ledger.prepareRead(f.original, f.actor));
+  await assert.rejects(() => readyControl(restarted.ledger, 'read', f.original, f.actor, f));
   const dispatch = await Promise.allSettled([f.ledger.claimControlDispatch(h, f.actor), f.ledger.claimControlDispatch(h, f.actor)]);
   assert.equal(dispatch.filter(v => v.status === 'fulfilled').length, 1);
-  const read = await restarted.ledger.prepareRead(f.original, f.actor);
+  const read = await readyControl(restarted.ledger, 'read', f.original, f.actor, f);
   assert.ok(await restarted.ledger.claimControlDispatch(read, f.actor));
   assert.equal(controls(f), 2);
 });
 
 test('fresh read after a lost bind response and transport expiry preserves the original hash and expiration across restart and login', async t => {
   const f = await reviewed(t, true), next = await f.auth(`Bearer ${await f.token(f.now + 1800)}`);
-  const h = await f.ledger.prepareBind(f.original, f.actor), bind = await f.ledger.claimControlDispatch(h, f.actor);
+  const h = await readyControl(f.ledger, 'bind', f.original, f.actor, f), bind = await f.ledger.claimControlDispatch(h, f.actor);
   const original = JSON.parse(Buffer.from(bind.signed_request.payload_base64, 'base64'));
   let at = (f.now + 61) * 1000; t.mock.method(Date, 'now', () => at);
-  const restarted = f.open(), r = await restarted.ledger.prepareRead(f.original, next);
+  const restarted = f.open(), r = await readyControl(restarted.ledger, 'read', f.original, next, f);
   const read = await restarted.ledger.claimControlDispatch(r, next), c = JSON.parse(Buffer.from(read.signed_request.payload_base64, 'base64'));
   assert.equal(c.original_resource_authorization_sha256, original.original_resource_authorization_sha256);
   assert.equal(c.original_resource_authorization_expires_at, original.original_resource_authorization_expires_at);
@@ -366,25 +369,25 @@ test('fresh read after a lost bind response and transport expiry preserves the o
   const bytes = Buffer.from(read.signed_request.payload_base64, 'base64');
   assert.ok(verify(null, Buffer.concat([Buffer.from('mrn-content-management-existing-resource-authorization-read-v2:'), bytes]), f.keys.publicKey,
     Buffer.from(read.signed_request.signature_base64, 'base64')));
-  await assert.rejects(() => restarted.ledger.prepareBind(f.original, next));
+  await assert.rejects(() => readyControl(restarted.ledger, 'bind', f.original, next, f));
   at = (f.now + 601) * 1000;
-  await assert.rejects(() => restarted.ledger.prepareRead(f.original, next));
+  await assert.rejects(() => readyControl(restarted.ledger, 'read', f.original, next, f));
 });
 
 test('first bind cannot be created after the original preview transport expires or before exact review reconstruction', async t => {
   const f = await fixture(t), h = await f.prepare();
-  await assert.rejects(() => f.ledger.prepareBind(h.requestId, f.actor));
+  await assert.rejects(() => readyControl(f.ledger, 'bind', h.requestId, f.actor, f));
   await f.ledger.claimDispatch(h, f.actor);
-  await assert.rejects(() => f.ledger.prepareBind(h.requestId, f.actor));
+  await assert.rejects(() => readyControl(f.ledger, 'bind', h.requestId, f.actor, f));
   await f.ledger.recordReview(h.requestId, f.actor, f.request, f.values.expected.evidence, f.values.expected.profile);
   t.mock.method(Date, 'now', () => (f.now + 61) * 1000);
-  await assert.rejects(() => f.ledger.prepareBind(h.requestId, f.actor));
+  await assert.rejects(() => readyControl(f.ledger, 'bind', h.requestId, f.actor, f));
   assert.equal(controls(f), 0);
 });
 
 test('lost, corrupt and rolled-back control history cannot authorize retries or fresh recovery signatures', async t => {
   for (const damage of ['body-missing', 'history-missing', 'both-missing', 'marker-missing', 'counter-reset', 'digest', 'rolled-back-state', 'changed-body-and-hash', 'orphan-history']) {
-    const f = await reviewed(t), h = await f.ledger.prepareBind(f.original, f.actor);
+    const f = await reviewed(t), h = await readyControl(f.ledger, 'bind', f.original, f.actor, f);
     await f.ledger.claimControlDispatch(h, f.actor);
     if (damage === 'body-missing') f.store.db.exec('DELETE FROM original_management_controls');
     if (damage === 'history-missing') f.store.db.exec('DELETE FROM original_management_control_history');
@@ -399,31 +402,31 @@ test('lost, corrupt and rolled-back control history cannot authorize retries or 
       v.claims.original_resource_authorization_expires_at += 300;
       const body = JSON.stringify(v); f.store.db.prepare('UPDATE original_management_controls SET body=?,digest=?').run(body, digest(body));
     }
-    await assert.rejects(() => f.ledger.prepareRead(f.original, f.actor), damage);
-    await assert.rejects(() => f.ledger.prepareBind(f.original, f.actor), damage);
+    await assert.rejects(() => readyControl(f.ledger, 'read', f.original, f.actor, f), damage);
+    await assert.rejects(() => readyControl(f.ledger, 'bind', f.original, f.actor, f), damage);
   }
 });
 
 test('fresh staff, principal and policy vetoes deny control issuance and dispatch without asserting renewed access', async t => {
   for (const stage of ['prepare', 'dispatch']) for (const failure of ['directory', 'revocation', 'policy']) {
-    const f = await reviewed(t), h = stage === 'dispatch' ? await f.ledger.prepareBind(f.original, f.actor) : null;
+    const f = await reviewed(t), h = stage === 'dispatch' ? await readyControl(f.ledger, 'bind', f.original, f.actor, f) : null;
     f.state.duringCheck = () => {
       if (failure === 'directory') throw new Error('Directory unavailable or revoked');
       if (failure === 'revocation') f.store.transaction(() => f.ledger.principals.pending(digest(f.actor.googleSubject), requesterDigest(f.actor)));
       if (failure === 'policy') f.pins.authorization_policy_sha256 = 'f'.repeat(64);
     };
-    await assert.rejects(() => h ? f.ledger.claimControlDispatch(h, f.actor) : f.ledger.prepareBind(f.original, f.actor));
+    await assert.rejects(() => h ? f.ledger.claimControlDispatch(h, f.actor) : readyControl(f.ledger, 'bind', f.original, f.actor, f));
     assert.equal(controls(f), h ? 1 : 0);
     assert.equal(f.store.db.prepare("SELECT count(*) n FROM original_management_controls WHERE state='dispatched'").get().n, 0);
   }
   const f = await reviewed(t), readOnly = await f.auth(`Bearer ${await f.token(f.now + 600, '123', { scope: 'mrn:operations' })}`);
   const outsider = await f.auth(`Bearer ${await f.token(f.now + 600, '456')}`);
-  for (const actor of [{ ...f.actor }, readOnly, outsider]) await assert.rejects(() => f.ledger.prepareBind(f.original, actor));
+  for (const actor of [{ ...f.actor }, readOnly, outsider]) await assert.rejects(() => readyControl(f.ledger, 'bind', f.original, actor, f));
 });
 
 test('a surviving control or control history blocks principal reinitialization across all content writers', async t => {
   for (const survivor of ['control', 'history']) {
-    const f = await reviewed(t), write = writers(f), h = await f.ledger.prepareBind(f.original, f.actor);
+    const f = await reviewed(t), write = writers(f), h = await readyControl(f.ledger, 'bind', f.original, f.actor, f);
     await f.ledger.claimControlDispatch(h, f.actor);
     f.store.db.exec(`DELETE FROM content_access_principals; DELETE FROM content_access_principal_history;
       DELETE FROM original_management_authorizations; DELETE FROM original_management_attempts; DELETE FROM original_management_reviews;
@@ -436,11 +439,11 @@ test('a surviving control or control history blocks principal reinitialization a
 test('control persistence and audit commit atomically before any signature can be dispatched', async t => {
   const f = await reviewed(t);
   f.store.db.exec("CREATE TRIGGER fail_control_audit BEFORE INSERT ON audit WHEN NEW.event='original-authorization-bind' BEGIN SELECT RAISE(ABORT,'fixture'); END");
-  await assert.rejects(() => f.ledger.prepareBind(f.original, f.actor));
+  await assert.rejects(() => readyControl(f.ledger, 'bind', f.original, f.actor, f));
   assert.equal(controls(f), 0);
   assert.equal(f.store.db.prepare('SELECT count(*) n FROM original_management_control_history').get().n, 0);
   f.store.db.exec('DROP TRIGGER fail_control_audit');
-  const h = await f.ledger.prepareBind(f.original, f.actor);
+  const h = await readyControl(f.ledger, 'bind', f.original, f.actor, f);
   f.store.db.exec("CREATE TRIGGER fail_control_dispatch BEFORE INSERT ON audit WHEN NEW.outcome='dispatched' BEGIN SELECT RAISE(ABORT,'fixture'); END");
   await assert.rejects(() => f.ledger.claimControlDispatch(h, f.actor));
   assert.equal(f.store.db.prepare('SELECT state FROM original_management_controls').get().state, 'prepared');
@@ -453,7 +456,7 @@ async function provider(f) {
   const raw = readFileSync(new URL('../contracts/content-management-existing-dispatch-v2-proposal.json', import.meta.url));
   const wire = JSON.parse(raw), names = Object.fromEntries(Object.entries(wire.machine_abilities)
     .map(([k, v]) => [k, v.name.replace('/', '__').replaceAll('-', '_')]));
-  const state = { epoch: '7'.repeat(64), binding: '8'.repeat(64), calls: [] };
+  const state = { epoch: '7'.repeat(64), binding: '8'.repeat(64), calls: [], enabled: true };
   const policy = () => ({ provider_source_sha: f.pins.provider_source_sha, authorization_policy_sha256: f.pins.authorization_policy_sha256 });
   const client = {
     async readResource() { return { contents: [{ text: JSON.stringify({ connected: true, dashboardHost: 'wpcontrol.mrndev.io', abilitiesCount: 115 }) }] }; },
@@ -465,8 +468,8 @@ async function provider(f) {
         protocol_contracts_sha256: existingManagementHashes, ...policy(),
         original_authorization_contract_sha256: '3a77cf8ad2131fd1e2255e74d2a3dcd9ca1d18051e5acc1d51bdb6b7d6fa73c2',
         dispatch_contract_sha256: digest(raw), observed_at: Math.floor(Date.now() / 1000), expires_at: Math.floor(Date.now() / 1000) + 30,
-        binding_readiness: 'ready', coherence_ready: true, coherence_epoch_sha256: state.epoch,
-        source_selected_preview_enabled: true, machine_binding_enabled: true, production_qualified: false, consumer_binding_issued: false };
+        binding_readiness: state.enabled ? 'ready' : 'disabled', coherence_ready: true, coherence_epoch_sha256: state.epoch,
+        source_selected_preview_enabled: state.enabled, machine_binding_enabled: state.enabled, production_qualified: false, consumer_binding_issued: false };
       else {
         const e = input.signed_request, bytes = Buffer.from(e.payload_base64, 'base64'), c = JSON.parse(bytes);
         const kind = name === names.bind ? 'bind' : 'read'; assert.equal(name, names[kind]);
@@ -480,8 +483,9 @@ async function provider(f) {
   };
   const transport = new OriginalAuthorizationTransport(client, { policy }); await transport.initialize();
   async function observe(kind = 'bind', ledger = f.ledger, actor = f.actor) {
-    const handle = await ledger[kind === 'bind' ? 'prepareBind' : 'prepareRead'](f.original, actor);
-    const input = await ledger.claimControlDispatch(handle, actor), ready = await transport.status();
+    const ready = await transport.status();
+    const handle = await ledger[kind === 'bind' ? 'prepareBind' : 'prepareRead'](f.original, actor, ready);
+    const input = await ledger.claimControlDispatch(handle, actor);
     return { handle, input, response: await transport[kind](input, ready) };
   }
   return { state, observe, transport };
@@ -524,7 +528,7 @@ test('a lost bind response is recovered by a fresh read after restart and transp
   assert.deepEqual(await f.ledger.readProviderBinding(f.original, next), saved);
   const again = await p.observe('read', f.ledger, next);
   assert.deepEqual(await f.ledger.recordProviderBinding(again.handle.controlId, next, again.response), saved);
-  await assert.rejects(() => f.ledger.prepareBind(f.original, next));
+  await assert.rejects(() => readyControl(f.ledger, 'bind', f.original, next, f));
   at = (f.now + 601) * 1000;
   await assert.rejects(() => f.ledger.readProviderBinding(f.original, next));
 });
@@ -534,10 +538,15 @@ test('a later provider observation cannot substitute the retained binding hash o
     const f = await reviewed(t), p = await provider(f), first = await p.observe();
     const saved = await f.ledger.recordProviderBinding(first.handle.controlId, f.actor, first.response);
     p.state[field] = '9'.repeat(64);
-    const next = await p.observe('read');
-    await assert.rejects(() => f.ledger.recordProviderBinding(next.handle.controlId, f.actor, next.response), field);
+    if (field === 'epoch') {
+      await assert.rejects(() => p.observe('read'));
+      assert.equal(controls(f), 1);
+    } else {
+      const next = await p.observe('read');
+      await assert.rejects(() => f.ledger.recordProviderBinding(next.handle.controlId, f.actor, next.response), field);
+      assert.equal(f.store.db.prepare('SELECT state FROM original_management_controls WHERE id=?').get(next.handle.controlId).state, 'dispatched');
+    }
     assert.deepEqual(await f.ledger.readProviderBinding(f.original, f.actor), saved);
-    assert.equal(f.store.db.prepare('SELECT state FROM original_management_controls WHERE id=?').get(next.handle.controlId).state, 'dispatched');
   }
 });
 
@@ -556,8 +565,8 @@ test('missing, corrupt or rolled-back provider receipt history denies recovery a
     if (damage === 'observation-missing') f.store.db.exec("DELETE FROM original_management_control_history WHERE state='observed'");
     if (damage === 'state-rewound') f.store.db.exec("UPDATE original_management_controls SET state='dispatched'");
     await assert.rejects(() => f.ledger.readProviderBinding(f.original, f.actor), damage);
-    await assert.rejects(() => f.ledger.prepareRead(f.original, f.actor), damage);
-    await assert.rejects(() => f.ledger.prepareBind(f.original, f.actor), damage);
+    await assert.rejects(() => readyControl(f.ledger, 'read', f.original, f.actor, f), damage);
+    await assert.rejects(() => readyControl(f.ledger, 'bind', f.original, f.actor, f), damage);
   }
 });
 
@@ -600,4 +609,209 @@ test('a surviving provider binding alone forbids principal reinitialization thro
     DELETE FROM original_management_controls; DELETE FROM original_management_control_history;`);
   for (const create of Object.values(write)) await assert.rejects(async () => create());
   assert.equal(f.store.db.prepare('SELECT count(*) n FROM content_access_principals').get().n, 0);
+});
+
+test('original preview retains a genuine fresh readiness anchor before any dispatch and never accepts a supplied epoch', async t => {
+  const f = await fixture(t), ready = await f.ready(), observation = originalReadinessObservation(ready);
+  for (const value of [undefined, { ...ready }, structuredClone(ready), observation]) {
+    await assert.rejects(() => f.ledger.prepare(f.actor, f.request, f.challenge, f.attempt, value));
+    assert.equal(count(f), 0);
+  }
+  const handle = await f.ledger.prepare(f.actor, f.request, f.challenge, f.attempt, ready);
+  const saved = await f.ledger.readCurrent(handle.requestId, f.actor);
+  const { policy, ...anchor } = observation;
+  assert.equal(policy.provider_source_sha, f.pins.provider_source_sha);
+  assert.deepEqual(saved.mapping.readiness, anchor);
+  assert.equal(saved.state, 'prepared');
+  const dispatched = await f.ledger.claimDispatch(handle, f.actor);
+  const claims = JSON.parse(Buffer.from(dispatched.payload_base64, 'base64'));
+  assert.equal(claims.ability, 'mrn-mainwp/preview-content-edit-v1');
+  assert.equal('coherence_epoch_sha256' in claims, false); // Provider selects the domain; unchanged public v1 input.
+});
+
+test('disabled, expired or differently pinned provider readiness cannot create a new original', async t => {
+  for (const failure of ['disabled', 'expired', 'source', 'policy']) {
+    const f = await fixture(t);
+    if (failure === 'disabled') f.service.state.enabled = false;
+    const p = await provider({ keys: f.keys, pins: { ...f.pins,
+      ...(failure === 'source' ? { provider_source_sha: 'f'.repeat(40) } : {}),
+      ...(failure === 'policy' ? { authorization_policy_sha256: 'f'.repeat(64) } : {}) } });
+    const ready = await (failure === 'disabled' ? f.ready() : p.transport.status());
+    if (failure === 'expired') t.mock.method(Date, 'now', () => (f.now + 31) * 1000);
+    await assert.rejects(() => f.ledger.prepare(f.actor, f.request, f.challenge, f.attempt, ready), failure);
+    assert.equal(count(f), 0); t.mock.restoreAll();
+  }
+});
+
+test('readiness is rechecked across fresh Directory verification and immediately before preview dispatch', async t => {
+  for (const stage of ['prepare', 'dispatch']) for (const failure of ['expired', 'closed']) {
+    const f = await fixture(t), ready = await f.ready();
+    const handle = stage === 'dispatch' ? await f.ledger.prepare(f.actor, f.request, f.challenge, f.attempt, ready) : null;
+    f.state.duringCheck = () => {
+      if (failure === 'expired') t.mock.method(Date, 'now', () => (f.now + 31) * 1000);
+      else f.service.transport.ready = false;
+    };
+    await assert.rejects(() => handle ? f.ledger.claimDispatch(handle, f.actor)
+      : f.ledger.prepare(f.actor, f.request, f.challenge, f.attempt, ready), `${stage}/${failure}`);
+    assert.equal(count(f), handle ? 1 : 0);
+    if (handle) assert.equal(f.store.db.prepare('SELECT state FROM original_management_authorizations').get().state, 'prepared');
+    t.mock.restoreAll();
+  }
+});
+
+test('control issuance and dispatch require fresh genuine readiness with the original epoch', async t => {
+  const f = await reviewed(t), p = await provider(f);
+  const ready = await p.transport.status();
+  for (const value of [undefined, { ...ready }]) await assert.rejects(() => f.ledger.prepareBind(f.original, f.actor, value));
+  p.state.epoch = 'f'.repeat(64);
+  await assert.rejects(async () => f.ledger.prepareBind(f.original, f.actor, await p.transport.status()));
+  assert.equal(controls(f), 0);
+  p.state.epoch = '7'.repeat(64);
+  const handle = await f.ledger.prepareBind(f.original, f.actor, await p.transport.status());
+  t.mock.method(Date, 'now', () => (f.now + 31) * 1000);
+  await assert.rejects(() => f.ledger.claimControlDispatch(handle, f.actor));
+  assert.equal(f.store.db.prepare('SELECT state FROM original_management_controls').get().state, 'prepared');
+});
+
+test('first provider binding cannot attach a newer readiness epoch to an older original preview', async t => {
+  const f = await reviewed(t), p = await provider(f), ready = await p.transport.status();
+  const handle = await f.ledger.prepareBind(f.original, f.actor, ready), input = await f.ledger.claimControlDispatch(handle, f.actor);
+  p.state.epoch = '9'.repeat(64);
+  const response = await p.transport.bind(input, await p.transport.status());
+  await assert.rejects(() => f.ledger.recordProviderBinding(handle.controlId, f.actor, response));
+  assert.equal(f.store.db.prepare('SELECT count(*) n FROM original_management_bindings').get().n, 0);
+  assert.equal(f.store.db.prepare('SELECT state FROM original_management_controls').get().state, 'dispatched');
+});
+
+test('missing or altered preview epoch cannot be repaired from a new readiness observation', async t => {
+  for (const damage of ['missing', 'changed']) {
+    const f = await reviewed(t), row = f.store.db.prepare('SELECT body FROM original_management_authorizations').get();
+    const m = JSON.parse(row.body);
+    if (damage === 'missing') delete m.readiness; else m.readiness.coherenceEpochSha256 = 'f'.repeat(64);
+    const body = JSON.stringify(m); f.store.db.prepare('UPDATE original_management_authorizations SET body=?,digest=?').run(body, digest(body));
+    await assert.rejects(() => f.ledger.readCurrent(f.original, f.actor));
+    await assert.rejects(async () => f.ledger.prepareBind(f.original, f.actor, await f.ready()));
+    await assert.rejects(() => f.prepare());
+  }
+});
+
+function originalPreviewClient(f) {
+  const state = { calls: [], confirmed: 0, corrupt: null, failure: null };
+  const response = value => ({ content: [{ type: 'text', text: JSON.stringify(value) }] });
+  const client = {
+    async readResource() { return { contents: [{ text: JSON.stringify({ connected: true, dashboardHost: 'wpcontrol.mrndev.io', abilitiesCount: 115 }) }] }; },
+    async listTools() { return { tools: Object.values(delegationTools).map(name => ({ name,
+      annotations: { readOnlyHint: false, destructiveHint: name === delegationTools.run } })) }; },
+    async callTool({ name, arguments: args }) {
+      state.calls.push({ name, args });
+      if (name === delegationTools.challenge) {
+        assert.equal(args.ability, 'mrn-mainwp/preview-content-edit-v1');
+        assert.equal(args.arguments_sha256, delegationDigest(f.request)); return response(f.challenge);
+      }
+      assert.equal(name, delegationTools.run);
+      const raw = Buffer.from(args.delegation.payload_base64, 'base64'), claims = JSON.parse(raw);
+      assert.ok(verify(null, Buffer.concat([Buffer.from(delegationPrefix), raw]), f.keys.publicKey, Buffer.from(args.delegation.signature_base64, 'base64')));
+      const retained = await f.ledger.readCurrent(claims.request_id, f.actor);
+      assert.equal(retained.state, 'dispatched');
+      assert.equal(retained.mapping.envelopeSha256, delegationDigest(args.delegation));
+      assert.equal(retained.mapping.readiness.coherenceEpochSha256, f.service.state.epoch);
+      assert.equal(args.ability, claims.ability); assert.equal(args.arguments_json, delegationCanonical(f.request));
+      if (!args.user_confirmed) {
+        state.first = structuredClone(args);
+        await state.duringConfirmation?.();
+        return response(state.failure === 'confirmation' ? { status: 'SAFE_MODE_BLOCKED' }
+          : { status: 'CONFIRMATION_REQUIRED', confirmation_token: 'fixture-confirmation' });
+      }
+      assert.deepEqual(args.delegation, state.first.delegation); assert.equal(args.confirmation_token, 'fixture-confirmation');
+      state.confirmed++;
+      if (state.failure === 'lost-response') throw new Error('Fixture response lost after provider execution');
+      const result = { schema: 1, request_id: claims.request_id, ability: args.ability, policy_sha256: claims.policy_sha256,
+        actor: { oauth_subject: claims.oauth_subject, google_sub: claims.google_sub, email: claims.email },
+        result: structuredClone(f.values.expected.evidence.review) };
+      state.corrupt?.(result); await state.duringResult?.(); return response(result);
+    },
+  };
+  const delegated = new DelegatedMainwpClient(client, f.actor, f.signer);
+  const preview = async () => delegated.previewOriginalManagementEdit(f.request,
+    { ledger: f.ledger, attemptId: f.attempt, readiness: await f.ready() });
+  return { state, delegated, preview, client };
+}
+
+test('original preview crosses both confirmed wrapper phases using the exact durably retained signed envelope', async t => {
+  const f = await fixture(t), p = originalPreviewClient(f), result = await p.preview();
+  assert.deepEqual(result.review, f.values.expected.evidence.review);
+  assert.deepEqual(p.state.calls.map(row => row.name), [delegationTools.challenge, delegationTools.run, delegationTools.run]);
+  const current = await f.ledger.readCurrent(result.originalRequestId, f.actor);
+  assert.equal(current.state, 'dispatched'); assert.equal(p.state.confirmed, 1);
+  const retained = await f.ledger.recordReview(result.originalRequestId, f.actor, f.request,
+    { ...f.values.expected.evidence, review: result.review }, f.values.expected.profile);
+  assert.equal(retained.state, 'reviewed');
+  const providerAdapter = await provider({ ...f, original: result.originalRequestId });
+  const binding = await providerAdapter.observe();
+  const saved = await f.ledger.recordProviderBinding(binding.handle.controlId, f.actor, binding.response);
+  assert.equal(saved.original, result.originalRequestId); assert.equal(saved.coherenceEpochSha256, current.mapping.readiness.coherenceEpochSha256);
+  assert.equal(saved.projection.consumer_binding_issued, false);
+});
+
+test('failed confirmation and uncertain original preview responses cannot cause automatic or repeated dispatch', async t => {
+  for (const failure of ['confirmation', 'lost-response']) {
+    const f = await fixture(t), p = originalPreviewClient(f); p.state.failure = failure;
+    await assert.rejects(p.preview);
+    const before = p.state.calls.filter(row => row.name === delegationTools.run).length;
+    assert.equal(before, failure === 'confirmation' ? 1 : 2);
+    assert.equal(f.store.db.prepare('SELECT state FROM original_management_authorizations').get().state, 'dispatched');
+    await assert.rejects(p.preview);
+    assert.equal(p.state.calls.filter(row => row.name === delegationTools.run).length, before);
+    assert.equal(count(f), 1);
+  }
+});
+
+test('original preview rejects changed person, request, policy or target without retaining a review', async t => {
+  for (const field of ['person', 'request', 'policy', 'target']) {
+    const f = await fixture(t), p = originalPreviewClient(f);
+    p.state.corrupt = result => {
+      if (field === 'person') result.actor.google_sub = '999';
+      if (field === 'request') result.request_id = randomUUID();
+      if (field === 'policy') result.policy_sha256 = 'f'.repeat(64);
+      if (field === 'target') result.result.target.post_id++;
+    };
+    await assert.rejects(p.preview, field);
+    assert.equal(f.store.db.prepare('SELECT count(*) n FROM original_management_reviews').get().n, 0);
+    assert.equal(p.state.confirmed, 1);
+  }
+});
+
+test('original preview requires the genuine actor, readiness and service ledger while the generic tool path stays closed', async t => {
+  const f = await fixture(t), p = originalPreviewClient(f), ready = await f.ready();
+  for (const options of [{}, { ledger: {}, attemptId: f.attempt, readiness: ready },
+    { ledger: f.ledger, attemptId: f.attempt, readiness: { ...ready } }])
+    await assert.rejects(() => p.delegated.previewOriginalManagementEdit(f.request, options));
+  await assert.rejects(() => p.delegated.callTool({ name: 'mrn_mainwp__preview_content_edit_v1', arguments: f.request }));
+  const copied = new DelegatedMainwpClient(p.client, { ...f.actor }, f.signer);
+  await assert.rejects(() => copied.previewOriginalManagementEdit(f.request, { ledger: f.ledger, attemptId: f.attempt, readiness: ready }));
+  assert.equal(count(f), 0); assert.equal(p.state.confirmed, 0);
+});
+
+test('fresh local authorization and readiness are rechecked before the confirmed original preview dispatch', async t => {
+  for (const failure of ['revocation', 'policy', 'expired-readiness']) {
+    const f = await fixture(t), p = originalPreviewClient(f);
+    p.state.duringConfirmation = () => {
+      if (failure === 'revocation') f.store.transaction(() => f.ledger.principals.pending(digest(f.actor.googleSubject), requesterDigest(f.actor)));
+      if (failure === 'policy') f.pins.authorization_policy_sha256 = 'f'.repeat(64);
+      if (failure === 'expired-readiness') t.mock.method(Date, 'now', () => (f.now + 31) * 1000);
+    };
+    await assert.rejects(p.preview, failure);
+    assert.equal(p.state.confirmed, 0);
+    assert.equal(p.state.calls.filter(row => row.name === delegationTools.run).length, 1);
+    assert.equal(f.store.db.prepare('SELECT state FROM original_management_authorizations').get().state, 'dispatched');
+    t.mock.restoreAll();
+  }
+});
+
+test('pending revocation during the confirmed original preview withholds the returned review', async t => {
+  const f = await fixture(t), p = originalPreviewClient(f);
+  p.state.duringResult = () => f.store.transaction(() => f.ledger.principals.pending(digest(f.actor.googleSubject), requesterDigest(f.actor)));
+  await assert.rejects(p.preview);
+  assert.equal(p.state.confirmed, 1);
+  assert.equal(f.store.db.prepare('SELECT count(*) n FROM original_management_reviews').get().n, 0);
 });

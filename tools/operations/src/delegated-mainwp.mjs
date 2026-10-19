@@ -5,6 +5,8 @@ import { delegationCanonical, delegationDigest } from './delegation.mjs';
 import { qualificationRequestSchema, validateQueuePins } from './content-access-store.mjs';
 import { managementQualificationRequestSchema, validateManagementQueuePins } from './content-management-access-store.mjs';
 import { managementSchemas } from './content-management-contract.mjs';
+import { OriginalManagementAuthorizationLedger } from './original-management-authorization.mjs';
+import { originalReadinessObservation } from './original-authorization-transport.mjs';
 
 export const qualificationQueueTool = 'mrn_mainwp__queue_delegated_qualification_v1';
 
@@ -64,10 +66,13 @@ export class DelegatedMainwpClient {
   }
   async envelope(ability, args) {
     if (!this.transportVerified) await this.ready();
-    const challenge = payload(await this.client.callTool({ name: delegationTools.challenge,
-      arguments: { ability, arguments_sha256: delegationDigest(args) } }, undefined, { timeout: 30000 }));
+    const challenge = await this.#challenge(ability, args);
     const envelope = this.signer.sign(this.actor, ability, args, challenge);
     return { envelope, claims: JSON.parse(Buffer.from(envelope.payload_base64, 'base64').toString('utf8')) };
+  }
+  async #challenge(ability, args) {
+    return payload(await this.client.callTool({ name: delegationTools.challenge,
+      arguments: { ability, arguments_sha256: delegationDigest(args) } }, undefined, { timeout: 30000 }));
   }
   async verifyStaff() {
     await this.ready();
@@ -90,9 +95,13 @@ export class DelegatedMainwpClient {
     return this.#dispatch(ability, args, wrapper, options);
   }
   async #dispatch(ability, args, wrapper, options, expectedPolicy) {
+    requireThat(Buffer.byteLength(delegationCanonical(args)) <= 98304, 'DELEGATION_INPUT', 'Delegated request exceeds the supported bound.');
+    const signed = await this.envelope(ability, args);
+    return this.#dispatchSigned(ability, args, wrapper, options, signed, expectedPolicy);
+  }
+  async #dispatchSigned(ability, args, wrapper, options, { envelope, claims }, expectedPolicy, beforeConfirmed) {
     const arguments_json = delegationCanonical(args);
     requireThat(Buffer.byteLength(arguments_json) <= 98304, 'DELEGATION_INPUT', 'Delegated request exceeds the supported bound.');
-    const { envelope, claims } = await this.envelope(ability, args);
     requireThat(expectedPolicy === undefined || expectedPolicy === claims.policy_sha256,
       'DELEGATION_MISMATCH', 'The current delegation policy differs from the admitted worker policy.');
     // No retry and no interactive-lease/raw-service fallback on any failure.
@@ -102,6 +111,7 @@ export class DelegatedMainwpClient {
       const preview = payload(response);
       requireThat(preview.status === 'CONFIRMATION_REQUIRED' && typeof preview.confirmation_token === 'string' && preview.confirmation_token.length > 0,
         'CONFIRMATION_GATE', 'The mandatory MainWP confirmation gate is unavailable or safe mode is enabled.');
+      await beforeConfirmed?.();
       requireThat(claims.expires_at > Date.now() / 1000, 'DELEGATION_EXPIRED', 'The signed request expired before confirmed dispatch; prepare again.');
       response = await this.client.callTool({ name: wrapper, arguments: { ...input, user_confirmed: true, confirmation_token: preview.confirmation_token } }, undefined, options);
     }
@@ -143,8 +153,33 @@ export class DelegatedMainwpClient {
     requireWriteScope(this.actor);
     const contract = managementSchemas['preview-content-edit-v1'], args = contract.input.parse(input);
     requireThat(args.post_id > 0, 'CAPABILITY_UNAVAILABLE', 'New-record qualification is not available.');
-    const review = contract.output.parse(payload(await this.#dispatch('mrn-mainwp/preview-content-edit-v1', args,
-      delegationTools.run, { timeout: 90000 })));
+    return this.#managementReview(args, await this.#dispatch('mrn-mainwp/preview-content-edit-v1', args,
+      delegationTools.run, { timeout: 90000 }));
+  }
+  // Private composition only. Reuse the exact retained original envelope for
+  // both phases of the existing confirmed wrapper; never sign a replacement.
+  async previewOriginalManagementEdit(input, { ledger, attemptId, readiness } = {}) {
+    requireWriteScope(this.actor);
+    requireThat(ledger instanceof OriginalManagementAuthorizationLedger && ledger.signer === this.signer,
+      'ORIGINAL_AUTHORIZATION', 'The service-owned original ledger and identity signer are required.');
+    const args = managementSchemas['preview-content-edit-v1'].input.parse(input), ability = 'mrn-mainwp/preview-content-edit-v1';
+    requireThat(args.post_id > 0, 'CAPABILITY_UNAVAILABLE', 'New-record qualification is not available.');
+    requireThat(Buffer.byteLength(delegationCanonical(args)) <= 98304, 'DELEGATION_INPUT', 'Delegated request exceeds the supported bound.');
+    await this.ready();
+    const handle = await ledger.prepare(this.actor, args, await this.#challenge(ability, args), attemptId, readiness);
+    const envelope = await ledger.claimDispatch(handle, this.actor);
+    const claims = JSON.parse(Buffer.from(envelope.payload_base64, 'base64').toString('utf8'));
+    const review = this.#managementReview(args, await this.#dispatchSigned(ability, args, delegationTools.run,
+      { timeout: 90000 }, { envelope, claims }, undefined, async () => {
+        const current = await ledger.readCurrent(handle.requestId, this.actor), observed = originalReadinessObservation(readiness);
+        requireThat(current.state === 'dispatched' && current.mapping.readiness.coherenceEpochSha256 === observed.coherenceEpochSha256,
+          'ORIGINAL_AUTHORIZATION', 'The original preview authority changed before confirmed dispatch.');
+      }));
+    await ledger.readCurrent(handle.requestId, this.actor);
+    return { originalRequestId: handle.requestId, review };
+  }
+  #managementReview(args, response) {
+    const review = managementSchemas['preview-content-edit-v1'].output.parse(payload(response));
     requireThat(review.site_id === args.site_id && review.site_url === args.site_url
       && review.target.post_type === args.post_type && review.target.post_id === args.post_id
       && review.before_sha256 === args.expected_snapshot_sha256,

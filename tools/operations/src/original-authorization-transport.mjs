@@ -25,7 +25,13 @@ const freeze = value => { if (value && typeof value === 'object') { Object.value
 const projectionFields = ['operation_id', 'reviewed_digest', 'qualification_protocol', 'protocol_contracts_sha256',
   'original_delegation_request_id', 'original_resource_authorization_sha256', 'original_resource_authorization_expires_at'];
 const bindingObservations = new WeakMap();
+const readinessObservations = new WeakMap();
 export const parseOriginalBindingProjection = value => parse(types.authorization_projection, value);
+// The observer closes over the live connection and source policy. A copied or
+// stale status cannot anchor a new original preview or authorize a control.
+export function originalReadinessObservation(value) {
+  const observe = readinessObservations.get(value); check(observe); return observe();
+}
 // A caller-created projection or serialized copy is not an authenticated
 // transport observation. Retain only bounded hashes/identifiers, never input.
 export function originalBindingObservation(value) {
@@ -65,7 +71,15 @@ export class OriginalAuthorizationTransport {
       && result.authorization_policy_sha256 === policy.authorization_policy_sha256 && result.dispatch_contract_sha256 === wireHash
       && Buffer.byteLength(delegationCanonical(result)) <= wire.limits.readiness_output_bytes);
     const value = freeze(result);
-    if (value.binding_readiness === 'ready') this.#readiness.set(value, policy);
+    if (value.binding_readiness === 'ready') {
+      this.#readiness.set(value, policy);
+      readinessObservations.set(value, () => {
+        check(this.ready && this.#readiness.has(value) && same(policy, this.#policy())); this.#fresh(value);
+        return freeze({ schema: 1, coherenceEpochSha256: value.coherence_epoch_sha256,
+          observedAt: value.observed_at * 1000, expiresAt: value.expires_at * 1000,
+          dispatchContractSha256: value.dispatch_contract_sha256, policy });
+      });
+    }
     return value;
   }
   async #control(kind, value, readiness) {

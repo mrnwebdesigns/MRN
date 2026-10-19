@@ -8,7 +8,7 @@ import { digest, registryTargetSchema, requireThat, sha } from './contracts.mjs'
 import { managementSchemas, validateManagementEvidence } from './content-management-contract.mjs';
 import { compileManagementEvidenceSchema } from './content-management-schema.mjs';
 import { existingManagementHashes, existingManagementProtocol } from './management-existing-contracts.mjs';
-import { originalBindingObservation, parseOriginalBindingProjection } from './original-authorization-transport.mjs';
+import { originalBindingObservation, originalReadinessObservation, parseOriginalBindingProjection } from './original-authorization-transport.mjs';
 
 const check = (ok, message) => requireThat(ok, 'ORIGINAL_AUTHORIZATION', message);
 const parse = (schema, value) => {
@@ -25,9 +25,13 @@ const pinsSchema = z.object({ provider_source_sha: z.string().regex(/^[a-f0-9]{4
   authorization_policy_sha256: sha, delegation_policy_sha256: sha }).strict();
 const reviewSchema = z.object({ operationId: z.string().uuid(), reviewedDigest: sha, expiresAt: z.number().int().positive().safe(),
   beforeSha256: sha, candidateSha256: sha, migrationSha256: sha }).strict();
+const readinessSchema = z.object({ schema: z.literal(1), coherenceEpochSha256: sha,
+  observedAt: z.number().int().positive().safe(), expiresAt: z.number().int().positive().safe(),
+  dispatchContractSha256: z.literal('8f524002fc5fd900f10e2851d0edd475b4e6ecfe3e6db2a1335573a6e3b7a579'),
+}).strict().refine(value => value.expiresAt > value.observedAt && value.expiresAt <= value.observedAt + 30000);
 const mappingSchema = z.object({ schema: z.literal(1), attempt: z.string().uuid(), requestId: z.string().uuid(),
   actor: accessActorSchema, site: registryTargetSchema, requester: sha, principal: sha, pins: pinsSchema,
-  memberPolicySha256: sha, argumentsSha256: sha, envelopeSha256: sha,
+  memberPolicySha256: sha, argumentsSha256: sha, envelopeSha256: sha, readiness: readinessSchema,
   authorization: z.object({ schema: z.literal(1), authorizationSha256: sha, expiresAt: z.number().int().positive().safe() }).strict(),
   transportExpiresAt: z.number().int().positive().safe(),
   target: z.object({ site_id: z.number().int().positive().safe(), site_url: z.string().url(),
@@ -81,6 +85,18 @@ export class OriginalManagementAuthorizationLedger {
     return site;
   }
   #pins() { return parse(pinsSchema, this.policy()); }
+  #readiness(value, pins) {
+    const { policy, ...anchor } = originalReadinessObservation(value);
+    check(policy.provider_source_sha === pins.provider_source_sha && policy.authorization_policy_sha256 === pins.authorization_policy_sha256,
+      'Provider readiness belongs to another source or authorization policy.');
+    return parse(readinessSchema, anchor);
+  }
+  #sameEpoch(current, readiness) {
+    const observed = this.#readiness(readiness, current.mapping.pins);
+    check(observed.coherenceEpochSha256 === current.mapping.readiness.coherenceEpochSha256,
+      'Provider readiness no longer matches the original preview epoch.');
+    return observed;
+  }
   #load(requestId) {
     parse(z.string().uuid(), requestId);
     const row = this.store.db.prepare('SELECT * FROM original_management_authorizations WHERE request=?').get(requestId);
@@ -124,11 +140,12 @@ export class OriginalManagementAuthorizationLedger {
   }
   // The stable service-owned attempt ID is reserved before any downstream call.
   // Repeating it refuses, including after a lost response or missing body.
-  async prepare(value, input, challenge, attemptId) {
+  async prepare(value, input, challenge, attemptId, readiness) {
     parse(z.string().uuid(), attemptId);
     const args = managementSchemas['preview-content-edit-v1'].input.parse(input);
     check(args.post_id > 0, 'Only an existing exact content record can retain original authorization.');
     const initial = this.#actor(value), site = this.#site(initial.actor, args), pins = this.#pins();
+    const readinessAnchor = this.#readiness(readiness, pins);
     const principalBefore = this.store.db.prepare('SELECT * FROM content_access_principals WHERE principal=?').get(digest(initial.actor.googleSubject));
     const memberPolicySha256 = delegationDigest(this.registry.member(initial.actor));
     const c = challengeSchema.parse(challenge);
@@ -140,6 +157,7 @@ export class OriginalManagementAuthorizationLedger {
       check(delegationDigest(principalBefore ?? null) === delegationDigest(principalAfter ?? null),
         'Principal history changed during active staff verification.');
       check(delegationDigest(this.#pins()) === delegationDigest(pins)
+        && delegationDigest(this.#readiness(readiness, pins)) === delegationDigest(readinessAnchor)
         && delegationDigest(this.#site(actor, args, site)) === delegationDigest(site)
         && delegationDigest(this.registry.member(actor)) === memberPolicySha256,
       'Original authority changed during active staff verification.');
@@ -148,7 +166,7 @@ export class OriginalManagementAuthorizationLedger {
       'This original preview attempt is already retained; read its state instead of retrying.');
       const envelope = Object.freeze(this.signer.sign(value, 'mrn-mainwp/preview-content-edit-v1', args, c));
       const claims = JSON.parse(Buffer.from(envelope.payload_base64, 'base64'));
-      const mapping = parse(mappingSchema, { schema: 1, attempt: attemptId, requestId: claims.request_id,
+      const mapping = parse(mappingSchema, { schema: 1, attempt: attemptId, requestId: claims.request_id, readiness: readinessAnchor,
         actor, authorization, site, pins, requester: requesterDigest(actor), principal: digest(actor.googleSubject),
         memberPolicySha256, argumentsSha256: claims.arguments_sha256, envelopeSha256: delegationDigest(envelope),
         transportExpiresAt: claims.expires_at * 1000,
@@ -162,7 +180,7 @@ export class OriginalManagementAuthorizationLedger {
       this.store.audit(actor, site, mapping.requestId, 'original-authorization-retained', 'prepared');
       this.#current(mapping.requestId, value);
       const handle = Object.freeze({ requestId: mapping.requestId });
-      this.#handles.set(handle, { envelope, authorizationSha256: authorization.authorizationSha256 });
+      this.#handles.set(handle, { envelope, authorizationSha256: authorization.authorizationSha256, readiness });
       return handle;
     });
   }
@@ -175,6 +193,7 @@ export class OriginalManagementAuthorizationLedger {
     await this.verifyStaff(before.mapping.actor);
     const envelope = this.store.transaction(() => {
       const current = this.#current(handle.requestId, actor), m = current.mapping;
+      this.#sameEpoch(current, held.readiness);
       check(this.#handles.get(handle) === held && current.digest === before.digest && current.revision === before.revision
         && current.state === 'prepared' && m.transportExpiresAt > this.now()
         && originalAuthorizationAnchor(actor).authorizationSha256 === held.authorizationSha256
@@ -274,10 +293,11 @@ export class OriginalManagementAuthorizationLedger {
     this.store.db.prepare('INSERT INTO original_management_control_history VALUES(?,?,?,?,?,?,?)')
       .run(row.id, m.requestId, row.kind, row.digest, m.principal, m.requester, state);
   }
-  async #prepareControl(requestId, actor, kind) {
+  async #prepareControl(requestId, actor, kind, readiness) {
     const before = await this.readCurrent(requestId, actor);
     return this.store.transaction(() => {
       const current = this.#current(requestId, actor), m = current.mapping, review = current.review;
+      this.#sameEpoch(current, readiness);
       check(current.state === 'reviewed' && current.digest === before.digest && current.revision === before.revision,
         'Original authority changed before control issuance.');
       const controls = this.#controls(current), bound = controls.find(row => row.kind === 'bind');
@@ -313,22 +333,24 @@ export class OriginalManagementAuthorizationLedger {
       'The original control marker could not be retained.');
       this.store.audit(m.actor, m.site, m.requestId, `original-authorization-${kind}`, 'prepared');
       const handle = Object.freeze({ originalRequestId: m.requestId, controlId: row.id });
-      this.#controlHandles.set(handle, input); return handle;
+      this.#controlHandles.set(handle, { input, readiness }); return handle;
     });
   }
   // Neither method accepts caller identity, expiry, hashes or protocol fields.
   // Bind requests a provider proof of its source-selected original domain; the
   // legacy review shape alone never establishes that proof or admission.
-  prepareBind(requestId, actor) { return this.#prepareControl(requestId, actor, 'bind'); }
-  prepareRead(requestId, actor) { return this.#prepareControl(requestId, actor, 'read'); }
+  prepareBind(requestId, actor, readiness) { return this.#prepareControl(requestId, actor, 'bind', readiness); }
+  prepareRead(requestId, actor, readiness) { return this.#prepareControl(requestId, actor, 'read', readiness); }
   async claimControlDispatch(handle, actor) {
-    const input = this.#controlHandles.get(handle);
-    check(input, 'Original authorization dispatch handle is unavailable or consumed.');
+    const held = this.#controlHandles.get(handle);
+    check(held, 'Original authorization dispatch handle is unavailable or consumed.');
+    const { input, readiness } = held;
     const before = await this.readCurrent(handle.originalRequestId, actor);
     const result = this.store.transaction(() => {
       const current = this.#current(handle.originalRequestId, actor);
+      this.#sameEpoch(current, readiness);
       check(current.digest === before.digest && current.revision === before.revision
-        && this.#controlHandles.get(handle) === input, 'Original authorization changed before dispatch.');
+        && this.#controlHandles.get(handle) === held, 'Original authorization changed before dispatch.');
       const row = this.#controls(current).find(row => row.id === handle.controlId);
       check(row?.state === 'prepared' && row.control.claims.expires_at > Math.floor(this.now() / 1000)
         && row.control.inputDigest === delegationDigest(input), 'Original authorization dispatch is expired or consumed.');
@@ -352,6 +374,7 @@ export class OriginalManagementAuthorizationLedger {
       original: z.string().uuid(), projection: z.unknown(), coherenceEpochSha256: sha }).strict(), value);
     const projection = parseOriginalBindingProjection(saved.projection);
     check(saved.original === m.requestId && saved.principal === m.principal && saved.requester === m.requester
+      && saved.coherenceEpochSha256 === m.readiness.coherenceEpochSha256
       && delegationDigest(saved.actor) === delegationDigest(m.actor), 'Original provider binding belongs to another person.');
     this.#projection(current, projection);
     return { ...saved, projection, digest: row.digest };
@@ -374,6 +397,8 @@ export class OriginalManagementAuthorizationLedger {
     const projection = parseOriginalBindingProjection(response);
     return this.store.transaction(() => {
       const current = this.#current(observation.originalRequestId, actor), m = current.mapping;
+      check(observation.coherenceEpochSha256 === m.readiness.coherenceEpochSha256,
+        'The provider observation does not belong to the original preview epoch.');
       check(current.digest === before.digest && current.revision === before.revision, 'Original authority changed before binding retention.');
       const control = this.#controls(current).find(row => row.id === controlId);
       check(control?.state === 'dispatched' && control.control.inputDigest === observation.inputDigest

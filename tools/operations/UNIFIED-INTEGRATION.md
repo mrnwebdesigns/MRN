@@ -56,7 +56,8 @@ It is not proof that an Auth0 browser session is still active.
 
 The private `OriginalManagementAuthorizationLedger` now persists that anchor
 with the exact signed preview delegation request ID, argument digest, original
-actor, target, source and policy before any downstream call. A stable local
+actor, target, source, policy and genuine provider readiness epoch before any
+downstream preview call. A stable local
 attempt ID and one-shot in-process handle prevent redispatch after a lost
 response or restart. It marks dispatch before returning the signed envelope.
 After the delegated response identity check, it reconstructs the complete
@@ -101,9 +102,9 @@ history also blocks damaged principal state from being treated as first use.
 This is still private source preparation. Production startup does not construct
 the ledger or expose controls. The stable existing preview ability is unchanged;
 only the provider's source-selected coherent readiness may choose its new
-lifetime domain. The v1 review shape cannot prove that choice. Fresh readiness,
-exact successful provider bind/read projection, automatic first-use state and
-asynchronous producer integration still need composition and qualification.
+lifetime domain. The v1 review shape cannot prove that choice. Provider routing,
+automatic first-use state and asynchronous producer integration still need
+composition and native qualification.
 There is no workspace tool, admission, Auth0 session introspection or production
 write activation in this source slice.
 
@@ -126,12 +127,27 @@ expiry, but cannot replace a retained binding hash/epoch or extend the original
 resource grant. Missing, corrupt or rolled-back history fails closed across all
 content writers. Recovery returns historical metadata, never current admission.
 
-All 556 local tests and lint pass, including 41 focused groups. Independent
-review of the committed issuer/transport found no blocker. These source tests
-do not prove an available provider endpoint. The next composition must retain
-the original readiness epoch before preview, then qualify the complete flow
-over actual MCP. Neither this transport nor its optional lifecycle is registered
-at startup. Existing production authorization and the company code pilot are
+The original preview now requires a genuine in-process readiness observation
+from the private transport. It persists the observed epoch before dispatch and
+rechecks freshness/lifecycle/source policy after Directory verification. Later
+bind/read issuance, dispatch and result retention require that original epoch;
+a new observation cannot repair an old or missing anchor. A historical receipt
+still does not establish current provider admission.
+
+The private delegated preview method reserves and claims the original in the
+ledger, then sends that exact signed envelope through both phases of MainWP's
+existing confirmed run wrapper. It checks the returned person, request, policy,
+site and record before returning the review for complete reconstruction. Fresh
+local/Directory access and readiness are rechecked before confirmed dispatch;
+local/Directory access is rechecked again before returning the review. Lost
+responses and failed confirmation retain the uncertain original without retry.
+The generic public delegation path remains closed to management previews.
+
+All 568 local tests and lint pass, including 71 focused groups. Independent
+review of the committed issuer/transport and response retention found no
+blocker. The new preview composition still needs independent review and actual
+MCP/provider qualification. Neither this transport nor its optional lifecycle is
+registered at startup. Production authorization and the company code pilot are
 unchanged.
 
 ## Existing-record v2 gateway preparation
