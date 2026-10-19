@@ -4,72 +4,44 @@
 
 One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebdesigns.com/mcp. Active MRN Google Workspace members get automatic portfolio access; there is no individual approval or enrollment step. Necessary approvals apply to concrete site changes. No teammate WordPress account, Application Password, API key, terminal, Codex, SSH or site token.
 
-## Current delivery state, 2026-10-18
+## Current delivery state, 2026-10-19
 
 - The existing workspace plugin remains the only team connector. Active MRN
   Google accounts need no individual enrollment or personal backend credentials.
   Production still provides read-only inspection; team editing is not ready.
-- Gateway `229b950` passes all 483 tests, combined run `39074114613` and MRN QA
-  `39074114593`. Its original five-report artifact and immutable runtime source
-  pins were independently verified.
-- Provider `7e91098` passes all four jobs in `39080756281`, including 37 native
-  source-context checks and actual anonymous/wrong-purpose HTTP refusal.
-  The correction adds only the four exact private POST source abilities to the
-  backend guard; staff scope and other methods remain denied.
-- Provider `744f15b` passes all four jobs in `39080997949`. Its actual Linux
-  export independently verifies three cache archives, 1,865 files and
-  35,006,494 bytes, the owner signature, and isolation of private materials from
-  Nginx. The tested merge tree equals the source tree. This is export proof;
-  it does not prove the complete gateway/worker source chain.
-- Gateway `4b5b0c4` selects `744f15b` in all four linked provider provenance
-  records and requires the new sixth native-source report in combined CI.
-  Gateway `4b5b0c4` passes 483 source tests and MRN QA `39081910603`, but
-  combined run `39081910595` failed at its first native management capture,
-  before source bootstrap. The earlier five reports pass and their original
-  archive is retained. The fixed worker returned `ok:false`; its underlying
-  refusal is not yet classified. A possible collision with the preceding test's
-  intentionally retained uncertainty lock remains a hypothesis. No lock is cleared.
-- The earlier combined runtime uses qualified management worker `fb9a16b`, whose
-  148 tests, three hosted jobs and original eight-report archives pass.
-  Separately, runner `8465b25` adds strict verification of the outer artifact
-  and inner source ZIP; 153 tests and all three jobs in `39081815246` pass.
-  Both original archives and all eight reports are independently verified,
-  including exact tested tree and recomputed measurement/lifecycle hashes.
-- Gateway `3f51867` selects provider `b9c5fa4` in all four provenance
-  records after comparing all 15 imported inputs. All four provider jobs pass
-  in `39125205713`; combined native-source CI remains required. It also selects
-  qualified worker `8465b25` and separates the
-  downloaded GitHub artifact hash/length from the inner source ZIP hash/length.
-  The actual two-layer ZIP test passes gateway acquisition, independent worker
-  envelope verification, source extraction and complete reconstruction; GitHub
-  transport and ownership in that test remain synthetic.
-- Gateway `3f51867` passes all 484 hosted tests and MRN QA `39158820105`.
-  Combined run `39158820117` retains five passing reports and an incomplete
-  source report: HTTP 500 `mrn_site_locked`, queued state, no capture and zero
-  callbacks. This confirms the preceding uncertainty test's retained lock.
-  Both original failed archives remain retained; no capture was retried.
-- Gateway `ed8e359` selects provider `57abbc2` in all four records, with
-  all 15 imported inputs unchanged. Its separate three-file fixture correction
-  runs source reconstruction before the negative management capture, asserts
-  source starts/finishes unlocked, and verifies the later uncertain capture
-  still owns its original lock and claim with no artifact. All four provider
-  jobs pass in `39175529154`, with tested merge tree equal to source.
-- Gateway `ed8e359` passes all 484 hosted tests and MRN QA `39179491180`.
-  Combined `39179491185` passes native capture/readback, canonical source
-  capture and independent worker metadata/recipient TLS, then fails its first
-  encrypted source batch with `SOURCE_HTTP_RESPONSE`. The original five-report
-  archive is retained; the later management uncertainty test has not run.
-- The source batch reader incorrectly inherited the access-veto helper's
-  two-second deadline. This candidate uses the frozen source recovery bound of
-  twenty seconds and validates the closed input/output schemas and byte limits.
-  Access-veto queries retain two seconds; provider, broker and worker contracts
-  are unchanged. Ten source-broker test groups pass. The original HTTP refusal
-  did not retain its underlying category, so native success remains required.
-  The fixture now retains only bounded batch counters, allowlisted errors and
-  HTTP status on failure, with no raw data or automatic retry.
+- Gateway `9e02cca` passes all 486 hosted source tests and MRN QA `39187678068`.
+  Combined run `39187678028` passes all seven actual native-source groups:
+  canonical capture, independent worker recipient binding, encrypted native
+  batches, full reconstruction, original revocation denial and unchanged child
+  content. Source starts and finishes unlocked. The original five-report ZIP
+  `12159705167` is retained with SHA-256
+  `013a3a2287a921d00472350cc9abb740c895892b947dcf79d1c991cd54a1c4d1`.
+- That combined run still fails: the subsequent separate management owner
+  correctly rejects stale catalog state. The source fixture's included locals
+  overwrote its parent's cleanup list, leaving the activation marker behind.
+  Provider candidate `6a18afa` isolates the include and reads committed SQL to
+  prove both catalog rows were removed and the original authority restored.
+  Its local and exact staged MRN QA pass; hosted provider and combined gateway
+  acceptance remain required. No production authority or lock is reset.
+- All four provider provenance records now select `6a18afa`; all 15 imported
+  contract/fixture inputs are byte-identical. The preceding provider `57abbc2`
+  passed all four jobs in `39175529154` with identical tested/source trees.
+  Its source-before-revocation order and retained-uncertain-lock checks remain.
+- Source batches use their frozen twenty-second recovery bound and closed
+  schemas/byte limits; access-veto queries retain their two-second deadline.
+  The successful native transfer above verifies this correction. Errors retain
+  only bounded diagnostic categories and counters, with no automatic retry.
+- Qualified worker `8465b25` passes 153 tests and all three jobs in `39081815246`.
+  Both original archives and eight reports were independently verified. The
+  gateway/worker two-layer ZIP test verifies separate outer GitHub artifact and
+  inner source hashes, exact extraction, reconstruction and cleanup. Its GitHub
+  transport and ownership remain synthetic; hosted cache provenance is open.
+- The last fully accepted gateway checkpoint is `229b950` (483 source tests,
+  combined `39074114613`, MRN QA `39074114593`). It predates the required full
+  native-source hook. Later partial successes do not replace combined acceptance.
 - Live MainWP was last observed connected to `wpcontrol.mrndev.io` with 115
   abilities and provider 0.13.8. The company code policy remains unchanged.
-- Remaining gates: full native source transfer/reconstruction; protected central
+- Remaining gates: complete combined source/management run; protected central
   cache provenance and delivery; rendered QA and retained report admission;
   concrete production deployment/access approval; workspace refresh; ordinary
   ChatGPT content edit/readback, code edit/rollback, outsider and revoked-user
