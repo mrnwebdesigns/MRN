@@ -3,6 +3,7 @@ import { closeSync, constants, fstatSync, fsyncSync, mkdtempSync, openSync, real
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { digest, requireThat } from './contracts.mjs';
+import { sourceCacheProducerSchema } from './management-source-cache.mjs';
 
 const repository = 'mrnwebdesigns/mrn-code-qa-runner';
 let activeCacheReads = 0;
@@ -22,6 +23,7 @@ const time = value => {
 export async function acquireManagementSourceCache({ selection, acquireGrant, authorize, expiresAt, fetchImpl = fetch,
   now = () => Date.now(), monotonic = () => performance.now() }) {
   const artifact = selection?.catalog_artifact;
+  const producer = sourceCacheProducerSchema.safeParse(selection?.producer); check(producer.success);
   check(selection && id(selection.repository_id) && id(selection.github_artifact_id) && id(selection.run_id)
     && /^[a-f0-9]{40}$/.test(selection.source_sha) && artifact?.archive_format === 'zip'
     && /^[a-f0-9]{64}$/.test(artifact.archive_sha256) && Number.isSafeInteger(artifact.maximum_archive_bytes)
@@ -68,6 +70,19 @@ export async function acquireManagementSourceCache({ selection, acquireGrant, au
     const raw = Buffer.concat(chunks); check(Buffer.from(raw.toString('utf8')).equals(raw));
     const value = JSON.parse(raw.toString('utf8')); await current(); return { value, sha256: digest(raw) };
   };
+  const observeProducer = async token => {
+    const observed = await json(`/repos/${repository}/actions/runs/${selection.run_id}`, token), run = observed.value;
+    check(integerId(run.id) === selection.run_id && integerId(run.repository?.id) === selection.repository_id
+      && run.repository.full_name === repository && run.repository.private === true
+      && integerId(run.head_repository?.id) === selection.repository_id && run.head_repository.full_name === repository
+      && integerId(run.workflow_id) === producer.data.workflow_id && run.path === producer.data.workflow_path
+      && run.head_sha === selection.source_sha && run.head_branch === 'main' && run.event === 'workflow_dispatch'
+      && run.run_attempt === 1 && run.status === 'completed' && run.conclusion === 'success'
+      && integerId(run.actor?.id) === producer.data.app_actor_id && integerId(run.triggering_actor?.id) === producer.data.app_actor_id);
+    const created = time(run.created_at), completed = time(run.updated_at);
+    check(created > 0 && created <= selection.created_at && selection.created_at <= completed && completed * 1000 <= now());
+    return observed;
+  };
   check(activeCacheReads < 2); activeCacheReads++;
   try {
     const operation = async () => {
@@ -76,6 +91,7 @@ export async function acquireManagementSourceCache({ selection, acquireGrant, au
         check(!granted && /^\/app\/installations\/[1-9][0-9]*\/access_tokens$/.test(path) && method === 'POST' && status === 201);
         granted = true; return (await json(path, token, method, body, status)).value;
       });
+      const producerRun = await observeProducer(grant.token);
       const metadata = await json(`/repos/${repository}/actions/artifacts/${selection.github_artifact_id}`, grant.token), item = metadata.value;
       check(integerId(item.id) === selection.github_artifact_id && item.expired === false
         && item.digest === `sha256:${selection.github_artifact_sha256}` && item.size_in_bytes === selection.github_artifact_bytes
@@ -105,6 +121,9 @@ export async function acquireManagementSourceCache({ selection, acquireGrant, au
       });
       const stat = fstatSync(fd); check(stat.isFile() && stat.nlink === 1 && (stat.mode & 0o077) === 0 && stat.uid === process.getuid()
         && stat.size === size && size === item.size_in_bytes && hash.digest('hex') === selection.github_artifact_sha256);
+      // A rerun or changed producer observation during transfer invalidates the
+      // download. This is still inside the original sixty-second/read allowance.
+      check((await observeProducer(grant.token)).sha256 === producerRun.sha256);
       fsyncSync(fd); closeSync(fd); fd = undefined;
       await current(); renameSync(partial, path); await current(); succeeded = true;
       const removeAt = Math.min(expiresAt, selection.expires_at * 1000);
@@ -114,7 +133,8 @@ export async function acquireManagementSourceCache({ selection, acquireGrant, au
       // the inner source.zip; only the independent envelope verifier may open it.
       return { archivePath: path, archiveSha256: selection.github_artifact_sha256, bytes: size,
         sourceArchiveSha256: artifact.archive_sha256, sourceArchiveBytes: selection.source_archive_bytes,
-        metadataSha256: metadata.sha256, inventoryVerified: false, sourceBytesVerified: false, admitted: false,
+        metadataSha256: metadata.sha256, producerRunSha256: producerRun.sha256, producerRunVerified: true,
+        inventoryVerified: false, sourceBytesVerified: false, admitted: false,
         expiresAt: removeAt, cleanup: () => { clearTimeout(expiryTimer); rmSync(directory, { recursive: true, force: true }); } };
     };
     const timeout = new Promise((_, reject) => {

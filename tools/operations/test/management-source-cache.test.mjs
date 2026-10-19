@@ -19,7 +19,12 @@ function fixture(options={}){
     archive_sha256:digest('distinct inner source archive'),archive_format:'zip',maximum_archive_bytes:raw.length-100};
   const entry={catalog_artifact:catalog,github_artifact_id:'456',github_artifact_sha256:digest(raw),github_artifact_bytes:raw.length,
     source_archive_bytes:raw.length-100,run_id:'123',source_sha:'b'.repeat(40),created_at:now/1000-60,expires_at:now/1000+3600};
-  const registry={schema:1,repository,repository_id:'789',entries:[entry]};let pin=delegationDigest(registry);
+  const producer={workflow_id:'321',workflow_path:'.github/workflows/management-source-cache.yml',app_actor_id:'987'};
+  const registry={schema:2,repository,repository_id:'789',producer,entries:[entry]};let pin=delegationDigest(registry);
+  const run={id:123,repository:{id:789,full_name:repository,private:true},head_repository:{id:789,full_name:repository},
+    workflow_id:321,path:producer.workflow_path,head_sha:entry.source_sha,head_branch:'main',event:'workflow_dispatch',
+    run_attempt:1,status:'completed',conclusion:'success',actor:{id:987},triggering_actor:{id:987},
+    created_at:new Date(now-120000).toISOString(),updated_at:new Date(now-30000).toISOString()};
   const metadata={id:456,expired:false,digest:'sha256:'+digest(raw),size_in_bytes:raw.length,
     workflow_run:{id:123,repository_id:789,head_sha:entry.source_sha},created_at:new Date(entry.created_at*1000).toISOString(),expires_at:new Date(entry.expires_at*1000).toISOString()};
   const fetchImpl=async(input,request)=>{
@@ -30,6 +35,7 @@ function fixture(options={}){
         repositories:[{id:789,full_name:repository}],permissions:{contents:'read',actions:'read',metadata:'read'}},201);
     }
     if(options.fetch){const response=await options.fetch(url,request,state,raw,metadata);if(response)return response;}
+    if(url===`https://api.github.com/repos/${repository}/actions/runs/123`){assert.equal(request.headers.Authorization,'Bearer fixture-installation-token');return json(run);}
     if(url===`https://api.github.com/repos/${repository}/actions/artifacts/456`){assert.equal(request.headers.Authorization,'Bearer fixture-installation-token');return json(metadata);}
     if(url.endsWith('/zip'))return new Response('',{status:302,headers:{location:'https://fixture.blob.core.windows.net/data?signature=synthetic'}});
     assert.equal(url,'https://fixture.blob.core.windows.net/data?signature=synthetic');assert.deepEqual(request.headers,{'Accept-Encoding':'identity'});
@@ -39,7 +45,7 @@ function fixture(options={}){
   const github=new GithubApp({appId:1,installationId:2,privateKey:key.privateKey,repositories:{[repository]:789},fetchImpl,now:()=>state.now});
   const cache=new ManagementSourceCacheRegistry({current:()=>registry,expectedSha256:()=>pin,github,now:()=>state.now});
   const acquire=(expiresAt=state.now+60000)=>cache.acquire(catalog,{expiresAt,authorize:async()=>{if(state.denied)throw new Error('original access revoked');}});
-  return{catalog,entry,registry,metadata,cache,github,state,calls,raw,acquire,repin:()=>{pin=delegationDigest(registry);}};
+  return{catalog,entry,registry,producer,run,metadata,cache,github,state,calls,raw,acquire,repin:()=>{pin=delegationDigest(registry);}};
 }
 
 test('empty or missing cache fails explicitly without acquiring credentials or accepting caller repository selectors',async()=>{
@@ -55,8 +61,9 @@ test('approved opaque artifact streams to private storage with actual hash and e
     assert.notEqual(result.archiveSha256,f.catalog.archive_sha256);
     assert.equal(result.sourceArchiveSha256,f.catalog.archive_sha256);assert.equal(result.sourceArchiveBytes,f.entry.source_archive_bytes);
     assert.equal(statSync(result.archivePath).mode&0o777,0o600);assert.equal(result.metadataSha256,digest(JSON.stringify(f.metadata)));
+    assert.equal(result.producerRunSha256,digest(JSON.stringify(f.run)));assert.equal(result.producerRunVerified,true);
     assert.equal(result.inventoryVerified,false);assert.equal(result.sourceBytesVerified,false);assert.equal(result.admitted,false);
-    assert.equal(f.calls.length,4);assert.equal(f.calls.filter(c=>c.request.method==='POST').length,1);
+    assert.equal(f.calls.length,6);assert.equal(f.calls.filter(c=>c.request.method==='POST').length,1);
   }finally{result.cleanup();}assert.equal(existsSync(result.archivePath),false);
 });
 
@@ -69,7 +76,7 @@ test('outer artifact and inner source metadata cannot be substituted or inferred
   for(const change of [f=>{f.metadata.digest='sha256:'+f.catalog.archive_sha256;},
     f=>{f.metadata.size_in_bytes=f.entry.source_archive_bytes;},
     f=>{f.entry.github_artifact_sha256=f.catalog.archive_sha256;f.repin();}]){
-    const f=fixture();change(f);await assert.rejects(f.acquire);assert.equal(f.calls.length,2);
+    const f=fixture();change(f);await assert.rejects(f.acquire);assert.equal(f.calls.length,3);
   }
 });
 
@@ -81,10 +88,45 @@ test('unapproved registry edits, duplicate IDs and changed catalog hashes cannot
   }
 });
 
+test('legacy or incomplete producer configuration cannot request a cache grant',async()=>{
+  for(const change of [f=>{f.registry.schema=1;},f=>{delete f.registry.producer;},f=>{delete f.producer.app_actor_id;},
+    f=>{f.producer.workflow_path='.github/workflows/unreviewed.yml';},f=>{f.producer.url='https://untrusted.test';}]){
+    const f=fixture();change(f);f.repin();await assert.rejects(f.acquire);assert.equal(f.calls.length,0);
+  }
+});
+
+test('unreviewed or incomplete producer runs stop before artifact metadata and bytes',async()=>{
+  for(const change of [r=>{r.id++;},r=>{r.workflow_id++;},r=>{r.path='.github/workflows/other.yml';},
+    r=>{r.repository.id++;},r=>{r.repository.full_name='outsider/repo';},r=>{r.repository.private=false;},
+    r=>{r.head_repository.id++;},r=>{r.head_repository.full_name='outsider/fork';},r=>{r.head_sha='f'.repeat(40);},
+    r=>{r.head_branch='candidate';},r=>{r.event='pull_request';},r=>{r.run_attempt=2;},r=>{r.actor.id++;},
+    r=>{r.triggering_actor.id++;},r=>{r.status='in_progress';},r=>{r.conclusion='failure';},
+    r=>{r.created_at=r.updated_at;},r=>{r.updated_at='2099-01-01T00:00:00Z';}]){
+    const f=fixture();change(f.run);await assert.rejects(f.acquire);assert.equal(f.calls.length,2);
+    assert.equal(f.calls.some(c=>c.url.includes('/artifacts/')),false);
+  }
+});
+
+test('producer rerun or changed completed observation after download removes private bytes',async()=>{
+  for(const change of [r=>{r.run_attempt=2;},r=>{r.status='in_progress';},r=>{r.actor.id++;},
+    r=>{r.updated_at=new Date(Date.parse(r.updated_at)+1000).toISOString();}]){
+    const before=directories();let reads=0;
+    const f=fixture({fetch:url=>{
+      if(url.endsWith('/actions/runs/123')&&++reads===2){const changed=structuredClone(f.run);change(changed);return json(changed);}
+    }});
+    await assert.rejects(f.acquire);assert.equal(reads,2);assert.deepEqual(directories(),before);
+  }
+});
+
+test('original access loss during producer observation prevents source artifact access',async()=>{
+  const f=fixture({fetch:(url,request,state)=>{if(url.endsWith('/actions/runs/123'))state.denied=true;}});
+  await assert.rejects(f.acquire);assert.equal(f.calls.length,2);assert.equal(f.calls.some(c=>c.url.includes('/artifacts/')),false);
+});
+
 test('foreign, expired, oversized and mismatched GitHub artifact observations stop before archive download',async()=>{
   for(const change of [m=>{m.id++;},m=>{m.workflow_run.repository_id++;},m=>{m.workflow_run.id++;},m=>{m.workflow_run.head_sha='f'.repeat(40);},
     m=>{m.expired=true;},m=>{m.digest='sha256:'+'f'.repeat(64);},m=>{m.size_in_bytes++;},m=>{m.expires_at='2099-01-01T00:00:00Z';}]){
-    const f=fixture();change(f.metadata);await assert.rejects(f.acquire);assert.equal(f.calls.length,2);
+    const f=fixture();change(f.metadata);await assert.rejects(f.acquire);assert.equal(f.calls.length,3);
   }
 });
 
@@ -100,7 +142,7 @@ test('storage redirects strip authorization and reject foreign origins, chained 
   for(const location of ['https://outsider.test/data','http://fixture.blob.core.windows.net/data','https://u:p@fixture.blob.core.windows.net/data',
     'https://fixture.blob.core.windows.net:444/data','https://fixture.blob.core.windows.net/data#fragment']){
     const f=fixture({fetch:url=>url.endsWith('/zip')?new Response('',{status:302,headers:{location}}):null});
-    await assert.rejects(f.acquire);assert.equal(f.calls.length,3);
+    await assert.rejects(f.acquire);assert.equal(f.calls.length,4);
   }
   const f=fixture({grant:()=>json({message:'denied'},403)});await assert.rejects(f.acquire);assert.equal(f.calls.length,1);
 });

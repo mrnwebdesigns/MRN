@@ -333,6 +333,10 @@ numeric repository/artifact/run identity, source commit, outer GitHub artifact
 hash and exact byte count, inner source ZIP byte count, and expiry. The inner
 source hash remains independently pinned by the owner catalog. Entries missing
 either layer are refused; the downloader cannot infer one from the other.
+Registry schema 2 additionally pins the producing workflow ID, the fixed
+`.github/workflows/management-source-cache.yml` path and the central App actor
+ID. Schema 1 and missing producer configuration are refused before a credential
+grant. This is private service configuration, never a staff setup step.
 Registry/catalog changes, duplicates, unknown IDs and stale entries fail before
 credential acquisition. It reuses the existing exact-repository GitHub App grant
 and requests only its existing `qaRead` permission profile; it cannot grant App
@@ -349,6 +353,19 @@ opens the single inner `source.zip`, validates its separate hash/length and
 catalog bound, then validates all source paths and bytes against the complete
 approved root. The cross-repository byte test exercises both actual ZIP layers;
 its GitHub responses and ownership remain synthetic.
+
+Before artifact access, the downloader independently reads the producing run
+and requires the exact private repository, same-repository head, workflow,
+source commit, `main` branch, `workflow_dispatch` event, first attempt, successful
+completion and the configured App as both actor and triggering actor. Artifact
+creation must fall within that run's observed creation/completion interval.
+It reads the run again after downloading, requires the same observation, and
+removes the private file if the run or original staff access changed. Both reads
+share the existing sixty-second bound and do not retry. A retained observation
+hash proves only this API observation; protected environment/isolation policy,
+owner approval, source closure and content qualification remain separate gates.
+The named producer workflow and its service configuration are not activated by
+this adapter. Controlled run responses do not establish hosted provenance.
 
 No registry is populated or activated. A read-only attempt to inspect App
 installations through the existing CLI returned 403 because that token cannot

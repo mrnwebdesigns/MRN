@@ -41,7 +41,13 @@ export async function checkManagementCache(runner) {
     const selected = { catalog_artifact: artifact, github_artifact_id: '456', run_id: '123', source_sha: 'b'.repeat(40),
       github_artifact_sha256: digest(outerBytes), github_artifact_bytes: outerBytes.length, source_archive_bytes: bytes.length,
       created_at: Math.floor(f.now / 1000) - 60, expires_at: Math.floor(f.now / 1000) + 3600 };
-    const registry = { schema: 1, repository, repository_id: '789', entries: [selected] }, pin = delegationDigest(registry);
+    const producer = { workflow_id: '321', workflow_path: '.github/workflows/management-source-cache.yml', app_actor_id: '987' };
+    const registry = { schema: 2, repository, repository_id: '789', producer, entries: [selected] }, pin = delegationDigest(registry);
+    const run = { id: 123, repository: { id: 789, full_name: repository, private: true },
+      head_repository: { id: 789, full_name: repository }, workflow_id: 321, path: producer.workflow_path,
+      head_sha: selected.source_sha, head_branch: 'main', event: 'workflow_dispatch', run_attempt: 1,
+      status: 'completed', conclusion: 'success', actor: { id: 987 }, triggering_actor: { id: 987 },
+      created_at: new Date(f.now - 120000).toISOString(), updated_at: new Date(f.now - 30000).toISOString() };
     const metadata = { id: 456, expired: false, digest: 'sha256:' + digest(outerBytes), size_in_bytes: outerBytes.length,
       workflow_run: { id: 123, repository_id: 789, head_sha: selected.source_sha },
       created_at: new Date(selected.created_at * 1000).toISOString(), expires_at: new Date(selected.expires_at * 1000).toISOString() };
@@ -55,6 +61,7 @@ export async function checkManagementCache(runner) {
           return json({ token: 'synthetic-cache-read', expires_at: new Date(f.now + 3600000).toISOString(),
             repositories: [{ id: 789, full_name: repository }], permissions: { contents: 'read', actions: 'read', metadata: 'read' } }, 201);
         }
+        if (address === `https://api.github.com/repos/${repository}/actions/runs/123`) return json(run);
         if (address === `https://api.github.com/repos/${repository}/actions/artifacts/456`) return json(metadata);
         if (address.endsWith('/zip')) return new Response('', { status: 302, headers: { Location: 'https://fixture.blob.core.windows.net/root.zip' } });
         assert.equal(address, 'https://fixture.blob.core.windows.net/root.zip');
@@ -63,7 +70,8 @@ export async function checkManagementCache(runner) {
       } });
     const cache = new ManagementSourceCacheRegistry({ current: () => registry, expectedSha256: () => pin, github, now: () => f.now });
     acquired = await cache.acquire(artifact, { expiresAt: f.now + 60000, authorize: async () => { authorizations++; } });
-    assert.equal(calls, 4); assert.ok(authorizations > 1); assert.equal(acquired.inventoryVerified, false);
+    assert.equal(calls, 6); assert.ok(authorizations > 1); assert.equal(acquired.inventoryVerified, false);
+    assert.equal(acquired.producerRunVerified, true); assert.equal(acquired.producerRunSha256, digest(JSON.stringify(run)));
     envelope = extractManagementArtifactEnvelope({ archivePath: acquired.archivePath, artifactSha256: acquired.archiveSha256,
       artifactBytes: acquired.bytes, sourceArchiveSha256: acquired.sourceArchiveSha256,
       sourceArchiveBytes: acquired.sourceArchiveBytes, expiresAt: acquired.expiresAt }, () => f.now);

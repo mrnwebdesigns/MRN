@@ -6,14 +6,16 @@ import { managementSourceWire } from './management-source-transfer.mjs';
 
 export const managementSourceRepository = 'mrnwebdesigns/mrn-code-qa-runner';
 const id = z.string().regex(/^[1-9][0-9]{0,19}$/), hash = z.string().regex(/^[a-f0-9]{64}$/);
+export const sourceCacheProducerSchema = z.object({ workflow_id: id,
+  workflow_path: z.literal('.github/workflows/management-source-cache.yml'), app_actor_id: id }).strict();
 const artifact = compileManagementEvidenceSchema({ $ref: '#/$defs/cache_artifact', $defs: managementSourceWire.$defs });
 const entry = z.object({ catalog_artifact: artifact, github_artifact_id: id, run_id: id,
   github_artifact_sha256: hash, github_artifact_bytes: z.number().int().safe().min(22).max(536870912),
   source_archive_bytes: z.number().int().safe().min(22).max(536870912),
   source_sha: z.string().regex(/^[a-f0-9]{40}$/), created_at: z.number().int().safe().positive(),
   expires_at: z.number().int().safe().positive() }).strict();
-const registry = z.object({ schema: z.literal(1), repository: z.literal(managementSourceRepository),
-  repository_id: id, entries: z.array(entry).max(128) }).strict();
+const registry = z.object({ schema: z.literal(2), repository: z.literal(managementSourceRepository),
+  repository_id: id, producer: sourceCacheProducerSchema, entries: z.array(entry).max(128) }).strict();
 const check = (value, code = 'MANAGEMENT_SOURCE_CACHE') => requireThat(value, code,
   code === 'MANAGEMENT_SOURCE_MISSING_CACHE' ? 'Required original source has no approved central cache artifact.' : 'The approved source cache identity or original access changed.');
 
@@ -42,7 +44,7 @@ export class ManagementSourceCacheRegistry {
     const selected = matches[0];
     check(delegationDigest(selected.catalog_artifact) === delegationDigest(parsed.data)
       && selected.created_at * 1000 <= this.now() && selected.expires_at * 1000 > this.now());
-    return { ...selected, repository_id: value.repository_id, registry_sha256: pinned };
+    return { ...selected, repository_id: value.repository_id, producer: value.producer, registry_sha256: pinned };
   }
   async acquire(input, { authorize, expiresAt }) {
     check(typeof authorize === 'function' && Number.isSafeInteger(expiresAt) && expiresAt > this.now());

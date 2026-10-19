@@ -44,13 +44,13 @@ Use already-authorized test identities or separately reviewed administrative tes
 
 ## Latest disposable evidence, 2026-10-19
 
-Gateway `a455f08` with provider `d44b800`, MCP `3249bde`, legacy runner `d9f2eba`
-and management worker `8465b25` passes all 494 hosted tests,
-[combined CI 39276146237](https://github.com/mrnwebdesigns/MRN/actions/runs/39276146237)
-and [MRN QA 39276146137](https://github.com/mrnwebdesigns/MRN/actions/runs/39276146137).
+Gateway `ed5dacb` with provider `d44b800`, MCP `3249bde`, legacy runner `d9f2eba`
+and management worker `8465b25` passes all 496 hosted tests,
+[combined CI 39283333559](https://github.com/mrnwebdesigns/MRN/actions/runs/39283333559)
+and [MRN QA 39283333346](https://github.com/mrnwebdesigns/MRN/actions/runs/39283333346).
 All six original reports and completed job logs were independently verified.
-Artifact `12198311855` is 8825 bytes with SHA-256
-`ccac32236996457a4fad42a8eeda85b360561d448d464b9f3220c1a7c52b9381`.
+Artifact `12203650764` is 8836 bytes with SHA-256
+`5a71e9894cf17502ba405cdc94bf7ced39e28c6fd6aa8e00f3e1102d0901daf2`.
 Exact tested Operations runtime/workflow blobs match committed source.
 
 This includes the disposable content edit, public readback and exact rollback,

@@ -9,13 +9,13 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
 - The existing workspace plugin remains the only team connector. Active MRN
   Google accounts need no individual enrollment or personal backend credentials.
   Production still provides read-only inspection; team editing is not ready.
-- Accepted gateway checkpoint `a455f08` passes all 494 hosted source tests,
-  combined run `39276146237` and MRN QA `39276146137`. All six original reports
+- Accepted gateway checkpoint `ed5dacb` passes all 496 hosted source tests,
+  combined run `39283333559` and MRN QA `39283333346`. All six original reports
   were independently verified, including seven actual native-source groups,
   native content edit/public readback/exact rollback, both committed owner
   cleanup readbacks and the later uncertain capture's original lock/claim.
-  The original artifact `12198311855` has SHA-256
-  `ccac32236996457a4fad42a8eeda85b360561d448d464b9f3220c1a7c52b9381`.
+  The original artifact `12203650764` has SHA-256
+  `5a71e9894cf17502ba405cdc94bf7ced39e28c6fd6aa8e00f3e1102d0901daf2`.
   Exact tested runtime/workflow blobs and all pinned dependencies were checked;
   the whole MRN merge tree also contains unrelated base-branch changes.
   Completed job logs were retained directly because the aggregated CLI log
@@ -87,9 +87,12 @@ verifies the Node TLS callback and role-separated signatures, compares both
 archive hashes, and checks acquisition replay and fresh revoked-read denial.
 Its GitHub, rendered-runtime and WordPress-HTTP observations are explicitly
 synthetic. The existing seven source groups remain mandatory. The new gate is
-disabled pending an independently qualified provider fixture: provider candidate
-`2771113` passes packet construction but failed report retention in native run
-`39277729373`. Diagnostic candidate `0423f81` is pending in `39281565731`.
+disabled pending an independently qualified provider fixture. Provider `73a509f`
+fixes absent archive/relations bootstrap imports and passes both native retention
+cases (13 checks each), but its full native run `39284549982` reached the outer
+15-minute CI limit. Consolidated candidate `18bf0d4` preserves current-main
+backup/field work and changes only that outer allocation to 25 minutes; run
+`39287071024` remains pending. No operation deadline or retry rule changed.
 The provider pin remains `d44b800`; the prepared gate does not prove successful
 retention, hosted provenance, QA admission or team acceptance.
 
@@ -100,6 +103,26 @@ family into the signed original. All 496 local tests pass. Prepared custody
 diagnostics record only fixed failure categories and aggregate observation
 stages, never raw exceptions, signatures, identity or content. The optional gate
 requires all five observation stages and no recorded failure before passing.
+
+## Source cache producer observations
+
+The private cache registry now requires schema 2 with an exact producer workflow
+ID/path and central App actor. The downloader reads the producing run before
+artifact access and again after transfer. Both observations must describe the
+same successful first attempt on the approved repository, source commit and
+`main` workflow dispatch, with the approved App as both actors and the artifact
+created within the run interval. Wrong origins, reruns, incomplete/failed runs,
+changed observations and access loss deny the read and remove private bytes.
+The existing request expiry, sixty-second bound, two acquisition slots and
+separate inner/outer archive checks remain unchanged; there is no retry.
+
+All 500 local gateway tests and ESLint pass, including 13 focused cache groups.
+The actual two-layer archive extraction, encrypted native transfer and complete
+source reconstruction check also passes with the existing pinned worker. Its
+GitHub run responses remain synthetic. No producer workflow, App permission,
+owner registry, signing environment or production route is activated. Hosted
+producer/isolation provenance, encrypted cache delivery and report/profile
+admission still require their own evidence.
 
 The following sections retain individual source checkpoints and their limits.
 They are not evidence of production activation or team readiness.
