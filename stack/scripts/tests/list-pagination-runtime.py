@@ -123,7 +123,8 @@ add_action('wp_head',static function(){ $id=get_queried_object_id();echo '<scrip
         check('nested-list', nested['url'] + '?' + nk + '=2', nested['url'] + '?' + nk + '=2')
         for name in ['team_member', 'job_posting']:
             owner = pages[name]; own_key = 'mrn_list_page_' + str(owner['id']) + '_0'
-            check('enabled-' + name, owner['url'] + '?' + own_key + '=2', owner['url'] + '?' + own_key + '=2')
+            public_owner = check('enabled-' + name, owner['url'] + '?' + own_key + '=2', owner['url'] + '?' + own_key + '=2')
+            assert len(public_owner['items']) == 2 and all(set(items) == {'4', '5', '6'} for items in public_owner['items']), public_owner
         fixture.php("update_option('mrn_disabled_post_types',['gallery','team_member'],false);echo json_encode(['done'=>true]);")
         disabled = pages['disabled_source']; dk = 'mrn_list_page_' + str(disabled['id']) + '_0'
         check('disabled-source-no-pagination', disabled['url'] + '?' + dk + '=2', disabled['url'])

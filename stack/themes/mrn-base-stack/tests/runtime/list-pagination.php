@@ -41,6 +41,7 @@ foreach ( array( 'single', 'multiple', 'empty', 'nested' ) as $name ) {
 }
 foreach ( array( 'team_member', 'job_posting' ) as $type ) {
 	$id = wp_insert_post( array( 'post_type' => $type, 'post_status' => 'publish', 'post_title' => 'Pagination ' . $type, 'post_name' => 'pagination-' . $type ) );
+	update_field( 'field_mrn_page_content_rows', array( $row ), $id );
 	update_field( 'field_mrn_page_after_content_rows', array( array( 'acf_fc_layout' => 'reusable_block', 'block' => $block ) ), $id );
 	$pages[ $type ] = array( 'id' => $id, 'url' => get_permalink( $id ) );
 }

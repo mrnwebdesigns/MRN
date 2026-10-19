@@ -107,13 +107,10 @@ function mrn_base_stack_get_list_pagination_request() {
 	}
 	$state  = $empty;
 	$fields = array( 'page_after_content_rows' );
-	if ( in_array( $post->post_type, array( 'page', 'service' ), true ) ) {
+	if ( ! in_array( $post->post_type, array( 'gallery', 'case_study', 'testimonial' ), true ) ) {
 		array_unshift( $fields, 'page_content_rows' );
 	}
 	if ( function_exists( 'mrn_base_stack_get_singular_sidebar_settings' ) && 'none' !== ( mrn_base_stack_get_singular_sidebar_settings( $post->ID )['layout'] ?? 'none' ) ) {
-		if ( ! in_array( 'page_content_rows', $fields, true ) ) {
-			array_unshift( $fields, 'page_content_rows' );
-		}
 		$fields[] = 'page_sidebar_rows';
 	}
 	$lists = array();
