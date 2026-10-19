@@ -41,6 +41,15 @@ function sanitize_textarea_field( $value ) {
 function wp_json_encode( $value ) {
 	return json_encode( $value );
 }
+function rest_url( $path ) {
+	return 'https://example.test/wp-json/' . $path;
+}
+function register_rest_route( $namespace, $route, $args ) {
+	$GLOBALS['mrn_schedule_route'] = array( $namespace, $route, $args );
+}
+class WP_REST_Response {
+	public function __construct( public $data, public $status, public $headers ) {}
+}
 function sanitize_key( $value ) {
 	return preg_replace( '/[^a-z0-9_\-]/', '', strtolower( $value ) );
 }
@@ -133,6 +142,23 @@ if ( '--fixture' === ( $argv[1] ?? '' ) ) {
 
 $schedule = mrn_base_stack_get_header_utility_message_schedule();
 mrn_schedule_assert( $schedule['valid'], 'A normal schedule should be valid.' );
+mrn_base_stack_register_header_utility_message_clock();
+$route = $GLOBALS['mrn_schedule_route'];
+mrn_schedule_assert( 'POST' === $route[2]['methods'] && '__return_true' === $route[2]['permission_callback'], 'The read-only public clock must avoid cached GET requests.' );
+mrn_schedule_assert( $route[2]['args']['token']['required'] && '^[a-f0-9]{32}$' === $route[2]['args']['token']['pattern'], 'Each request needs a bounded random cache challenge.' );
+$before_clock = microtime( true ) * 1000;
+$clock = mrn_base_stack_get_header_utility_message_clock( array( 'token' => str_repeat( 'a', 32 ) ) );
+mrn_schedule_assert( $clock->data['now'] >= $before_clock && $clock->data['now'] <= microtime( true ) * 1000, 'The endpoint must return real server UTC milliseconds.' );
+mrn_schedule_assert( str_repeat( 'a', 32 ) === $clock->data['token'] && mrn_base_stack_get_header_utility_message_schedule_version() === $clock->data['version'], 'Clock responses must bind the request and the saved message.' );
+mrn_schedule_assert( str_contains( $clock->headers['Cache-Control'], 'no-store' ) && 'no-store' === $clock->headers['CDN-Cache-Control'], 'Browser and edge caches must not store clock responses.' );
+mrn_schedule_assert( array( 'token', 'version', 'received', 'now' ) === array_keys( $clock->data ), 'The public clock must expose neither message content nor stored settings.' );
+$version = $clock->data['version'];
+$GLOBALS['mrn_schedule_fields']['header_utility_message_text'] = 'Changed message';
+mrn_schedule_assert( $version !== mrn_base_stack_get_header_utility_message_schedule_version(), 'A stale cached message must lose its settings fingerprint.' );
+$GLOBALS['mrn_schedule_fields']['header_utility_message_text'] = 'Scheduled message';
+$GLOBALS['mrn_schedule_fields']['header_utility_message_enabled'] = 0;
+mrn_schedule_assert( '' === mrn_base_stack_get_header_utility_message_clock( array( 'token' => str_repeat( 'b', 32 ) ) )->data['version'], 'Inactive messages must never receive clock authorization.' );
+$GLOBALS['mrn_schedule_fields']['header_utility_message_enabled'] = 1;
 mrn_schedule_assert( strtotime( '2026-10-16T13:00:00Z' ) === $schedule['start'], 'Start uses the selected time zone.' );
 mrn_schedule_assert( strtotime( '2026-10-16T21:00:00Z' ) === $schedule['end'], 'End uses the selected time zone.' );
 

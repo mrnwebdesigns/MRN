@@ -88,17 +88,34 @@ twice during the autumn clock change, the first occurrence is used for an
 explicit date boundary. Recurring hours follow the local wall clock, including
 both occurrences of a repeated hour.
 
-Scheduled message markup remains in cached HTML, initially hidden. A small
-inline controller uses the browser clock to reveal it only within the window,
-updates at the next boundary and rechecks restored/foreground tabs. Recurring
-day/hour rules make a small local calculation each minute to follow DST jumps.
-This adds
-no AJAX requests or cron jobs; manual messages load no controller. Scheduled
-messages stay hidden when JavaScript is unavailable. Changing saved content,
-dates or Active still requires the site's normal options-page HTML cache
-invalidation; the controller handles time passing after those settings are
-already present in cached HTML. Child themes overriding the parent's header
-must preserve its schedule attributes and adjacent controller.
+Scheduled message markup remains in cached HTML, initially hidden. The inline
+controller obtains UTC from a same-origin, public, read-only POST endpoint at
+`/wp-json/mrn/v1/header-utility-message-clock`. Browser/CDN no-store headers and
+a random echoed request token prevent cached clock replies from being trusted.
+The response also binds the cached message to the current saved settings; an
+outdated message stays hidden until the page cache is refreshed.
+
+The server clock anchors `performance.now()` for exact date boundaries and
+recurring rules in the selected zone. Visitor wall time and browser time zone do
+not decide visibility. The controller excludes server processing time when
+estimating network transit, resynchronizes once per minute while visible and
+whenever the tab regains focus, and discards samples after two minutes. Failed,
+slow or unverified responses hide the message and retry after 15 seconds.
+Messages also stay hidden without JavaScript or before the first verified reply.
+Manual messages make no clock requests. No WordPress cron job is involved.
+
+Some browsers pause their monotonic counter during OS sleep. Device wall time
+is used only to detect a discontinuity and request fresh server time; it can
+never reveal a message. Hidden/restored tabs must revalidate before appearing.
+Timing accuracy is bounded by the site's UTC clock, network transit and browser
+timer scheduling; sleeping/offline browsers cannot promise a simultaneous visual
+change. Use a time-synchronized host clock. The selected city zone still owns
+DST conversion, independently of the server's configured local zone.
+
+Changing saved content, dates or Active requires the site's normal options-page
+HTML cache invalidation. A settings fingerprint prevents stale cached scheduled
+content from being authorized after the next clock check. Child themes overriding
+the parent's header must preserve its schedule attributes and adjacent controller.
 
 Focused checks:
 

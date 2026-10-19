@@ -32,7 +32,7 @@ function mrn_base_stack_get_header_utility_message_schedule_fields() {
 			'type'          => 'true_false',
 			'ui'            => 1,
 			'default_value' => 0,
-			'instructions'  => __( 'Automatically show and hide the message during the selected dates. Active must also be switched on.', 'mrn-base-stack' ),
+			'instructions'  => __( 'Automatically show and hide the message during the selected dates. Active must also be switched on. Timing is verified with the site server; the message stays hidden if time cannot be verified.', 'mrn-base-stack' ),
 		),
 		array(
 			'key'               => 'field_mrn_header_utility_message_schedule_timezone',
@@ -375,6 +375,73 @@ function mrn_base_stack_validate_header_utility_message_schedule() {
 add_action( 'acf/validate_save_post', 'mrn_base_stack_validate_header_utility_message_schedule' );
 
 /**
+ * Bind a cached message to its current saved settings without publishing them.
+ *
+ * @return string
+ */
+function mrn_base_stack_get_header_utility_message_schedule_version() {
+	return hash( 'sha256', wp_json_encode( array( mrn_base_stack_get_header_utility_message_options(), mrn_base_stack_get_header_utility_message_schedule() ) ) );
+}
+
+/**
+ * Register a public, read-only clock. POST prevents intermediary GET caching;
+ * the random request token also lets the browser reject a replayed response.
+ */
+function mrn_base_stack_register_header_utility_message_clock() {
+	// nosemgrep: wp-open-rest-permission-callback -- Intentionally public, read-only UTC and opaque fingerprint; bounded validated token, no content disclosure or writes.
+	register_rest_route(
+		'mrn/v1',
+		'/header-utility-message-clock',
+		array(
+			'methods'             => 'POST',
+			'permission_callback' => '__return_true',
+			'callback'            => 'mrn_base_stack_get_header_utility_message_clock',
+			'args'                => array(
+				'token' => array(
+					'type'     => 'string',
+					'required' => true,
+					'pattern'  => '^[a-f0-9]{32}$',
+				),
+			),
+		)
+	);
+}
+add_action( 'rest_api_init', 'mrn_base_stack_register_header_utility_message_clock' );
+
+/**
+ * Return current UTC and a settings fingerprint, with no content or writes.
+ * The token is a cache challenge, not an authentication nonce.
+ *
+ * @param WP_REST_Request $request Validated public clock request.
+ * @return WP_REST_Response
+ */
+function mrn_base_stack_get_header_utility_message_clock( $request ) {
+	$schedule = mrn_base_stack_get_header_utility_message_schedule();
+	$version  = $schedule['enabled'] && mrn_base_stack_has_header_utility_message() ? mrn_base_stack_get_header_utility_message_schedule_version() : '';
+	$now      = microtime( true ) * 1000;
+	// PHP records this request's start before WordPress boots. Subtracting
+	// server processing time prevents slow bootstrap from skewing transit estimates.
+	$received = isset( $_SERVER['REQUEST_TIME_FLOAT'] ) ? (float) $_SERVER['REQUEST_TIME_FLOAT'] * 1000 : $now;
+
+	return new WP_REST_Response(
+		array(
+			'token'    => $request['token'],
+			'version'  => $version,
+			'received' => $received,
+			'now'      => $now,
+		),
+		200,
+		array(
+			'Cache-Control'     => 'no-store, no-cache, must-revalidate, max-age=0, private',
+			'CDN-Cache-Control' => 'no-store',
+			'Surrogate-Control' => 'no-store',
+			'Pragma'            => 'no-cache',
+			'Expires'           => '0',
+		)
+	);
+}
+
+/**
  * Return escaped schedule attributes for the header grid item.
  *
  * @return string
@@ -393,12 +460,12 @@ function mrn_base_stack_get_header_utility_message_schedule_attributes() {
 		$rules['offset'] = ( new DateTimeZone( $schedule['timezone'] ) )->getOffset( new DateTimeImmutable( '@0' ) );
 	}
 
-	return 'hidden data-mrn-utility-schedule data-mrn-utility-start="' . esc_attr( (string) $schedule['start'] ) . '" data-mrn-utility-end="' . esc_attr( (string) $schedule['end'] ) . '" data-mrn-utility-rules="' . esc_attr( wp_json_encode( $rules ) ) . '"';
+	return 'hidden data-mrn-utility-schedule data-mrn-utility-clock-url="' . esc_url( rest_url( 'mrn/v1/header-utility-message-clock' ) ) . '" data-mrn-utility-version="' . esc_attr( mrn_base_stack_get_header_utility_message_schedule_version() ) . '" data-mrn-utility-start="' . esc_attr( (string) $schedule['start'] ) . '" data-mrn-utility-end="' . esc_attr( (string) $schedule['end'] ) . '" data-mrn-utility-rules="' . esc_attr( wp_json_encode( $rules ) ) . '"';
 }
 
 /**
  * Render the small, synchronous controller beside a scheduled header item.
- * No network request or WordPress cron is needed to cross a schedule boundary.
+ * Fresh server UTC anchors the controller; WordPress cron is not needed.
  *
  * @return string
  */
