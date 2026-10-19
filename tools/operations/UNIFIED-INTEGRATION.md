@@ -9,26 +9,27 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
 - The existing workspace plugin remains the only team connector. Active MRN
   Google accounts need no individual enrollment or personal backend credentials.
   Production still provides read-only inspection; team editing is not ready.
-- Gateway `9e02cca` passes all 486 hosted source tests and MRN QA `39187678068`.
-  Combined run `39187678028` passes all seven actual native-source groups:
-  canonical capture, independent worker recipient binding, encrypted native
-  batches, full reconstruction, original revocation denial and unchanged child
-  content. Source starts and finishes unlocked. The original five-report ZIP
-  `12159705167` is retained with SHA-256
-  `013a3a2287a921d00472350cc9abb740c895892b947dcf79d1c991cd54a1c4d1`.
-- That combined run still fails: the subsequent separate management owner
-  correctly rejects stale catalog state. The source fixture's included locals
-  overwrote its parent's cleanup list, leaving the activation marker behind.
-  Provider candidate `6a18afa` isolates the include and reads committed SQL to
-  prove both catalog rows were removed and the original authority restored.
-  Its local and exact staged MRN QA and all four hosted provider jobs pass in
-  `39266052762`. The tested merge tree equals source, and native SQL readback
-  proves both catalog rows removed and original authority restored. Combined
-  gateway acceptance remains required. No production authority or lock is reset.
-- All four provider provenance records now select `6a18afa`; all 15 imported
-  contract/fixture inputs are byte-identical. The preceding provider `57abbc2`
-  passed all four jobs in `39175529154` with identical tested/source trees.
-  Its source-before-revocation order and retained-uncertain-lock checks remain.
+- Accepted gateway checkpoint `ecb4b8e` passes all 486 hosted source tests,
+  combined run `39266276490` and MRN QA `39266276194`. All six original reports
+  were independently verified, including seven actual native-source groups,
+  native content edit/public readback/exact rollback, both committed owner
+  cleanup readbacks and the later uncertain capture's original lock/claim.
+  The original artifact `12193129860` has SHA-256
+  `b2edfda97c4c737bb7de58ed0bdbea0b9981f9c7a62875a32c5eecc170e1e72d`.
+  Exact tested runtime/workflow blobs and all pinned dependencies were checked;
+  the whole MRN merge tree also contains unrelated base-branch changes.
+- Provider `6a18afa` isolates the source fixture's local variables from its
+  parent's cleanup list and proves catalog cleanup through committed SQL.
+  All four provider jobs pass in `39266052762`, with identical tested/source
+  trees. The source-before-revocation sequence passes in the combined run.
+  No production authority or lock is reset.
+- All four provider provenance records now select report-API candidate
+  `d44b800`, with all 15 imported inputs unchanged. All four provider jobs pass
+  in `39266689832`; tested merge tree equals source. Actual HTTP rejects
+  anonymous/wrong-purpose requests on all three private report abilities, and
+  65 native store checks plus 26 seeded recovery checks pass. Seeded storage
+  does not prove successful acquisition or raw evidence retention. Combined
+  gateway adoption of this newer provider remains required.
 - Source batches use their frozen twenty-second recovery bound and closed
   schemas/byte limits; access-veto queries retain their two-second deadline.
   The successful native transfer above verifies this correction. Errors retain
@@ -38,13 +39,10 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
   gateway/worker two-layer ZIP test verifies separate outer GitHub artifact and
   inner source hashes, exact extraction, reconstruction and cleanup. Its GitHub
   transport and ownership remain synthetic; hosted cache provenance is open.
-- The last fully accepted gateway checkpoint is `229b950` (483 source tests,
-  combined `39074114613`, MRN QA `39074114593`). It predates the required full
-  native-source hook. Later partial successes do not replace combined acceptance.
 - Live MainWP was last observed connected to `wpcontrol.mrndev.io` with 115
   abilities and provider 0.13.8. The company code policy remains unchanged.
-- Remaining gates: complete combined source/management run; protected central
-  cache provenance and delivery; rendered QA and retained report admission;
+- Remaining gates: protected central cache provenance and delivery; rendered
+  QA and retained report admission;
   concrete production deployment/access approval; workspace refresh; ordinary
   ChatGPT content edit/readback, code edit/rollback, outsider and revoked-user
   acceptance. No production source adapter or new credential is activated.
@@ -62,8 +60,8 @@ after closure. Production startup does not construct this transport.
 
 Seven controlled transport groups and the full 493-test local gateway suite pass.
 These are signature-shape fixtures, not successful provider report acquisition.
-The provider report API candidate must separately qualify before pin adoption;
-actual MCP acquisition, retained raw evidence, fresh summary readback, concurrency
+Provider report registration and denial checks are independently qualified;
+actual successful MCP acquisition, retained raw evidence, fresh summary readback, concurrency
 and fault handling still require native integration proof. This transport neither
 selects a caller's identity/run nor signs or admits a report.
 
