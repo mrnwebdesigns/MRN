@@ -1,5 +1,10 @@
 # Stack Changelog
 
+## 2026.10.19-fleet-auto-8fa07d82e0b0
+
+- Automatic cumulative release from accepted source vector `2e9cfd7dbc5b0afccde836b4bfbc8a942ea714384e468a1ea65bef7f5e57dfae`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
 ## 2026.10.19-fleet-auto-afd6088c4c83
 
 - Automatic cumulative release from accepted source vector `7617b393f0a53e9852c0823e962e9475ec8d7718e3e57f218cfbe4f1a612d4c4`.
