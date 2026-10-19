@@ -1,0 +1,10 @@
+{
+  "stack/themes/mrn-base-stack/inc/builder/hero-frame.php": "9bf0cdf584e4a88c1caab22af8247eafcd87419c0293d464df2a10356e94a1dc",
+  "stack/themes/mrn-base-stack/inc/builder/helpers.php": "3b71d58a41fdf7c4ebe909a1c2e06fc02f6dec08ffe78203c5982b27322bd3de",
+  "stack/themes/mrn-base-stack/inc/builder/boot.php": "5fbd0b33f3fda5dd4f8f0359dc00ceaa38ffa5ddcf69c487ed7c9f6a08431eca",
+  "stack/themes/mrn-base-stack/template-parts/builder/hero.php": "f856aca34b306d5dcac432b67f072196e0d2b079e9001548d047620224b64fbc",
+  "stack/themes/mrn-base-stack/css/layouts/hero.css": "e9baa996465e47f649043e804d36f34c1747d87e1842a14f941bd9e1617d3d41",
+  "stack/themes/mrn-base-stack/functions.php": "1346fd1764b429ba1d1165219f3624fd5d48692262f8419de5dafe87a24e2a7c",
+  "stack/themes/mrn-base-stack/style.css": "fe83a7eb10370d1c2dc057898602b533000495a4b4d3bd06f0ca0d38dca42209",
+  "stack/themes/mrn-base-stack/tests/runtime/hero-frame.php": "66adfd3f57c0e3a234b31576b5f23ea4c9933fdbc0c3cdf2874d1ff542e60bc4"
+}
