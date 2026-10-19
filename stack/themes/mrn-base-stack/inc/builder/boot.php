@@ -31,4 +31,6 @@ require_once __DIR__ . '/repeater-limits.php';
 
 require_once __DIR__ . '/render.php';
 
+require_once __DIR__ . '/seopress-analysis.php';
+
 require_once __DIR__ . '/field-groups.php';
