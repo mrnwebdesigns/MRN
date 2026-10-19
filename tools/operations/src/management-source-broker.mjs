@@ -6,10 +6,24 @@ import { managementEvidenceTypes as types } from './management-evidence-contract
 import { ManagementWorkerContext } from './management-worker-context.mjs';
 import { ManagementEvidenceSigner } from './management-evidence-callback.mjs';
 import { createPrivateQueryReader } from './access-control.mjs';
+import { payload } from './mainwp.mjs';
 import { encryptSourceBatch, managementSourceWire, parseSource, sourceBatchPurpose, sourceRecipientKey,
   sourceRecipientPurpose, validateSourceBatch } from './management-source-transfer.mjs';
 
-export const ManagementSourceReader = createPrivateQueryReader('mrn_mainwp__read_content_edit_qualification_source_v1');
+const sourceReadTool = 'mrn_mainwp__read_content_edit_qualification_source_v1';
+// Source batches have their own frozen recovery deadline. Access-veto queries
+// retain the shared reader's two-second budget and separate connection.
+export class ManagementSourceReader extends createPrivateQueryReader(sourceReadTool) {
+  async read(envelope) {
+    check(this.ready);
+    const input = parseSource('read_input', { signed_request: envelope });
+    check(Buffer.byteLength(delegationCanonical(input)) <= managementSourceWire.limits.read_input_bytes);
+    const output = parseSource('read_output', payload(await this.client.callTool({ name: sourceReadTool, arguments: input }, undefined,
+      { timeout: managementSourceWire.limits.recovery_seconds * 1000 })));
+    check(Buffer.byteLength(delegationCanonical(output)) <= managementSourceWire.limits.private_response_bytes);
+    return output;
+  }
+}
 export const managementSourceRecipientPath = '/internal/mainwp/management-source-recipient';
 export const managementSourceBatchPath = '/internal/mainwp/management-source-batch';
 const check = value => requireThat(value, 'MANAGEMENT_SOURCE_BROKER', 'The original private source handoff is unavailable, consumed or changed.');

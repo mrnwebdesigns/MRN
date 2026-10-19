@@ -4,13 +4,39 @@ import { readFileSync } from 'node:fs';
 import { createDecipheriv, createPublicKey, diffieHellman, hkdfSync, verify } from 'node:crypto';
 import { digest } from '../src/contracts.mjs';
 import { delegationCanonical, delegationDigest } from '../src/delegation.mjs';
-import { ManagementSourceBroker } from '../src/management-source-broker.mjs';
+import { ManagementSourceBroker, ManagementSourceReader } from '../src/management-source-broker.mjs';
+import { createPrivateQueryReader } from '../src/access-control.mjs';
 import { sourceBatchPurpose, sourceCipherPurpose, sourceRecipientPurpose, validateSourceBatch } from '../src/management-source-transfer.mjs';
 import { sourceBrokerFixture } from './fixtures/management-source.mjs';
 import { setImmediate } from 'node:timers';
 import { request as httpRequest } from 'node:http';
 import { createHttpServer } from '../src/http.mjs';
 import { managementSourceRecipientPath, managementSourceBatchPath } from '../src/management-source-broker.mjs';
+
+test('source batches use the frozen recovery deadline without changing access-veto lookups',async()=>{
+  const v=JSON.parse(readFileSync(new URL('./fixtures/content-management-source-transfer-v1.json',import.meta.url))), calls=[];
+  const sourceTool='mrn_mainwp__read_content_edit_qualification_source_v1',accessTool='fixture_access_lookup';
+  const client={readResource:async()=>({contents:[{text:JSON.stringify({connected:true,dashboardHost:'wpcontrol.mrndev.io',abilitiesCount:2})}]}),
+    listTools:async()=>({tools:[sourceTool,accessTool].map(name=>({name,annotations:{readOnlyHint:false,destructiveHint:false}}))}),
+    callTool:async(request,unused,options)=>{calls.push({request,options});return {content:[{type:'text',text:JSON.stringify(v.read_output)}]};}};
+  const reader=new ManagementSourceReader(client),access=new (createPrivateQueryReader(accessTool))(client);
+  await assert.rejects(()=>reader.read(v.read_input.signed_request));assert.equal(calls.length,0);
+  await reader.initialize();await access.initialize();
+  assert.deepEqual(await reader.read(v.read_input.signed_request),v.read_output);
+  await access.read(v.read_input.signed_request);
+  assert.deepEqual(calls.map(call=>call.options),[{timeout:20000},{timeout:2000}]);
+  assert.deepEqual(calls[0].request,{name:sourceTool,arguments:v.read_input});
+});
+
+test('source reader refuses malformed signed input and oversized or open response shapes',async()=>{
+  const v=JSON.parse(readFileSync(new URL('./fixtures/content-management-source-transfer-v1.json',import.meta.url)));let calls=0,output=v.read_output;
+  const reader=new ManagementSourceReader({callTool:async()=>{calls++;return {content:[{type:'text',text:JSON.stringify(output)}]};}});reader.ready=true;
+  await assert.rejects(()=>reader.read({...v.read_input.signed_request,email:'caller@mrnwebdesigns.com'}));assert.equal(calls,0);
+  for(const value of [{...v.read_output,extra:true},{...v.read_output,frames:[]},{...v.read_output,frames:[{...v.read_output.frames[0],data_base64:'A'.repeat(1048577)}]}]){
+    output=value;await assert.rejects(()=>reader.read(v.read_input.signed_request));
+  }
+  assert.equal(calls,3);
+});
 
 
 test('original OIDC run enrolls one private recipient and observes actual encrypted provider bytes',async t=>{

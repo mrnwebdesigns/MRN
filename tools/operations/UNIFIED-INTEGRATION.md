@@ -48,12 +48,25 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
   source report: HTTP 500 `mrn_site_locked`, queued state, no capture and zero
   callbacks. This confirms the preceding uncertainty test's retained lock.
   Both original failed archives remain retained; no capture was retried.
-- The current candidate selects provider `57abbc2` in all four records, with
+- Gateway `ed8e359` selects provider `57abbc2` in all four records, with
   all 15 imported inputs unchanged. Its separate three-file fixture correction
   runs source reconstruction before the negative management capture, asserts
   source starts/finishes unlocked, and verifies the later uncertain capture
-  still owns its original lock and claim with no artifact. Provider and combined
-  CI must both pass. Production source, policies and deadlines are unchanged.
+  still owns its original lock and claim with no artifact. All four provider
+  jobs pass in `39175529154`, with tested merge tree equal to source.
+- Gateway `ed8e359` passes all 484 hosted tests and MRN QA `39179491180`.
+  Combined `39179491185` passes native capture/readback, canonical source
+  capture and independent worker metadata/recipient TLS, then fails its first
+  encrypted source batch with `SOURCE_HTTP_RESPONSE`. The original five-report
+  archive is retained; the later management uncertainty test has not run.
+- The source batch reader incorrectly inherited the access-veto helper's
+  two-second deadline. This candidate uses the frozen source recovery bound of
+  twenty seconds and validates the closed input/output schemas and byte limits.
+  Access-veto queries retain two seconds; provider, broker and worker contracts
+  are unchanged. Ten source-broker test groups pass. The original HTTP refusal
+  did not retain its underlying category, so native success remains required.
+  The fixture now retains only bounded batch counters, allowlisted errors and
+  HTTP status on failure, with no raw data or automatic retry.
 - Live MainWP was last observed connected to `wpcontrol.mrndev.io` with 115
   abilities and provider 0.13.8. The company code policy remains unchanged.
 - Remaining gates: full native source transfer/reconstruction; protected central

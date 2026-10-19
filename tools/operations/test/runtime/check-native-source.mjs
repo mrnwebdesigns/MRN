@@ -297,9 +297,22 @@ try {
   };
   const worker = new ManagementWorkerContext({ ledger, identity, trust: () => trust, keys: oidcKeys, verifyStaff });
   const batchReader = new ManagementSourceReader(await rawClient()); await batchReader.initialize();
-  const broker = new ManagementSourceBroker({ worker, identity, registrar, reader: batchReader, resolveSource: value => source.capture.resolve(value) });
+  const batchObservation = { backendReads: 0, backendCompleted: 0, backendError: null, backendElapsedMs: 0, httpStatus: null };
+  const batchCodes = new Set(['ACCESS_UNAVAILABLE', 'DOWNSTREAM_TIMEOUT', 'MAINWP_ACCESS', 'MAINWP_FAILED',
+    'MANAGEMENT_SOURCE_TRANSFER', 'MANAGEMENT_SOURCE_BROKER']);
+  const broker = new ManagementSourceBroker({ worker, identity, registrar, reader: { async read(input) {
+    batchObservation.backendReads++; const started = performance.now();
+    try { const value = await batchReader.read(input); batchObservation.backendCompleted++; return value; }
+    catch (error) { batchObservation.backendError = error?.code === -32001 ? 'MCP_TIMEOUT'
+      : batchCodes.has(error?.code) ? error.code : 'REDACTED'; throw error; }
+    finally { batchObservation.backendElapsedMs = Math.min(20001, Math.ceil(performance.now() - started)); }
+  } }, resolveSource: value => source.capture.resolve(value) });
   const sourceContext = new ManagementSourceContext({ worker, source: source.capture });
   const gateway = createHttpServer({ publicUrl: audience, managementWorker: worker, managementSource: broker, managementSourceContext: sourceContext });
+  gateway.on('request', (req, res) => {
+    if (req.method === 'POST' && req.url === '/internal/mainwp/management-source-batch')
+      res.once('finish', () => { batchObservation.httpStatus = res.statusCode; });
+  });
   const tlsKey = join(work, 'broker.key'), tlsCert = join(work, 'broker.crt');
   execFileSync('openssl', ['req', '-x509', '-nodes', '-newkey', 'rsa:2048', '-keyout', tlsKey, '-out', tlsCert, '-days', '1',
     '-subj', '/CN=operations.mrnwebdesigns.com', '-addext', 'subjectAltName=DNS:operations.mrnwebdesigns.com'], { stdio: 'ignore' });
@@ -342,7 +355,14 @@ try {
   assert.equal(delegationDigest(recipe), mapped.slot.recipe_sha256);
   assembly = new ManagementSourceAssembly({ context: metadata.context, parityManifest: parity, recipe, catalog, slot: metadata.slot });
   for (let batch = 0; batch * 16 < mapped.slot.total_frames; batch++) {
-    const opened = await readManagementSourceBatch({ recipient, batchIndex: batch, oidcToken: await token() });
+    let opened;
+    try { opened = await readManagementSourceBatch({ recipient, batchIndex: batch, oidcToken: await token() }); }
+    catch (error) {
+      const errors = new Set(['SOURCE_HTTP_RESPONSE', 'SOURCE_HTTP_TIMEOUT', 'SOURCE_HTTP_TRANSPORT', 'SOURCE_HTTP_EXPIRED', 'SOURCE_HTTP_SIZE']);
+      report.failure = { phase: 'source-batch', batchIndex: batch, workerError: errors.has(error?.message) ? error.message : 'REDACTED',
+        sourceBatch: batchObservation, callback: callbackObservation };
+      save(); process.stdout.write(JSON.stringify({ source_batch_failure: report.failure }) + '\n'); throw error;
+    }
     assert.equal(opened.state, 'partial-source-batch-verified'); assembly.accept(opened);
   }
   pass('actual-provider-native-frames-cross-encrypted-broker-and-independent-decryption');
