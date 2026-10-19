@@ -50,13 +50,39 @@ and cannot modify the earlier expiry. This is historical binding metadata;
 current principal, Directory, scope and access-veto checks remain mandatory.
 It is not proof that an Auth0 browser session is still active.
 
-The anchor is currently request-local only. The next original-intent adapter
-must persist it with the exact signed preview delegation request ID before
-sending that preview, and then bind only the returned original operation and
-review. It must refuse missing/corrupt local mappings and cannot recreate or
-replace them using a later token, caller hash or MCP session ID. No durable
-session/intent binding, asynchronous v2 dispatch or runtime route is enabled
-by this preparation.
+The private `OriginalManagementAuthorizationLedger` now persists that anchor
+with the exact signed preview delegation request ID, argument digest, original
+actor, target, source and policy before any downstream call. A stable local
+attempt ID and one-shot in-process handle prevent redispatch after a lost
+response or restart. It marks dispatch before returning the signed envelope.
+After the delegated response identity check, it reconstructs the complete
+candidate/migration and retains only the immutable operation/review pointer and
+hashes. Tokens, signatures and content bodies are absent from the ledger.
+
+Metadata recovery requires a genuine current authenticated actor matching the
+original person, the original unextended expiry, intact attempt/principal
+history, fresh Directory verification and unchanged source/policy/site checks.
+Missing/corrupt records, pending denial, revocation, changed revisions and
+partial local persistence refuse recovery or dispatch. A later token can read
+the retained metadata but cannot recover the in-process envelope or extend the
+original authorization.
+
+All three local content protocols share the same append-only principal history.
+A missing primary row with any surviving legacy/management/preview map or
+principal history is damaged established state, never automatic first use.
+Restoring an older clear row cannot override a later pending-denial record.
+Fresh empty state initializes automatically inside the original transaction.
+Before deploying this schema, MRN services must inspect existing local ledgers;
+established rows without history require one qualified central migration and
+backup. A staff login cannot perform that migration or clear denial. This is
+service setup, not individual staff enrollment or approval.
+
+This ledger is not constructed by production startup and does not sign
+`original_resource_authorization_current:true`. Its existing-preview signing
+helper does not select or qualify the provider's new lifetime domain. Exact
+v2 transport/response admission, provider binding, automatic first-use state
+and asynchronous producer integration remain required. No new runtime route,
+workspace tool, Auth0 session introspection or production write is enabled.
 
 ## Private report transport preparation
 
