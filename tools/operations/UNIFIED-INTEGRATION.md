@@ -9,15 +9,17 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
 - The existing workspace plugin remains the only team connector. Active MRN
   Google accounts need no individual enrollment or personal backend credentials.
   Production still provides read-only inspection; team editing is not ready.
-- Accepted gateway checkpoint `daa9f2f` passes all 494 hosted source tests,
-  combined run `39272437042` and MRN QA `39272437161`. All six original reports
+- Accepted gateway checkpoint `a455f08` passes all 494 hosted source tests,
+  combined run `39276146237` and MRN QA `39276146137`. All six original reports
   were independently verified, including seven actual native-source groups,
   native content edit/public readback/exact rollback, both committed owner
   cleanup readbacks and the later uncertain capture's original lock/claim.
-  The original artifact `12196842696` has SHA-256
-  `06a9ad183509aa202355f35245d0f2cd68064eaf2cbcb80d5e668a8d18466d39`.
+  The original artifact `12198311855` has SHA-256
+  `ccac32236996457a4fad42a8eeda85b360561d448d464b9f3220c1a7c52b9381`.
   Exact tested runtime/workflow blobs and all pinned dependencies were checked;
   the whole MRN merge tree also contains unrelated base-branch changes.
+  Completed job logs were retained directly because the aggregated CLI log
+  omitted the native test step; every existing acceptance assertion remains.
 - Provider `6a18afa` isolates the source fixture's local variables from its
   parent's cleanup list and proves catalog cleanup through committed SQL.
   All four provider jobs pass in `39266052762`, with identical tested/source
@@ -86,9 +88,18 @@ archive hashes, and checks acquisition replay and fresh revoked-read denial.
 Its GitHub, rendered-runtime and WordPress-HTTP observations are explicitly
 synthetic. The existing seven source groups remain mandatory. The new gate is
 disabled pending an independently qualified provider fixture: provider candidate
-`06e6658` failed native run `39274033435` before its first custody assertion.
+`2771113` passes packet construction but failed report retention in native run
+`39277729373`. Diagnostic candidate `0423f81` is pending in `39281565731`.
 The provider pin remains `d44b800`; the prepared gate does not prove successful
 retention, hosted provenance, QA admission or team acceptance.
+
+Two additional gateway regressions preserve the exact signed request when a
+core-only edit omits `acf_patches` or an ACF-only edit omits `changes`. Both
+retain the untouched content and refuse insertion of an equivalent empty
+family into the signed original. All 496 local tests pass. Prepared custody
+diagnostics record only fixed failure categories and aggregate observation
+stages, never raw exceptions, signatures, identity or content. The optional gate
+requires all five observation stages and no recorded failure before passing.
 
 The following sections retain individual source checkpoints and their limits.
 They are not evidence of production activation or team readiness.

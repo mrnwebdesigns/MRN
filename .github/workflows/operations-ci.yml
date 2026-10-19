@@ -211,6 +211,8 @@ jobs:
             ]);
             for (const field of ['productionCredentials', 'liveGoogleVerified', 'hostedProvenanceVerified', 'protectedRenderedQaVerified', 'consumerBindingIssued', 'contentWriteVerified', 'remoteBackupVerified', 'chatgptAcceptanceVerified']) assert.equal(custody[field], false);
             assert.deepEqual(custody.callback, { requests: 1, completed: 1, queryReads: 1 });
+            assert.deepEqual(custody.syntheticObservationStages, ['run', 'inventory', 'qualification', 'acquisition', 'finish']);
+            assert.equal(Object.hasOwn(custody, 'failures'), false);
             assert.equal(custody.retained.state, 'retained');
             assert.equal(custody.retained.consumer_binding_issued, false);
             assert.equal(custody.retained.production_qualified, false);

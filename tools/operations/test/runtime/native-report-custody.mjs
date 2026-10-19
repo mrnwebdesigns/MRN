@@ -73,6 +73,17 @@ export async function createNativeReportCustody({ source, reportPath, original, 
   const save = () => writeFileSync(reportPath, JSON.stringify(report, null, 2) + '\n', { mode: 0o600 });
   const pass = name => { report.passed.push(name); save(); process.stdout.write(`PASS ${name}\n`); };
   const phase = name => { report.phase = name; save(); };
+  const failure = (stage, error) => {
+    const allowed = new Set(['MANAGEMENT_EVIDENCE_CALLBACK', 'MANAGEMENT_EVIDENCE_BINDING', 'MANAGEMENT_EVIDENCE_STATE',
+      'MANAGEMENT_REPORT_TRANSPORT', 'ACCESS_INVALID', 'ACCESS_EXPIRED', 'ACCESS_BINDING', 'ACCESS_MAPPING',
+      'ACCESS_REPLAY', 'ACCESS_TRANSPORT', 'ACCESS_UNAVAILABLE', 'MAINWP_ACCESS', 'MAINWP_FAILED', 'DOWNSTREAM_TIMEOUT']);
+    // Fixed stages, known error codes and aggregate progress only. Exception
+    // messages, signatures, pointers and original source values stay private.
+    report.failures ??= [];
+    if (report.failures.length < 4) report.failures.push({ stage,
+      code: error?.code === -32001 ? 'MCP_TIMEOUT' : allowed.has(error?.code) ? error.code : 'REDACTED' });
+    save();
+  };
   save();
   const job = original.context.binding.qualification_job_id;
   const signedClaims = (envelope, role, purpose, schema) => {
@@ -126,6 +137,7 @@ export async function createNativeReportCustody({ source, reportPath, original, 
     const reader = new ManagementEvidenceQueryReader(queryClient); await reader.initialize();
     transport = await createManagementReportTransport({ enabled: true, callbackClient: queryClient, connect: connectControl });
     const observations = [], counts = { requests: 0, completed: 0, queryReads: 0 };
+    report.callback = counts; report.syntheticObservationStages = observations; save();
     let acquisition;
     const handler = new ManagementEvidenceCallback({ signer: identitySigner, readbackSigner: registrarSigner, ledger, verifyStaff,
       github: githubFixture(packet, original, archives, observations), reader: { async read(envelope) {
@@ -136,15 +148,19 @@ export async function createNativeReportCustody({ source, reportPath, original, 
       close,
       async respond(input) {
         counts.requests++;
-        const result = await handler.respond(input);
-        acquisition = signedClaims(result.signed_acquisition, 'identity', evidenceWire.purposes.acquisition, evidenceTypes.acquisition_claims);
-        same(acquisition.recorded_dispatch, original.provenance);
-        for (const role of ['qualification', 'acquisition']) need(result[`${role}_zip_base64`] === packet[`${role}_zip_base64`]);
-        counts.completed++; return result;
+        try {
+          const result = await handler.respond(input);
+          acquisition = signedClaims(result.signed_acquisition, 'identity', evidenceWire.purposes.acquisition, evidenceTypes.acquisition_claims);
+          same(acquisition.recorded_dispatch, original.provenance);
+          for (const role of ['qualification', 'acquisition']) need(result[`${role}_zip_base64`] === packet[`${role}_zip_base64`]);
+          counts.completed++; save(); return result;
+        } catch (error) { failure('evidence-callback', error); throw error; }
       },
       async run() {
         phase('actual-MCP-retain-and-TLS-evidence-callback');
-        const summary = await transport.retain(packet.retain_input);
+        let summary;
+        try { summary = await transport.retain(packet.retain_input); }
+        catch (error) { failure('retain-response', error); throw error; }
         same(counts, { requests: 1, completed: 1, queryReads: 1 });
         same(observations, ['run', 'inventory', 'qualification', 'acquisition', 'finish']);
         need(summary.qualification_job_id === job && summary.management_context_sha256 === original.context.management_context_sha256
@@ -157,7 +173,7 @@ export async function createNativeReportCustody({ source, reportPath, original, 
           && summary.retained_at >= original.context.binding.created_at
           && summary.retained_at < original.context.binding.expires_at);
         need(summary.consumer_binding_issued === false && summary.production_qualified === false && summary.state === 'retained');
-        report.retained = summary; report.callback = counts;
+        report.retained = summary;
         pass('actual-MCP-retention-completes-through-Node-TLS-callback-and-distinct-role-keys');
         phase('fresh-retained-read-and-replay-denial');
         same(await transport.read(packet.read_input), summary);
@@ -175,7 +191,7 @@ export async function createNativeReportCustody({ source, reportPath, original, 
         await assert.rejects(() => transport.read({ signed_request: registrarSigner.envelope(fresh, reportWire.purposes.read) }));
         pass('fresh-original-revocation-denies-unused-report-read');
       },
-      complete() { need(report.passed.length === 5); delete report.phase; report.result = 'PASS'; save(); },
+      complete() { need(report.passed.length === 5 && !report.failures); delete report.phase; report.result = 'PASS'; save(); },
     };
   } catch (error) { await close(); throw error; }
 }

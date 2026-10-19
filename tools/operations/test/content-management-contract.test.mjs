@@ -96,6 +96,36 @@ test('unknown controls, Unicode map keys, raw decimals and incomplete success ve
   }
 });
 
+for (const omitted of ['acf_patches', 'changes']) {
+  test(`single-kind edit without ${omitted} preserves original request bytes and untouched content`, () => {
+    const fixture = copy(fixtures.cases[0]);
+    delete fixture.migration.request[omitted];
+    // Derive the expected untouched half from the original read, independently
+    // of the candidate reconstruction being exercised below.
+    const untouched = omitted === 'acf_patches' ? 'acf_values' : 'core';
+    fixture.migration.candidate_snapshot[untouched] = copy(fixture.read.snapshot[untouched]);
+    fixture.review.candidate_snapshot = copy(fixture.migration.candidate_snapshot);
+    fixture.review.candidate_sha256 = fixture.migration.candidate_sha256 = managementCandidateHash(fixture.review.candidate_snapshot);
+    fixture.review.migration_artifact.sha256 = delegationDigest(fixture.migration);
+    const descriptor = { ...fixture.review }; delete descriptor.digest;
+    fixture.review.digest = delegationDigest(descriptor);
+    const original = delegationCanonical(fixture.migration.request), expected = expectedFor(fixture);
+    const evidence = validateManagementEvidence(evidenceFor(fixture), expected);
+    assert.equal(delegationCanonical(evidence.migration.request), original);
+    assert.equal(delegationCanonical(fixture.migration.request), original);
+    assert.equal(Object.hasOwn(evidence.migration.request, omitted), false);
+    assert.equal(Object.hasOwn(expected.request, omitted), false);
+    assert.deepEqual(evidence.review.candidate_snapshot[untouched], fixture.read.snapshot[untouched]);
+    // An equivalent empty projection is still different signed source data.
+    // Validation must not insert it into the retained original request.
+    fixture.migration.request[omitted] = omitted === 'acf_patches' ? [] : {};
+    fixture.review.migration_artifact.sha256 = delegationDigest(fixture.migration);
+    const altered = { ...fixture.review }; delete altered.digest;
+    fixture.review.digest = delegationDigest(altered);
+    assert.throws(() => validateManagementEvidence(evidenceFor(fixture), expected));
+  });
+}
+
 test('a changed caller target, baseline, profile, reason or requested value cannot reuse a valid preview', () => {
   const fixture = fixtures.cases[0];
   const changes = [expected => { expected.site.id++; }, expected => { expected.site.url = 'https://different.example.invalid'; },

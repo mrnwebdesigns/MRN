@@ -42,7 +42,26 @@ All results and necessary decisions must appear in chat. Any request for a WordP
 
 Use already-authorized test identities or separately reviewed administrative test changes. Do not suspend a real staff member, weaken a policy, forge a production identity or grant an outsider access to manufacture test evidence. A local negative test is not a live denial result.
 
-## Latest disposable evidence, 2026-10-16
+## Latest disposable evidence, 2026-10-19
+
+Gateway `a455f08` with provider `d44b800`, MCP `3249bde`, legacy runner `d9f2eba`
+and management worker `8465b25` passes all 494 hosted tests,
+[combined CI 39276146237](https://github.com/mrnwebdesigns/MRN/actions/runs/39276146237)
+and [MRN QA 39276146137](https://github.com/mrnwebdesigns/MRN/actions/runs/39276146137).
+All six original reports and completed job logs were independently verified.
+Artifact `12198311855` is 8825 bytes with SHA-256
+`ccac32236996457a4fad42a8eeda85b360561d448d464b9f3220c1a7c52b9381`.
+Exact tested Operations runtime/workflow blobs match committed source.
+
+This includes the disposable content edit, public readback and exact rollback,
+ten delegated identity checks, seven actual source groups, twelve worker context
+groups, source-owner cleanup and retention of the later uncertain capture lock.
+The fixture uses synthetic OAuth, Directory, QA and backup authorities.
+The new report-custody gate remains disabled pending provider qualification;
+hosted cache provenance, protected rendered QA and report admission remain open.
+Every ordinary-member and live-denial row above remains unverified.
+
+## Earlier disposable checkpoints
 
 Gateway `f13ec5d` with provider `b18592d`, MCP `3249bde` and runner `d9f2eba`
 passes [combined CI 38906299558](https://github.com/mrnwebdesigns/MRN/actions/runs/38906299558)
@@ -62,8 +81,6 @@ sibling edits. That verifier is not a registered write workflow. Full management
 qualification/admission and live deployment remain open. The fixture's OAuth,
 Directory, QA signer and backup authority are synthetic; every ordinary-member
 and live-denial row above remains unverified.
-
-## Earlier disposable checkpoints
 
 The disposable integration at gateway `a6eccc2` with provider `27ac5bc` and MCP
 `3249bde` passed ten actual HTTP/MCP/WordPress transport checks, including
