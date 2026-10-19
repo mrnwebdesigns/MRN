@@ -18,6 +18,7 @@ parameters:
         - stack/themes/mrn-base-stack/inc/image-helpers.php
         - stack/themes/mrn-base-stack/inc/builder/render.php
         - stack/themes/mrn-base-stack/inc/cookie-preferences.php
+        - stack/themes/mrn-base-stack/inc/template-tags.php
         - mu-plugins/mrn-public-security-hardening/mrn-public-security-hardening.php
     parallel:
         maximumNumberOfProcesses: 1

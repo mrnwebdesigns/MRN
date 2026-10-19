@@ -1,4 +1,4 @@
-/** Keep cached header messages in their absolute schedule window. */
+/** Keep cached header messages in their schedule using freshly verified server UTC. */
 ( function () {
 	'use strict';
 
@@ -11,7 +11,12 @@
 	const end = item.dataset.mrnUtilityEnd ? Number( item.dataset.mrnUtilityEnd ) * 1000 : null;
 	let rules;
 	let formatter;
+	let clockUrl;
 	try {
+		clockUrl = new URL( item.dataset.mrnUtilityClockUrl, window.location.href );
+		if ( clockUrl.origin !== window.location.origin || ! /^https?:$/.test( clockUrl.protocol ) || ! /^[a-f0-9]{64}$/.test( item.dataset.mrnUtilityVersion ) ) {
+			return;
+		}
 		rules = JSON.parse( item.dataset.mrnUtilityRules );
 		formatter = new Intl.DateTimeFormat( 'en-US', {
 			timeZone: rules.offset === null ? rules.timezone : 'UTC',
@@ -28,6 +33,82 @@
 	const dayMilliseconds = 86400000;
 	const holidayCache = new Map();
 	let timer;
+	let syncTimer;
+	let sample = null;
+	let requestController = null;
+	let requestId = 0;
+	let lastMonotonic = performance.now();
+	let lastWallTime = Date.now();
+	const sampleLifetime = 120000;
+
+	function invalidate() {
+		sample = null;
+		item.hidden = true;
+		item.dataset.mrnUtilityClock = 'waiting';
+		window.clearTimeout( timer );
+	}
+
+	async function synchronize() {
+		if ( document.hidden || requestController ) {
+			return;
+		}
+		const controller = new AbortController();
+		requestController = controller;
+		const id = ++requestId;
+		const started = performance.now();
+		const timeout = window.setTimeout( () => controller.abort(), 5000 );
+		try {
+			const token = Array.from( crypto.getRandomValues( new Uint32Array( 4 ) ), value => value.toString( 16 ).padStart( 8, '0' ) ).join( '' );
+			const response = await fetch( clockUrl.href, {
+				method: 'POST', cache: 'no-store', credentials: 'omit', redirect: 'error',
+				headers: { 'Content-Type': 'application/json' }, body: JSON.stringify( { token } ), signal: controller.signal,
+			} );
+			const data = await response.json();
+			const received = performance.now();
+			if ( id !== requestId ) {
+				return;
+			}
+			if ( ! response.ok || Number( response.headers.get( 'Age' ) ) > 0 || data.token !== token || data.version !== item.dataset.mrnUtilityVersion || ! Number.isFinite( data.now ) || data.now <= 0 || ! Number.isFinite( data.received ) || data.received > data.now || received - started > 5000 ) {
+				throw new Error( 'Unverified server clock' );
+			}
+			// Exclude WordPress processing time before estimating network transit.
+			// Device wall time never enters this UTC anchor or visibility decisions.
+			const transit = Math.max( 0, received - started - ( data.now - data.received ) );
+			sample = { utc: data.now + transit / 2, monotonic: received };
+			item.dataset.mrnUtilityClock = 'synced';
+			update();
+		} catch ( error ) {
+			if ( id === requestId ) {
+				invalidate();
+				item.dataset.mrnUtilityClock = 'unavailable';
+			}
+		} finally {
+			window.clearTimeout( timeout );
+			if ( id === requestId ) {
+				requestController = null;
+				window.clearTimeout( syncTimer );
+				syncTimer = window.setTimeout( synchronize, sample ? 60000 : 15000 );
+			}
+		}
+	}
+
+	function revalidate( event ) {
+		if ( event && event.type === 'focus' && requestController ) {
+			return;
+		}
+		invalidate();
+		window.clearTimeout( syncTimer );
+		++requestId;
+		if ( requestController ) {
+			requestController.abort();
+			requestController = null;
+		}
+		lastMonotonic = performance.now();
+		lastWallTime = Date.now();
+		if ( ! event || event.type !== 'pagehide' ) {
+			synchronize();
+		}
+	}
 
 	function dateKey( date ) {
 		return date.toISOString().slice( 0, 10 );
@@ -95,7 +176,11 @@
 
 	function update() {
 		window.clearTimeout( timer );
-		const now = Date.now();
+		if ( ! sample || performance.now() - sample.monotonic >= sampleLifetime ) {
+			invalidate();
+			return;
+		}
+		const now = sample.utc + performance.now() - sample.monotonic;
 		item.hidden =
 			( start !== null && ( ! Number.isFinite( start ) || now < start ) ) ||
 			( end !== null && ( ! Number.isFinite( end ) || now >= end ) ) ||
@@ -121,7 +206,28 @@
 		}
 	}
 
-	update();
-	window.addEventListener( 'pageshow', update );
-	document.addEventListener( 'visibilitychange', update );
+	// Some browsers pause the monotonic counter during OS sleep. Wall time is
+	// used ONLY as a wake/clock-change hint: a discrepancy hides the message and
+	// requests new server UTC; it can never make a message become visible.
+	window.setInterval( () => {
+		const monotonic = performance.now();
+		const wallTime = Date.now();
+		const interrupted = Math.abs( wallTime - lastWallTime - ( monotonic - lastMonotonic ) ) > 2000;
+		lastMonotonic = monotonic;
+		lastWallTime = wallTime;
+		if ( ! document.hidden && ( interrupted || ( sample && monotonic - sample.monotonic >= sampleLifetime ) ) ) {
+			revalidate();
+		}
+	}, 1000 );
+	invalidate();
+	synchronize();
+	window.addEventListener( 'pageshow', event => {
+		if ( event.persisted ) {
+			revalidate();
+		}
+	} );
+	window.addEventListener( 'focus', revalidate );
+	window.addEventListener( 'online', revalidate );
+	window.addEventListener( 'pagehide', revalidate );
+	document.addEventListener( 'visibilitychange', revalidate );
 }() );
