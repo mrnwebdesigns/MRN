@@ -35,7 +35,7 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
   and inner source ZIP; 153 tests and all three jobs in `39081815246` pass.
   Both original archives and all eight reports are independently verified,
   including exact tested tree and recomputed measurement/lifecycle hashes.
-- This diagnostic candidate selects provider `b9c5fa4` in all four provenance
+- Gateway `3f51867` selects provider `b9c5fa4` in all four provenance
   records after comparing all 15 imported inputs. All four provider jobs pass
   in `39125205713`; combined native-source CI remains required. It also selects
   qualified worker `8465b25` and separates the
@@ -43,6 +43,17 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
   The actual two-layer ZIP test passes gateway acquisition, independent worker
   envelope verification, source extraction and complete reconstruction; GitHub
   transport and ownership in that test remain synthetic.
+- Gateway `3f51867` passes all 484 hosted tests and MRN QA `39158820105`.
+  Combined run `39158820117` retains five passing reports and an incomplete
+  source report: HTTP 500 `mrn_site_locked`, queued state, no capture and zero
+  callbacks. This confirms the preceding uncertainty test's retained lock.
+  Both original failed archives remain retained; no capture was retried.
+- The current candidate selects provider `57abbc2` in all four records, with
+  all 15 imported inputs unchanged. Its separate three-file fixture correction
+  runs source reconstruction before the negative management capture, asserts
+  source starts/finishes unlocked, and verifies the later uncertain capture
+  still owns its original lock and claim with no artifact. Provider and combined
+  CI must both pass. Production source, policies and deadlines are unchanged.
 - Live MainWP was last observed connected to `wpcontrol.mrndev.io` with 115
   abilities and provider 0.13.8. The company code policy remains unchanged.
 - Remaining gates: full native source transfer/reconstruction; protected central
