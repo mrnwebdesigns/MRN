@@ -4,7 +4,7 @@
 
 One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebdesigns.com/mcp. Active MRN Google Workspace members get automatic portfolio access; there is no individual approval or enrollment step. Necessary approvals apply to concrete site changes. No teammate WordPress account, Application Password, API key, terminal, Codex, SSH or site token.
 
-## Current delivery state, 2026-10-19
+## Current delivery state, 2026-10-20
 
 - The one existing plugin is available to everyone in the MRN ChatGPT workspace.
   The published directory currently lists 11 tools with four enabled; content
@@ -48,7 +48,7 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
 for `MRN_DISPOSABLE_EXISTING_BINDING_HOOK`, requiring
 `MRN_DISPOSABLE_EXISTING_BINDING_TEST=1` and `GITHUB_ACTIONS=true`. The new
 combined CI candidate enables it with provider
-`76b141b39167d7cac9c45482630b89f127e14a9f` and requires its eighth report.
+`a4ccb0c8ca40e97282aae56440e046f62eb04aa6` and requires its eighth report.
 All four source provenance records select that exact checkpoint; original
 contracts remain byte-identical. The provider source registers the three
 canonical machine abilities, but production has not adopted them.
@@ -60,9 +60,23 @@ Tested merge `c19c6483d3fa11fe0bd9219b940006e74cad24a2` and source share the
 full tree `b929ec70d4442f9f56834774c250021f2c744e6f`. Its 30 native
 owner/Directory/SQL checks and 15 new fake-Docker boundary tests pass. The
 optional hook was absent in that component run: it proves regression/source
-qualification, not actual clone or v2 MCP success. The first enabled combined
-run remains unverified. Earlier `2916df1` owner qualification and the failed
+qualification, not actual clone or v2 MCP success. Earlier `2916df1` owner qualification and the failed
 `999d88e` stale-owner-proof fixture are retained in the evidence history.
+
+The first enabled combined run `39392624734` at gateway `37fe496` passed all
+571 controlled tests but failed the parent fingerprint's bounded statistics
+check before clone creation or the Node v2 hook. Its original authorization 38,
+owner 30 and isolation 3 native checks passed first; only three partial reports
+were produced. The cause remains undetermined. A separate source review found
+that the fingerprint omitted the `mrn_management_evidence_` option family.
+Provider candidate `a4ccb0c` adds that family, clone-only mutation/restoration
+checks for marker, anchor and audit coverage, and closed failure diagnostics.
+Runtime code, contracts, database bounds and deadlines are unchanged from
+`76b141b`. Component run `39416147753` failed an earlier native sync preflight:
+the HTTP process could not read the synthetic key directory. That failure is
+distinct from the parent statistics failure. Independent component and combined
+checks must both pass; `4cffd90`/`76b141b` remain the accepted combined/component
+checkpoints. No production activation follows from these fixture changes.
 
 The closed schema2 context, separate Dashboard database and mutable volumes,
 canonical-host TLS endpoint, Node HOME/network log and SQLite database keep
@@ -123,7 +137,7 @@ backup. A staff login cannot perform that migration or clear denial. This is
 service setup, not individual staff enrollment or approval.
 
 The private ledger now issues distinct bind/read controls using the unchanged
-provider original-authorization wire now pinned to qualified source `76b141b`. It signs
+provider original-authorization wire now pinned to diagnostic candidate `a4ccb0c`. It signs
 `original_resource_authorization_current:true` only after rechecking the exact
 reviewed original, genuine current actor, original expiry, current principal,
 policy/site and fresh Directory state. It accepts no caller hash or expiry.

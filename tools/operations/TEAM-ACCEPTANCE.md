@@ -42,7 +42,7 @@ All results and necessary decisions must appear in chat. Any request for a WordP
 
 Use already-authorized test identities or separately reviewed administrative test changes. Do not suspend a real staff member, weaken a policy, forge a production identity or grant an outsider access to manufacture test evidence. A local negative test is not a live denial result.
 
-## Latest disposable evidence, 2026-10-19
+## Latest disposable evidence, 2026-10-20
 
 Gateway `4cffd90` is the latest independently accepted combined checkpoint:
 [CI 39354587611](https://github.com/mrnwebdesigns/MRN/actions/runs/39354587611)
@@ -56,8 +56,15 @@ The synthetic identity, remote-backup, hosted-provenance and rendered-QA limits
 remain explicit. Private original-authorization controls and response retention
 have local tests; the separately prepared actual v2 binding hook has not passed
 native qualification. The accepted combined pin does not expose these endpoints.
-The new CI candidate pins component-qualified provider `76b141b` and enables
-the separate eighth report; its actual combined result remains unverified.
+Gateway `37fe496` passed 571 controlled tests but failed combined CI
+`39392624734` at the parent-state fingerprint, before the clone or v2 hook.
+The statistics failure's cause remains unknown. A separate review found missing
+coverage for the management evidence marker, anchor and audit options.
+The new candidate pins provider `a4ccb0c`, which adds that coverage, clone-only
+negative checks and bounded failure diagnostics without changing runtime code
+or bounds. Its component CI `39416147753` failed an earlier native sync
+preflight; both component and combined gates must pass before acceptance.
+The eighth report remains required and has not yet passed.
 Current implementation and remaining qualification are in `UNIFIED-INTEGRATION.md`.
 
 ## Earlier disposable checkpoints
