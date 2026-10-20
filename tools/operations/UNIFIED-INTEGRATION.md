@@ -11,11 +11,11 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
   and code tools are absent. New tools default to disabled. No individual
   enrollment or personal backend credentials are required. Team editing is
   not yet ready.
-- Accepted gateway checkpoint `7d69ec5` passed 549 tests, combined run
-  `39332023874` and MRN QA `39332023751`. All seven original reports were
+- Accepted gateway checkpoint `5d54022` passed 568 tests, combined run
+  `39335614546` and MRN QA `39335614529`. All seven original reports were
   independently verified, including native content edit/readback/rollback,
   complete source reconstruction and report custody against provider `5905258`
-  and worker `cd74e20`. Tested merge `55da89aa35a6dc534c0dd5b7d466656414a474ff`
+  and worker `cd74e20`. Tested merge `583b713bb496e353de2c010ac67b4c8fc35f906d`
   has identical gateway, workflow, runtime and Fleet regression blobs.
   Intermediate checkpoints `0dd1159` and `3c98733` also passed their hosted
   runs and independent original-archive/source verification.
@@ -42,6 +42,41 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
   full-site rendered QA/report admission; concrete deployment/access approval;
   refresh of the same workspace plugin; ordinary ChatGPT content edit/readback,
   qualified code edit/rollback, outsider and revoked-account acceptance.
+
+## Separate native v2 binding fixture
+
+`test/runtime/existing-binding-hook.sh` is a separate optional test entrypoint
+for `MRN_DISPOSABLE_EXISTING_BINDING_HOOK`, requiring
+`MRN_DISPOSABLE_EXISTING_BINDING_TEST=1` and `GITHUB_ACTIONS=true`. It is not
+registered in production or enabled in combined CI yet. The accepted source
+lock remains `5905258`; the provider's new owner/controller composition must
+pass its own native gate before a new exact provider pin and this hook can be
+enabled together. Provider `2916df1` now passes all four jobs in `39348069352`,
+including 30 native owner/Directory/SQL checks, missing-schema and stale-owner
+proof denial, independent committed attribution and shared budget interlocks.
+The tested merge `ef54044fc8b46c0e9d22692a4b10f7d13cdea01b` has the exact
+source tree `451167c02c5f09829a3fb7411fcec1bb04111290`. This corrects the
+test-only stale-proof failure in `999d88e`; it does not prove the new v2 MCP
+flow. The isolated provider hook remains under implementation and qualification.
+
+The closed schema2 context, separate Dashboard database and mutable volumes,
+canonical-host TLS endpoint, Node HOME/network log and SQLite database keep
+the legacy schema1 regression unchanged. The provider owns clone isolation and
+an independent before/after barrier proving its original Dashboard state,
+connection keyfiles and Child content unchanged. The hook verifies the complete
+installed source against immutable Git and the exact eleven profile files.
+
+The intended native proof uses synthetic Bob through the actual delegated
+Directory path: fresh exact-site sync/read, genuine readiness and signed
+original preview, full candidate/migration reconstruction, then one real bind.
+A test-only wrapper discards the successful bind response before receipt
+retention. Reopening SQLite and signing in again must refuse rebinding and
+recover the original hash, expiry and epoch with a fresh signed read. Another
+SQLite reopen checks receipt durability; exact audit attribution and a fresh
+Child readback complete the check. This adds no provider selector or control
+route. Its report explicitly does not prove live Google, after-transport-expiry
+recovery, protected rendered QA, remote backup, content/code execution or
+ordinary ChatGPT acceptance.
 
 ## Original authorization anchor preparation
 
