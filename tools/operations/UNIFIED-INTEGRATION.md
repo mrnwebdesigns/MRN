@@ -48,7 +48,7 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
 for `MRN_DISPOSABLE_EXISTING_BINDING_HOOK`, requiring
 `MRN_DISPOSABLE_EXISTING_BINDING_TEST=1` and `GITHUB_ACTIONS=true`. The new
 combined CI candidate enables it with provider
-`3d0e83907f8d65552cb2e842f96055463cd9f7d3` and requires its eighth report.
+`a6611f11c9139ab5157f3d320a9bd7302761fb79` and requires its eighth report.
 All four source provenance records select that exact checkpoint; original
 contracts remain byte-identical. The provider source registers the three
 canonical machine abilities, but production has not adopted them.
@@ -104,8 +104,37 @@ That correction is committed as provider
 `afa4902080ef3117f549da40e9a66d31fb93ec82`. All 12 fixture/documentation
 files match the independently reviewed bytes. Product runtime, contracts and
 packaging are unchanged. Local provider checks include 17 clone-boundary and
-24 diagnostic tests; component CI `39421841230` is pending. All four gateway
-provenance records select the same immutable candidate for combined testing.
+24 diagnostic tests. At gateway `402675c`, all 571 hosted controlled tests and
+MRN QA pass, but combined CI `39422160292` fails in the original preview phase
+with `MAINWP_FAILED`. The early parent fingerprint has 42 rows / 747,017 bytes;
+actual clone preparation and installed source verification pass. The run does
+not prove a successful bind or the complete parent-preservation barrier.
+Independent source review identifies a concrete integration gap: all three
+registered v2 execution routes are missing from the service REST guard.
+Component CI `39421841230` separately exhausts the unchanged 128 MiB limit at
+`source-native-start`. Neither native run qualifies this candidate.
+
+The gateway fixture now separates readiness, preview dispatch, migration read,
+candidate validation and review retention in its failure report. Its last
+eight tool observations contain only fixed tool labels, result categories,
+confirmation booleans and allowlisted provider error symbols. Messages,
+identities, signed inputs and response bodies are never retained. This adds
+diagnostics only, without retrying a request or changing a success gate.
+
+The next candidate pins provider
+`a6611f11c9139ab5157f3d320a9bd7302761fb79`, tree
+`08c9145ddbbcbbfebd37df921ddcba0b169ca616`. Its eight committed files match the
+reviewed source. The runtime correction admits only readiness GET and bind/read
+POST at the three exact v2 paths; existing REST denials, private backend
+permission and source/original authorization gates remain intact. Wrong methods,
+lookalike paths and staff delegation to these private abilities are refused.
+The disposable HTTP fixture requires real authenticated callback responses and
+anonymous/unsigned refusals before the parent barrier. Source-control, native
+source, encrypted storage and source-context checks now run in a fresh PHP
+process at the unchanged 128 MiB limit using the same original context, source
+and existing synthetic keys. No original expiry or authorization is renewed.
+Local provider regression and MRN QA pass; component and combined native
+verification remain required. No production setting changed.
 
 The closed schema2 context, separate Dashboard database and mutable volumes,
 canonical-host TLS endpoint, Node HOME/network log and SQLite database keep

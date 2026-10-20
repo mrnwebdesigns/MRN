@@ -312,7 +312,7 @@ test('bind control is signed only from intact verified original authority with t
   const wireBytes = readFileSync(new URL('../contracts/content-management-original-authorization-v2.json', import.meta.url));
   assert.equal(digest(wireBytes), '3a77cf8ad2131fd1e2255e74d2a3dcd9ca1d18051e5acc1d51bdb6b7d6fa73c2');
   const source = JSON.parse(readFileSync(new URL('../contracts/content-management-original-authorization-source.json', import.meta.url)));
-  assert.equal(source.commit, '3d0e83907f8d65552cb2e842f96055463cd9f7d3');
+  assert.equal(source.commit, 'a6611f11c9139ab5157f3d320a9bd7302761fb79');
   assert.equal(source.repository, 'mrnwebdesigns/mrn-mainwp-operations-api');
   assert.equal(source.sha256, digest(wireBytes)); assert.equal(source.runtimeRegistered, true); assert.equal(source.productionQualified, false);
   const wire = JSON.parse(wireBytes), f = await reviewed(t);

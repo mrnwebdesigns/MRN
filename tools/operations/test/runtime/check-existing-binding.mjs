@@ -17,9 +17,11 @@ import { createOriginalAuthorizationTransport, parseOriginalBindingProjection } 
 import { Store } from '../../src/store.mjs';
 import { accessRegistry } from '../fixtures/access-registry.mjs';
 import { existingBindingProfile, existingBindingProfileFiles, parseExistingBindingContext } from './existing-binding-context.mjs';
+import { bindingFixtureDiagnostic } from './existing-binding-diagnostics.mjs';
 
 process.umask(0o077);
 const clients = new Set(), transports = new Set();
+const recentCalls = [];
 let store, deadline, reportPath;
 const report = { schema: 2, result: 'INCOMPLETE', scope: 'disposable-native-existing-binding-v2-only', passed: [],
   productionCredentials: false, productionActivation: false, liveGoogleVerified: false, protectedWorkerVerified: false,
@@ -42,7 +44,7 @@ try {
   const context = parseExistingBindingContext(readFileSync(contextFile));
   const started = performance.now();
   deadline = setTimeout(() => {
-    report.result = 'FAIL'; report.failure = { phase, deadlineExceeded: true }; save();
+    report.result = 'FAIL'; report.failure = { phase, recentCalls, deadlineExceeded: true }; save();
     process.stderr.write('FAIL disposable v2 binding deadline; private output withheld\n');
     process.exit(1);
   }, context.limits.hook_seconds * 1000);
@@ -93,7 +95,20 @@ try {
   const signer = new IdentitySigner({ keyId: 'disposable-identity-only', connectionId: 'con_RuntimeFixture',
     privateKey: createPrivateKey({ key: readFileSync(join(directory, 'identity.der')), type: 'pkcs8', format: 'der' }) });
   const { registry } = accessRegistry(context.site.site_url);
-  const rawClient = async () => { const client = await connectMainwp(config, environment); clients.add(client); return client; };
+  const rawClient = async () => {
+    const raw = await connectMainwp(config, environment); clients.add(raw);
+    const observe = row => { recentCalls.push(row); if (recentCalls.length > 8) recentCalls.shift(); };
+    return { readResource: (...args) => raw.readResource(...args), listTools: (...args) => raw.listTools(...args),
+      close: () => raw.close(), callTool: async (...args) => {
+        const request = args[0], confirmed = request?.arguments?.user_confirmed === true;
+        try {
+          const result = await raw.callTool(...args);
+          observe(bindingFixtureDiagnostic(request?.name, result, confirmed)); return result;
+        } catch (error) {
+          observe(bindingFixtureDiagnostic(request?.name, error, confirmed, true)); throw error;
+        }
+      } };
+  };
   const verifyStaff = async actor => {
     const client = new DelegatedMainwpClient(await rawClient(), actor, signer);
     try { const access = await client.verifyStaff(); assert.equal(access.policy_sha256, context.pins.delegation_policy_sha256); }
@@ -164,11 +179,16 @@ try {
     assert.equal(result.coherence_epoch_sha256, context.pins.coherence_epoch_sha256);
     assert.equal(result.production_qualified, false); assert.equal(result.consumer_binding_issued, false); return result;
   };
-  phase = 'original-preview';
+  phase = 'original-readiness';
+  const previewReady = await ready();
+  phase = 'original-preview-dispatch';
   const { originalRequestId, review } = await client.previewOriginalManagementEdit(request,
-    { ledger, attemptId: randomUUID(), readiness: await ready() });
+    { ledger, attemptId: randomUUID(), readiness: previewReady });
+  phase = 'original-migration-read';
   const migration = await client.readManagementMigration({ ...context.site, operation_id: review.operation_id });
+  phase = 'original-candidate-validation';
   const evidence = validateManagementEvidence({ read, review, migration }, { site, target: context.target, request, profile });
+  phase = 'original-review-retention';
   const reviewed = await ledger.recordReview(originalRequestId, actor, request, evidence, profile);
   assert.deepEqual(reviewed.mapping.authorization, originalAnchor);
   assert.equal(reviewed.mapping.readiness.coherenceEpochSha256, context.pins.coherence_epoch_sha256);
@@ -241,7 +261,7 @@ try {
   pass('Fresh exact-site sync and full Child readback prove the preview and binding did not edit content');
   report.result = 'PASS'; report.elapsedMs = Math.ceil(performance.now() - started); save();
 } catch (error) {
-  report.result = 'FAIL'; report.failure = { phase,
+  report.result = 'FAIL'; report.failure = { phase, recentCalls,
     code: typeof error?.code === 'string' && /^[A-Z0-9_]{1,80}$/.test(error.code) ? error.code : 'DISPOSABLE_BINDING_CHECK_FAILED' };
   save(); process.stderr.write(`FAIL disposable v2 binding at ${phase}; private output withheld\n`); process.exitCode = 1;
 } finally {

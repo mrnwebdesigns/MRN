@@ -74,9 +74,23 @@ parent checkpoint, prepares disabled management authority only inside the
 separate clone, and retains every later large-history test. Normal native
 registration creates keys as the actual HTTP user with unchanged private modes.
 Its 12 committed files match the reviewed fixture/documentation bytes; product
-runtime and contracts are unchanged. Component CI `39421841230` and a new
-enabled combined run must pass before acceptance. The eighth report remains
-required and has not yet passed.
+runtime and contracts are unchanged. Gateway `402675c` passed all 571 controlled
+tests and hosted MRN QA, but combined CI `39422160292` failed in the original
+preview phase with `MAINWP_FAILED`. The early parent fingerprint contained
+42 rows / 747,017 bytes; clone preparation and installed source verification
+passed. No successful bind or complete parent-preservation barrier is claimed.
+Independent source review found that the three registered v2 execution routes
+were absent from the service REST guard. Provider component CI `39421841230`
+separately exhausted the unchanged 128 MiB limit at `source-native-start`.
+Both blockers remain open until their corrected native runs pass.
+The eighth report remains required and has not yet passed.
+The replacement provider candidate `a6611f1` narrowly admits the three exact
+private v2 routes and preserves existing denials. It adds actual HTTP coverage
+and isolates the same source checks in a fresh PHP process at 128 MiB, with
+unchanged original authority and expiry. All eight committed files match the
+reviewed source; local provider MRN QA passes. The gateway pins that candidate
+and adds bounded, body-free fixture diagnostics. New component and combined
+native results are required before accepting this replacement.
 Current implementation and remaining qualification are in `UNIFIED-INTEGRATION.md`.
 
 ## Earlier disposable checkpoints
