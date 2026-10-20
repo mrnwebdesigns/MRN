@@ -99,6 +99,7 @@ jobs:
       DEPLOY_KINSTA_SITE_ID: ${{ vars.DEPLOY_KINSTA_SITE_ID }}
       DEPLOY_KINSTA_ENVIRONMENT_ID: ${{ vars.DEPLOY_KINSTA_ENVIRONMENT_ID }}
       DEPLOY_KINSTA_TRANSACTION_BACKUP_APPROVED: ${{ vars.DEPLOY_KINSTA_TRANSACTION_BACKUP_APPROVED }}
+      DEPLOY_KINSTA_MANUAL_BACKUP_APPROVAL: ${{ vars.DEPLOY_KINSTA_MANUAL_BACKUP_APPROVAL }}
       DEPLOY_TRANSPORT: ${{ vars.DEPLOY_TRANSPORT }}
       DEPLOY_BASELINE_TREE: ${{ vars.DEPLOY_BASELINE_TREE }}
       DEPLOY_READY: ${{ vars.DEPLOY_READY }}
@@ -257,7 +258,7 @@ jobs:
           KNOWN_HOSTS: ${{ secrets.DEPLOY_SSH_KNOWN_HOSTS || (inputs.target == 'dev' && secrets.DEV_SSH_KNOWN_HOSTS) || '' }}
         run: |
           set -euo pipefail
-          if [[ "$DEPLOY_BACKUP_PROVIDER" != kinsta && -z "$SSH_KEY" ]]; then
+          if [[ ( "$DEPLOY_BACKUP_PROVIDER" != kinsta || -n "$DEPLOY_KINSTA_MANUAL_BACKUP_APPROVAL" ) && -z "$SSH_KEY" ]]; then
             echo '::error::Missing deployment SSH private-key secret for this environment.'
             exit 1
           fi
@@ -280,14 +281,14 @@ jobs:
           EOF
             chmod 600 "$HOME/.ssh/config"
           fi
-          if [[ "$DEPLOY_BACKUP_PROVIDER" != kinsta ]]; then
+          if [[ "$DEPLOY_BACKUP_PROVIDER" != kinsta || -n "$DEPLOY_KINSTA_MANUAL_BACKUP_APPROVAL" ]]; then
             if ! ssh-keygen -y -P '' -f "$RUNNER_TEMP/site-deploy.key" >/dev/null 2>&1; then
               echo '::error::Deployment SSH secret is not a valid noninteractive private key.'
               exit 1
             fi
           fi
       - name: Install native Kinsta SSH transport
-        if: vars.DEPLOY_BACKUP_PROVIDER == 'kinsta'
+        if: vars.DEPLOY_BACKUP_PROVIDER == 'kinsta' && vars.DEPLOY_KINSTA_MANUAL_BACKUP_APPROVAL == ''
         run: sudo apt-get update && sudo apt-get install -y sshpass
       - name: Preflight or deploy exact child-theme payload
         id: activation

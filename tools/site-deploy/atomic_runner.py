@@ -127,7 +127,8 @@ def run(plan, c):
     if native:
         remote_plan['native_backup_receipt'] = backup
         envelope['native'] = {'token': target.native_backup.token, 'site_id': target.native_backup.site_id,
-                              'environment_id': target.native_backup.environment_id}
+                              'environment_id': target.native_backup.environment_id,
+                              'manual_approval': c.get('manual_backup_approval', '')}
     if not plan.get('rollback_to'):
         require_current_push(order, os.environ)
     process = target.controller(job + '/host_controller.py', envelope)
