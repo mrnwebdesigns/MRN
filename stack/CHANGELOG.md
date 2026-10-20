@@ -1,5 +1,10 @@
 # Stack Changelog
 
+## 2026.10.20-fleet-auto-dda0001c3dd2
+
+- Automatic cumulative release from accepted source vector `2ae208685bae54b0f29fc8d95e1b40b9117ac9af3c687596986550d80480cee7`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
 ## Unreleased — parent 1.6.6 Header Utility Message navigation
 
 - Keep manually active messages visible without waiting for an unrelated clock request.
