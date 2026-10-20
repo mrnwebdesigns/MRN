@@ -11,11 +11,11 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
   and code tools are absent. New tools default to disabled. No individual
   enrollment or personal backend credentials are required. Team editing is
   not yet ready.
-- Accepted gateway checkpoint `5d54022` passed 568 tests, combined run
-  `39335614546` and MRN QA `39335614529`. All seven original reports were
+- Accepted gateway checkpoint `4cffd90` passed 571 tests, combined run
+  `39354587611` and MRN QA `39354587613`. All seven original reports were
   independently verified, including native content edit/readback/rollback,
   complete source reconstruction and report custody against provider `5905258`
-  and worker `cd74e20`. Tested merge `583b713bb496e353de2c010ac67b4c8fc35f906d`
+  and worker `cd74e20`. Tested merge `db93c6ddbd0692861ebdce89a3b10477286d6588`
   has identical gateway, workflow, runtime and Fleet regression blobs.
   Intermediate checkpoints `0dd1159` and `3c98733` also passed their hosted
   runs and independent original-archive/source verification.
@@ -27,7 +27,7 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
   state. The prior 46 original-selection and three 128 MiB isolation checks
   also pass. Runtime bytes are unchanged from `f2262cf`; its earlier failed
   fixture run `39324850558` remains recorded. The failure did not recur; a
-  root-cause fix is not claimed. The accepted combined gateway run pins this provider. Existing-v2 routes and admission remain disabled.
+  root-cause fix is not claimed. That accepted combined gateway run pins this provider and does not test the new v2 routes. Production admission remains disabled.
 - Worker `cd74e20` passes 160 tests and all three jobs in `39320436312`. Both
   original archives and all eight reports were independently verified, with
   exact edit/restored snapshots and browser/profile/runtime/parity hashes.
@@ -37,8 +37,7 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
 - Live MainWP was observed at `wpcontrol.mrndev.io` with 115 abilities and
   provider 0.13.8. The company code pilot remains unchanged. No production,
   Auth0, Google, workspace-tool or repository-access setting changed.
-- Remaining gates: automatic requester allowance initialization and complete
-  provider-bound original authorization; protected central cache provenance/delivery and
+- Remaining gates: combined provider-bound original authorization; protected central cache provenance/delivery and
   full-site rendered QA/report admission; concrete deployment/access approval;
   refresh of the same workspace plugin; ordinary ChatGPT content edit/readback,
   qualified code edit/rollback, outsider and revoked-account acceptance.
@@ -47,17 +46,23 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
 
 `test/runtime/existing-binding-hook.sh` is a separate optional test entrypoint
 for `MRN_DISPOSABLE_EXISTING_BINDING_HOOK`, requiring
-`MRN_DISPOSABLE_EXISTING_BINDING_TEST=1` and `GITHUB_ACTIONS=true`. It is not
-registered in production or enabled in combined CI yet. The accepted source
-lock remains `5905258`; the provider's new owner/controller composition must
-pass its own native gate before a new exact provider pin and this hook can be
-enabled together. Provider `2916df1` now passes all four jobs in `39348069352`,
-including 30 native owner/Directory/SQL checks, missing-schema and stale-owner
-proof denial, independent committed attribution and shared budget interlocks.
-The tested merge `ef54044fc8b46c0e9d22692a4b10f7d13cdea01b` has the exact
-source tree `451167c02c5f09829a3fb7411fcec1bb04111290`. This corrects the
-test-only stale-proof failure in `999d88e`; it does not prove the new v2 MCP
-flow. The isolated provider hook remains under implementation and qualification.
+`MRN_DISPOSABLE_EXISTING_BINDING_TEST=1` and `GITHUB_ACTIONS=true`. The new
+combined CI candidate enables it with provider
+`76b141b39167d7cac9c45482630b89f127e14a9f` and requires its eighth report.
+All four source provenance records select that exact checkpoint; original
+contracts remain byte-identical. The provider source registers the three
+canonical machine abilities, but production has not adopted them.
+
+Provider `76b141b` passes all four jobs in `39363697356`. The original native
+log has 117 JSON groups and SHA-256
+`4ded88f1cc1426936920a2bfd4efd340dbf728a34d7f5cc45f94466aecf712df`.
+Tested merge `c19c6483d3fa11fe0bd9219b940006e74cad24a2` and source share the
+full tree `b929ec70d4442f9f56834774c250021f2c744e6f`. Its 30 native
+owner/Directory/SQL checks and 15 new fake-Docker boundary tests pass. The
+optional hook was absent in that component run: it proves regression/source
+qualification, not actual clone or v2 MCP success. The first enabled combined
+run remains unverified. Earlier `2916df1` owner qualification and the failed
+`999d88e` stale-owner-proof fixture are retained in the evidence history.
 
 The closed schema2 context, separate Dashboard database and mutable volumes,
 canonical-host TLS endpoint, Node HOME/network log and SQLite database keep
@@ -118,7 +123,7 @@ backup. A staff login cannot perform that migration or clear denial. This is
 service setup, not individual staff enrollment or approval.
 
 The private ledger now issues distinct bind/read controls using the unchanged
-provider original-authorization wire from qualified source `5905258`. It signs
+provider original-authorization wire now pinned to qualified source `76b141b`. It signs
 `original_resource_authorization_current:true` only after rechecking the exact
 reviewed original, genuine current actor, original expiry, current principal,
 policy/site and fresh Directory state. It accepts no caller hash or expiry.
@@ -137,9 +142,9 @@ history also blocks damaged principal state from being treated as first use.
 This is still private source preparation. Production startup does not construct
 the ledger or expose controls. The stable existing preview ability is unchanged;
 only the provider's source-selected coherent readiness may choose its new
-lifetime domain. The v1 review shape cannot prove that choice. Provider routing,
-automatic first-use state and asynchronous producer integration still need
-composition and native qualification.
+lifetime domain. The v1 review shape cannot prove that choice. Provider routing and central owner initialization have component qualification;
+their actual combined gateway flow and asynchronous producer integration remain
+unverified.
 There is no workspace tool, admission, Auth0 session introspection or production
 write activation in this source slice.
 

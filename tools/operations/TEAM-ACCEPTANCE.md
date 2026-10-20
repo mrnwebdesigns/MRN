@@ -44,18 +44,20 @@ Use already-authorized test identities or separately reviewed administrative tes
 
 ## Latest disposable evidence, 2026-10-19
 
-Gateway `5d54022` is the latest independently accepted combined checkpoint:
-[CI 39335614546](https://github.com/mrnwebdesigns/MRN/actions/runs/39335614546)
-and [MRN QA 39335614529](https://github.com/mrnwebdesigns/MRN/actions/runs/39335614529)
+Gateway `4cffd90` is the latest independently accepted combined checkpoint:
+[CI 39354587611](https://github.com/mrnwebdesigns/MRN/actions/runs/39354587611)
+and [MRN QA 39354587613](https://github.com/mrnwebdesigns/MRN/actions/runs/39354587613)
 pass. All seven original reports and relevant tested source/workflow/Fleet blobs
 match committed source, including actual TLS/MCP report custody, native content
 edit/readback/exact rollback, original revocation denial and source reconstruction.
-Artifact `12228171077` is 10146 bytes, SHA-256
-`b097f851c40a396bce2e02f9c1d56ebe8fce7d67d658c4eabcd04ef4d3c71067`.
+Artifact `12234634166` is 10145 bytes, SHA-256
+`644322d6976774ee7346d40649a4240419e5d9107f42e1bbf7800c56f087e8ee`.
 The synthetic identity, remote-backup, hosted-provenance and rendered-QA limits
 remain explicit. Private original-authorization controls and response retention
 have local tests; the separately prepared actual v2 binding hook has not passed
 native qualification. The accepted combined pin does not expose these endpoints.
+The new CI candidate pins component-qualified provider `76b141b` and enables
+the separate eighth report; its actual combined result remains unverified.
 Current implementation and remaining qualification are in `UNIFIED-INTEGRATION.md`.
 
 ## Earlier disposable checkpoints

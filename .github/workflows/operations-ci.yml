@@ -123,6 +123,9 @@ jobs:
           MRN_DISPOSABLE_SYNC_AUTH_DIAGNOSTICS: '1'
           MRN_DISPOSABLE_MANAGEMENT_TEST: '1'
           MRN_DISPOSABLE_SOURCE_TEST: '1'
+          # Separate cloned Dashboard; never initializes the legacy fixture.
+          MRN_DISPOSABLE_EXISTING_BINDING_TEST: '1'
+          MRN_DISPOSABLE_EXISTING_BINDING_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/existing-binding-hook.sh
           # Qualified provider; actual gateway custody remains a required CI gate.
           MRN_DISPOSABLE_REPORT_CUSTODY_TEST: '1'
           MRN_DISPOSABLE_NATIVE_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/native-hook.sh
@@ -138,6 +141,7 @@ jobs:
           MRN_GATEWAY_MANAGEMENT_REPORT: ${{ runner.temp }}/gateway-management-report.json
           MRN_GATEWAY_SOURCE_REPORT: ${{ runner.temp }}/gateway-native-source-report.json
           MRN_GATEWAY_REPORT_CUSTODY_REPORT: ${{ runner.temp }}/gateway-report-custody-report.json
+          MRN_GATEWAY_EXISTING_BINDING_REPORT: ${{ runner.temp }}/gateway-existing-binding-report.json
         run: |
           .runtime/provider/tests/runtime/run-dashboard-api.sh
           node --input-type=module <<'JS'
@@ -219,9 +223,41 @@ jobs:
             for (const field of ['management_context_sha256', 'qualification_report_sha256', 'qualification_archive_sha256', 'acquisition_archive_sha256', 'acquisition_observation_sha256', 'evidence_policy_sha256']) assert.match(custody.retained[field], /^[a-f0-9]{64}$/);
           }
           const sources = JSON.parse(readFileSync('tools/operations/test/runtime/sources.json', 'utf8'));
+          const binding = JSON.parse(readFileSync(process.env.MRN_GATEWAY_EXISTING_BINDING_REPORT, 'utf8'));
+          assert.equal(binding.schema, 2); assert.equal(binding.result, 'PASS');
+          assert.equal(binding.scope, 'disposable-native-existing-binding-v2-only');
+          assert.deepEqual(binding.passed, [
+            'Separate synthetic v2 descriptor and installed immutable source independently verified',
+            'Actual signed preview and complete candidate reconstruction retain the original verified actor and epoch',
+            'One actual provider bind succeeds before a simulated lost response; no local receipt or retry is created',
+            'SQLite reopen and a fresh authenticated login recover the exact binding by signed read without extending the original grant',
+            'Fresh exact-site sync and full Child readback prove the preview and binding did not edit content',
+          ]);
+          for (const field of ['productionCredentials', 'productionActivation', 'liveGoogleVerified', 'protectedWorkerVerified',
+            'renderedQaVerified', 'consumerBindingIssued', 'contentWriteVerified', 'codeWriteVerified', 'remoteBackupVerified',
+            'chatgptAcceptanceVerified', 'afterTransportExpiryVerified']) assert.equal(binding[field], false);
+          assert.equal(Object.hasOwn(binding, 'failure'), false);
+          assert.equal(binding.pins.provider_source_sha, sources.provider.commit);
+          assert.equal(Object.keys(binding.pins).length, 8);
+          for (const field of ['installed_manifest_sha256', 'source_binding_sha256', 'authorization_policy_sha256',
+            'delegation_policy_sha256', 'coherence_epoch_sha256', 'qualification_catalog_sha256', 'qualification_authority_sha256'])
+            assert.match(binding.pins[field], /^[a-f0-9]{64}$/);
+          for (const field of ['reviewed_digest', 'original_authorization_sha256', 'projection_sha256', 'receipt_sha256', 'coherence_epoch_sha256'])
+            assert.match(binding.binding[field], /^[a-f0-9]{64}$/);
+          for (const field of ['original_request_id', 'operation_id']) assert.match(binding.binding[field], /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/);
+          assert.equal(binding.binding.coherence_epoch_sha256, binding.pins.coherence_epoch_sha256);
+          assert.equal(binding.binding.bind_dispatches, 1); assert.equal(binding.binding.read_dispatches, 1);
+          assert.ok(Number.isSafeInteger(binding.binding.original_expires_at) && binding.binding.original_expires_at > 0);
+          assert.equal(binding.child.site.site_url, 'https://child.fixture.example.invalid');
+          assert.ok(Number.isSafeInteger(binding.child.site.site_id) && binding.child.site.site_id > 0);
+          assert.equal(binding.child.target.kind, 'wordpress-content'); assert.equal(binding.child.target.post_type, 'page');
+          assert.ok(Number.isSafeInteger(binding.child.target.post_id) && binding.child.target.post_id > 0);
+          assert.match(binding.child.before_sha256, /^[a-f0-9]{64}$/); assert.equal(binding.child.after_sha256, binding.child.before_sha256);
+          assert.equal(binding.network.signed_control_posts, 2); assert.match(binding.network.network_log_sha256, /^[a-f0-9]{64}$/);
+          assert.ok(Number.isSafeInteger(binding.elapsedMs) && binding.elapsedMs > 0 && binding.elapsedMs < 180000);
           for (const name of ['provider', 'transport', 'runner']) assert.equal(execFileSync('git', ['-C', `.runtime/${name}`, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), sources[name].commit);
           assert.equal(execFileSync('git', ['-C', '.runtime/management-worker', 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), sources.managementWorker.commit);
-          for (const report of [proof, native, access, management, source, ...(custody ? [custody] : [])]) assert.deepEqual(report.source, sources);
+          for (const report of [proof, native, access, management, source, binding, ...(custody ? [custody] : [])]) assert.deepEqual(report.source, sources);
           JS
       - name: Retain redacted disposable worker failure
         if: failure()
@@ -244,5 +280,6 @@ jobs:
             ${{ runner.temp }}/gateway-management-report.json
             ${{ runner.temp }}/gateway-native-source-report.json
             ${{ runner.temp }}/gateway-report-custody-report.json
+            ${{ runner.temp }}/gateway-existing-binding-report.json
           if-no-files-found: error
           retention-days: 14
