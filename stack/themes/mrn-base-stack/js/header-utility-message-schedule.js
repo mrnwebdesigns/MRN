@@ -42,6 +42,43 @@
 	let lastMonotonic = performance.now();
 	let lastWallTime = Date.now();
 	const sampleLifetime = 120000;
+	const startedKey = 'mrn-header-utility-started:' + clockUrl.href;
+	let confirmedStartedVersion = null;
+
+	function canKeepVisibleWithoutClock() {
+		return enabled && ( ! scheduled || (
+			end === null && ! hasRecurringRules && confirmedStartedVersion === item.dataset.mrnUtilityVersion
+		) );
+	}
+
+	function restoreConfirmedStart() {
+		if ( ! enabled || ! scheduled || end !== null || hasRecurringRules ) {
+			return;
+		}
+		try {
+			const saved = JSON.parse( window.sessionStorage.getItem( startedKey ) );
+			if ( saved && saved.version === item.dataset.mrnUtilityVersion && Number.isFinite( saved.serverTime ) && saved.serverTime > 0 &&
+				( start === null || ( Number.isFinite( start ) && saved.serverTime >= start ) ) ) {
+				// A server-confirmed start stays in the past forever. No local clock,
+				// elapsed-time estimate, or cached on/off decision is reused.
+				confirmedStartedVersion = saved.version;
+			}
+		} catch ( error ) {
+			// Blocked or malformed storage falls back to the fresh server check.
+		}
+	}
+
+	function rememberConfirmedStart( serverTime ) {
+		if ( item.hidden || ! scheduled || end !== null || hasRecurringRules || confirmedStartedVersion === item.dataset.mrnUtilityVersion ) {
+			return;
+		}
+		confirmedStartedVersion = item.dataset.mrnUtilityVersion;
+		try {
+			window.sessionStorage.setItem( startedKey, JSON.stringify( { version: confirmedStartedVersion, serverTime } ) );
+		} catch ( error ) {
+			// This document can still retain its already verified open-ended state.
+		}
+	}
 
 	function refreshMessage( data ) {
 		if ( data.version === item.dataset.mrnUtilityVersion ) {
@@ -68,6 +105,12 @@
 			return url.href;
 		} );
 		const restoreFocus = item.contains( document.activeElement );
+		confirmedStartedVersion = null;
+		try {
+			window.sessionStorage.removeItem( startedKey );
+		} catch ( error ) {
+			// Version matching prevents any old stored confirmation being reused.
+		}
 		// Markup comes only from the same-origin, read-only endpoint, which uses
 		// the same sanitized/escaped rendering helper as the initial page.
 		item.innerHTML = message.enabled ? message.html : '';
@@ -99,7 +142,7 @@
 
 	function invalidate() {
 		sample = null;
-		item.hidden = true;
+		item.hidden = ! canKeepVisibleWithoutClock();
 		item.dataset.mrnUtilityClock = 'waiting';
 		window.clearTimeout( timer );
 	}
@@ -245,6 +288,7 @@
 			( start !== null && ( ! Number.isFinite( start ) || now < start ) ) ||
 			( end !== null && ( ! Number.isFinite( end ) || now >= end ) ) ||
 			( hasRecurringRules && ! matchesRecurringRules( now ) ) ) );
+		rememberConfirmedStart( now );
 		let next = scheduled ? ( start !== null && now < start ? start : end ) : null;
 		if ( hasRecurringRules && ( start === null || now >= start ) && ( end === null || now < end ) ) {
 			// One local computation per minute keeps weekly/holiday rules correct
@@ -279,6 +323,7 @@
 			revalidate();
 		}
 	}, 1000 );
+	restoreConfirmedStart();
 	invalidate();
 	synchronize();
 	window.addEventListener( 'pageshow', event => {
