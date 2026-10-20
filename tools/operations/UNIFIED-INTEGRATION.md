@@ -48,7 +48,7 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
 for `MRN_DISPOSABLE_EXISTING_BINDING_HOOK`, requiring
 `MRN_DISPOSABLE_EXISTING_BINDING_TEST=1` and `GITHUB_ACTIONS=true`. The new
 combined CI candidate enables it with provider
-`a4ccb0c8ca40e97282aae56440e046f62eb04aa6` and requires its eighth report.
+`3d0e83907f8d65552cb2e842f96055463cd9f7d3` and requires its eighth report.
 All four source provenance records select that exact checkpoint; original
 contracts remain byte-identical. The provider source registers the three
 canonical machine abilities, but production has not adopted them.
@@ -77,6 +77,35 @@ the HTTP process could not read the synthetic key directory. That failure is
 distinct from the parent statistics failure. Independent component and combined
 checks must both pass; `4cffd90`/`76b141b` remain the accepted combined/component
 checkpoints. No production activation follows from these fixture changes.
+
+Diagnostic gateway `9e1262a` passed 571 hosted controlled tests and MRN QA.
+Its combined run `39417143399` measured 1,208 protected option rows totaling
+78,870,591 bytes, exceeding the unchanged 67,108,864-byte bound. SQL and numeric
+parsing succeeded. The native hook was not reached; only three partial reports
+passed. The original log has 71 JSON groups and SHA-256
+`9673c4d6321ebee2c75d241679b3f73c0abe2446f889e3c3ad7898aa336c0cb7`.
+Artifact `12262741038` is 4985 bytes, SHA-256
+`9b7fa91877e10902b24745d5791fa3394be674bfd27c3cf0f228454820ebed63`.
+Tested merge `df876faecc30059f738d8951102c8bf242b893f1`, all dependency pins
+and relevant gateway/workflow/Fleet blobs were independently verified.
+The earlier run did not record counters, so its exact sizes remain unknown.
+
+The reviewed fixture correction moves the binding test before the legacy
+large-history suites, at the coherent catalog/access checkpoint with management
+authority genuinely unprepared. Only the new clone receives actual disabled
+management-owner preparation and fresh owner proof. The original parent keeps
+its full state; no history is removed and all later legacy tests remain required.
+Native peer registration creates keys once as the actual HTTP user, preserving
+0700/0600 modes and the original root CLI custody. Component and enabled
+eight-report combined verification remain required; source review is not a pass.
+
+That correction is committed as provider
+`3d0e83907f8d65552cb2e842f96055463cd9f7d3`, tree
+`afa4902080ef3117f549da40e9a66d31fb93ec82`. All 12 fixture/documentation
+files match the independently reviewed bytes. Product runtime, contracts and
+packaging are unchanged. Local provider checks include 17 clone-boundary and
+24 diagnostic tests; component CI `39421841230` is pending. All four gateway
+provenance records select the same immutable candidate for combined testing.
 
 The closed schema2 context, separate Dashboard database and mutable volumes,
 canonical-host TLS endpoint, Node HOME/network log and SQLite database keep
@@ -137,7 +166,7 @@ backup. A staff login cannot perform that migration or clear denial. This is
 service setup, not individual staff enrollment or approval.
 
 The private ledger now issues distinct bind/read controls using the unchanged
-provider original-authorization wire now pinned to diagnostic candidate `a4ccb0c`. It signs
+provider original-authorization wire now pinned to fixture candidate `3d0e839`. It signs
 `original_resource_authorization_current:true` only after rechecking the exact
 reviewed original, genuine current actor, original expiry, current principal,
 policy/site and fresh Directory state. It accepts no caller hash or expiry.

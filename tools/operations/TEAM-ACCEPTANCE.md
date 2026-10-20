@@ -60,11 +60,23 @@ Gateway `37fe496` passed 571 controlled tests but failed combined CI
 `39392624734` at the parent-state fingerprint, before the clone or v2 hook.
 The statistics failure's cause remains unknown. A separate review found missing
 coverage for the management evidence marker, anchor and audit options.
-The new candidate pins provider `a4ccb0c`, which adds that coverage, clone-only
+Gateway `9e1262a` pins provider `a4ccb0c`, which adds that coverage, clone-only
 negative checks and bounded failure diagnostics without changing runtime code
-or bounds. Its component CI `39416147753` failed an earlier native sync
-preflight; both component and combined gates must pass before acceptance.
-The eighth report remains required and has not yet passed.
+or bounds. Hosted MRN QA and 571 controlled tests pass. Combined CI
+`39417143399` failed before cloning: 1,208 protected option rows occupied
+78,870,591 bytes, above the unchanged 67,108,864-byte bound. SQL and numeric
+parsing succeeded. Provider component CI `39416147753` separately failed an
+earlier native sync preflight because the HTTP user could not read the
+synthetic key directory.
+
+Provider candidate `3d0e839` runs the binding fixture at the earlier coherent
+parent checkpoint, prepares disabled management authority only inside the
+separate clone, and retains every later large-history test. Normal native
+registration creates keys as the actual HTTP user with unchanged private modes.
+Its 12 committed files match the reviewed fixture/documentation bytes; product
+runtime and contracts are unchanged. Component CI `39421841230` and a new
+enabled combined run must pass before acceptance. The eighth report remains
+required and has not yet passed.
 Current implementation and remaining qualification are in `UNIFIED-INTEGRATION.md`.
 
 ## Earlier disposable checkpoints
