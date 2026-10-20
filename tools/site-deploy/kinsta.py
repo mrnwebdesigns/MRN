@@ -5,6 +5,64 @@ import time
 import urllib.error
 import urllib.request
 
+DOSTER_MANUAL_APPROVAL = 'doster-owner-manual-2026-10-20'
+DOSTER_SITE = '37f05135-d359-440e-a6bf-28e95ea5ec40'
+DOSTER_DEV = '93162079-439b-45a5-b4b6-07ed7fcd6295'
+DOSTER_REPOSITORY = 'mrnwebdesigns/doster-and-brown-child-theme'
+DOSTER_TARGET = dict(environment='dev', url='https://stg-lowwd-mrndev.kinsta.cloud',
+                     root='/www/lowwd_975/public', host='34.74.12.94', port='61903', user='lowwd')
+
+
+def adapter(token, site_id, environment_id, manual_approval='', repository=''):
+    """The default remains native/API-backed; one owner-approved Dev exception."""
+    if not manual_approval:
+        return Kinsta(token, site_id, environment_id)
+    if (manual_approval, repository, site_id, environment_id) != (
+            DOSTER_MANUAL_APPROVAL, DOSTER_REPOSITORY, DOSTER_SITE, DOSTER_DEV):
+        raise ValueError('Manual backup exception is restricted to the approved Doster MRNDev target')
+    return DosterOwnerManualBackup()
+
+
+class DosterOwnerManualBackup:
+    """Owner manages backups; this never claims a fresh provider snapshot exists.
+
+    Approved in the Doster site conversation on 2026-10-20. Pinned SSH plus fresh
+    WordPress/physical-path identity, artifact, ordering and rollback gates stay on.
+    No API/password fallback or production target is supported by this exception.
+    """
+    token, site_id, environment_id = '', DOSTER_SITE, DOSTER_DEV
+
+    def __init__(self):
+        self.identity_verified = False
+
+    def identity(self, config):
+        self.identity_verified = False
+        if any(config.get(key) != value for key, value in DOSTER_TARGET.items()):
+            raise ValueError('Manual backup exception target differs from approved Doster MRNDev')
+        self.identity_verified = True
+        return {'manual_backup_approval': DOSTER_MANUAL_APPROVAL}
+
+    def connect(self, config):
+        raise ValueError('Manual backup exception requires an explicitly pinned SSH key')
+
+    def backup(self, label):
+        if not self.identity_verified:
+            raise ValueError('Manual backup exception requires exact target identity first')
+        return dict(valid=True, provider='owner-manual-exception', approval=DOSTER_MANUAL_APPROVAL,
+                    site_id=self.site_id, environment_id=self.environment_id, label=label,
+                    scope='owner-managed-backups', automatic_backup_created=False,
+                    approval_recorded_at=int(time.time()))
+
+    def verify_transaction_backup(self, receipt, operation):
+        expected = dict(valid=True, provider='owner-manual-exception', approval=DOSTER_MANUAL_APPROVAL,
+                        site_id=self.site_id, environment_id=self.environment_id,
+                        scope='owner-managed-backups', automatic_backup_created=False)
+        if (not self.identity_verified or any(receipt.get(key) != value for key, value in expected.items())
+                or not re.fullmatch(r'mrn-tool-transfer-[0-9]+', receipt.get('label', ''))
+                or not 0 <= time.time() - receipt.get('approval_recorded_at', 0) < 3600):
+            raise ValueError('Missing or mismatched Doster owner manual-backup approval receipt')
+        return dict(receipt, operation=operation)
+
 
 class Kinsta:
     def __init__(self, token, site_id, environment_id):

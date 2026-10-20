@@ -388,8 +388,9 @@ if __name__ == '__main__':
         native = request.pop('native', None)
         adapter = None
         if native:
-            from kinsta import Kinsta
-            adapter = Kinsta(native['token'], native['site_id'], native['environment_id'])
+            from kinsta import adapter as kinsta_adapter
+            adapter = kinsta_adapter(native['token'], native['site_id'], native['environment_id'],
+                                     native.get('manual_approval', ''), request['plan']['repository'])
             del native
         response = execute(request['plan'], adapter)
     except Exception as error:

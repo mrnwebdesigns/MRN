@@ -106,6 +106,9 @@ def config(environ):
     if c['host_provider'] == 'kinsta' and c['backup_provider'] != 'kinsta':
         raise ValueError('Kinsta activation requires its native backup provider')
     c['native_transaction_backup_approved'] = environ.get('DEPLOY_KINSTA_TRANSACTION_BACKUP_APPROVED') == '1'
+    c['manual_backup_approval'] = environ.get('DEPLOY_KINSTA_MANUAL_BACKUP_APPROVAL', '')
+    if c['manual_backup_approval'] and (c['host_provider'], c['backup_provider']) != ('kinsta', 'kinsta'):
+        raise ValueError('Manual backup approval is only supported by its exact Kinsta adapter')
     return c
 
 
@@ -115,10 +118,11 @@ class Target:
         self.native_backup = None
         self.password = None
         if c.get('backup_provider') == 'kinsta':
-            from kinsta import Kinsta
-            self.native_backup = Kinsta(os.environ.get('DEPLOY_KINSTA_API_TOKEN', ''),
+            from kinsta import adapter
+            self.native_backup = adapter(os.environ.get('DEPLOY_KINSTA_API_TOKEN', ''),
                                         os.environ.get('DEPLOY_KINSTA_SITE_ID', ''),
-                                        os.environ.get('DEPLOY_KINSTA_ENVIRONMENT_ID', ''))
+                                        os.environ.get('DEPLOY_KINSTA_ENVIRONMENT_ID', ''),
+                                        c.get('manual_backup_approval', ''), os.environ.get('GITHUB_REPOSITORY', ''))
             if c['key_file'] == 'native-kinsta':
                 self.password = self.native_backup.connect(c)
             else:
@@ -331,13 +335,21 @@ def qualification_request(args, c, environ):
     if environ.get('QUALIFY_DEV', 'false') != 'true':
         return False
     from release_request import api
+    manual = False
+    if c.get('manual_backup_approval'):
+        from kinsta import adapter
+        approved = adapter('', environ.get('DEPLOY_KINSTA_SITE_ID', ''),
+                           environ.get('DEPLOY_KINSTA_ENVIRONMENT_ID', ''),
+                           c['manual_backup_approval'], environ.get('GITHUB_REPOSITORY', ''))
+        approved.identity(c)
+        manual = (c.get('host_provider'), c.get('backup_provider')) == ('kinsta', 'kinsta')
     if (environ.get('GITHUB_ACTIONS') != 'true'
             or environ.get('GITHUB_EVENT_NAME') != 'workflow_dispatch'
             or environ.get('GITHUB_REF') != 'refs/heads/main'
             or environ.get('SOURCE_BRANCH') != 'main'
             or args.mode != 'deploy' or args.environment != 'dev'
-            or c.get('host_provider') != 'cloudpanel' or c.get('ready')
-            or c.get('backup_provider') != 'updraft'
+            or not (manual or (c.get('host_provider'), c.get('backup_provider')) == ('cloudpanel', 'updraft'))
+            or c.get('ready')
             or not re.fullmatch(r'[0-9a-f]{40}', args.sha)
             or c.get('enrollment_sha') != args.sha
             or environ.get('MRN_SOURCE_QA_SHA') != args.sha
@@ -418,6 +430,7 @@ def deploy(args, c):
                    'host': c['host'], 'root': c['root'], 'template': c['template'],
                    'tree': digest(files), 'previous_tree': digest(before['files']), 'status': 'preflight',
                    'backup_provider': c.get('backup_provider', 'updraft'),
+                   'manual_backup_approval': c.get('manual_backup_approval') or None,
                    'readiness': {k: before[k] for k in ['writable', 'state_ready', 'backup_ready']},
                    'changed': sorted(n for n in set(files) | set(before['files']) if files.get(n) != before['files'].get(n))}
         receipt['payload_kind'] = 'verified-build-artifact' if artifact else 'source-adoption-inventory'
