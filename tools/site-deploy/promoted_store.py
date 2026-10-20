@@ -21,27 +21,53 @@ DOSTER_CUTOVER_ORDER = {
     'source_sha': '0f9b5b56a3c665e5e4dd15d8ef32ef76fa34d8a5',
     'workflow': 'mrnwebdesigns/doster-and-brown-child-theme/.github/workflows/site-deploy.yml',
 }
+DOSTER_CUTOVER_POINTER = dict(schema=1, slug='doster-and-brown-child',
+    release_id='76611d9a671976f974b9391158303f8f31375a3fb18feda78d75d3eff09b2305',
+    public_path='mrn-assets/doster-and-brown-child/922dc8722187320fb69b2265ba692ce49efa30ae92ff3b2cdafc8ef33566883b')
+DOSTER_CUTOVER_TREE = '759a5478cc0f41c236a580e49b9715f62b387ab618003874fdf0d71438e28505'
+
+
+def reviewed_doster_promotion():
+    from kinsta import DOSTER_DEV, DOSTER_TARGET
+    return dict(schema=2, doster_cutover='doster-live-20261020', source_url=DOSTER_TARGET['url'],
+                source_environment_id=DOSTER_DEV, source_sha=DOSTER_CUTOVER_ORDER['source_sha'],
+                public_tree=DOSTER_CUTOVER_TREE, pointer=dict(DOSTER_CUTOVER_POINTER))
 
 
 def doster_cutover(plan, promotion):
     """One reviewed owner-authorized copy; never a generic ordered-store bypass."""
     if not isinstance(promotion, dict) or promotion.get('schema') != 2:
         return False
-    from kinsta import DOSTER_REPOSITORY, DOSTER_DEV, DOSTER_TARGET, DOSTER_LIVE_TARGET
+    from kinsta import DOSTER_REPOSITORY, DOSTER_LIVE_TARGET
     target = dict(DOSTER_LIVE_TARGET, repository=DOSTER_REPOSITORY,
                   slug='doster-and-brown-child', template='mrn-base-stack')
     actual = dict(plan, host=plan.get('ssh_host', plan.get('host')),
                   port=plan.get('ssh_port', plan.get('port')), user=plan.get('ssh_user', plan.get('user')))
-    source = dict(doster_cutover='doster-live-20261020', source_url=DOSTER_TARGET['url'],
-                  source_environment_id=DOSTER_DEV, source_sha=DOSTER_CUTOVER_ORDER['source_sha'],
-                  public_tree='759a5478cc0f41c236a580e49b9715f62b387ab618003874fdf0d71438e28505')
-    pointer = dict(schema=1, slug=target['slug'],
-                   release_id='76611d9a671976f974b9391158303f8f31375a3fb18feda78d75d3eff09b2305',
-                   public_path='mrn-assets/doster-and-brown-child/922dc8722187320fb69b2265ba692ce49efa30ae92ff3b2cdafc8ef33566883b')
+    source = reviewed_doster_promotion()
     if (any(actual.get(k) != v for k,v in target.items())
-            or any(promotion.get(k) != v for k,v in source.items()) or promotion.get('pointer') != pointer):
+            or any(promotion.get(k) != v for k,v in source.items())):
         raise ValueError('Doster copied-release qualification differs from the exact reviewed Live cutover')
     return True
+
+
+def qualification_order(plan, doster):
+    order = plan.get('deployment_order')
+    if not order:
+        return
+    from deployment_request import validate_order
+    validate_order(order)
+    if (not doster or order.get('event') != 'workflow_dispatch'
+            or order.get('repository') != DOSTER_CUTOVER_ORDER['repository']
+            or order.get('workflow') != DOSTER_CUTOVER_ORDER['workflow']
+            or order.get('source_sha') != plan.get('source_sha')):
+        raise ValueError('Doster Live qualification requires its trusted manual workflow order')
+
+
+def require_doster_workflow(plan, promotion):
+    if doster_cutover(plan,promotion):
+        if not plan.get('deployment_order'):
+            raise ValueError('Doster Live activation must run through its manual GitHub workflow')
+        qualification_order(plan,True)
 
 
 def source_order_matches(plan, promotion, order):
@@ -51,13 +77,14 @@ def source_order_matches(plan, promotion, order):
 def validate(plan, promotion):
     check(plan['slug'], r'[a-z0-9_-]+', 'stylesheet')
     doster = doster_cutover(plan, promotion)
+    qualification_order(plan, doster)
     fields = {'schema', 'source_url', 'source_environment_id', 'source_sha', 'pointer', 'public_tree'}
     if doster:
         fields.add('doster_cutover')
     if (not isinstance(promotion, dict) or set(promotion) != fields
             or promotion.get('schema') != (2 if doster else 1) or plan.get('environment') != 'live'
             or plan.get('host_provider') != 'kinsta' or plan.get('backup_provider') != 'kinsta'
-            or plan.get('deployment_order') or plan.get('adopt') or plan.get('qualification')
+            or (plan.get('deployment_order') and not doster) or plan.get('adopt') or plan.get('qualification')
             or plan.get('bind_imported_source') or plan.get('rollback_to')):
         raise ValueError('Promoted store import requires an exact manual native Kinsta Live plan')
     url = urlsplit(promotion['source_url'])

@@ -247,8 +247,9 @@ def public_check(plan, store, pointer):
 def execute(plan, native_backup=None):
     promotion = plan.get('promote_kinsta_staging')
     if promotion is not None:
-        from promoted_store import validate, native_source
+        from promoted_store import validate, native_source, require_doster_workflow
         validate(plan, promotion)
+        require_doster_workflow(plan,promotion)
         if plan.get('exercise_rollback') is not True:
             raise ValueError('Promoted Live qualification requires rollback verification')
     if plan.get('bind_imported_source') and (plan.get('environment') != 'staging' or plan.get('host_provider') != 'kinsta'):

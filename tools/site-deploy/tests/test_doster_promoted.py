@@ -68,3 +68,15 @@ class DosterCopiedRelease(unittest.TestCase):
                        dict(bind_imported_source='a'*40),dict(rollback_to='b'*64)):
             with self.subTest(change=change),self.assertRaises(ValueError):
                 promoted.validate(dict(self.plan,**change),self.promotion)
+
+    def test_only_a_matching_manual_live_workflow_order_can_qualify(self):
+        order=dict(promoted.DOSTER_CUTOVER_ORDER,source_sha='a'*40,run_id='123456',run_number=100)
+        plan=dict(self.plan,source_sha='a'*40,deployment_order=order)
+        promoted.validate(plan,self.promotion)
+        promoted.require_doster_workflow(plan,self.promotion)
+        with self.assertRaisesRegex(ValueError,'manual GitHub workflow'):
+            promoted.require_doster_workflow(self.plan,self.promotion)
+        for change in (dict(event='push'),dict(repository='other/site'),dict(source_sha='b'*40),
+                       dict(workflow=kinsta.DOSTER_REPOSITORY+'/.github/workflows/other.yml')):
+            with self.subTest(change=change),self.assertRaises(ValueError):
+                promoted.validate(dict(plan,deployment_order=dict(order,**change)),self.promotion)

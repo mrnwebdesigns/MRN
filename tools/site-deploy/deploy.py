@@ -393,6 +393,7 @@ def deploy(args, c):
     order = github_order(os.environ, args.sha, args.environment, args.mode)
     repository = check(os.environ['GITHUB_REPOSITORY'], r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+', 'repository')
     promotion_plan = dict(c, repository=repository, slug=args.slug,
+                          source_sha=args.sha,
                           bind_imported_source=imported_source, deployment_order=order,
                           source_path=args.source, promoted_source_archive=promoted_archive,
                           artifact_sha256=getattr(args, 'artifact_sha256', None))

@@ -46,10 +46,21 @@ the copied `dev` store, its original ordering, and the old public loader. It
 requires a distinct candidate, an unused Live store, production WordPress mode,
 canonical loader/public snapshot, verified private code and public asset hashes,
 the exact owner-manual Live adapter and rollback/reactivation. Qualification
-cannot run as an automatic/ordered deployment. A failed import restores the
+cannot run as an automatic deployment. GitHub qualification permits only its
+matching trusted manual workflow order; the copied Dev order remains pinned and
+unchanged. A failed import restores the
 original loader and quarantines Live metadata; no copied source history is
 deleted or reclassified as Live history. Routine Live Actions releases use the
 separately bound Live store only after qualification enables readiness.
+
+The reusable workflow's `qualify_doster_live` input is off by default and accepts
+only an explicit Doster manual Live request from main. Before SSH configuration,
+it retrieves exact artifact 12272493310 from run 39438246725, verifies current-main
+source QA and the original successful run/artifact provenance, then verifies the
+original archive against the independently pinned checksum. The usual deployment
+controller, browser/assets checks and final runtime QA still apply. After
+qualification, `DEPLOY_READY=1` disables this first-use path; ordinary manual Live
+releases use no promotion flag.
 
 The backing manual snapshot observed before this onboarding is historical
 recovery evidence, not an automatic-backup capability. Deployment receipts must
