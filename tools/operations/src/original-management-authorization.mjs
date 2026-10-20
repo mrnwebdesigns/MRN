@@ -23,8 +23,12 @@ const controlSchema = z.object({ schema: z.literal(1), original: z.string().uuid
   claims: authorizationClaims }).strict();
 const pinsSchema = z.object({ provider_source_sha: z.string().regex(/^[a-f0-9]{40}$/),
   authorization_policy_sha256: sha, delegation_policy_sha256: sha }).strict();
-const reviewSchema = z.object({ operationId: z.string().uuid(), reviewedDigest: sha, expiresAt: z.number().int().positive().safe(),
-  beforeSha256: sha, candidateSha256: sha, migrationSha256: sha }).strict();
+const managementContractSha256 = digest(readFileSync(new URL('../contracts/content-management-v1.json', import.meta.url)));
+const qualificationAnchorSchema = z.object({ requestSha256: sha, profileSha256: sha, runtimeContextSha256: sha,
+  acfSchemaSha256: sha, beforePathsSha256: sha, managementContractSha256: z.literal(managementContractSha256) }).strict();
+const reviewSchema = z.object({ schema: z.literal(2), operationId: z.string().uuid(), reviewedDigest: sha,
+  expiresAt: z.number().int().positive().safe(), beforeSha256: sha, candidateSha256: sha, migrationSha256: sha,
+  qualification: qualificationAnchorSchema }).strict();
 const readinessSchema = z.object({ schema: z.literal(1), coherenceEpochSha256: sha,
   observedAt: z.number().int().positive().safe(), expiresAt: z.number().int().positive().safe(),
   dispatchContractSha256: z.literal('8f524002fc5fd900f10e2851d0edd475b4e6ecfe3e6db2a1335573a6e3b7a579'),
@@ -71,6 +75,10 @@ export class OriginalManagementAuthorizationLedger {
       this.store.db.exec('ALTER TABLE original_management_attempts ADD COLUMN control_count INTEGER NOT NULL DEFAULT 0');
     if (!columns.some(c => c.name === 'binding_digest'))
       this.store.db.exec("ALTER TABLE original_management_attempts ADD COLUMN binding_digest TEXT NOT NULL DEFAULT ''");
+    // A missing marker on an established review is not permission to rebuild
+    // its anchor. Only a new, fully reconstructed review writes both together.
+    if (!columns.some(c => c.name === 'review_digest'))
+      this.store.db.exec("ALTER TABLE original_management_attempts ADD COLUMN review_digest TEXT NOT NULL DEFAULT ''");
   }
   #actor(value) {
     // Never accept a caller-created actor, hash or session ID at this boundary.
@@ -114,12 +122,13 @@ export class OriginalManagementAuthorizationLedger {
     const retained = this.store.db.prepare('SELECT * FROM original_management_reviews WHERE request=?').get(requestId);
     let review;
     if (row.state === 'reviewed') {
-      check(retained && digest(retained.body) === retained.digest, 'The original preview mapping is missing or corrupt.');
+      check(retained && digest(retained.body) === retained.digest && retained.digest === attempt.review_digest,
+        'The original preview mapping or its immutable anchor is missing or corrupt.');
       let value; try { value = JSON.parse(retained.body); } catch { check(false, 'The original preview mapping is corrupt.'); }
       review = parse(reviewSchema, value);
       check(review.operationId === retained.operation && review.beforeSha256 === mapping.target.expected_snapshot_sha256,
         'The original preview mapping differs from its retained request.');
-    } else check(!retained, 'The original preview history is inconsistent.');
+    } else check(!retained && attempt.review_digest === '', 'The original preview history is inconsistent.');
     return { mapping, state: row.state, digest: row.digest, ...(review ? { review } : {}) };
   }
   #current(requestId, currentActor) {
@@ -207,24 +216,31 @@ export class OriginalManagementAuthorizationLedger {
     this.#handles.delete(handle); return envelope;
   }
   // Called only after the delegated response request_id/identity check. Repeat
-  // full candidate/migration reconstruction, then retain just its immutable
-  // operation pointer and hashes. Missing review history can never be rebound.
+  // full candidate/migration reconstruction, then retain its operation pointer
+  // and hash-only qualification anchor. No content or callback can reconstruct
+  // missing review history, and a later login cannot supply replacement pins.
   async recordReview(requestId, actor, input, evidence, profile) {
     const before = await this.readCurrent(requestId, actor), m = before.mapping;
     check(before.state === 'dispatched' && delegationDigest(input) === m.argumentsSha256,
       'Only the exact dispatched preview may retain its original review.');
-    const { review } = validateManagementEvidence(evidence, { site: { id: m.target.site_id, url: m.target.site_url },
+    const { review, migration, read } = validateManagementEvidence(evidence, { site: { id: m.target.site_id, url: m.target.site_url },
       target: { kind: 'wordpress-content', post_type: m.target.post_type, post_id: m.target.post_id }, request: input, profile, now: this.now() });
-    const projection = parse(reviewSchema, { operationId: review.operation_id, reviewedDigest: review.digest,
+    const projection = parse(reviewSchema, { schema: 2, operationId: review.operation_id, reviewedDigest: review.digest,
       expiresAt: review.expires_at * 1000, beforeSha256: review.before_sha256, candidateSha256: review.candidate_sha256,
-      migrationSha256: review.migration_artifact.sha256 });
+      migrationSha256: review.migration_artifact.sha256, qualification: {
+        requestSha256: delegationDigest(migration.request), profileSha256: review.profile.sha256,
+        runtimeContextSha256: review.profile.runtime_context_sha256, acfSchemaSha256: delegationDigest(read.snapshot.acf_definitions),
+        beforePathsSha256: delegationDigest(read.affected_paths), managementContractSha256,
+      } });
     return this.store.transaction(() => {
       const current = this.#current(requestId, actor);
       check(current.state === 'dispatched' && current.digest === before.digest && current.revision === before.revision,
         'The original dispatch changed before review retention.');
-      const body = JSON.stringify(projection);
+      const body = JSON.stringify(projection), hash = digest(body);
       this.store.db.prepare('INSERT INTO original_management_reviews VALUES(?,?,?,?)')
-        .run(requestId, projection.operationId, body, digest(body));
+        .run(requestId, projection.operationId, body, hash);
+      check(this.store.db.prepare("UPDATE original_management_attempts SET review_digest=? WHERE attempt=? AND review_digest=''")
+        .run(hash, m.attempt).changes === 1, 'The immutable original review anchor could not be retained.');
       check(this.store.db.prepare("UPDATE original_management_authorizations SET state='reviewed' WHERE request=? AND state='dispatched'")
         .run(requestId).changes === 1, 'The original review could not be retained.');
       this.store.audit(m.actor, m.site, requestId, 'original-preview-retained', 'reviewed');
@@ -239,7 +255,8 @@ export class OriginalManagementAuthorizationLedger {
     await this.verifyStaff(before.mapping.actor);
     return this.store.transaction(() => {
       const after = this.#current(requestId, actor);
-      check(after.digest === before.digest && after.revision === before.revision && after.state === before.state,
+      check(after.digest === before.digest && after.revision === before.revision && after.state === before.state
+        && delegationDigest(after.review ?? null) === delegationDigest(before.review ?? null),
         'Original authorization changed during active staff verification.');
       return after;
     });

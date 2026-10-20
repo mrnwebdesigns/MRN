@@ -36,8 +36,11 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
   `39428711609` pass with exact tested source. It adds whole-record refusal for
   registered ACF password fields and preserves existing draft dates during
   unrelated edits. Its licensed local ACF PRO run passes 81 native checks;
-  hosted licensed ACF qualification and the newly pinned combined run remain
-  separate requirements.
+  hosted licensed ACF qualification remains separate. Gateway `1ffa31f` passes
+  574 controlled tests, 13 Fleet regressions and MRN QA, but combined
+  `39431563142` fails when the parent rejects the completion marker after all
+  five inner binding checks passed. The complete parent barrier and later
+  groups were not reached; this is not an accepted combined checkpoint.
 - Worker `cd74e20` passes 160 tests and all three jobs in `39320436312`. Both
   original archives and all eight reports were independently verified, with
   exact edit/restored snapshots and browser/profile/runtime/parity hashes.
@@ -201,6 +204,20 @@ six password cases, nested content edits, rollback and date preservation.
 It does not prove hosted ACF PRO, MainWP transport or production readiness.
 Wire contracts, public caller schemas and the company code pilot are unchanged.
 
+Combined `39431563142` at gateway `1ffa31f` produces three partial PASS reports
+only. The inner binding sequence finishes in 25,389 ms before the parent rejects
+its completion marker; full parent preservation is unverified. Artifact
+`12267988711` is 3404 bytes, SHA-256
+`958280c515885c69bd7e9303180f0e12b5f5e698480013d07b9976c7513943b7`.
+Original log SHA-256 is
+`842141e9d6f10c5d8dfb86ebdee54e12eaf5bef11daee338eb92ffa8999a7024`.
+Tested merge `539dd43f1b2c459a75cf4cd62fdc60b717608e08` has identical relevant
+source. Source inspection finds that shell redirection publishes the watched
+filename before its bytes are complete. The failed marker bytes were not
+retained, so that race is not claimed as a proven cause of this run.
+The provider thread owns a separate handoff correction and deterministic
+regression; deadlines and the complete parent barrier remain required.
+
 The closed schema2 context, separate Dashboard database and mutable volumes,
 canonical-host TLS endpoint, Node HOME/network log and SQLite database keep
 the legacy schema1 regression unchanged. The provider owns clone isolation and
@@ -240,6 +257,17 @@ response or restart. It marks dispatch before returning the signed envelope.
 After the delegated response identity check, it reconstructs the complete
 candidate/migration and retains only the immutable operation/review pointer and
 hashes. Tokens, signatures and content bodies are absent from the ledger.
+
+The retained review now has an explicit schema2 qualification anchor containing
+the migration request, profile, runtime context, ACF definitions, original public
+paths and management contract hashes. These come from the reconstructed original,
+not a later queue response or callback. The review digest is also written to the
+original attempt in the same transaction as review state and audit. Missing or
+altered markers, old reviews without the anchor and partial persistence fail
+closed; a new sign-in cannot retrofit old history. Current Directory verification
+also checks that the complete review did not change while the check was running.
+This prepares durable queue validation only. It neither queues qualification nor
+admits a source/report or enables a production workflow.
 
 Metadata recovery requires a genuine current authenticated actor matching the
 original person, the original unextended expiry, intact attempt/principal

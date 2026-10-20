@@ -192,6 +192,17 @@ try {
   const reviewed = await ledger.recordReview(originalRequestId, actor, request, evidence, profile);
   assert.deepEqual(reviewed.mapping.authorization, originalAnchor);
   assert.equal(reviewed.mapping.readiness.coherenceEpochSha256, context.pins.coherence_epoch_sha256);
+  assert.equal(reviewed.review.schema, 2);
+  assert.deepEqual(reviewed.review.qualification, {
+    requestSha256: delegationDigest(migration.request), profileSha256: profile.sha256,
+    runtimeContextSha256: profile.runtime_context_sha256,
+    acfSchemaSha256: delegationDigest(read.snapshot.acf_definitions),
+    beforePathsSha256: delegationDigest(read.affected_paths),
+    managementContractSha256: digest(readFileSync(new URL('../../contracts/content-management-v1.json', import.meta.url))),
+  });
+  const reviewAnchorHash = digest(JSON.stringify(reviewed.review));
+  assert.equal(store.db.prepare('SELECT review_digest FROM original_management_attempts WHERE request=?').get(originalRequestId).review_digest,
+    reviewAnchorHash);
   pass('Actual signed preview and complete candidate reconstruction retain the original verified actor and epoch');
 
   phase = 'interrupted-bind';
@@ -208,7 +219,9 @@ try {
   phase = 'durable-recovery';
   ledger = openLedger(); const nextActor = await login();
   assert.notEqual(originalAuthorizationAnchor(nextActor).authorizationSha256, originalAnchor.authorizationSha256);
-  assert.deepEqual((await ledger.readCurrent(originalRequestId, nextActor)).mapping.authorization, originalAnchor);
+  const recoveredOriginal = await ledger.readCurrent(originalRequestId, nextActor);
+  assert.deepEqual(recoveredOriginal.mapping.authorization, originalAnchor);
+  assert.deepEqual(recoveredOriginal.review, reviewed.review);
   transport = await openTransport(false);
   await assert.rejects(async () => ledger.prepareBind(originalRequestId, nextActor, await ready()));
   const readReady = await ready(), readHandle = await ledger.prepareRead(originalRequestId, nextActor, readReady);
@@ -223,6 +236,11 @@ try {
   assert.equal(binding.coherenceEpochSha256, context.pins.coherence_epoch_sha256);
   store.close(); store = undefined; ledger = openLedger();
   assert.deepEqual(await ledger.readProviderBinding(originalRequestId, nextActor), binding);
+  assert.deepEqual((await ledger.readCurrent(originalRequestId, nextActor)).review, reviewed.review);
+  const retainedReview = store.db.prepare('SELECT body,digest FROM original_management_reviews WHERE request=?').get(originalRequestId);
+  assert.equal(digest(retainedReview.body), reviewAnchorHash); assert.equal(retainedReview.digest, reviewAnchorHash);
+  assert.equal(store.db.prepare('SELECT review_digest FROM original_management_attempts WHERE request=?').get(originalRequestId).review_digest,
+    reviewAnchorHash);
   assert.equal(bindDispatches, 1);
   assert.equal(store.db.prepare('SELECT count(*) n FROM original_management_authorizations').get().n, 1);
   assert.equal(store.db.prepare("SELECT count(*) n FROM original_management_controls WHERE kind='bind'").get().n, 1);
@@ -230,7 +248,7 @@ try {
   report.binding = { original_request_id: originalRequestId, operation_id: review.operation_id, reviewed_digest: review.digest,
     original_authorization_sha256: originalAnchor.authorizationSha256, original_expires_at: originalAnchor.expiresAt / 1000,
     projection_sha256: interceptedBindingHash, receipt_sha256: binding.digest, coherence_epoch_sha256: binding.coherenceEpochSha256,
-    bind_dispatches: bindDispatches, read_dispatches: 1 };
+    review_anchor_sha256: reviewAnchorHash, bind_dispatches: bindDispatches, read_dispatches: 1 };
   pass('SQLite reopen and a fresh authenticated login recover the exact binding by signed read without extending the original grant');
 
   phase = 'unchanged-child';

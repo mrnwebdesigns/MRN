@@ -216,6 +216,87 @@ test('only the exact dispatched and fully reconstructed preview can retain an im
   await assert.rejects(() => retain());
 });
 
+test('qualification hashes survive SQLite reopen and a new login without retaining content or renewing the review', async t => {
+  const f = await fixture(t, true), h = await f.prepare(), { evidence, profile } = f.values.expected;
+  await f.ledger.claimDispatch(h, f.actor);
+  const retained = await f.ledger.recordReview(h.requestId, f.actor, f.request, evidence, profile);
+  assert.deepEqual(retained.review.qualification, {
+    requestSha256: delegationDigest(evidence.migration.request), profileSha256: profile.sha256,
+    runtimeContextSha256: profile.runtime_context_sha256,
+    acfSchemaSha256: delegationDigest(evidence.read.snapshot.acf_definitions),
+    beforePathsSha256: delegationDigest(evidence.read.affected_paths),
+    managementContractSha256: digest(readFileSync(new URL('../contracts/content-management-v1.json', import.meta.url))),
+  });
+  assert.equal(retained.review.schema, 2);
+  const row = f.store.db.prepare('SELECT body,digest FROM original_management_reviews').get();
+  assert.equal(f.store.db.prepare('SELECT review_digest FROM original_management_attempts').get().review_digest, digest(row.body));
+  for (const secret of [f.raw, JSON.stringify(f.request.changes), JSON.stringify(evidence.read.snapshot),
+    JSON.stringify(evidence.read.snapshot.acf_definitions), JSON.stringify(evidence.migration)])
+    if (secret && secret.length > 2) assert.equal(row.body.includes(secret), false);
+  const reopened = f.open(), next = await f.auth(`Bearer ${await f.token(f.now + 1800)}`);
+  assert.deepEqual(await reopened.ledger.readCurrent(h.requestId, next), retained);
+  retained.review.qualification.profileSha256 = 'f'.repeat(64);
+  const recovered = await reopened.ledger.readCurrent(h.requestId, next);
+  assert.equal(recovered.review.qualification.profileSha256, profile.sha256);
+  assert.equal(recovered.review.expiresAt, evidence.review.expires_at * 1000);
+  assert.equal(recovered.mapping.authorization.expiresAt, f.actor.expiresAt);
+});
+
+test('missing, changed or pre-anchor review history cannot be repaired by login or repeated evidence', async t => {
+  for (const damage of ['missing-marker', 'missing-body', 'old-review', 'unexpected-field',
+    'requestSha256', 'profileSha256', 'runtimeContextSha256', 'acfSchemaSha256', 'beforePathsSha256', 'managementContractSha256']) {
+    const f = await fixture(t), h = await f.prepare(), { evidence, profile } = f.values.expected;
+    await f.ledger.claimDispatch(h, f.actor);
+    await f.ledger.recordReview(h.requestId, f.actor, f.request, evidence, profile);
+    if (damage === 'missing-marker') f.store.db.exec("UPDATE original_management_attempts SET review_digest=''");
+    else if (damage === 'missing-body') f.store.db.exec('DELETE FROM original_management_reviews');
+    else {
+      const value = JSON.parse(f.store.db.prepare('SELECT body FROM original_management_reviews').get().body);
+      if (damage === 'old-review') { delete value.schema; delete value.qualification; }
+      else if (damage === 'unexpected-field') value.qualification.actor = 'caller-supplied';
+      else value.qualification[damage] = 'f'.repeat(64);
+      const body = JSON.stringify(value);
+      f.store.db.prepare('UPDATE original_management_reviews SET body=?,digest=?').run(body, digest(body));
+      // Even consistent checksums do not upgrade old or open-ended schemas.
+      if (['old-review', 'unexpected-field'].includes(damage))
+        f.store.db.prepare('UPDATE original_management_attempts SET review_digest=?').run(digest(body));
+    }
+    const next = await f.auth(`Bearer ${await f.token(f.now + 1800)}`), reopened = new OriginalManagementAuthorizationLedger(f.store, f.options);
+    await assert.rejects(() => reopened.readCurrent(h.requestId, next), damage);
+    await assert.rejects(() => reopened.recordReview(h.requestId, next, f.request, evidence, profile), damage);
+  }
+});
+
+test('review, qualification marker, state and audit commit atomically across failures and concurrent service instances', async t => {
+  const f = await fixture(t, true), h = await f.prepare(), { evidence, profile } = f.values.expected;
+  await f.ledger.claimDispatch(h, f.actor);
+  f.store.db.exec("CREATE TRIGGER fail_review BEFORE INSERT ON audit WHEN NEW.event='original-preview-retained' BEGIN SELECT RAISE(ABORT,'fixture'); END");
+  await assert.rejects(() => f.ledger.recordReview(h.requestId, f.actor, f.request, evidence, profile));
+  assert.equal(f.store.db.prepare('SELECT count(*) n FROM original_management_reviews').get().n, 0);
+  assert.equal(f.store.db.prepare('SELECT review_digest FROM original_management_attempts').get().review_digest, '');
+  assert.equal(f.store.db.prepare('SELECT state FROM original_management_authorizations').get().state, 'dispatched');
+  f.store.db.exec('DROP TRIGGER fail_review');
+  const second = f.open(), outcomes = await Promise.allSettled([f.ledger, second.ledger].map(ledger =>
+    ledger.recordReview(h.requestId, f.actor, f.request, evidence, profile)));
+  assert.equal(outcomes.filter(value => value.status === 'fulfilled').length, 1);
+  assert.equal(f.store.db.prepare("SELECT count(*) n FROM audit WHERE event='original-preview-retained'").get().n, 1);
+  assert.deepEqual(await f.ledger.readCurrent(h.requestId, f.actor), await second.ledger.readCurrent(h.requestId, f.actor));
+});
+
+test('a review anchor changed during current Directory verification is refused', async t => {
+  const f = await fixture(t), h = await f.prepare(), { evidence, profile } = f.values.expected;
+  await f.ledger.claimDispatch(h, f.actor);
+  await f.ledger.recordReview(h.requestId, f.actor, f.request, evidence, profile);
+  f.state.duringCheck = () => {
+    const value = JSON.parse(f.store.db.prepare('SELECT body FROM original_management_reviews').get().body);
+    value.qualification.profileSha256 = 'f'.repeat(64);
+    const body = JSON.stringify(value), hash = digest(body);
+    f.store.db.prepare('UPDATE original_management_reviews SET body=?,digest=?').run(body, hash);
+    f.store.db.prepare('UPDATE original_management_attempts SET review_digest=?').run(hash);
+  };
+  await assert.rejects(() => f.ledger.readCurrent(h.requestId, f.actor), { code: 'ORIGINAL_AUTHORIZATION' });
+});
+
 test('existing principal revision changes during another preview preparation deny the new attempt', async t => {
   const f = await fixture(t); await f.prepare();
   f.state.duringCheck = () => f.store.db.exec('UPDATE content_access_principals SET revision=revision+1');

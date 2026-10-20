@@ -63,7 +63,12 @@ The next candidate pins provider `293b138`, whose four component CI jobs in
 `39428711609` pass with exact tested source. Whole-record password-field refusal
 and draft-date preservation pass 81 licensed local ACF PRO/native checks.
 That local result does not establish hosted ACF PRO or MainWP transport coverage.
-The newly pinned combined run remains required.
+The newly pinned gateway `1ffa31f` passes 574 controlled tests, 13 Fleet
+regressions and MRN QA. Combined `39431563142` fails at the provider parent
+completion marker after all five inner v2 binding checks pass. Three partial
+reports are insufficient: full parent preservation and later groups remain
+unverified. A source inspection identifies non-atomic marker publication;
+the actual failed marker bytes were not retained. This failure is not waived.
 
 ## Earlier binding failures and their correction
 
