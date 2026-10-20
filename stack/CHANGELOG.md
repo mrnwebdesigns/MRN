@@ -1,5 +1,11 @@
 # Stack Changelog
 
+## Unreleased — parent 1.6.6 Header Utility Message navigation
+
+- Keep manually active messages visible without waiting for an unrelated clock request.
+- Reuse a server-confirmed start across navigation and reload only for an unchanged, non-recurring message with no scheduled end. Store that confirmation per tab and site; never use the visitor's clock to decide eligibility.
+- Continue checking for edits and deactivation, discard confirmations on version changes, and retain fresh-clock checks for future starts, scheduled ends, and recurring restrictions.
+
 ## 2026.10.19-fleet-auto-4644b6c4640d
 
 - Automatic cumulative release from accepted source vector `7d6fc21c3b05e4f62504393962cbd943cc7eabe7a3606f7cb36ef5db109ae05b`.
