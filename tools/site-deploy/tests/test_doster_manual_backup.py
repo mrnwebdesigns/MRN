@@ -92,3 +92,42 @@ class DosterManualBackup(unittest.TestCase):
         self.assertIn('DEPLOY_KINSTA_MANUAL_BACKUP_APPROVAL: ${{ vars.DEPLOY_KINSTA_MANUAL_BACKUP_APPROVAL }}', workflow)
         self.assertIn('|| -n "$DEPLOY_KINSTA_MANUAL_BACKUP_APPROVAL"', workflow)
         self.assertIn("vars.DEPLOY_KINSTA_MANUAL_BACKUP_APPROVAL == ''", workflow)
+
+    def test_live_has_separate_exact_identity_and_receipt(self):
+        adapter = self.adapter(environment_id=kinsta.DOSTER_LIVE)
+        with patch('urllib.request.urlopen', side_effect=AssertionError('No API allowed')):
+            adapter.identity(kinsta.DOSTER_LIVE_TARGET)
+            receipt = adapter.backup('mrn-tool-transfer-123')
+            self.assertEqual(kinsta.DOSTER_LIVE, receipt['environment_id'])
+            self.assertFalse(receipt['automatic_backup_created'])
+            adapter.verify_transaction_backup(receipt, 'activate')
+            for key in kinsta.DOSTER_LIVE_TARGET:
+                with self.subTest(key=key), self.assertRaises(ValueError):
+                    adapter.identity(dict(kinsta.DOSTER_LIVE_TARGET, **{key:'different'}))
+                with self.assertRaises(ValueError):
+                    adapter.verify_transaction_backup(receipt, 'activate')
+
+    def test_dev_and_live_cannot_use_each_others_identity_or_receipts(self):
+        dev = self.adapter()
+        live = self.adapter(environment_id=kinsta.DOSTER_LIVE)
+        with self.assertRaises(ValueError):
+            live.identity(kinsta.DOSTER_TARGET)
+        with self.assertRaises(ValueError):
+            dev.identity(kinsta.DOSTER_LIVE_TARGET)
+        dev.identity(kinsta.DOSTER_TARGET)
+        live.identity(kinsta.DOSTER_LIVE_TARGET)
+        for destination, source in ((live,dev),(dev,live)):
+            with self.assertRaises(ValueError):
+                destination.verify_transaction_backup(source.backup('mrn-tool-transfer-123'),'activate')
+
+    def test_live_exception_still_requires_a_real_key(self):
+        config = dict(kinsta.DOSTER_LIVE_TARGET, backup_provider='kinsta', key_file='/private/live-key',
+                      known_hosts_file='/private/live-hosts', manual_backup_approval=kinsta.DOSTER_MANUAL_APPROVAL)
+        env = dict(DEPLOY_KINSTA_SITE_ID=kinsta.DOSTER_SITE, DEPLOY_KINSTA_ENVIRONMENT_ID=kinsta.DOSTER_LIVE,
+                   GITHUB_REPOSITORY=kinsta.DOSTER_REPOSITORY)
+        with patch.dict(os.environ,env,clear=True), patch('urllib.request.urlopen',side_effect=AssertionError('No API allowed')):
+            target = deploy.Target(config)
+            self.assertIsNone(target.password)
+            self.assertIn('StrictHostKeyChecking=yes',target.options)
+            with self.assertRaisesRegex(ValueError,'pinned SSH key'):
+                deploy.Target(dict(config,key_file='native-kinsta'))

@@ -259,7 +259,7 @@ def execute(plan, native_backup=None):
         native_backup.identity({'url': plan['url'], 'root': plan['root'], 'host': plan['ssh_host'],
                                 'port': plan['ssh_port'], 'user': plan['ssh_user'], 'environment': plan['environment']})
         if promotion is not None:
-            native_source(native_backup, promotion)
+            native_source(native_backup, promotion, plan)
 
     def guard(operation):
         if plan.get('host_provider') == 'kinsta':
