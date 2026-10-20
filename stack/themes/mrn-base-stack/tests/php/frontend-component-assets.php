@@ -120,6 +120,10 @@ function add_filter( $hook_name, $callback, $priority = 10, $accepted_args = 1 )
 	return true;
 }
 
+function add_action( ...$args ) {
+	return true;
+}
+
 function apply_filters( $hook_name, $value, ...$args ) {
 	return array_key_exists( $hook_name, $GLOBALS['mrn_component_test_filters'] )
 		? $GLOBALS['mrn_component_test_filters'][ $hook_name ]
@@ -227,6 +231,7 @@ function mrn_component_test_assert_only_need( $post_id, $expected_component ) {
 	}
 }
 
+require dirname( __DIR__, 2 ) . '/inc/motion-assets.php';
 require dirname( __DIR__, 2 ) . '/inc/frontend-assets.php';
 
 $simple_needs = mrn_base_stack_get_front_end_component_needs_for_post( 10 );

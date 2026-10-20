@@ -735,10 +735,10 @@ function mrn_base_stack_register_front_end_component_assets() {
 	wp_register_style( 'mrn-base-stack-presentation', $theme_uri . 'css/presentation.css', array(), $version( 'css/presentation.css', _S_VERSION ) );
 	wp_register_script( 'mrn-base-stack-presentation', $theme_uri . 'js/presentation.js', array(), $version( 'js/presentation.js', _S_VERSION ), true );
 
-	wp_register_script( 'mrn-base-stack-motion', $theme_uri . 'js/vendor/motion.js', array(), '12.38.0', true );
+	$motion_runtime = mrn_base_stack_register_motion_runtime();
 	wp_register_script( 'mrn-base-stack-splide', $theme_uri . 'js/vendor/splide.min.js', array(), '4.1.4', true );
 	wp_register_script( 'mrn-base-stack-glightbox', $theme_uri . 'js/vendor/glightbox.min.js', array(), '3.3.1', true );
-	wp_register_script( 'mrn-base-stack-front-end-effects', $theme_uri . 'js/front-end-effects.js', array( 'mrn-base-stack-motion' ), $version( 'js/front-end-effects.js', _S_VERSION ), true );
+	wp_register_script( 'mrn-base-stack-front-end-effects', $theme_uri . 'js/front-end-effects.js', array( $motion_runtime ), $version( 'js/front-end-effects.js', _S_VERSION ), true );
 	wp_register_script( 'mrn-base-stack-front-end-slider', $theme_uri . 'js/front-end-slider.js', array( 'mrn-base-stack-splide' ), $version( 'js/front-end-slider.js', _S_VERSION ), true );
 	wp_register_script( 'mrn-base-stack-front-end-tabs', $theme_uri . 'js/front-end-tabs.js', array( 'mrn-base-stack-splide' ), $version( 'js/front-end-tabs.js', _S_VERSION ), true );
 	wp_register_script( 'mrn-base-stack-front-end-video-modal', $theme_uri . 'js/front-end-video-modal.js', array( 'mrn-base-stack-glightbox' ), $version( 'js/front-end-video-modal.js', _S_VERSION ), true );
