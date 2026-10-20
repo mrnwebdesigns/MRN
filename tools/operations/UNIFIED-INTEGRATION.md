@@ -269,6 +269,16 @@ also checks that the complete review did not change while the check was running.
 This prepares durable queue validation only. It neither queues qualification nor
 admits a source/report or enables a production workflow.
 
+`existing-management-queue.mjs` validates the separate frozen v2 queue response
+against that retained review, the observed provider binding and independently
+supplied service readiness pins. It compares every content/source/profile field,
+the exact individual/target and the unchanged coherence epoch. Creation must
+fall within the actual dispatch window; expiry is exactly the minimum of the
+original review, original resource authorization, owner catalog TTL and 900
+seconds. A later login expiry is never used. This metadata validator does not
+create identity authority or a durable queue mapping; one-time signed queue
+dispatch, current-access callback and worker delivery remain separate work.
+
 Metadata recovery requires a genuine current authenticated actor matching the
 original person, the original unextended expiry, intact attempt/principal
 history, fresh Directory verification and unchanged source/policy/site checks.

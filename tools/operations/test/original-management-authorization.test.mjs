@@ -18,6 +18,7 @@ import { managementAccessFixture } from './fixtures/management-access.mjs';
 import { existingManagementHashes } from '../src/management-existing-contracts.mjs';
 import { OriginalAuthorizationTransport, originalBindingObservation, originalReadinessObservation } from '../src/original-authorization-transport.mjs';
 import { DelegatedMainwpClient, delegationTools } from '../src/delegated-mainwp.mjs';
+import { validateExistingManagementQueue } from '../src/existing-management-queue.mjs';
 
 const audience = 'https://operations.mrnwebdesigns.com/mcp', issuer = 'https://identity.example.test/';
 async function fixture(t, durable = false) {
@@ -571,6 +572,85 @@ async function provider(f) {
   }
   return { state, observe, transport };
 }
+
+async function existingQueue(t) {
+  const f = await reviewed(t, true), p = await provider(f), observed = await p.observe();
+  await f.ledger.recordProviderBinding(observed.handle.controlId, f.actor, observed.response);
+  const next = await f.auth(`Bearer ${await f.token(f.now + 1800)}`), reopened = f.open();
+  const original = await reopened.ledger.readCurrent(f.original, next);
+  const providerBinding = await reopened.ledger.readProviderBinding(f.original, next);
+  const pins = { ...f.values.expected.pins, provider_source_sha: f.pins.provider_source_sha,
+    authorization_policy_sha256: f.pins.authorization_policy_sha256 };
+  const dispatchedAt = Date.now(), created = Math.floor(dispatchedAt / 1000);
+  const context = structuredClone(f.values.context);
+  Object.assign(context.binding, { ...pins, schema: 2, qualification_protocol: 'content-management-existing-v2',
+    protocol_contracts_sha256: existingManagementHashes, created_at: created,
+    expires_at: Math.min(Math.floor(original.review.expiresAt / 1000), Math.floor(original.mapping.authorization.expiresAt / 1000),
+      created + pins.job_intent_ttl_seconds, created + 900) });
+  context.binding_sha256 = delegationDigest(context.binding);
+  return { f, context, expected: { original, providerBinding, request: f.values.request, pins, dispatchedAt, now: dispatchedAt } };
+}
+
+test('existing-v2 queue metadata binds the durable original review recovered by a fresh login', async t => {
+  const { f, context, expected } = await existingQueue(t);
+  assert.deepEqual(validateExistingManagementQueue(context, expected), context);
+  // This metadata verifier is not a queue, dispatch, capture or admission.
+  assert.equal(f.store.db.prepare("SELECT count(*) n FROM sqlite_master WHERE name='management_access_jobs'").get().n, 0);
+  assert.equal(expected.original.mapping.authorization.expiresAt, f.actor.expiresAt);
+  const legacy = structuredClone(f.values.context);
+  assert.throws(() => validateExistingManagementQueue(legacy, expected));
+});
+
+test('closed v2 queue metadata refuses substituted identity, content, source, target, version and protocol hashes', async t => {
+  const { context, expected } = await existingQueue(t);
+  const changes = [
+    ...Object.keys(context.binding).filter(k => k.endsWith('_sha256')).map(k => [k, 'f'.repeat(64)]),
+    ['operation_id', randomUUID()], ['site_id', 99], ['site_url', 'https://other.example.invalid'],
+    ['target', { ...context.binding.target, post_id: 999 }], ['expected_target_revision', 1],
+    ['provider_source_sha', 'f'.repeat(40)], ['schema', 1], ['qualification_protocol', 'content-management-qualification-v1'],
+    ['protocol_contracts_sha256', { ...existingManagementHashes, qualification: 'f'.repeat(64) }],
+    ['job_intent_ttl_seconds', context.binding.job_intent_ttl_seconds + 1],
+  ];
+  for (const [field, value] of changes) {
+    const bad = structuredClone(context); bad.binding[field] = value; bad.binding_sha256 = delegationDigest(bad.binding);
+    assert.throws(() => validateExistingManagementQueue(bad, expected), field);
+  }
+  for (const change of [{ state: 'captured' }, { capture_artifact_sha256: 'f'.repeat(64) }, { binding_sha256: 'f'.repeat(64) }, { caller: 'staff' }])
+    assert.throws(() => validateExistingManagementQueue({ ...context, ...change }, expected));
+  const bad = structuredClone(expected);
+  bad.providerBinding.coherenceEpochSha256 = 'f'.repeat(64);
+  assert.throws(() => validateExistingManagementQueue(context, bad));
+  for (const field of ['operation_id', 'reviewed_digest', 'original_delegation_request_id', 'original_resource_authorization_sha256']) {
+    const changed = structuredClone(expected);
+    changed.providerBinding.projection[field] = field.endsWith('_id') ? randomUUID() : 'f'.repeat(64);
+    assert.throws(() => validateExistingManagementQueue(context, changed), field);
+  }
+});
+
+test('existing queue lifetime is capped by original resource, review and catalog without adopting a new login expiry', async t => {
+  const { context, expected } = await existingQueue(t);
+  for (const limiting of ['review', 'original-resource', 'catalog']) {
+    const wanted = structuredClone(expected), value = structuredClone(context), created = value.binding.created_at;
+    const expiry = created + 60;
+    if (limiting === 'review') wanted.original.review.expiresAt = expiry * 1000;
+    if (limiting === 'original-resource') {
+      wanted.original.mapping.authorization.expiresAt = expiry * 1000;
+      wanted.providerBinding.projection.original_resource_authorization_expires_at = expiry;
+    }
+    if (limiting === 'catalog') wanted.pins.job_intent_ttl_seconds = value.binding.job_intent_ttl_seconds = 60;
+    value.binding.expires_at = expiry; value.binding_sha256 = delegationDigest(value.binding);
+    assert.deepEqual(validateExistingManagementQueue(value, wanted), value, limiting);
+    value.binding.expires_at++; value.binding_sha256 = delegationDigest(value.binding);
+    assert.throws(() => validateExistingManagementQueue(value, wanted), limiting);
+  }
+  for (const created of [context.binding.created_at - 1, context.binding.created_at + 1]) {
+    const value = structuredClone(context); value.binding.created_at = created; value.binding_sha256 = delegationDigest(value.binding);
+    assert.throws(() => validateExistingManagementQueue(value, expected));
+  }
+  assert.throws(() => validateExistingManagementQueue(context, { ...expected, now: context.binding.expires_at * 1000 }));
+  assert.throws(() => validateExistingManagementQueue(context, { ...expected, dispatchedAt: expected.now + 1 }));
+  assert.throws(() => validateExistingManagementQueue(context, { ...expected, request: { ...expected.request, actor: 'caller' } }));
+});
 
 test('only the exact authenticated provider observation is retained with immutable original metadata and audit', async t => {
   const f = await reviewed(t), p = await provider(f), { handle, input, response } = await p.observe();
