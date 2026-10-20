@@ -32,7 +32,8 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
   fixture run `39324850558` remains recorded. The failure did not recur; a
   root-cause fix is not claimed. The earlier `4cffd90` combined run pinned this
   provider without testing the new v2 routes. Production admission remains disabled.
-- Current candidate pins provider `293b138`, whose four component CI jobs in
+- Current candidate pins fixture correction `f084797` atop provider `293b138`,
+  whose four component CI jobs in
   `39428711609` pass with exact tested source. It adds whole-record refusal for
   registered ACF password fields and preserves existing draft dates during
   unrelated edits. Its licensed local ACF PRO run passes 81 native checks;
@@ -62,7 +63,7 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
 for `MRN_DISPOSABLE_EXISTING_BINDING_HOOK`, requiring
 `MRN_DISPOSABLE_EXISTING_BINDING_TEST=1` and `GITHUB_ACTIONS=true`. The new
 combined CI candidate enables it with provider
-`293b1387a839043eceeb1cf7703bc8d119a0a3ed` and requires its eighth report.
+`f084797442149ce0c49ef5e9c5d5b3dcc9e5ac2e` and requires its eighth report.
 All four source provenance records select that exact checkpoint; original
 contracts remain byte-identical. The provider source registers the three
 canonical machine abilities, but production has not adopted them.
@@ -218,6 +219,19 @@ retained, so that race is not claimed as a proven cause of this run.
 The provider thread owns a separate handoff correction and deterministic
 regression; deadlines and the complete parent barrier remain required.
 
+That correction is provider `f084797442149ce0c49ef5e9c5d5b3dcc9e5ac2e`,
+tree `07b0778fd4ce591c3d0adb1c9412099ae4ad709a`. All eight fixture/workflow/docs
+files match review; product runtime and contracts are byte-identical to `293b138`.
+Private ready/context/result files now stage complete, flushed, closed 0600 bytes
+and publish through an atomic no-replace hard link. The parent refreshes stat
+before validating the marker, with only closed failure diagnostics. The host
+also records its PASS/FAIL process outcome, so a later failure can distinguish
+process exit from handoff. Thirty real-filesystem checks include the reproduced
+empty-file window and two concurrent publishers with exactly one winner.
+Full MRN QA passes 221 PHP files before the final closed diagnostic/doc addition;
+the final exact staged gate, PHP/bash and filesystem checks pass. Component CI
+`39434147170` and the new combined gateway run remain required.
+
 The closed schema2 context, separate Dashboard database and mutable volumes,
 canonical-host TLS endpoint, Node HOME/network log and SQLite database keep
 the legacy schema1 regression unchanged. The provider owns clone isolation and
@@ -298,7 +312,7 @@ backup. A staff login cannot perform that migration or clear denial. This is
 service setup, not individual staff enrollment or approval.
 
 The private ledger now issues distinct bind/read controls using the unchanged
-provider original-authorization wire now pinned to candidate `293b138`. It signs
+provider original-authorization wire now pinned to candidate `f084797`. It signs
 `original_resource_authorization_current:true` only after rechecking the exact
 reviewed original, genuine current actor, original expiry, current principal,
 policy/site and fresh Directory state. It accepts no caller hash or expiry.

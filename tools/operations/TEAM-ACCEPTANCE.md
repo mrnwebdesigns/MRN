@@ -59,8 +59,8 @@ Artifact `12266709930` is 11990 bytes, SHA-256
 The synthetic identity, remote-backup, hosted-provenance and rendered-QA limits
 remain explicit. Every ordinary-member and live-denial row above is still open.
 
-The next candidate pins provider `293b138`, whose four component CI jobs in
-`39428711609` pass with exact tested source. Whole-record password-field refusal
+Provider `293b138` passes all four component CI jobs in
+`39428711609` with exact tested source. Whole-record password-field refusal
 and draft-date preservation pass 81 licensed local ACF PRO/native checks.
 That local result does not establish hosted ACF PRO or MainWP transport coverage.
 The newly pinned gateway `1ffa31f` passes 574 controlled tests, 13 Fleet
@@ -69,6 +69,12 @@ completion marker after all five inner v2 binding checks pass. Three partial
 reports are insufficient: full parent preservation and later groups remain
 unverified. A source inspection identifies non-atomic marker publication;
 the actual failed marker bytes were not retained. This failure is not waived.
+The current gateway pins fixture-only correction `f084797`, with atomic private
+marker publication, fresh-stat validation and closed host/process diagnostics.
+All eight files match review; thirty filesystem checks, provider full/staged
+MRN QA and syntax checks pass. Product runtime and contracts are unchanged.
+Its component CI `39434147170` and new combined run remain required, including
+the original parent preservation and every later integration report.
 
 ## Earlier binding failures and their correction
 
