@@ -9,6 +9,9 @@ on:
       qualify_dev:
         type: boolean
         default: false
+      qualify_doster_live:
+        type: boolean
+        default: false
       target:
         type: string
         required: true
@@ -107,6 +110,7 @@ jobs:
       DEPLOY_ENROLLMENT_PRIOR_RELEASE: ${{ vars.DEPLOY_ENROLLMENT_PRIOR_RELEASE }}
       LOCAL_QA_ACCEPTANCE: ${{ inputs.local_qa_acceptance }}
       QUALIFY_DEV: ${{ inputs.qualify_dev }}
+      QUALIFY_DOSTER_LIVE: ${{ inputs.qualify_doster_live }}
       DEPLOY_VERIFY_PAGES: ${{ vars.DEPLOY_VERIFY_PAGES }}
       MODE: ${{ inputs.mode }}
       TARGET: ${{ inputs.target }}
@@ -150,6 +154,9 @@ jobs:
             [[ "$MRN_SOURCE_QA_SHA" == "$SOURCE_SHA" ]]
           fi
           [[ -z "$MRN_SOURCE_QA_SHA" || "$MRN_SOURCE_QA_SHA" == "$SOURCE_SHA" ]]
+          if [[ "${QUALIFY_DOSTER_LIVE:-false}" == true ]]; then
+            [[ "$GITHUB_REPOSITORY" == mrnwebdesigns/doster-and-brown-child-theme && "$GITHUB_EVENT_NAME" == workflow_dispatch && "$TARGET" == live && "$SOURCE_BRANCH" == main && "$QUALIFY_DEV" != true ]]
+          fi
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.source_sha || github.sha }}
@@ -188,6 +195,21 @@ jobs:
             --archive "$RUNNER_TEMP/site-release/site-release.tar" --sha256 "$ARTIFACT_SHA256" \
             --source-sha "$SOURCE_SHA" --source-path "$SOURCE_PATH" --slug "$STYLESHEET" \
             --receipt "$RUNNER_TEMP/site-artifact-verification.json"
+      - name: Retrieve the exact original Doster qualification artifact
+        if: inputs.qualify_doster_live
+        uses: actions/download-artifact@v4
+        with:
+          artifact-ids: '12272493310'
+          run-id: '39438246725'
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/doster-original-release
+          merge-multiple: true
+      - name: Verify the reviewed Doster cutover before configuring site access
+        if: inputs.qualify_doster_live
+        run: |
+          python3 "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/doster_live_cutover.py" \
+            --archive "$RUNNER_TEMP/doster-original-release/site-release.tar" \
+            --output "$RUNNER_TEMP/doster-live-promotion.json"
       - name: Validate approved local release qualification
         if: inputs.local_qa_acceptance != ''
         run: |
@@ -299,11 +321,15 @@ jobs:
           DEPLOY_KINSTA_API_TOKEN: ${{ secrets.DEPLOY_KINSTA_API_TOKEN }}
         run: |
           set -euo pipefail
+          promotion_args=()
+          if [[ "${QUALIFY_DOSTER_LIVE:-false}" == true ]]; then
+            promotion_args=(--promote-kinsta-staging-manifest "$RUNNER_TEMP/doster-live-promotion.json" --promoted-source-artifact "$RUNNER_TEMP/doster-original-release/site-release.tar")
+          fi
           python3 "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/deploy.py" \
             --mode "$MODE" --environment "$TARGET" --sha "$SOURCE_SHA" \
             --source "$SOURCE_PATH" --slug "$STYLESHEET" \
             --artifact "$RUNNER_TEMP/site-release/site-release.tar" --artifact-sha256 "$ARTIFACT_SHA256" \
-            --receipt "$RUNNER_TEMP/site-deployment.json"
+            --receipt "$RUNNER_TEMP/site-deployment.json" "${promotion_args[@]}"
       - name: Verify browser-loaded assets and responsive layout contracts
         id: browser
         if: inputs.mode == 'deploy' && inputs.local_qa_acceptance == ''

@@ -66,8 +66,9 @@ def run(plan, c):
     if not plan.get('rollback_to'):
         verify(plan['archive'], plan['artifact_sha256'], plan['source_sha'], plan['source_path'], plan['slug'])
     if promotion is not None:
-        from promoted_store import validate, source_artifact
+        from promoted_store import validate, source_artifact, require_doster_workflow
         validate(dict(c, **plan), promotion)
+        require_doster_workflow(dict(c,**plan),promotion)
         source_artifact(plan, promotion)
     target = Target(c)
     # Recovery must not execute a potentially broken active child theme. The

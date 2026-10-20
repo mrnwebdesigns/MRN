@@ -10,6 +10,10 @@ on:
         description: Exact-commit first Dev qualification; dispatch only
         type: boolean
         default: false
+      qualify_doster_live:
+        description: Owner-approved one-time Doster copied-release qualification; manual Live only
+        type: boolean
+        default: false
       target:
         type: string
         default: dev
@@ -83,6 +87,7 @@ jobs:
         id: source
         env:
           QUALIFY_DEV: ${{ inputs.qualify_dev }}
+          QUALIFY_DOSTER_LIVE: ${{ inputs.qualify_doster_live }}
           GH_TOKEN: ${{ github.token }}
           RELEASE_REQUESTS_AFTER: ${{ inputs.release_requests_after }}
           LIVE_ENABLED: ${{ inputs.live_enabled }}
@@ -96,6 +101,9 @@ jobs:
           set -euo pipefail
           if [[ "$QUALIFY_DEV" == true ]]; then
             [[ "$GITHUB_EVENT_NAME" == workflow_dispatch && "$TARGET" == dev && "$MODE" == deploy && "$SOURCE_BRANCH" == main ]]
+          fi
+          if [[ "${QUALIFY_DOSTER_LIVE:-false}" == true ]]; then
+            [[ "$GITHUB_REPOSITORY" == mrnwebdesigns/doster-and-brown-child-theme && "$GITHUB_EVENT_NAME" == workflow_dispatch && "$TARGET" == live && "$SOURCE_BRANCH" == main && "$QUALIFY_DEV" != true ]]
           fi
           python3 .mrn-deploy-tools/tools/site-deploy/deployment_request.py
   source-qa:
@@ -156,6 +164,7 @@ jobs:
     uses: ./.github/workflows/site-deploy-target.yml
     with:
       target: live
+      qualify_doster_live: ${{ inputs.qualify_doster_live }}
       local_qa_acceptance: ${{ inputs.local_qa_acceptance }}
       mode: ${{ inputs.mode }}
       source_sha: ${{ needs.request.outputs.source_sha }}

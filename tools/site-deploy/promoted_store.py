@@ -15,14 +15,76 @@ from atomic_store import Store, durable_replace, inventory
 from deploy import check, digest
 from verify_release import verify
 
+DOSTER_CUTOVER_ORDER = {
+    'event': 'workflow_dispatch', 'repository': 'mrnwebdesigns/doster-and-brown-child-theme',
+    'run_attempt': 1, 'run_id': '39438246725', 'run_number': 38,
+    'source_sha': '0f9b5b56a3c665e5e4dd15d8ef32ef76fa34d8a5',
+    'workflow': 'mrnwebdesigns/doster-and-brown-child-theme/.github/workflows/site-deploy.yml',
+}
+DOSTER_CUTOVER_POINTER = dict(schema=1, slug='doster-and-brown-child',
+    release_id='76611d9a671976f974b9391158303f8f31375a3fb18feda78d75d3eff09b2305',
+    public_path='mrn-assets/doster-and-brown-child/922dc8722187320fb69b2265ba692ce49efa30ae92ff3b2cdafc8ef33566883b')
+DOSTER_CUTOVER_TREE = '759a5478cc0f41c236a580e49b9715f62b387ab618003874fdf0d71438e28505'
+
+
+def reviewed_doster_promotion():
+    from kinsta import DOSTER_DEV, DOSTER_TARGET
+    return dict(schema=2, doster_cutover='doster-live-20261020', source_url=DOSTER_TARGET['url'],
+                source_environment_id=DOSTER_DEV, source_sha=DOSTER_CUTOVER_ORDER['source_sha'],
+                public_tree=DOSTER_CUTOVER_TREE, pointer=dict(DOSTER_CUTOVER_POINTER))
+
+
+def doster_cutover(plan, promotion):
+    """One reviewed owner-authorized copy; never a generic ordered-store bypass."""
+    if not isinstance(promotion, dict) or promotion.get('schema') != 2:
+        return False
+    from kinsta import DOSTER_REPOSITORY, DOSTER_LIVE_TARGET
+    target = dict(DOSTER_LIVE_TARGET, repository=DOSTER_REPOSITORY,
+                  slug='doster-and-brown-child', template='mrn-base-stack')
+    actual = dict(plan, host=plan.get('ssh_host', plan.get('host')),
+                  port=plan.get('ssh_port', plan.get('port')), user=plan.get('ssh_user', plan.get('user')))
+    source = reviewed_doster_promotion()
+    if (any(actual.get(k) != v for k,v in target.items())
+            or any(promotion.get(k) != v for k,v in source.items())):
+        raise ValueError('Doster copied-release qualification differs from the exact reviewed Live cutover')
+    return True
+
+
+def qualification_order(plan, doster):
+    order = plan.get('deployment_order')
+    if not order:
+        return
+    from deployment_request import validate_order
+    validate_order(order)
+    if (not doster or order.get('event') != 'workflow_dispatch'
+            or order.get('repository') != DOSTER_CUTOVER_ORDER['repository']
+            or order.get('workflow') != DOSTER_CUTOVER_ORDER['workflow']
+            or order.get('source_sha') != plan.get('source_sha')):
+        raise ValueError('Doster Live qualification requires its trusted manual workflow order')
+
+
+def require_doster_workflow(plan, promotion):
+    if doster_cutover(plan,promotion):
+        if not plan.get('deployment_order'):
+            raise ValueError('Doster Live activation must run through its manual GitHub workflow')
+        qualification_order(plan,True)
+
+
+def source_order_matches(plan, promotion, order):
+    return order == DOSTER_CUTOVER_ORDER if doster_cutover(plan, promotion) else order is None
+
 
 def validate(plan, promotion):
     check(plan['slug'], r'[a-z0-9_-]+', 'stylesheet')
-    if (not isinstance(promotion, dict) or set(promotion) != {
-            'schema', 'source_url', 'source_environment_id', 'source_sha', 'pointer', 'public_tree'}
-            or promotion.get('schema') != 1 or plan.get('environment') != 'live'
+    doster = doster_cutover(plan, promotion)
+    qualification_order(plan, doster)
+    fields = {'schema', 'source_url', 'source_environment_id', 'source_sha', 'pointer', 'public_tree'}
+    if doster:
+        fields.add('doster_cutover')
+    if (not isinstance(promotion, dict) or set(promotion) != fields
+            or promotion.get('schema') != (2 if doster else 1) or plan.get('environment') != 'live'
             or plan.get('host_provider') != 'kinsta' or plan.get('backup_provider') != 'kinsta'
-            or plan.get('deployment_order') or plan.get('adopt') or plan.get('qualification')
+            or (plan.get('deployment_order') and not doster) or plan.get('adopt') or plan.get('qualification')
             or plan.get('bind_imported_source') or plan.get('rollback_to')):
         raise ValueError('Promoted store import requires an exact manual native Kinsta Live plan')
     url = urlsplit(promotion['source_url'])
@@ -45,15 +107,21 @@ def validate(plan, promotion):
     expected = root.parent / 'deployments/mrn-site-deploy/live'
     if Path(plan['state_dir']) != expected:
         raise ValueError('Live import requires its canonical separate release store')
-    return expected.with_name('staging')
+    return expected.with_name('dev' if doster else 'staging')
 
 
 def source_binding(plan, promotion):
     binding = {key: plan[key] for key in ('repository', 'root', 'template', 'slug')}
-    return dict(binding, environment='staging', url=promotion['source_url'])
+    return dict(binding, environment='dev' if doster_cutover(plan, promotion) else 'staging', url=promotion['source_url'])
 
 
-def native_source(adapter, promotion):
+def native_source(adapter, promotion, plan=None):
+    if promotion.get('schema') == 2:
+        from kinsta import DosterOwnerManualBackup, DOSTER_LIVE
+        if (not plan or not doster_cutover(plan, promotion) or not isinstance(adapter, DosterOwnerManualBackup)
+                or adapter.environment_id != DOSTER_LIVE or not adapter.identity_verified):
+            raise ValueError('Doster cutover requires the separately verified owner-approved Live adapter')
+        return
     environments = adapter.api('/sites/' + adapter.site_id + '/environments')['site']['environments']
     matches = [e for e in environments if e.get('id') == promotion['source_environment_id']
                and e.get('name') == 'staging' and e.get('primaryDomain', {}).get('type') == 'staging'
@@ -76,7 +144,7 @@ def preflight(target, plan, promotion, before):
     if (before.get('state') is not None or before.get('target_binding_exists')
             or before.get('deployment_order') or digest(before['files']) != promotion['public_tree']):
         raise ValueError('Live import destination or reviewed public tree changed')
-    native_source(target.native_backup, promotion)
+    native_source(target.native_backup, promotion, plan)
     encoded = base64.b64encode(json.dumps({'source': str(source), 'destination': plan['state_dir'],
                                           'release': promotion['pointer']['release_id']}).encode()).decode()
     result = target.php('''
@@ -84,16 +152,18 @@ $c=json_decode(base64_decode('%s'),true);$s=$c['source'];$r=$s.'/releases/'.$c['
 echo 'MRN_RESULT='.wp_json_encode(array(
  'environment'=>wp_get_environment_type(),'source_physical'=>realpath($s)===$s,
  'source_private'=>is_dir($s) && (fileperms($s)&0077)===0,
- 'source_no_aliases'=>!is_link($s.'/current.json') && !is_link($s.'/site.json') && !is_link($s.'/adoption.json') && !is_link($r.'/installed.json'),
+ 'source_no_aliases'=>!is_link($s.'/current.json') && !is_link($s.'/site.json') && !is_link($s.'/adoption.json') && !is_link($s.'/deployment-order.json') && !is_link($r.'/installed.json'),
  'destination_exists'=>file_exists($c['destination']) || is_link($c['destination']),
  'pointer'=>!is_link($s.'/current.json') && is_file($s.'/current.json')?json_decode(file_get_contents($s.'/current.json'),true):null,
  'binding'=>!is_link($s.'/site.json') && is_file($s.'/site.json')?json_decode(file_get_contents($s.'/site.json'),true):null,
+ 'order'=>!is_link($s.'/deployment-order.json') && is_file($s.'/deployment-order.json')?json_decode(file_get_contents($s.'/deployment-order.json'),true):null,
  'metadata'=>!is_link($r.'/installed.json') && is_file($r.'/installed.json')?json_decode(file_get_contents($r.'/installed.json'),true):null));
 ''' % encoded, skip_themes=True)
     if (result.get('environment') != 'production' or not result.get('source_physical')
             or not result.get('source_private') or not result.get('source_no_aliases') or result.get('destination_exists')
             or result.get('pointer') != promotion['pointer']
             or result.get('binding') != source_binding(plan, promotion)
+            or not source_order_matches(plan, promotion, result.get('order'))
             or (result.get('metadata') or {}).get('source_sha') != promotion['source_sha']
             or (result.get('metadata') or {}).get('theme_files') != verified['theme_files']):
         raise ValueError('Promoted Live store preflight differs from the reviewed manifest')
@@ -132,11 +202,13 @@ def import_store(plan, store, binding, guard, template):
         raise ValueError('Live import requires a fresh destination and rollback exercise')
     source = Store(source_path, store.public_theme, store.content_root, store.slug)
     with source.locked_store():
-        metadata_paths = [source.state / name for name in ('current.json', 'site.json', 'adoption.json')]
+        metadata_paths = [source.state / name for name in ('current.json', 'site.json', 'adoption.json', 'deployment-order.json')]
         metadata_paths.append(source.releases / promotion['pointer']['release_id'] / 'installed.json')
         if any(p.is_symlink() for p in metadata_paths):
             raise ValueError('Promoted private metadata must not be aliased')
-        if ((source.state / 'deployment-order.json').exists()
+        order_path = source.state / 'deployment-order.json'
+        source_order = json.loads(order_path.read_text()) if order_path.exists() else None
+        if (not source_order_matches(plan, promotion, source_order)
                 or json.loads((source.state / 'site.json').read_text()) != source_binding(plan, promotion)
                 or source.pointer() != promotion['pointer']):
             raise ValueError('Promoted staging binding, order or pointer changed')
@@ -207,6 +279,9 @@ def restore_import(plan, store, guard):
         raise ValueError('Public drift blocks promoted loader recovery')
     source = Store(record['source_state'], store.public_theme, store.content_root, store.slug)
     with source.locked_store():
+        order_path = source.state / 'deployment-order.json'
+        if order_path.is_symlink() or not source_order_matches(plan, promotion, json.loads(order_path.read_text()) if order_path.exists() else None):
+            raise ValueError('Original promoted order changed before recovery')
         if (source.pointer() != record['source_pointer']
                 or json.loads((source.state / 'site.json').read_text()) != record['source_binding']):
             raise ValueError('Original promoted store changed before recovery')

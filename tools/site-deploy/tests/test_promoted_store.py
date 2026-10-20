@@ -123,6 +123,33 @@ class PromotedLiveStore(unittest.TestCase):
         self.guard.assert_not_called()
         self.assertEqual(self.original_files, inventory(self.f.theme))
 
+    def test_reviewed_ordered_dev_copy_is_preserved_through_import_and_recovery(self):
+        # The literal Doster identity/artifact allowlist has separate negative
+        # tests. Exercise the common filesystem/rollback contract in a temp root.
+        from atomic_store import durable_replace
+        dev_path=self.source_path.with_name('dev')
+        self.source_path.rename(dev_path)
+        self.source_path=dev_path
+        self.source=Store(dev_path,self.f.theme,self.f.content,'child')
+        self.promotion.update(schema=2,doster_cutover='doster-live-20261020')
+        with patch.object(promoted,'doster_cutover',return_value=True):
+            adoption=json.loads((dev_path/'adoption.json').read_text())
+            loader=promoted.bootstrap(self.f.bootstrap,self.source)
+            durable_replace(self.f.theme/'functions.php',loader,0o644)
+            adoption['bootstrap_sha256']=hashlib.sha256(loader).hexdigest()
+            (dev_path/'adoption.json').write_text(json.dumps(adoption))
+            (dev_path/'site.json').write_text(json.dumps(promoted.source_binding(self.plan,self.promotion)))
+            (dev_path/'deployment-order.json').write_text(json.dumps(promoted.DOSTER_CUTOVER_ORDER))
+            self.promotion['public_tree']=digest(inventory(self.f.theme))
+            before_public=inventory(self.f.theme);before_source=inventory(dev_path)
+            with self.store.locked_store():
+                self.run_import()
+                self.store.verify_public_snapshot()
+                promoted.restore_import(self.plan,self.store,self.guard)
+            self.assertEqual(before_public,inventory(self.f.theme))
+            self.assertEqual(before_source,inventory(dev_path))
+            self.assertIsNone(self.store.pointer())
+
     def test_changed_source_binding_is_rejected_before_backup_guard(self):
         (self.source_path/'site.json').write_text('{}')
         with self.store.locked_store(), self.assertRaisesRegex(ValueError, 'binding, order or pointer'):
