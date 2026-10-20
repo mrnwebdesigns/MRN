@@ -16,6 +16,11 @@ full handle too, avoiding the extra core transfer. Undeclared asynchronous
 global consumers are outside the opt-in contract: retain the default full
 runtime on those sites until their dependency ownership is corrected.
 
+The component asset registry and legacy explicit enqueue helper share
+`mrn_base_stack_register_motion_runtime()`. Qualification must exercise
+`mrn_base_stack_enqueue_front_end_component_assets()` with the opt-in; testing
+the legacy helper alone does not prove the builder's actual asset selection.
+
 This build changes no effect options, timings, text, markup or CSS. Qualification
 must cover normal and reduced motion, no-JavaScript/library failure, queued
 legacy consumers and the affected site's complete interactions. Source

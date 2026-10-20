@@ -8,8 +8,11 @@ $GLOBALS['motion_test_directory'] = $theme;
 $GLOBALS['motion_test_selection'] = 'full';
 function get_template_directory() { return $GLOBALS['motion_test_directory']; }
 function get_template_directory_uri() { return 'https://fixture.invalid/theme'; }
-function apply_filters( $name, $value ) { return $GLOBALS['motion_test_selection']; }
+function apply_filters( $name, $value ) { return 'mrn_base_stack_motion_runtime' === $name ? $GLOBALS['motion_test_selection'] : $value; }
 function add_action( ...$args ) {}
+function add_filter( ...$args ) {}
+function trailingslashit( $value ) { return rtrim( $value, '/' ) . '/'; }
+function wp_register_style( ...$args ) {}
 function wp_scripts() { return $GLOBALS['motion_test_scripts']; }
 function wp_register_script( $handle, $src, $deps, $version, $footer ) {
 	$scripts = wp_scripts();
@@ -21,10 +24,14 @@ function wp_enqueue_script( $handle, $src = null, $deps = array(), $version = nu
 	if ( null !== $src ) { wp_register_script( $handle, $src, $deps, $version, $footer ); }
 	wp_scripts()->queue[] = $handle;
 }
-function motion_fixture( $selection = 'full' ) {
+function motion_fixture( $selection = 'full', $component = false ) {
 	$GLOBALS['motion_test_selection'] = $selection;
 	$GLOBALS['motion_test_scripts'] = (object) array( 'registered' => array(), 'queue' => array(), 'to_do' => array(), 'done' => array() );
-	mrn_base_stack_enqueue_motion_assets();
+	if ( $component ) {
+		mrn_base_stack_enqueue_front_end_component_assets( array( 'motion' => true ) );
+	} else {
+		mrn_base_stack_enqueue_motion_assets();
+	}
 	return wp_scripts();
 }
 function motion_assert( $value, $message ) {
@@ -32,6 +39,7 @@ function motion_assert( $value, $message ) {
 	$GLOBALS['motion_test_assertions'] = ( $GLOBALS['motion_test_assertions'] ?? 0 ) + 1;
 }
 require $theme . '/inc/motion-assets.php';
+require $theme . '/inc/frontend-assets.php';
 $full = 'mrn-base-stack-motion';
 $core = 'mrn-base-stack-motion-core';
 $effects = 'mrn-base-stack-front-end-effects';
@@ -80,4 +88,21 @@ motion_assert( array( $full ) === $scripts->registered[ $effects ]->deps, 'Alrea
 $GLOBALS['motion_test_directory'] = __DIR__; // No vendor core file in this fixture directory.
 $scripts = motion_fixture( 'core' );
 motion_assert( array( $full ) === $scripts->registered[ $effects ]->deps, 'Missing core distribution must fall back to full.' );
+$GLOBALS['motion_test_directory'] = $theme;
+$scripts = motion_fixture( 'full', true );
+motion_assert( array( $full ) === $scripts->registered[ $effects ]->deps, 'The real component registration path must retain full by default.' );
+motion_assert( in_array( $effects, $scripts->queue, true ), 'The motion component must enqueue its effects handle.' );
+$scripts = motion_fixture( 'core', true );
+motion_assert( array( $core ) === $scripts->registered[ $effects ]->deps, 'The real component registration path must honor the core opt-in.' );
+motion_assert( ! in_array( $full, $scripts->queue, true ) && isset( $scripts->registered[ $full ] ), 'Component opt-in must retain the full registration without queueing it.' );
+mrn_base_stack_resolve_motion_consumers();
+motion_assert( array( $core ) === $scripts->registered[ $effects ]->deps, 'A core-only component must retain its selected dependency.' );
+wp_enqueue_script( 'component-extension', '/extension.js', array( $full ), '1', true );
+mrn_base_stack_resolve_motion_consumers();
+motion_assert( array( $full ) === $scripts->registered[ $effects ]->deps, 'A declared full consumer must override the component opt-in.' );
+$scripts = motion_fixture( 'unknown', true );
+motion_assert( array( $full ) === $scripts->registered[ $effects ]->deps, 'Unknown component selections must use full.' );
+$GLOBALS['motion_test_directory'] = __DIR__;
+$scripts = motion_fixture( 'core', true );
+motion_assert( array( $full ) === $scripts->registered[ $effects ]->deps, 'The component path must fall back when the core distribution is missing.' );
 echo 'PASS ' . $GLOBALS['motion_test_assertions'] . " Motion asset contracts\n";

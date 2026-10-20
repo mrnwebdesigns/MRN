@@ -8,15 +8,13 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Enqueue the complete runtime by default and register the opt-in core build.
+ * Register the selected runtime for both component and legacy enqueue paths.
  *
- * @return void
+ * @return string Selected runtime handle.
  */
-function mrn_base_stack_enqueue_motion_assets() {
+function mrn_base_stack_register_motion_runtime() {
 	$directory       = get_template_directory();
 	$uri             = get_template_directory_uri();
-	$effects_path    = $directory . '/js/front-end-effects.js';
-	$effects_version = is_readable( $effects_path ) ? _S_VERSION . '.' . (string) filemtime( $effects_path ) : _S_VERSION;
 	$core_path       = $directory . '/js/vendor/motion-core.js';
 	/**
 	 * Select the built-in effects runtime after reviewing a site's consumers.
@@ -31,13 +29,26 @@ function mrn_base_stack_enqueue_motion_assets() {
 	wp_register_script( 'mrn-base-stack-motion', $uri . '/js/vendor/motion.js', array(), '12.38.0', true );
 	if ( $core ) {
 		wp_register_script( 'mrn-base-stack-motion-core', $uri . '/js/vendor/motion-core.js', array(), _S_VERSION . '.' . (string) filemtime( $core_path ), true );
-	} else {
+	}
+	return $core ? 'mrn-base-stack-motion-core' : 'mrn-base-stack-motion';
+}
+
+/**
+ * Preserve the legacy explicit enqueue helper.
+ *
+ * @return void
+ */
+function mrn_base_stack_enqueue_motion_assets() {
+	$runtime         = mrn_base_stack_register_motion_runtime();
+	$effects_path    = get_template_directory() . '/js/front-end-effects.js';
+	$effects_version = is_readable( $effects_path ) ? _S_VERSION . '.' . (string) filemtime( $effects_path ) : _S_VERSION;
+	if ( 'mrn-base-stack-motion' === $runtime ) {
 		wp_enqueue_script( 'mrn-base-stack-motion' );
 	}
 	wp_enqueue_script(
 		'mrn-base-stack-front-end-effects',
-		$uri . '/js/front-end-effects.js',
-		array( $core ? 'mrn-base-stack-motion-core' : 'mrn-base-stack-motion' ),
+		get_template_directory_uri() . '/js/front-end-effects.js',
+		array( $runtime ),
 		$effects_version,
 		true
 	);
