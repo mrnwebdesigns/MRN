@@ -1,0 +1,37 @@
+name: Motion runtime contracts
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tools/motion-runtime/**'
+      - 'stack/themes/mrn-base-stack/functions.php'
+      - 'stack/themes/mrn-base-stack/inc/motion-assets.php'
+      - 'stack/themes/mrn-base-stack/js/front-end-effects.js'
+      - 'stack/themes/mrn-base-stack/js/vendor/motion*'
+      - 'stack/themes/mrn-base-stack/tests/**'
+      - '.github/workflows/motion-runtime.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+      - run: npm ci --prefix tools/motion-runtime --ignore-scripts
+      - run: node tools/motion-runtime/build.mjs --check
+      - run: php stack/themes/mrn-base-stack/tests/php/motion-assets.php
+      - run: php stack/themes/mrn-base-stack/tests/php/frontend-component-assets.php
+      - run: tools/motion-runtime/node_modules/.bin/playwright install --with-deps chromium
+      - name: Test full, core, mixed, reduced-motion and failure behavior
+        run: NODE_PATH="$GITHUB_WORKSPACE/tools/motion-runtime/node_modules" node stack/themes/mrn-base-stack/tests/js/motion-runtime-browser.cjs

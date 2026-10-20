@@ -1,4 +1,9 @@
 ( function() {
+	// A separately registered legacy consumer keeps the complete Motion API.
+	function motionRuntime() {
+		return window.Motion || window.mrnBaseStackCoreMotion;
+	}
+
 	function normalizeMargin( value ) {
 		if ( typeof value !== 'string' || '' === value.trim() ) {
 			return '0px';
@@ -320,7 +325,7 @@
 	}
 
 	function initDarkScrollCardEffects() {
-		if ( ! window.Motion || 'function' !== typeof window.Motion.scroll ) {
+		if ( ! motionRuntime() || 'function' !== typeof motionRuntime().scroll ) {
 			return;
 		}
 
@@ -348,7 +353,7 @@
 			var targetImageBrightness = getCssNumberVar( surfaceElement, '--mrn-dark-scroll-card-image-brightness', 0.72 );
 			var targetImageSaturation = getCssNumberVar( surfaceElement, '--mrn-dark-scroll-card-image-saturation', 0.85 );
 
-			window.Motion.scroll(
+			motionRuntime().scroll(
 				function( progress ) {
 					var p = clamp( progress );
 					var cardBackground = [
@@ -432,11 +437,11 @@
 			cardElements.forEach( function( cardElement, index ) {
 				cardElement.style.setProperty( '--mrn-stack-index', String( index ) );
 
-				if ( userPrefersReducedMotion() || ! window.Motion || 'function' !== typeof window.Motion.scroll ) {
+				if ( userPrefersReducedMotion() || ! motionRuntime() || 'function' !== typeof motionRuntime().scroll ) {
 					return;
 				}
 
-				window.Motion.scroll(
+				motionRuntime().scroll(
 					function( progress ) {
 						var p = clamp( progress );
 						var scale = 1 - ( p * 0.025 );
@@ -685,7 +690,7 @@
 
 	function animateStatValue( valueElement ) {
 		var parsed = parseStatValue( valueElement.textContent || '' );
-		var animate = window.Motion && 'function' === typeof window.Motion.animate ? window.Motion.animate : null;
+		var animate = motionRuntime() && 'function' === typeof motionRuntime().animate ? motionRuntime().animate : null;
 
 		if ( valueElement.dataset.mrnStatAnimated ) {
 			return;
@@ -747,7 +752,7 @@
 
 	function initGlobalApi( inView ) {
 		window.mrnBaseStack = window.mrnBaseStack || {};
-		window.mrnBaseStack.motion = window.Motion || {};
+		window.mrnBaseStack.motion = motionRuntime() || {};
 		window.mrnBaseStack.inView = inView;
 		window.mrnBaseStack.initSurfaceSections = function() {
 			initSurfaceSections( inView );
@@ -761,16 +766,16 @@
 		initFullItemOverlayLinks();
 		document.documentElement.classList.add( 'mrn-motion-effects-ready' );
 
-		if ( ! window.Motion || 'function' !== typeof window.Motion.inView ) {
+		if ( ! motionRuntime() || 'function' !== typeof motionRuntime().inView ) {
 			initTextRevealEffects( null, textRevealEntries );
 			return;
 		}
 
-		initGlobalApi( window.Motion.inView );
-		initSurfaceSections( window.Motion.inView );
-		initActiveClassEffects( window.Motion.inView );
-		initTextRevealEffects( window.Motion.inView, textRevealEntries );
-		initStatValueAnimations( window.Motion.inView );
+		initGlobalApi( motionRuntime().inView );
+		initSurfaceSections( motionRuntime().inView );
+		initActiveClassEffects( motionRuntime().inView );
+		initTextRevealEffects( motionRuntime().inView, textRevealEntries );
+		initStatValueAnimations( motionRuntime().inView );
 		initDarkScrollCardEffects();
 		initStackedCardEffects();
 	}
