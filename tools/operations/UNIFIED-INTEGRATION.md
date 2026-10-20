@@ -11,15 +11,18 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
   and code tools are absent. New tools default to disabled. No individual
   enrollment or personal backend credentials are required. Team editing is
   not yet ready.
-- Accepted gateway checkpoint `4cffd90` passed 571 tests, combined run
-  `39354587611` and MRN QA `39354587613`. All seven original reports were
+- Accepted gateway checkpoint `0ce3f14` passed 574 tests, 13 Fleet regressions,
+  combined run `39428046110` and MRN QA `39428045661`. All eight original reports were
   independently verified, including native content edit/readback/rollback,
-  complete source reconstruction and report custody against provider `5905258`
-  and worker `cd74e20`. Tested merge `db93c6ddbd0692861ebdce89a3b10477286d6588`
+  complete source reconstruction, report custody and actual v2 binding recovery
+  against provider `affb7e9` and worker `cd74e20`. Tested merge
+  `8e03a1d21a5ac766f30da68fb9d44b1cc5f9088f`
   has identical gateway, workflow, runtime and Fleet regression blobs.
-  Intermediate checkpoints `0dd1159` and `3c98733` also passed their hosted
-  runs and independent original-archive/source verification.
-- Candidate provider `5905258` passes all four jobs in `39325764872`, with
+  One actual signed bind, an interrupted response, SQLite reopen, a fresh
+  same-person login and signed read recover the original authorization without
+  redispatch or expiry extension. Parent SQL, keyfiles and Child content remain
+  unchanged. The fixture uses synthetic identity and service authorities.
+- Earlier provider `5905258` passes all four jobs in `39325764872`, with
   exact tested merge tree `638b5dd43a98bdb1018521a65e8c59698ef58dc6` and
   independently retained original log. Its 38 new native authorization checks
   prove actual SQL, independent readback, two simultaneous bind processes with
@@ -27,7 +30,14 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
   state. The prior 46 original-selection and three 128 MiB isolation checks
   also pass. Runtime bytes are unchanged from `f2262cf`; its earlier failed
   fixture run `39324850558` remains recorded. The failure did not recur; a
-  root-cause fix is not claimed. That accepted combined gateway run pins this provider and does not test the new v2 routes. Production admission remains disabled.
+  root-cause fix is not claimed. The earlier `4cffd90` combined run pinned this
+  provider without testing the new v2 routes. Production admission remains disabled.
+- Current candidate pins provider `293b138`, whose four component CI jobs in
+  `39428711609` pass with exact tested source. It adds whole-record refusal for
+  registered ACF password fields and preserves existing draft dates during
+  unrelated edits. Its licensed local ACF PRO run passes 81 native checks;
+  hosted licensed ACF qualification and the newly pinned combined run remain
+  separate requirements.
 - Worker `cd74e20` passes 160 tests and all three jobs in `39320436312`. Both
   original archives and all eight reports were independently verified, with
   exact edit/restored snapshots and browser/profile/runtime/parity hashes.
@@ -37,7 +47,8 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
 - Live MainWP was observed at `wpcontrol.mrndev.io` with 115 abilities and
   provider 0.13.8. The company code pilot remains unchanged. No production,
   Auth0, Google, workspace-tool or repository-access setting changed.
-- Remaining gates: combined provider-bound original authorization; protected central cache provenance/delivery and
+- Remaining gates: one-time qualification queue using the bound original;
+  protected central cache provenance/delivery and
   full-site rendered QA/report admission; concrete deployment/access approval;
   refresh of the same workspace plugin; ordinary ChatGPT content edit/readback,
   qualified code edit/rollback, outsider and revoked-account acceptance.
@@ -48,7 +59,7 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
 for `MRN_DISPOSABLE_EXISTING_BINDING_HOOK`, requiring
 `MRN_DISPOSABLE_EXISTING_BINDING_TEST=1` and `GITHUB_ACTIONS=true`. The new
 combined CI candidate enables it with provider
-`affb7e91ef23d13e7319ce80e67f85d41a1ee942` and requires its eighth report.
+`293b1387a839043eceeb1cf7703bc8d119a0a3ed` and requires its eighth report.
 All four source provenance records select that exact checkpoint; original
 contracts remain byte-identical. The provider source registers the three
 canonical machine abilities, but production has not adopted them.
@@ -165,7 +176,30 @@ Configured but unavailable readiness fails closed; never-configured state
 retains legacy behavior. The native requester test now requires the actual
 signed public preview to retain the v2 protocol, original lifetime, epoch and
 individual identity. Local full and staged MRN QA pass. Component CI
-`39427741941` and the new combined run must pass independently.
+`39427741941` passes all four jobs, including 36 native requester-state checks.
+Gateway `0ce3f14` independently passes combined run `39428046110` and MRN QA
+`39428045661`. All eight original reports and 128 native JSON groups were
+verified. Artifact `12266709930` is 11990 bytes, SHA-256
+`16ba545b15892959845ac75cff85d496b28ec105e572ef21b50ad4630e510fe1`.
+The native log SHA-256 is
+`abfd5214f8a295317dfcd1b61a1c79d33df76aa7f9864d9cc8a87b6cee5e63ff`.
+This closes the isolated binding/preview integration failures above.
+
+The next pinned provider `293b1387a839043eceeb1cf7703bc8d119a0a3ed` has tree
+`802fcafec1f78add0a4172dc2a773344c1485bbf`; all eight changed files match review.
+Component CI `39428711609` passes all four jobs, and tested merge
+`ca2be2054caeeaa63e9a7d96e1bac11eb9e3a664` has that exact tree. The original
+native log contains 121 JSON groups, SHA-256
+`fbe8c8bfecc15e3f999a5a5f4d2fd9dba0be7fdac905a1e8da3281c3c9850351`.
+Registered password definitions, including unused nested flexible layouts,
+refuse the complete content snapshot before any password ACF value getter.
+Internal metadata reads still occur. Existing draft/pending dates are preserved
+for unrelated edits; actual status transitions retain native WordPress behavior.
+An explicit unchanged status does not exempt unexpected date changes.
+The licensed local WordPress/ACF PRO fixture passes 81 checks, including
+six password cases, nested content edits, rollback and date preservation.
+It does not prove hosted ACF PRO, MainWP transport or production readiness.
+Wire contracts, public caller schemas and the company code pilot are unchanged.
 
 The closed schema2 context, separate Dashboard database and mutable volumes,
 canonical-host TLS endpoint, Node HOME/network log and SQLite database keep
@@ -174,7 +208,7 @@ an independent before/after barrier proving its original Dashboard state,
 connection keyfiles and Child content unchanged. The hook verifies the complete
 installed source against immutable Git and the exact eleven profile files.
 
-The intended native proof uses synthetic Bob through the actual delegated
+The accepted `0ce3f14` native proof uses synthetic Bob through the actual delegated
 Directory path: fresh exact-site sync/read, genuine readiness and signed
 original preview, full candidate/migration reconstruction, then one real bind.
 A test-only wrapper discards the successful bind response before receipt
@@ -226,7 +260,7 @@ backup. A staff login cannot perform that migration or clear denial. This is
 service setup, not individual staff enrollment or approval.
 
 The private ledger now issues distinct bind/read controls using the unchanged
-provider original-authorization wire now pinned to fixture candidate `3d0e839`. It signs
+provider original-authorization wire now pinned to candidate `293b138`. It signs
 `original_resource_authorization_current:true` only after rechecking the exact
 reviewed original, genuine current actor, original expiry, current principal,
 policy/site and fresh Directory state. It accepts no caller hash or expiry.

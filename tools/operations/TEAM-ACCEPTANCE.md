@@ -44,18 +44,29 @@ Use already-authorized test identities or separately reviewed administrative tes
 
 ## Latest disposable evidence, 2026-10-20
 
-Gateway `4cffd90` is the latest independently accepted combined checkpoint:
-[CI 39354587611](https://github.com/mrnwebdesigns/MRN/actions/runs/39354587611)
-and [MRN QA 39354587613](https://github.com/mrnwebdesigns/MRN/actions/runs/39354587613)
-pass. All seven original reports and relevant tested source/workflow/Fleet blobs
+Gateway `0ce3f14` is the latest independently accepted combined checkpoint:
+[CI 39428046110](https://github.com/mrnwebdesigns/MRN/actions/runs/39428046110)
+and [MRN QA 39428045661](https://github.com/mrnwebdesigns/MRN/actions/runs/39428045661)
+pass, including 574 controlled tests and 13 Fleet regressions.
+All eight original reports and relevant tested source/workflow/Fleet blobs
 match committed source, including actual TLS/MCP report custody, native content
 edit/readback/exact rollback, original revocation denial and source reconstruction.
-Artifact `12234634166` is 10145 bytes, SHA-256
-`644322d6976774ee7346d40649a4240419e5d9107f42e1bbf7800c56f087e8ee`.
+The new actual signed-preview/binding test recovers a lost response after SQLite
+reopen and fresh same-person authentication without rebinding or extending the
+original grant. Independent parent SQL/key/Child preservation also passes.
+Artifact `12266709930` is 11990 bytes, SHA-256
+`16ba545b15892959845ac75cff85d496b28ec105e572ef21b50ad4630e510fe1`.
 The synthetic identity, remote-backup, hosted-provenance and rendered-QA limits
-remain explicit. Private original-authorization controls and response retention
-have local tests; the separately prepared actual v2 binding hook has not passed
-native qualification. The accepted combined pin does not expose these endpoints.
+remain explicit. Every ordinary-member and live-denial row above is still open.
+
+The next candidate pins provider `293b138`, whose four component CI jobs in
+`39428711609` pass with exact tested source. Whole-record password-field refusal
+and draft-date preservation pass 81 licensed local ACF PRO/native checks.
+That local result does not establish hosted ACF PRO or MainWP transport coverage.
+The newly pinned combined run remains required.
+
+## Earlier binding failures and their correction
+
 Gateway `37fe496` passed 571 controlled tests but failed combined CI
 `39392624734` at the parent-state fingerprint, before the clone or v2 hook.
 The statistics failure's cause remains unknown. A separate review found missing
@@ -82,8 +93,7 @@ passed. No successful bind or complete parent-preservation barrier is claimed.
 Independent source review found that the three registered v2 execution routes
 were absent from the service REST guard. Provider component CI `39421841230`
 separately exhausted the unchanged 128 MiB limit at `source-native-start`.
-Both blockers remain open until their corrected native runs pass.
-The eighth report remains required and has not yet passed.
+Both blockers required corrected native runs before acceptance.
 The replacement provider candidate `a6611f1` narrowly admits the three exact
 private v2 routes and preserves existing denials. It adds actual HTTP coverage
 and isolates the same source checks in a fresh PHP process at 128 MiB, with
@@ -104,7 +114,8 @@ to the exact verified preview operation and fresh preparer authorization.
 Private keys and control permissions remain unchanged. Configured unavailable
 state is refused, while never-configured state retains legacy behavior.
 All six committed files match review; local full/staged MRN QA pass. Component
-CI `39427741941` and the new combined run remain required.
+CI `39427741941` and combined CI `39428046110` subsequently pass, closing these
+isolated integration failures. They do not close production or team acceptance.
 Current implementation and remaining qualification are in `UNIFIED-INTEGRATION.md`.
 
 ## Earlier disposable checkpoints
