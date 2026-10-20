@@ -1,5 +1,22 @@
 # Front-end Performance Contract
 
+## Optional Motion core (1.6.7)
+
+The complete `mrn-base-stack-motion` handle and vendor file remain the default.
+A reviewed site can return `core` from `mrn_base_stack_motion_runtime` to use
+the smaller built-in `animate`, `inView` and `scroll` bundle. It has its own
+`window.mrnBaseStackCoreMotion` namespace and never replaces `window.Motion`.
+An extension requiring another API must enqueue or depend on the existing full
+handle. Consumers declared before WordPress resolves scripts select one full
+runtime for built-in effects as well. Late consumers still retain their full
+handle; an already scheduled or printed core asset cannot be undownloaded.
+Keep the default on sites with undeclared global or asynchronous consumers.
+
+Build sources, exact dependency locks and reproduction instructions live in
+`tools/motion-runtime`. The full/core, mixed-library, reduced-motion and missing
+library browser tests are independent of any production site's score. Opting
+in requires that site's own interactions and failure behavior to be qualified.
+
 This theme keeps shared markup and styles stable while loading feature assets
 only when the current rendered Stack page can use them. Site and third-party
 plugin assets remain outside this contract.

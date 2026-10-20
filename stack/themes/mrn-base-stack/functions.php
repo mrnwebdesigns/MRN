@@ -9,7 +9,7 @@
 
 if ( ! defined( '_S_VERSION' ) ) {
 	// Replace the version number of the theme on each release.
-	define( '_S_VERSION', '1.6.6' );
+	define( '_S_VERSION', '1.6.7' );
 }
 
 /**
@@ -630,29 +630,7 @@ function mrn_base_stack_enqueue_gallery_admin_assets( $hook_suffix ) {
 }
 add_action( 'admin_enqueue_scripts', 'mrn_base_stack_enqueue_gallery_admin_assets' );
 
-/**
- * Enqueue Motion inView assets for front-end effects.
- */
-function mrn_base_stack_enqueue_motion_assets() {
-	$effects_path    = get_template_directory() . '/js/front-end-effects.js';
-	$effects_version = file_exists( $effects_path ) ? _S_VERSION . '.' . (string) filemtime( $effects_path ) : _S_VERSION;
-
-	wp_enqueue_script(
-		'mrn-base-stack-motion',
-		get_template_directory_uri() . '/js/vendor/motion.js',
-		array(),
-		'12.38.0',
-		true
-	);
-
-	wp_enqueue_script(
-		'mrn-base-stack-front-end-effects',
-		get_template_directory_uri() . '/js/front-end-effects.js',
-		array( 'mrn-base-stack-motion' ),
-		$effects_version,
-		true
-	);
-}
+require_once get_template_directory() . '/inc/motion-assets.php';
 
 /**
  * Stage motion effects before first paint without hiding no-JavaScript output.
