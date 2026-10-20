@@ -89,8 +89,22 @@ private v2 routes and preserves existing denials. It adds actual HTTP coverage
 and isolates the same source checks in a fresh PHP process at 128 MiB, with
 unchanged original authority and expiry. All eight committed files match the
 reviewed source; local provider MRN QA passes. The gateway pins that candidate
-and adds bounded, body-free fixture diagnostics. New component and combined
-native results are required before accepting this replacement.
+and adds bounded, body-free fixture diagnostics. Provider CI `39425106965`
+passes all four jobs; its tested merge has the exact source tree. The native
+log contains 121 JSON groups, including all nine binding HTTP checks and the
+unchanged source-control/native/storage/context groups under 128 MiB.
+Gateway `1fdbe15` passes 574 controlled tests, 13 Fleet regressions and hosted
+MRN QA, but combined CI `39425348769` stops at candidate validation with
+`CONTENT_MANAGEMENT_MISMATCH`. Readiness, signed preview and migration retrieval
+were reached; binding and the complete parent barrier remain unverified.
+An independent class-composition reproduction identifies scoped preview
+calling an unscoped-only registry reader, then selecting the legacy protocol.
+The gateway now pins correction `affb7e9`: a boolean readiness check is limited
+to the exact verified preview operation and fresh preparer authorization.
+Private keys and control permissions remain unchanged. Configured unavailable
+state is refused, while never-configured state retains legacy behavior.
+All six committed files match review; local full/staged MRN QA pass. Component
+CI `39427741941` and the new combined run remain required.
 Current implementation and remaining qualification are in `UNIFIED-INTEGRATION.md`.
 
 ## Earlier disposable checkpoints

@@ -48,7 +48,7 @@ One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebd
 for `MRN_DISPOSABLE_EXISTING_BINDING_HOOK`, requiring
 `MRN_DISPOSABLE_EXISTING_BINDING_TEST=1` and `GITHUB_ACTIONS=true`. The new
 combined CI candidate enables it with provider
-`a6611f11c9139ab5157f3d320a9bd7302761fb79` and requires its eighth report.
+`affb7e91ef23d13e7319ce80e67f85d41a1ee942` and requires its eighth report.
 All four source provenance records select that exact checkpoint; original
 contracts remain byte-identical. The provider source registers the three
 canonical machine abilities, but production has not adopted them.
@@ -133,8 +133,39 @@ anonymous/unsigned refusals before the parent barrier. Source-control, native
 source, encrypted storage and source-context checks now run in a fresh PHP
 process at the unchanged 128 MiB limit using the same original context, source
 and existing synthetic keys. No original expiry or authorization is renewed.
-Local provider regression and MRN QA pass; component and combined native
-verification remain required. No production setting changed.
+Provider CI `39425106965` passes all four jobs. Tested merge
+`b3f689333bbc21a003ddacd0e76b32920edc94a5` has the exact source tree; the
+original native log has 121 JSON groups, SHA-256
+`8cfc81e25bc72ad108b287e2e752975709eaf5013f106ff936e0af6bb00b3abb`.
+All nine HTTP checks and source-control 32, native 17, storage 46 and context
+37 pass; the complete process phase evidence retains the 128 MiB cap.
+This qualifies component regression only; the new gateway hook was absent.
+
+Gateway `1fdbe15` passes 574 controlled tests, 13 Fleet regressions and MRN QA.
+Its combined run `39425348769` passes the nine HTTP checks, clone preparation
+and source verification, then stops at candidate validation with
+`CONTENT_MANAGEMENT_MISMATCH` after readiness, signed preview and migration
+retrieval. No bind or complete parent barrier is verified. Artifact
+`12265502314` is 2848 bytes, SHA-256
+`66358e0dbb21d80c470e4a7d926a6dba87a819252a17f043e1cd8bf057610196`.
+Independent source review and actual-class reproduction with synthetic
+dependencies identify a scope-composition gap: `source_epoch()` calls an
+unscoped-only registry reader during delegated preview, catches its refusal
+and selects the legacy protocol. The native artifact does not retain raw
+profiles, so this source finding is distinct from the observed mismatch.
+No production setting changed.
+
+The scoped-preview correction is provider
+`affb7e91ef23d13e7319ce80e67f85d41a1ee942`, tree
+`4caa545048a5351c08f9d9c7f0239a794f8fad76`. All six committed files match the
+reviewed bytes. Only the exact verified preview operation can obtain a boolean
+registry-readiness result after fresh preparer authorization; private registry
+export and machine controls retain their unscoped backend requirement.
+Configured but unavailable readiness fails closed; never-configured state
+retains legacy behavior. The native requester test now requires the actual
+signed public preview to retain the v2 protocol, original lifetime, epoch and
+individual identity. Local full and staged MRN QA pass. Component CI
+`39427741941` and the new combined run must pass independently.
 
 The closed schema2 context, separate Dashboard database and mutable volumes,
 canonical-host TLS endpoint, Node HOME/network log and SQLite database keep
