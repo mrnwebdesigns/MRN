@@ -119,7 +119,33 @@ def legacy_assets(plan):
             types = {'text/css'} if parsed.path.endswith('.css') else {'text/javascript', 'application/javascript'}
             assets[url] = {'sha256': hashlib.sha256(fetch(url, types)).hexdigest(), 'types': sorted(types)}
     if not assets:
-        raise ValueError('No legacy child assets found for adoption comparison')
+        # A materialized migration may already serve build-owned immutable
+        # assets without a private release pointer. Verify its existing public
+        # manifest before adoption, then preserve those exact URLs on rollback.
+        path = Path(plan['root']) / 'wp-content/themes' / plan['slug'] / 'mrn-assets.json'
+        if not path.is_file() or path.is_symlink():
+            raise ValueError('No legacy child assets found for adoption comparison')
+        manifest = json.loads(path.read_text())
+        generation = check(manifest.get('generation', ''), r'[a-f0-9]{64}', 'migrated asset generation')
+        expected_path = 'mrn-assets/' + plan['slug'] + '/' + generation
+        if (manifest.get('schema') != 1 or manifest.get('scope') != 'child-theme'
+                or manifest.get('slug') != plan['slug'] or manifest.get('public_path') != expected_path):
+            raise ValueError('Migrated asset manifest does not belong to this child theme')
+
+        def same_origin_fetch(url, types):
+            if urlsplit(url).netloc != urlsplit(plan['url']).netloc:
+                raise ValueError('Migrated asset verification requires the exact site origin')
+            return fetch(url, types)
+
+        proof = verify_public(manifest, plan['pages'], fetcher=same_origin_fetch)
+        for page in proof['pages']:
+            for url, checksum in page['assets'].items():
+                suffix = urlsplit(url).path
+                if re.search(r'\.(css|js|mjs)$', suffix):
+                    types = {'text/css'} if suffix.endswith('.css') else {'text/javascript', 'application/javascript'}
+                    assets[url] = {'sha256': checksum, 'types': sorted(types)}
+        if not assets:
+            raise ValueError('No verified migrated child assets found for adoption comparison')
     return assets
 
 
