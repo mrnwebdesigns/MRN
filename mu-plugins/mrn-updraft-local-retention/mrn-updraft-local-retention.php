@@ -3,13 +3,16 @@
  * Plugin Name: MRN Updraft Backup Policy
  * Description: Enforces the MRN Updraft backup policy, limits local backup sets, and repairs missing scheduled events.
  * Author: MRN Web Designs
- * Version: 0.7.0
+ * Version: 0.8.0
  */
 
 defined('ABSPATH') || exit;
 
 require_once __DIR__ . '/includes/class-mrn-updraft-mainwp-policy.php';
 MRN_Updraft_MainWP_Policy::init();
+
+require_once __DIR__ . '/includes/class-mrn-updraft-mainwp-maintenance.php';
+MRN_Updraft_MainWP_Maintenance::init();
 
 /**
  * Cron hook used for scheduled local backup cleanup.
@@ -344,7 +347,7 @@ function mrn_updraft_backup_policy_get_retention_status(): array {
 	if (mrn_updraft_backup_policy_is_excluded()) {
 		return array(
 			'policy_version'   => '2026.09',
-			'plugin_version'   => '0.7.0',
+			'plugin_version'   => '0.8.0',
 			'management_mode'  => 'excluded',
 			'excluded'         => true,
 			'exclusion_reason' => 'p_and_p_not_yes',
@@ -380,7 +383,7 @@ function mrn_updraft_backup_policy_get_retention_status(): array {
 
 	return array(
 		'policy_version'        => '2026.09',
-		'plugin_version'        => '0.7.0',
+		'plugin_version'        => '0.8.0',
 		'expected_schedule'     => $expected_schedule,
 		'file_retention_cap'    => MRN_UPDRAFT_REMOTE_FILE_RETENTION_MAX_SETS,
 		'database_retention_cap' => MRN_UPDRAFT_REMOTE_DATABASE_RETENTION_MAX_SETS,
