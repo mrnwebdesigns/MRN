@@ -30,6 +30,8 @@ $_POST = $post;
 check_label( MRN_Updraft_MainWP_Policy::mainwp_backup_options( $options, array() ) === $options + array( 'label' => 'MRN MainWP database-only backup' ) );
 check_label( MRN_Updraft_MainWP_Policy::mainwp_backup_options( $options, $post ) === $options );
 check_label( MRN_Updraft_MainWP_Policy::mainwp_backup_options( $options + array( 'label' => 'Native label' ), array() ) === $options + array( 'label' => 'Native label' ) );
+$_POST['package_base64'] = new stdClass(); // Sentinel: unrelated upload payloads must never be traversed.
+check_label( MRN_Updraft_MainWP_Policy::mainwp_backup_options( $options, array() ) === $options + array( 'label' => 'MRN MainWP database-only backup' ) );
 
 foreach ( array( 'function', 'mwp_action', 'mainwpsignature', 'backupnow_nofiles', 'backupnow_label' ) as $key ) {
 	$_POST = $post;
