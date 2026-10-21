@@ -398,9 +398,11 @@ final class MRN_Updraft_MainWP_Maintenance {
 				$attributes = 0;
 				$zip->getExternalAttributesIndex( $i, $system, $attributes );
 				$bytes    += $metadata['size'];
-				$canonical = strtolower( rtrim( (string) $name, '/' ) );
+				// ZIP directories may end in one slash; internal empty/dot segments remain invalid.
+				$pathname  = '/' === substr( (string) $name, -1 ) ? substr( $name, 0, -1 ) : (string) $name;
+				$canonical = strtolower( $pathname );
 				$type      = ( $attributes >> 16 ) & 0170000;
-				if ( isset( $seen[ $canonical ] ) || preg_match( '#(?:^|/)\.?(?:/|$)#', (string) $name ) || ( 3 === $system && ! in_array( $type, array( 0, 0100000, 0040000 ), true ) ) ) {
+				if ( isset( $seen[ $canonical ] ) || preg_match( '#(?:^|/)\.?(?:/|$)#', $pathname ) || ( 3 === $system && ! in_array( $type, array( 0, 0100000, 0040000 ), true ) ) ) {
 					throw new RuntimeException( 'package_alias_or_type' );
 				}
 				$seen[ $canonical ] = true;
