@@ -1,6 +1,6 @@
 === MRN Updraft Backup Policy ===
 Contributors: mrnwebdesigns
-Stable tag: 0.8.1
+Stable tag: 0.8.2
 Tested up to: 7.1
 Requires PHP: 7.4
 
@@ -14,6 +14,9 @@ Supports the shared Stack loader or the standalone MU bootstrap. See README.md
 for configuration, prerequisites, domain cutover, and verification details.
 
 == Changelog ==
+
+= 0.8.2 =
+* Accept normal ZIP directory entries while still rejecting aliases, traversal and unsafe types.
 
 = 0.8.1 =
 * Forward the fixed MRN label into new native MainWP backups before they start.

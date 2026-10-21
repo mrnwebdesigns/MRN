@@ -63,7 +63,7 @@ MRN_QA_CODE_ANALYSIS_SCOPE=all mrn-qa run --project-root /Users/khofmeyer/Develo
 
 Runtime browser, accessibility, API, and performance checks should be run separately against an explicit target site when this plugin change affects rendered output or live WordPress behavior.
 
-## Guarded MainWP maintenance (local 0.8.1 candidate)
+## Guarded MainWP maintenance (0.8.2 candidate)
 
 Adds `mrn_maintenance_request` only on MainWP Child's existing authenticated
 `extra_execution` hook. There is no child REST route, new credential, raw-code
@@ -79,6 +79,12 @@ update and rollback hooks remain in use. Independent readback is bound to the
 same exact operation and selection. Unknown operations are not retried, locks
 are not stolen, and audit records are not silently expired. New operations stop
 at 2,000 durable operation/nonce entries pending separately authorized archival.
+
+ZIP validation accepts the single trailing slash used by standard directory
+entries in official WordPress packages. Empty internal path segments, dot or
+parent aliases, duplicate/case-colliding paths, symlinks and unsafe types remain
+refused. `php tests/maintenance-packages.php` covers both plugin/theme directory
+entries and the corresponding unsafe archives without touching a WordPress site.
 
 Qualification includes `php tests/schedule-repair.php` (actual policy adapter
 with history/log/S3 fixtures) and the Dashboard repository's disposable
