@@ -118,6 +118,35 @@ class HostControllerContract(unittest.TestCase):
         self.assertIsNone(self.fixture.store.pointer())
         self.assertEqual(self.fixture.before, fixture.inventory(self.fixture.theme))
 
+    def test_native_public_gate_waits_for_edge_then_still_checks_public_assets(self):
+        plan = dict(self.plan, host_provider='kinsta')
+        store, adapter = Mock(), Mock()
+        pointer = {'release_id':'a'*64,'public_path':None}
+        events = []
+        adapter.refresh_edge_html.side_effect = lambda *args: events.append('edge') or {'status':'complete'}
+        with patch.object(host,'html_cache',side_effect=lambda *args:events.append('origin') or {}), \
+                patch.object(host,'verify_cached_public',side_effect=lambda *args:events.append('public') or {}), \
+                patch.object(host,'legacy_assets',side_effect=lambda *args:events.append('assets') or {}):
+            receipt = host.public_check(plan,store,pointer,adapter)
+        self.assertEqual(['origin','edge','public','assets'],events)
+        self.assertEqual('complete',receipt['cache']['edge']['status'])
+        adapter.refresh_edge_html.assert_called_once_with(plan['url'],plan['pages'])
+        store.verify_public_snapshot.assert_called_once()
+
+    def test_missing_native_edge_identity_blocks_before_any_cache_write(self):
+        with patch.object(host,'html_cache') as origin:
+            with self.assertRaisesRegex(ValueError,'Native Kinsta identity'):
+                host.public_check(dict(self.plan,host_provider='kinsta'),Mock(),{'release_id':'a'*64})
+            origin.assert_not_called()
+
+    def test_failed_native_edge_operation_blocks_public_acceptance(self):
+        adapter = Mock()
+        adapter.refresh_edge_html.side_effect = RuntimeError('edge purge pending')
+        with patch.object(host,'html_cache',return_value={}), patch.object(host,'verify_cached_public') as public:
+            with self.assertRaisesRegex(RuntimeError,'edge purge pending'):
+                host.public_check(dict(self.plan,host_provider='kinsta'),Mock(),{'release_id':'a'*64},adapter)
+            public.assert_not_called()
+
     def test_recovery_failure_receipt_preserves_location_without_secret_text(self):
         try:
             try:
