@@ -1,0 +1,555 @@
+{
+    "scope": "Saved row metadata only; enabled does not prove DOM visibility or global layout availability.",
+    "records": 63,
+    "saved_rows": 300,
+    "disabled_saved_rows": 29,
+    "records_with_disabled_rows": 12,
+    "authored_writes": 0,
+    "items": [
+        {
+            "id": 12,
+            "saved_rows": 12,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 308,
+            "saved_rows": 11,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 400,
+            "saved_rows": 7,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 611,
+            "saved_rows": 10,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 653,
+            "saved_rows": 5,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 673,
+            "saved_rows": 4,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 774,
+            "saved_rows": 7,
+            "disabled_indices": [
+                5
+            ],
+            "renamed_indices": [],
+            "visibility_sha256": "dcbdec7220d65807895431b5d49706eaa2626ed5ec7f9be82c7b29c4c7359c63",
+            "issues": []
+        },
+        {
+            "id": 1017,
+            "saved_rows": 10,
+            "disabled_indices": [
+                5
+            ],
+            "renamed_indices": [],
+            "visibility_sha256": "dcbdec7220d65807895431b5d49706eaa2626ed5ec7f9be82c7b29c4c7359c63",
+            "issues": []
+        },
+        {
+            "id": 1124,
+            "saved_rows": 2,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 1142,
+            "saved_rows": 16,
+            "disabled_indices": [
+                1,
+                4,
+                6,
+                9,
+                10
+            ],
+            "renamed_indices": [],
+            "visibility_sha256": "008a016510ecb749cf45e0872d86f782e5b70e08dcdfa58280cbededc5bf5dff",
+            "issues": []
+        },
+        {
+            "id": 1191,
+            "saved_rows": 8,
+            "disabled_indices": [
+                4
+            ],
+            "renamed_indices": [],
+            "visibility_sha256": "cd52b23a3c527de0dbf7d85068fa6ca75906829c1f6d14f113108596e5d5e7b6",
+            "issues": []
+        },
+        {
+            "id": 1210,
+            "saved_rows": 10,
+            "disabled_indices": [
+                6
+            ],
+            "renamed_indices": [],
+            "visibility_sha256": "24f6ecc5d7b66f81e06913d2c2ed83cc95e7e231bf9091ffd74a8e052ebf3e3b",
+            "issues": []
+        },
+        {
+            "id": 1223,
+            "saved_rows": 4,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 1236,
+            "saved_rows": 4,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 1304,
+            "saved_rows": 10,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 1307,
+            "saved_rows": 10,
+            "disabled_indices": [
+                6,
+                7,
+                9
+            ],
+            "renamed_indices": [],
+            "visibility_sha256": "ef43256393467c66b0c5e135ae7b4f603b2e0e69ce5729a911d34a16978b0c23",
+            "issues": []
+        },
+        {
+            "id": 1309,
+            "saved_rows": 3,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 1443,
+            "saved_rows": 3,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 9287,
+            "saved_rows": 3,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 9555,
+            "saved_rows": 10,
+            "disabled_indices": [
+                2,
+                6
+            ],
+            "renamed_indices": [],
+            "visibility_sha256": "e95b6f91f42cbea67c3d989e5e04846be8d0bd168c64471028fa4bc84546676c",
+            "issues": []
+        },
+        {
+            "id": 9562,
+            "saved_rows": 8,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 9565,
+            "saved_rows": 3,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 10223,
+            "saved_rows": 8,
+            "disabled_indices": [
+                4
+            ],
+            "renamed_indices": [],
+            "visibility_sha256": "cd52b23a3c527de0dbf7d85068fa6ca75906829c1f6d14f113108596e5d5e7b6",
+            "issues": []
+        },
+        {
+            "id": 10308,
+            "saved_rows": 11,
+            "disabled_indices": [
+                2
+            ],
+            "renamed_indices": [],
+            "visibility_sha256": "822ada4cba7f83383ae8b782d23d64af26c34a88fd4946ca012f18b9fc467740",
+            "issues": []
+        },
+        {
+            "id": 10376,
+            "saved_rows": 2,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 10377,
+            "saved_rows": 2,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 10378,
+            "saved_rows": 3,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 10379,
+            "saved_rows": 2,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 10380,
+            "saved_rows": 2,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 10381,
+            "saved_rows": 12,
+            "disabled_indices": [
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11
+            ],
+            "renamed_indices": [],
+            "visibility_sha256": "df24b856a58a7c6af20d0fe0e5e884d9eb362d5403631e6cab605131859c1a55",
+            "issues": []
+        },
+        {
+            "id": 10382,
+            "saved_rows": 2,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 10383,
+            "saved_rows": 3,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 10384,
+            "saved_rows": 2,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 10385,
+            "saved_rows": 2,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 10386,
+            "saved_rows": 2,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 10387,
+            "saved_rows": 4,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 10388,
+            "saved_rows": 2,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 10389,
+            "saved_rows": 2,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 10392,
+            "saved_rows": 2,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 10397,
+            "saved_rows": 9,
+            "disabled_indices": [
+                5,
+                7
+            ],
+            "renamed_indices": [],
+            "visibility_sha256": "18314e4bbf3c4a96242187e0fcdd39919ddcbb3fc13666fa587200ba3a923105",
+            "issues": []
+        },
+        {
+            "id": 10401,
+            "saved_rows": 2,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 10403,
+            "saved_rows": 2,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 10442,
+            "saved_rows": 2,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 10482,
+            "saved_rows": 4,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 10496,
+            "saved_rows": 4,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 10498,
+            "saved_rows": 9,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 10531,
+            "saved_rows": 5,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 10650,
+            "saved_rows": 11,
+            "disabled_indices": [
+                8,
+                9,
+                10
+            ],
+            "renamed_indices": [],
+            "visibility_sha256": "b7a5fa025b57a2656dbd00f24d11620fc530281c2e58fd941ee50d72695eb559",
+            "issues": []
+        },
+        {
+            "id": 10694,
+            "saved_rows": 2,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 10699,
+            "saved_rows": 2,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 10710,
+            "saved_rows": 2,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 10716,
+            "saved_rows": 2,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 10729,
+            "saved_rows": 3,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 10734,
+            "saved_rows": 2,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 10740,
+            "saved_rows": 2,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 10747,
+            "saved_rows": 2,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 10754,
+            "saved_rows": 2,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 10759,
+            "saved_rows": 2,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 10767,
+            "saved_rows": 2,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 10777,
+            "saved_rows": 2,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 11561,
+            "saved_rows": 2,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 11567,
+            "saved_rows": 1,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        },
+        {
+            "id": 11578,
+            "saved_rows": 1,
+            "disabled_indices": [],
+            "renamed_indices": [],
+            "visibility_sha256": "e6ca418396d1bf8929a5459c48996e386786f607954dfbdb845161e29cce39cd",
+            "issues": []
+        }
+    ]
+}

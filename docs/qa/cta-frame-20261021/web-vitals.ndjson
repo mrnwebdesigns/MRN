@@ -1,2 +1,2 @@
-{"path":"/","metrics":{"LCP":{"value":108,"rating":"good"},"CLS":{"value":0.13243181134594811,"rating":"needs-improvement"},"INP":{"value":16,"rating":"good"}}}
-{"path":"/seo.html","metrics":{"LCP":{"value":120,"rating":"good"},"CLS":{"value":0,"rating":"good"},"INP":{"value":24,"rating":"good"}}}
+{"path":"/","metrics":{"LCP":{"value":772,"rating":"good"},"CLS":{"value":0.005146191875139872,"rating":"good"},"INP":{"value":8,"rating":"good"}}}
+{"path":"/stack-cta-frame-preview-20261021/seo.html","metrics":{"LCP":{"value":104,"rating":"good"},"CLS":{"value":0.12414795043733386,"rating":"needs-improvement"},"INP":{"value":8,"rating":"good"}}}
