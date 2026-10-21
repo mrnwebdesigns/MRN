@@ -17,6 +17,8 @@ require_once __DIR__ . '/presentation.php';
 
 require_once __DIR__ . '/hero-frame.php';
 
+require_once __DIR__ . '/cta-frame.php';
+
 require_once __DIR__ . '/lazy-layouts.php';
 
 require_once __DIR__ . '/editor-startup.php';

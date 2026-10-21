@@ -1,0 +1,296 @@
+[
+  {
+    "client": 2560,
+    "overflow": false,
+    "rows": [
+      {
+        "action": {
+          "height": 53.59375,
+          "width": 200,
+          "x": 1180,
+          "y": 236.390625
+        },
+        "bg": "rgb(242, 244, 247)",
+        "heading": {
+          "height": 43.203125,
+          "width": 1140,
+          "x": 710,
+          "y": 80
+        },
+        "height": 369.984375,
+        "id": "legacy-cta",
+        "padding": "80px 120px"
+      },
+      {
+        "action": {
+          "height": 53.59375,
+          "width": 200,
+          "x": 1180,
+          "y": 236.390625
+        },
+        "bg": "rgb(242, 244, 247)",
+        "heading": {
+          "height": 43.203125,
+          "width": 1140,
+          "x": 710,
+          "y": 80
+        },
+        "height": 369.984375,
+        "id": "native-cta",
+        "padding": "80px 120px"
+      }
+    ]
+  },
+  {
+    "client": 1280,
+    "overflow": false,
+    "rows": [
+      {
+        "action": {
+          "height": 53.59375,
+          "width": 200,
+          "x": 540,
+          "y": 234.65625
+        },
+        "bg": "rgb(242, 244, 247)",
+        "heading": {
+          "height": 41.46875,
+          "width": 920,
+          "x": 180,
+          "y": 80
+        },
+        "height": 368.25,
+        "id": "legacy-cta",
+        "padding": "80px 120px"
+      },
+      {
+        "action": {
+          "height": 53.59375,
+          "width": 200,
+          "x": 540,
+          "y": 234.65625
+        },
+        "bg": "rgb(242, 244, 247)",
+        "heading": {
+          "height": 41.46875,
+          "width": 920,
+          "x": 180,
+          "y": 80
+        },
+        "height": 368.25,
+        "id": "native-cta",
+        "padding": "80px 120px"
+      }
+    ]
+  },
+  {
+    "client": 1199,
+    "overflow": false,
+    "rows": [
+      {
+        "action": {
+          "height": 53.59375,
+          "width": 200,
+          "x": 499.5,
+          "y": 232.5234375
+        },
+        "bg": "rgb(242, 244, 247)",
+        "heading": {
+          "height": 39.3359375,
+          "width": 869,
+          "x": 165,
+          "y": 80
+        },
+        "height": 366.1171875,
+        "id": "legacy-cta",
+        "padding": "80px 120px"
+      },
+      {
+        "action": {
+          "height": 53.59375,
+          "width": 200,
+          "x": 499.5,
+          "y": 232.5234375
+        },
+        "bg": "rgb(242, 244, 247)",
+        "heading": {
+          "height": 39.3359375,
+          "width": 869,
+          "x": 165,
+          "y": 80
+        },
+        "height": 366.1171875,
+        "id": "native-cta",
+        "padding": "80px 120px"
+      }
+    ]
+  },
+  {
+    "client": 960,
+    "overflow": false,
+    "rows": [
+      {
+        "action": {
+          "height": 53.59375,
+          "width": 200,
+          "x": 380,
+          "y": 226.2109375
+        },
+        "bg": "rgb(242, 244, 247)",
+        "heading": {
+          "height": 33.0234375,
+          "width": 630,
+          "x": 165,
+          "y": 80
+        },
+        "height": 359.8046875,
+        "id": "legacy-cta",
+        "padding": "80px 120px"
+      },
+      {
+        "action": {
+          "height": 53.59375,
+          "width": 200,
+          "x": 380,
+          "y": 226.2109375
+        },
+        "bg": "rgb(242, 244, 247)",
+        "heading": {
+          "height": 33.0234375,
+          "width": 630,
+          "x": 165,
+          "y": 80
+        },
+        "height": 359.8046875,
+        "id": "native-cta",
+        "padding": "80px 120px"
+      }
+    ]
+  },
+  {
+    "client": 820,
+    "overflow": false,
+    "rows": [
+      {
+        "action": {
+          "height": 53.59375,
+          "width": 200,
+          "x": 310,
+          "y": 248.109375
+        },
+        "bg": "rgb(242, 244, 247)",
+        "heading": {
+          "height": 29.328125,
+          "width": 490,
+          "x": 165,
+          "y": 80
+        },
+        "height": 381.703125,
+        "id": "legacy-cta",
+        "padding": "80px 120px"
+      },
+      {
+        "action": {
+          "height": 53.59375,
+          "width": 200,
+          "x": 310,
+          "y": 248.109375
+        },
+        "bg": "rgb(242, 244, 247)",
+        "heading": {
+          "height": 29.328125,
+          "width": 490,
+          "x": 165,
+          "y": 80
+        },
+        "height": 381.703125,
+        "id": "native-cta",
+        "padding": "80px 120px"
+      }
+    ]
+  },
+  {
+    "client": 767,
+    "overflow": false,
+    "rows": [
+      {
+        "action": {
+          "height": 53.59375,
+          "width": 200,
+          "x": 283.5,
+          "y": 231.578125
+        },
+        "bg": "rgb(242, 244, 247)",
+        "heading": {
+          "height": 28.796875,
+          "width": 513,
+          "x": 127,
+          "y": 64
+        },
+        "height": 349.171875,
+        "id": "legacy-cta",
+        "padding": "64px 96px"
+      },
+      {
+        "action": {
+          "height": 53.59375,
+          "width": 200,
+          "x": 283.5,
+          "y": 205.984375
+        },
+        "bg": "rgb(242, 244, 247)",
+        "heading": {
+          "height": 28.796875,
+          "width": 705,
+          "x": 31,
+          "y": 64
+        },
+        "height": 323.578125,
+        "id": "native-cta",
+        "padding": "64px 0px"
+      }
+    ]
+  },
+  {
+    "client": 375,
+    "overflow": false,
+    "rows": [
+      {
+        "action": {
+          "height": 53.59375,
+          "width": 200,
+          "x": 127,
+          "y": 516.3125
+        },
+        "bg": "rgb(242, 244, 247)",
+        "heading": {
+          "height": 57.59375,
+          "width": 121,
+          "x": 127,
+          "y": 64
+        },
+        "height": 633.90625,
+        "id": "legacy-cta",
+        "padding": "64px 96px"
+      },
+      {
+        "action": {
+          "height": 53.59375,
+          "width": 200,
+          "x": 87.5,
+          "y": 257.171875
+        },
+        "bg": "rgb(242, 244, 247)",
+        "heading": {
+          "height": 28.796875,
+          "width": 313,
+          "x": 31,
+          "y": 64
+        },
+        "height": 374.765625,
+        "id": "native-cta",
+        "padding": "64px 0px"
+      }
+    ]
+  }
+]

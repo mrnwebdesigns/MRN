@@ -1,0 +1,2 @@
+{"path":"/","metrics":{"LCP":{"value":108,"rating":"good"},"CLS":{"value":0.13243181134594811,"rating":"needs-improvement"},"INP":{"value":16,"rating":"good"}}}
+{"path":"/seo.html","metrics":{"LCP":{"value":120,"rating":"good"},"CLS":{"value":0,"rating":"good"},"INP":{"value":24,"rating":"good"}}}
