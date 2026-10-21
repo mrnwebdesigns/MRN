@@ -596,7 +596,12 @@ final class MRN_Updraft_MainWP_Policy {
 		if ( is_wp_error( $client ) || ! is_object( $client ) || ( ! is_a( $client, 'UpdraftPlus_S3' ) && ! is_a( $client, 'UpdraftPlus_S3_Compat' ) ) ) {
 			return self::failure( 'remote_inventory_unavailable' );
 		}
-		foreach ( array( 'getBucket', 'getBucketLocation', 'setSSL', 'setSSLAuth', 'setExceptions', 'setRegion', 'setEndpoint' ) as $method ) {
+		$compat  = is_a( $client, 'UpdraftPlus_S3_Compat' );
+		$methods = array( 'getBucket', 'getBucketLocation', 'setSSL', 'setSSLAuth', 'setExceptions', 'setRegion' );
+		if ( ! $compat ) {
+			$methods = array_merge( $methods, array( 'setEndpoint', 'setSignatureVersion' ) );
+		}
+		foreach ( $methods as $method ) {
 			if ( ! is_callable( array( $client, $method ) ) ) {
 				return self::failure( 'remote_inventory_unavailable' );
 			}
@@ -616,10 +621,9 @@ final class MRN_Updraft_MainWP_Policy {
 				return self::failure( 'remote_region_unavailable' );
 			}
 			$client->setRegion( $region );
-			$endpoint = 's3.' . $region . ( 0 === strpos( $region, 'cn-' ) ? '.amazonaws.com.cn' : '.amazonaws.com' );
-			if ( is_a( $client, 'UpdraftPlus_S3_Compat' ) ) {
-				$client->setEndpoint( $endpoint, $region );
-			} else {
+			// Compat's SDK v3 routes with @region; its legacy endpoint setter is unsupported.
+			if ( ! $compat ) {
+				$endpoint = 's3.' . $region . ( 0 === strpos( $region, 'cn-' ) ? '.amazonaws.com.cn' : '.amazonaws.com' );
 				$client->setEndpoint( $endpoint );
 				$client->setSignatureVersion( 'v4' );
 			}

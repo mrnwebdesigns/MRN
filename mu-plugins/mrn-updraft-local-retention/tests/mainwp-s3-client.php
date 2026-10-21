@@ -48,7 +48,8 @@ class MRN_Regional_S3 extends UpdraftPlus_S3 {
 		$this->events[] = 'list';
 		$region = in_array( $this->location, array( null, '', 'US' ), true ) ? 'us-east-1' : ( 'EU' === $this->location ? 'eu-west-1' : $this->location );
 		$domain = 0 === strpos( $region, 'cn-' ) ? 'amazonaws.com.cn' : 'amazonaws.com';
-		if ( $region !== $this->getRegion() || $this->endpoint !== 's3.' . $region . '.' . $domain || ! $this->useSSLValidation || 'system' !== $this->sslCACert || 'backups' !== $bucket || 'sites/example-com/backup_2026_abcdef123456-' !== $prefix || 1000 !== $max_keys ) {
+		$endpoint_valid = is_a( $this, 'UpdraftPlus_S3_Compat' ) || $this->endpoint === 's3.' . $region . '.' . $domain;
+		if ( $region !== $this->getRegion() || ! $endpoint_valid || ! $this->useSSLValidation || 'system' !== $this->sslCACert || 'backups' !== $bucket || 'sites/example-com/backup_2026_abcdef123456-' !== $prefix || 1000 !== $max_keys ) {
 			throw new RuntimeException( 'Regional scoped listing contract failed.' );
 		}
 		return $this->list;
@@ -62,12 +63,10 @@ class MRN_Regional_Storage {
 	public function getS3( ...$arguments ) { return $this->client; }
 }
 
-/** Compat's public endpoint setter also requires its region argument. */
+/** Compat's SDK v3 routes with @region; legacy setEndpoint must never run. */
 class MRN_Regional_Compat extends MRN_Regional_S3 {
 	public function setEndpoint( $host, $region = null ) {
-		if ( null === $region ) { throw new RuntimeException( 'Compat region required.' ); }
-		$this->endpoint = $host;
-		$this->setRegion( $region );
+		throw new RuntimeException( 'Compat endpoint setter is unsupported.' );
 	}
 }
 class_alias( MRN_Regional_Compat::class, 'UpdraftPlus_S3_Compat' );
@@ -105,7 +104,7 @@ check_s3( array() === inspect_s3( $client ), 'successful empty listing remains d
 $client = new MRN_Regional_S3(); $client->list = array( array( 'name' => 'sites/other-com/backup_2026_abcdef123456-db.gz', 'size' => 42 ) );
 check_s3( is_wp_error( inspect_s3( $client ) ), 'unrelated prefix refused' );
 $client = new MRN_Regional_Compat();
-check_s3( array() === inspect_s3( $client ) && array( 'location', 'list' ) === $client->events, 'Compat public endpoint contract preserves TLS and region' );
+check_s3( array() === inspect_s3( $client ) && array( 'location', 'list' ) === $client->events, 'Compat preserves TLS and region without unsupported endpoint setter' );
 check_s3( is_wp_error( inspect_s3( new stdClass() ) ), 'unknown client refused' );
 $client = new MRN_Regional_S3(); $client->list = array_fill( 0, 1000, array( 'name' => 'sites/example-com/backup_2026_abcdef123456-db.gz', 'size' => 1 ) );
 check_s3( is_wp_error( inspect_s3( $client ) ), 'truncated inventory refused' );
