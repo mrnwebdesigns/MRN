@@ -63,7 +63,7 @@ MRN_QA_CODE_ANALYSIS_SCOPE=all mrn-qa run --project-root /Users/khofmeyer/Develo
 
 Runtime browser, accessibility, API, and performance checks should be run separately against an explicit target site when this plugin change affects rendered output or live WordPress behavior.
 
-## Guarded MainWP maintenance (local 0.8.0 candidate)
+## Guarded MainWP maintenance (local 0.8.1 candidate)
 
 Adds `mrn_maintenance_request` only on MainWP Child's existing authenticated
 `extra_execution` hook. There is no child REST route, new credential, raw-code
@@ -86,3 +86,8 @@ with history/log/S3 fixtures) and the Dashboard repository's disposable
 updates with mocked transport/backup boundary). Neither proves deployment or
 remote runtime readiness. This local candidate must not be promoted or installed
 without the separately approved release, backup and pilot gates.
+
+MainWP Child 6.2.1 omits the native Updraft request argument. The backup-options
+bridge preserves only the fixed MRN label for a new, remote, full-database
+backup requested through that signed flow. It never changes existing history,
+starts a backup, changes credentials, or relaxes receipt verification.

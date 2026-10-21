@@ -22,6 +22,30 @@ final class MRN_Updraft_MainWP_Policy {
 	/** Register only the post-authentication MainWP Child hook. */
 	public static function init() {
 		add_filter( 'mainwp_child_extra_execution', array( __CLASS__, 'dispatch' ), 20, 2 );
+		add_filter( 'updraft_backupnow_options', array( __CLASS__, 'mainwp_backup_options' ), 9, 2 );
+	}
+
+	/**
+	 * Preserve the fixed MRN label when MainWP Child omits Updraft's request argument.
+	 *
+	 * This filter starts no backup and grants no permission. MainWP authenticates
+	 * backup_now before Updraft invokes it. Never relabel existing backup history.
+	 *
+	 * @param array $options Native options for the new backup.
+	 * @param array $request Native Updraft request (empty in MainWP Child 6.2.1).
+	 * @return array
+	 */
+	public static function mainwp_backup_options( $options, $request ) {
+		if ( ! is_array( $options ) || array() !== $request || isset( $options['label'] ) || empty( $options['use_nonce'] ) || ! is_string( $options['use_nonce'] ) || ! preg_match( '/^[0-9a-f]{12}$/D', $options['use_nonce'] ) || ! array_key_exists( 'nocloud', $options ) || false !== $options['nocloud'] ) {
+			return $options;
+		}
+		$fields = array_fill_keys( array( 'function', 'mwp_action', 'backupnow_nofiles', 'backupnow_label', 'mainwpsignature', 'backupnow_nodb', 'backupnow_nocloud', 'onlythisfileentity', 'onlythesetableentities' ), true );
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Existing signed MainWP backup flow invokes this metadata-only filter; it cannot start a backup. Never copy unrelated upload payloads.
+		$post = wp_unslash( array_intersect_key( $_POST, $fields ) );
+		if ( 'updraftplus' === ( $post['function'] ?? '' ) && 'backup_now' === ( $post['mwp_action'] ?? '' ) && '1' === ( $post['backupnow_nofiles'] ?? '' ) && 'MRN MainWP database-only backup' === ( $post['backupnow_label'] ?? '' ) && ! empty( $post['mainwpsignature'] ) && is_string( $post['mainwpsignature'] ) && empty( $post['backupnow_nodb'] ) && empty( $post['backupnow_nocloud'] ) && empty( $post['onlythisfileentity'] ) && empty( $post['onlythesetableentities'] ) ) {
+			$options['label'] = 'MRN MainWP database-only backup';
+		}
+		return $options;
 	}
 
 	/**
