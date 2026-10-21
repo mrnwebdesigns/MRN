@@ -63,7 +63,7 @@ MRN_QA_CODE_ANALYSIS_SCOPE=all mrn-qa run --project-root /Users/khofmeyer/Develo
 
 Runtime browser, accessibility, API, and performance checks should be run separately against an explicit target site when this plugin change affects rendered output or live WordPress behavior.
 
-## Guarded MainWP maintenance (0.8.2 candidate)
+## Guarded MainWP maintenance (0.8.3 candidate)
 
 Adds `mrn_maintenance_request` only on MainWP Child's existing authenticated
 `extra_execution` hook. There is no child REST route, new credential, raw-code
@@ -85,6 +85,20 @@ entries in official WordPress packages. Empty internal path segments, dot or
 parent aliases, duplicate/case-colliding paths, symlinks and unsafe types remain
 refused. `php tests/maintenance-packages.php` covers both plugin/theme directory
 entries and the corresponding unsafe archives without touching a WordPress site.
+
+Remote proof initializes native S3 TLS certificate verification and discovers
+the bucket region before its bounded exact-prefix listing. Region discovery
+failure is a refusal; verification never creates a bucket or changes credentials.
+`php tests/mainwp-s3-client.php /path/to/updraftplus/includes/S3.php` exercises
+the installed native client API with offline network substitutes.
+
+After an authenticated, site-matched preflight refusal, the existing MainWP
+runtime report can include `last_maintenance_preflight_refusal`. It contains
+only a schema version, a fixed code and a timestamp, retained for ten minutes
+under one fixed transient key. Reading the report performs no new backup,
+remote scan or diagnostic write. Unknown exceptions remain `internal_error`;
+raw messages, signed URLs, backup nonces and credentials are never retained.
+This is diagnostic history, not deployment approval or current readiness.
 
 Qualification includes `php tests/schedule-repair.php` (actual policy adapter
 with history/log/S3 fixtures) and the Dashboard repository's disposable

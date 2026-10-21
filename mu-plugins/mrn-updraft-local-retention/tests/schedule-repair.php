@@ -130,11 +130,19 @@ final class UpdraftPlus_Storage_Methods_Interface {
 }
 
 final class MRN_Test_S3_Client {
+	public function setSSL($ssl, $verify = true): void {}
+	public function setSSLAuth($cert = null, $key = null, $ca = null): void {}
+	public function setExceptions($enabled = true): void {}
+	public function setRegion($region): void {}
+	public function setEndpoint($host): void {}
+	public function setSignatureVersion($version): void {}
+	public function getBucketLocation($bucket): string { return 'US'; }
 	public function getBucket(string $bucket, string $prefix, $marker, int $limit): array {
 		global $mrn_test_s3_filename;
 		return array(array('name' => 'sites/' . mrn_updraft_backup_policy_get_sanitized_hostname() . '/' . $mrn_test_s3_filename, 'size' => 1));
 	}
 }
+class_alias(MRN_Test_S3_Client::class, 'UpdraftPlus_S3');
 
 final class MRN_Test_S3_Storage {
 	public function set_options(array $settings, bool $use_settings, string $instance_id): void {}

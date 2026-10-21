@@ -593,10 +593,44 @@ final class MRN_Updraft_MainWP_Policy {
 		// Use Updraft's own S3 client. Unlike listfiles(), getBucket distinguishes
 		// a successful empty listing from an authentication/network failure.
 		$client = $provider['object']->getS3( $settings['accesskey'], $settings['secretkey'], mrn_updraft_backup_policy_get_option( 'updraft_ssl_useservercerts', false ), false, false, null, ! empty( $settings['server_side_encryption'] ), $settings['sessiontoken'] ?? null );
-		if ( is_wp_error( $client ) || ! is_object( $client ) || ! method_exists( $client, 'getBucket' ) ) {
+		if ( is_wp_error( $client ) || ! is_object( $client ) || ( ! is_a( $client, 'UpdraftPlus_S3' ) && ! is_a( $client, 'UpdraftPlus_S3_Compat' ) ) ) {
 			return self::failure( 'remote_inventory_unavailable' );
 		}
-		$list = $client->getBucket( $parts[0], $prefix . $stem, null, 1000 );
+		foreach ( array( 'getBucket', 'getBucketLocation', 'setSSL', 'setSSLAuth', 'setExceptions', 'setRegion', 'setEndpoint' ) as $method ) {
+			if ( ! is_callable( array( $client, $method ) ) ) {
+				return self::failure( 'remote_inventory_unavailable' );
+			}
+		}
+		try {
+			// getS3() alone has not initialized certificate verification or bucket region.
+			// Avoid get_bucket_access(): its native fallback can attempt to create a bucket.
+			$client->setSSL( true, true );
+			$client->setSSLAuth( null, null, 'system' );
+			$client->setExceptions( true );
+			$region = $client->getBucketLocation( $parts[0] );
+			if ( false === $region ) {
+				return self::failure( 'remote_region_unavailable' );
+			}
+			$region = in_array( $region, array( null, '', 'US' ), true ) ? 'us-east-1' : ( 'EU' === $region ? 'eu-west-1' : $region );
+			if ( ! is_string( $region ) || ! preg_match( '/^(?:af|ap|ca|cn|eu|il|me|mx|sa|us)(?:-[a-z0-9]+){1,3}-[1-9][0-9]*$/D', $region ) ) {
+				return self::failure( 'remote_region_unavailable' );
+			}
+			$client->setRegion( $region );
+			$endpoint = 's3.' . $region . ( 0 === strpos( $region, 'cn-' ) ? '.amazonaws.com.cn' : '.amazonaws.com' );
+			if ( is_a( $client, 'UpdraftPlus_S3_Compat' ) ) {
+				$client->setEndpoint( $endpoint, $region );
+			} else {
+				$client->setEndpoint( $endpoint );
+				$client->setSignatureVersion( 'v4' );
+			}
+			$list = $client->getBucket( $parts[0], $prefix . $stem, null, 1000 );
+		} catch ( Throwable $error ) {
+			// Native exception text can contain signed requests or provider details.
+			unset( $error );
+			return self::failure( 'remote_inventory_unavailable' );
+		} finally {
+			$client->setExceptions( false );
+		}
 		if ( ! is_array( $list ) || count( $list ) >= 1000 ) {
 			return self::failure( 'remote_inventory_unavailable' );
 		}
