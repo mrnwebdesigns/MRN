@@ -618,6 +618,55 @@ final class MRN_Updraft_MainWP_Policy {
 		return self::failure( 'recent_labeled_database_backup_required' );
 	}
 
+	/**
+	 * Prove a native labeled DB-only recovery point without returning logs or storage secrets.
+	 *
+	 * @param string $nonce Exact Updraft nonce.
+	 * @return array|WP_Error
+	 */
+	public static function maintenance_backup( $nonce ) {
+		$valid = self::verify_backup( $nonce );
+		if ( is_wp_error( $valid ) ) {
+			return $valid;
+		}
+		global $updraftplus;
+		if ( ! is_object( $updraftplus ) || ! is_callable( array( $updraftplus, 'backups_dir_location' ) ) ) {
+			return self::failure( 'maintenance_backup_log_unavailable' );
+		}
+		$file = trailingslashit( $updraftplus->backups_dir_location() ) . 'log.' . $nonce . '.txt';
+		if ( is_link( $file ) || ! is_file( $file ) || ! is_readable( $file ) || filesize( $file ) < 1 || filesize( $file ) > 8388608 ) {
+			return self::failure( 'maintenance_backup_log_unavailable' );
+		}
+		// Bound the read even if another process appends after the size check.
+		$log = file_get_contents( $file, false, null, 0, 8388609 );
+		if ( ! is_string( $log ) || strlen( $log ) > 8388608 || ! preg_match( '/The backup succeeded and is now complete/i', $log ) || ! preg_match( '/Recording as successfully uploaded:[^\r\n]+/i', $log ) || preg_match( '/\b(error|warning):|backup failed|fatal error|errors have occurred|failed to upload|more services to follow/i', $log ) ) {
+			return self::failure( 'maintenance_backup_not_complete' );
+		}
+		unset( $log );
+		$history = self::history();
+		if ( is_wp_error( $history ) ) {
+			return $history;
+		}
+		foreach ( $history as $timestamp => $record ) {
+			$row = self::record( $timestamp, $record );
+			if ( $row['nonce'] !== $nonce || 'MRN MainWP database-only backup' !== $row['label'] || $row['incremental'] ) {
+				continue;
+			}
+			if ( ! is_int( $timestamp ) || $timestamp > time() || time() - $timestamp >= 2 * HOUR_IN_SECONDS ) {
+				return self::failure( 'maintenance_backup_expired' );
+			}
+			return array(
+				'provider'        => 'updraftplus',
+				'nonce'           => $nonce,
+				'database_only'   => true,
+				'remote_verified' => true,
+				'completed_at'    => $timestamp * 1000,
+				'expires_at'      => ( $timestamp + 2 * HOUR_IN_SECONDS ) * 1000,
+			);
+		}
+		return self::failure( 'maintenance_backup_label_required' );
+	}
+
 	/** Exact component deletion through Updraft's S3 engine, then history readback. */
 	private static function execute_cleanup( $plan ) {
 		$deleted = array();

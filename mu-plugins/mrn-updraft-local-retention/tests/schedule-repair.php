@@ -31,6 +31,8 @@ if (false !== $mrn_test_backup_hostname) {
 	define('MRN_UPDRAFT_BACKUP_HOSTNAME', $mrn_test_backup_hostname);
 }
 
+function trailingslashit(string $value): string { return rtrim($value, '/') . '/'; }
+
 function wp_get_environment_type(): string {
 	global $mrn_test_environment;
 	return $mrn_test_environment;
@@ -394,6 +396,41 @@ $mrn_test_history = array($backup_timestamp => array(
 	'service_instance_ids' => array('s3' => array('instance')),
 	'native' => true,
 ));
+// Exercise the new maintenance proof using the actual policy adapter and bounded log reader.
+$maintenance_logs = sys_get_temp_dir() . '/mrn-maintenance-test-' . bin2hex(random_bytes(8));
+mkdir($maintenance_logs, 0700);
+$updraftplus = new class($maintenance_logs) {
+	private $directory;
+	public function __construct($directory) { $this->directory = $directory; }
+	public function backups_dir_location() { return $this->directory; }
+};
+$maintenance_log = $maintenance_logs . '/log.' . $nonce . '.txt';
+$complete_log = 'Recording as successfully uploaded: ' . $mrn_test_s3_filename . "\nThe backup succeeded and is now complete\n";
+$maintenance_check = static function ($ok, $label) {
+	if (!$ok) { fwrite(STDERR, 'Maintenance backup regression: ' . $label . "\n"); exit(1); }
+};
+$maintenance_check(is_wp_error(MRN_Updraft_MainWP_Policy::maintenance_backup($nonce)), 'missing log');
+file_put_contents($maintenance_log, 'Backup apparently succeeded');
+$maintenance_check(is_wp_error(MRN_Updraft_MainWP_Policy::maintenance_backup($nonce)), 'generic success is insufficient');
+file_put_contents($maintenance_log, $complete_log);
+$proof = MRN_Updraft_MainWP_Policy::maintenance_backup($nonce);
+$maintenance_check(is_array($proof) && true === $proof['remote_verified'] && $proof['expires_at'] === ($backup_timestamp + 7200) * 1000, 'remote proof with history expiry');
+file_put_contents($maintenance_log, $complete_log . "Warning: incomplete archive\n");
+$maintenance_check(is_wp_error(MRN_Updraft_MainWP_Policy::maintenance_backup($nonce)), 'warning refused');
+file_put_contents($maintenance_log, $complete_log);
+$saved_filename = $mrn_test_s3_filename;
+$mrn_test_s3_filename = 'absent-remote-object';
+$maintenance_check(is_wp_error(MRN_Updraft_MainWP_Policy::maintenance_backup($nonce)), 'missing remote archive');
+$mrn_test_s3_filename = $saved_filename;
+$saved_history = $mrn_test_history;
+$mrn_test_history = array(time() - 7201 => reset($saved_history));
+$maintenance_check(is_wp_error(MRN_Updraft_MainWP_Policy::maintenance_backup($nonce)), 'expiry cannot renew on status read');
+$mrn_test_history = $saved_history;
+$mrn_test_history[$backup_timestamp]['label'] = 'unrelated backup';
+$maintenance_check(is_wp_error(MRN_Updraft_MainWP_Policy::maintenance_backup($nonce)), 'exact deployment label');
+$mrn_test_history = $saved_history;
+unlink($maintenance_log);
+rmdir($maintenance_logs);
 $preview_request['payload'] = array();
 $preview_request['request_ref'] = null;
 $preview_request['operation'] = 'preview_decommission';
