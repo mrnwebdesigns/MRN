@@ -4,7 +4,7 @@ Theme URI: https://mrndev.io/
 Author: MRN Web Designs
 Author URI: https://mrndev.io/
 Description: Stack starter theme for MRN sites. Includes builder-aware templates, reusable-block support, and a clean development shell for site builds.
-Version: 1.6.8
+Version: 1.6.9
 Tested up to: 6.8
 Requires PHP: 8.0
 License: GNU General Public License v2 or later
@@ -7832,4 +7832,82 @@ a.mrn-social-links__link:focus-visible svg {
 .mrn-card-row__content > .mrn-content-builder__row .mrn-ui__head,
 .mrn-card-row__content > .mrn-content-builder__row .mrn-ui__body {
 	gap: var(--mrn-card-nested-row-gap, var(--mrn-row-space-fallback));
+}
+
+/* Optional CTA frame: values belong to native fields, spacing and motion to the outer row. */
+.mrn-content-builder__row.has-cta-frame {
+	background: var(--mrn-cta-frame-bg, transparent);
+	padding-top: var(--mrn-row-padding-top, 0px);
+	padding-right: var(--mrn-row-padding-right, 0px);
+	padding-bottom: var(--mrn-row-padding-bottom, 0px);
+	padding-left: var(--mrn-row-padding-left, 0px);
+}
+
+.mrn-content-builder__row.has-cta-frame > .mrn-layout-section--reusable-cta > .mrn-layout-container {
+	padding: 0;
+}
+
+.mrn-content-builder__row.has-cta-frame > .mrn-layout-section--reusable-cta > .mrn-layout-container > .mrn-layout-grid--reusable > .mrn-layout-content--reusable > .mrn-reusable-block--cta {
+	background-color: transparent;
+	margin: 0;
+	padding: 0;
+	text-align: var(--mrn-cta-frame-alignment, start);
+}
+
+.mrn-content-builder__row.has-cta-frame > .mrn-layout-section--reusable-cta > .mrn-layout-container > .mrn-layout-grid--reusable > .mrn-layout-content--reusable > .mrn-reusable-block--cta > .mrn-reusable-block__inner--callout {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	gap: var(--mrn-cta-frame-content-gap, var(--mrn-space-stack-md));
+	margin-inline: auto;
+	max-width: var(--mrn-cta-frame-content-width, none);
+	width: 100%;
+	padding-inline: var(--mrn-cta-frame-inner-gutter-current, var(--mrn-cta-frame-inner-gutter, 0px));
+}
+
+.mrn-content-builder__row.has-cta-frame > .mrn-layout-section--reusable-cta > .mrn-layout-container > .mrn-layout-grid--reusable > .mrn-layout-content--reusable > .mrn-reusable-block--cta > .mrn-reusable-block__inner--callout > .mrn-reusable-block__content--cta {
+	grid-template-columns: minmax(0, 1fr);
+	display: grid;
+	gap: var(--mrn-cta-frame-content-gap, var(--mrn-space-stack-md));
+	min-width: 0;
+}
+
+.mrn-content-builder__row.has-cta-frame > .mrn-layout-section--reusable-cta > .mrn-layout-container > .mrn-layout-grid--reusable > .mrn-layout-content--reusable > .mrn-reusable-block--cta > .mrn-reusable-block__inner--callout > .mrn-reusable-block__content--cta > .mrn-ui__head {
+	grid-template-columns: minmax(0, 1fr);
+}
+
+.mrn-content-builder__row.has-cta-frame > .mrn-layout-section--reusable-cta > .mrn-layout-container > .mrn-layout-grid--reusable > .mrn-layout-content--reusable > .mrn-reusable-block--cta > .mrn-reusable-block__inner--callout > .mrn-reusable-block__content--cta > .mrn-reusable-block__actions--callout > * {
+	min-width: min(var(--mrn-cta-frame-action-min-width, 0px), 100%);
+	max-width: 100%;
+}
+
+.mrn-content-builder__row.has-cta-frame > .mrn-layout-section--reusable-cta > .mrn-layout-container > .mrn-layout-grid--reusable > .mrn-layout-content--reusable > .mrn-reusable-block--cta > .mrn-reusable-block__inner--callout > .mrn-reusable-block__content--cta > .mrn-ui__text {
+	margin-top: var(--mrn-cta-frame-text-space-before, 0px);
+}
+
+.mrn-content-builder__row.has-cta-frame > .mrn-layout-section--reusable-cta > .mrn-layout-container > .mrn-layout-grid--reusable > .mrn-layout-content--reusable > .mrn-reusable-block--cta > .mrn-reusable-block__inner--callout > .mrn-reusable-block__content--cta > .mrn-ui__text > p {
+	margin-bottom: var(--mrn-cta-frame-paragraph-space-after, 0px);
+}
+
+.mrn-content-builder__row.has-cta-frame > .mrn-layout-section--reusable-cta > .mrn-layout-container > .mrn-layout-grid--reusable > .mrn-layout-content--reusable > .mrn-reusable-block--cta > .mrn-reusable-block__inner--callout > .mrn-reusable-block__content--cta > .mrn-reusable-block__actions--callout {
+	display: flex;
+	justify-content: var(--mrn-cta-frame-actions-alignment, flex-start);
+	margin-top: var(--mrn-cta-frame-actions-space-before, 0px);
+}
+
+@media (max-width: 767px) {
+	.mrn-content-builder__row.has-cta-frame:not(.has-cta-gutter-at-960):not(.has-cta-gutter-at-1199) {
+		--mrn-cta-frame-inner-gutter-current: var(--mrn-cta-frame-inner-gutter-mobile, var(--mrn-cta-frame-inner-gutter, 0px));
+	}
+}
+
+@media (max-width: 960px) {
+	.mrn-content-builder__row.has-cta-frame.has-cta-gutter-at-960 {
+		--mrn-cta-frame-inner-gutter-current: var(--mrn-cta-frame-inner-gutter-mobile, var(--mrn-cta-frame-inner-gutter, 0px));
+	}
+}
+
+@media (max-width: 1199px) {
+	.mrn-content-builder__row.has-cta-frame.has-cta-gutter-at-1199 {
+		--mrn-cta-frame-inner-gutter-current: var(--mrn-cta-frame-inner-gutter-mobile, var(--mrn-cta-frame-inner-gutter, 0px));
+	}
 }

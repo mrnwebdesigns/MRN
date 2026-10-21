@@ -1,0 +1,98 @@
+[
+  {
+    "test": "acf-cloned-ajax-fields.php",
+    "exit_code": 0
+  },
+  {
+    "test": "acf-select-field-finalization.php",
+    "exit_code": 0
+  },
+  {
+    "test": "business-information-defaults.php",
+    "exit_code": 0
+  },
+  {
+    "test": "business-information-memoization.php",
+    "exit_code": 0
+  },
+  {
+    "test": "content-toc.php",
+    "exit_code": 0
+  },
+  {
+    "test": "editor-startup.php",
+    "exit_code": 0
+  },
+  {
+    "test": "events-cpt-contract.php",
+    "exit_code": 0
+  },
+  {
+    "test": "frontend-asset-meta-index.php",
+    "exit_code": 0
+  },
+  {
+    "test": "frontend-component-assets.php",
+    "exit_code": 0
+  },
+  {
+    "test": "header-utility-message-schedule.php",
+    "exit_code": 0
+  },
+  {
+    "test": "image-priority-loading.php",
+    "exit_code": 0
+  },
+  {
+    "test": "layout-classes.php",
+    "exit_code": 0
+  },
+  {
+    "test": "lazy-layouts.php",
+    "exit_code": 0
+  },
+  {
+    "test": "locations.php",
+    "exit_code": 0
+  },
+  {
+    "test": "mobile-navigation-breakpoint.php",
+    "exit_code": 0
+  },
+  {
+    "test": "motion-assets.php",
+    "exit_code": 0
+  },
+  {
+    "test": "motion-target-choices.php",
+    "exit_code": 0
+  },
+  {
+    "test": "not-found-lazy-layouts.php",
+    "exit_code": 0
+  },
+  {
+    "test": "read-time.php",
+    "exit_code": 0
+  },
+  {
+    "test": "rendered-social-link-asset-needs.php",
+    "exit_code": 0
+  },
+  {
+    "test": "resource-featured-image-support.php",
+    "exit_code": 0
+  },
+  {
+    "test": "row-spacing-meta-index.php",
+    "exit_code": 0
+  },
+  {
+    "test": "search-form-contract.php",
+    "exit_code": 0
+  },
+  {
+    "test": "tab-switch-renderer.php",
+    "exit_code": 0
+  }
+]

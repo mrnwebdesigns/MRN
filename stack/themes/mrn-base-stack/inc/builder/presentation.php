@@ -99,6 +99,9 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 				'default_value' => 4000,
 			)
 		);
+		if ( in_array( $layout, array( 'cta', 'cta_block' ), true ) ) {
+			$fields = array_merge( $fields, mrn_base_stack_get_cta_frame_fields( $seed ) );
+		}
 		return $fields;
 	}
 	if ( 'image_content' === $layout ) {

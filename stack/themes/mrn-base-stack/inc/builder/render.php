@@ -188,6 +188,12 @@ function mrn_base_stack_wrap_cloned_reusable_builder_markup( $inner_markup, arra
 		}
 	}
 
+	if ( in_array( $layout_name, array( 'cta', 'cta_block' ), true ) ) {
+		$frame_contract = mrn_base_stack_get_cta_frame_contract( $row );
+		$row_classes = trim( $row_classes . ' ' . implode( ' ', $frame_contract['classes'] ) );
+		$row_attributes = mrn_base_stack_merge_builder_attributes( $row_attributes, $frame_contract['attributes'] );
+	}
+
 	$row_attribute_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $row_attributes ) : '';
 
 		$anchor_fallback = '';
@@ -312,6 +318,7 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 
 	if ( 'cta' === $layout ) {
 		if ( function_exists( 'mrn_rbl_render_fields_as_block' ) ) {
+			$stacked_frame = ! empty( mrn_base_stack_get_cta_frame_contract( $row )['classes'] );
 			$markup         = mrn_rbl_render_fields_as_block(
 				'mrn_reusable_cta',
 				$row,
@@ -320,7 +327,7 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 					'post_name'             => 'page-cta',
 					'block_name'            => 'Page Specific CTA',
 					'suppress_anchor'       => true,
-					'apply_motion_contract' => true,
+					'apply_motion_contract' => ! $stacked_frame,
 				)
 			);
 			$wrapped_markup = mrn_base_stack_wrap_reusable_builder_markup(
@@ -328,7 +335,7 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 				$row,
 				'mrn_reusable_cta',
 				'wide',
-				false
+				$stacked_frame
 			);
 			echo $wrapped_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Wrapped reusable markup is escaped within the helper.
 			return true;
@@ -478,6 +485,7 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 
 	if ( 'cta_block' === $layout ) {
 		if ( function_exists( 'mrn_rbl_render_fields_as_block' ) ) {
+			$stacked_frame = ! empty( mrn_base_stack_get_cta_frame_contract( $row )['classes'] );
 			$markup         = mrn_rbl_render_fields_as_block(
 				'mrn_reusable_cta',
 				$row,
@@ -486,7 +494,7 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 					'post_name'             => 'page-cta-block',
 					'block_name'            => 'Page Specific CTA Block',
 					'suppress_anchor'       => true,
-					'apply_motion_contract' => true,
+					'apply_motion_contract' => ! $stacked_frame,
 				)
 			);
 			$wrapped_markup = mrn_base_stack_wrap_reusable_builder_markup(
@@ -494,7 +502,7 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 				$row,
 				'mrn_reusable_cta',
 				'wide',
-				false
+				$stacked_frame
 			);
 			echo $wrapped_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Wrapped reusable markup is escaped within the helper.
 			return true;
