@@ -17,6 +17,22 @@ final class MRN_Updraft_MainWP_Maintenance {
 	const MAX_ZIP     = 52428800;
 	const MAX_TREE    = 536870912;
 	const MAX_FILES   = 50000;
+	const DIAGNOSTIC_KEY = 'mrn_maintenance_preflight_refusal_v1';
+	const DIAGNOSTIC_TTL = 600;
+	const DIAGNOSTIC_CODES = array(
+		'unsupported_runtime', 'invalid_schema', 'selection_required', 'invalid_override',
+		'invalid_target', 'unknown_version', 'version_refused', 'unused_override',
+		'tree_unavailable', 'tree_unsafe', 'tree_limit', 'tree_unreadable',
+		'plugin_unreadable', 'theme_invalid', 'core_unavailable', 'offer_changed',
+		'shared_plugin_directory', 'download_unavailable', 'download_failed',
+		'package_invalid', 'package_limit', 'package_alias_or_type', 'package_path',
+		'package_version', 'package_name', 'theme_template_changed', 'backup_unverified',
+		'preflight_state_changed', 'backup_nonce_invalid', 'storage_adapter_unavailable',
+		'remote_inventory_unavailable', 'remote_inventory_schema', 'remote_region_unavailable',
+		'backup_remote_verification_failed', 'recent_labeled_database_backup_required',
+		'maintenance_backup_log_unavailable', 'maintenance_backup_not_complete',
+		'maintenance_backup_expired', 'maintenance_backup_label_required', 'internal_error',
+	);
 
 	/**
 	 * Register only MainWP Child's post-authentication hook.
@@ -35,8 +51,15 @@ final class MRN_Updraft_MainWP_Maintenance {
 	 */
 	public static function dispatch( $information, $post ) {
 		if ( ! is_array( $post ) || ! isset( $post[ self::REQUEST_KEY ] ) ) {
+			if ( is_array( $post ) && 'extra_execution' === ( $post['function'] ?? '' ) && 'report' === ( $post['mrn_stack_report_action'] ?? '' ) && is_array( $information ) && true === ( $information['success'] ?? null ) && is_array( $information['report'] ?? null ) ) {
+				$diagnostic = get_transient( self::DIAGNOSTIC_KEY );
+				if ( is_array( $diagnostic ) && array_keys( $diagnostic ) === array( 'schema_version', 'code', 'recorded_at' ) && 1 === $diagnostic['schema_version'] && in_array( $diagnostic['code'], self::DIAGNOSTIC_CODES, true ) && is_int( $diagnostic['recorded_at'] ) && $diagnostic['recorded_at'] <= time() && time() - $diagnostic['recorded_at'] < self::DIAGNOSTIC_TTL ) {
+					$information['report']['last_maintenance_preflight_refusal'] = $diagnostic;
+				}
+			}
 			return $information;
 		}
+		$operation = '';
 		try {
 			if ( 'extra_execution' !== ( $post['function'] ?? '' ) || ! is_string( $post[ self::REQUEST_KEY ] ) || strlen( $post[ self::REQUEST_KEY ] ) > 262144 ) {
 				throw new RuntimeException( 'invalid_transport' );
@@ -45,8 +68,8 @@ final class MRN_Updraft_MainWP_Maintenance {
 			if ( ! is_array( $input ) || 1 !== ( $input['protocol'] ?? null ) || self::url( home_url( '/' ) ) !== ( $input['site_url'] ?? null ) ) {
 				throw new RuntimeException( 'site_identity' );
 			}
-			self::libraries();
 			$operation = $input['operation'] ?? '';
+			self::libraries();
 			if ( 'preflight' === $operation ) {
 				self::keys( $input, array( 'protocol', 'operation', 'site_id', 'site_url', 'kind', 'items', 'major_overrides', 'backup_nonce' ) );
 				$data = self::inspect( $input );
@@ -59,12 +82,19 @@ final class MRN_Updraft_MainWP_Maintenance {
 			} else {
 				throw new RuntimeException( 'operation_forbidden' );
 			}
+			if ( 'preflight' === $operation ) {
+				delete_transient( self::DIAGNOSTIC_KEY );
+			}
 			return array(
 				'success' => true,
 				'data'    => $data,
 			);
 		} catch ( Throwable $error ) {
 			// Exception text may contain a download URL or a native provider secret.
+			if ( 'preflight' === $operation ) {
+				$code = $error instanceof RuntimeException && in_array( $error->getMessage(), self::DIAGNOSTIC_CODES, true ) ? $error->getMessage() : 'internal_error';
+				set_transient( self::DIAGNOSTIC_KEY, array( 'schema_version' => 1, 'code' => $code, 'recorded_at' => time() ), self::DIAGNOSTIC_TTL );
+			}
 			unset( $error );
 			return array(
 				'success'    => false,
@@ -445,7 +475,10 @@ final class MRN_Updraft_MainWP_Maintenance {
 		self::selection( $input );
 		$backup = MRN_Updraft_MainWP_Policy::maintenance_backup( $input['backup_nonce'] );
 		if ( is_wp_error( $backup ) ) {
-			throw new RuntimeException( 'backup_unverified' );
+			$raw  = $backup->get_error_code();
+			$code = is_string( $raw ) && 0 === strpos( $raw, 'mrn_updraft_' ) ? substr( $raw, strlen( 'mrn_updraft_' ) ) : '';
+			$code = in_array( $code, self::DIAGNOSTIC_CODES, true ) ? $code : 'backup_unverified';
+			throw new RuntimeException( esc_html( $code ) );
 		}
 		$before   = self::state();
 		$offers   = self::offers( $input, $before );
