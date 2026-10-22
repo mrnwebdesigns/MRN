@@ -25,6 +25,8 @@ import { ExistingManagementAccessSigner, ExistingManagementAccessQueryReader, Ex
 import { createExistingManagementAccessRuntime } from '../src/content-access-runtime.mjs';
 import { managementCaptureContract } from '../src/content-management-capture.mjs';
 import { createHttpServer } from '../src/http.mjs';
+import { ExistingManagementContext, ExistingManagementContextReader, existingManagementContextTool,
+  createExistingManagementContextRuntime } from '../src/existing-management-context.mjs';
 
 const audience = 'https://operations.mrnwebdesigns.com/mcp', issuer = 'https://identity.example.test/';
 async function fixture(t, durable = false) {
@@ -989,7 +991,10 @@ async function queueFixture(t) {
   const state = { pins: structuredClone(expected.pins), epoch: expected.original.mapping.readiness.coherenceEpochSha256,
     checks: 0, duringCheck: null };
   f.options.queueReadiness = async (actor, input) => {
-    originalAuthorizationAnchor(actor); assert.deepEqual(input, f.values.request);
+    // Human queue callers are branded by the ledger; a private worker receives
+    // the same independently retained identity, without manufacturing a JWT.
+    assert.equal(requesterDigest(actor), requesterDigest(f.actor));
+    state.lastActor = structuredClone(actor); assert.deepEqual(input, f.values.request);
     state.checks++; await state.duringCheck?.();
     return { pins: structuredClone(state.pins), coherenceEpochSha256: state.epoch };
   };
@@ -1436,4 +1441,108 @@ test('existing access HTTP is opt-in, fixed-origin and shares the bounded privat
     }); req.on('error', reject); req.end(delegationCanonical(pointer));
   });
   assert.equal(result, 404); await new Promise(resolve => disabled.close(resolve));
+});
+
+async function existingContextFixture(t) {
+  const f = await existingAccessFixture(t), state = { calls: 0, closes: 0, mono: 0, claims: [] };
+  const registrarKeys = generateKeyPairSync('ed25519'), registrar = { keyId: 'registrar-fixture', privateKey: registrarKeys.privateKey };
+  const tool = { name: existingManagementContextTool, annotations: { readOnlyHint: false, destructiveHint: false } };
+  const client = {
+    readResource: () => f.client.readResource(), listTools: async () => ({ tools: [tool] }),
+    async callTool({ name, arguments: input }, _schema, options) {
+      assert.equal(name, existingManagementContextTool); assert.equal(options.timeout, 20000);
+      state.calls++;
+      const bytes = Buffer.from(input.signed_request.payload_base64, 'base64'), claims = JSON.parse(bytes);
+      assert.equal(claims.schema, 2); assert.equal(claims.action, 'context');
+      assert.equal(claims.issuer, 'mrn-content-qualification'); assert.equal(claims.audience, 'https://wpcontrol.mrndev.io');
+      assert.deepEqual(claims.binding, f.context.binding); assert.equal(claims.binding_sha256, f.context.binding_sha256);
+      assert.ok(claims.expires_at <= claims.issued_at + 20 && claims.expires_at <= f.actor.expiresAt / 1000);
+      assert.ok(verify(null, Buffer.concat([Buffer.from(existingManagementWires.qualification.purposes.context), bytes]),
+        registrarKeys.publicKey, Buffer.from(input.signed_request.signature_base64, 'base64')));
+      assert.equal(verify(null, Buffer.concat([Buffer.from(existingManagementWires.qualification.purposes.context), bytes]),
+        f.keys.publicKey, Buffer.from(input.signed_request.signature_base64, 'base64')), false);
+      assert.equal(verify(null, Buffer.concat([Buffer.from(managementCaptureContract.purposes.context), bytes]),
+        registrarKeys.publicKey, Buffer.from(input.signed_request.signature_base64, 'base64')), false);
+      state.claims.push(claims); await state.duringRead?.(input);
+      // Controlled provider fixture only. Native provider generation/transport
+      // is a separate combined test; this exercises both gateway components.
+      const veto = decodeEnvelope((await f.call({ ...f.query(), phase: 'read-capture' })).signed_veto);
+      assert.equal(veto.state, 'clear');
+      await state.afterCallback?.();
+      return { content: [{ type: 'text', text: JSON.stringify(state.output ?? f.context) }] };
+    },
+    async close() { state.closes++; },
+  };
+  const reader = new ExistingManagementContextReader(client);
+  const contextReader = new ExistingManagementContext({ ledger: f.ledger, reader, registrar, monotonic: () => state.mono });
+  await reader.initialize();
+  return { ...f, registrar, contextClient: client, contextState: state, contextTool: tool, contextReader, reader,
+    readContext: () => contextReader.read(f.context.binding.qualification_job_id) };
+}
+
+test('private existing context uses the frozen registrar route, original job and independent identity callback', async t => {
+  const f = await existingContextFixture(t), checks = f.state.checks;
+  assert.deepEqual(await f.readContext(), f.context);
+  assert.equal(f.contextState.calls, 1); assert.equal(f.accessState.calls, 1);
+  assert.equal(f.queueState.lastActor.expiresAt, f.actor.expiresAt);
+  assert.equal(f.state.checks - checks, 4); // Before/after protected readiness, on each side of provider I/O.
+  assert.deepEqual(await f.readContext(), f.context);
+  assert.notEqual(f.contextState.claims[0].request_id, f.contextState.claims[1].request_id);
+  assert.notEqual(f.contextState.claims[0].nonce, f.contextState.claims[1].nonce);
+  assert.equal(f.store.db.prepare('SELECT access_count FROM original_management_attempts').get().access_count, 2);
+  await assert.rejects(() => f.contextReader.read(randomUUID())); assert.equal(f.contextState.calls, 2);
+});
+
+test('existing context checks staff, source and revocation before dispatch and after the callback', async t => {
+  for (const stage of ['before', 'after']) for (const kind of ['revoked', 'staff', 'policy', 'source', 'epoch']) {
+    const f = await existingContextFixture(t), mutate = () => {
+      if (kind === 'revoked') f.accessLedger.recordPendingRevocation(f.context.binding.qualification_job_id);
+      if (kind === 'staff') f.state.duringCheck = () => { throw new Error('Current Directory denied'); };
+      if (kind === 'policy') f.policy.emailDomains[0].portfolio.actions = ['read'];
+      if (kind === 'source') f.queueState.pins.installed_manifest_sha256 = 'f'.repeat(64);
+      if (kind === 'epoch') f.queueState.epoch = 'f'.repeat(64);
+    };
+    if (stage === 'before') mutate(); else f.contextState.afterCallback = mutate;
+    await assert.rejects(f.readContext, `${stage}/${kind}`);
+    assert.equal(f.contextState.calls, stage === 'before' ? 0 : 1);
+  }
+});
+
+test('existing context discards substituted or late responses without retrying or changing its retained binding', async t => {
+  for (const kind of ['binding', 'state', 'extra', 'mutated-input', 'expiry', 'monotonic']) {
+    const f = await existingContextFixture(t);
+    f.contextState.afterCallback = () => {
+      const value = structuredClone(f.context);
+      if (kind === 'binding') value.binding.original_resource_authorization_sha256 = 'f'.repeat(64);
+      if (kind === 'state') value.state = 'capturing';
+      if (kind === 'extra') value.current = true;
+      if (kind === 'expiry') t.mock.method(Date, 'now', () => (f.contextState.claims[0].expires_at + 1) * 1000);
+      if (kind === 'monotonic') f.contextState.mono = 20000;
+      f.contextState.output = value;
+    };
+    if (kind === 'mutated-input') f.contextState.duringRead = input => { input.signed_request.key_id = 'changed'; };
+    await assert.rejects(f.readContext, kind); assert.equal(f.contextState.calls, 1);
+    t.mock.restoreAll();
+    assert.deepEqual(f.ledger.originalQueuedJob(f.context.binding.qualification_job_id).queue.context, f.context);
+  }
+});
+
+test('existing context has no legacy capability fallback and private lifecycle cannot read after shutdown', async t => {
+  for (const kind of ['legacy', 'unsafe', 'host']) {
+    const f = await existingContextFixture(t);
+    if (kind === 'legacy') f.contextTool.name = 'mrn_mainwp__get_content_edit_qualification_context_v1';
+    if (kind === 'unsafe') f.contextTool.annotations.readOnlyHint = true;
+    if (kind === 'host') f.status.dashboardHost = 'other.example.invalid';
+    await assert.rejects(() => f.reader.initialize()); await assert.rejects(f.readContext);
+    assert.equal(f.contextState.calls, 0);
+  }
+  assert.equal(await createExistingManagementContextRuntime(), null);
+  const f = await existingContextFixture(t);
+  const runtime = await createExistingManagementContextRuntime({ enabled: true, ledger: f.ledger, registrar: f.registrar,
+    connect: async () => f.contextClient });
+  assert.deepEqual(await runtime.context.read(f.context.binding.qualification_job_id), f.context);
+  await runtime.close(); await runtime.close(); assert.equal(f.contextState.closes, 1);
+  await assert.rejects(() => runtime.context.read(f.context.binding.qualification_job_id));
+  await assert.rejects(() => createExistingManagementContextRuntime({ enabled: true, ledger: {}, registrar: f.registrar,
+    connect: async () => f.contextClient })); assert.equal(f.contextState.closes, 2);
 });

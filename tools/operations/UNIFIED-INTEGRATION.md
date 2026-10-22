@@ -64,6 +64,22 @@ assessment. This does not alter downstream deployment ZIP/base64 capacity.
 These local results do not replace the new combined native/provider run or the
 remaining protected producer, rendered QA and ordinary-member acceptance gates.
 
+Gateway `ff0bbb4` committed that callback slice. Its hosted MRN QA
+`39827377578` passes; Operations `39827377501` has passed controlled contracts
+and is still running native transport. The next private source slice adds the
+exact signed `get-content-edit-qualification-context-existing-v2` reader. It
+uses the configured registrar key and the independently observed original
+queue, with a 20-second total deadline and the original grant/intent ceilings.
+Current staff, local policy, protected source pins and coherence are rechecked
+before and after provider I/O. Returned state/binding substitution and changed
+outgoing requests are rejected. The complete gateway suite passes 606 tests;
+focused coverage also checks separate registrar/identity keys and fixed purposes.
+This is controlled composition, not proof of native provider query generation.
+The provider's forthcoming context route and a separate closed disposable
+callback sidecar are required for that proof; the existing fixture descriptor,
+profile and deadlines remain unchanged. Production startup and tools remain
+unregistered.
+
 ## Prior delivery checkpoint, 2026-10-20
 
 - The one existing plugin is available to everyone in the MRN ChatGPT workspace.

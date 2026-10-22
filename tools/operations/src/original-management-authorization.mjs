@@ -662,11 +662,25 @@ export class OriginalManagementAuthorizationLedger {
     'Original current-access history is missing or corrupt; its allowance cannot be reset.');
     return marker;
   }
-  originalQueuedJob(jobId) {
+  #currentQueued(jobId) {
+    const value = this.#queuedJob(jobId);
+    this.#accessHistory(value.original, jobId);
+    return { ...value, revision: this.#retainedAuthority(value.original).revision };
+  }
+  originalQueuedJob(jobId) { return this.store.transaction(() => this.#currentQueued(jobId)); }
+  async currentQueuedJob(jobId) {
+    // Only a service-owned worker may recover this original; no current caller
+    // or provider response can replace its actor, grant, policy or queue pins.
+    const before = this.originalQueuedJob(jobId);
+    await this.verifyStaff(before.original.mapping.actor);
+    const admission = await this.#queueAdmission(before.original.mapping.actor, before.queue.queue.request);
+    await this.verifyStaff(before.original.mapping.actor);
     return this.store.transaction(() => {
-      const value = this.#queuedJob(jobId);
-      this.#accessHistory(value.original, jobId);
-      return { ...value, revision: this.#retainedAuthority(value.original).revision };
+      const after = this.#currentQueued(jobId);
+      check(after.original.digest === before.original.digest && after.revision === before.revision
+        && after.queue.digest === before.queue.digest && delegationDigest(after.queue.context) === delegationDigest(before.queue.context),
+      'The original queued job changed during current staff and protected readiness checks.');
+      this.#sameQueueAdmission(after.queue.queue, admission); return after;
     });
   }
   recordQueuePendingRevocation(jobId) {

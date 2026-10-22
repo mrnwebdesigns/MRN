@@ -71,6 +71,15 @@ The dependency is now pinned to 1.32.1 with the required structural input bound;
 the new combined hosted result is still pending. The provider source remains
 `f084797` until the new queue/access candidate passes independent qualification.
 
+The private context reader raises the passing gateway suite to 606 tests. It
+uses the original observed queue, separate registrar authority, fixed existing-v2
+route/purpose, fresh staff/readiness checks and bounded expiry; changed or late
+responses cannot authorize continuation. These controlled tests exercise the
+gateway callback components but do not manufacture native provider proof.
+Gateway `ff0bbb4` hosted MRN QA `39827377578` passes; its controlled-contract job
+passes and native integration in `39827377501` is still running. Actual v2 context
+generation, callback transport and every real ChatGPT row remain open.
+
 ## Earlier disposable evidence, 2026-10-20
 
 Gateway `0ce3f14` is the latest independently accepted combined checkpoint:
