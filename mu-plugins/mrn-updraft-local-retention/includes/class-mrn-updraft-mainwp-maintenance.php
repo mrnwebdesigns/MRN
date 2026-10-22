@@ -32,6 +32,12 @@ final class MRN_Updraft_MainWP_Maintenance {
 		'backup_remote_verification_failed', 'recent_labeled_database_backup_required',
 		'maintenance_backup_log_unavailable', 'maintenance_backup_not_complete',
 		'maintenance_backup_expired', 'maintenance_backup_label_required', 'internal_error',
+		'download_http_blocked', 'download_transport_failed', 'download_dns_failed',
+		'download_connection_failed', 'download_incomplete', 'download_stream_failed',
+		'download_timeout', 'download_tls_failed', 'download_empty_reply',
+		'download_certificate_failed', 'download_http_denied', 'download_http_unavailable',
+		'download_http_limited', 'download_http_server_error', 'download_http_status',
+		'download_empty', 'download_size_limit',
 	);
 
 	/**
@@ -387,11 +393,30 @@ final class MRN_Updraft_MainWP_Maintenance {
 				'limit_response_size' => self::MAX_ZIP + 1,
 				'timeout'             => 30,
 				'redirection'         => 3,
+				'sslverify'           => true,
 			)
 		);
-		if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) || filesize( $file ) < 1 || filesize( $file ) > self::MAX_ZIP ) {
+		if ( is_wp_error( $response ) ) {
+			$code = 'http_request_not_executed' === $response->get_error_code() ? 'download_http_blocked' : 'download_transport_failed';
+			// Inspect only the fixed cURL prefix in memory; never retain native messages or URLs.
+			if ( 'http_request_failed' === $response->get_error_code() && preg_match( '/^cURL error (6|7|18|23|28|35|52|60):/', substr( $response->get_error_message(), 0, 24 ), $match ) ) {
+				$codes = array( 6 => 'download_dns_failed', 7 => 'download_connection_failed', 18 => 'download_incomplete', 23 => 'download_stream_failed', 28 => 'download_timeout', 35 => 'download_tls_failed', 52 => 'download_empty_reply', 60 => 'download_certificate_failed' );
+				$code  = $codes[ (int) $match[1] ];
+			}
 			wp_delete_file( $file );
-			throw new RuntimeException( 'download_failed' );
+			throw new RuntimeException( esc_html( $code ) );
+		}
+		$status = wp_remote_retrieve_response_code( $response );
+		if ( 200 !== $status ) {
+			$code = in_array( $status, array( 401, 403, 407 ), true ) ? 'download_http_denied' : ( in_array( $status, array( 404, 410 ), true ) ? 'download_http_unavailable' : ( 429 === $status ? 'download_http_limited' : ( is_int( $status ) && $status >= 500 && $status <= 599 ? 'download_http_server_error' : 'download_http_status' ) ) );
+			wp_delete_file( $file );
+			throw new RuntimeException( esc_html( $code ) );
+		}
+		clearstatcache( true, $file );
+		$bytes = filesize( $file );
+		if ( false === $bytes || $bytes < 1 || $bytes > self::MAX_ZIP ) {
+			wp_delete_file( $file );
+			throw new RuntimeException( false === $bytes || $bytes < 1 ? 'download_empty' : 'download_size_limit' );
 		}
 		return $file;
 	}
