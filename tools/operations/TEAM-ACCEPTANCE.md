@@ -44,10 +44,17 @@ Use already-authorized test identities or separately reviewed administrative tes
 
 ## Latest source evidence, 2026-10-22
 
-The new native queue/context/access fixture passes 609 local tests, lint and
-syntax checks and uses provider `b81a0dbe4d4be177480c9497bad9533831ff9b08` solely
-as its disposable test candidate. The provider native run `39829662335` and new
-gateway combined proof remain pending. Required results are actual signed queue,
+The new native queue/context/access fixture uses provider
+`b81a0dbe4d4be177480c9497bad9533831ff9b08` solely as its disposable test candidate.
+All four provider jobs in `39829662335` pass. Gateway `e593e98` run
+`39830911903` failed two stale provenance assertions and skipped native testing;
+its earlier 609-test local pass preceded the runtime pin change. The correction
+independently verifies all eleven imported qualification files and preserves the
+separate measurement candidate source, then aligns only the runtime references
+and exact test assertion. After the correction and indirect dependency patch,
+all 609 gateway tests, 13 Fleet regressions, lint and the zero-vulnerability
+dependency audit pass. The new combined proof remains pending.
+Required results are actual signed queue,
 provider-generated TLS callback and identity readback, revocation denial,
 blocked later dispatch, unchanged Child content and route cleanup. The strict
 sidecar is separate from the unchanged original descriptor/profile/deadlines.

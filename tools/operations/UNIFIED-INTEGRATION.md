@@ -14,10 +14,25 @@ workspace-tool, credential or access configuration changes accompany this source
 The current disposable integration candidate selects provider
 `b81a0dbe4d4be177480c9497bad9533831ff9b08` for the actual existing-v2 queue,
 registrar context and identity callback roundtrip. This is a test pin, not a
-production rollout or accepted provider upgrade. Its provider native run
-`39829662335` and the new gateway combined result must both pass before that
-composition is qualified. All 609 local gateway tests, lint and hook syntax
-checks pass; ten frozen contract files match the immutable provider bytes.
+production rollout or accepted provider upgrade. All four provider jobs in
+`39829662335` pass, including 35 native queue/control checks. The gateway's
+`e593e98` run `39830911903` failed two provenance assertions before native
+testing: the runtime pin was changed after the 609-test local run, while the
+copied-contract manifest and measurement runtime reference still named the
+previous provider. That local result did not qualify the final pin change.
+
+The correction verifies all eleven imported qualification files against both
+their recorded SHA-256 and immutable `b81a0db` bytes, then aligns the manifest,
+exact test assertion and measurement runtime reference. The measurement
+candidate retains its original `11956fd` source and all three original file
+hashes. No frozen protocol bytes or checks are relaxed. After the complete
+correction, all 609 gateway tests, 13 Fleet regressions and ESLint pass. The
+hosted combined result is still required before this composition is qualified.
+
+The same correction updates only the indirect `ip-address` dependency from
+10.7.2 to 10.7.4 after advisory GHSA-rxp7-6hxx-x8q5 was published. MCP SDK 1.32.1
+and its input limits are unchanged. The production dependency audit now reports
+zero vulnerabilities; the passing complete gateway suite includes this lockfile.
 
 The hook consumes a separately closed disposable `access.json` sidecar with
 only the existing fixture registrar key reference and fixed callback socket/
