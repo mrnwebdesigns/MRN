@@ -63,7 +63,7 @@ MRN_QA_CODE_ANALYSIS_SCOPE=all mrn-qa run --project-root /Users/khofmeyer/Develo
 
 Runtime browser, accessibility, API, and performance checks should be run separately against an explicit target site when this plugin change affects rendered output or live WordPress behavior.
 
-## Guarded MainWP maintenance (0.8.3 candidate)
+## Guarded MainWP maintenance (0.8.4 candidate)
 
 Adds `mrn_maintenance_request` only on MainWP Child's existing authenticated
 `extra_execution` hook. There is no child REST route, new credential, raw-code
@@ -96,7 +96,7 @@ After an authenticated, site-matched preflight refusal, the existing MainWP
 runtime report can include `last_maintenance_preflight_refusal`. It contains
 only a schema version, a fixed code and a timestamp, retained for ten minutes
 under one fixed transient key. Reading the report performs no new backup,
-remote scan or diagnostic write. Unknown exceptions remain `internal_error`;
+remote scan or diagnostic write. Download refusals distinguish fixed network, TLS, HTTP and size categories; no native message or response body is retained. The same 30-second timeout, three-redirect cap and 50 MiB limit remain enforced. Unknown exceptions remain `internal_error`;
 raw messages, signed URLs, backup nonces and credentials are never retained.
 This is diagnostic history, not deployment approval or current readiness.
 

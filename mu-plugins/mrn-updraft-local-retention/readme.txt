@@ -1,6 +1,6 @@
 === MRN Updraft Backup Policy ===
 Contributors: mrnwebdesigns
-Stable tag: 0.8.3
+Stable tag: 0.8.4
 Tested up to: 7.1
 Requires PHP: 7.4
 
@@ -14,6 +14,10 @@ Supports the shared Stack loader or the standalone MU bootstrap. See README.md
 for configuration, prerequisites, domain cutover, and verification details.
 
 == Changelog ==
+
+= 0.8.4 =
+* Classify download refusals using fixed network, TLS, HTTP and size codes only.
+* Preserve download limits and verified HTTPS, refresh file size after streaming.
 
 = 0.8.3 =
 * Initialize verified TLS and the native S3 bucket region before scoped backup proof.
