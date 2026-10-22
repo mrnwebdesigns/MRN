@@ -11671,7 +11671,9 @@ function mrn_base_stack_get_button_link_icon_fields( $key_prefix, $link_style_fi
 			'choices'       => array(
 				'left'  => 'Left',
 				'right' => 'Right',
+				'only'  => 'Icon Only (Label for Screen Readers)',
 			),
+			'instructions' => 'Icon Only retains the link title for screen readers. Without a valid icon, the title remains visible.',
 			'default_value' => 'left',
 			'multiple'      => 0,
 			'return_format' => 'value',
@@ -11811,8 +11813,17 @@ function mrn_base_stack_link_dashicon_exists( $dashicon ) {
 function mrn_base_stack_get_button_link_icon_position( array $row ) {
 	$position = isset( $row['link_icon_position'] ) ? sanitize_key( (string) $row['link_icon_position'] ) : 'left';
 
-	return in_array( $position, array( 'left', 'right' ), true ) ? $position : 'left';
+	return in_array( $position, array( 'left', 'right', 'only' ), true ) ? $position : 'left';
 }
+
+/** Extend cloned library link fields while this theme supplies icon-only rendering. */
+function mrn_base_stack_extend_link_icon_position_field( $field ) {
+	if ( ! is_array( $field ) || 'select' !== ( $field['type'] ?? '' ) || ! str_starts_with( $field['key'] ?? '', 'field_mrn_' ) || ! isset( $field['choices']['left'], $field['choices']['right'] ) ) { return $field; }
+	$field['choices']['only'] = 'Icon Only (Label for Screen Readers)';
+	$field['instructions'] = 'Icon Only retains the link title for screen readers. Without a valid icon, the title remains visible.';
+	return $field;
+}
+add_filter( 'acf/load_field/name=link_icon_position', 'mrn_base_stack_extend_link_icon_position_field' );
 
 /**
  * Resolve the chosen icon gap for a builder button link.
@@ -11915,6 +11926,9 @@ function mrn_base_stack_get_compact_link_label_markup( $label, $icon_markup = ''
 
 	if ( '' === $icon_markup ) {
 		return $label_markup;
+	}
+	if ( 'only' === $position && '' !== trim( wp_strip_all_tags( (string) $label ) ) ) {
+		return '<span class="screen-reader-text">' . $label_markup . '</span>' . $icon_markup;
 	}
 
 	if ( 'right' === $position ) {

@@ -2740,10 +2740,19 @@ button.mrn-ui__link--button {
 	margin-left: var(--mrn-link-icon-gap, var(--mrn-link-icon-margin-left, 10px));
 }
 
+.mrn-ui__link-icon--only {
+	margin-inline: 0;
+	min-height: 1lh;
+}
+
 .mrn-ui__link-icon-image {
 	display: block;
 	height: 1em;
 	width: auto;
+}
+
+.mrn-content-builder__row.has-cta-frame .mrn-reusable-block__actions--callout .mrn-ui__link-icon-image {
+	height: var(--mrn-cta-frame-action-icon-height, 1em);
 }
 
 .mrn-ui__link--text {

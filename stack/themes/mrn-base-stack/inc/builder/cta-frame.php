@@ -23,6 +23,7 @@ function mrn_base_stack_get_cta_frame_fields( $seed ) {
 		'paragraph_space_after' => 'Space After Body Paragraphs',
 		'actions_space_before' => 'Space Before Actions',
 		'action_min_width' => 'Action Minimum Width',
+		'action_icon_height' => 'Action Media Icon Height',
 		'heading_size' => 'Heading Font Size',
 		'heading_line_height' => 'Heading Line Height',
 		'heading_space_after' => 'Space After Heading',
@@ -67,7 +68,7 @@ function mrn_base_stack_get_cta_frame_contract( array $row ) {
 	if ( 'stacked' !== ( $row['cta_frame'] ?? '' ) ) { return $result; }
 	$result['classes'][] = 'has-cta-frame';
 	$styles = array();
-	foreach ( array( 'inner_gutter', 'inner_gutter_mobile', 'content_width', 'content_gap', 'text_space_before', 'paragraph_space_after', 'actions_space_before', 'action_min_width', 'heading_size', 'heading_line_height', 'heading_space_after', 'text_size', 'text_line_height' ) as $name ) {
+	foreach ( array( 'inner_gutter', 'inner_gutter_mobile', 'content_width', 'content_gap', 'text_space_before', 'paragraph_space_after', 'actions_space_before', 'action_min_width', 'action_icon_height', 'heading_size', 'heading_line_height', 'heading_space_after', 'text_size', 'text_line_height' ) as $name ) {
 		$value = mrn_base_stack_validate_hero_frame_dimension( $row[ 'cta_' . $name ] ?? '', 'content_width' === $name, str_contains( $name, 'line_height' ) );
 		if ( '' !== $value ) {
 			$styles[] = '--mrn-cta-frame-' . str_replace( '_', '-', $name ) . ':' . $value;
