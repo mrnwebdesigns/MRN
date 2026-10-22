@@ -12,7 +12,7 @@ This gateway retains the existing Google login and plugin; no production,
 workspace-tool, credential or access configuration changes accompany this source.
 
 The current disposable integration candidate selects provider
-`4aeb9cb77cb8977bc37b95e07752cb008f2ca2ff`. It repairs the central REST guard's
+`534990b273c9ad70f4290d408b6f2190751e5e78`. It repairs the central REST guard's
 missing five exact POST routes for the private existing-v2 context, access
 readback and capture/recovery controls. Each route retains its independent
 signature and capability checks; a delegated staff scope cannot use this
@@ -20,6 +20,13 @@ machine dispatch. All twenty imported contract/fixture files compared here
 match the immutable candidate without protocol-byte changes. Runtime and
 dependent provenance pins move together. This selection is only for isolated
 testing, not production adoption.
+
+This candidate also corrects the native test helper to send canonical JSON
+through the actual WordPress REST parser. Two parser regressions raise the
+required native queue/control/capture count to 52; exact HTTP route coverage
+remains 29. Runtime provider logic and frozen protocol bytes are unchanged from
+`4aeb9cb`. The earlier direct-Ability capture failure remains open until a new
+native result identifies and verifies it.
 
 Gateway `dbd4ddb` passed all 609 local tests, thirteen Fleet regressions, lint,
 the dependency audit and hosted MRN QA `39832745950`. Its combined run
@@ -29,7 +36,7 @@ artifact `12449422610` and all five tested source paths were independently
 verified; callback route cleanup passed. That failed result is not waived.
 Provider `6fb4718` also failed its separate native capture run `39832432295`;
 the repair candidate adds bounded diagnostics and actual REST dispatch to
-resolve that failure. Provider `39835510055` and the new gateway combined run
+resolve that failure. Provider `39837935867` and the new gateway combined run
 must both pass before the composition is qualified.
 
 Gateway `1a3c1c7` passed hosted MRN QA `39835946602`; combined `39835946576`

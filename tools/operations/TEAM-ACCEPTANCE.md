@@ -45,12 +45,15 @@ Use already-authorized test identities or separately reviewed administrative tes
 ## Latest source evidence, 2026-10-22
 
 The current isolated candidate is provider
-`4aeb9cb77cb8977bc37b95e07752cb008f2ca2ff`, which adds the five exact private
+`534990b273c9ad70f4290d408b6f2190751e5e78`, which adds the five exact private
 POST routes missing from the central REST guard. All twenty imported contract
 and fixture files match immutable source; signature, capability and machine-only
-gates remain required. Provider CI `39835510055` and the new gateway combined
+gates remain required. Provider CI `39837935867` and the new gateway combined
 run remain separate qualification gates. The previous provider capture failure
 at `6fb4718` remains open until the new native result identifies and proves it.
+The candidate fixes the REST test helper to send actual canonical JSON and adds
+two WordPress parser regressions. Required provider native checks are now 52,
+with the same 29 HTTP route checks; this remains test selection only.
 
 Gateway `dbd4ddb` passed hosted MRN QA `39832745950` and controlled contracts,
 but combined `39832746016` failed at the first context callback with
