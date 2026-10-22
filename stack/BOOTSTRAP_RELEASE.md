@@ -1,6 +1,6 @@
 # New-site Stack bootstrap release
 
-Platform candidate: `2026.10.22-fleet-auto-fb4939587e24`; plugin input bundle: `2026.10.22-fleet-auto-fb4939587e24`. Scope: qualified source installation inputs; site deployment remains separate.
+Platform candidate: `2026.10.22-fleet-auto-c8adffac26e5`; plugin input bundle: `2026.10.22-fleet-auto-c8adffac26e5`. Scope: qualified source installation inputs; site deployment remains separate.
 
 The Stack profile selects **33 standard plugins**. The plain profile selects **32**, excluding only Reusable Block Library. Community versions are pinned in `plugins.txt`; every plugin archive is checksum-bound in `manifests/bootstrap-packages.lock.json`. The MRN platform lock separately covers the parent/child pair, MU components and shared runtime.
 
@@ -26,7 +26,7 @@ The Stack profile selects **33 standard plugins**. The plain profile selects **3
 | MRN reCAPTCHA Enterprise Manager (`mrn-recaptcha-enterprise-manager`) | 0.2.3 | all |
 | MRN Stack Deployment Agent (`mrn-stack-deployment-agent`) | 0.3.2 | all |
 | MRN Template Inspector (`mrn-template-inspector`) | 0.2.7 | all |
-| MRN Reusable Block Library (`mrn-reusable-block-library`) | 0.2.2 | stack |
+| MRN Reusable Block Library (`mrn-reusable-block-library`) | 0.2.3 | stack |
 | MRN Universal Sticky Bar (`mrn-universal-sticky-bar`) | 1.3.0 | all |
 | Post Duplicator (`post-duplicator`) | 3.0.16 | all |
 | Post Types Order (`post-types-order`) | 2.5.6 | all |
