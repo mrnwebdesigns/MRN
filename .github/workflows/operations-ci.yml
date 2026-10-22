@@ -254,6 +254,8 @@ jobs:
           assert.match(binding.qualification.job_id, /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/);
           assert.match(binding.qualification.context_sha256, /^[a-f0-9]{64}$/);
           assert.equal(binding.qualification.dispatches, 1);
+          assert.deepEqual(binding.queueConfirmation, { phases: [false, true], same_input: true,
+            http_before: [0, 0], http_after: [0, 1] });
           assert.equal(binding.qualification.original_expires_at, binding.binding.original_expires_at);
           assert.ok(Number.isSafeInteger(binding.qualification.job_expires_at) && binding.qualification.job_expires_at > 0
             && binding.qualification.job_expires_at <= binding.binding.original_expires_at);
@@ -267,7 +269,7 @@ jobs:
           assert.match(binding.child.before_sha256, /^[a-f0-9]{64}$/); assert.equal(binding.child.after_sha256, binding.child.before_sha256);
           assert.equal(binding.network.signed_control_posts, 2); assert.match(binding.network.network_log_sha256, /^[a-f0-9]{64}$/);
           assert.equal(binding.network.context_posts, 2); assert.equal(binding.network.access_readback_posts, 2);
-          assert.equal(binding.network.queue_confirmation_posts, 2);
+          assert.equal(binding.network.queue_posts, 1);
           assert.ok(Number.isSafeInteger(binding.elapsedMs) && binding.elapsedMs > 0 && binding.elapsedMs < 180000);
           for (const name of ['provider', 'transport', 'runner']) assert.equal(execFileSync('git', ['-C', `.runtime/${name}`, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), sources[name].commit);
           assert.equal(execFileSync('git', ['-C', '.runtime/management-worker', 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), sources.managementWorker.commit);

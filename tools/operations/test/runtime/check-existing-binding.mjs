@@ -10,10 +10,10 @@ import { createLocalJWKSet, exportJWK, generateKeyPair, SignJWT } from 'jose';
 import { createAuthenticator, originalAuthorizationAnchor } from '../../src/auth.mjs';
 import { digest } from '../../src/contracts.mjs';
 import { IdentitySigner, delegationCanonical, delegationDigest } from '../../src/delegation.mjs';
-import { DelegatedMainwpClient } from '../../src/delegated-mainwp.mjs';
+import { DelegatedMainwpClient, delegationTools } from '../../src/delegated-mainwp.mjs';
 import { validateManagementRead, validateManagementEvidence } from '../../src/content-management-contract.mjs';
 import { connectMainwp, MainwpSession, payload, toolNames } from '../../src/mainwp.mjs';
-import { OriginalManagementAuthorizationLedger } from '../../src/original-management-authorization.mjs';
+import { OriginalManagementAuthorizationLedger, originalQualificationAbility } from '../../src/original-management-authorization.mjs';
 import { createOriginalAuthorizationTransport, parseOriginalBindingProjection } from '../../src/original-authorization-transport.mjs';
 import { Store } from '../../src/store.mjs';
 import { accessRegistry } from '../fixtures/access-registry.mjs';
@@ -138,14 +138,30 @@ try {
   const signer = new IdentitySigner({ keyId: 'disposable-identity-only', connectionId: 'con_RuntimeFixture',
     privateKey: createPrivateKey({ key: readFileSync(join(directory, 'identity.der')), type: 'pkcs8', format: 'der' }) });
   const { registry } = accessRegistry(context.site.site_url);
+  const queueCalls = [];
+  const networkRows = () => readFileSync(join(work, 'gateway-network.jsonl'), 'utf8').trim().split('\n').map(line => JSON.parse(line));
+  const queuePostCount = () => networkRows().filter(row => row.ability === originalQualificationAbility).length;
   const rawClient = async () => {
     const raw = await connectMainwp(config, environment); clients.add(raw);
     const observe = row => { recentCalls.push(row); if (recentCalls.length > 8) recentCalls.shift(); };
     return { readResource: (...args) => raw.readResource(...args), listTools: (...args) => raw.listTools(...args),
       close: () => raw.close(), callTool: async (...args) => {
         const request = args[0], confirmed = request?.arguments?.user_confirmed === true;
+        const queueInput = request?.name === delegationTools.run && request?.arguments?.ability === originalQualificationAbility;
+        let queueCall;
+        if (queueInput) {
+          const { ability, arguments_json, delegation } = request.arguments;
+          queueCall = { confirmed, inputSha256: delegationDigest({ ability, arguments_json, delegation }), before: queuePostCount() };
+          queueCalls.push(queueCall);
+        }
         try {
           const result = await raw.callTool(...args);
+          if (queueCall) {
+            const { ability, arguments_json, delegation } = request.arguments;
+            assert.equal(delegationDigest({ ability, arguments_json, delegation }), queueCall.inputSha256);
+            queueCall.after = queuePostCount();
+            if (!confirmed) assert.equal(payload(result).status, 'CONFIRMATION_REQUIRED');
+          }
           observe(bindingFixtureDiagnostic(request?.name, result, confirmed)); return result;
         } catch (error) {
           observe(bindingFixtureDiagnostic(request?.name, error, confirmed, true)); throw error;
@@ -316,6 +332,13 @@ try {
     reviewed_digest: review.digest }, { ledger, originalRequestId }));
   assert.equal(store.db.prepare('SELECT count(*) n FROM original_management_queues').get().n, 1);
   assert.equal(store.db.prepare("SELECT count(*) n FROM original_management_queue_history WHERE state='dispatched'").get().n, 1);
+  // The canonical MCP transport issues the first token locally: this wrapper
+  // has no dry_run. Two identical MCP inputs must produce exactly one POST.
+  const confirmation = { phases: queueCalls.map(c => c.confirmed), same_input: queueCalls.length === 2
+    && queueCalls[0].inputSha256 === queueCalls[1].inputSha256,
+  http_before: queueCalls.map(c => c.before), http_after: queueCalls.map(c => c.after) };
+  report.queueConfirmation = confirmation; save();
+  assert.deepEqual(confirmation, { phases: [false, true], same_input: true, http_before: [0, 0], http_after: [0, 1] });
   report.qualification = { job_id: jobId, context_sha256: queued.binding_sha256,
     original_expires_at: originalAnchor.expiresAt / 1000, job_expires_at: queued.binding.expires_at, dispatches: 1 };
   pass('Actual signed qualification queues the retained original once with unchanged grant and intent ceilings');
@@ -381,17 +404,18 @@ try {
   report.currentAccess = { context_requests: contextCalls, signed_callbacks: accessRows.length, clear: 1, pending_revocation: 1,
     repeated_revoked_read_dispatched: false };
   pass('Revocation during actual provider context lookup returns a signed denial and blocks later local dispatch');
-  const network = readFileSync(join(work, 'gateway-network.jsonl'), 'utf8').trim().split('\n').map(line => JSON.parse(line));
+  phase = 'network-verification';
+  const network = networkRows();
   const controls = network.filter(row => /\/(?:bind|read)-content-edit-authorization-v2\/run$/.test(row.path));
-  assert.equal(controls.length, 2); assert.ok(controls.every(row => row.method === 'POST' && row.status === 200));
   const accessPosts = network.filter(row => /\/read-management-access-veto-query-existing-v2\/run$/.test(row.path));
   const contextPosts = network.filter(row => /\/get-content-edit-qualification-context-existing-v2\/run$/.test(row.path));
-  const queuePosts = network.filter(row => row.ability === 'mrn-mainwp/request-content-edit-qualification-existing-v2');
+  const queuePosts = network.filter(row => row.ability === originalQualificationAbility);
+  report.network = { signed_control_posts: controls.length, context_posts: contextPosts.length, access_readback_posts: accessPosts.length,
+    queue_posts: queuePosts.length, network_log_sha256: digest(readFileSync(join(work, 'gateway-network.jsonl'))) }; save();
+  assert.equal(controls.length, 2); assert.ok(controls.every(row => row.method === 'POST' && row.status === 200));
   assert.equal(accessPosts.length, 2); assert.ok(accessPosts.every(row => row.method === 'POST' && row.status === 200));
   assert.equal(contextPosts.length, 2); assert.ok(contextPosts.every(row => row.method === 'POST'));
-  assert.equal(queuePosts.length, 2); assert.ok(queuePosts.every(row => row.method === 'POST' && row.status === 200));
-  report.network = { signed_control_posts: controls.length, context_posts: contextPosts.length, access_readback_posts: accessPosts.length,
-    queue_confirmation_posts: queuePosts.length, network_log_sha256: digest(readFileSync(join(work, 'gateway-network.jsonl'))) };
+  assert.equal(queuePosts.length, 1); assert.ok(queuePosts.every(row => row.method === 'POST' && row.status === 200));
   checksComplete = true;
 } catch (error) {
   report.result = 'FAIL'; report.failure = { phase, recentCalls,

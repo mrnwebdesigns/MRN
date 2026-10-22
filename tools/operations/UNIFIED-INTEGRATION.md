@@ -32,6 +32,21 @@ the repair candidate adds bounded diagnostics and actual REST dispatch to
 resolve that failure. Provider `39835510055` and the new gateway combined run
 must both pass before the composition is qualified.
 
+Gateway `1a3c1c7` passed hosted MRN QA `39835946602`; combined `39835946576`
+failed its final network assertion after all eight behavioral groups passed,
+including actual TLS callback/readback, signed revocation denial and unchanged
+Child content. Original artifact `12451735525` and the five tested source paths
+were independently verified. The test incorrectly expected two HTTP queue
+requests: the immutable canonical MCP confirmation implementation and provider
+contract specify a local first confirmation token, then one confirmed POST.
+The corrected proof checks both identical signed MCP inputs, zero queue POSTs
+before confirmation and exactly one afterward. Other exact network counts stay
+unchanged, and bounded counts are retained before assertions. This corrects the
+test's layer distinction; it does not waive the failed result or qualify capture.
+Provider `4aeb9cb` also failed native CI `39835510055` at the capture invariant;
+its separate REST fixture correction and the earlier `6fb4718` failure remain
+provider-owned gates.
+
 The preceding disposable integration candidate selected provider
 `b81a0dbe4d4be177480c9497bad9533831ff9b08` for the actual existing-v2 queue,
 registrar context and identity callback roundtrip. This is a test pin, not a

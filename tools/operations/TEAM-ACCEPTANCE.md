@@ -58,6 +58,14 @@ but combined `39832746016` failed at the first context callback with
 artifact and exact tested source were independently verified, including route
 cleanup. No production or ordinary-member acceptance follows from these results.
 
+Gateway `1a3c1c7` passed MRN QA `39835946602`, but combined `39835946576`
+failed a final queue network-count assertion after its eight behavioral groups
+passed. The corrected proof requires the canonical two MCP confirmation calls
+with identical signed input, zero queue POSTs before confirmation and one after.
+Actual TLS access/revocation observations are retained in artifact `12451735525`;
+the failed overall run is not accepted as complete integration. Provider native
+capture CI `39835510055` also failed and remains a separate gate.
+
 The preceding native queue/context/access fixture used provider
 `b81a0dbe4d4be177480c9497bad9533831ff9b08` solely as its disposable test candidate.
 All four provider jobs in `39829662335` pass. Gateway `e593e98` run
