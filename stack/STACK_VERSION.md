@@ -1,7 +1,7 @@
 # Stack Version
 
 ## Candidate Release
-- Stack release: `2026.10.22-fleet-auto-fb4939587e24`
+- Stack release: `2026.10.22-fleet-auto-c8adffac26e5`
 - Release date: `2026-10-22`
 - Status: `source snapshot; qualification/publication evidence establishes Fleet readiness; site rollout separate`
 
@@ -36,7 +36,7 @@
 | `mrn-public-security-hardening` | `0.4.4` |
 | `mrn-public-security-hardening-loader` | `0.4.4` |
 | `mrn-recaptcha-enterprise-manager` | `0.2.3` |
-| `mrn-reusable-block-library` | `0.2.2` |
+| `mrn-reusable-block-library` | `0.2.3` |
 | `mrn-schema-bridge` | `0.7.0` |
 | `mrn-schema-bridge-loader` | `0.7.0` |
 | `mrn-shared-assets` | `0.2.2` |

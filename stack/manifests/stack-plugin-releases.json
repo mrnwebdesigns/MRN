@@ -1714,6 +1714,35 @@
         "preserve_active_state": true
       },
       "version": "0.13.9"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-reusable-block-library-0.2.3-689bd39e1fa3.zip",
+        "main_file": "mrn-reusable-block-library/mrn-reusable-block-library.php",
+        "path": "releases/stack-plugins/mrn-reusable-block-library-0.2.3-689bd39e1fa3.zip",
+        "sha256": "d82e9efaba7d86cc612961e72be2ad6684e9ac3b596d2a910b5a5f0161ba8c3e",
+        "size_bytes": 63544
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-reusable-block-library",
+      "source": {
+        "git_commit": "689bd39e1fa38809c6f5afad6b19e2369b189ff6",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-reusable-block-library",
+        "repository": "mrnwebdesigns/mrn-reusable-block-library"
+      },
+      "target_tier": "optional-shared",
+      "tree": {
+        "file_count": 21,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "fa62d70c00e57d63d5245c320e2c55c0f5dc32661de931740bbdb450aa8e31ff"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.2.3"
     }
   ],
   "schema_version": 1
