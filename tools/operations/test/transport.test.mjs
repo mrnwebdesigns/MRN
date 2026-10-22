@@ -105,6 +105,33 @@ test('hosted HTTP MCP authenticates each request and keeps concurrent identities
   assert.equal(revoked.isError, true); assert.equal(f.state.calls.length, afterRecovery);
 });
 
+test('hosted MCP bounds nested tool input before validation and dispatch while retaining supported requests', async t => {
+  const { sign, auth } = await identity(); let calls = 0;
+  const service = { list() { calls++; return { websites: [] }; }, assessFleet(_actor, { targets }) { calls++; return { count: targets.length }; } };
+  const reserved = reservePort(); await new Promise(resolve => reserved.listen(0, '127.0.0.1', resolve));
+  const port = reserved.address().port; await new Promise(resolve => reserved.close(resolve));
+  const base = `http://127.0.0.1:${port}`;
+  const server = createHttpServer({ service, authenticate: auth, publicUrl: `${base}/mcp`, issuer });
+  await new Promise(resolve => server.listen(port, '127.0.0.1', resolve));
+  t.after(() => new Promise(resolve => server.close(resolve)));
+  const client = new Client({ name: 'bounded-input-test', version: '1' });
+  await client.connect(new StreamableHTTPClientTransport(new URL(`${base}/mcp`),
+    { requestInit: { headers: { Authorization: `Bearer ${await sign()}` } } }));
+  t.after(() => client.close());
+  for (const padding of [Array(1024).fill(0), Object.fromEntries(Array.from({ length: 1024 }, (_, i) => [`k${i}`, null])),
+    [{ nested: Array(1023).fill(0) }]]) {
+    const args = { padding };
+    assert.ok(Buffer.byteLength(JSON.stringify(args)) < 65536);
+    const result = await client.callTool({ name: 'list_websites', arguments: args });
+    assert.equal(result.isError, true); assert.match(result.content[0].text, /maximum of 1024 elements/);
+    assert.equal(calls, 0);
+  }
+  assert.equal((await client.callTool({ name: 'list_websites', arguments: {} })).isError, undefined);
+  const targets = Array.from({ length: 25 }, (_, i) => ({ website: `https://site-${i}.example.test`, environment: 'production' }));
+  const supported = await client.callTool({ name: 'assess_fleet', arguments: { targets } });
+  assert.equal(JSON.parse(supported.content[0].text).count, 25); assert.equal(calls, 2);
+});
+
 test('actual stdio downstream MCP supports Fleet execution and recovery after a lost rollback response', async t => {
   const f = setup(); t.after(() => f.close()); const stateFile = join(f.root, 'mainwp-state.json'); writeFileSync(stateFile, JSON.stringify(f.state));
   f.service.connect = async () => {

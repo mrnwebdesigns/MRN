@@ -5,6 +5,7 @@ import { OpsError, requireThat, safeError } from './contracts.mjs';
 import { oauthChallenge } from './auth.mjs';
 import { operationsScopes } from './scopes.mjs';
 import { accessVetoPath, managementAccessVetoPath } from './content-access.mjs';
+import { existingManagementAccessPath } from './existing-management-access.mjs';
 import { delegationCanonical, delegationIssuer } from './delegation.mjs';
 import { managementEvidencePath } from './management-evidence-callback.mjs';
 import { managementWorkerPath } from './management-worker-context.mjs';
@@ -22,9 +23,9 @@ async function readBody(req, { limit = 65536, canonical = false } = {}) {
   }
   catch (e) { if (e instanceof OpsError) throw e; throw new OpsError('BODY_INVALID', 'Invalid JSON request.'); }
 }
-export function createHttpServer({ service, authenticate, publicUrl, issuer, origins = [], accessVeto = null, managementAccessVeto = null, managementEvidence = null, managementWorker = null, managementSource = null, managementSourceContext = null }) {
+export function createHttpServer({ service, authenticate, publicUrl, issuer, origins = [], accessVeto = null, managementAccessVeto = null, existingManagementAccessVeto = null, managementEvidence = null, managementWorker = null, managementSource = null, managementSourceContext = null }) {
   const canonical = new URL(publicUrl); const rate = new Map(); let active = 0;
-  requireThat(!(accessVeto || managementAccessVeto || managementEvidence || managementWorker || managementSource || managementSourceContext) || canonical.origin === delegationIssuer, 'ACCESS_TRANSPORT', 'Private access callbacks require the fixed MRN gateway origin.');
+  requireThat(!(accessVeto || managementAccessVeto || existingManagementAccessVeto || managementEvidence || managementWorker || managementSource || managementSourceContext) || canonical.origin === delegationIssuer, 'ACCESS_TRANSPORT', 'Private access callbacks require the fixed MRN gateway origin.');
   let controlActive = 0, controlCount = 0, controlUntil = 0;
   let evidenceActive = 0, evidenceCount = 0, evidenceUntil = 0;
   let workerActive = 0, workerCount = 0, workerUntil = 0;
@@ -88,7 +89,8 @@ export function createHttpServer({ service, authenticate, publicUrl, issuer, ori
         // payload. Do not depend on schema/handler property insertion order.
         return json(res, 200, response, delegationCanonical);
       }
-      const control = req.url === accessVetoPath ? accessVeto : req.url === managementAccessVetoPath ? managementAccessVeto : null;
+      const control = req.url === accessVetoPath ? accessVeto : req.url === managementAccessVetoPath ? managementAccessVeto
+        : req.url === existingManagementAccessPath ? existingManagementAccessVeto : null;
       if (control) {
         requireThat(req.method === 'POST' && !req.headers.origin && !req.headers.authorization
           && req.headers['content-type'] === 'application/json', 'BODY_INVALID', 'Use the private POST query callback.');

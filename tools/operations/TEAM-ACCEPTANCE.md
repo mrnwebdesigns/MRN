@@ -59,6 +59,18 @@ provider fixture. Actual v2 queue/capture/source/rendered-QA/report integration,
 retry-safe draft creation and every real ChatGPT row above remain unverified.
 No production policy, tool registration or qualification flag is enabled.
 
+The next current-access slice passes 602 local gateway tests, ESLint and a clean
+dependency audit. It adds the exact private v2 callback, original-job binding,
+signed protocol separation, atomic bounded query consumption, persistent
+revocation and a tested public MCP input-element ceiling. Controlled tests cover
+actual HTTP, SQLite reopen, replay, history loss and the full 512-query limit.
+They do not prove live Google Directory state or an ordinary member's session.
+The prior queue commit `d2b31fa` passed hosted MRN QA `39823890828`, but Operations
+`39823890823` failed on MCP SDK dependencies and skipped native integration.
+The dependency is now pinned to 1.32.1 with the required structural input bound;
+the new combined hosted result is still pending. The provider source remains
+`f084797` until the new queue/access candidate passes independent qualification.
+
 ## Earlier disposable evidence, 2026-10-20
 
 Gateway `0ce3f14` is the latest independently accepted combined checkpoint:

@@ -84,7 +84,12 @@ export class OriginalManagementAuthorizationLedger {
       response TEXT NOT NULL DEFAULT '', response_digest TEXT NOT NULL DEFAULT '');
       CREATE TABLE IF NOT EXISTS original_management_queue_history(id TEXT NOT NULL, ordinal INTEGER NOT NULL,
       original TEXT NOT NULL, state TEXT NOT NULL, digest TEXT NOT NULL, dispatched_at INTEGER NOT NULL,
-      response_digest TEXT NOT NULL, principal TEXT NOT NULL, requester TEXT NOT NULL, PRIMARY KEY(id,ordinal));`);
+      response_digest TEXT NOT NULL, principal TEXT NOT NULL, requester TEXT NOT NULL, PRIMARY KEY(id,ordinal));
+      CREATE TABLE IF NOT EXISTS original_management_access_queries(id TEXT PRIMARY KEY, job TEXT NOT NULL,
+      check_id TEXT NOT NULL UNIQUE, body TEXT NOT NULL, digest TEXT NOT NULL);`);
+    if (!this.store.db.prepare('PRAGMA table_info(original_management_queues)').all().some(c => c.name === 'provider_job'))
+      this.store.db.exec('ALTER TABLE original_management_queues ADD COLUMN provider_job TEXT');
+    this.store.db.exec('CREATE UNIQUE INDEX IF NOT EXISTS original_queue_provider_job ON original_management_queues(provider_job)');
     const columns = this.store.db.prepare('PRAGMA table_info(original_management_attempts)').all();
     if (!columns.some(c => c.name === 'bind_control'))
       this.store.db.exec("ALTER TABLE original_management_attempts ADD COLUMN bind_control TEXT NOT NULL DEFAULT ''");
@@ -98,6 +103,10 @@ export class OriginalManagementAuthorizationLedger {
       this.store.db.exec("ALTER TABLE original_management_attempts ADD COLUMN review_digest TEXT NOT NULL DEFAULT ''");
     if (!columns.some(c => c.name === 'queue_id'))
       this.store.db.exec("ALTER TABLE original_management_attempts ADD COLUMN queue_id TEXT NOT NULL DEFAULT ''");
+    if (!columns.some(c => c.name === 'access_count'))
+      this.store.db.exec('ALTER TABLE original_management_attempts ADD COLUMN access_count INTEGER NOT NULL DEFAULT 0');
+    if (!columns.some(c => c.name === 'access_digest'))
+      this.store.db.exec("ALTER TABLE original_management_attempts ADD COLUMN access_digest TEXT NOT NULL DEFAULT ''");
   }
   #actor(value) {
     // Never accept a caller-created actor, hash or session ID at this boundary.
@@ -154,6 +163,12 @@ export class OriginalManagementAuthorizationLedger {
     const { actor } = this.#actor(currentActor), retained = this.#load(requestId), m = retained.mapping;
     check(requesterDigest(actor) === m.requester && actor.googleConnection === m.actor.googleConnection,
       'This preview belongs to a different verified person.');
+    return this.#retainedAuthority(retained);
+  }
+  // Private workers recover only the independently retained original. This is
+  // never used to accept an identity supplied by a public caller or callback.
+  #retainedAuthority(retained) {
+    const m = retained.mapping;
     // Reuse the retained original expiry. The current caller may have a newer
     // token, but cannot replace the original grant or its policy/site mapping.
     this.principals.actor(m.actor);
@@ -520,7 +535,9 @@ export class OriginalManagementAuthorizationLedger {
       let output; try { output = JSON.parse(row.response); } catch { check(false, 'Original queue response is corrupt.'); }
       context = validateExistingManagementQueue(output, { original: current, providerBinding: binding,
         request: queue.request, pins, dispatchedAt: row.dispatched_at, now: this.now() });
-    } else check(row.response === '' && row.response_digest === '', 'An unobserved queue cannot retain a response.');
+      check(row.provider_job === context.binding.qualification_job_id, 'The independent provider job index differs from its retained response.');
+    } else check(row.response === '' && row.response_digest === '' && row.provider_job === null,
+      'An unobserved queue cannot retain a response or provider job.');
     return { queue: { ...queue, pins }, state: row.state, digest: row.digest, dispatchedAt: row.dispatched_at, context };
   }
   // The only queue selector is the actual retained v2 provider binding.
@@ -615,11 +632,88 @@ export class OriginalManagementAuthorizationLedger {
       const context = validateExistingManagementQueue(output, { original: current, providerBinding: binding,
         request: q.queue.request, pins: q.queue.pins, dispatchedAt: q.dispatchedAt, now: this.now() });
       const body = JSON.stringify(context), hash = digest(body);
-      check(this.store.db.prepare("UPDATE original_management_queues SET state='observed',response=?,response_digest=? WHERE id=? AND state='dispatched'")
-        .run(body, hash, queueId).changes === 1, 'Original qualification response could not be retained.');
+      check(this.store.db.prepare("UPDATE original_management_queues SET state='observed',response=?,response_digest=?,provider_job=? WHERE id=? AND state='dispatched'")
+        .run(body, hash, context.binding.qualification_job_id, queueId).changes === 1, 'Original qualification response could not be retained.');
       this.#queueHistory({ state: 'observed', digest: q.digest, dispatched_at: q.dispatchedAt, response_digest: hash }, q.queue);
       this.store.audit(current.mapping.actor, current.mapping.site, requestId, 'original-qualification-queue', 'observed');
       return this.#queue(current);
+    });
+  }
+
+  #queuedJob(jobId) {
+    parse(z.string().uuid(), jobId);
+    const row = this.store.db.prepare('SELECT original FROM original_management_queues WHERE provider_job=?').get(jobId);
+    check(row, 'The original observed provider job is unavailable; callback data cannot create it.');
+    const original = this.#load(row.original), queue = this.#queue(original);
+    check(queue?.state === 'observed' && queue.context.binding.qualification_job_id === jobId,
+      'The original provider job is missing or changed.');
+    return { original, queue };
+  }
+  // Same bounded local check budget as the legacy management callback. An
+  // independent counter/digest on the original attempt prevents lost query
+  // rows from being mistaken for unused allowance after restart.
+  #accessHistory(original, jobId) {
+    const marker = this.store.db.prepare('SELECT access_count,access_digest FROM original_management_attempts WHERE attempt=?')
+      .get(original.mapping.attempt);
+    const rows = this.store.db.prepare('SELECT id,check_id,body,digest FROM original_management_access_queries WHERE job=? ORDER BY id LIMIT 513').all(jobId);
+    check(marker && Number.isSafeInteger(marker.access_count) && marker.access_count >= 0 && marker.access_count <= 512
+      && rows.length === marker.access_count && rows.every(r => digest(r.body) === r.digest)
+      && marker.access_digest === (rows.length ? delegationDigest(rows.map(r => ({ ...r }))) : ''),
+    'Original current-access history is missing or corrupt; its allowance cannot be reset.');
+    return marker;
+  }
+  originalQueuedJob(jobId) {
+    return this.store.transaction(() => {
+      const value = this.#queuedJob(jobId);
+      this.#accessHistory(value.original, jobId);
+      return { ...value, revision: this.#retainedAuthority(value.original).revision };
+    });
+  }
+  recordQueuePendingRevocation(jobId) {
+    return this.store.transaction(() => {
+      const { original } = this.#queuedJob(jobId), m = original.mapping;
+      this.#accessHistory(original, jobId);
+      const result = this.principals.pending(m.principal, m.requester);
+      if (result.changed) this.store.audit(m.actor, m.site, m.requestId, 'original-queue-access', 'pending-revocation');
+      return { state: 'pending-revocation', revision: result.revision, committed_denial: false };
+    });
+  }
+  answerQueueAccess(value, queryDigest, signAnswer) {
+    const query = parse(existingManagementTypes.qualification.veto_query, value);
+    return this.store.transaction(() => {
+      const { original, queue } = this.#queuedJob(query.qualification_job_id), m = original.mapping, b = queue.context.binding;
+      const now = Math.floor(this.now() / 1000);
+      check(queryDigest === delegationDigest(query) && query.issued_at <= now && query.expires_at > now
+        && query.expires_at > query.issued_at && query.expires_at - query.issued_at <= 5
+        && query.requester_binding_sha256 === m.requester && query.management_context_sha256 === queue.context.binding_sha256
+        && ['site_id', 'site_url', 'target', 'authorization_policy_sha256'].every(k => delegationDigest(query[k]) === delegationDigest(b[k]))
+        && query.expires_at <= b.expires_at,
+      'The current-access query does not bind the original observed qualification job.');
+      const principal = this.principals.row(m.principal, m.requester);
+      let state = principal.state;
+      if (state === 'clear') {
+        try { this.#retainedAuthority(original); } catch { state = 'denied'; }
+      }
+      const history = this.#accessHistory(original, b.qualification_job_id);
+      check(history.access_count < 512
+        && !this.store.db.prepare('SELECT id FROM original_management_access_queries WHERE id=? OR check_id=?').get(query.query_id, query.check_id),
+      'The original current-access query was already consumed or its check budget is exhausted.');
+      const expires = Math.min(b.expires_at, Math.floor(m.authorization.expiresAt / 1000));
+      const response = signAnswer(state, principal.revision, expires);
+      check(response && !response.then && query.expires_at > Math.floor(this.now() / 1000),
+        'Current-access signing must complete synchronously before the query expires.');
+      const body = JSON.stringify({ original: m.requestId, job: b.qualification_job_id, query: query.query_id,
+        check: query.check_id, queryDigest, phase: query.phase, state, revision: principal.revision,
+        principal: m.principal, requester: m.requester, actor: m.actor });
+      this.store.db.prepare('INSERT INTO original_management_access_queries VALUES(?,?,?,?,?)')
+        .run(query.query_id, b.qualification_job_id, query.check_id, body, digest(body));
+      const rows = this.store.db.prepare('SELECT id,check_id,body,digest FROM original_management_access_queries WHERE job=? ORDER BY id LIMIT 513')
+        .all(b.qualification_job_id).map(r => ({ ...r }));
+      check(this.store.db.prepare('UPDATE original_management_attempts SET access_count=access_count+1,access_digest=? WHERE attempt=? AND access_count=? AND access_digest=?')
+        .run(delegationDigest(rows), m.attempt, history.access_count, history.access_digest).changes === 1,
+      'Current-access history changed before its one-time claim.');
+      this.store.audit(m.actor, m.site, m.requestId, 'original-queue-access', state);
+      this.#accessHistory(original, b.qualification_job_id); return response;
     });
   }
 }

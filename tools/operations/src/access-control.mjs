@@ -15,7 +15,9 @@ const fresh = (claims, now) => requireThat(claims.issued_at <= now && claims.exp
 
 // Internal source-selected protocol. Never take contract, purpose or tool name
 // from a callback, OAuth claim, public argument or provider response.
-export function createAccessControl({ contract, compile, readbackTool }) {
+export function createAccessControl({ contract, compile, readbackTool, readbackSchemaVersion = 1, vetoSchemaVersion = 1 }) {
+  requireThat([1, 2].includes(readbackSchemaVersion) && [1, 2].includes(vetoSchemaVersion),
+    'ACCESS_CONFIG', 'The callback versions must be selected by source.');
   const querySchema = compile('query_readback_output'), claimsSchema = compile('veto_claims');
   const readbackSchema = compile('query_readback_claims');
   class AccessSigner {
@@ -31,14 +33,14 @@ export function createAccessControl({ contract, compile, readbackTool }) {
     }
     readback(input) {
       const pointer = parse(pointerSchema, input), now = Math.floor(this.now() / 1000);
-      const claims = parse(readbackSchema, { schema: 1, issuer: delegationIssuer, audience: delegationAudience,
+      const claims = parse(readbackSchema, { schema: readbackSchemaVersion, issuer: delegationIssuer, audience: delegationAudience,
         issued_at: now, expires_at: now + 5, request_id: randomUUID(), nonce: randomBytes(32).toString('hex'),
         action: 'read-veto-query', ...pointer });
       return { claims, envelope: this.envelope(claims, contract.query_readback_purpose_prefix) };
     }
     veto(query, querySha256, state, revision, expiresAt) {
       const now = Math.floor(this.now() / 1000);
-      const claims = parse(claimsSchema, { ...query, issuer: delegationIssuer, audience: delegationAudience,
+      const claims = parse(claimsSchema, { ...query, schema: vetoSchemaVersion, issuer: delegationIssuer, audience: delegationAudience,
         action: 'access-veto', issued_at: now, expires_at: Math.min(now + 5, query.expires_at, expiresAt),
         request_id: randomUUID(), nonce: randomBytes(32).toString('hex'), query_sha256: querySha256,
         state, gateway_revision: revision });

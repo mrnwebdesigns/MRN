@@ -20,7 +20,7 @@ The parent preservation barrier and atomic marker handoff pass; the prior
 `1ffa31f` failure remains a failed run. This proves disposable binding recovery,
 not an existing-v2 qualification queue or ordinary-member acceptance.
 
-The next source slice adds the one-time existing-v2 queue to the original
+Gateway `d2b31fa` adds the one-time existing-v2 queue to the original
 authorization ledger. A prepared/dispatched/observed history and independent
 attempt marker survive SQLite close/reopen and a fresh same-person login.
 Before sending a signed request, the service records its exact identity,
@@ -35,13 +35,34 @@ issuers, tampering, changed source/manifest, expiry and cross-protocol revocatio
 
 The queue is private composition, disabled unless its service-owned protected
 readiness callback is supplied. It is not registered in production startup or
-the workspace. Provider queue candidate `e35fbce` is being qualified separately;
+the workspace. Provider queue/access candidates are being qualified separately;
 the existing combined source pin remains `f084797` until candidate proof passes.
 Next dependencies are authenticated v2 context/capture/current-access, exact
 source transfer, protected rendered WordPress/ACF PRO QA and report admission.
 Retry-safe native draft creation still needs its own qualification. Deployment,
 same-plugin tool publication and real ChatGPT content/code/denial acceptance
 remain open. Doster's completed Privacy Center is excluded from demonstrations.
+
+The subsequent source slice adds the private existing-v2 current-access callback
+at the frozen `/internal/mainwp/management-existing-access-v2` path. It resolves
+only an observed original provider job, with no callback-created mapping or
+legacy fallback. Stored queries retain schema 1; signed readback/veto claims use
+schema 2 and their separate fixed purposes. Original grant expiry, exact target,
+policy/source binding, current local permission and shared pending revocation
+remain enforced. The provider must independently verify current Directory state.
+An atomic 512-query counter and history digest survive SQLite reopen and refuse
+missing history, replay, exhaustion or a counter rewind. Private runtime/HTTP
+composition is available, but production startup remains unregistered.
+
+All 602 gateway tests and ESLint pass locally. The preceding `d2b31fa` hosted
+Operations run `39823890823` failed its dependency audit before native testing;
+MRN QA `39823890828` passed. This source pins MCP SDK 1.32.1 and enables its
+1,024-element public tool-input limit before schema validation; npm audit reports
+zero vulnerabilities. Real authenticated HTTP tests reject excessive nested
+input below the unchanged 64 KiB public body cap and accept the supported 25-site
+assessment. This does not alter downstream deployment ZIP/base64 capacity.
+These local results do not replace the new combined native/provider run or the
+remaining protected producer, rendered QA and ordinary-member acceptance gates.
 
 ## Prior delivery checkpoint, 2026-10-20
 

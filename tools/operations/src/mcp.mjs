@@ -37,7 +37,10 @@ Form submission/delivery is not implemented: do not submit real forms or imply d
 Role permissions, fresh state, backups, immutable source/artifact bindings and shared locks are enforced by services, independent of these instructions.`;
 
 export function createMcp(service, actor, { publicUrl } = {}) {
-  const server = new McpServer({ name: 'mrn-website-operations', title: 'MRN Website Operations', version: '0.1.0' }, { instructions: guide });
+  // Bound structural work before Zod validation, including unknown properties.
+  // The largest supported request is 25 flat Fleet targets; HTTP also caps bytes.
+  const server = new McpServer({ name: 'mrn-website-operations', title: 'MRN Website Operations', version: '0.1.0' },
+    { instructions: guide, maxToolInputElements: 1024 });
   const descriptors = [];
   const register = (name, description, schema, readOnly, fn) => {
     const annotations = { readOnlyHint: readOnly,
@@ -88,7 +91,7 @@ export function createMcp(service, actor, { publicUrl } = {}) {
   register('website_history', 'Read previous inspections and changes for the exact selected environment.', target, true, args => service.history(actor, args.website, args.environment));
   register('prepare_rollback', 'Prepare rollback for a verified content/code edit or verified/reconciled Fleet update using retained exact snapshots or artifacts. Repeat applicable source, QA, approval and backup gates. Content rollback restores the approved record field; this is not a whole database or media restore.', { operationId: id, requestKey }, false, args => service.prepareRollback(actor, args));
   register('assess_fleet', 'Assess one to 25 explicitly selected environments and save their inspections; partial Stack installations remain qualification cases. No update is authorized by this assessment.', { targets: z.array(z.object(target).strict()).min(1).max(25) }, false, args => service.assessFleet(actor, args));
-  // SDK 1.31's registerTool drops top-level securitySchemes. Use its public
+  // SDK registerTool drops top-level securitySchemes. Use its public
   // request-handler and schema-conversion APIs to retain ChatGPT's declaration;
   // SDK validation and handlers still execute every tool. No private SDK state.
   server.server.setRequestHandler(ListToolsRequestSchema, () => ({ tools: descriptors }));

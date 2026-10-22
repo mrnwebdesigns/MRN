@@ -4,6 +4,7 @@ import { generateKeyPairSync, randomUUID, verify } from 'node:crypto';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { request as httpRequest } from 'node:http';
 import { createLocalJWKSet, exportJWK, generateKeyPair, SignJWT } from 'jose';
 import { createAuthenticator, originalAuthorizationAnchor } from '../src/auth.mjs';
 import { IdentitySigner, delegationCanonical, delegationDigest, delegationPrefix } from '../src/delegation.mjs';
@@ -15,10 +16,15 @@ import { ContentAccessLedger } from '../src/content-access-store.mjs';
 import { requesterDigest } from '../src/access-principal.mjs';
 import { accessRegistry } from './fixtures/access-registry.mjs';
 import { managementAccessFixture } from './fixtures/management-access.mjs';
-import { existingManagementHashes } from '../src/management-existing-contracts.mjs';
+import { existingManagementHashes, existingManagementWires } from '../src/management-existing-contracts.mjs';
 import { OriginalAuthorizationTransport, originalBindingObservation, originalReadinessObservation } from '../src/original-authorization-transport.mjs';
 import { DelegatedMainwpClient, delegationTools } from '../src/delegated-mainwp.mjs';
 import { validateExistingManagementQueue } from '../src/existing-management-queue.mjs';
+import { ExistingManagementAccessSigner, ExistingManagementAccessQueryReader, ExistingManagementAccessVeto,
+  ExistingManagementAccessLedger, existingManagementAccessReadbackTool, existingManagementAccessPath } from '../src/existing-management-access.mjs';
+import { createExistingManagementAccessRuntime } from '../src/content-access-runtime.mjs';
+import { managementCaptureContract } from '../src/content-management-capture.mjs';
+import { createHttpServer } from '../src/http.mjs';
 
 const audience = 'https://operations.mrnwebdesigns.com/mcp', issuer = 'https://identity.example.test/';
 async function fixture(t, durable = false) {
@@ -1248,4 +1254,186 @@ test('fresh login cannot claim a prepared handle or renew an expired queue trans
   await assert.rejects(() => f.queuePrepare(f.open().ledger, next));
   at = (f.now + 601) * 1000;
   await assert.rejects(() => f.ledger.readQueue(f.original, next));
+});
+
+async function existingAccessFixture(t) {
+  const f = await queueFixture(t), context = await originalQueueClient(f).queue();
+  const identity = { keyId: 'fixture', privateKey: f.keys.privateKey }, state = { calls: 0, closes: 0, mono: 0 };
+  const ledger = new ExistingManagementAccessLedger(f.ledger), signer = new ExistingManagementAccessSigner(identity);
+  const tool = { name: existingManagementAccessReadbackTool, annotations: { readOnlyHint: false, destructiveHint: false } };
+  const status = { connected: true, dashboardHost: 'wpcontrol.mrndev.io', abilitiesCount: 115 };
+  const client = {
+    async readResource() { return { contents: [{ text: JSON.stringify(status) }] }; },
+    async listTools() { return { tools: [tool] }; },
+    async callTool({ name, arguments: args }) {
+      state.calls++; assert.equal(name, existingManagementAccessReadbackTool);
+      const bytes = Buffer.from(args.signed_request.payload_base64, 'base64'), claims = JSON.parse(bytes);
+      assert.equal(claims.schema, 2); assert.equal(claims.query_id, state.query.query_id);
+      assert.ok(verify(null, Buffer.concat([Buffer.from(existingManagementWires.qualification.query_readback_purpose_prefix), bytes]),
+        f.keys.publicKey, Buffer.from(args.signed_request.signature_base64, 'base64')));
+      await state.duringRead?.();
+      return { content: [{ type: 'text', text: JSON.stringify(state.output ?? { stored: true, query: state.query, query_sha256: delegationDigest(state.query) }) }] };
+    },
+    async close() { state.closes++; },
+  };
+  const reader = new ExistingManagementAccessQueryReader(client);
+  const veto = new ExistingManagementAccessVeto({ signer, reader, ledger, monotonic: () => state.mono });
+  const query = () => ({ schema: 1, issuer: 'https://wpcontrol.mrndev.io', audience: 'https://operations.mrnwebdesigns.com',
+    issued_at: Math.floor(Date.now() / 1000), expires_at: Math.floor(Date.now() / 1000) + 5, request_id: randomUUID(), nonce: 'a'.repeat(64),
+    ...Object.fromEntries(['authorization_policy_sha256', 'qualification_job_id', 'site_id', 'site_url', 'target', 'requester_binding_sha256'].map(k => [k, context.binding[k]])),
+    action: 'pending-veto-query', phase: 'capture', check_id: randomUUID(), query_id: randomUUID(), provider_query_nonce: 'b'.repeat(64),
+    management_context_sha256: context.binding_sha256 });
+  const pointer = q => ({ query_id: q.query_id, provider_query_nonce: q.provider_query_nonce });
+  const call = async (q = query()) => { state.query = q; if (!reader.ready) await reader.initialize(); return veto.respond(pointer(q)); };
+  return { ...f, context, identity, accessState: state, accessLedger: ledger, signer, reader, veto, client, tool, status, query, pointer, call };
+}
+const decodeEnvelope = value => JSON.parse(Buffer.from(value.payload_base64, 'base64'));
+
+test('existing-v2 access uses its fixed POST reader and signature domain against the actual observed original queue', async t => {
+  const f = await existingAccessFixture(t), q = f.query(), response = (await f.call(q)).signed_veto;
+  const claims = decodeEnvelope(response), bytes = Buffer.from(response.payload_base64, 'base64');
+  assert.equal(existingManagementAccessPath, new URL(existingManagementWires.qualification.callback_url).pathname);
+  assert.equal(claims.schema, 2); assert.equal(claims.state, 'clear');
+  assert.equal(claims.management_context_sha256, f.context.binding_sha256);
+  assert.equal(claims.requester_binding_sha256, f.context.binding.requester_binding_sha256);
+  assert.ok(verify(null, Buffer.concat([Buffer.from(existingManagementWires.qualification.veto_purpose_prefix), bytes]),
+    f.keys.publicKey, Buffer.from(response.signature_base64, 'base64')));
+  assert.equal(verify(null, Buffer.concat([Buffer.from(managementCaptureContract.veto_purpose_prefix), bytes]),
+    f.keys.publicKey, Buffer.from(response.signature_base64, 'base64')), false);
+  const original = f.ledger.originalQueuedJob(q.qualification_job_id);
+  assert.deepEqual(original.queue.context, f.context); assert.equal(original.original.mapping.authorization.expiresAt, f.actor.expiresAt);
+  assert.equal(f.store.db.prepare("SELECT count(*) n FROM sqlite_master WHERE name='management_access_jobs'").get().n, 0);
+  const saved = f.store.db.prepare('SELECT body FROM original_management_access_queries').get().body;
+  for (const forbidden of [f.raw, response.payload_base64, response.signature_base64, JSON.stringify(f.request.changes)])
+    if (forbidden) assert.equal(saved.includes(forbidden), false);
+  await assert.rejects(() => f.call(q));
+  await assert.rejects(() => f.call({ ...f.query(), check_id: q.check_id }));
+});
+
+test('existing access refuses legacy, substituted, missing and unobserved jobs without creating a local map', async t => {
+  for (const change of ['schema2-query', 'legacy', 'job', 'target', 'requester', 'context', 'policy', 'lost-map', 'lost-index', 'unobserved']) {
+    const f = await existingAccessFixture(t), q = f.query();
+    if (change === 'schema2-query') q.schema = 2;
+    if (change === 'legacy') q.management_context_sha256 = delegationDigest(f.values.context.binding);
+    if (change === 'job') q.qualification_job_id = randomUUID();
+    if (change === 'target') q.target = { ...q.target, post_id: q.target.post_id + 1 };
+    if (change === 'requester') q.requester_binding_sha256 = 'f'.repeat(64);
+    if (change === 'context') q.management_context_sha256 = 'f'.repeat(64);
+    if (change === 'policy') q.authorization_policy_sha256 = 'f'.repeat(64);
+    if (change === 'lost-map') f.store.db.exec('DELETE FROM original_management_authorizations');
+    if (change === 'lost-index') f.store.db.exec('UPDATE original_management_queues SET provider_job=NULL');
+    if (change === 'unobserved') f.store.db.exec("UPDATE original_management_queues SET state='dispatched'");
+    await assert.rejects(() => f.call(q), change);
+    assert.equal(f.store.db.prepare('SELECT count(*) n FROM original_management_access_queries').get().n, 0);
+  }
+});
+
+test('pending revocation, current policy removal and provider source changes deny existing callbacks after readback', async t => {
+  for (const kind of ['revocation', 'policy', 'source']) {
+    const f = await existingAccessFixture(t);
+    f.accessState.duringRead = () => {
+      if (kind === 'revocation') f.accessLedger.recordPendingRevocation(f.context.binding.qualification_job_id);
+      if (kind === 'policy') f.policy.emailDomains[0].portfolio.actions = ['read'];
+      if (kind === 'source') f.pins.provider_source_sha = 'f'.repeat(40);
+    };
+    const claims = decodeEnvelope((await f.call()).signed_veto);
+    assert.equal(claims.state, kind === 'revocation' ? 'pending-revocation' : 'denied');
+    assert.throws(() => f.ledger.originalQueuedJob(f.context.binding.qualification_job_id));
+  }
+});
+
+test('access consumption is atomic and survives SQLite reopen; lost history cannot replenish its budget', async t => {
+  const f = await existingAccessFixture(t), q = f.query();
+  f.store.db.exec("CREATE TRIGGER fail_v2_access BEFORE INSERT ON audit WHEN NEW.event='original-queue-access' BEGIN SELECT RAISE(ABORT,'fixture'); END");
+  await assert.rejects(() => f.call(q));
+  assert.equal(f.store.db.prepare('SELECT count(*) n FROM original_management_access_queries').get().n, 0);
+  assert.equal(f.store.db.prepare('SELECT access_count FROM original_management_attempts').get().access_count, 0);
+  f.store.db.exec('DROP TRIGGER fail_v2_access'); await f.call(q);
+  f.close(f.store); const reopened = f.open();
+  const ledger = new ExistingManagementAccessLedger(reopened.ledger);
+  assert.throws(() => ledger.answer(q, delegationDigest(q), () => ({})));
+  reopened.store.db.exec('DELETE FROM original_management_access_queries');
+  assert.throws(() => ledger.answer(f.query(), delegationDigest(q), () => ({})));
+  assert.throws(() => reopened.ledger.originalQueuedJob(f.context.binding.qualification_job_id));
+  const changed = f.query();
+  assert.throws(() => ledger.answer(changed, delegationDigest(changed), () => ({})));
+});
+
+test('the existing access budget exhausts after 512 accepted queries and cannot be reset by a counter rewind', async t => {
+  const f = await existingAccessFixture(t), now = Date.now(); t.mock.method(Date, 'now', () => now);
+  for (let n = 0; n < 512; n++) {
+    const q = f.query();
+    const answer = f.accessLedger.answer(q, delegationDigest(q), (state, revision) => ({ state, revision }));
+    assert.equal(answer.state, 'clear');
+  }
+  assert.equal(f.store.db.prepare('SELECT access_count FROM original_management_attempts').get().access_count, 512);
+  const q = f.query(); let signed = false;
+  const answer = () => f.accessLedger.answer(q, delegationDigest(q), () => { signed = true; return {}; });
+  assert.throws(answer); assert.equal(signed, false);
+  assert.equal(f.store.db.prepare('SELECT count(*) n FROM original_management_access_queries').get().n, 512);
+  f.store.db.exec("UPDATE original_management_attempts SET access_count=0,access_digest=''");
+  assert.throws(answer); assert.equal(signed, false);
+  assert.throws(() => f.ledger.originalQueuedJob(q.qualification_job_id));
+});
+
+test('access history alone prevents principal reinitialization and concurrent callbacks cannot consume one query twice', async t => {
+  const f = await existingAccessFixture(t), q = f.query();
+  const outcomes = await Promise.allSettled([f.call(q), f.call(q)]);
+  assert.equal(outcomes.filter(r => r.status === 'fulfilled').length, 1);
+  const writersForPrincipal = writers(f);
+  f.store.db.exec(`DELETE FROM content_access_principals; DELETE FROM content_access_principal_history;
+    DELETE FROM original_management_authorizations; DELETE FROM original_management_attempts; DELETE FROM original_management_reviews;
+    DELETE FROM original_management_controls; DELETE FROM original_management_control_history;
+    DELETE FROM original_management_bindings; DELETE FROM original_management_queues; DELETE FROM original_management_queue_history;`);
+  for (const create of Object.values(writersForPrincipal)) await assert.rejects(async () => create());
+});
+
+test('existing callback closes on changed reader metadata, timeout, or runtime shutdown with no old-route fallback', async t => {
+  for (const kind of ['old-tool', 'unsafe', 'host', 'expired', 'slow']) {
+    const f = await existingAccessFixture(t);
+    if (kind === 'old-tool') f.tool.name = 'mrn_mainwp__read_management_access_veto_query_v1';
+    if (kind === 'unsafe') f.tool.annotations.readOnlyHint = true;
+    if (kind === 'host') f.status.dashboardHost = 'other.example.invalid';
+    if (kind === 'expired') f.accessState.duringRead = () => { f.accessState.query.expires_at = Math.floor(Date.now() / 1000) - 1; };
+    if (kind === 'slow') f.accessState.duringRead = () => { f.accessState.mono = 2500; };
+    await assert.rejects(() => f.call(), kind);
+    assert.equal(f.store.db.prepare('SELECT count(*) n FROM original_management_access_queries').get().n, 0);
+  }
+  assert.equal(await createExistingManagementAccessRuntime(), null);
+  const f = await existingAccessFixture(t);
+  const runtime = await createExistingManagementAccessRuntime({ enabled: true, ledger: f.ledger, identity: f.identity, connect: async () => f.client });
+  f.accessState.query = f.query(); await runtime.veto.respond(f.pointer(f.accessState.query));
+  await runtime.close(); await runtime.close(); assert.equal(f.accessState.closes, 1);
+  await assert.rejects(() => runtime.veto.respond(f.pointer(f.query())));
+});
+
+test('existing access HTTP is opt-in, fixed-origin and shares the bounded private POST controls', async t => {
+  const f = await existingAccessFixture(t); await f.reader.initialize();
+  assert.throws(() => createHttpServer({ publicUrl: 'https://other.example/mcp', existingManagementAccessVeto: f.veto }));
+  const server = createHttpServer({ publicUrl: audience, existingManagementAccessVeto: f.veto });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve)); t.after(() => new Promise(resolve => server.close(resolve)));
+  const send = (path, value, headers = {}, method = 'POST') => new Promise((resolve, reject) => {
+    const req = httpRequest({ host: '127.0.0.1', port: server.address().port, path, method, agent: false,
+      headers: { Host: 'operations.mrnwebdesigns.com', 'Content-Type': 'application/json', ...headers } }, res => {
+      const chunks = []; res.on('data', c => chunks.push(c)); res.on('end', () => resolve({ status: res.statusCode, body: JSON.parse(Buffer.concat(chunks)) }));
+    }); req.on('error', reject); req.end(delegationCanonical(value));
+  });
+  f.accessState.query = f.query(); const pointer = f.pointer(f.accessState.query);
+  assert.equal((await send(existingManagementAccessPath, pointer)).status, 200);
+  for (const [path, body, headers, method] of [
+    [existingManagementAccessPath, pointer, {}, 'GET'], [existingManagementAccessPath, pointer, { Authorization: 'Bearer caller' }],
+    [existingManagementAccessPath, pointer, { Origin: 'https://caller.example' }],
+    [existingManagementAccessPath, { ...pointer, actor: f.actor.verifiedEmail }, {}],
+    [existingManagementAccessPath, { padding: 'x'.repeat(600) }, {}],
+    ['/internal/mainwp/management-existing-access-veto', pointer, {}], ['/internal/mainwp/management-access-veto', pointer, {}],
+  ]) assert.notEqual((await send(path, body, headers, method)).status, 200);
+  const disabled = createHttpServer({ publicUrl: audience });
+  await new Promise(resolve => disabled.listen(0, '127.0.0.1', resolve));
+  const result = await new Promise((resolve, reject) => {
+    const req = httpRequest({ host: '127.0.0.1', port: disabled.address().port, path: existingManagementAccessPath,
+      method: 'POST', headers: { Host: 'operations.mrnwebdesigns.com', 'Content-Type': 'application/json' } }, res => {
+      res.resume(); res.on('end', () => resolve(res.statusCode));
+    }); req.on('error', reject); req.end(delegationCanonical(pointer));
+  });
+  assert.equal(result, 404); await new Promise(resolve => disabled.close(resolve));
 });
