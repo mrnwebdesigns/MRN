@@ -44,6 +44,15 @@ Use already-authorized test identities or separately reviewed administrative tes
 
 ## Latest source evidence, 2026-10-22
 
+The new native queue/context/access fixture passes 609 local tests, lint and
+syntax checks and uses provider `b81a0dbe4d4be177480c9497bad9533831ff9b08` solely
+as its disposable test candidate. The provider native run `39829662335` and new
+gateway combined proof remain pending. Required results are actual signed queue,
+provider-generated TLS callback and identity readback, revocation denial,
+blocked later dispatch, unchanged Child content and route cleanup. The strict
+sidecar is separate from the unchanged original descriptor/profile/deadlines.
+This adds no production registration, access grant or ordinary-member proof.
+
 Gateway `47a1bde` passes [combined CI 39434418265](https://github.com/mrnwebdesigns/MRN/actions/runs/39434418265)
 and [MRN QA 39434418251](https://github.com/mrnwebdesigns/MRN/actions/runs/39434418251).
 The eight original artifacts and tested source blobs were independently verified,
@@ -69,7 +78,8 @@ The prior queue commit `d2b31fa` passed hosted MRN QA `39823890828`, but Operati
 `39823890823` failed on MCP SDK dependencies and skipped native integration.
 The dependency is now pinned to 1.32.1 with the required structural input bound;
 the new combined hosted result is still pending. The provider source remains
-`f084797` until the new queue/access candidate passes independent qualification.
+`f084797` at that checkpoint; the new disposable candidate above requires its
+own independent qualification.
 
 The private context reader raises the passing gateway suite to 606 tests. It
 uses the original observed queue, separate registrar authority, fixed existing-v2
@@ -77,7 +87,7 @@ route/purpose, fresh staff/readiness checks and bounded expiry; changed or late
 responses cannot authorize continuation. These controlled tests exercise the
 gateway callback components but do not manufacture native provider proof.
 Gateway `ff0bbb4` hosted MRN QA `39827377578` passes; its controlled-contract job
-passes and native integration in `39827377501` is still running. Actual v2 context
+passes and native integration in `39827377501` now passes. Actual v2 context
 generation, callback transport and every real ChatGPT row remain open.
 
 ## Earlier disposable evidence, 2026-10-20

@@ -35,3 +35,13 @@ test('successful, malformed and oversized responses have bounded body-free diagn
   const large = bindingFixtureDiagnostic(name, result({ error: 'PRIVATE_FIXTURE_MATERIAL'.repeat(10000) }, true));
   assert.equal(large.kind, 'not-inspected'); assert.equal(JSON.stringify(large).includes('PRIVATE_FIXTURE_MATERIAL'), false);
 });
+
+test('existing context and identity callback diagnostics preserve only fixed route labels and denial codes', () => {
+  for (const [name, label] of [
+    ['mrn_mainwp__get_content_edit_qualification_context_existing_v2', 'existing-context'],
+    ['mrn_mainwp__read_management_access_veto_query_existing_v2', 'existing-access-read'],
+  ]) {
+    assert.deepEqual(bindingFixtureDiagnostic(name, result({ error: { code: 'mrn_existing_control', message: 'PRIVATE' } }, true)),
+      { tool: label, kind: 'tool-error', confirmed: false, provider_code: 'mrn_existing_control' });
+  }
+});

@@ -11,6 +11,25 @@ separate provider rollout and does not replace posts/pages/ACF delivery here.
 This gateway retains the existing Google login and plugin; no production,
 workspace-tool, credential or access configuration changes accompany this source.
 
+The current disposable integration candidate selects provider
+`b81a0dbe4d4be177480c9497bad9533831ff9b08` for the actual existing-v2 queue,
+registrar context and identity callback roundtrip. This is a test pin, not a
+production rollout or accepted provider upgrade. Its provider native run
+`39829662335` and the new gateway combined result must both pass before that
+composition is qualified. All 609 local gateway tests, lint and hook syntax
+checks pass; ten frozen contract files match the immutable provider bytes.
+
+The hook consumes a separately closed disposable `access.json` sidecar with
+only the existing fixture registrar key reference and fixed callback socket/
+routing command. It warms a separate identity connection before context I/O.
+Required native proof includes one signed queue, the real provider-generated
+TLS callback/readback, a signed pending-revocation denial during the next
+context request, blocked later local dispatch, unchanged Child content and
+disabled routing during cleanup. Ten seconds are reserved for cleanup inside
+the unchanged 180-second hook maximum; the original descriptor, eleven profile
+files and 200-second owner barrier remain unchanged. No owner/bootstrap call,
+fresh signer or production configuration is introduced.
+
 Gateway `47a1bde` with provider `f084797` passes combined CI `39434418265`
 and MRN QA `39434418251`. All eight original reports, 129 native JSON
 observations and the relevant tested-merge blobs were independently checked.
@@ -36,7 +55,8 @@ issuers, tampering, changed source/manifest, expiry and cross-protocol revocatio
 The queue is private composition, disabled unless its service-owned protected
 readiness callback is supplied. It is not registered in production startup or
 the workspace. Provider queue/access candidates are being qualified separately;
-the existing combined source pin remains `f084797` until candidate proof passes.
+the accepted reference at this checkpoint is `f084797`; the new candidate above
+must establish its own complete proof.
 Next dependencies are authenticated v2 context/capture/current-access, exact
 source transfer, protected rendered WordPress/ACF PRO QA and report admission.
 Retry-safe native draft creation still needs its own qualification. Deployment,
@@ -65,8 +85,8 @@ These local results do not replace the new combined native/provider run or the
 remaining protected producer, rendered QA and ordinary-member acceptance gates.
 
 Gateway `ff0bbb4` committed that callback slice. Its hosted MRN QA
-`39827377578` passes; Operations `39827377501` has passed controlled contracts
-and is still running native transport. The next private source slice adds the
+`39827377578` and Operations `39827377501` both pass. Original evidence review
+for that run is separate from qualifying the new native composition. The next private source slice adds the
 exact signed `get-content-edit-qualification-context-existing-v2` reader. It
 uses the configured registrar key and the independently observed original
 queue, with a 20-second total deadline and the original grant/intent ceilings.

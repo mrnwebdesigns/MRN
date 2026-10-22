@@ -225,13 +225,16 @@ jobs:
           const sources = JSON.parse(readFileSync('tools/operations/test/runtime/sources.json', 'utf8'));
           const binding = JSON.parse(readFileSync(process.env.MRN_GATEWAY_EXISTING_BINDING_REPORT, 'utf8'));
           assert.equal(binding.schema, 2); assert.equal(binding.result, 'PASS');
-          assert.equal(binding.scope, 'disposable-native-existing-binding-v2-only');
+          assert.equal(binding.scope, 'disposable-native-existing-queue-access-v2-only');
           assert.deepEqual(binding.passed, [
             'Separate synthetic v2 descriptor and installed immutable source independently verified',
             'Actual signed preview and complete candidate reconstruction retain the original verified actor and epoch',
             'One actual provider bind succeeds before a simulated lost response; no local receipt or retry is created',
             'SQLite reopen and a fresh authenticated login recover the exact binding by signed read without extending the original grant',
-            'Fresh exact-site sync and full Child readback prove the preview and binding did not edit content',
+            'Actual signed qualification queues the retained original once with unchanged grant and intent ceilings',
+            'Actual registrar context request triggers the provider TLS callback and separate signed identity readback',
+            'Fresh exact-site sync and full Child readback prove the preview, binding and qualification did not edit content',
+            'Revocation during actual provider context lookup returns a signed denial and blocks later local dispatch',
           ]);
           for (const field of ['productionCredentials', 'productionActivation', 'liveGoogleVerified', 'protectedWorkerVerified',
             'renderedQaVerified', 'consumerBindingIssued', 'contentWriteVerified', 'codeWriteVerified', 'remoteBackupVerified',
@@ -248,12 +251,23 @@ jobs:
           assert.equal(binding.binding.coherence_epoch_sha256, binding.pins.coherence_epoch_sha256);
           assert.equal(binding.binding.bind_dispatches, 1); assert.equal(binding.binding.read_dispatches, 1);
           assert.ok(Number.isSafeInteger(binding.binding.original_expires_at) && binding.binding.original_expires_at > 0);
+          assert.match(binding.qualification.job_id, /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/);
+          assert.match(binding.qualification.context_sha256, /^[a-f0-9]{64}$/);
+          assert.equal(binding.qualification.dispatches, 1);
+          assert.equal(binding.qualification.original_expires_at, binding.binding.original_expires_at);
+          assert.ok(Number.isSafeInteger(binding.qualification.job_expires_at) && binding.qualification.job_expires_at > 0
+            && binding.qualification.job_expires_at <= binding.binding.original_expires_at);
+          assert.deepEqual(binding.currentAccess, { context_requests: 2, signed_callbacks: 2, clear: 1, pending_revocation: 1,
+            repeated_revoked_read_dispatched: false });
+          assert.equal(binding.callbackRouteDisabled, true);
           assert.equal(binding.child.site.site_url, 'https://child.fixture.example.invalid');
           assert.ok(Number.isSafeInteger(binding.child.site.site_id) && binding.child.site.site_id > 0);
           assert.equal(binding.child.target.kind, 'wordpress-content'); assert.equal(binding.child.target.post_type, 'page');
           assert.ok(Number.isSafeInteger(binding.child.target.post_id) && binding.child.target.post_id > 0);
           assert.match(binding.child.before_sha256, /^[a-f0-9]{64}$/); assert.equal(binding.child.after_sha256, binding.child.before_sha256);
           assert.equal(binding.network.signed_control_posts, 2); assert.match(binding.network.network_log_sha256, /^[a-f0-9]{64}$/);
+          assert.equal(binding.network.context_posts, 2); assert.equal(binding.network.access_readback_posts, 2);
+          assert.equal(binding.network.queue_confirmation_posts, 2);
           assert.ok(Number.isSafeInteger(binding.elapsedMs) && binding.elapsedMs > 0 && binding.elapsedMs < 180000);
           for (const name of ['provider', 'transport', 'runner']) assert.equal(execFileSync('git', ['-C', `.runtime/${name}`, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), sources[name].commit);
           assert.equal(execFileSync('git', ['-C', '.runtime/management-worker', 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), sources.managementWorker.commit);

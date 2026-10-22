@@ -2,9 +2,10 @@
 // Directory. No content execution, QA admission, production or team acceptance.
 import assert from 'node:assert/strict';
 import { createPrivateKey, randomUUID } from 'node:crypto';
-import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, lstatSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { execFileSync } from 'node:child_process';
+import { execFile, execFileSync } from 'node:child_process';
+import { promisify } from 'node:util';
 import { createLocalJWKSet, exportJWK, generateKeyPair, SignJWT } from 'jose';
 import { createAuthenticator, originalAuthorizationAnchor } from '../../src/auth.mjs';
 import { digest } from '../../src/contracts.mjs';
@@ -18,23 +19,55 @@ import { Store } from '../../src/store.mjs';
 import { accessRegistry } from '../fixtures/access-registry.mjs';
 import { existingBindingProfile, existingBindingProfileFiles, parseExistingBindingContext } from './existing-binding-context.mjs';
 import { bindingFixtureDiagnostic } from './existing-binding-diagnostics.mjs';
+import { parseExistingBindingAccess } from './existing-binding-access.mjs';
+import { createExistingManagementAccessRuntime } from '../../src/content-access-runtime.mjs';
+import { createExistingManagementContextRuntime, existingManagementContextTool } from '../../src/existing-management-context.mjs';
+import { createHttpServer } from '../../src/http.mjs';
 
 process.umask(0o077);
 const clients = new Set(), transports = new Set();
 const recentCalls = [];
-let store, deadline, reportPath;
-const report = { schema: 2, result: 'INCOMPLETE', scope: 'disposable-native-existing-binding-v2-only', passed: [],
+let store, deadline, hardDeadline, reportPath, sidecar, callbackServer, accessRuntime, routingTouched = false, closingAccess, started;
+let checksComplete = false;
+const report = { schema: 2, result: 'INCOMPLETE', scope: 'disposable-native-existing-queue-access-v2-only', passed: [],
   productionCredentials: false, productionActivation: false, liveGoogleVerified: false, protectedWorkerVerified: false,
   renderedQaVerified: false, consumerBindingIssued: false, contentWriteVerified: false, codeWriteVerified: false,
   remoteBackupVerified: false, chatgptAcceptanceVerified: false, afterTransportExpiryVerified: false };
 const save = () => { if (reportPath) writeFileSync(reportPath, JSON.stringify(report, null, 2) + '\n', { mode: 0o600 }); };
 const pass = label => { report.passed.push(label); save(); process.stdout.write(`PASS ${label}\n`); };
+const switchCallback = async mode => {
+  assert.ok(sidecar && ['node', 'disabled'].includes(mode));
+  try { await promisify(execFile)(sidecar.route_switch, [mode], { timeout: 5000, maxBuffer: 4096 }); }
+  catch { throw new Error('Disposable callback routing failed; private output withheld'); }
+};
+const closeAccess = () => {
+  if (!closingAccess) closingAccess = (async () => {
+    let failed = false;
+    if (routingTouched) {
+      try { await switchCallback('disabled'); report.callbackRouteDisabled = true; }
+      catch { failed = true; }
+    }
+    if (callbackServer?.listening) {
+      callbackServer.closeAllConnections();
+      await new Promise(resolveClose => callbackServer.close(resolveClose));
+    }
+    await accessRuntime?.close();
+    if (failed) throw new Error('Disposable callback route cleanup failed');
+  })();
+  return closingAccess;
+};
+const privateFile = (path, maximum) => {
+  const info = lstatSync(path);
+  assert.ok(info.isFile() && !info.isSymbolicLink() && (info.mode & 0o777) === 0o600 && info.size <= maximum);
+  return readFileSync(path);
+};
 let phase = 'fixture-validation';
 try {
   assert.equal(process.env.GITHUB_ACTIONS, 'true');
   assert.equal(process.env.MRN_DISPOSABLE_EXISTING_BINDING_TEST, '1');
   const [directory, certificate, runtimeCli, contextFile] = process.argv.slice(2);
   assert.equal(process.argv.length, 6); assert.equal(resolve(directory), directory);
+  assert.equal(realpathSync(directory), directory);
   assert.equal(certificate, join(directory, 'tls.crt'));
   assert.equal(runtimeCli, join(directory, 'existing-binding-v2/wp-fixture-cli'));
   assert.equal(contextFile, join(directory, 'existing-binding-v2/context.json'));
@@ -42,12 +75,22 @@ try {
   reportPath = process.env.MRN_GATEWAY_EXISTING_BINDING_REPORT;
   assert.ok(typeof reportPath === 'string' && resolve(reportPath) === reportPath);
   const context = parseExistingBindingContext(readFileSync(contextFile));
-  const started = performance.now();
-  deadline = setTimeout(() => {
+  sidecar = parseExistingBindingAccess(privateFile(join(directory, 'existing-binding-v2/access.json'), 4096), directory);
+  const routeInfo = lstatSync(sidecar.route_switch);
+  assert.ok(routeInfo.isFile() && !routeInfo.isSymbolicLink() && (routeInfo.mode & 0o777) === 0o700);
+  const registrarBytes = privateFile(sidecar.registrar_signer, 48);
+  assert.equal(registrarBytes.length, 48); assert.equal(registrarBytes.subarray(0, 16).toString('hex'), '302e020100300506032b657004220420');
+  const registrar = { keyId: sidecar.registrar_key_id, privateKey: createPrivateKey({ key: registrarBytes, type: 'pkcs8', format: 'der' }) };
+  registrarBytes.fill(0);
+  started = performance.now();
+  // Reserve cleanup inside the unchanged 180-second maximum. The original
+  // hard deadline still exits even if a subprocess or close becomes stuck.
+  deadline = setTimeout(async () => {
     report.result = 'FAIL'; report.failure = { phase, recentCalls, deadlineExceeded: true }; save();
     process.stderr.write('FAIL disposable v2 binding deadline; private output withheld\n');
-    process.exit(1);
-  }, context.limits.hook_seconds * 1000);
+    try { await closeAccess(); } finally { process.exit(1); }
+  }, (context.limits.hook_seconds - 10) * 1000);
+  hardDeadline = setTimeout(() => process.exit(1), context.limits.hook_seconds * 1000);
   const lock = JSON.parse(readFileSync(new URL('./sources.json', import.meta.url)));
   const providerRoot = resolve(process.env.MRN_GATEWAY_PROVIDER_SOURCE), transportRoot = resolve(process.env.MRN_GATEWAY_MCP_SOURCE);
   for (const [name, root] of [['provider', providerRoot], ['transport', transportRoot]])
@@ -116,9 +159,20 @@ try {
   };
   const pins = { provider_source_sha: context.pins.provider_source_sha, authorization_policy_sha256: context.pins.authorization_policy_sha256,
     delegation_policy_sha256: context.pins.delegation_policy_sha256 };
+  const queueReadiness = async (actor, input) => {
+    assert.equal(actor.googleSubject, context.actor.googleSubject);
+    assert.equal(input.site_id, context.site.site_id); assert.equal(input.site_url, context.site.site_url);
+    const current = await ready();
+    // Explicit disposable catalog expectation from the pinned catalog-owner
+    // fixture, not a production protected-worker/provenance claim.
+    return { coherenceEpochSha256: current.coherence_epoch_sha256,
+      pins: { provider_source_sha: pins.provider_source_sha, authorization_policy_sha256: pins.authorization_policy_sha256,
+        installed_manifest_sha256: context.pins.installed_manifest_sha256, source_binding_sha256: context.pins.source_binding_sha256,
+        job_intent_ttl_seconds: 600 } };
+  };
   const openLedger = () => {
     store = new Store(join(work, 'original-binding.sqlite'));
-    return new OriginalManagementAuthorizationLedger(store, { signer, registry, policy: () => pins, verifyStaff });
+    return new OriginalManagementAuthorizationLedger(store, { signer, registry, policy: () => pins, verifyStaff, queueReadiness });
   };
   let ledger = openLedger();
   const audience = 'https://operations.mrnwebdesigns.com/mcp', issuer = 'https://oauth.example.invalid/';
@@ -251,6 +305,45 @@ try {
     review_anchor_sha256: reviewAnchorHash, bind_dispatches: bindDispatches, read_dispatches: 1 };
   pass('SQLite reopen and a fresh authenticated login recover the exact binding by signed read without extending the original grant');
 
+  phase = 'original-qualification-queue';
+  const queueClient = new DelegatedMainwpClient(await rawClient(), nextActor, signer);
+  const queued = await queueClient.queueOriginalManagementQualification({ ...context.site, operation_id: review.operation_id,
+    reviewed_digest: review.digest }, { ledger, originalRequestId });
+  const jobId = queued.binding.qualification_job_id;
+  assert.equal(queued.binding.expires_at, Math.min(review.expires_at, originalAnchor.expiresAt / 1000, queued.binding.created_at + 600));
+  assert.deepEqual(ledger.originalQueuedJob(jobId).queue.context, queued);
+  await assert.rejects(() => queueClient.queueOriginalManagementQualification({ ...context.site, operation_id: review.operation_id,
+    reviewed_digest: review.digest }, { ledger, originalRequestId }));
+  assert.equal(store.db.prepare('SELECT count(*) n FROM original_management_queues').get().n, 1);
+  assert.equal(store.db.prepare("SELECT count(*) n FROM original_management_queue_history WHERE state='dispatched'").get().n, 1);
+  report.qualification = { job_id: jobId, context_sha256: queued.binding_sha256,
+    original_expires_at: originalAnchor.expiresAt / 1000, job_expires_at: queued.binding.expires_at, dispatches: 1 };
+  pass('Actual signed qualification queues the retained original once with unchanged grant and intent ceilings');
+
+  phase = 'private-current-access-setup';
+  accessRuntime = await createExistingManagementAccessRuntime({ enabled: true, ledger,
+    identity: { keyId: signer.keyId, privateKey: signer.privateKey }, connect: rawClient });
+  callbackServer = createHttpServer({ publicUrl: audience, existingManagementAccessVeto: accessRuntime.veto });
+  await new Promise((resolveListen, reject) => { callbackServer.once('error', reject); callbackServer.listen(sidecar.callback_socket, resolveListen); });
+  routingTouched = true; await switchCallback('node');
+  let contextCalls = 0, revokeDuringContext = false;
+  const contextClient = await rawClient();
+  const contextRuntime = await createExistingManagementContextRuntime({ enabled: true, ledger, registrar, connect: async () => ({
+    readResource: (...args) => contextClient.readResource(...args), listTools: (...args) => contextClient.listTools(...args),
+    close: () => contextClient.close(), callTool: async (...args) => {
+      assert.equal(args[0].name, existingManagementContextTool); contextCalls++;
+      if (revokeDuringContext) ledger.recordQueuePendingRevocation(jobId);
+      return contextClient.callTool(...args);
+    },
+  }) });
+  transports.add(contextRuntime);
+  phase = 'private-context-and-callback';
+  assert.deepEqual(await contextRuntime.context.read(jobId), queued);
+  const consumed = store.db.prepare('SELECT body FROM original_management_access_queries WHERE job=?').all(jobId).map(r => JSON.parse(r.body));
+  assert.equal(consumed.length, 1); assert.equal(consumed[0].state, 'clear'); assert.equal(consumed[0].phase, 'read-capture');
+  assert.equal(contextCalls, 1);
+  pass('Actual registrar context request triggers the provider TLS callback and separate signed identity readback');
+
   phase = 'unchanged-child';
   const freshClient = new DelegatedMainwpClient(await rawClient(), nextActor, signer);
   const freshSession = new MainwpSession(freshClient, registry, store, nextActor,
@@ -266,25 +359,54 @@ try {
     ['original-preview-retained', 'reviewed'], ['original-authorization-bind', 'prepared'],
     ['original-authorization-bind', 'dispatched'], ['original-authorization-read', 'prepared'],
     ['original-authorization-read', 'dispatched'], ['original-provider-binding', 'observed'],
+    ['original-qualification-queue', 'prepared'], ['original-qualification-queue', 'dispatched'], ['original-qualification-queue', 'observed'],
+    ['original-queue-access', 'clear'],
   ]);
   for (const row of audit) {
     assert.equal(row.subject, 'google-oauth2|222222');
     assert.deepEqual(JSON.parse(row.identity), { googleSubject: '222222', email: 'bob@mrnwebdesigns.com', provider: 'google-oauth2' });
   }
+  report.child = { site: context.site, target: context.target, before_sha256: read.snapshot_sha256, after_sha256: after.snapshot_sha256 };
+  pass('Fresh exact-site sync and full Child readback prove the preview, binding and qualification did not edit content');
+
+  phase = 'revocation-during-context';
+  revokeDuringContext = true;
+  await assert.rejects(() => contextRuntime.context.read(jobId));
+  assert.equal(contextCalls, 2);
+  const accessRows = store.db.prepare('SELECT body FROM original_management_access_queries WHERE job=? ORDER BY rowid').all(jobId).map(r => JSON.parse(r.body));
+  assert.deepEqual(accessRows.map(r => [r.state, r.phase]), [['clear', 'read-capture'], ['pending-revocation', 'read-capture']]);
+  assert.ok(accessRows.every(r => r.actor.subject === context.actor.subject && r.actor.verifiedEmail === context.actor.verifiedEmail));
+  assert.equal(store.db.prepare('SELECT access_count FROM original_management_attempts WHERE request=?').get(originalRequestId).access_count, 2);
+  await assert.rejects(() => contextRuntime.context.read(jobId)); assert.equal(contextCalls, 2);
+  report.currentAccess = { context_requests: contextCalls, signed_callbacks: accessRows.length, clear: 1, pending_revocation: 1,
+    repeated_revoked_read_dispatched: false };
+  pass('Revocation during actual provider context lookup returns a signed denial and blocks later local dispatch');
   const network = readFileSync(join(work, 'gateway-network.jsonl'), 'utf8').trim().split('\n').map(line => JSON.parse(line));
   const controls = network.filter(row => /\/(?:bind|read)-content-edit-authorization-v2\/run$/.test(row.path));
   assert.equal(controls.length, 2); assert.ok(controls.every(row => row.method === 'POST' && row.status === 200));
-  report.child = { site: context.site, target: context.target, before_sha256: read.snapshot_sha256, after_sha256: after.snapshot_sha256 };
-  report.network = { signed_control_posts: controls.length, network_log_sha256: digest(readFileSync(join(work, 'gateway-network.jsonl'))) };
-  pass('Fresh exact-site sync and full Child readback prove the preview and binding did not edit content');
-  report.result = 'PASS'; report.elapsedMs = Math.ceil(performance.now() - started); save();
+  const accessPosts = network.filter(row => /\/read-management-access-veto-query-existing-v2\/run$/.test(row.path));
+  const contextPosts = network.filter(row => /\/get-content-edit-qualification-context-existing-v2\/run$/.test(row.path));
+  const queuePosts = network.filter(row => row.ability === 'mrn-mainwp/request-content-edit-qualification-existing-v2');
+  assert.equal(accessPosts.length, 2); assert.ok(accessPosts.every(row => row.method === 'POST' && row.status === 200));
+  assert.equal(contextPosts.length, 2); assert.ok(contextPosts.every(row => row.method === 'POST'));
+  assert.equal(queuePosts.length, 2); assert.ok(queuePosts.every(row => row.method === 'POST' && row.status === 200));
+  report.network = { signed_control_posts: controls.length, context_posts: contextPosts.length, access_readback_posts: accessPosts.length,
+    queue_confirmation_posts: queuePosts.length, network_log_sha256: digest(readFileSync(join(work, 'gateway-network.jsonl'))) };
+  checksComplete = true;
 } catch (error) {
   report.result = 'FAIL'; report.failure = { phase, recentCalls,
     code: typeof error?.code === 'string' && /^[A-Z0-9_]{1,80}$/.test(error.code) ? error.code : 'DISPOSABLE_BINDING_CHECK_FAILED' };
   save(); process.stderr.write(`FAIL disposable v2 binding at ${phase}; private output withheld\n`); process.exitCode = 1;
 } finally {
+  try { await closeAccess(); }
+  catch {
+    report.result = 'FAIL'; report.failure = { phase: 'callback-route-cleanup', code: 'DISPOSABLE_CALLBACK_CLEANUP_FAILED' };
+    process.exitCode = 1;
+  }
   await Promise.allSettled([...transports].map(runtime => runtime.close()));
   await Promise.allSettled([...clients].map(client => client.close()));
   store?.close();
-  clearTimeout(deadline);
+  if (checksComplete && report.result !== 'FAIL') report.result = 'PASS';
+  if (started !== undefined) report.elapsedMs = Math.ceil(performance.now() - started);
+  save(); clearTimeout(deadline); clearTimeout(hardDeadline);
 }
