@@ -59,6 +59,12 @@ mrn_motion_target_test_assert_same(
 );
 
 mrn_motion_target_test_assert_same(
+	array( 'row', 'surface', 'content', 'header', 'heading' ),
+	array_keys( mrn_base_stack_get_motion_target_choices_for_field( 'field_mrn_body_text_motion_settings' ) ),
+	'Body Text exposes a heading-only target without animating its label.'
+);
+
+mrn_motion_target_test_assert_same(
 	array_keys( mrn_base_stack_get_motion_target_choices() ),
 	array_keys( mrn_base_stack_get_motion_target_choices_for_field( 'field_custom_motion_settings' ) ),
 	'Unknown extension fields retain the complete compatibility catalog.'

@@ -1,0 +1,31 @@
+{
+    "result": "passed",
+    "source_id": 1142,
+    "source_index": 3,
+    "cards": 3,
+    "images_required": false,
+    "count": 19,
+    "checks": [
+        "All three SEO cards survive native ACF",
+        "Native frame and responsive row preset retain the approved content geometry",
+        "Card 0 retains its exact heading",
+        "Card 0 retains complete editor-normalized copy",
+        "Card 0 retains its empty image selection",
+        "Card 1 retains its exact heading",
+        "Card 1 retains complete editor-normalized copy",
+        "Card 1 retains its empty image selection",
+        "Card 2 retains its exact heading",
+        "Card 2 retains complete editor-normalized copy",
+        "Card 2 retains its empty image selection",
+        "The source fluid space before cards survives native rendering",
+        "The source background color covers the outer native row spacing",
+        "Image-free cards never gain an image or media-only hover classes",
+        "Card 0 copy remains in native output",
+        "Card 1 copy remains in native output",
+        "Card 2 copy remains in native output",
+        "The approved SEO card row maps with its visible-caption decision",
+        "SEO source remains unchanged and the owned draft is removed"
+    ],
+    "authored_writes": 0,
+    "scope": "Native proof only; complete-page conversion remains pending"
+}

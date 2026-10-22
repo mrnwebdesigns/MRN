@@ -4595,6 +4595,7 @@ function mrn_base_stack_get_motion_target_choices() {
 		'content'      => 'Text / Content Area',
 		'media'        => 'Image / Media',
 		'header'       => 'Heading Area',
+		'heading'      => 'Heading Text Only',
 		'items'        => 'Items / Grid',
 		'left-column'  => 'Left Sub-Layout',
 		'right-column' => 'Right Sub-Layout',
@@ -4633,7 +4634,7 @@ function mrn_base_stack_get_motion_target_choices_for_field( $field_key ) {
 
 	$profiles = array(
 		'basic'            => array( 'row', 'surface', 'content', 'media', 'header' ),
-		'body_text'        => array( 'row', 'surface', 'content', 'header' ),
+		'body_text'        => array( 'row', 'surface', 'content', 'header', 'heading' ),
 		'card'             => array( 'row', 'surface', 'content', 'header', 'items' ),
 		'content_lists'    => array( 'row', 'surface', 'content', 'header', 'items' ),
 		'cta'              => array( 'row', 'surface', 'content', 'media' ),
@@ -5106,7 +5107,7 @@ function mrn_base_stack_apply_tag_field_column_layout( array $fields ) {
  */
 function mrn_base_stack_ensure_repeater_subheading_contract( array $fields, $repeater_key = '', $repeater_name = '' ) {
 	$repeater_name = sanitize_key( (string) $repeater_name );
-	if ( in_array( $repeater_name, array( 'tabs', 'card_items', 'stat_items', 'showcase_items' ), true ) ) {
+	if ( in_array( $repeater_name, array( 'tabs', 'card_items', 'stat_items', 'showcase_items', 'text_tags' ), true ) ) {
 		return $fields;
 	}
 
@@ -7797,6 +7798,7 @@ function mrn_base_stack_get_builder_layout_contract_fields( $layout_name, $key_s
 				'aria-label'    => '',
 				'type'          => 'select',
 				'choices'       => array(
+					'1' => '1',
 					'2' => '2',
 					'3' => '3',
 					'4' => '4',

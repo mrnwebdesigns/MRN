@@ -128,6 +128,14 @@ $section_classes  = mrn_base_stack_merge_builder_section_classes( $section_class
 $section_attrs    = mrn_base_stack_merge_builder_attributes( $section_attrs, $display_contract['attributes'] );
 $section_attrs    = mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
 
+$aside_contract = mrn_base_stack_get_split_aside_contract( $row );
+$section_classes = mrn_base_stack_merge_builder_section_classes( $section_classes, $aside_contract );
+$section_attrs = mrn_base_stack_merge_builder_attributes( $section_attrs, $aside_contract['attributes'] );
+if ( 'bounded' === ( $row['split_frame'] ?? '' ) ) {
+	if ( ! $left_rows ) { $section_classes[] = 'has-empty-left-column'; }
+	if ( ! $right_rows ) { $section_classes[] = 'has-empty-right-column'; }
+}
+
 $surface_style = mrn_base_stack_get_inline_style_attribute( $section_styles );
 $grid_styles   = array();
 $column_alignment = (string) ( $row['column_alignment'] ?? '' );

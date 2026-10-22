@@ -1,0 +1,25 @@
+PASS: Cloned ACF AJAX field registration and reusable-block query contracts.
+PASS: After Content public, admin, AJAX and integration field contracts.
+PASS: ACF builder field finalization regression.
+PASS: Business information defaults without ACF.
+PASS: Business information memoization and schema contracts.
+PASS: Content TOC contract.
+PASS: ownership, saved values, nested rows, opt-outs, public reads and requested templates.
+PASS: Events CPT and ACF field contract are registered.
+Frontend asset meta-index tests passed.
+PASS: Front-end component assets and critical preload.
+PASS: Header Utility Message time zones, DST, ACF validation and master switch.
+PASS: Image priority and lazy-loading contracts.
+Builder layout-class tests passed.
+PASS: saved rows, repeater templates, unrelated fields, nested requests, defaults, and non-editor contexts.
+PASS: Location fields, independent inheritance and retained custom values.
+Mobile navigation breakpoint tests passed.
+PASS 22 Motion asset contracts
+Contextual motion target and tab animation choice tests passed.
+Lazy 404 builder layout tests passed.
+PASS: Read-time contract.
+PASS: Rendered social-link asset needs.
+PASS: Resource CPT keeps featured-image support in admin/data-only mode.
+OK: row-spacing meta index hydration handles skipped flexible-content rows.
+PASS: Search form contract.
+Saved tab animation choices reach the real renderer; unknown values switch instantly.

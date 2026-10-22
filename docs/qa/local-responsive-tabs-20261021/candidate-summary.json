@@ -1,0 +1,46 @@
+{
+  "home": "https://mrnwebdesigns-stack-migration.localhost",
+  "snapshot_sha256": "4aa1b9af35d6b6f959146c49db919590614ce6d9e6855a3d2b88a5b1c6f56460",
+  "plan_hash": "a9353de68a1dbc13fa9362dbd19ea99dcc0ba0c914a61bff022c23107919bc4e",
+  "converter_version": "20261021.5",
+  "records": 63,
+  "rows": 298,
+  "used_layout_families": 48,
+  "native_limits": {
+    "hero_links": 4,
+    "faq_items": 30,
+    "logo_items": 30,
+    "showcase_items": 12,
+    "card_items": 12,
+    "grid_items": 12
+  },
+  "active_legacy_rows": 294,
+  "existing_native_records_requiring_reconciliation": [
+    11561,
+    11567
+  ],
+  "existing_native_rows_requiring_reconciliation": 3,
+  "converted_source_rows_retained": 1,
+  "record_statuses": {
+    "blocked": 63
+  },
+  "row_statuses": {
+    "mapping-implemented": 174,
+    "converter-work": 104,
+    "stack-review": 1,
+    "presentation-review": 15,
+    "existing-native-review": 3,
+    "converted-source-retained": 1
+  },
+  "gap_counts": {
+    "case-study-tab-action-presentation": {
+      "rows": 1,
+      "records": 1
+    }
+  },
+  "limitations": [
+    "Candidate mappings require implementation and editor/visual qualification.",
+    "Absence of a listed gap does not certify a faithful match.",
+    "No shared Stack edits, source metadata removal or authored record conversion is performed by this audit."
+  ]
+}

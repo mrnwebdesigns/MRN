@@ -23,6 +23,9 @@ $tab_style          = function_exists( 'mrn_base_stack_normalize_tabbed_layout_t
 $tab_orientation    = 0 === strpos( $tab_position, 'left-' ) ? 'vertical' : 'horizontal';
 $equal_heights      = ! empty( $row['equal_panel_heights'] );
 $switch_effect      = isset( $row['tab_switch_effect'] ) ? sanitize_key( (string) $row['tab_switch_effect'] ) : 'instant';
+$mobile_accordion   = 'accordion' === ( $row['tab_mobile_behavior'] ?? '' );
+$mobile_breakpoint  = '991' === ( $row['tab_mobile_breakpoint'] ?? '' ) ? '991' : '767';
+if ( $mobile_accordion ) { $switch_effect = 'instant'; $equal_heights = false; }
 $uses_slider        = 'slide' === $switch_effect;
 $bottom_accent      = ! empty( $row['bottom_accent'] );
 $accent_slug        = isset( $row['bottom_accent_style'] ) ? (string) $row['bottom_accent_style'] : '';
@@ -80,6 +83,7 @@ foreach ( $tab_items as $tab_index => $tab_item ) {
 
 	$rendered_tabs[] = array(
 		'button_id'        => $layout_uid . 'tab-' . ( (int) $tab_index + 1 ),
+		'drawer_id'        => $layout_uid . 'drawer-' . ( (int) $tab_index + 1 ),
 		'panel_id'         => $layout_uid . 'panel-' . ( (int) $tab_index + 1 ),
 		'label'            => $tab_label,
 		'accessible_label' => $accessible_label,
@@ -145,6 +149,11 @@ $section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' 
 $section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' )
 	? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() )
 	: array_merge( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
+$frame_contract = function_exists( 'mrn_base_stack_get_tabs_frame_contract' ) ? mrn_base_stack_get_tabs_frame_contract( $row ) : array( 'classes' => array(), 'attributes' => array() );
+$section_classes = mrn_base_stack_merge_builder_section_classes( $section_classes, $frame_contract );
+$section_attrs = mrn_base_stack_merge_builder_attributes( $section_attrs, $frame_contract['attributes'] );
+$inactive_filter_id = $layout_uid . 'inactive-filter';
+if ( in_array( 'has-muted-tab-icons', $section_classes, true ) ) { $section_attrs = mrn_base_stack_merge_builder_attributes( $section_attrs, array( 'style' => '--mrn-tab-inactive-filter:url(#' . $inactive_filter_id . ')' ) ); }
 $section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';
 $surface_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $section_styles ) : implode( '; ', $section_styles );
 $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
@@ -157,6 +166,8 @@ $root_classes      = array(
 	'mrn-tabbed-layout--transition-' . sanitize_html_class( $switch_effect ),
 );
 
+if ( $mobile_accordion ) { $root_classes[] = 'has-tab-mobile-accordion'; }
+
 if ( $equal_heights ) {
 	$root_classes[] = 'mrn-tabbed-layout--equal-heights';
 }
@@ -164,7 +175,13 @@ if ( $equal_heights ) {
 echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_stack_get_builder_anchor_markup( $row ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Anchor markup is escaped in the helper.
 ?>
 <section class="<?php echo esc_attr( implode( ' ', $section_classes ) ); ?>"<?php echo '' !== $section_attr_html ? ' ' . $section_attr_html : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
-	<div class="<?php echo esc_attr( implode( ' ', $root_classes ) ); ?>" data-mrn-tabbed-layout data-mrn-equal-panel-heights="<?php echo $equal_heights ? 'true' : 'false'; ?>">
+	<?php if ( $mobile_accordion ) : ?>
+		<noscript><style>html [data-mrn-tabbed-layout][data-mrn-tab-accordion] .mrn-tabbed-layout__nav-wrap{display:none}html [data-mrn-tabbed-layout][data-mrn-tab-accordion] .mrn-tabbed-layout__summary{display:flex}</style></noscript>
+	<?php endif; ?>
+	<?php if ( in_array( 'has-muted-tab-icons', $section_classes, true ) ) : ?>
+		<svg class="mrn-tabbed-layout__filters" width="0" height="0" aria-hidden="true" focusable="false"><defs><filter id="<?php echo esc_attr( $inactive_filter_id ); ?>" color-interpolation-filters="sRGB"><feFlood style="flood-color:var(--mrn-tab-inactive-icon-color, currentColor)"/><feComposite in2="SourceAlpha" operator="in"/></filter></defs></svg>
+	<?php endif; ?>
+	<div class="<?php echo esc_attr( implode( ' ', $root_classes ) ); ?>" data-mrn-tabbed-layout<?php if ( $mobile_accordion ) : ?> data-mrn-tab-accordion="<?php echo esc_attr( $mobile_breakpoint ); ?>"<?php endif; ?> data-mrn-equal-panel-heights="<?php echo $equal_heights ? 'true' : 'false'; ?>">
 		<div class="mrn-layout-section mrn-layout-section--tabbed-layout <?php echo esc_attr( $width_layers['section_class'] ); ?><?php echo $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 			<div class="mrn-layout-container <?php echo esc_attr( $width_layers['container_class'] ); ?><?php echo ! $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo ! $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 				<div class="mrn-layout-grid mrn-layout-grid--tabbed-layout mrn-ui__body">
@@ -252,15 +269,23 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 												</div>
 										</li>
 									<?php else : ?>
+										<?php if ( $mobile_accordion ) : ?>
+										<details class="mrn-tabbed-layout__drawer" data-mrn-tab-drawer<?php echo 0 === $tab_index ? ' open' : ''; ?>>
+											<summary id="<?php echo esc_attr( $tab_item['drawer_id'] ); ?>" class="mrn-tabbed-layout__summary" aria-controls="<?php echo esc_attr( $tab_item['panel_id'] ); ?>">
+												<?php echo $tab_item['icon_markup']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped shared icon markup. ?>
+												<span<?php echo '' === $tab_item['label'] ? ' class="screen-reader-text"' : ''; ?>><?php echo esc_html( $tab_item['accessible_label'] ); ?></span>
+											</summary>
+										<?php endif; ?>
 										<div
 											id="<?php echo esc_attr( $tab_item['panel_id'] ); ?>"
 											class="mrn-tabbed-layout__panel<?php echo 0 === $tab_index ? ' is-active' : ''; ?>"
-											role="tabpanel"
-											aria-labelledby="<?php echo esc_attr( $tab_item['button_id'] ); ?>"
+											role="<?php echo $mobile_accordion ? 'region' : 'tabpanel'; ?>"
+											aria-labelledby="<?php echo esc_attr( $mobile_accordion ? $tab_item['drawer_id'] : $tab_item['button_id'] ); ?>"
 											data-mrn-tab-panel
 										>
 											<?php echo $tab_item['markup']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Nested builder rows escape their own output. ?>
 										</div>
+										<?php if ( $mobile_accordion ) : ?></details><?php endif; ?>
 									<?php endif; ?>
 								<?php endforeach; ?>
 

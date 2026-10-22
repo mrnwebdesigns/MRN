@@ -64,6 +64,9 @@ foreach ( $items as $item ) {
 	$valid_items[] = array(
 		'image' => $image,
 		'link'  => $item_link,
+		'image_alt_override' => is_string( $item['image_alt_override'] ?? null ) ? trim( $item['image_alt_override'] ) : '',
+		'column_span' => $item['column_span'] ?? 1,
+		'row_span' => $item['row_span'] ?? 1,
 	);
 }
 
@@ -115,6 +118,9 @@ $section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_clas
 $section_attrs     = isset( $display_contract['attributes'] ) && is_array( $display_contract['attributes'] ) ? $display_contract['attributes'] : array();
 $section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array() );
 $section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
+$bento_contract = function_exists( 'mrn_base_stack_get_showcase_bento_contract' ) ? mrn_base_stack_get_showcase_bento_contract( $row ) : array( 'classes' => array(), 'attributes' => array() );
+$section_classes = mrn_base_stack_merge_builder_section_classes( $section_classes, $bento_contract );
+$section_attrs = mrn_base_stack_merge_builder_attributes( $section_attrs, $bento_contract['attributes'] );
 $section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';
 $surface_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $section_styles ) : implode( '; ', $section_styles );
 $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
@@ -156,6 +162,7 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 						'mrn-showcase-row__item--gallery-shell',
 						'mrn-ui__item',
 					);
+					if ( 'bento' === ( $row['showcase_presentation'] ?? '' ) ) { $item_classes[] = 'mrn-bento-c' . mrn_base_stack_get_showcase_span( $item['column_span'] ); $item_classes[] = 'mrn-bento-r' . mrn_base_stack_get_showcase_span( $item['row_span'] ); }
 					$use_overlay_link     = $enable_full_item_link && $hide_item_link && '' !== $url;
 					$item_link_aria_label = '' !== $link_title ? $link_title : __( 'View showcase item', 'mrn-base-stack' );
 
@@ -179,7 +186,7 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 								<?php endif; ?>
 							>
 						<?php endif; ?>
-						<?php echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image( $image, 'mrn-gallery' ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						<?php echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image( $image, 'mrn-gallery', '' !== $item['image_alt_override'] ? array( 'alt' => $item['image_alt_override'] ) : array() ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 						<?php if ( '' !== $url && ! $use_overlay_link ) : ?>
 							</a>
 						<?php endif; ?>

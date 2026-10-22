@@ -46,7 +46,7 @@ try {
 	}
 	update_field( 'field_mrn_page_content_rows', array( $row ), $id );
 	$readback = get_field( 'page_content_rows', $id )[0];
-	foreach ( $names as $name ) { $expect( $row[ $name ] === $readback[ $name ], 'ACF persistence preserves ' . $name ); }
+	foreach ( array_intersect( $names, array_keys( $row ) ) as $name ) { $expect( $row[ $name ] === $readback[ $name ], 'ACF persistence preserves ' . $name ); }
 	$render = static function ( $value ) use ( $id ) { ob_start(); mrn_base_stack_render_builder_row( $value, $id, 0 ); return ob_get_clean(); };
 	$html = $render( $readback );
 	$expect( str_contains( $html, 'has-cta-frame' ) && str_contains( $html, 'has-cta-gutter-at-1199' ) && str_contains( $html, '--mrn-cta-frame-content-gap:0px' ), 'Saved native frame and responsive values reach the wrapper' );

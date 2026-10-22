@@ -1,0 +1,15 @@
+{
+  "records": 63,
+  "source_hashes_unchanged": true,
+  "indexed_metadata_unchanged": true,
+  "roots": [
+    "add_elements",
+    "page_hero_rows",
+    "page_content_rows"
+  ],
+  "conversion_marker_unchanged": true,
+  "authored_page_conversions_this_pass": 0,
+  "existing_converted_record": 11578,
+  "wp_json_http_status": 200,
+  "scope": "Indexed builder source, destination and conversion marker; not all postmeta"
+}

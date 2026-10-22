@@ -1,0 +1,2 @@
+{"path":"/","metrics":{"LCP":{"value":3928,"rating":"needs-improvement"},"CLS":{"value":0.005146191875139872,"rating":"good"},"INP":{"value":32,"rating":"good"}}}
+{"path":"/stack-local-tabs-preview-20261021/tabs.html","metrics":{"LCP":{"value":712,"rating":"good"},"CLS":{"value":0.1261342958741718,"rating":"needs-improvement"},"INP":{"value":40,"rating":"good"}}}

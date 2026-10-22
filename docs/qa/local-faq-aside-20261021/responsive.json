@@ -1,0 +1,209 @@
+[
+  {
+    "client": 2545,
+    "overflow": false,
+    "rows": [
+      {
+        "asidePosition": "sticky",
+        "asideWidth": 260,
+        "height": 2318.375,
+        "kind": "legacy",
+        "questionSize": "24px",
+        "questionWidth": 753
+      },
+      {
+        "asidePosition": "sticky",
+        "asideWidth": 260,
+        "height": 2318.375,
+        "kind": "native",
+        "questionSize": "24px",
+        "questionWidth": 753
+      }
+    ],
+    "viewport": 2560
+  },
+  {
+    "client": 1265,
+    "overflow": false,
+    "rows": [
+      {
+        "asidePosition": "sticky",
+        "asideWidth": 260,
+        "height": 2497.5625,
+        "kind": "legacy",
+        "questionSize": "24px",
+        "questionWidth": 518
+      },
+      {
+        "asidePosition": "sticky",
+        "asideWidth": 260,
+        "height": 2497.5625,
+        "kind": "native",
+        "questionSize": "24px",
+        "questionWidth": 518
+      }
+    ],
+    "viewport": 1280
+  },
+  {
+    "client": 1184,
+    "overflow": false,
+    "rows": [
+      {
+        "asidePosition": "sticky",
+        "asideWidth": 260,
+        "height": 2593.5625,
+        "kind": "legacy",
+        "questionSize": "24px",
+        "questionWidth": 467
+      },
+      {
+        "asidePosition": "sticky",
+        "asideWidth": 260,
+        "height": 2593.5625,
+        "kind": "native",
+        "questionSize": "24px",
+        "questionWidth": 467
+      }
+    ],
+    "viewport": 1199
+  },
+  {
+    "client": 977,
+    "overflow": false,
+    "rows": [
+      {
+        "asidePosition": "sticky",
+        "asideWidth": 260,
+        "height": 3681.53125,
+        "kind": "legacy",
+        "questionSize": "24px",
+        "questionWidth": 260
+      },
+      {
+        "asidePosition": "sticky",
+        "asideWidth": 260,
+        "height": 3681.53125,
+        "kind": "native",
+        "questionSize": "24px",
+        "questionWidth": 260
+      }
+    ],
+    "viewport": 992
+  },
+  {
+    "client": 976,
+    "overflow": false,
+    "rows": [
+      {
+        "asidePosition": "static",
+        "asideWidth": 646,
+        "height": 2645.96875,
+        "kind": "legacy",
+        "questionSize": "24px",
+        "questionWidth": 646
+      },
+      {
+        "asidePosition": "static",
+        "asideWidth": 646,
+        "height": 2660.75,
+        "kind": "native",
+        "questionSize": "24px",
+        "questionWidth": 646
+      }
+    ],
+    "viewport": 991
+  },
+  {
+    "client": 805,
+    "overflow": false,
+    "rows": [
+      {
+        "asidePosition": "static",
+        "asideWidth": 475,
+        "height": 2863.5625,
+        "kind": "legacy",
+        "questionSize": "24px",
+        "questionWidth": 475
+      },
+      {
+        "asidePosition": "static",
+        "asideWidth": 475,
+        "height": 2878.34375,
+        "kind": "native",
+        "questionSize": "24px",
+        "questionWidth": 475
+      }
+    ],
+    "viewport": 820
+  },
+  {
+    "client": 767,
+    "overflow": false,
+    "rows": [
+      {
+        "asidePosition": "static",
+        "asideWidth": 437,
+        "height": 2985.15625,
+        "kind": "legacy",
+        "questionSize": "24px",
+        "questionWidth": 437
+      },
+      {
+        "asidePosition": "static",
+        "asideWidth": 437,
+        "height": 2999.9375,
+        "kind": "native",
+        "questionSize": "24px",
+        "questionWidth": 437
+      }
+    ],
+    "viewport": 782
+  },
+  {
+    "client": 752,
+    "overflow": false,
+    "rows": [
+      {
+        "asidePosition": "static",
+        "asideWidth": 498,
+        "height": 2372.7578125,
+        "kind": "legacy",
+        "questionSize": "18px",
+        "questionWidth": 498
+      },
+      {
+        "asidePosition": "static",
+        "asideWidth": 690,
+        "height": 2246.7578125,
+        "kind": "native",
+        "questionSize": "18px",
+        "questionWidth": 690
+      }
+    ],
+    "viewport": 767
+  },
+  {
+    "client": 375,
+    "overflow": false,
+    "rows": [
+      {
+        "asidePosition": "static",
+        "asideWidth": 121,
+        "height": 5966.2265625,
+        "kind": "legacy",
+        "questionSize": "18px",
+        "questionWidth": 121
+      },
+      {
+        "asidePosition": "static",
+        "asideWidth": 313,
+        "height": 2905.9140625,
+        "kind": "native",
+        "questionSize": "18px",
+        "questionWidth": 313
+      }
+    ],
+    "viewport": 390
+  }
+]

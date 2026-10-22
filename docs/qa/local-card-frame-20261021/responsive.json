@@ -1,0 +1,200 @@
+[
+  {
+    "cards": [
+      {
+        "body_background": "rgb(255, 253, 251)",
+        "caption_background": "rgb(255, 253, 251)",
+        "height": 228,
+        "images": 0,
+        "width": 281.6640625,
+        "within_viewport": true
+      },
+      {
+        "body_background": "rgb(255, 253, 251)",
+        "caption_background": "rgb(255, 253, 251)",
+        "height": 228,
+        "images": 0,
+        "width": 281.6640625,
+        "within_viewport": true
+      },
+      {
+        "body_background": "rgb(255, 253, 251)",
+        "caption_background": "rgb(255, 253, 251)",
+        "height": 228,
+        "images": 0,
+        "width": 281.6640625,
+        "within_viewport": true
+      }
+    ],
+    "columns": "281.664px 281.664px 281.664px",
+    "document_overflow": false,
+    "measured_space_before_cards": 59.1953125,
+    "space_before_cards": "59.2px",
+    "width": 1280
+  },
+  {
+    "cards": [
+      {
+        "body_background": "rgb(255, 253, 251)",
+        "caption_background": "rgb(255, 253, 251)",
+        "height": 193,
+        "images": 0,
+        "width": 412,
+        "within_viewport": true
+      },
+      {
+        "body_background": "rgb(255, 253, 251)",
+        "caption_background": "rgb(255, 253, 251)",
+        "height": 193,
+        "images": 0,
+        "width": 412,
+        "within_viewport": true
+      },
+      {
+        "body_background": "rgb(255, 253, 251)",
+        "caption_background": "rgb(255, 253, 251)",
+        "height": 193,
+        "images": 0,
+        "width": 412,
+        "within_viewport": true
+      }
+    ],
+    "columns": "412px 412px",
+    "document_overflow": false,
+    "measured_space_before_cards": 55.953125,
+    "space_before_cards": "55.96px",
+    "width": 1199
+  },
+  {
+    "cards": [
+      {
+        "body_background": "rgb(255, 253, 251)",
+        "caption_background": "rgb(255, 253, 251)",
+        "height": 228,
+        "images": 0,
+        "width": 308.5,
+        "within_viewport": true
+      },
+      {
+        "body_background": "rgb(255, 253, 251)",
+        "caption_background": "rgb(255, 253, 251)",
+        "height": 228,
+        "images": 0,
+        "width": 308.5,
+        "within_viewport": true
+      },
+      {
+        "body_background": "rgb(255, 253, 251)",
+        "caption_background": "rgb(255, 253, 251)",
+        "height": 228,
+        "images": 0,
+        "width": 308.5,
+        "within_viewport": true
+      }
+    ],
+    "columns": "308.5px 308.5px",
+    "document_overflow": false,
+    "measured_space_before_cards": 47.6796875,
+    "space_before_cards": "47.68px",
+    "width": 992
+  },
+  {
+    "cards": [
+      {
+        "body_background": "rgb(255, 253, 251)",
+        "caption_background": "rgb(255, 253, 251)",
+        "height": 263,
+        "images": 0,
+        "width": 222.5,
+        "within_viewport": true
+      },
+      {
+        "body_background": "rgb(255, 253, 251)",
+        "caption_background": "rgb(255, 253, 251)",
+        "height": 263,
+        "images": 0,
+        "width": 222.5,
+        "within_viewport": true
+      },
+      {
+        "body_background": "rgb(255, 253, 251)",
+        "caption_background": "rgb(255, 253, 251)",
+        "height": 263,
+        "images": 0,
+        "width": 222.5,
+        "within_viewport": true
+      }
+    ],
+    "columns": "222.5px 222.5px",
+    "document_overflow": true,
+    "measured_space_before_cards": 40.796875,
+    "space_before_cards": "40.8px",
+    "width": 820
+  },
+  {
+    "cards": [
+      {
+        "body_background": "rgb(255, 253, 251)",
+        "caption_background": "rgb(255, 253, 251)",
+        "height": 114,
+        "images": 0,
+        "width": 690,
+        "within_viewport": true
+      },
+      {
+        "body_background": "rgb(255, 253, 251)",
+        "caption_background": "rgb(255, 253, 251)",
+        "height": 114,
+        "images": 0,
+        "width": 690,
+        "within_viewport": true
+      },
+      {
+        "body_background": "rgb(255, 253, 251)",
+        "caption_background": "rgb(255, 253, 251)",
+        "height": 114,
+        "images": 0,
+        "width": 690,
+        "within_viewport": true
+      }
+    ],
+    "columns": "690px",
+    "document_overflow": false,
+    "measured_space_before_cards": 40,
+    "space_before_cards": "40px",
+    "width": 767
+  },
+  {
+    "cards": [
+      {
+        "body_background": "rgb(255, 253, 251)",
+        "caption_background": "rgb(255, 253, 251)",
+        "height": 174,
+        "images": 0,
+        "width": 313,
+        "within_viewport": true
+      },
+      {
+        "body_background": "rgb(255, 253, 251)",
+        "caption_background": "rgb(255, 253, 251)",
+        "height": 204,
+        "images": 0,
+        "width": 313,
+        "within_viewport": true
+      },
+      {
+        "body_background": "rgb(255, 253, 251)",
+        "caption_background": "rgb(255, 253, 251)",
+        "height": 174,
+        "images": 0,
+        "width": 313,
+        "within_viewport": true
+      }
+    ],
+    "columns": "313px",
+    "document_overflow": false,
+    "measured_space_before_cards": 40,
+    "space_before_cards": "40px",
+    "width": 390
+  }
+]

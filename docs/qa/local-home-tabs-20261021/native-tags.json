@@ -1,0 +1,33 @@
+{
+    "result": "passed",
+    "count": 26,
+    "checks": [
+        "Explicit local test attachment exists",
+        "Owned local draft created",
+        "Registered editable Body Text field: text_tags",
+        "Registered editable Body Text field: heading_link",
+        "Registered editable Body Text field: list_presentation",
+        "Registered editable Body Text field: tag_gap",
+        "Registered editable Body Text field: tag_space_before",
+        "Native tags expose bounded pill presentation",
+        "Native editor validation accepts retained placeholders and site-relative tag URLs",
+        "Nested structured tag fields have isolated ACF keys",
+        "The native guard refuses six tags instead of silently discarding data",
+        "Tag text, repeated order and complete destinations survive ACF",
+        "Both native action fields preserve the complete link including its blank original title",
+        "Editable image naming and single-column Stats survive ACF",
+        "Native renderer preserves tag order and editable geometry",
+        "Tag text is escaped, never treated as authored markup",
+        "Placeholder tags remain text without invented click targets",
+        "Image action retains its full URL, meaningful name and safe target",
+        "A single native metric renders both value and label in one column",
+        "A tag-only native Body Text row remains renderable",
+        "Unset and unnamed image actions retain original markup without an empty link",
+        "Unsafe image destinations cannot render an action",
+        "Unsafe tag destinations and style injections cannot render",
+        "Unsafe heading destinations cannot render",
+        "Blank existing Stats column values retain their previous two-column default",
+        "Owned draft removed"
+    ],
+    "candidate_only": true
+}

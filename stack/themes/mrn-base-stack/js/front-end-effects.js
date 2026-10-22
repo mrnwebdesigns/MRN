@@ -52,6 +52,7 @@
 				'.mrn-content-list-row__header',
 				'.mrn-hero__content'
 			],
+			heading: [ '.mrn-ui__heading' ],
 			items: [
 				'.mrn-ui__items',
 				'.mrn-card-row__grid',
@@ -160,6 +161,10 @@
 		}
 
 		motionSections.forEach( function( sectionElement ) {
+			// Keep a saved heading-only selection inert until the heading has copy.
+			if ( 'heading' === normalizeMotionTarget( sectionElement.getAttribute( 'data-mrn-motion-target' ) ) && ! sectionElement.querySelector( '.mrn-ui__heading' ) ) {
+				return;
+			}
 			var targetElement = findMotionTarget( sectionElement );
 			var activeClass = sectionElement.getAttribute( 'data-mrn-motion-class' ) || 'is-mrn-in-view';
 			var marginValue = normalizeMargin( sectionElement.getAttribute( 'data-mrn-motion-margin' ) || '-35% 0px -35% 0px' );

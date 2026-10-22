@@ -1,0 +1,18 @@
+{
+  "result": "passed_with_advisory_limits",
+  "scope": "Changed staged task snapshots; local runtime proof is separate",
+  "stack_php_targets": 15,
+  "site_php_targets": 4,
+  "php_lint": "passed",
+  "phpcs_security_and_wordpress": "passed",
+  "php_compatibility": "passed (7.4-8.3)",
+  "stack_semgrep": "passed",
+  "site_semgrep": "skipped: no configured ruleset",
+  "phpstan": "advisory only; Stack snapshot lacks wp-cli stub path; site reports 44 symbol/type advisories including unknown WP_CLI; not strict type clearance",
+  "runtime_rest_http": 200,
+  "runtime_accessibility": "separate full-page MRN smoke: 2 passed",
+  "runtime_performance": "separate local CWV: both routes all good",
+  "release_parity_fleet_and_remote_readiness": "not run: local unpublished work only",
+  "source_work_committed": false,
+  "pushed_or_published": false
+}
