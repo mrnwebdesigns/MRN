@@ -44,7 +44,21 @@ Use already-authorized test identities or separately reviewed administrative tes
 
 ## Latest source evidence, 2026-10-22
 
-The new native queue/context/access fixture uses provider
+The current isolated candidate is provider
+`4aeb9cb77cb8977bc37b95e07752cb008f2ca2ff`, which adds the five exact private
+POST routes missing from the central REST guard. All twenty imported contract
+and fixture files match immutable source; signature, capability and machine-only
+gates remain required. Provider CI `39835510055` and the new gateway combined
+run remain separate qualification gates. The previous provider capture failure
+at `6fb4718` remains open until the new native result identifies and proves it.
+
+Gateway `dbd4ddb` passed hosted MRN QA `39832745950` and controlled contracts,
+but combined `39832746016` failed at the first context callback with
+`mrn_delegation_required`, after a successful actual signed queue. Its retained
+artifact and exact tested source were independently verified, including route
+cleanup. No production or ordinary-member acceptance follows from these results.
+
+The preceding native queue/context/access fixture used provider
 `b81a0dbe4d4be177480c9497bad9533831ff9b08` solely as its disposable test candidate.
 All four provider jobs in `39829662335` pass. Gateway `e593e98` run
 `39830911903` failed two stale provenance assertions and skipped native testing;

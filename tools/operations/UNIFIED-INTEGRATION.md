@@ -12,6 +12,27 @@ This gateway retains the existing Google login and plugin; no production,
 workspace-tool, credential or access configuration changes accompany this source.
 
 The current disposable integration candidate selects provider
+`4aeb9cb77cb8977bc37b95e07752cb008f2ca2ff`. It repairs the central REST guard's
+missing five exact POST routes for the private existing-v2 context, access
+readback and capture/recovery controls. Each route retains its independent
+signature and capability checks; a delegated staff scope cannot use this
+machine dispatch. All twenty imported contract/fixture files compared here
+match the immutable candidate without protocol-byte changes. Runtime and
+dependent provenance pins move together. This selection is only for isolated
+testing, not production adoption.
+
+Gateway `dbd4ddb` passed all 609 local tests, thirteen Fleet regressions, lint,
+the dependency audit and hosted MRN QA `39832745950`. Its combined run
+`39832746016` passed the actual signed queue, then failed the first context
+request with `mrn_delegation_required` before the callback was reached. Original
+artifact `12449422610` and all five tested source paths were independently
+verified; callback route cleanup passed. That failed result is not waived.
+Provider `6fb4718` also failed its separate native capture run `39832432295`;
+the repair candidate adds bounded diagnostics and actual REST dispatch to
+resolve that failure. Provider `39835510055` and the new gateway combined run
+must both pass before the composition is qualified.
+
+The preceding disposable integration candidate selected provider
 `b81a0dbe4d4be177480c9497bad9533831ff9b08` for the actual existing-v2 queue,
 registrar context and identity callback roundtrip. This is a test pin, not a
 production rollout or accepted provider upgrade. All four provider jobs in
