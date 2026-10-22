@@ -4,7 +4,46 @@
 
 One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebdesigns.com/mcp. Active MRN Google Workspace members get automatic portfolio access; there is no individual approval or enrollment step. Necessary approvals apply to concrete site changes. No teammate WordPress account, Application Password, API key, terminal, Codex, SSH or site token.
 
-## Current delivery state, 2026-10-20
+## Current content integration, 2026-10-22
+
+The unified release remains unaccepted. Routine maintenance belongs to its
+separate provider rollout and does not replace posts/pages/ACF delivery here.
+This gateway retains the existing Google login and plugin; no production,
+workspace-tool, credential or access configuration changes accompany this source.
+
+Gateway `47a1bde` with provider `f084797` passes combined CI `39434418265`
+and MRN QA `39434418251`. All eight original reports, 129 native JSON
+observations and the relevant tested-merge blobs were independently checked.
+Artifact `12272697476` is 12,040 bytes, SHA-256
+`b14bdd9b45a505d89e778210d9e52d08127cd985f0afe838e58711add58529e2`.
+The parent preservation barrier and atomic marker handoff pass; the prior
+`1ffa31f` failure remains a failed run. This proves disposable binding recovery,
+not an existing-v2 qualification queue or ordinary-member acceptance.
+
+The next source slice adds the one-time existing-v2 queue to the original
+authorization ledger. A prepared/dispatched/observed history and independent
+attempt marker survive SQLite close/reopen and a fresh same-person login.
+Before sending a signed request, the service records its exact identity,
+review, provider binding, source pins and original expiry. Both confirmation
+phases reuse that envelope. Failed confirmation or a lost response leaves a
+consumed attempt; no retry, reset, replacement job or token renewal is allowed.
+Current Directory/local revocation and protected readiness are rechecked before
+confirmed dispatch and response retention. The exact v2 operation is accepted
+by the signer while the generic tool path remains closed. All 593 gateway
+tests and ESLint pass locally, including atomic persistence failure, concurrent
+issuers, tampering, changed source/manifest, expiry and cross-protocol revocation.
+
+The queue is private composition, disabled unless its service-owned protected
+readiness callback is supplied. It is not registered in production startup or
+the workspace. Provider queue candidate `e35fbce` is being qualified separately;
+the existing combined source pin remains `f084797` until candidate proof passes.
+Next dependencies are authenticated v2 context/capture/current-access, exact
+source transfer, protected rendered WordPress/ACF PRO QA and report admission.
+Retry-safe native draft creation still needs its own qualification. Deployment,
+same-plugin tool publication and real ChatGPT content/code/denial acceptance
+remain open. Doster's completed Privacy Center is excluded from demonstrations.
+
+## Prior delivery checkpoint, 2026-10-20
 
 - The one existing plugin is available to everyone in the MRN ChatGPT workspace.
   The published directory currently lists 11 tools with four enabled; content

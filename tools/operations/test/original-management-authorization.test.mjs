@@ -9,7 +9,7 @@ import { createAuthenticator, originalAuthorizationAnchor } from '../src/auth.mj
 import { IdentitySigner, delegationCanonical, delegationDigest, delegationPrefix } from '../src/delegation.mjs';
 import { digest } from '../src/contracts.mjs';
 import { Store } from '../src/store.mjs';
-import { OriginalManagementAuthorizationLedger } from '../src/original-management-authorization.mjs';
+import { OriginalManagementAuthorizationLedger, originalQualificationAbility } from '../src/original-management-authorization.mjs';
 import { ManagementAccessLedger } from '../src/content-management-access-store.mjs';
 import { ContentAccessLedger } from '../src/content-access-store.mjs';
 import { requesterDigest } from '../src/access-principal.mjs';
@@ -50,7 +50,8 @@ async function fixture(t, durable = false) {
   const service = await provider({ pins, keys }), ready = () => service.transport.status();
   const prepare = async (value = actor, args = request, id = attempt, c = challenge) => current.ledger.prepare(value, args, c, id, await ready());
   return { ...current, values, state, now, actor, request, attempt, prepare, token, raw, auth, open, keys, signer, options,
-    pins, registry, registryData, policy, challenge, service, ready };
+    pins, registry, registryData, policy, challenge, service, ready,
+    close: store => { stores.splice(stores.indexOf(store), 1); store.close(); } };
 }
 const count = f => f.store.db.prepare('SELECT count(*) n FROM original_management_authorizations').get().n;
 
@@ -975,4 +976,276 @@ test('pending revocation during the confirmed original preview withholds the ret
   await assert.rejects(p.preview);
   assert.equal(p.state.confirmed, 1);
   assert.equal(f.store.db.prepare('SELECT count(*) n FROM original_management_reviews').get().n, 0);
+});
+
+async function queueFixture(t) {
+  const { f, context, expected } = await existingQueue(t);
+  const state = { pins: structuredClone(expected.pins), epoch: expected.original.mapping.readiness.coherenceEpochSha256,
+    checks: 0, duringCheck: null };
+  f.options.queueReadiness = async (actor, input) => {
+    originalAuthorizationAnchor(actor); assert.deepEqual(input, f.values.request);
+    state.checks++; await state.duringCheck?.();
+    return { pins: structuredClone(state.pins), coherenceEpochSha256: state.epoch };
+  };
+  f.ledger = new OriginalManagementAuthorizationLedger(f.store, f.options);
+  const request = f.values.request;
+  const prepare = (ledger = f.ledger, actor = f.actor) => ledger.prepareQueue(f.original, actor, request, f.challenge);
+  const output = () => {
+    const value = structuredClone(context), created = Math.floor(Date.now() / 1000);
+    value.binding.created_at = created;
+    value.binding.expires_at = Math.min(Math.floor(expected.original.review.expiresAt / 1000), f.now + 600,
+      created + state.pins.job_intent_ttl_seconds, created + 900);
+    value.binding_sha256 = delegationDigest(value.binding); return value;
+  };
+  return { ...f, queueState: state, queueRequest: request, queuePrepare: prepare, queueOutput: output };
+}
+const queueCount = f => f.store.db.prepare('SELECT count(*) n FROM original_management_queues').get().n;
+
+test('original qualification queue survives close/reopen and fresh login without replay, renewal or secret storage', async t => {
+  const f = await queueFixture(t), h = await f.queuePrepare();
+  assert.ok(Object.isFrozen(h)); assert.equal(queueCount(f), 1);
+  const prepared = await f.ledger.readQueue(f.original, f.actor);
+  assert.equal(prepared.state, 'prepared'); assert.equal(prepared.dispatchedAt, 0);
+  const envelope = await f.ledger.claimQueueDispatch(h, f.actor);
+  const raw = Buffer.from(envelope.payload_base64, 'base64'), claims = JSON.parse(raw);
+  assert.ok(verify(null, Buffer.concat([Buffer.from(delegationPrefix), raw]), f.keys.publicKey, Buffer.from(envelope.signature_base64, 'base64')));
+  assert.equal(claims.ability, originalQualificationAbility);
+  assert.equal(claims.arguments_sha256, delegationDigest(f.queueRequest));
+  assert.notEqual(claims.request_id, f.original);
+  const context = f.queueOutput(), saved = await f.ledger.recordQueue(f.original, h.queueId, f.actor, context);
+  assert.equal(saved.state, 'observed'); assert.deepEqual(saved.context, context);
+  const body = f.store.db.prepare('SELECT body FROM original_management_queues').get().body;
+  for (const secret of [f.raw, envelope.payload_base64, envelope.signature_base64, JSON.stringify(f.request.changes)])
+    if (secret) assert.equal(body.includes(secret), false);
+  assert.deepEqual(f.store.db.prepare('SELECT state FROM original_management_queue_history ORDER BY ordinal').all().map(x => x.state),
+    ['prepared', 'dispatched', 'observed']);
+  assert.equal(f.store.db.prepare("SELECT count(*) n FROM audit WHERE event='original-qualification-queue'").get().n, 3);
+  f.close(f.store);
+  const next = await f.auth(`Bearer ${await f.token(f.now + 1800)}`), reopened = f.open();
+  assert.deepEqual(await reopened.ledger.readQueue(f.original, next), saved);
+  assert.equal((await reopened.ledger.readCurrent(f.original, next)).mapping.authorization.expiresAt, f.actor.expiresAt);
+  await assert.rejects(() => f.queuePrepare(reopened.ledger, next));
+  await assert.rejects(() => reopened.ledger.claimQueueDispatch(h, next));
+  await assert.rejects(() => reopened.ledger.recordQueue(f.original, h.queueId, next, context));
+});
+
+test('concurrent original queue preparation, dispatch and observation each have exactly one durable winner', async t => {
+  const f = await queueFixture(t), second = f.open();
+  const attempts = await Promise.allSettled([f.queuePrepare(), f.queuePrepare(second.ledger)]);
+  assert.equal(attempts.filter(x => x.status === 'fulfilled').length, 1); assert.equal(queueCount(f), 1);
+  const index = attempts.findIndex(x => x.status === 'fulfilled'), ledger = index === 0 ? f.ledger : second.ledger;
+  const h = attempts[index].value;
+  const dispatch = await Promise.allSettled([ledger.claimQueueDispatch(h, f.actor), ledger.claimQueueDispatch(h, f.actor)]);
+  assert.equal(dispatch.filter(x => x.status === 'fulfilled').length, 1);
+  const response = f.queueOutput();
+  const observed = await Promise.allSettled([f.ledger, second.ledger].map(l => l.recordQueue(f.original, h.queueId, f.actor, response)));
+  assert.equal(observed.filter(x => x.status === 'fulfilled').length, 1);
+  assert.equal(f.store.db.prepare('SELECT count(*) n FROM original_management_queue_history').get().n, 3);
+});
+
+test('queue persistence failure rolls back its marker, transition history and audit at every boundary', async t => {
+  for (const stage of ['prepared', 'dispatched', 'observed']) {
+    const f = await queueFixture(t);
+    let h;
+    if (stage !== 'prepared') h = await f.queuePrepare();
+    if (stage === 'observed') await f.ledger.claimQueueDispatch(h, f.actor);
+    const baseline = f.store.db.prepare('SELECT * FROM original_management_queues').all();
+    const history = f.store.db.prepare('SELECT * FROM original_management_queue_history').all();
+    const marker = f.store.db.prepare('SELECT queue_id FROM original_management_attempts').get();
+    const audit = f.store.db.prepare('SELECT count(*) n FROM audit').get().n;
+    f.store.db.exec("CREATE TRIGGER reject_queue BEFORE INSERT ON audit WHEN NEW.event='original-qualification-queue' BEGIN SELECT RAISE(ABORT,'fixture'); END");
+    const operation = () => stage === 'prepared' ? f.queuePrepare() : stage === 'dispatched'
+      ? f.ledger.claimQueueDispatch(h, f.actor) : f.ledger.recordQueue(f.original, h.queueId, f.actor, f.queueOutput());
+    await assert.rejects(operation, stage);
+    assert.deepEqual(f.store.db.prepare('SELECT * FROM original_management_queues').all(), baseline);
+    assert.deepEqual(f.store.db.prepare('SELECT * FROM original_management_queue_history').all(), history);
+    assert.deepEqual(f.store.db.prepare('SELECT queue_id FROM original_management_attempts').get(), marker);
+    assert.equal(f.store.db.prepare('SELECT count(*) n FROM audit').get().n, audit);
+    f.store.db.exec('DROP TRIGGER reject_queue'); await operation();
+  }
+});
+
+test('queue refuses absent readiness, forged identity, wrong request, missing provider binding and mismatched source', async t => {
+  for (const failure of ['disabled', 'forged', 'readonly', 'person', 'request', 'binding', 'policy', 'source', 'epoch']) {
+    const f = await queueFixture(t); let actor = f.actor, request = f.queueRequest;
+    if (failure === 'disabled') f.ledger.queueReadiness = undefined;
+    if (failure === 'forged') actor = { ...actor };
+    if (failure === 'readonly') actor = await f.auth(`Bearer ${await f.token(f.now + 600, '123', { scope: 'mrn:operations' })}`);
+    if (failure === 'person') actor = await f.auth(`Bearer ${await f.token(f.now + 600, '456')}`);
+    if (failure === 'request') request = { ...request, actor: 'caller-supplied' };
+    if (failure === 'binding') f.store.db.exec('DELETE FROM original_management_bindings');
+    if (failure === 'policy') f.queueState.pins.authorization_policy_sha256 = 'f'.repeat(64);
+    if (failure === 'source') f.queueState.pins.provider_source_sha = 'f'.repeat(40);
+    if (failure === 'epoch') f.queueState.epoch = 'f'.repeat(64);
+    await assert.rejects(() => f.ledger.prepareQueue(f.original, actor, request, f.challenge), failure);
+    assert.equal(queueCount(f), 0);
+  }
+});
+
+test('current protected source and Directory authority are rechecked for queue dispatch and observation', async t => {
+  for (const stage of ['prepare', 'dispatch', 'observe']) for (const failure of ['directory', 'revocation', 'source', 'manifest', 'epoch', 'unavailable']) {
+    const f = await queueFixture(t);
+    const h = stage === 'prepare' ? null : await f.queuePrepare();
+    if (stage === 'observe') await f.ledger.claimQueueDispatch(h, f.actor);
+    if (failure === 'directory') f.state.duringCheck = () => { throw new Error('Directory unavailable'); };
+    if (failure === 'revocation') f.queueState.duringCheck = () => f.store.transaction(() =>
+      f.ledger.principals.pending(digest(f.actor.googleSubject), requesterDigest(f.actor)));
+    if (failure === 'source') f.queueState.pins.provider_source_sha = 'f'.repeat(40);
+    if (failure === 'manifest') {
+      if (stage === 'prepare') continue; // A new original may admit the current manifest; retained queues cannot change it.
+      f.queueState.pins.installed_manifest_sha256 = 'f'.repeat(64);
+    }
+    if (failure === 'epoch') f.queueState.epoch = 'f'.repeat(64);
+    if (failure === 'unavailable') f.queueState.duringCheck = () => { throw new Error('Protected worker unavailable'); };
+    await assert.rejects(() => stage === 'prepare' ? f.queuePrepare() : stage === 'dispatch'
+      ? f.ledger.claimQueueDispatch(h, f.actor) : f.ledger.recordQueue(f.original, h.queueId, f.actor, f.queueOutput()), `${stage}/${failure}`);
+    assert.equal(f.store.db.prepare('SELECT state FROM original_management_queues').get()?.state,
+      stage === 'prepare' ? undefined : stage === 'dispatch' ? 'prepared' : 'dispatched');
+  }
+});
+
+test('lost or damaged queue rows, markers and ordered history cannot be reset or recreated', async t => {
+  for (const damage of ['body-missing', 'history-missing', 'marker-missing', 'body-and-marker-missing', 'hash', 'body-and-hash', 'rewind', 'history-state', 'response']) {
+    const f = await queueFixture(t), h = await f.queuePrepare();
+    await f.ledger.claimQueueDispatch(h, f.actor);
+    await f.ledger.recordQueue(f.original, h.queueId, f.actor, f.queueOutput());
+    if (['body-missing', 'body-and-marker-missing'].includes(damage)) f.store.db.exec('DELETE FROM original_management_queues');
+    if (damage === 'history-missing') f.store.db.exec('DELETE FROM original_management_queue_history');
+    if (['marker-missing', 'body-and-marker-missing'].includes(damage)) f.store.db.exec("UPDATE original_management_attempts SET queue_id=''");
+    if (damage === 'hash') f.store.db.exec("UPDATE original_management_queues SET digest='bad'");
+    if (damage === 'body-and-hash') {
+      const q = JSON.parse(f.store.db.prepare('SELECT body FROM original_management_queues').get().body);
+      q.currentAuthorizationSha256 = 'f'.repeat(64); const body = JSON.stringify(q);
+      f.store.db.prepare('UPDATE original_management_queues SET body=?,digest=?').run(body, digest(body));
+    }
+    if (damage === 'rewind') f.store.db.exec("UPDATE original_management_queues SET state='prepared',dispatched_at=0,response='',response_digest=''");
+    if (damage === 'history-state') f.store.db.exec("UPDATE original_management_queue_history SET state='prepared' WHERE ordinal=2");
+    if (damage === 'response') f.store.db.exec("UPDATE original_management_queues SET response='{}'");
+    await assert.rejects(() => f.ledger.readQueue(f.original, f.actor), damage);
+    await assert.rejects(() => f.queuePrepare(), damage);
+    await assert.rejects(() => f.ledger.recordQueue(f.original, h.queueId, f.actor, f.queueOutput()), damage);
+  }
+});
+
+test('queue rows and history independently forbid missing principal reinitialization across all protocols', async t => {
+  for (const survivor of ['row', 'history']) {
+    const f = await queueFixture(t); await f.queuePrepare(); const write = writers(f);
+    f.store.db.exec(`DELETE FROM content_access_principals; DELETE FROM content_access_principal_history;
+      DELETE FROM original_management_authorizations; DELETE FROM original_management_attempts; DELETE FROM original_management_reviews;
+      DELETE FROM original_management_controls; DELETE FROM original_management_control_history; DELETE FROM original_management_bindings;`);
+    f.store.db.exec(`DELETE FROM ${survivor === 'row' ? 'original_management_queue_history' : 'original_management_queues'}`);
+    for (const create of Object.values(write)) await assert.rejects(async () => create(), survivor);
+    assert.equal(f.store.db.prepare('SELECT count(*) n FROM content_access_principals').get().n, 0);
+  }
+});
+
+function originalQueueClient(f) {
+  const state = { calls: [], confirmed: 0 }, response = value => ({ content: [{ type: 'text', text: JSON.stringify(value) }] });
+  const client = {
+    async readResource() { return { contents: [{ text: JSON.stringify({ connected: true, dashboardHost: 'wpcontrol.mrndev.io', abilitiesCount: 115 }) }] }; },
+    async listTools() { return { tools: Object.values(delegationTools).map(name => ({ name,
+      annotations: { readOnlyHint: false, destructiveHint: name === delegationTools.run } })) }; },
+    async callTool({ name, arguments: args }) {
+      state.calls.push({ name, args });
+      if (name === delegationTools.challenge) {
+        assert.equal(args.ability, originalQualificationAbility);
+        assert.equal(args.arguments_sha256, delegationDigest(f.queueRequest)); return response(f.challenge);
+      }
+      assert.equal(name, delegationTools.run);
+      const bytes = Buffer.from(args.delegation.payload_base64, 'base64'), claims = JSON.parse(bytes);
+      assert.ok(verify(null, Buffer.concat([Buffer.from(delegationPrefix), bytes]), f.keys.publicKey, Buffer.from(args.delegation.signature_base64, 'base64')));
+      const retained = await f.ledger.readQueue(f.original, f.actor);
+      assert.equal(retained.state, 'dispatched'); assert.equal(retained.queue.envelopeSha256, delegationDigest(args.delegation));
+      assert.equal(claims.request_id, retained.queue.delegationRequestId);
+      assert.equal(args.ability, originalQualificationAbility); assert.equal(args.arguments_json, delegationCanonical(f.queueRequest));
+      if (!args.user_confirmed) {
+        state.first = structuredClone(args); await state.duringConfirmation?.();
+        return response(state.failure === 'confirmation' ? { status: 'SAFE_MODE_BLOCKED' }
+          : { status: 'CONFIRMATION_REQUIRED', confirmation_token: 'fixture-queue-confirmation' });
+      }
+      assert.deepEqual(args.delegation, state.first.delegation); assert.equal(args.confirmation_token, 'fixture-queue-confirmation');
+      state.confirmed++;
+      if (state.failure === 'lost-response') throw new Error('Fixture lost queue response');
+      const result = { schema: 1, request_id: claims.request_id, ability: args.ability, policy_sha256: claims.policy_sha256,
+        actor: { oauth_subject: claims.oauth_subject, google_sub: claims.google_sub, email: claims.email }, result: f.queueOutput() };
+      state.corrupt?.(result); await state.duringResult?.(); return response(result);
+    },
+  };
+  const delegated = new DelegatedMainwpClient(client, f.actor, f.signer);
+  const queue = () => delegated.queueOriginalManagementQualification(f.queueRequest, { ledger: f.ledger, originalRequestId: f.original });
+  return { state, client, delegated, queue };
+}
+
+test('signed existing queue crosses both confirmation phases once and durably retains the exact provider context', async t => {
+  const f = await queueFixture(t), p = originalQueueClient(f), output = await p.queue();
+  assert.deepEqual((await f.ledger.readQueue(f.original, f.actor)).context, output);
+  assert.deepEqual(p.state.calls.map(row => row.name), [delegationTools.challenge, delegationTools.run, delegationTools.run]);
+  assert.equal(p.state.confirmed, 1);
+  await assert.rejects(p.queue); assert.equal(p.state.confirmed, 1);
+  await assert.rejects(() => p.delegated.callTool({ name: 'mrn_mainwp__request_content_edit_qualification_existing_v2', arguments: f.queueRequest }));
+  await assert.rejects(() => p.delegated.queueOriginalManagementQualification(f.queueRequest, { ledger: {}, originalRequestId: f.original }));
+});
+
+test('failed confirmation and uncertain queue response stay consumed across fresh login and SQLite reopen', async t => {
+  for (const failure of ['confirmation', 'lost-response']) {
+    const f = await queueFixture(t), p = originalQueueClient(f); p.state.failure = failure;
+    await assert.rejects(p.queue);
+    const before = p.state.calls.length;
+    await assert.rejects(p.queue); assert.equal(p.state.calls.length, before + 1); // Challenge is read-only; no second dispatch.
+    assert.equal(p.state.confirmed, failure === 'confirmation' ? 0 : 1);
+    const saved = await f.ledger.readQueue(f.original, f.actor); assert.equal(saved.state, 'dispatched');
+    const next = await f.auth(`Bearer ${await f.token(f.now + 1800)}`);
+    f.close(f.store); const reopened = f.open();
+    assert.deepEqual(await reopened.ledger.readQueue(f.original, next), saved);
+    await assert.rejects(() => f.queuePrepare(reopened.ledger, next));
+  }
+});
+
+test('a changed actor, request, policy or queued context is refused without storing provider success', async t => {
+  for (const field of ['actor', 'request', 'policy', 'source', 'target', 'protocol', 'unknown']) {
+    const f = await queueFixture(t), p = originalQueueClient(f);
+    p.state.corrupt = result => {
+      if (field === 'actor') result.actor.google_sub = '999';
+      if (field === 'request') result.request_id = randomUUID();
+      if (field === 'policy') result.policy_sha256 = 'f'.repeat(64);
+      if (field === 'source') result.result.binding.provider_source_sha = 'f'.repeat(40);
+      if (field === 'target') result.result.binding.target.post_id++;
+      if (field === 'protocol') result.result.binding.schema = 1;
+      if (field === 'unknown') result.result.caller_email = f.actor.verifiedEmail;
+      result.result.binding_sha256 = delegationDigest(result.result.binding);
+    };
+    await assert.rejects(p.queue, field);
+    assert.equal(f.store.db.prepare('SELECT state,response FROM original_management_queues').get().state, 'dispatched');
+    assert.equal(f.store.db.prepare('SELECT response FROM original_management_queues').get().response, '');
+  }
+});
+
+test('changed readiness or revocation between confirmation phases and response withholds further work', async t => {
+  for (const stage of ['duringConfirmation', 'duringResult']) for (const failure of ['revocation', 'manifest', 'source-binding', 'epoch', 'expiry']) {
+    const f = await queueFixture(t), p = originalQueueClient(f);
+    p.state[stage] = () => {
+      if (failure === 'revocation') f.store.transaction(() => f.ledger.principals.pending(digest(f.actor.googleSubject), requesterDigest(f.actor)));
+      if (failure === 'manifest') f.queueState.pins.installed_manifest_sha256 = 'f'.repeat(64);
+      if (failure === 'source-binding') f.queueState.pins.source_binding_sha256 = 'f'.repeat(64);
+      if (failure === 'epoch') f.queueState.epoch = 'f'.repeat(64);
+      if (failure === 'expiry') t.mock.method(Date, 'now', () => (f.now + 61) * 1000);
+    };
+    await assert.rejects(p.queue, `${stage}/${failure}`);
+    assert.equal(p.state.confirmed, stage === 'duringConfirmation' ? 0 : 1);
+    assert.equal(f.store.db.prepare('SELECT state FROM original_management_queues').get().state, 'dispatched');
+    t.mock.restoreAll();
+  }
+});
+
+test('fresh login cannot claim a prepared handle or renew an expired queue transport or original grant', async t => {
+  const f = await queueFixture(t), h = await f.queuePrepare();
+  const next = await f.auth(`Bearer ${await f.token(f.now + 1800)}`);
+  await assert.rejects(() => f.ledger.claimQueueDispatch({ ...h }, f.actor));
+  await assert.rejects(() => f.ledger.claimQueueDispatch(h, next));
+  let at = (f.now + 61) * 1000; t.mock.method(Date, 'now', () => at);
+  assert.equal((await f.ledger.readQueue(f.original, next)).state, 'prepared');
+  await assert.rejects(() => f.ledger.claimQueueDispatch(h, f.actor));
+  await assert.rejects(() => f.queuePrepare(f.open().ledger, next));
+  at = (f.now + 601) * 1000;
+  await assert.rejects(() => f.ledger.readQueue(f.original, next));
 });

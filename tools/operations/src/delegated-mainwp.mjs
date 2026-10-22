@@ -5,7 +5,7 @@ import { delegationCanonical, delegationDigest } from './delegation.mjs';
 import { qualificationRequestSchema, validateQueuePins } from './content-access-store.mjs';
 import { managementQualificationRequestSchema, validateManagementQueuePins } from './content-management-access-store.mjs';
 import { managementSchemas } from './content-management-contract.mjs';
-import { OriginalManagementAuthorizationLedger } from './original-management-authorization.mjs';
+import { OriginalManagementAuthorizationLedger, originalQualificationAbility } from './original-management-authorization.mjs';
 import { originalReadinessObservation } from './original-authorization-transport.mjs';
 
 export const qualificationQueueTool = 'mrn_mainwp__queue_delegated_qualification_v1';
@@ -211,6 +211,26 @@ export class DelegatedMainwpClient {
     // Failure to durably map this exact authenticated result forbids dispatch.
     // A callback or fresh login cannot reconstruct or renew a missing mapping.
     return ledger.recordQueued(this.actor, args, response, expected, admittedSite).context;
+  }
+  // Private existing-record composition. The ledger requires its observed v2
+  // original; no public protocol selector or raw-service queue is introduced.
+  async queueOriginalManagementQualification(input, { ledger, originalRequestId } = {}) {
+    requireWriteScope(this.actor);
+    requireThat(ledger instanceof OriginalManagementAuthorizationLedger && ledger.signer === this.signer,
+      'ORIGINAL_AUTHORIZATION', 'The service-owned original ledger and identity signer are required.');
+    const args = managementQualificationRequestSchema.parse(input);
+    await this.ready();
+    const handle = await ledger.prepareQueue(originalRequestId, this.actor, args, await this.#challenge(originalQualificationAbility, args));
+    const envelope = await ledger.claimQueueDispatch(handle, this.actor);
+    const claims = JSON.parse(Buffer.from(envelope.payload_base64, 'base64').toString('utf8'));
+    const response = payload(await this.#dispatchSigned(originalQualificationAbility, args, delegationTools.run,
+      { timeout: 30000 }, { envelope, claims }, undefined, async () => {
+        const current = await ledger.readQueue(originalRequestId, this.actor);
+        requireThat(current.state === 'dispatched' && current.queue.id === handle.queueId
+          && current.queue.envelopeSha256 === delegationDigest(envelope),
+        'ORIGINAL_AUTHORIZATION', 'Original qualification authority changed before confirmed dispatch.');
+      }));
+    return (await ledger.recordQueue(originalRequestId, handle.queueId, this.actor, response)).context;
   }
   async listTools(params) { return this.client.listTools(params); }
   async readResource(params) {

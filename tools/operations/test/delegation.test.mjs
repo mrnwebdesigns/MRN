@@ -39,6 +39,13 @@ test('concurrent operators produce independent signatures bound to their identit
     assert.throws(() => signer.sign({ ...actor('123'), ...override }, 'mainwp/get-site-v1', {}, challenge), { code: 'AUTH_REQUIRED' });
   }
   assert.throws(() => signer.sign(actor('123'), 'mainwp/get-site-v1', {}, { ...challenge, expires_at: now / 1000 - 1 }), { code: 'DELEGATION_EXPIRED' });
+  for (const ability of ['mrn-mainwp/get-content-policy-v2', 'mrn-mainwp/request-content-edit-qualification-existing-v2']) {
+    const envelope = signer.sign(actor('123'), ability, {}, challenge);
+    assert.equal(JSON.parse(Buffer.from(envelope.payload_base64, 'base64')).ability, ability);
+  }
+  for (const ability of ['mrn-mainwp/request-content-edit-qualification-existing-v3', 'mainwp/request-content-edit-qualification-existing-v2',
+    'mrn-mainwp/execute-content-change-v2', 'mrn-mainwp/arbitrary-v2'])
+    assert.throws(() => signer.sign(actor('123'), ability, {}, challenge), { code: 'DELEGATION_INPUT' });
 });
 
 test('identity key loader rejects readable, linked and non-Ed25519 files', t => {

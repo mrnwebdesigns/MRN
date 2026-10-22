@@ -7,8 +7,10 @@ import { IdentitySigner, challengeSchema, delegationCanonical, delegationDigest,
 import { digest, registryTargetSchema, requireThat, sha } from './contracts.mjs';
 import { managementSchemas, validateManagementEvidence } from './content-management-contract.mjs';
 import { compileManagementEvidenceSchema } from './content-management-schema.mjs';
-import { existingManagementHashes, existingManagementProtocol } from './management-existing-contracts.mjs';
+import { existingManagementHashes, existingManagementProtocol, existingManagementTypes } from './management-existing-contracts.mjs';
 import { originalBindingObservation, originalReadinessObservation, parseOriginalBindingProjection } from './original-authorization-transport.mjs';
+import { validateExistingManagementQueue } from './existing-management-queue.mjs';
+import { validateManagementQueuePins } from './content-management-access-store.mjs';
 
 const check = (ok, message) => requireThat(ok, 'ORIGINAL_AUTHORIZATION', message);
 const parse = (schema, value) => {
@@ -29,6 +31,13 @@ const qualificationAnchorSchema = z.object({ requestSha256: sha, profileSha256: 
 const reviewSchema = z.object({ schema: z.literal(2), operationId: z.string().uuid(), reviewedDigest: sha,
   expiresAt: z.number().int().positive().safe(), beforeSha256: sha, candidateSha256: sha, migrationSha256: sha,
   qualification: qualificationAnchorSchema }).strict();
+export const originalQualificationAbility = 'mrn-mainwp/request-content-edit-qualification-existing-v2';
+const queueRequestSchema = existingManagementTypes.qualification.request_input;
+const queueSchema = z.object({ schema: z.literal(1), id: z.string().uuid(), original: z.string().uuid(),
+  actor: accessActorSchema, principal: sha, requester: sha, originalDigest: sha, reviewDigest: sha, bindingDigest: sha,
+  coherenceEpochSha256: sha, request: queueRequestSchema, pins: z.unknown(),
+  envelopeSha256: sha, delegationRequestId: z.string().uuid(), currentAuthorizationSha256: sha,
+  transportExpiresAt: z.number().int().positive().safe() }).strict();
 const readinessSchema = z.object({ schema: z.literal(1), coherenceEpochSha256: sha,
   observedAt: z.number().int().positive().safe(), expiresAt: z.number().int().positive().safe(),
   dispatchContractSha256: z.literal('8f524002fc5fd900f10e2851d0edd475b4e6ecfe3e6db2a1335573a6e3b7a579'),
@@ -49,10 +58,12 @@ const mappingSchema = z.object({ schema: z.literal(1), attempt: z.string().uuid(
 export class OriginalManagementAuthorizationLedger {
   #handles = new WeakMap();
   #controlHandles = new WeakMap();
-  constructor(store, { signer, registry, policy, verifyStaff, now = () => Date.now() }) {
+  #queueHandles = new WeakMap();
+  constructor(store, { signer, registry, policy, verifyStaff, queueReadiness, now = () => Date.now() }) {
     check(signer instanceof IdentitySigner && typeof policy === 'function' && typeof verifyStaff === 'function',
       'The existing service identity signer, policy and active staff check are required.');
-    Object.assign(this, { store, signer, registry, policy, verifyStaff, now });
+    check(queueReadiness === undefined || typeof queueReadiness === 'function', 'Protected qualification readiness must be service-owned.');
+    Object.assign(this, { store, signer, registry, policy, verifyStaff, queueReadiness, now });
     this.principals = new AccessPrincipals(store, { registry, connectionId: signer.connectionId, now });
     this.store.db.exec(`CREATE TABLE IF NOT EXISTS original_management_authorizations(
       request TEXT PRIMARY KEY, attempt TEXT NOT NULL UNIQUE, body TEXT NOT NULL, digest TEXT NOT NULL,
@@ -67,7 +78,13 @@ export class OriginalManagementAuthorizationLedger {
       CREATE TABLE IF NOT EXISTS original_management_control_history(
       id TEXT NOT NULL, original TEXT NOT NULL, kind TEXT NOT NULL, digest TEXT NOT NULL, principal TEXT NOT NULL,
       requester TEXT NOT NULL, state TEXT NOT NULL, PRIMARY KEY(id,state));
-      CREATE TABLE IF NOT EXISTS original_management_bindings(original TEXT PRIMARY KEY, body TEXT NOT NULL, digest TEXT NOT NULL);`);
+      CREATE TABLE IF NOT EXISTS original_management_bindings(original TEXT PRIMARY KEY, body TEXT NOT NULL, digest TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS original_management_queues(id TEXT PRIMARY KEY, original TEXT NOT NULL UNIQUE,
+      body TEXT NOT NULL, digest TEXT NOT NULL, state TEXT NOT NULL, dispatched_at INTEGER NOT NULL DEFAULT 0,
+      response TEXT NOT NULL DEFAULT '', response_digest TEXT NOT NULL DEFAULT '');
+      CREATE TABLE IF NOT EXISTS original_management_queue_history(id TEXT NOT NULL, ordinal INTEGER NOT NULL,
+      original TEXT NOT NULL, state TEXT NOT NULL, digest TEXT NOT NULL, dispatched_at INTEGER NOT NULL,
+      response_digest TEXT NOT NULL, principal TEXT NOT NULL, requester TEXT NOT NULL, PRIMARY KEY(id,ordinal));`);
     const columns = this.store.db.prepare('PRAGMA table_info(original_management_attempts)').all();
     if (!columns.some(c => c.name === 'bind_control'))
       this.store.db.exec("ALTER TABLE original_management_attempts ADD COLUMN bind_control TEXT NOT NULL DEFAULT ''");
@@ -79,6 +96,8 @@ export class OriginalManagementAuthorizationLedger {
     // its anchor. Only a new, fully reconstructed review writes both together.
     if (!columns.some(c => c.name === 'review_digest'))
       this.store.db.exec("ALTER TABLE original_management_attempts ADD COLUMN review_digest TEXT NOT NULL DEFAULT ''");
+    if (!columns.some(c => c.name === 'queue_id'))
+      this.store.db.exec("ALTER TABLE original_management_attempts ADD COLUMN queue_id TEXT NOT NULL DEFAULT ''");
   }
   #actor(value) {
     // Never accept a caller-created actor, hash or session ID at this boundary.
@@ -444,6 +463,163 @@ export class OriginalManagementAuthorizationLedger {
       check(current.digest === before.digest && current.revision === before.revision, 'Original authority changed before provider binding recovery.');
       this.#controls(current); const binding = this.#binding(current);
       check(binding, 'The original provider binding has not been observed.'); return binding;
+    });
+  }
+
+  #queueHistory(row, mapping) {
+    const ordinal = ['prepared', 'dispatched', 'observed'].indexOf(row.state) + 1;
+    check(ordinal > 0, 'Original queue state is invalid.');
+    this.store.db.prepare('INSERT INTO original_management_queue_history VALUES(?,?,?,?,?,?,?,?,?)')
+      .run(mapping.id, ordinal, mapping.original, row.state, row.digest, row.dispatched_at,
+        row.response_digest, mapping.principal, mapping.requester);
+  }
+  async #queueAdmission(actor, input) {
+    check(typeof this.queueReadiness === 'function', 'Protected existing-record qualification readiness is unavailable.');
+    const value = parse(z.object({ pins: z.unknown(), coherenceEpochSha256: sha }).strict(),
+      await this.queueReadiness(actor, structuredClone(input)));
+    return { ...value, pins: validateManagementQueuePins(value.pins) };
+  }
+  #sameQueueAdmission(queue, admission) {
+    check(queue && delegationDigest(queue.pins) === delegationDigest(admission.pins)
+      && queue.coherenceEpochSha256 === admission.coherenceEpochSha256,
+    'Protected qualification source, catalog or coherence changed; the retained queue cannot be renewed.');
+  }
+  #queue(current) {
+    const m = current.mapping;
+    const marker = this.store.db.prepare('SELECT queue_id FROM original_management_attempts WHERE attempt=?').get(m.attempt);
+    const row = this.store.db.prepare('SELECT * FROM original_management_queues WHERE original=?').get(m.requestId);
+    const history = this.store.db.prepare('SELECT * FROM original_management_queue_history WHERE original=? ORDER BY ordinal').all(m.requestId);
+    check(marker && typeof marker.queue_id === 'string', 'Original queue marker is unavailable.');
+    if (marker.queue_id === '') {
+      check(!row && history.length === 0, 'Surviving queue history forbids treating this original as unqueued.'); return null;
+    }
+    check(row && row.id === marker.queue_id && digest(row.body) === row.digest, 'Original queue is missing or corrupt; do not recreate it.');
+    let raw; try { raw = JSON.parse(row.body); } catch { check(false, 'Original queue metadata is corrupt.'); }
+    const queue = parse(queueSchema, raw), pins = validateManagementQueuePins(queue.pins), binding = this.#binding(current);
+    this.#controls(current);
+    check(binding && queue.id === row.id && queue.original === m.requestId && queue.originalDigest === current.digest
+      && queue.reviewDigest === delegationDigest(current.review) && queue.bindingDigest === binding.digest
+      && queue.principal === m.principal && queue.requester === m.requester && delegationDigest(queue.actor) === delegationDigest(m.actor)
+      && queue.coherenceEpochSha256 === m.readiness.coherenceEpochSha256
+      && pins.provider_source_sha === m.pins.provider_source_sha && pins.authorization_policy_sha256 === m.pins.authorization_policy_sha256
+      && queue.request.site_id === m.target.site_id && queue.request.site_url === m.target.site_url
+      && queue.request.operation_id === current.review?.operationId && queue.request.reviewed_digest === current.review?.reviewedDigest,
+    'Original queue no longer binds its original person, source, review or provider authorization.');
+    const states = ['prepared', 'dispatched', 'observed'], count = states.indexOf(row.state) + 1;
+    check(count > 0 && history.length === count && history.every((entry, index) =>
+      entry.id === queue.id && entry.ordinal === index + 1 && entry.state === states[index] && entry.digest === row.digest
+      && entry.principal === m.principal && entry.requester === m.requester
+      && entry.dispatched_at === (index === 0 ? 0 : row.dispatched_at)
+      && entry.response_digest === (index < 2 ? '' : row.response_digest)),
+    'Original queue history is inconsistent; retrying or resetting it is forbidden.');
+    check(Number.isSafeInteger(row.dispatched_at) && (count === 1 ? row.dispatched_at === 0 : row.dispatched_at > 0),
+      'The original queue dispatch boundary is unavailable.');
+    let context = null;
+    if (row.state === 'observed') {
+      check(row.response && digest(row.response) === row.response_digest, 'Original queue response is missing or corrupt.');
+      let output; try { output = JSON.parse(row.response); } catch { check(false, 'Original queue response is corrupt.'); }
+      context = validateExistingManagementQueue(output, { original: current, providerBinding: binding,
+        request: queue.request, pins, dispatchedAt: row.dispatched_at, now: this.now() });
+    } else check(row.response === '' && row.response_digest === '', 'An unobserved queue cannot retain a response.');
+    return { queue: { ...queue, pins }, state: row.state, digest: row.digest, dispatchedAt: row.dispatched_at, context };
+  }
+  // The only queue selector is the actual retained v2 provider binding.
+  // Readiness is a service-owned function, never a public argument or callback.
+  async prepareQueue(requestId, actor, input, challenge) {
+    const args = parse(queueRequestSchema, input), before = await this.readCurrent(requestId, actor);
+    const binding = await this.readProviderBinding(requestId, actor);
+    const admission = await this.#queueAdmission(actor, args);
+    const pins = admission.pins, c = challengeSchema.parse(challenge);
+    // Recheck Directory after potentially asynchronous protected readiness.
+    await this.readCurrent(requestId, actor);
+    return this.store.transaction(() => {
+      const current = this.#current(requestId, actor), m = current.mapping, observed = this.#binding(current);
+      this.#controls(current);
+      check(current.state === 'reviewed' && current.digest === before.digest && current.revision === before.revision
+        && delegationDigest(current.review) === delegationDigest(before.review) && observed?.digest === binding.digest
+        && admission.coherenceEpochSha256 === m.readiness.coherenceEpochSha256
+        && pins.provider_source_sha === m.pins.provider_source_sha && pins.authorization_policy_sha256 === m.pins.authorization_policy_sha256
+        && c.policy_sha256 === m.pins.delegation_policy_sha256
+        && args.site_id === m.target.site_id && args.site_url === m.target.site_url
+        && args.operation_id === current.review.operationId && args.reviewed_digest === current.review.reviewedDigest,
+      'Protected queue readiness differs from the original authorization.');
+      check(this.#queue(current) === null, 'This original already has a qualification attempt; do not dispatch another.');
+      const envelope = Object.freeze(this.signer.sign(actor, originalQualificationAbility, args, c));
+      const claims = JSON.parse(Buffer.from(envelope.payload_base64, 'base64'));
+      const queue = parse(queueSchema, { schema: 1, id: randomUUID(), original: requestId, actor: m.actor,
+        principal: m.principal, requester: m.requester, originalDigest: current.digest, reviewDigest: delegationDigest(current.review),
+        bindingDigest: observed.digest, coherenceEpochSha256: admission.coherenceEpochSha256, request: args, pins,
+        envelopeSha256: delegationDigest(envelope), delegationRequestId: claims.request_id,
+        currentAuthorizationSha256: originalAuthorizationAnchor(actor).authorizationSha256, transportExpiresAt: claims.expires_at * 1000 });
+      const body = JSON.stringify(queue), hash = digest(body);
+      this.store.db.prepare("INSERT INTO original_management_queues(id,original,body,digest,state) VALUES(?,?,?,?,'prepared')")
+        .run(queue.id, requestId, body, hash);
+      check(this.store.db.prepare("UPDATE original_management_attempts SET queue_id=? WHERE attempt=? AND queue_id=''")
+        .run(queue.id, m.attempt).changes === 1, 'The one-time queue marker could not be retained.');
+      this.#queueHistory({ state: 'prepared', digest: hash, dispatched_at: 0, response_digest: '' }, queue);
+      this.store.audit(m.actor, m.site, requestId, 'original-qualification-queue', 'prepared');
+      this.#queue(current);
+      const handle = Object.freeze({ queueId: queue.id, originalRequestId: requestId });
+      this.#queueHandles.set(handle, envelope); return handle;
+    });
+  }
+  async claimQueueDispatch(handle, actor) {
+    const envelope = this.#queueHandles.get(handle);
+    check(envelope, 'Original queue handle is unavailable or consumed.');
+    // This checks current protected readiness as well as fresh Directory state;
+    // a previously prepared queue never freezes permission to dispatch later.
+    const admitted = await this.readQueue(handle.originalRequestId, actor);
+    const before = await this.readCurrent(handle.originalRequestId, actor);
+    const result = this.store.transaction(() => {
+      const current = this.#current(handle.originalRequestId, actor), q = this.#queue(current);
+      check(current.digest === before.digest && current.revision === before.revision && q?.state === 'prepared'
+        && q.digest === admitted.digest
+        && q.queue.id === handle.queueId && q.queue.envelopeSha256 === delegationDigest(envelope)
+        && q.queue.currentAuthorizationSha256 === originalAuthorizationAnchor(actor).authorizationSha256
+        && q.queue.transportExpiresAt > this.now() && this.#queueHandles.get(handle) === envelope,
+      'Original queue dispatch is consumed, expired or changed.');
+      const at = this.now();
+      check(this.store.db.prepare("UPDATE original_management_queues SET state='dispatched',dispatched_at=? WHERE id=? AND state='prepared'")
+        .run(at, q.queue.id).changes === 1, 'Original queue dispatch could not be claimed.');
+      this.#queueHistory({ state: 'dispatched', digest: q.digest, dispatched_at: at, response_digest: '' }, q.queue);
+      this.store.audit(current.mapping.actor, current.mapping.site, handle.originalRequestId, 'original-qualification-queue', 'dispatched');
+      this.#queue(current); return envelope;
+    });
+    this.#queueHandles.delete(handle); return result;
+  }
+  async readQueue(requestId, actor) {
+    const before = await this.readCurrent(requestId, actor);
+    const saved = this.store.transaction(() => this.#queue(this.#current(requestId, actor)));
+    check(saved, 'This original has no retained qualification attempt.');
+    const admission = await this.#queueAdmission(actor, saved.queue.request);
+    await this.readCurrent(requestId, actor);
+    return this.store.transaction(() => {
+      const current = this.#current(requestId, actor);
+      check(current.digest === before.digest && current.revision === before.revision, 'Original authority changed during queue recovery.');
+      const queue = this.#queue(current);
+      check(queue?.digest === saved.digest, 'The original queue changed during protected readiness verification.');
+      this.#sameQueueAdmission(queue.queue, admission); return queue;
+    });
+  }
+  // The delegated client must validate response identity before calling this.
+  // An uncertain response leaves its dispatched marker intact; there is no
+  // callback reconstruction, retry, reset or replacement-job path.
+  async recordQueue(requestId, queueId, actor, output) {
+    const admitted = await this.readQueue(requestId, actor);
+    const before = await this.readCurrent(requestId, actor);
+    return this.store.transaction(() => {
+      const current = this.#current(requestId, actor), q = this.#queue(current), binding = this.#binding(current);
+      check(current.digest === before.digest && current.revision === before.revision && q?.state === 'dispatched'
+        && q.digest === admitted.digest
+        && q.queue.id === queueId && q.queue.transportExpiresAt > this.now(), 'Original queue response is expired, consumed or unrelated.');
+      const context = validateExistingManagementQueue(output, { original: current, providerBinding: binding,
+        request: q.queue.request, pins: q.queue.pins, dispatchedAt: q.dispatchedAt, now: this.now() });
+      const body = JSON.stringify(context), hash = digest(body);
+      check(this.store.db.prepare("UPDATE original_management_queues SET state='observed',response=?,response_digest=? WHERE id=? AND state='dispatched'")
+        .run(body, hash, queueId).changes === 1, 'Original qualification response could not be retained.');
+      this.#queueHistory({ state: 'observed', digest: q.digest, dispatched_at: q.dispatchedAt, response_digest: hash }, q.queue);
+      this.store.audit(current.mapping.actor, current.mapping.site, requestId, 'original-qualification-queue', 'observed');
+      return this.#queue(current);
     });
   }
 }

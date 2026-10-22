@@ -42,7 +42,24 @@ All results and necessary decisions must appear in chat. Any request for a WordP
 
 Use already-authorized test identities or separately reviewed administrative test changes. Do not suspend a real staff member, weaken a policy, forge a production identity or grant an outsider access to manufacture test evidence. A local negative test is not a live denial result.
 
-## Latest disposable evidence, 2026-10-20
+## Latest source evidence, 2026-10-22
+
+Gateway `47a1bde` passes [combined CI 39434418265](https://github.com/mrnwebdesigns/MRN/actions/runs/39434418265)
+and [MRN QA 39434418251](https://github.com/mrnwebdesigns/MRN/actions/runs/39434418251).
+The eight original artifacts and tested source blobs were independently verified,
+including the complete parent preservation barrier and immutable review anchor.
+Artifact `12272697476` SHA-256 is
+`b14bdd9b45a505d89e778210d9e52d08127cd985f0afe838e58711add58529e2`.
+
+The subsequent private one-time queue passes 593 local gateway tests and lint.
+It covers both signed confirmation phases, actual SQLite close/reopen, a new
+Google login, concurrent claims, loss/corruption, revocation, current source pins
+and unchanged original expiry. These tests use controlled identities and a
+provider fixture. Actual v2 queue/capture/source/rendered-QA/report integration,
+retry-safe draft creation and every real ChatGPT row above remain unverified.
+No production policy, tool registration or qualification flag is enabled.
+
+## Earlier disposable evidence, 2026-10-20
 
 Gateway `0ce3f14` is the latest independently accepted combined checkpoint:
 [CI 39428046110](https://github.com/mrnwebdesigns/MRN/actions/runs/39428046110)

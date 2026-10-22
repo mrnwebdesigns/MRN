@@ -46,7 +46,8 @@ export class AccessPrincipals {
   assertNeverInitialized(principal, requester) {
     requireThat(!this.store.db.prepare('SELECT principal FROM content_access_principal_history WHERE principal=? LIMIT 1').get(principal),
       'ACCESS_UNAVAILABLE', 'Established principal state is missing; automatic reinitialization is forbidden.');
-    for (const table of ['content_access_jobs', 'management_access_jobs', 'original_management_authorizations', 'original_management_controls', 'original_management_bindings']) {
+    for (const table of ['content_access_jobs', 'management_access_jobs', 'original_management_authorizations', 'original_management_controls',
+      'original_management_bindings', 'original_management_queues']) {
       if (!this.store.db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?").get(table)) continue;
       // Fixed internal tables; stream rows without retaining content. A valid
       // JSON string alone cannot prove a historical map belonged to someone
@@ -62,7 +63,7 @@ export class AccessPrincipals {
           'ACCESS_UNAVAILABLE', 'Surviving workflow history forbids recreating missing principal state.');
       }
     }
-    for (const table of ['original_management_attempts', 'original_management_control_history']) {
+    for (const table of ['original_management_attempts', 'original_management_control_history', 'original_management_queue_history']) {
       if (!this.store.db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?").get(table)) continue;
       for (const row of this.store.db.prepare(`SELECT principal,requester FROM ${table}`).iterate()) {
         requireThat(/^[a-f0-9]{64}$/.test(row.principal) && /^[a-f0-9]{64}$/.test(row.requester),

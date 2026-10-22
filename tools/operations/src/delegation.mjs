@@ -64,7 +64,9 @@ export class IdentitySigner {
       && actor.subject === `google-oauth2|${actor.googleSubject}` && actor.hostedDomain === 'mrnwebdesigns.com'
       && actor.googleConnection === this.connectionId && actor.verifiedEmail?.endsWith('@mrnwebdesigns.com')
       && actor.expiresAt > this.now(), 'AUTH_REQUIRED', 'Only a current verified MRN Google identity can be delegated.');
-    requireThat(/^(?:mainwp|mrn-mainwp)\/[a-z0-9-]+-v1$/.test(ability) || ability === 'mrn-mainwp/get-content-policy-v2', 'DELEGATION_INPUT', 'Invalid delegated ability name.');
+    requireThat(/^(?:mainwp|mrn-mainwp)\/[a-z0-9-]+-v1$/.test(ability)
+      || ['mrn-mainwp/get-content-policy-v2', 'mrn-mainwp/request-content-edit-qualification-existing-v2'].includes(ability),
+    'DELEGATION_INPUT', 'Invalid delegated ability name.');
     challenge = challengeSchema.parse(challenge);
     const expires = Math.min(now + 60, challenge.expires_at, Math.floor(actor.expiresAt / 1000));
     requireThat(expires > now, 'DELEGATION_EXPIRED', 'The delegation challenge expired.');
