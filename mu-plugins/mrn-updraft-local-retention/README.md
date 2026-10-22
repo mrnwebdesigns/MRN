@@ -63,7 +63,14 @@ MRN_QA_CODE_ANALYSIS_SCOPE=all mrn-qa run --project-root /Users/khofmeyer/Develo
 
 Runtime browser, accessibility, API, and performance checks should be run separately against an explicit target site when this plugin change affects rendered output or live WordPress behavior.
 
-## Guarded MainWP maintenance (0.8.4 candidate)
+## Guarded MainWP maintenance (0.8.5 candidate)
+
+After each successful native update, the batch admits only the selected item's
+approved version and new code tree into its next expected state. Activation,
+theme selection, core and every other installed entry must remain unchanged.
+This permits subsequent approved items to run while still refusing unrelated
+changes before, during or after an individual replacement. A partial or
+unverified result must be reconciled before any further update attempt.
 
 Adds `mrn_maintenance_request` only on MainWP Child's existing authenticated
 `extra_execution` hook. There is no child REST route, new credential, raw-code

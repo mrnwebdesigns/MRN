@@ -701,6 +701,18 @@ final class MRN_Updraft_MainWP_Maintenance {
 						throw new RuntimeException( 'backup_expired_before_write' );
 					}
 					$ok                  = self::upgrade( $input, $item, $input['packages'][ $index ], $offers[ $item['slug'] ], $expected );
+					if ( $ok ) {
+						$after = self::state();
+						$next  = $expected;
+						$kind  = $input['kind'] . 's';
+						// Admit only this item's version/tree; activation and every other entry stay bound.
+						$next[ $kind ][ $item['slug'] ]['version'] = $item['to'];
+						$next[ $kind ][ $item['slug'] ]['tree']    = $after[ $kind ][ $item['slug'] ]['tree'] ?? null;
+						if ( self::digest( $after ) !== self::digest( $next ) ) {
+							throw new RuntimeException( 'postinstall_state_changed' );
+						}
+						$expected = $next;
+					}
 					$result['results'][] = array(
 						'slug'    => $item['slug'],
 						'success' => $ok,
