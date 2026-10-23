@@ -44,6 +44,14 @@ Use already-authorized test identities or separately reviewed administrative tes
 
 ## Latest source evidence, 2026-10-23
 
+The expanded original-capture/recovery composition is **not qualified**:
+native runs `39978255035` and `39979454472` failed during capture. The latter
+stopped after 60,068 ms despite a 120-second client limit; the cause is under
+investigation. Gateway `a182a7e` passed 619 local tests; `a82c61b` adds bounded
+HTTP failure diagnostics with six focused tests and staged MRN QA passing.
+These results do not replace the narrower passing baseline below or establish
+any live acceptance row.
+
 Gateway `84aaf09d4279370e6dc28e5ec2ec87be5d5a6e6a` with provider
 `a199464c725d01611164d07b77183727c98ebf5e` and MCP transport
 `16a0e1e719077deb98f8d3b9a0ca57e85b301406` passes

@@ -82,7 +82,7 @@ baseline, expands the company code pilot or grants staff access through source
 tests alone. Deployment examples and the serving process have not been repinned
 by this compatibility test.
 
-The next gateway slice adds fixed existing-v2 capture and recovery calls with
+Gateway `a182a7e` adds fixed existing-v2 capture and recovery calls with
 separate registrar signature purposes. It verifies the capture against the
 original queued binding and independently retained preview. A one-time capture
 claim is committed before provider I/O; lost responses remain uncertain across
@@ -99,7 +99,7 @@ late responses, persistence failure, tampering and restart recovery. The native
 TLS hook now requires one successful provider capture with a deliberately lost
 response, SQLite reopen, exactly one recovery read, identical artifact and
 measurement hashes, unchanged Child content and revoked-read refusal. That
-expanded native proof remains pending until its original report is reviewed.
+expanded native proof failed in both runs described below and remains required.
 The pinned provider/transport and frozen contracts are unchanged. Production
 startup and workspace registration remain disabled for this private path.
 
@@ -113,6 +113,25 @@ HTTP error format and records bounded call timing. Its dedicated capture
 connection uses the existing 120-second capture allowance instead of the
 transport's 30-second default, with automatic retry disabled. Worker, SDK,
 original-grant, intent, recovery and overall hook deadlines are unchanged.
+
+The second expanded run, `39979454472` on `2e5f123`, failed at the same capture
+phase after 60,068 ms despite that 120-second client limit. Its artifact
+`12513256465` was independently verified against SHA-256
+`20c5429f22ae3d9a93adee41802be7e76ac32a7dc882e1d7b7fa994e1cb9835a`.
+Access callbacks and cleanup passed; hosted MRN QA `39979454347` passed.
+The unchanged pre-capture baseline `cf4d1fe` passed native run `39976308386`.
+The disposable nginx proxy has no read-timeout override; its default 60-second
+boundary is a hypothesis, not a confirmed HTTP 504 from the retained evidence.
+The provider owner is investigating that fixture separately from the company
+maintenance guard. No production proxy or provider contract changes follow
+from this failure.
+
+Gateway `a82c61b` adds bounded failure-network evidence: at most 32 fixed
+operation labels, numeric HTTP statuses and allowlisted refusal codes. It also
+records thrown capture transport failures. Raw paths, identities, bodies,
+tokens and signatures are excluded. Six diagnostic tests, lint and the staged
+MRN QA gate pass. A new native run must qualify the complete capture/recovery
+path before production composition can proceed.
 
 ## Earlier candidate evidence, 2026-10-22
 
