@@ -9,13 +9,13 @@ function fixture() {
     target: { kind: 'wordpress-content', post_type: 'page', post_id: 12 },
     actor: { subject: 'google-oauth2|222222', googleSubject: '222222', verifiedEmail: 'bob@mrnwebdesigns.com',
       identityProvider: 'google-oauth2', hostedDomain: 'mrnwebdesigns.com', googleConnection: 'con_RuntimeFixture',
-      expiresAt: now + 180000, scopes: ['mrn:operations', 'mrn:operations:write'] },
+      expiresAt: now + 300000, scopes: ['mrn:operations', 'mrn:operations:write'] },
     profile_source: Object.fromEntries(existingBindingProfileFiles.map(file => [file, 'a'.repeat(64)])),
     profile_runtime_url: 'https://mrn-qa.internal:9443',
     pins: { provider_source_sha: 'a'.repeat(40), installed_manifest_sha256: 'a'.repeat(64), source_binding_sha256: 'a'.repeat(64),
       authorization_policy_sha256: 'b'.repeat(64), delegation_policy_sha256: 'c'.repeat(64), coherence_epoch_sha256: 'd'.repeat(64),
       qualification_catalog_sha256: 'e'.repeat(64), qualification_authority_sha256: 'f'.repeat(64) },
-    limits: { hook_seconds: 180, owner_wait_seconds: 200 } };
+    limits: { hook_seconds: 300, owner_wait_seconds: 320 } };
 }
 const parse = value => parseExistingBindingContext(Buffer.from(JSON.stringify(value)), now);
 test('v2 fixture accepts only its separate synthetic existing-record descriptor', () => {
@@ -29,7 +29,9 @@ test('wrong identity, real host, new record, stale grant and extended deadlines 
   const changes = [c => { c.site.site_url = 'https://mrnwebdesigns.com'; }, c => { c.target.post_id = 0; },
     c => { c.actor.subject = 'google-oauth2|111111'; }, c => { c.actor.verifiedEmail = 'owner@mrnwebdesigns.com'; },
     c => { c.actor.googleConnection = 'con_Production'; }, c => { c.actor.expiresAt = now; },
-    c => { c.actor.expiresAt += 1000; }, c => { c.actor.scopes.pop(); }, c => { c.limits.hook_seconds = 181; }];
+    c => { c.actor.expiresAt += 1000; }, c => { c.actor.scopes.pop(); },
+    c => { c.limits.hook_seconds = 180; }, c => { c.limits.hook_seconds = 301; },
+    c => { c.limits.owner_wait_seconds = 200; }, c => { c.limits.owner_wait_seconds = 321; }];
   for (const change of changes) { const c = fixture(); change(c); assert.throws(() => parse(c)); }
 });
 test('every descriptor boundary is closed and every profile file and immutable pin is mandatory', () => {

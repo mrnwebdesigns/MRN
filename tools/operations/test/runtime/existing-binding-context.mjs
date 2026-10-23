@@ -4,6 +4,13 @@ import { z } from 'zod';
 import { delegationDigest } from '../../src/delegation.mjs';
 import { existingManagementHashes } from '../../src/management-existing-contracts.mjs';
 
+// Initial synthetic grant and aggregate test allocation only. A full capture,
+// lost-response recovery, measurement read and revocation sequence must fit
+// without renewing its original grant. Individual 120s/20s limits are unchanged.
+export const existingBindingFixtureLimits = Object.freeze({
+  initial_grant_seconds: 300, hook_seconds: 300, owner_wait_seconds: 320,
+});
+
 export const existingBindingProfileFiles = Object.freeze([
   'child/content-acf.php', 'child/content-fields.php', 'child/content-records.php',
   'includes/class-mrn-mainwp-content-management.php', 'includes/class-mrn-mainwp-content-source.php',
@@ -29,7 +36,8 @@ const contextType = z.object({
   pins: z.object({ provider_source_sha: z.string().regex(/^[a-f0-9]{40}$/), installed_manifest_sha256: sha,
     source_binding_sha256: sha, authorization_policy_sha256: sha, delegation_policy_sha256: sha,
     coherence_epoch_sha256: sha, qualification_catalog_sha256: sha, qualification_authority_sha256: sha }).strict(),
-  limits: z.object({ hook_seconds: z.literal(180), owner_wait_seconds: z.literal(200) }).strict(),
+  limits: z.object({ hook_seconds: z.literal(existingBindingFixtureLimits.hook_seconds),
+    owner_wait_seconds: z.literal(existingBindingFixtureLimits.owner_wait_seconds) }).strict(),
 }).strict();
 
 export function parseExistingBindingContext(bytes, now = Date.now()) {
@@ -37,7 +45,7 @@ export function parseExistingBindingContext(bytes, now = Date.now()) {
   let result;
   try { result = contextType.parse(JSON.parse(bytes.toString('utf8'))); }
   catch { throw new Error('Invalid disposable v2 context'); }
-  if (result.actor.expiresAt <= now || result.actor.expiresAt > now + 180000)
+  if (result.actor.expiresAt <= now || result.actor.expiresAt > now + existingBindingFixtureLimits.initial_grant_seconds * 1000)
     throw new Error('Expired or extended disposable v2 context');
   return result;
 }

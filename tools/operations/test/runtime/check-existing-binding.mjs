@@ -17,7 +17,8 @@ import { OriginalManagementAuthorizationLedger, originalQualificationAbility } f
 import { createOriginalAuthorizationTransport, parseOriginalBindingProjection } from '../../src/original-authorization-transport.mjs';
 import { Store } from '../../src/store.mjs';
 import { accessRegistry } from '../fixtures/access-registry.mjs';
-import { existingBindingProfile, existingBindingProfileFiles, parseExistingBindingContext } from './existing-binding-context.mjs';
+import { existingBindingFixtureLimits, existingBindingProfile, existingBindingProfileFiles,
+  parseExistingBindingContext } from './existing-binding-context.mjs';
 import { bindingFixtureDiagnostic, bindingFixtureNetworkDiagnostic } from './existing-binding-diagnostics.mjs';
 import { parseExistingBindingAccess } from './existing-binding-access.mjs';
 import { createExistingManagementAccessRuntime } from '../../src/content-access-runtime.mjs';
@@ -37,7 +38,8 @@ let networkPath, captureStarted;
 const report = { schema: 2, result: 'INCOMPLETE', scope: 'disposable-native-existing-queue-access-v2-only', passed: [],
   productionCredentials: false, productionActivation: false, liveGoogleVerified: false, protectedWorkerVerified: false,
   renderedQaVerified: false, consumerBindingIssued: false, contentWriteVerified: false, codeWriteVerified: false,
-  remoteBackupVerified: false, chatgptAcceptanceVerified: false, afterTransportExpiryVerified: false };
+  remoteBackupVerified: false, chatgptAcceptanceVerified: false, afterTransportExpiryVerified: false,
+  fixtureLimits: existingBindingFixtureLimits, aggregateDeadlineExceeded: false };
 const save = () => {
   if (report.captureCall?.kind === 'pending') report.captureCall.elapsed_ms = Math.ceil(performance.now() - captureStarted);
   if (reportPath) writeFileSync(reportPath, JSON.stringify(report, null, 2) + '\n', { mode: 0o600 });
@@ -97,9 +99,11 @@ try {
   const registrar = { keyId: sidecar.registrar_key_id, privateKey: createPrivateKey({ key: registrarBytes, type: 'pkcs8', format: 'der' }) };
   registrarBytes.fill(0);
   started = performance.now();
-  // Reserve cleanup inside the unchanged 180-second maximum. The original
-  // hard deadline still exits even if a subprocess or close becomes stuck.
+  // Reserve cleanup inside the separately reviewed aggregate test allocation.
+  // Per-operation and already-issued original authority limits remain fixed.
+  // The hard deadline still exits even if a subprocess or close becomes stuck.
   deadline = setTimeout(async () => {
+    report.aggregateDeadlineExceeded = true;
     report.result = 'FAIL'; report.failure = { phase, recentCalls, network: networkDiagnostic(), deadlineExceeded: true }; save();
     process.stderr.write('FAIL disposable v2 binding deadline; private output withheld\n');
     try { await closeAccess(); }

@@ -236,7 +236,11 @@ the retained observation on a slower runner. Simulating a capture two seconds
 later reproduces the same rejection locally. The test correction preserves
 forward time and requires both actual capture/recovery dispatches and the exact
 changed-receipt rejection. No runtime guard, authority ceiling or timeout is
-relaxed. The corrected candidate still requires hosted qualification.
+relaxed. Corrected gateway `5af2858fc4859e8c9ac48296bc44658658c165d4`
+passes combined CI `39991989576` and MRN QA `39991989339`: 624 gateway
+tests and all eight original native reports. Artifact `12519558240` has
+SHA-256 `2a428ea872267314233bfe2e8688b59a18468c67760223f192c10f0e81443616`.
+The authenticator is source-qualified; production adoption remains separate.
 
 ### Existing-record measurement read
 
@@ -254,9 +258,41 @@ rehashed substitutions and mutated inputs, current access changes, late/lost
 responses and lifecycle/legacy-route refusal. The combined native fixture now
 requires a real measurement POST after lost-response capture recovery, identical
 retained measurement bytes, and no further measurement dispatch after revocation.
-That new native check requires its own passing hosted result. The reader remains
+Gateway `279cbb9190a4bf204a847d3797b6ba1ea1a3a54a` passes combined CI
+`39996013398` and MRN QA `39996013468`: 630 gateway tests, 13 Fleet
+regressions and all eight original native reports. Independently verified
+artifact `12520767869` has SHA-256
+`f3bf4859260b9484d583679ce54f9306d1a763938025a1fd3c385e3a583a9278`.
+The native hook completed in 124,787 ms, with one capture, one recovery, one
+measurement POST, 66 fresh staff checks and 52 signed access callbacks
+(51 clear, one denial). The complete measurement hash equals the retained
+capture receipt, Child content is unchanged, and the callback route is disabled
+afterward. The reader remains
 unregistered in production and grants no evidence admission, source transfer,
 content write or ordinary-member acceptance.
+
+The preceding `25f5d35` run `39992777244` produced eight passing reports but
+the outer validation expected the old report shape, and its 25-minute whole-job
+cap interrupted completion. `279cbb9` fixes the report expectation and adds
+exact measurement assertions. `9ab35bb` gives the whole job 30 minutes; its
+run `39996642288` instead failed the independent 170-second native cleanup
+boundary during measurement, after capture and recovery succeeded. That original
+failure artifact `12519713893` has SHA-256
+`00283f68c6aedf7362f1ad70474288768abc304313d6cf8741c28ae503809df8`.
+The passing earlier run does not erase this timing-sensitive fixture failure.
+
+A separate fixture candidate allocates an initial synthetic grant of 300 seconds,
+a 300-second aggregate hook (cleanup at 290) and a 320-second owner barrier for
+the entire preview, capture, recovery, measurement, unchanged-Child and revocation
+sequence. The gateway accepts only these exact descriptor limits. No issued grant
+is renewed; production authentication, intent, 120-second capture and 20-second
+read limits are unchanged. The report keeps an independent aggregate-deadline
+flag even if cleanup causes a later request failure. The paired provider is `be3efa1fd7fb90e0f1dd709497a94b0751426fcf`, exactly
+four fixture/test files beyond `f7ca46f`: initial synthetic allocation, parent
+barrier, hook timeout and regression. All provider runtime and protocol bytes
+are unchanged; the eleven imported qualification files were independently
+compared to that commit. All 24 provider fixture checks pass. The complete
+hosted suite must pass before this new allocation is accepted.
 
 ## Earlier candidate evidence, 2026-10-22
 
