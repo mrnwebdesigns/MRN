@@ -192,15 +192,15 @@
       "name": "MRN Config Helper",
       "package": "mrn-config-helper.zip",
       "profile": "all",
-      "sha256": "cdee274d8465a0f22d242ad4cfaff8c333d1f2ab8a26080b5ccbb039a26f77c1",
-      "size_bytes": 121641,
+      "sha256": "34e1f1e0706886fef47956ee6409aed73d96e7c2033be592646b0548178ebb12",
+      "size_bytes": 128809,
       "slug": "mrn-config-helper",
       "source": {
-        "commit": "eb167abaa68efd75c28593598d6a5d0b8dc1152c",
+        "commit": "f949c18d223d9256e3790958a8671a62d08afe02",
         "repository": "mrn-config-helper",
         "type": "git"
       },
-      "version": "0.1.74"
+      "version": "0.1.75"
     },
     {
       "main_file": "mrn-media-bulk-tools/mrn-media-bulk-tools.php",
@@ -513,7 +513,7 @@
       "version": "0.1.4"
     }
   ],
-  "release_id": "2026.10.23-fleet-auto-29209e3ed8de",
+  "release_id": "2026.10.23-fleet-auto-e5a6aa620209",
   "schema_version": 1,
   "scope": "new-site-bootstrap-inputs",
   "stack_plugin_count": 33
