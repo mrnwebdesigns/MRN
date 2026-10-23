@@ -1192,7 +1192,7 @@
         "state": "confirmed-symlinked"
       },
       "target_tier": "platform-required",
-      "version": "0.1.74"
+      "version": "0.1.75"
     },
     {
       "classification": "integration-adapter",
