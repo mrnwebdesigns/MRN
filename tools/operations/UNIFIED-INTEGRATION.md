@@ -63,8 +63,15 @@ The gateway dependency repair pins patched Zod 4.6.7 and preserves byte-exact
 URL validation instead of adopting Zod 4's trimming behavior. All 652 gateway
 tests and lint pass locally, and the production dependency audit reports zero
 vulnerabilities. Native catalog composition still requires a fresh passing run.
-The separately pinned MCP transport has its own dependency repair gate; no
-installed transport or global configuration has been changed here.
+The next composition selects transport `64498151d7d5dc8e7adcb7423d160a280a1939e7`,
+which pins Zod 4.6.7 and the compatible transitive ip-address 10.7.4 patch. Its
+production audit reports zero findings; 3,155 tests pass on each of Node 20/22/26,
+with coverage, packed fixture and extracted-bundle startup checks passing. Six
+live-only fixture checks were intentionally skipped. Twelve development-only
+audit findings remain, including the bundle builder's incompatible Zod 3
+requirement; no forced major override or suppression was used. The combined CI
+now audits the transport before build. This source candidate does not change
+the installed transport, global MCP configuration or production runtime.
 
 The separate runner format correction `53e534502227c9ddfab5515d8fdc83bb8297b887`
 passes all 163 tests, staged MRN QA and [hosted isolation 40024009019](https://github.com/mrnwebdesigns/mrn-code-qa-runner/actions/runs/40024009019).
@@ -73,8 +80,40 @@ rows. Provider `f4358bd` supplies immutable PHP array/stream golden vectors;
 JavaScript assembly and final readback agree in both authority domains. Only the
 byte envelope uses the frozen v1 format; existing-v2 authority validators and
 schema-2 results remain unchanged. This runner is separately reviewed in
-[PR #8](https://github.com/mrnwebdesigns/mrn-code-qa-runner/pull/8) and is not yet
-selected by the gateway. Actual protected source delivery remains a separate gate.
+[PR #8](https://github.com/mrnwebdesigns/mrn-code-qa-runner/pull/8). The next gateway
+composition selects it as the management worker and adds its three immutable
+PHP/JavaScript vector cases to CI. The actual gateway/runner TLS integration
+passes all twelve local checks, including revocation refusal and independent
+source reconstruction. Native composition and actual protected existing-v2
+source delivery remain separate gates.
+
+### Next protected source-delivery checkpoint
+
+The existing-v2 source-context/catalog readers and byte validators do not yet
+provide a protected source producer. The gateway's source bootstrap, capture
+mapping, broker and worker-context lifecycle still use the legacy ledger and
+fixed v1 routes. The runner's HTTP context, recipient and batch clients also
+remain v1. Reusing those paths by relabeling an existing operation would change
+its authority and is not an integration shortcut.
+
+The next implementation must add independently retained v2 source history to
+genuine new originals, fixed existing-v2 provider capture/read/status controls,
+and a closed broker/worker contract with distinct context, recipient, batch and
+AEAD domains. The current frozen v2 registry has backend transfer domains but
+no broker/worker wire; it must remain byte-identical. Protected dispatch and
+provenance, current staff checks, bounded source delivery and full independent
+reconstruction must precede QA report admission. Missing history must refuse;
+it must not be lazily initialized or repaired from a caller's observation.
+
+Preserve the original 512 access-query ceiling, the independent 64 worker-query
+ceiling, and the frozen 48 source-control ceiling. Per-frame access checks can
+exhaust the original budget before the nominal byte/frame ceiling is reached;
+reserve finalization/recovery capacity and refuse combinations that cannot fit.
+Do not reset counters, broaden deadlines or issue a new original to complete an
+expired operation. Real company sources exceeding native limits still require
+a qualified central cache publication and provenance workflow; that workflow
+is not implemented. These are remaining source gates, not staff onboarding or
+additional personal credentials.
 
 An earlier qualified disposable composition is gateway
 `84aaf09d4279370e6dc28e5ec2ec87be5d5a6e6a`, provider

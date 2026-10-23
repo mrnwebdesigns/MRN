@@ -60,8 +60,10 @@ replace the pending native catalog or live acceptance gates.
 
 The source-format mismatch also has a separately qualified runner correction,
 `53e5345`, with 163 tests and hosted code/content isolation `40024009019` passing.
-It preserves existing-v2 authority and result schemas and has not been selected
-by the gateway. Native protected source delivery and report admission remain open.
+It preserves existing-v2 authority and result schemas. The next gateway
+composition selects it as the management worker; twelve local gateway/runner
+TLS checks and three closure-vector cases pass. Native protected existing-v2
+source delivery and report admission remain open.
 
 Earlier checkpoints and failures are retained below as historical evidence.
 

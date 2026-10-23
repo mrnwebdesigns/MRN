@@ -106,7 +106,10 @@ jobs:
         run: |
           npm ci --ignore-scripts --prefix tools/operations
           npm ci --ignore-scripts --prefix .runtime/transport
+          npm audit --omit=dev --prefix .runtime/transport
           npm run build --prefix .runtime/transport
+      - name: Verify pinned PHP and JavaScript source closure vectors
+        run: node --test .runtime/management-worker/test/management-source-closure.test.mjs
       - name: Verify private capture transport size and deadlines
         env:
           MRN_GATEWAY_MCP_SOURCE: ${{ github.workspace }}/.runtime/transport

@@ -6,7 +6,7 @@
   },
   "transport": {
     "repository": "mrnwebdesigns/mainwp-mcp",
-    "commit": "16a0e1e719077deb98f8d3b9a0ca57e85b301406"
+    "commit": "64498151d7d5dc8e7adcb7423d160a280a1939e7"
   },
   "runner": {
     "repository": "mrnwebdesigns/mrn-code-qa-runner",
@@ -14,6 +14,6 @@
   },
   "managementWorker": {
     "repository": "mrnwebdesigns/mrn-code-qa-runner",
-    "commit": "cd74e2030c9c090ac287ca5d371165d3c8ccac23"
+    "commit": "53e534502227c9ddfab5515d8fdc83bb8297b887"
   }
 }
