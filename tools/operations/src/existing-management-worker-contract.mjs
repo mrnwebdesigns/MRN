@@ -20,9 +20,10 @@ for (const name of wire.imported_definitions)
   need(delegationDigest(wire.$defs[name]) === delegationDigest(existingManagementWires.evidence.$defs[name]));
 export const existingWorkerPurpose = wire.purpose;
 export const existingWorkerUrl = wire.private_url;
-const types = Object.fromEntries(['pointer', 'retained_record', 'claims', 'output'].map(name => [name,
+const types = Object.fromEntries(['pointer', 'dispatch_request', 'dispatch_observation', 'retained_record', 'claims', 'output'].map(name => [name,
   compileManagementEvidenceSchema({ $ref: '#/$defs/' + name, $defs: wire.$defs })]));
-const parse = (name, input) => { const result = types[name].safeParse(input); need(result.success); return result.data; };
+export const parseExistingWorkerRecord = (name, input) => { const result = types[name].safeParse(input); need(result.success); return result.data; };
+const parse = parseExistingWorkerRecord;
 const same = (a, b) => need(delegationDigest(a) === delegationDigest(b));
 const positive = value => Number.isSafeInteger(value) && value > 0;
 

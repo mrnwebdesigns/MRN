@@ -10,6 +10,7 @@ import { compileManagementEvidenceSchema } from './content-management-schema.mjs
 import { existingManagementHashes, existingManagementProtocol, existingManagementTypes } from './management-existing-contracts.mjs';
 import { originalBindingObservation, originalReadinessObservation, parseOriginalBindingProjection } from './original-authorization-transport.mjs';
 import { validateExistingManagementQueue } from './existing-management-queue.mjs';
+import { existingWorkerContractSha256, parseExistingWorkerRecord } from './existing-management-worker-contract.mjs';
 import { validateManagementQueuePins } from './content-management-access-store.mjs';
 
 const check = (ok, message) => requireThat(ok, 'ORIGINAL_AUTHORIZATION', message);
@@ -48,8 +49,14 @@ const readinessSchema = z.object({ schema: z.literal(1), coherenceEpochSha256: s
   observedAt: z.number().int().positive().safe(), expiresAt: z.number().int().positive().safe(),
   dispatchContractSha256: z.literal('8f524002fc5fd900f10e2851d0edd475b4e6ecfe3e6db2a1335573a6e3b7a579'),
 }).strict().refine(value => value.expiresAt > value.observedAt && value.expiresAt <= value.observedAt + 30000);
+const workerConfigurationSchema = z.object({ schema: z.literal(2), worker_contract_sha256: z.literal(existingWorkerContractSha256),
+  policy: existingManagementTypes.evidence.policy, app_actor_id: existingManagementTypes.evidence.id }).strict()
+  .refine(v => v.policy.repository === 'mrnwebdesigns/mrn-code-qa-runner');
+const workerSourceFields = ['repository', 'repository_id', 'ref', 'workflow_id', 'workflow_path', 'workflow_sha256',
+  'runner_source_sha', 'engine_commit', 'engine_configuration_sha256', 'runtime_sha256'];
 const mappingSchema = z.object({ schema: z.literal(1), attempt: z.string().uuid(), requestId: z.string().uuid(),
   actor: accessActorSchema, site: registryTargetSchema, requester: sha, principal: sha, pins: pinsSchema,
+  workerConfigurationSha256: sha.optional(),
   memberPolicySha256: sha, argumentsSha256: sha, envelopeSha256: sha, readiness: readinessSchema,
   authorization: z.object({ schema: z.literal(1), authorizationSha256: sha, expiresAt: z.number().int().positive().safe() }).strict(),
   transportExpiresAt: z.number().int().positive().safe(),
@@ -66,11 +73,13 @@ export class OriginalManagementAuthorizationLedger {
   #controlHandles = new WeakMap();
   #queueHandles = new WeakMap();
   #captureHandles = new WeakMap();
-  constructor(store, { signer, registry, policy, verifyStaff, queueReadiness, now = () => Date.now() }) {
+  #workerHandles = new WeakMap();
+  constructor(store, { signer, registry, policy, verifyStaff, queueReadiness, workerConfiguration, now = () => Date.now() }) {
     check(signer instanceof IdentitySigner && typeof policy === 'function' && typeof verifyStaff === 'function',
       'The existing service identity signer, policy and active staff check are required.');
     check(queueReadiness === undefined || typeof queueReadiness === 'function', 'Protected qualification readiness must be service-owned.');
-    Object.assign(this, { store, signer, registry, policy, verifyStaff, queueReadiness, now });
+    check(workerConfiguration === undefined || typeof workerConfiguration === 'function', 'Worker configuration must be service-owned.');
+    Object.assign(this, { store, signer, registry, policy, verifyStaff, queueReadiness, workerConfiguration, now });
     this.principals = new AccessPrincipals(store, { registry, connectionId: signer.connectionId, now });
     this.store.db.exec(`CREATE TABLE IF NOT EXISTS original_management_authorizations(
       request TEXT PRIMARY KEY, attempt TEXT NOT NULL UNIQUE, body TEXT NOT NULL, digest TEXT NOT NULL,
@@ -99,7 +108,12 @@ export class OriginalManagementAuthorizationLedger {
     if (!this.store.db.prepare('PRAGMA table_info(original_management_queues)').all().some(c => c.name === 'provider_job'))
       this.store.db.exec('ALTER TABLE original_management_queues ADD COLUMN provider_job TEXT');
     this.store.db.exec('CREATE UNIQUE INDEX IF NOT EXISTS original_queue_provider_job ON original_management_queues(provider_job)');
+    this.store.db.exec(`CREATE TABLE IF NOT EXISTS original_management_worker_history(
+      original TEXT NOT NULL, ordinal INTEGER NOT NULL, body TEXT NOT NULL, digest TEXT NOT NULL,
+      dispatch TEXT UNIQUE, run TEXT UNIQUE, PRIMARY KEY(original,ordinal));`);
     const columns = this.store.db.prepare('PRAGMA table_info(original_management_attempts)').all();
+    if (!columns.some(c => c.name === 'worker_history_digest'))
+      this.store.db.exec("ALTER TABLE original_management_attempts ADD COLUMN worker_history_digest TEXT NOT NULL DEFAULT ''");
     if (!columns.some(c => c.name === 'bind_control'))
       this.store.db.exec("ALTER TABLE original_management_attempts ADD COLUMN bind_control TEXT NOT NULL DEFAULT ''");
     if (!columns.some(c => c.name === 'control_count'))
@@ -200,6 +214,7 @@ export class OriginalManagementAuthorizationLedger {
     parse(z.string().uuid(), attemptId);
     const args = managementSchemas['preview-content-edit-v1'].input.parse(input);
     check(args.post_id > 0, 'Only an existing exact content record can retain original authorization.');
+    const worker = this.workerConfiguration ? parse(workerConfigurationSchema, this.workerConfiguration()) : null;
     const initial = this.#actor(value), site = this.#site(initial.actor, args), pins = this.#pins();
     const readinessAnchor = this.#readiness(readiness, pins);
     const principalBefore = this.store.db.prepare('SELECT * FROM content_access_principals WHERE principal=?').get(digest(initial.actor.googleSubject));
@@ -208,6 +223,8 @@ export class OriginalManagementAuthorizationLedger {
     check(c.policy_sha256 === pins.delegation_policy_sha256, 'The preview challenge uses a different delegation policy.');
     await this.verifyStaff(initial.actor);
     return this.store.transaction(() => {
+      check(delegationDigest(this.workerConfiguration ? parse(workerConfigurationSchema, this.workerConfiguration()) : null)
+        === delegationDigest(worker), 'Worker configuration changed during original preparation.');
       const { actor, authorization } = this.#actor(value);
       const principalAfter = this.store.db.prepare('SELECT * FROM content_access_principals WHERE principal=?').get(digest(actor.googleSubject));
       check(delegationDigest(principalBefore ?? null) === delegationDigest(principalAfter ?? null),
@@ -222,7 +239,7 @@ export class OriginalManagementAuthorizationLedger {
       'This original preview attempt is already retained; read its state instead of retrying.');
       const envelope = Object.freeze(this.signer.sign(value, 'mrn-mainwp/preview-content-edit-v1', args, c));
       const claims = JSON.parse(Buffer.from(envelope.payload_base64, 'base64'));
-      const mapping = parse(mappingSchema, { schema: 1, attempt: attemptId, requestId: claims.request_id, readiness: readinessAnchor,
+      const mapping = parse(mappingSchema, { ...(worker ? { workerConfigurationSha256: delegationDigest(worker) } : {}), schema: 1, attempt: attemptId, requestId: claims.request_id, readiness: readinessAnchor,
         actor, authorization, site, pins, requester: requesterDigest(actor), principal: digest(actor.googleSubject),
         memberPolicySha256, argumentsSha256: claims.arguments_sha256, envelopeSha256: delegationDigest(envelope),
         transportExpiresAt: claims.expires_at * 1000,
@@ -233,6 +250,8 @@ export class OriginalManagementAuthorizationLedger {
         .run(mapping.requestId, attemptId, body, hash, 'prepared');
       this.store.db.prepare('INSERT INTO original_management_attempts(attempt,request,digest,principal,requester) VALUES(?,?,?,?,?)')
         .run(attemptId, mapping.requestId, hash, mapping.principal, mapping.requester);
+      if (worker) this.#appendWorkerHistory(mapping, { schema: 2, state: 'unused', original: mapping.requestId,
+        original_sha256: hash, configuration: worker }, '');
       this.store.audit(actor, site, mapping.requestId, 'original-authorization-retained', 'prepared');
       this.#current(mapping.requestId, value);
       const handle = Object.freeze({ requestId: mapping.requestId });
@@ -789,6 +808,134 @@ export class OriginalManagementAuthorizationLedger {
       'Capture response is stale, superseded or differs from the retained artifact.');
       this.#captureEvent(current, history, { ...held.event, phase: 'observed', at: this.now(), receipt });
       within(); return receipt;
+    });
+  }
+  // Independent original/attempt anchors make deleted or partial worker history
+  // a refusal. Only prepare() creates the unused seed, in the original transaction.
+  #workerRows(original) {
+    // Bound each persisted body before materializing it. Four rows detect any
+    // impossible extra event without scanning or accepting unbounded history.
+    return this.store.db.prepare(`SELECT original,ordinal,
+      CASE WHEN length(CAST(body AS BLOB))<=32768 THEN body ELSE NULL END AS body,
+      digest,dispatch,run FROM original_management_worker_history WHERE original=? ORDER BY ordinal LIMIT 4`).all(original);
+  }
+  #appendWorkerHistory(mapping, value, previousDigest) {
+    const rows = this.#workerRows(mapping.requestId);
+    check(rows.length === { unused: 0, prepared: 1, observed: 2 }[value.state], 'Original worker history is already consumed.');
+    const body = delegationCanonical(value);
+    check(Buffer.byteLength(body) <= 32768, 'Original worker history exceeds its metadata bound.');
+    const dispatch = value.state === 'prepared' ? value.prepared.request.dispatch_id : null;
+    const run = value.state === 'observed' ? value.retained.provenance.run_id : null;
+    this.store.db.prepare('INSERT INTO original_management_worker_history VALUES(?,?,?,?,?,?)')
+      .run(mapping.requestId, rows.length, body, digest(body), dispatch, run);
+    const after = this.#workerRows(mapping.requestId);
+    check(this.store.db.prepare('UPDATE original_management_attempts SET worker_history_digest=? WHERE attempt=? AND worker_history_digest=?')
+      .run(delegationDigest(after), mapping.attempt, previousDigest).changes === 1, 'Original worker history changed before commit.');
+  }
+  #workerHistory(current) {
+    const { original } = current, m = original.mapping;
+    check(m.workerConfigurationSha256 && typeof this.workerConfiguration === 'function',
+      'This original has no prepared worker history; existing jobs cannot be enrolled or backfilled.');
+    const configuration = parse(workerConfigurationSchema, this.workerConfiguration());
+    check(delegationDigest(configuration) === m.workerConfigurationSha256, 'Original worker policy or source changed.');
+    const marker = this.store.db.prepare('SELECT worker_history_digest FROM original_management_attempts WHERE attempt=?').get(m.attempt);
+    const rows = this.#workerRows(m.requestId);
+    check(rows.length >= 1 && rows.length <= 3 && marker?.worker_history_digest === delegationDigest(rows),
+      'Original worker history is missing, partial or changed; never redispatch.');
+    const seed = { schema: 2, state: 'unused', original: m.requestId, original_sha256: original.digest, configuration };
+    const values = rows.map((row, index) => {
+      check(row.original === m.requestId && row.ordinal === index && digest(row.body) === row.digest,
+        'Original worker event integrity changed.');
+      let value; try { value = JSON.parse(row.body); } catch { check(false, 'Original worker event is corrupt.'); }
+      check(delegationCanonical(value) === row.body, 'Original worker event encoding changed.'); return value;
+    });
+    check(delegationDigest(values[0]) === delegationDigest(seed) && rows[0].dispatch === null && rows[0].run === null,
+      'Original worker seed differs from the genuine original.');
+    if (rows.length > 1) {
+      const v = values[1], p = v.prepared, capture = this.#captureHistory(current);
+      check(Object.keys(v).sort().join(',') === 'context,prepared,schema,state' && v.schema === 2 && v.state === 'prepared'
+        && p && Object.keys(p).sort().join(',') === 'app_actor_id,context_sha256,evidence_policy_sha256,original_expires_at,request,requested_at'
+        && capture.state === 'captured', 'Original worker preparation changed.');
+      const context = existingManagementTypes.evidence.context.parse(v.context), request = parseExistingWorkerRecord('dispatch_request', p.request);
+      const b = current.queue.context.binding, receipt = capture.receipt;
+      check(delegationDigest(context.binding) === delegationDigest(b) && context.management_context_sha256 === current.queue.context.binding_sha256
+        && context.capture_artifact_sha256 === receipt.captureArtifactSha256 && context.measurement_record_sha256 === receipt.measurementSha256
+        && context.evidence_policy_epoch === configuration.policy.policy_epoch && context.evidence_policy_sha256 === delegationDigest(configuration.policy)
+        && p.context_sha256 === delegationDigest(context) && p.evidence_policy_sha256 === context.evidence_policy_sha256
+        && request.context_sha256 === p.context_sha256 && request.worker_contract_sha256 === existingWorkerContractSha256
+        && p.app_actor_id === configuration.app_actor_id && p.original_expires_at === b.expires_at * 1000
+        && Number.isSafeInteger(p.requested_at) && p.requested_at >= b.created_at * 1000 && p.requested_at <= this.now()
+        && p.original_expires_at > this.now() && rows[1].dispatch === request.dispatch_id && rows[1].run === null,
+      'Original worker preparation no longer matches captured source, policy or lifetime.');
+      if (rows.length === 3) {
+        const v2 = values[2], retained = parseExistingWorkerRecord('retained_record', v2.retained), o = retained.observation, prov = retained.provenance;
+        check(Object.keys(v2).sort().join(',') === 'retained,schema,state' && v2.schema === 2 && v2.state === 'observed'
+          && delegationDigest(retained.context) === delegationDigest(context)
+          && delegationDigest(Object.fromEntries(Object.entries(o).filter(([key]) => !['run_id', 'observed_at'].includes(key)))) === delegationDigest(p)
+          && rows[2].dispatch === null && rows[2].run === o.run_id && prov.run_id === o.run_id
+          && prov.dispatch_id === request.dispatch_id && prov.dispatch_request_sha256 === delegationDigest(request)
+          && prov.dispatch_record_sha256 === delegationDigest(o) && workerSourceFields.every(k => prov[k] === configuration.policy[k])
+          && o.observed_at >= p.requested_at && o.observed_at <= this.now(), 'Original worker observation changed.');
+      }
+    }
+    return { state: values.at(-1).state, value: values.at(-1), configuration, historyDigest: marker.worker_history_digest };
+  }
+  // No GitHub call or source admission: reserve one opaque protected dispatch
+  // before I/O. A lost response or restart consumes it permanently.
+  async prepareWorkerDispatch(jobId, measurement) {
+    const measured = existingManagementTypes.qualification.measurement_output.parse(measurement);
+    const { current: before } = await this.currentQueuedCapture(jobId);
+    return this.store.transaction(() => {
+      const current = this.#currentQueued(jobId); this.#sameCaptureAuthority(current, before);
+      const history = this.#workerHistory(current), capture = this.#captureHistory(current), b = current.queue.context.binding;
+      check(history.state === 'unused' && capture.state === 'captured' && measured.qualification_job_id === jobId
+        && measured.binding_sha256 === current.queue.context.binding_sha256
+        && measured.measurement_record_sha256 === delegationDigest(measured.measurements)
+        && measured.measurement_record_sha256 === capture.receipt.measurementSha256,
+      'A worker requires the exact captured original and its independent measurements.');
+      const policy = history.configuration.policy;
+      const context = existingManagementTypes.evidence.context.parse({ binding: b, management_context_sha256: current.queue.context.binding_sha256,
+        capture_artifact_sha256: capture.receipt.captureArtifactSha256, measurement_record_sha256: capture.receipt.measurementSha256,
+        parity_sha256: measured.measurements.parity_sha256, evidence_policy_epoch: policy.policy_epoch, evidence_policy_sha256: delegationDigest(policy) });
+      const request = parseExistingWorkerRecord('dispatch_request', { schema: 2, dispatch_id: randomUUID(),
+        context_sha256: delegationDigest(context), worker_contract_sha256: existingWorkerContractSha256 });
+      const prepared = { request, context_sha256: request.context_sha256, evidence_policy_sha256: context.evidence_policy_sha256,
+        requested_at: this.now(), original_expires_at: b.expires_at * 1000, app_actor_id: history.configuration.app_actor_id };
+      this.#appendWorkerHistory(current.original.mapping, { schema: 2, state: 'prepared', context, prepared }, history.historyDigest);
+      const saved = this.#workerHistory(current), handle = Object.freeze({ jobId, dispatchId: request.dispatch_id });
+      this.#workerHandles.set(handle, { current, historyDigest: saved.historyDigest });
+      this.store.audit(current.original.mapping.actor, current.original.mapping.site, current.original.mapping.requestId, 'original-worker-dispatch', 'prepared');
+      return { handle, request: structuredClone(request) };
+    });
+  }
+  // A private dispatcher must independently verify the actual protected GitHub
+  // run before calling this. Public tools/callbacks never receive the handle.
+  async recordWorkerDispatch(handle, runId) {
+    const held = this.#workerHandles.get(handle); check(held, 'Original worker handle is missing or consumed.');
+    this.#workerHandles.delete(handle); existingManagementTypes.evidence.id.parse(runId);
+    const before = await this.currentQueuedJob(handle.jobId);
+    return this.store.transaction(() => {
+      const current = this.#currentQueued(handle.jobId); this.#sameCaptureAuthority(current, before); this.#sameCaptureAuthority(current, held.current);
+      const history = this.#workerHistory(current);
+      check(history.state === 'prepared' && history.historyDigest === held.historyDigest
+        && this.now() - history.value.prepared.requested_at < 60000, 'Original worker dispatch changed or expired.');
+      const p = history.value.prepared, observation = { ...p, run_id: runId, observed_at: this.now() };
+      const provenance = existingManagementTypes.evidence.provenance.parse({ ...Object.fromEntries(workerSourceFields.map(k => [k, history.configuration.policy[k]])),
+        dispatch_id: p.request.dispatch_id, dispatch_request_sha256: delegationDigest(p.request), dispatch_record_sha256: delegationDigest(observation),
+        run_id: runId, run_attempt: 1 });
+      const retained = parseExistingWorkerRecord('retained_record', { context: history.value.context, provenance, observation });
+      this.#appendWorkerHistory(current.original.mapping, { schema: 2, state: 'observed', retained }, history.historyDigest);
+      this.#workerHistory(current);
+      this.store.audit(current.original.mapping.actor, current.original.mapping.site, current.original.mapping.requestId, 'original-worker-dispatch', 'observed');
+      return retained;
+    });
+  }
+  async readWorkerHistory(jobId) {
+    const before = await this.currentQueuedJob(jobId);
+    return this.store.transaction(() => {
+      const current = this.#currentQueued(jobId); this.#sameCaptureAuthority(current, before);
+      const history = this.#workerHistory(current);
+      return { ...history, current };
     });
   }
   recordQueuePendingRevocation(jobId) {

@@ -105,9 +105,9 @@ window are required.
 This is a consistency verifier only. It registers no endpoint, records no
 dispatch, creates no authority and makes no network or source request. Its result
 explicitly leaves current staff access, hosted OIDC provenance, source
-verification and admission false. The original marker/history, independently
-pinned current identity registry, fresh staff checks and protected dispatch
-still require implementation and separate qualification. Twenty focused
+verification and admission false. Independently pinned current identity keys,
+fresh staff checks at the protected worker endpoint and actual protected
+dispatch still require implementation and separate qualification. Twenty focused
 checks cover substitutions, legacy/other-v2 signature domains, original-expiry
 extension, duplicate keys and byte limits; these synthetic records prove no
 live access or content operation.
@@ -131,6 +131,43 @@ legacy helpers and contracts are unchanged. Seven new matching-record denials
 and a byte-preservation test cover the correction. The earlier gateway `41a1df8`
 composition remains a historical baseline, not acceptance of the corrected pin.
 New hosted isolation and native composition are required for this source.
+
+### Original worker history and dependency repair
+
+The source candidate adds an optional service-owned worker configuration to a
+**genuine new original** only. Its digest is retained in that immutable original;
+an empty journal is created in the same SQLite transaction and independently
+anchored on the original attempt. Later configuration cannot enroll an old job.
+The journal permits exactly one prepared dispatch and one observed run, binds
+both to the accepted capture/measurement, source policy and original lifetime,
+and reserves the attempt before any network operation. Only its one-use
+in-process handle can record a run. A restart, lost response, missing journal,
+partial rollback, changed policy or revoked original identity refuses reuse.
+
+Eight new controlled SQLite test groups cover reopen, concurrent reservations,
+configuration drift, missing/partial history, uncertain capture, measurement
+substitution, revoked scope, deadline expiry and failed audit rollback. A record
+read from the real journal passes the independent signed-byte verifier using
+synthetic signing. This is **metadata consistency**, not protected GitHub dispatch,
+hosted OIDC, provider source delivery, report admission or live Google proof.
+No startup, private HTTP route, signing environment or workspace tool is enabled.
+
+Runner `2c369e8` passes [hosted CI 40035186809](https://github.com/mrnwebdesigns/mrn-code-qa-runner/actions/runs/40035186809).
+All eight original fixture QA reports were downloaded and verified, including
+runtime API, browser, accessibility and page-speed rows; unmeasured INP remains
+unmeasured. Tested merge `d092d0c03cc68477ddf2edd14268d2fbefae197a` has the exact
+candidate tree `a00fdba13e67041060852223f7916924fca21ed7`.
+
+Gateway `4cb750b6` passed 672 tests and MRN QA, but its native job **did not run**:
+the audit newly reported [GHSA-27r3-jxmh-p828](https://github.com/advisories/GHSA-27r3-jxmh-p828)
+in transitive body-parser 2.3.0. Both gateway and isolated MCP transport locks now
+resolve upstream body-parser 2.4.0 and required compatible dependencies, without
+overrides or audit exclusions. The updated gateway has 680 passing tests and
+lint; transport has 3,155 passing tests and a passing TypeScript build. Both
+production dependency audits report zero vulnerabilities. The transport's 12
+previous development-only audit findings remain; this is not a clean full audit.
+The transport source revision is selected in `test/runtime/sources.json`;
+combined native qualification must be repeated against that exact source.
 
 ### Next protected source-delivery checkpoint
 

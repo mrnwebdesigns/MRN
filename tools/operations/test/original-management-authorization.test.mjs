@@ -34,10 +34,11 @@ import { ExistingManagementMeasurements, ExistingManagementMeasurementsReader, e
   createExistingManagementMeasurementsRuntime } from '../src/existing-management-measurements.mjs';
 import { ExistingManagementSourceContext, ExistingManagementSourceContextReader, existingManagementSourceContextTool,
   createExistingManagementSourceContextRuntime } from '../src/existing-management-source-context.mjs';
+import { existingWorkerContractSha256, existingWorkerPurpose, verifyExistingManagementWorkerRecord } from '../src/existing-management-worker-contract.mjs';
 import { ExistingManagementSourceCatalogRegistry } from '../src/existing-management-source-catalog.mjs';
 
 const audience = 'https://operations.mrnwebdesigns.com/mcp', issuer = 'https://identity.example.test/';
-async function fixture(t, durable = false) {
+async function fixture(t, durable = false, workerConfiguration) {
   const now = Math.floor(Date.now() / 1000), oauth = await generateKeyPair('ES256');
   const keys = generateKeyPairSync('ed25519'), stores = [];
   const dir = durable ? mkdtempSync(join(tmpdir(), 'mrn-original-auth-')) : null;
@@ -57,7 +58,7 @@ async function fixture(t, durable = false) {
   const state = { checks: 0, duringCheck: null };
   const pins = { provider_source_sha: 'a'.repeat(40), authorization_policy_sha256: 'b'.repeat(64), delegation_policy_sha256: 'c'.repeat(64) };
   const signer = new IdentitySigner({ keyId: 'fixture', privateKey: keys.privateKey, connectionId: 'con_fixture' });
-  const options = { signer, registry, policy: () => pins, verifyStaff: async value => {
+  const options = { signer, registry, workerConfiguration, policy: () => pins, verifyStaff: async value => {
     assert.equal(value.googleSubject, '123'); state.checks++; await state.duringCheck?.(value);
   } };
   const open = () => { const store = new Store(file); stores.push(store); return { store, ledger: new OriginalManagementAuthorizationLedger(store, options) }; };
@@ -397,8 +398,8 @@ test('intact history for another person permits automatic first use without clea
   assert.equal(f.ledger.principals.row(digest(f.actor.googleSubject), requesterDigest(f.actor)).state, 'pending-revocation');
 });
 
-async function reviewed(t, durable = false) {
-  const f = await fixture(t, durable), handle = await f.prepare();
+async function reviewed(t, durable = false, workerConfiguration) {
+  const f = await fixture(t, durable, workerConfiguration), handle = await f.prepare();
   await f.ledger.claimDispatch(handle, f.actor);
   const { evidence, profile } = f.values.expected;
   await f.ledger.recordReview(handle.requestId, f.actor, f.request, evidence, profile);
@@ -590,8 +591,8 @@ async function provider(f) {
   return { state, observe, transport };
 }
 
-async function existingQueue(t) {
-  const f = await reviewed(t, true), p = await provider(f), observed = await p.observe();
+async function existingQueue(t, workerConfiguration) {
+  const f = await reviewed(t, true, workerConfiguration), p = await provider(f), observed = await p.observe();
   await f.ledger.recordProviderBinding(observed.handle.controlId, f.actor, observed.response);
   const next = await f.auth(`Bearer ${await f.token(f.now + 1800)}`), reopened = f.open();
   const original = await reopened.ledger.readCurrent(f.original, next);
@@ -994,8 +995,8 @@ test('pending revocation during the confirmed original preview withholds the ret
   assert.equal(f.store.db.prepare('SELECT count(*) n FROM original_management_reviews').get().n, 0);
 });
 
-async function queueFixture(t) {
-  const { f, context, expected } = await existingQueue(t);
+async function queueFixture(t, workerConfiguration) {
+  const { f, context, expected } = await existingQueue(t, workerConfiguration);
   const state = { pins: structuredClone(expected.pins), epoch: expected.original.mapping.readiness.coherenceEpochSha256,
     checks: 0, duringCheck: null };
   f.options.queueReadiness = async (actor, input) => {
@@ -1269,8 +1270,8 @@ test('fresh login cannot claim a prepared handle or renew an expired queue trans
   await assert.rejects(() => f.ledger.readQueue(f.original, next));
 });
 
-async function existingAccessFixture(t) {
-  const f = await queueFixture(t), context = await originalQueueClient(f).queue();
+async function existingAccessFixture(t, workerConfiguration) {
+  const f = await queueFixture(t, workerConfiguration), context = await originalQueueClient(f).queue();
   const identity = { keyId: 'fixture', privateKey: f.keys.privateKey }, state = { calls: 0, closes: 0, mono: 0 };
   const ledger = new ExistingManagementAccessLedger(f.ledger), signer = new ExistingManagementAccessSigner(identity);
   const tool = { name: existingManagementAccessReadbackTool, annotations: { readOnlyHint: false, destructiveHint: false } };
@@ -1555,8 +1556,8 @@ test('existing context has no legacy capability fallback and private lifecycle c
     connect: async () => f.contextClient })); assert.equal(f.contextState.closes, 2);
 });
 
-async function existingCaptureFixture(t) {
-  const f = await existingAccessFixture(t), state = { calls: [], closes: 0, mono: 0 };
+async function existingCaptureFixture(t, workerConfiguration) {
+  const f = await existingAccessFixture(t, workerConfiguration), state = { calls: [], closes: 0, mono: 0 };
   const keys = generateKeyPairSync('ed25519'), registrar = { keyId: 'capture-registrar', privateKey: keys.privateKey };
   const value = JSON.parse(readFileSync(new URL('./fixtures/content-management-qualification-v1.json', import.meta.url))).capture_output;
   const artifact = value.capture_artifact, b = f.context.binding;
@@ -2218,5 +2219,151 @@ test('queued-capture observation rejects changed history and current authority d
     };
     await assert.rejects(() => f.ledger.currentQueuedCapture(f.job), kind);
     assert.equal(f.captureState.calls.length, 1);
+  }
+});
+
+
+async function workerHistoryFixture(t, captured = true) {
+  const configuration = { schema: 2, worker_contract_sha256: existingWorkerContractSha256, app_actor_id: '40',
+    policy: { schema: 1, enabled: false, policy_epoch: 1, qa_key_ids: ['fixture-qa'],
+      repository: 'mrnwebdesigns/mrn-code-qa-runner', repository_id: '10', ref: 'refs/heads/main', workflow_id: '20',
+      workflow_path: '.github/workflows/management.yml', workflow_sha256: 'a'.repeat(64), runner_source_sha: 'b'.repeat(40),
+      engine_commit: 'c'.repeat(40), engine_configuration_sha256: 'd'.repeat(64), runtime_sha256: 'e'.repeat(64),
+      performance_budget_sha256: 'f'.repeat(64), render_assertions_sha256: '1'.repeat(64), hook_policy_sha256: '2'.repeat(64) } };
+  const f = await existingCaptureFixture(t, () => configuration);
+  if (captured) await f.runCapture();
+  const measurement = { qualification_job_id: f.job, binding_sha256: f.context.binding_sha256,
+    measurement_record_sha256: delegationDigest(f.value.measurements), measurements: structuredClone(f.value.measurements) };
+  return { ...f, configuration, measurement, prepareWorker: ledger => (ledger ?? f.ledger).prepareWorkerDispatch(f.job, measurement) };
+}
+
+test('worker history is seeded only with a genuine new original and survives independent reopen', async t => {
+  const f = await workerHistoryFixture(t), initial = await f.ledger.readWorkerHistory(f.job);
+  assert.equal(initial.state, 'unused');
+  assert.equal(initial.current.original.mapping.workerConfigurationSha256, delegationDigest(f.configuration));
+  const prepared = await f.prepareWorker(), saved = await f.open().ledger.readWorkerHistory(f.job);
+  assert.equal(saved.state, 'prepared'); assert.equal(saved.value.prepared.request.schema, 2);
+  assert.equal(saved.value.prepared.request.worker_contract_sha256, existingWorkerContractSha256);
+  assert.deepEqual(prepared.request, saved.value.prepared.request);
+  assert.equal(saved.value.prepared.original_expires_at, f.context.binding.expires_at * 1000);
+  prepared.request.context_sha256 = 'f'.repeat(64);
+  assert.notEqual((await f.ledger.readWorkerHistory(f.job)).value.prepared.request.context_sha256, prepared.request.context_sha256);
+  const retained = await f.ledger.recordWorkerDispatch(prepared.handle, '30');
+  assert.deepEqual((await f.open().ledger.readWorkerHistory(f.job)).value.retained, retained);
+  assert.equal(retained.observation.app_actor_id, '40'); assert.equal(retained.provenance.run_attempt, 1);
+  assert.equal(f.store.db.prepare('SELECT count(*) n FROM original_management_worker_history').get().n, 3);
+  for (const ledger of [f.ledger, f.open().ledger]) {
+    await assert.rejects(() => f.prepareWorker(ledger));
+    await assert.rejects(() => ledger.recordWorkerDispatch(prepared.handle, '31'));
+  }
+  // The actual durable record is accepted by the independent byte verifier;
+  // synthetic signing proves consistency, not hosted identity or source access.
+  const at = Date.now(), claims = { schema: 2, issuer: 'https://operations.mrnwebdesigns.com',
+    audience: 'https://github.com/mrnwebdesigns/mrn-code-qa-runner/actions/runs/30', issued_at: Math.floor(at / 1000),
+    expires_at: Math.min(Math.floor(at / 1000) + 5, f.context.binding.expires_at), request_id: randomUUID(), nonce: 'c'.repeat(64),
+    action: 'read-original-existing-management-dispatch', dispatch_id: retained.provenance.dispatch_id,
+    context_sha256: delegationDigest(retained.context), worker_contract_sha256: existingWorkerContractSha256,
+    context: retained.context, recorded_dispatch: retained.provenance, dispatch_record: retained.observation };
+  const payload = Buffer.from(delegationCanonical(claims)), raw = Buffer.from(delegationCanonical({ signed_context: {
+    key_id: 'fixture', payload_base64: payload.toString('base64'), signature_base64: sign(null,
+      Buffer.concat([Buffer.from(existingWorkerPurpose), payload]), f.keys.privateKey).toString('base64') } }));
+  const result = verifyExistingManagementWorkerRecord({ raw, pointer: { dispatch_id: retained.provenance.dispatch_id,
+    context_sha256: delegationDigest(retained.context) }, retained, originalBinding: f.context.binding,
+    identityKeyId: 'fixture', identityPublicKey: f.keys.publicKey, startedAt: at, completedAt: at + 1 });
+  assert.equal(result.admitted, false); assert.equal(result.current_access_proven, false);
+  const rows = f.store.db.prepare('SELECT body FROM original_management_worker_history').all();
+  for (const secret of [f.raw, JSON.stringify(f.request.changes), f.value.capture_artifact.dataset.read.snapshot.core.post_content])
+    assert.equal(JSON.stringify(rows).includes(secret), false);
+});
+
+test('old originals cannot gain worker eligibility from newly supplied configuration', async t => {
+  const f = await existingCaptureFixture(t); await f.runCapture();
+  const candidate = await workerHistoryFixture(t);
+  f.options.workerConfiguration = () => candidate.configuration;
+  const reopened = f.open().ledger;
+  await assert.rejects(() => reopened.readWorkerHistory(f.job));
+  await assert.rejects(() => reopened.prepareWorkerDispatch(f.job, candidate.measurement));
+  assert.equal(f.store.db.prepare('SELECT count(*) n FROM original_management_worker_history').get().n, 0);
+});
+
+test('worker configuration drift during original preparation rolls back both original and seed', async t => {
+  const f = await fixture(t), source = await workerHistoryFixture(t);
+  f.options.workerConfiguration = () => source.configuration;
+  const ledger = new OriginalManagementAuthorizationLedger(f.store, f.options);
+  f.state.duringCheck = () => { source.configuration.policy.policy_epoch++; };
+  await assert.rejects(async () => ledger.prepare(f.actor, f.request, f.challenge, f.attempt, await f.ready()));
+  assert.equal(count(f), 0); assert.equal(f.store.db.prepare('SELECT count(*) n FROM original_management_worker_history').get().n, 0);
+});
+
+test('worker preparation requires exact captured measurements, never uncertain or altered source', async t => {
+  for (const kind of ['uncaptured', 'uncertain', 'measurement', 'rehashed', 'job', 'binding', 'extra']) {
+    const f = await workerHistoryFixture(t, !['uncaptured', 'uncertain'].includes(kind));
+    if (kind === 'uncertain') { f.captureState.failure = true; await assert.rejects(f.runCapture); }
+    if (kind === 'measurement' || kind === 'rehashed') f.measurement.measurements.native_calls++;
+    if (kind === 'rehashed') f.measurement.measurement_record_sha256 = delegationDigest(f.measurement.measurements);
+    if (kind === 'job') f.measurement.qualification_job_id = randomUUID();
+    if (kind === 'binding') f.measurement.binding_sha256 = 'f'.repeat(64);
+    if (kind === 'extra') f.measurement.email = 'caller@mrnwebdesigns.com';
+    await assert.rejects(() => f.prepareWorker(), kind);
+    assert.equal((await f.ledger.readWorkerHistory(f.job)).state, 'unused');
+  }
+});
+
+test('concurrent worker preparations have one winner and restart never recreates its handle', async t => {
+  const f = await workerHistoryFixture(t), reopened = f.open().ledger;
+  const results = await Promise.allSettled([f.prepareWorker(), f.prepareWorker(reopened)]);
+  assert.equal(results.filter(x => x.status === 'fulfilled').length, 1);
+  const h = results.find(x => x.status === 'fulfilled').value.handle, third = f.open().ledger;
+  await assert.rejects(() => third.recordWorkerDispatch(h, '30'));
+  await assert.rejects(() => third.recordWorkerDispatch({ ...h }, '30'));
+  await assert.rejects(() => f.prepareWorker(third));
+  assert.equal((await third.readWorkerHistory(f.job)).state, 'prepared');
+});
+
+test('missing and partial worker journal or anchors cannot be repaired or redispatched', async t => {
+  for (const kind of ['all', 'seed', 'prepared', 'body', 'digest', 'marker', 'capture']) {
+    const f = await workerHistoryFixture(t), { handle } = await f.prepareWorker();
+    if (kind === 'all') f.store.db.exec('DELETE FROM original_management_worker_history');
+    if (kind === 'seed') f.store.db.exec('DELETE FROM original_management_worker_history WHERE ordinal=0');
+    if (kind === 'prepared') f.store.db.exec('DELETE FROM original_management_worker_history WHERE ordinal=1');
+    if (kind === 'body') f.store.db.exec("UPDATE original_management_worker_history SET body='{}' WHERE ordinal=1");
+    if (kind === 'digest') f.store.db.exec("UPDATE original_management_worker_history SET digest='bad' WHERE ordinal=1");
+    if (kind === 'marker') f.store.db.exec("UPDATE original_management_attempts SET worker_history_digest=''");
+    if (kind === 'capture') f.store.db.exec('DELETE FROM original_management_capture_history');
+    const reopened = f.open().ledger;
+    await assert.rejects(() => reopened.readWorkerHistory(f.job), kind);
+    await assert.rejects(() => f.ledger.recordWorkerDispatch(handle, '30'), kind);
+    await assert.rejects(() => f.prepareWorker(reopened), kind);
+  }
+});
+
+test('worker history rechecks original staff, scope, policy, source and expiry before and after current verification', async t => {
+  for (const stage of ['before', 'during']) for (const kind of ['staff', 'revoked', 'policy', 'app', 'source', 'scope', 'expiry']) {
+    const f = await workerHistoryFixture(t), { handle } = await f.prepareWorker();
+    const deny = () => {
+      if (kind === 'staff') throw new Error('Directory unavailable');
+      if (kind === 'revoked') f.ledger.recordQueuePendingRevocation(f.job);
+      if (kind === 'policy') f.configuration.policy.policy_epoch++;
+      if (kind === 'app') f.configuration.app_actor_id = '41';
+      if (kind === 'source') f.configuration.policy.runner_source_sha = 'e'.repeat(40);
+      if (kind === 'scope') f.policy.emailDomains[0].portfolio.actions = ['read'];
+      if (kind === 'expiry' && !f.expiryApplied) { f.expiryApplied = true; t.mock.method(Date, 'now', () => f.context.binding.expires_at * 1000); }
+    };
+    if (stage === 'during' || kind === 'staff') f.state.duringCheck = deny; else deny();
+    await assert.rejects(() => f.ledger.recordWorkerDispatch(handle, '30'), `${stage}/${kind}`);
+    assert.equal(f.store.db.prepare('SELECT count(*) n FROM original_management_worker_history').get().n, 2);
+    t.mock.restoreAll();
+  }
+});
+
+test('late or failed worker observation consumes its handle and retains uncertain preparation', async t => {
+  for (const kind of ['deadline', 'invalid-run', 'audit-failure']) {
+    const f = await workerHistoryFixture(t), { handle } = await f.prepareWorker();
+    if (kind === 'deadline') { const at = (await f.ledger.readWorkerHistory(f.job)).value.prepared.requested_at + 60000; t.mock.method(Date, 'now', () => at); }
+    if (kind === 'audit-failure') t.mock.method(f.store, 'audit', () => { throw new Error('disk failure'); });
+    await assert.rejects(() => f.ledger.recordWorkerDispatch(handle, kind === 'invalid-run' ? '0' : '30'));
+    t.mock.restoreAll();
+    await assert.rejects(() => f.ledger.recordWorkerDispatch(handle, '31'));
+    assert.equal((await f.ledger.readWorkerHistory(f.job)).state, 'prepared');
   }
 });

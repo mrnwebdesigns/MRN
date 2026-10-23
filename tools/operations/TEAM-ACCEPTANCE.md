@@ -65,6 +65,13 @@ initial runner reader accepted because its shared schema helper omitted URI
 formats. Fresh hosted isolation and combined qualification remain separate gates. Actual protected existing-v2 source
 delivery, rendered management QA and report admission remain open.
 
+The worker-history candidate preserves a new original's staff identity,
+configuration and one-use dispatch attempt across restart, with eight controlled
+SQLite test groups. The corrected runner passes hosted isolation. Gateway
+`4cb750b6` stopped at the newly reported body-parser dependency advisory before
+native testing; patched locks and the next combined run are separate gates.
+No live acceptance row is satisfied by these source tests.
+
 Earlier checkpoints and failures are retained below as historical evidence.
 
 Capture/recovery plus measurement is qualified at gateway
