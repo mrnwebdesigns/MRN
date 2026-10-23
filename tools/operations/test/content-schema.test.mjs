@@ -42,7 +42,8 @@ test('management URI constraints validate absolute addresses without normalizing
   const value = { site_url: 'https://fixture.example.invalid/path%20name' };
   assert.deepEqual(schema.parse(value), value);
   for (const site_url of ['fixture.example.invalid', '/relative', '//fixture.example.invalid', 'https://', '\ud800', 'https://fixture.example.invalid/\0',
-    ' https://fixture.example.invalid', 'https://fixture.example.invalid/a b', 'https:\\fixture.example.invalid', 'https://fixture.example.invalid/%zz'])
+    ' https://fixture.example.invalid', 'https://fixture.example.invalid ', 'https://fixture.example.invalid/\tpath',
+    'https://fixture.example.invalid/\npath', 'https://fixture.example.invalid/a b', 'https:\\fixture.example.invalid', 'https://fixture.example.invalid/%zz'])
     assert.equal(schema.safeParse({ site_url }).success, false);
   for (const wire of [{ type: 'integer', format: 'uri' }, { type: 'string', format: 'url' }, { type: 'string', format: null }])
     assert.throws(() => compileContentSchema(wire), { code: 'CONTENT_CONTRACT' });

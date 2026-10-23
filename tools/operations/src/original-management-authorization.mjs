@@ -4,7 +4,7 @@ import { randomBytes, randomUUID, sign } from 'node:crypto';
 import { originalAuthorizationAnchor } from './auth.mjs';
 import { AccessPrincipals, accessActorSchema, requesterDigest } from './access-principal.mjs';
 import { IdentitySigner, challengeSchema, delegationCanonical, delegationDigest, delegationIssuer, delegationAudience } from './delegation.mjs';
-import { digest, registryTargetSchema, requireThat, sha } from './contracts.mjs';
+import { absoluteUrl, digest, registryTargetSchema, requireThat, sha } from './contracts.mjs';
 import { managementSchemas, validateManagementEvidence } from './content-management-contract.mjs';
 import { compileManagementEvidenceSchema } from './content-management-schema.mjs';
 import { existingManagementHashes, existingManagementProtocol, existingManagementTypes } from './management-existing-contracts.mjs';
@@ -53,7 +53,7 @@ const mappingSchema = z.object({ schema: z.literal(1), attempt: z.string().uuid(
   memberPolicySha256: sha, argumentsSha256: sha, envelopeSha256: sha, readiness: readinessSchema,
   authorization: z.object({ schema: z.literal(1), authorizationSha256: sha, expiresAt: z.number().int().positive().safe() }).strict(),
   transportExpiresAt: z.number().int().positive().safe(),
-  target: z.object({ site_id: z.number().int().positive().safe(), site_url: z.string().url(),
+  target: z.object({ site_id: z.number().int().positive().safe(), site_url: absoluteUrl,
     post_type: z.enum(['post', 'page']), post_id: z.number().int().positive().safe(), expected_snapshot_sha256: sha }).strict(),
 }).strict();
 

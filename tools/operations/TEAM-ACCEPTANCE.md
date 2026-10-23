@@ -53,6 +53,11 @@ unchanged. The 237,659 ms hook completed cleanup within its original allocation.
 This qualifies that private source gate only. Every live acceptance row above
 remains unverified.
 
+The subsequent catalog run `40026067552` stopped at the Zod dependency
+audit before native testing. MRN QA `40026067544` passed. A patched dependency
+and byte-preserving URL validation pass 652 local gateway tests; this does not
+replace the pending native catalog or live acceptance gates.
+
 The source-format mismatch also has a separately qualified runner correction,
 `53e5345`, with 163 tests and hosted code/content isolation `40024009019` passing.
 It preserves existing-v2 authority and result schemas and has not been selected

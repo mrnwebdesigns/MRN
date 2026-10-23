@@ -54,6 +54,18 @@ hook preserved its 300-second allocation and original authority, completed all
 unchanged and disabled the callback route. This closes the earlier source-context
 latency failure for this disposable scope; live acceptance remains unverified.
 
+The next catalog candidate `002bdbd` with provider `25cb8d3` passed 650
+controlled tests and 13 Fleet regressions in CI, but Operations run `40026067552`
+stopped at the dependency audit before native dispatch. MRN QA `40026067544`
+passed. The audit identified Zod advisory
+[GHSA-mrhx-c7xc-m3w5](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5).
+The gateway dependency repair pins patched Zod 4.6.7 and preserves byte-exact
+URL validation instead of adopting Zod 4's trimming behavior. All 652 gateway
+tests and lint pass locally, and the production dependency audit reports zero
+vulnerabilities. Native catalog composition still requires a fresh passing run.
+The separately pinned MCP transport has its own dependency repair gate; no
+installed transport or global configuration has been changed here.
+
 The separate runner format correction `53e534502227c9ddfab5515d8fdc83bb8297b887`
 passes all 163 tests, staged MRN QA and [hosted isolation 40024009019](https://github.com/mrnwebdesigns/mrn-code-qa-runner/actions/runs/40024009019).
 Eight original code/content QA reports pass API/browser/accessibility/performance

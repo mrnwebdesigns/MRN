@@ -1,6 +1,6 @@
 import { createPublicKey, verify } from 'node:crypto';
 import { z } from 'zod';
-import { digest, requireThat, sha } from './contracts.mjs';
+import { absoluteUrl, digest, requireThat, sha } from './contracts.mjs';
 import { delegationCanonical, delegationDigest } from './delegation.mjs';
 import { ProtectedCodeQa } from './code-qa.mjs';
 import { contentEnvelopeSchema, contentProfileSchema, contentSnapshotSchema, contentSnapshot, contentTargetSchema, contentSame, contentPaths, contentSchemas, contentPlanDescriptor } from './content-contract.mjs';
@@ -10,13 +10,13 @@ const uuid = z.string().regex(/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0
 const planOutput = contentSchemas['prepare-content-change-v1'].output.shape;
 export const contentQaPolicySchema = z.object({ version: z.literal(1), repository: z.literal('mrnwebdesigns/mrn-code-qa-runner'), workflowCommit: commit,
   actor: z.string().regex(/^[A-Za-z0-9-]+\[bot\]$/), keyId: z.string().regex(/^[A-Za-z0-9_-]{1,64}$/), publicKeyBase64: z.string().length(44), engineCommit: commit,
-  profiles: z.array(z.object({ siteUrl: z.string().url(), profile: contentProfileSchema,
+  profiles: z.array(z.object({ siteUrl: absoluteUrl, profile: contentProfileSchema,
     targets: z.array(z.object({ target: contentTargetSchema, selector: z.string().min(1).max(256) }).strict()).min(1) }).strict()).min(1),
 }).strict();
 export const contentQaRequest = z.object({ schema: z.literal(1), request_id: z.string().regex(/^[a-f0-9]{32}$/), kind: z.literal('content'),
-  operation_id: uuid, site_id: z.number().int().positive().safe(), site_url: z.string().url(), target: contentTargetSchema,
+  operation_id: uuid, site_id: z.number().int().positive().safe(), site_url: absoluteUrl, target: contentTargetSchema,
   before_snapshot: contentSnapshotSchema, new_value: z.string().max(8192), before_sha256: sha, candidate_sha256: sha, plan_digest: sha,
-  rollback_operation_id: z.union([uuid, z.literal('')]), profile: contentProfileSchema, runtime_url: z.string().url(),
+  rollback_operation_id: z.union([uuid, z.literal('')]), profile: contentProfileSchema, runtime_url: absoluteUrl,
   affected_paths: planOutput.affected_paths, stable_selector: planOutput.stable_selector, migration_artifact: planOutput.migration_artifact,
 }).strict();
 export function contentQaInput(plan, requestId) {

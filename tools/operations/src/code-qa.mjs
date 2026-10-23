@@ -1,6 +1,6 @@
 import { createPublicKey, verify } from 'node:crypto';
 import { z } from 'zod';
-import { digest, requireThat, sha } from './contracts.mjs';
+import { absoluteUrl, digest, requireThat, sha } from './contracts.mjs';
 import { codePath } from './code.mjs';
 import { branchHead } from './github.mjs';
 import { receiptFromZip } from './receipt-zip.mjs';
@@ -11,15 +11,15 @@ const source = z.discriminatedUnion('mode', [z.object({ mode: z.literal('unversi
   repository: z.string().regex(/^https:\/\/github\.com\/mrnwebdesigns\/[A-Za-z0-9_-]+$/), branch: z.string().min(1).max(128), commit }).strict()]);
 export const codePolicySchema = z.object({ version: z.literal(1), repository: z.literal('mrnwebdesigns/mrn-code-qa-runner'), workflowCommit: commit,
   actor: z.string().regex(/^[A-Za-z0-9-]+\[bot\]$/), keyId: z.string().regex(/^[A-Za-z0-9_-]{1,64}$/), publicKeyBase64: z.string().length(44), engineCommit: commit,
-  profiles: z.array(z.object({ siteUrl: z.string().url().refine(v => /^https:\/\/[^/?#@]+\/$/.test(v)), paths: z.array(codePath).min(1), runtimeUrl: z.string().url().refine(v => /^https:\/\//.test(v)),
+  profiles: z.array(z.object({ siteUrl: absoluteUrl.refine(v => /^https:\/\/[^/?#@]+\/$/.test(v)), paths: z.array(codePath).min(1), runtimeUrl: absoluteUrl.refine(v => /^https:\/\//.test(v)),
     source: z.union([z.object({ mode: z.literal('unversioned') }).strict(), z.object({ mode: z.literal('git'), repository: z.string().regex(/^https:\/\/github\.com\/mrnwebdesigns\/[A-Za-z0-9_-]+$/),
       branch: z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_/-]{0,127}$/), paths: z.record(z.string(), z.string()) }).strict()]),
     sourceAutomation: z.object({ deploymentDisabled: z.literal(true), baseCommit: commit, expiresAt: z.number().int().positive(), evidenceRef: z.string().min(1) }).strict().optional(),
   }).strict()).min(1),
 }).strict();
 export const codeQaRequest = z.object({ schema: z.literal(1), request_id: z.string().regex(/^[a-f0-9]{32}$/), site_id: z.number().int().positive().safe(),
-  site_url: z.string().url(), kind: z.enum(['file', 'rollback', 'source_review', 'rollback_source_review']), path: codePath, repository_path: z.string().min(1).max(512),
-  expected_sha256: snapshot, new_sha256: snapshot, rollback_operation_id: z.string(), runtime_url: z.string().url(), source,
+  site_url: absoluteUrl, kind: z.enum(['file', 'rollback', 'source_review', 'rollback_source_review']), path: codePath, repository_path: z.string().min(1).max(512),
+  expected_sha256: snapshot, new_sha256: snapshot, rollback_operation_id: z.string(), runtime_url: absoluteUrl, source,
   payload_base64: z.string().max(43692) }).strict();
 const claimsSchema = z.object({ schema: z.literal(1), issuer: z.literal('mrn-qa-engine'), audience: z.literal('https://wpcontrol.mrndev.io'),
   result: z.literal('Pass'), mode: z.literal('release'), smoke_strict: z.literal(true), issued_at: z.number().int(), expires_at: z.number().int(),

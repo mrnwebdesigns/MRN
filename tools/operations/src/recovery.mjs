@@ -1,12 +1,12 @@
 import { z } from 'zod';
-import { digest, requireThat, sha } from './contracts.mjs';
+import { absoluteUrl, digest, requireThat, sha } from './contracts.mjs';
 
 const evidence = z.object({ reportRef: z.string().min(1), reportSha256: sha }).strict();
 // Operator-owned enrollment, never MCP input. A readback cannot prove that a
 // timed-out worker, backup, or independent deployment has stopped writing.
 export const recoverySchema = z.object({ version: z.literal(1), records: z.array(z.object({
   operationId: z.string().uuid(), operationDigest: sha,
-  siteUrl: z.string().url(), environment: z.enum(['local', 'development', 'staging', 'production']),
+  siteUrl: absoluteUrl, environment: z.enum(['local', 'development', 'staging', 'production']),
   verifiedBy: z.string().min(1), verifiedAt: z.string().datetime(), validUntil: z.string().datetime(),
   workersStopped: evidence, downstreamIdle: evidence, independentWritersExcluded: evidence,
 }).strict()) }).strict();

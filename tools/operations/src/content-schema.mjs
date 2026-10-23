@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { requireThat } from './contracts.mjs';
+import { isAbsoluteUrl, requireThat } from './contracts.mjs';
 import { delegationCanonical } from './delegation.mjs';
 
 // Only the checked-in content contract vocabulary is supported. References
@@ -68,7 +68,7 @@ export function compileContentSchema(schema, definitions = {}) {
       if (s.minLength !== undefined) out = out.min(s.minLength);
       if (s.maxLength !== undefined) out = out.max(s.maxLength);
       if (s.pattern) out = out.regex(new RegExp(s.pattern));
-      if (s.format === 'uri') out = out.url().refine(value => /^[A-Za-z][A-Za-z0-9+.-]*:/.test(value)
+      if (s.format === 'uri') out = out.refine(isAbsoluteUrl, 'Invalid absolute URL.').refine(value => /^[A-Za-z][A-Za-z0-9+.-]*:/.test(value)
         && !/[\u0000-\u0020\u007f\\]/u.test(value) && !/%(?![0-9a-f]{2})/i.test(value), 'Invalid absolute content URI.');
       out = out.refine(value => value.isWellFormed() && !value.includes('\0'), 'Invalid content Unicode.');
     } else if (s.type === 'integer') {

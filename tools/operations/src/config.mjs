@@ -1,12 +1,12 @@
 import { z } from 'zod';
 import { isAbsolute } from 'node:path';
-import { readJson, Registry, requireThat } from './contracts.mjs';
+import { absoluteUrl, readJson, Registry, requireThat } from './contracts.mjs';
 import { codePolicySchema } from './code-qa.mjs';
 import { contentQaPolicySchema } from './content-qa.mjs';
 import { delegationIssuer } from './delegation.mjs';
 
 const absolute = z.string().refine(isAbsolute, 'Use an absolute service path.');
-const secureUrl = z.string().url().refine(s => { const u = new URL(s); return u.protocol === 'https:' && !u.username && !u.password && !u.search && !u.hash; });
+const secureUrl = absoluteUrl.refine(s => { const u = new URL(s); return u.protocol === 'https:' && !u.username && !u.password && !u.search && !u.hash; });
 export const configSchema = z.object({
   version: z.literal(1), publicUrl: secureUrl.refine(s => new URL(s).pathname === '/mcp'),
   listen: z.object({ host: z.literal('127.0.0.1'), port: z.number().int().min(1024).max(65535) }).strict(),

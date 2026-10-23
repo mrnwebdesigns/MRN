@@ -24,6 +24,10 @@ export const safeError = error => error instanceof OpsError
   ? { code: error.code, message: error.message }
   : { code: 'INTEGRATION_FAILED', message: 'The integration did not complete. Inspect private service diagnostics; no automatic credential or access fallback was attempted.' };
 export const readJson = file => JSON.parse(readFileSync(file, 'utf8'));
+// URL validation must preserve the supplied bytes: signed records and exact
+// target comparisons must not inherit Zod URL trimming or normalization.
+export const isAbsoluteUrl = value => URL.canParse(value);
+export const absoluteUrl = z.string().refine(isAbsoluteUrl, 'Invalid absolute URL.');
 export const sha = z.string().regex(/^[a-f0-9]{64}$/);
 export const commit = z.string().regex(/^[a-f0-9]{40}$/);
 const identifier = z.string().regex(/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,119}$/);
