@@ -294,6 +294,28 @@ are unchanged; the eleven imported qualification files were independently
 compared to that commit. All 24 provider fixture checks pass. The complete
 hosted suite must pass before this new allocation is accepted.
 
+### Existing-record source-context consumer
+
+The additive private source-context reader uses only the frozen existing-v2
+purpose and canonical POST route. It requires an accepted original capture
+receipt and complete measurement bytes matching that receipt, then compares
+the returned binding, artifact, measurement and parity to the retained evidence.
+Evidence-policy epoch/hash and source-catalog digest come from a separate closed
+service-owned resolver; the provider response or a team request cannot supply
+those expected values. Current staff, policy, source, owner pins, revocation and
+expiry are checked before and after the lookup, within the existing 20-second
+read limit. A later login cannot replace the original actor or extend its grant.
+
+Controlled tests exercise restart, substituted/rehashed responses, missing
+capture and owner configuration, access changes, signed-input mutation, lost or
+stalled responses and shutdown. The provider owns the durable two-read budget;
+these gateway tests do not qualify that SQL implementation. The provider's new
+original-state marker, real capture initialization and canonical HTTP/MCP
+source-context registration still need independent native qualification.
+Production startup and workspace tools do not import this consumer. It returns
+metadata with source verification, slot creation and admission all false; no
+source transfer, catalog approval or content write follows from this checkpoint.
+
 ## Earlier candidate evidence, 2026-10-22
 
 The earlier disposable integration candidate selected provider

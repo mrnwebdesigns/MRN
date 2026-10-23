@@ -31,6 +31,8 @@ import { ExistingManagementCapture, ExistingManagementCaptureReader, existingMan
   createExistingManagementCaptureRuntime, validateExistingManagementCapture } from '../src/existing-management-capture.mjs';
 import { ExistingManagementMeasurements, ExistingManagementMeasurementsReader, existingManagementMeasurementsTool,
   createExistingManagementMeasurementsRuntime } from '../src/existing-management-measurements.mjs';
+import { ExistingManagementSourceContext, ExistingManagementSourceContextReader, existingManagementSourceContextTool,
+  createExistingManagementSourceContextRuntime } from '../src/existing-management-source-context.mjs';
 
 const audience = 'https://operations.mrnwebdesigns.com/mcp', issuer = 'https://identity.example.test/';
 async function fixture(t, durable = false) {
@@ -1874,4 +1876,152 @@ test('private measurement lifecycle requires the exact v2 route and closes witho
     ledger: f.ledger, registrar: f.registrar, connect: async () => f.measurementClient });
   await runtime.close(); await runtime.close(); assert.equal(f.measurementState.closes, 1);
   await assert.rejects(() => runtime.measurements.read(f.job)); assert.equal(f.measurementState.calls, 0);
+});
+
+async function existingSourceContextFixture(t, capture = true) {
+  const f = await existingMeasurementsFixture(t, capture), state = { calls: 0, closes: 0, mono: 0, claims: [] };
+  const owner = { evidence_policy_epoch: 1, evidence_policy_sha256: 'b'.repeat(64), source_recipe_catalog_sha256: 'c'.repeat(64) };
+  const expected = { management: { binding: structuredClone(f.context.binding), management_context_sha256: f.context.binding_sha256,
+    capture_artifact_sha256: f.value.capture_artifact_sha256, measurement_record_sha256: f.measurementValue.measurement_record_sha256,
+    parity_sha256: f.value.measurements.parity_sha256, evidence_policy_epoch: owner.evidence_policy_epoch,
+    evidence_policy_sha256: owner.evidence_policy_sha256 }, source_recipe_catalog_sha256: owner.source_recipe_catalog_sha256 };
+  const tools = [{ name: existingManagementSourceContextTool, annotations: { readOnlyHint: false, destructiveHint: false } }];
+  const client = { readResource: () => f.client.readResource(), listTools: async () => ({ tools }),
+    close: async () => { state.closes++; }, async callTool({ name, arguments: input }, _schema, options) {
+      assert.equal(name, existingManagementSourceContextTool); assert.equal(options.timeout, 20000);
+      const bytes = Buffer.from(input.signed_request.payload_base64, 'base64'), claims = JSON.parse(bytes);
+      assert.equal(claims.schema, 2); assert.equal(claims.action, 'read-management-source-context');
+      assert.equal(claims.qualification_job_id, f.job); assert.equal(claims.management_context_sha256, f.context.binding_sha256);
+      assert.ok(claims.expires_at <= claims.issued_at + 20 && claims.expires_at <= f.context.binding.expires_at
+        && claims.expires_at <= f.actor.expiresAt / 1000);
+      const publicKey = createPublicKey(f.registrar.privateKey);
+      assert.ok(verify(null, Buffer.concat([Buffer.from(existingManagementWires.source_context.purpose), bytes]),
+        publicKey, Buffer.from(input.signed_request.signature_base64, 'base64')));
+      assert.equal(verify(null, Buffer.concat([Buffer.from('mrn-content-management-source-context-lookup-v1:'), bytes]),
+        publicKey, Buffer.from(input.signed_request.signature_base64, 'base64')), false);
+      const requestHash = delegationDigest(input); state.calls++; state.claims.push(claims);
+      await state.duringRead?.(input);
+      const veto = decodeEnvelope((await f.call({ ...f.query(), phase: 'retain-report' })).signed_veto);
+      assert.equal(veto.state, 'clear'); await state.afterCallback?.();
+      if (state.failure) throw new Error('Lost source context response');
+      const output = { schema: 2, source_context: structuredClone(expected), source_context_sha256: delegationDigest(expected),
+        source_bytes_verified: false, slot_created: false, admitted: false, request_sha256: requestHash };
+      state.changeOutput?.(output);
+      return { content: [{ type: 'text', text: JSON.stringify(output) }] };
+    } };
+  const reader = new ExistingManagementSourceContextReader(client); await reader.initialize();
+  const make = ledger => new ExistingManagementSourceContext({ ledger, reader, registrar: f.registrar,
+    owner: () => owner, monotonic: () => state.mono });
+  const source = make(f.ledger);
+  return { ...f, sourceOwner: owner, sourceState: state, sourceTools: tools, sourceClient: client, sourceReader: reader,
+    sourceExpected: expected, source, makeSource: make, readSource: () => source.read(f.job, f.measurementValue) };
+}
+
+test('existing source context binds retained capture, service owner pins and original identity across restart', async t => {
+  const f = await existingSourceContextFixture(t), before = await f.ledger.readCapture(f.job);
+  const first = await f.readSource(), second = await f.makeSource(f.open().ledger).read(f.job, f.measurementValue);
+  assert.deepEqual(first.source_context, f.sourceExpected); assert.deepEqual(second.source_context, f.sourceExpected);
+  assert.equal(first.source_bytes_verified, false); assert.equal(first.slot_created, false); assert.equal(first.admitted, false);
+  assert.notEqual(f.sourceState.claims[0].request_id, f.sourceState.claims[1].request_id);
+  assert.notEqual(f.sourceState.claims[0].nonce, f.sourceState.claims[1].nonce);
+  assert.equal(f.captureState.calls.length, 1); assert.deepEqual(await f.ledger.readCapture(f.job), before);
+  assert.equal((await f.ledger.currentQueuedJob(f.job)).original.mapping.authorization.expiresAt, f.actor.expiresAt);
+});
+
+test('source context refuses absent capture, rehashed measurements and unconfigured owner pins before dispatch', async t => {
+  for (const kind of ['missing', 'uncertain', 'corrupt', 'measurement', 'job', 'owner']) {
+    const f = await existingSourceContextFixture(t, !['missing', 'uncertain'].includes(kind));
+    if (kind === 'uncertain') { f.captureState.failure = true; await assert.rejects(f.runCapture); }
+    if (kind === 'corrupt') f.store.db.exec("UPDATE original_management_capture_history SET digest='bad'");
+    if (kind === 'measurement') { f.measurementValue.measurements.parity_sha256 = 'f'.repeat(64);
+      f.measurementValue.measurement_record_sha256 = delegationDigest(f.measurementValue.measurements); }
+    if (kind === 'job') f.measurementValue.qualification_job_id = randomUUID();
+    if (kind === 'owner') delete f.sourceOwner.evidence_policy_sha256;
+    await assert.rejects(f.readSource, kind); assert.equal(f.sourceState.calls, 0);
+  }
+});
+
+test('source context rejects rehashed substitutions, authority flags and signed input changes', async t => {
+  for (const kind of ['binding', 'artifact', 'measurement', 'parity', 'epoch', 'policy', 'catalog', 'request', 'flags', 'extra', 'input']) {
+    const f = await existingSourceContextFixture(t);
+    if (kind === 'input') f.sourceState.duringRead = input => { input.signed_request.key_id = 'changed'; };
+    f.sourceState.changeOutput = value => {
+      const context = value.source_context, management = context.management;
+      if (kind === 'binding') management.binding.site_url = 'https://other.example.test';
+      if (kind === 'artifact') management.capture_artifact_sha256 = 'f'.repeat(64);
+      if (kind === 'measurement') management.measurement_record_sha256 = 'f'.repeat(64);
+      if (kind === 'parity') management.parity_sha256 = 'f'.repeat(64);
+      if (kind === 'epoch') management.evidence_policy_epoch++;
+      if (kind === 'policy') management.evidence_policy_sha256 = 'f'.repeat(64);
+      if (kind === 'catalog') context.source_recipe_catalog_sha256 = 'f'.repeat(64);
+      if (kind === 'request') value.request_sha256 = 'f'.repeat(64);
+      if (kind === 'flags') value.admitted = true;
+      if (kind === 'extra') value.verifiedEmail = 'other@mrnwebdesigns.com';
+      value.source_context_sha256 = delegationDigest(context);
+    };
+    await assert.rejects(f.readSource, kind); assert.equal(f.sourceState.calls, 1);
+  }
+});
+
+test('source context rechecks staff, revocation and immutable owner/source state after callback', async t => {
+  for (const kind of ['staff', 'revoked', 'source', 'policy', 'epoch', 'owner', 'capture']) {
+    const f = await existingSourceContextFixture(t);
+    f.sourceState.afterCallback = () => {
+      if (kind === 'staff') f.state.duringCheck = () => { throw new Error('Directory denied'); };
+      if (kind === 'revoked') f.accessLedger.recordPendingRevocation(f.job);
+      if (kind === 'source') f.queueState.pins.installed_manifest_sha256 = 'f'.repeat(64);
+      if (kind === 'policy') f.policy.emailDomains[0].portfolio.actions = ['read'];
+      if (kind === 'epoch') f.queueState.epoch = 'f'.repeat(64);
+      if (kind === 'owner') f.sourceOwner.evidence_policy_epoch++;
+      if (kind === 'capture') f.store.db.exec("UPDATE original_management_capture_history SET digest='bad'");
+    };
+    await assert.rejects(f.readSource, kind); assert.equal(f.sourceState.calls, 1);
+  }
+});
+
+test('source context refuses lost and late responses without retry or original renewal', async t => {
+  for (const kind of ['monotonic', 'wall', 'reverse', 'expiry', 'lost']) {
+    const f = await existingSourceContextFixture(t);
+    if (kind === 'lost') f.sourceState.failure = true;
+    else f.sourceState.afterCallback = () => {
+      if (kind === 'monotonic') f.sourceState.mono = 20000;
+      if (kind === 'reverse') f.sourceState.mono = -1;
+      if (kind === 'wall') { const at = Date.now() + 20000; t.mock.method(Date, 'now', () => at); }
+      if (kind === 'expiry') t.mock.method(Date, 'now', () => f.context.binding.expires_at * 1000);
+    };
+    await assert.rejects(f.readSource, kind); t.mock.restoreAll();
+    assert.equal(f.sourceState.calls, 1); assert.equal(f.captureState.calls.length, 1);
+  }
+});
+
+test('source context bounded timer rejects a stalled transport without a second dispatch', async t => {
+  const f = await existingSourceContextFixture(t), schedule = globalThis.setTimeout;
+  let release;
+  f.sourceState.duringRead = () => new Promise(resolve => { release = resolve; });
+  t.mock.method(globalThis, 'setTimeout', (callback, milliseconds, ...args) => {
+    assert.ok(milliseconds > 0 && milliseconds <= 20000);
+    return schedule(callback, 0, ...args);
+  });
+  await assert.rejects(f.readSource, { message: 'MANAGEMENT_EXISTING_SOURCE_CONTEXT_TIMEOUT' });
+  assert.equal(f.sourceState.calls, 1); assert.equal(typeof release, 'function');
+  t.mock.restoreAll(); release();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(f.sourceState.calls, 1); assert.equal(f.captureState.calls.length, 1);
+});
+
+test('source context remains private and requires the exact v2 route with shutdown refusal', async t => {
+  assert.equal(await createExistingManagementSourceContextRuntime(), null);
+  for (const kind of ['missing', 'legacy', 'unsafe', 'host']) {
+    const f = await existingSourceContextFixture(t);
+    if (kind === 'missing') f.sourceTools.pop();
+    if (kind === 'legacy') f.sourceTools[0].name = 'mrn_mainwp__read_content_edit_qualification_source_context_v1';
+    if (kind === 'unsafe') f.sourceTools[0].annotations.destructiveHint = true;
+    if (kind === 'host') f.status.dashboardHost = 'other.invalid';
+    await assert.rejects(() => f.sourceReader.initialize()); await assert.rejects(f.readSource);
+    assert.equal(f.sourceState.calls, 0);
+  }
+  const f = await existingSourceContextFixture(t), runtime = await createExistingManagementSourceContextRuntime({ enabled: true,
+    ledger: f.ledger, registrar: f.registrar, owner: () => f.sourceOwner, connect: async () => f.sourceClient });
+  await runtime.close(); await runtime.close(); assert.equal(f.sourceState.closes, 1);
+  await assert.rejects(() => runtime.sourceContext.read(f.job, f.measurementValue)); assert.equal(f.sourceState.calls, 0);
 });
