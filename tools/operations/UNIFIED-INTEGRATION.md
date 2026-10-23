@@ -4,6 +4,31 @@
 
 One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebdesigns.com/mcp. Active MRN Google Workspace members get automatic portfolio access; there is no individual approval or enrollment step. Necessary approvals apply to concrete site changes. No teammate WordPress account, Application Password, API key, terminal, Codex, SSH or site token.
 
+## Company-only test target, 2026-10-23
+
+Kyle's instruction, "Use mrnwebdesigns.com for testing", selects
+`https://mrnwebdesigns.com/` as the sole live pilot for this integration's
+maintenance, content and guarded code acceptance. Resolve its exact identity
+and refresh scoped state before each operation; do not expand to another site
+when a gate fails. Concrete change previews, approvals, applicable QA, verified
+backups, post-change checks and rollback remain required.
+
+The MainWP MCP Major Upgrade chat owns the current company-site maintenance
+diagnosis and runtime execution. This integration chat owns final composition,
+workspace availability and ChatGPT acceptance. Coordinate writes between them.
+The latest reported maintenance preview reached Cloudflare HTTP 524 after about
+125 seconds; the maintenance gate remains closed and vendor updates have not
+been performed. Installed guard evidence alone is not acceptance.
+
+Doster Dev and Live are removed from this test plan. Cancel the pending Doster
+Updraft/S3 restoration and guard rollout. The earlier approved Dashboard-only
+Platform & Plugins correction for `https://dosterandbrown.mrndev.io/` remains Yes;
+that correction did not restore remote backups or install the new guard.
+Kyle identifies current Doster hosting as Kinsta. Any future Doster operation
+must independently resolve its current environment and qualify the applicable
+Kinsta recovery workflow. Platform & Plugins eligibility does not select a
+backup provider, and this target correction does not change shared backup policy.
+
 ## Current content integration, 2026-10-23
 
 The unified release remains unaccepted. Routine maintenance belongs to its
