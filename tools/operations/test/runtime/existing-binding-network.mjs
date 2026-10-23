@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 const restrictedFetch = globalThis.fetch;
 globalThis.fetch = async (input, options = {}) => {
   const url = new URL(typeof input === 'string' || input instanceof URL ? input : input.url);
-  if (/\/mrn-mainwp\/(?:(?:bind|read)-content-edit-authorization-v2|get-content-edit-qualification-context-existing-v2|(?:capture-content-edit-qualification|read-content-edit-qualification-capture)-existing-v2|read-management-access-veto-query-existing-v2)\/run$/.test(url.pathname)) {
+  if (/\/mrn-mainwp\/(?:(?:bind|read)-content-edit-authorization-v2|get-content-edit-qualification-context-existing-v2|(?:capture-content-edit-qualification|read-content-edit-qualification-(?:capture|measurements))-existing-v2|read-management-access-veto-query-existing-v2)\/run$/.test(url.pathname)) {
     assert.equal(options.method, 'POST'); assert.equal(url.search, '');
   }
   return restrictedFetch(input, options);

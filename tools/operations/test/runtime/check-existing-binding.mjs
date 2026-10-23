@@ -24,6 +24,8 @@ import { createExistingManagementAccessRuntime } from '../../src/content-access-
 import { createExistingManagementContextRuntime, existingManagementContextTool } from '../../src/existing-management-context.mjs';
 import { createExistingManagementCaptureRuntime, existingManagementCaptureTools,
   validateExistingManagementCapture } from '../../src/existing-management-capture.mjs';
+import { ExistingManagementMeasurements, ExistingManagementMeasurementsReader,
+  existingManagementMeasurementsTool } from '../../src/existing-management-measurements.mjs';
 import { createHttpServer } from '../../src/http.mjs';
 
 process.umask(0o077);
@@ -450,6 +452,28 @@ try {
     original_expires_at: originalAnchor.expiresAt / 1000, job_expires_at: queued.binding.expires_at };
   pass('One native capture survives a lost response and SQLite reopen with identical bounded read recovery and no recapture');
 
+  phase = 'private-measurement-read';
+  let measurementReads = 0;
+  // Reuse only the registrar transport; each read signs fresh claims and the
+  // provider repeats its original-requester callback and shared recovery budget.
+  const measurementReader = new ExistingManagementMeasurementsReader({
+    readResource: (...args) => contextClient.readResource(...args), listTools: (...args) => contextClient.listTools(...args),
+    callTool: (...args) => {
+      assert.equal(args[0].name, existingManagementMeasurementsTool); measurementReads++;
+      return contextClient.callTool(...args);
+    },
+  });
+  await measurementReader.initialize();
+  const measurementRuntime = new ExistingManagementMeasurements({ ledger: resumed.captureLedger, reader: measurementReader, registrar });
+  const measured = await measurementRuntime.read(jobId);
+  assert.deepEqual(measured.measurements, recoveredCapture.measurements);
+  assert.equal(measured.measurement_record_sha256, interceptedCapture.measurements);
+  assert.equal(measured.binding_sha256, queued.binding_sha256);
+  assert.equal(measurementReads, 1); assert.equal(captureDispatches, 1); assert.equal(recoveryReads, 1);
+  report.measurements = { reads: measurementReads, measurement_record_sha256: measured.measurement_record_sha256,
+    matches_retained_capture: true, original_authorization_unchanged: true, admitted: false };
+  pass('Native measurement read matches the independently retained capture receipt under the original authority');
+
   phase = 'unchanged-child';
   const freshClient = new DelegatedMainwpClient(await rawClient(), nextActor, signer);
   const freshSession = new MainwpSession(freshClient, registry, store, nextActor,
@@ -488,6 +512,7 @@ try {
   assert.equal(store.db.prepare('SELECT access_count FROM original_management_attempts WHERE request=?').get(originalRequestId).access_count, accessRows.length);
   await assert.rejects(() => contextRuntime.context.read(jobId)); assert.equal(contextCalls, 2);
   await assert.rejects(() => resumed.runtime.capture.recover(jobId, captureExpected)); assert.equal(recoveryReads, 1);
+  await assert.rejects(() => measurementRuntime.read(jobId)); assert.equal(measurementReads, 1);
   report.currentAccess = { context_requests: contextCalls, signed_callbacks: accessRows.length, clear: accessRows.length - 1, pending_revocation: 1,
     repeated_revoked_read_dispatched: false };
   pass('Revocation during actual provider context lookup returns a signed denial and blocks later local dispatch');
@@ -499,19 +524,20 @@ try {
   const queuePosts = network.filter(row => row.ability === originalQualificationAbility);
   const capturePosts = network.filter(row => /\/capture-content-edit-qualification-existing-v2\/run$/.test(row.path));
   const recoveryPosts = network.filter(row => /\/read-content-edit-qualification-capture-existing-v2\/run$/.test(row.path));
+  const measurementPosts = network.filter(row => /\/read-content-edit-qualification-measurements-existing-v2\/run$/.test(row.path));
   const staffPosts = network.filter(row => /\/get-team-access-v1\/run$/.test(row.path));
   assert.equal(report.staffChecks.dispatched, report.staffChecks.completed);
   assert.equal(staffPosts.length, report.staffChecks.dispatched);
   assert.ok(staffPosts.length > 0 && staffPosts.every(row => row.method === 'POST' && row.status === 200));
   report.staffChecks.verified_posts = staffPosts.length;
   report.network = { signed_control_posts: controls.length, context_posts: contextPosts.length, access_readback_posts: accessPosts.length,
-    queue_posts: queuePosts.length, capture_posts: capturePosts.length, recovery_posts: recoveryPosts.length,
+    queue_posts: queuePosts.length, capture_posts: capturePosts.length, recovery_posts: recoveryPosts.length, measurement_posts: measurementPosts.length,
     network_log_sha256: digest(readFileSync(join(work, 'gateway-network.jsonl'))) }; save();
   assert.equal(controls.length, 2); assert.ok(controls.every(row => row.method === 'POST' && row.status === 200));
   assert.equal(accessPosts.length, accessRows.length); assert.ok(accessPosts.every(row => row.method === 'POST' && row.status === 200));
   assert.equal(contextPosts.length, 2); assert.ok(contextPosts.every(row => row.method === 'POST'));
   assert.equal(queuePosts.length, 1); assert.ok(queuePosts.every(row => row.method === 'POST' && row.status === 200));
-  for (const posts of [capturePosts, recoveryPosts]) {
+  for (const posts of [capturePosts, recoveryPosts, measurementPosts]) {
     assert.equal(posts.length, 1); assert.ok(posts.every(row => row.method === 'POST' && row.status === 200));
   }
   checksComplete = true;

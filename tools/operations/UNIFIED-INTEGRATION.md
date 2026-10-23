@@ -238,6 +238,26 @@ forward time and requires both actual capture/recovery dispatches and the exact
 changed-receipt rejection. No runtime guard, authority ceiling or timeout is
 relaxed. The corrected candidate still requires hosted qualification.
 
+### Existing-record measurement read
+
+The private gateway now has a fixed
+`read-content-edit-qualification-measurements-existing-v2` reader. It requires
+an already accepted capture receipt from the original authorization ledger,
+signs the distinct v2 measurement purpose, and compares the returned complete
+measurement digest, artifact, dataset and binding against that receipt. It
+rechecks original staff, policy, source, revocation and expiry on both sides of
+I/O. The 20-second deadline, provider's shared eight-read recovery allowance
+and original intent ceiling are unchanged; no automatic retry is introduced.
+
+Six local groups cover SQLite reopen, missing/uncertain/corrupt capture,
+rehashed substitutions and mutated inputs, current access changes, late/lost
+responses and lifecycle/legacy-route refusal. The combined native fixture now
+requires a real measurement POST after lost-response capture recovery, identical
+retained measurement bytes, and no further measurement dispatch after revocation.
+That new native check requires its own passing hosted result. The reader remains
+unregistered in production and grants no evidence admission, source transfer,
+content write or ordinary-member acceptance.
+
 ## Earlier candidate evidence, 2026-10-22
 
 The earlier disposable integration candidate selected provider

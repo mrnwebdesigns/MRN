@@ -6,6 +6,7 @@ const toolLabels = new Map([
   ['mrn_mainwp__get_content_edit_qualification_context_existing_v2', 'existing-context'],
   ['mrn_mainwp__capture_content_edit_qualification_existing_v2', 'existing-capture'],
   ['mrn_mainwp__read_content_edit_qualification_capture_existing_v2', 'existing-capture-read'],
+  ['mrn_mainwp__read_content_edit_qualification_measurements_existing_v2', 'existing-measurements-read'],
   ['mrn_mainwp__read_management_access_veto_query_existing_v2', 'existing-access-read'],
   ['mrn_mainwp__get_delegation_challenge_v1', 'challenge'],
   ['mrn_mainwp__get_team_access_v1', 'staff-access'],

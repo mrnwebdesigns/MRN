@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { generateKeyPairSync, randomUUID, verify } from 'node:crypto';
+import { createPublicKey, generateKeyPairSync, randomUUID, verify } from 'node:crypto';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -29,6 +29,8 @@ import { ExistingManagementContext, ExistingManagementContextReader, existingMan
   createExistingManagementContextRuntime } from '../src/existing-management-context.mjs';
 import { ExistingManagementCapture, ExistingManagementCaptureReader, existingManagementCaptureTools,
   createExistingManagementCaptureRuntime, validateExistingManagementCapture } from '../src/existing-management-capture.mjs';
+import { ExistingManagementMeasurements, ExistingManagementMeasurementsReader, existingManagementMeasurementsTool,
+  createExistingManagementMeasurementsRuntime } from '../src/existing-management-measurements.mjs';
 
 const audience = 'https://operations.mrnwebdesigns.com/mcp', issuer = 'https://identity.example.test/';
 async function fixture(t, durable = false) {
@@ -1754,4 +1756,122 @@ test('private capture lifecycle requires both exact v2 tools and closes without 
     ledger: f.ledger, registrar: f.registrar, connect: async () => f.captureClient });
   await runtime.close(); await runtime.close(); assert.equal(f.captureState.closes, 1);
   await assert.rejects(() => runtime.capture.capture(f.job, f.values.expected)); assert.equal(f.captureState.calls.length, 0);
+});
+
+async function existingMeasurementsFixture(t, capture = true) {
+  const f = await existingCaptureFixture(t);
+  const publicKey = createPublicKey(f.registrar.privateKey);
+  if (capture) await f.runCapture();
+  const state = { calls: 0, closes: 0, mono: 0 }, value = {
+    qualification_job_id: f.job, binding_sha256: f.context.binding_sha256,
+    measurement_record_sha256: delegationDigest(f.value.measurements), measurements: structuredClone(f.value.measurements),
+  };
+  const tools = [{ name: existingManagementMeasurementsTool, annotations: { readOnlyHint: false, destructiveHint: false } }];
+  const client = {
+    readResource: () => f.client.readResource(), listTools: async () => ({ tools }), close: async () => { state.closes++; },
+    async callTool({ name, arguments: input }, _schema, options) {
+      assert.equal(name, existingManagementMeasurementsTool); assert.equal(options.timeout, 20000);
+      const raw = Buffer.from(input.signed_request.payload_base64, 'base64'), claims = JSON.parse(raw);
+      assert.equal(claims.schema, 2); assert.equal(claims.action, 'read-measurements');
+      assert.deepEqual(claims.binding, f.context.binding); assert.equal(claims.binding_sha256, f.context.binding_sha256);
+      assert.ok(claims.expires_at <= claims.issued_at + 20 && claims.expires_at <= f.context.binding.expires_at
+        && claims.expires_at <= f.actor.expiresAt / 1000);
+      assert.ok(verify(null, Buffer.concat([Buffer.from(existingManagementWires.qualification.purposes['read-measurements']), raw]),
+        publicKey, Buffer.from(input.signed_request.signature_base64, 'base64')));
+      assert.equal(verify(null, Buffer.concat([Buffer.from(managementCaptureContract.purposes['read-measurements']), raw]),
+        publicKey, Buffer.from(input.signed_request.signature_base64, 'base64')), false);
+      state.calls++; state.claims = claims; await state.duringRead?.(input);
+      // The provider's measurement route uses its shared recovery access phase.
+      const veto = decodeEnvelope((await f.call({ ...f.query(), phase: 'read-capture' })).signed_veto);
+      assert.equal(veto.state, 'clear'); await state.afterCallback?.();
+      if (state.failure) throw new Error('Lost measurement response');
+      return { content: [{ type: 'text', text: JSON.stringify(state.output ?? value) }] };
+    },
+  };
+  const reader = new ExistingManagementMeasurementsReader(client); await reader.initialize();
+  const make = ledger => new ExistingManagementMeasurements({ ledger, reader, registrar: f.registrar, monotonic: () => state.mono });
+  const measurements = make(f.ledger);
+  return { ...f, measurementState: state, measurementClient: client, measurementTools: tools, measurementReader: reader,
+    measurementValue: value, measurements, makeMeasurements: make, readMeasurements: () => measurements.read(f.job) };
+}
+
+test('existing measurements bind the original capture receipt and current callback across SQLite reopen', async t => {
+  const f = await existingMeasurementsFixture(t), before = await f.ledger.readCapture(f.job);
+  assert.deepEqual(await f.readMeasurements(), f.measurementValue);
+  assert.deepEqual(await f.makeMeasurements(f.open().ledger).read(f.job), f.measurementValue);
+  assert.equal(f.measurementState.calls, 2); assert.equal(f.captureState.calls.length, 1);
+  assert.deepEqual(await f.ledger.readCapture(f.job), before);
+  assert.equal((await f.ledger.currentQueuedJob(f.job)).original.mapping.authorization.expiresAt, f.actor.expiresAt);
+});
+
+test('missing, uncertain or corrupt retained capture cannot authorize a measurement read', async t => {
+  for (const kind of ['missing', 'uncertain', 'corrupt']) {
+    const f = await existingMeasurementsFixture(t, kind === 'corrupt');
+    if (kind === 'uncertain') { f.captureState.failure = true; await assert.rejects(f.runCapture); }
+    if (kind === 'corrupt') f.store.db.exec("UPDATE original_management_capture_history SET digest='bad'");
+    await assert.rejects(f.readMeasurements); assert.equal(f.measurementState.calls, 0);
+  }
+});
+
+test('rehashed measurement substitution and modified signed inputs are rejected against retained capture', async t => {
+  for (const kind of ['job', 'binding', 'hash', 'measurement', 'extra', 'input']) {
+    const f = await existingMeasurementsFixture(t), value = structuredClone(f.measurementValue);
+    if (kind === 'job') value.qualification_job_id = randomUUID();
+    if (kind === 'binding') value.binding_sha256 = 'f'.repeat(64);
+    if (kind === 'hash') value.measurement_record_sha256 = 'f'.repeat(64);
+    if (kind === 'measurement') { value.measurements.native_calls++; value.measurement_record_sha256 = delegationDigest(value.measurements); }
+    if (kind === 'extra') value.admitted = true;
+    if (kind === 'input') f.measurementState.duringRead = input => { input.signed_request.key_id = 'changed'; };
+    f.measurementState.output = value; await assert.rejects(f.readMeasurements, kind);
+    assert.equal(f.measurementState.calls, 1);
+    assert.equal((await f.ledger.readCapture(f.job)).receipt.measurementSha256, f.measurementValue.measurement_record_sha256);
+  }
+});
+
+test('measurement reads recheck original staff, policy, source and revocation before and after I/O', async t => {
+  for (const stage of ['before', 'after']) for (const kind of ['staff', 'revoked', 'source', 'policy', 'epoch']) {
+    const f = await existingMeasurementsFixture(t), mutate = () => {
+      if (kind === 'staff') f.state.duringCheck = () => { throw new Error('Directory denied'); };
+      if (kind === 'revoked') f.accessLedger.recordPendingRevocation(f.job);
+      if (kind === 'source') f.queueState.pins.installed_manifest_sha256 = 'f'.repeat(64);
+      if (kind === 'policy') f.policy.emailDomains[0].portfolio.actions = ['read'];
+      if (kind === 'epoch') f.queueState.epoch = 'f'.repeat(64);
+    };
+    if (stage === 'before') mutate(); else f.measurementState.afterCallback = mutate;
+    await assert.rejects(f.readMeasurements, `${stage}/${kind}`);
+    assert.equal(f.measurementState.calls, stage === 'before' ? 0 : 1);
+  }
+});
+
+test('measurement deadlines, original expiry and clock reversal reject late responses without automatic retry', async t => {
+  for (const kind of ['monotonic', 'wall', 'reverse', 'expiry', 'lost']) {
+    const f = await existingMeasurementsFixture(t);
+    if (kind === 'lost') f.measurementState.failure = true;
+    else f.measurementState.afterCallback = () => {
+      if (kind === 'monotonic') f.measurementState.mono = 20000;
+      if (kind === 'reverse') f.measurementState.mono = -1;
+      if (kind === 'wall') { const at = Date.now() + 20000; t.mock.method(Date, 'now', () => at); }
+      if (kind === 'expiry') t.mock.method(Date, 'now', () => f.context.binding.expires_at * 1000);
+    };
+    await assert.rejects(f.readMeasurements, kind); t.mock.restoreAll();
+    assert.equal(f.measurementState.calls, 1); assert.equal(f.captureState.calls.length, 1);
+    assert.equal((await f.ledger.readCapture(f.job)).receipt.measurementSha256, f.measurementValue.measurement_record_sha256);
+  }
+});
+
+test('private measurement lifecycle requires the exact v2 route and closes without a legacy fallback', async t => {
+  assert.equal(await createExistingManagementMeasurementsRuntime(), null);
+  for (const change of ['missing', 'legacy', 'unsafe', 'host']) {
+    const f = await existingMeasurementsFixture(t);
+    if (change === 'missing') f.measurementTools.pop();
+    if (change === 'legacy') f.measurementTools[0].name = existingManagementMeasurementsTool.replace('_existing_v2', '_v1');
+    if (change === 'unsafe') f.measurementTools[0].annotations.destructiveHint = true;
+    if (change === 'host') f.status.dashboardHost = 'other.invalid';
+    await assert.rejects(() => f.measurementReader.initialize()); await assert.rejects(f.readMeasurements);
+    assert.equal(f.measurementState.calls, 0);
+  }
+  const f = await existingMeasurementsFixture(t), runtime = await createExistingManagementMeasurementsRuntime({ enabled: true,
+    ledger: f.ledger, registrar: f.registrar, connect: async () => f.measurementClient });
+  await runtime.close(); await runtime.close(); assert.equal(f.measurementState.closes, 1);
+  await assert.rejects(() => runtime.measurements.read(f.job)); assert.equal(f.measurementState.calls, 0);
 });
