@@ -6,7 +6,7 @@
 - Slug: `mrn-config-helper`
 - Type:
   - standard plugin
-- Current version: `0.1.73`
+- Current version: `0.1.75`
 - Source path:
   - `/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper`
 
@@ -21,6 +21,28 @@ Version 0.1.72 removes the Google Tag Manager card and automatic GTM Injector se
 ## Breadcrumb editor retirement
 
 Version 0.1.73 removes the custom Breadcrumb Trail meta box and save handler from every content editor, including sites retaining the legacy breadcrumb provider. Historical overrides remain stored and readable by legacy rendering. Native SEOPress editing and frontend breadcrumb/schema output remain unchanged. The former public editor methods remain inert for compatibility. The selective Fleet update is upgrade-only and retains 0.1.72 for rollback.
+
+## WPForms notification recipients
+
+Version 0.1.75 makes each WPForms notification the recipient source of truth.
+The Integrations card groups notifications by form and shows each notification's
+name, enabled status, conditional-rule summary and saved Send To field. Native
+WPForms links own rule editing. Dropdown choice IDs are translated to labels in
+the read-only summary; routing remains the native WPForms responsibility.
+
+Primary Notification Email is a reusable shortcut. Primary/custom add and remove
+buttons patch only explicitly selected notifications once. No recipient is
+injected into the builder, frontend, processing or notification data, and new
+forms inherit no recipients. Upgrading preserves existing recipients, all
+conditional rules and historical exclusion settings. Previously inserted
+addresses require a separately reviewed, explicit removal.
+
+Generic configuration saves ignore unchanged recipient fields. Changed fields
+require a matching recipient snapshot and WPForms edit capability, so stale
+screens cannot overwrite later native edits. Only email fields are patched;
+notification names, enabled state, subjects, messages, rules, sender settings and
+other forms remain intact. Native WPForms revisions are retained. Email addresses
+are deduplicated case-insensitively, while smart-tag attributes retain their case.
 
 ## Purpose
 
