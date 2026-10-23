@@ -63,7 +63,7 @@ MRN_QA_CODE_ANALYSIS_SCOPE=all mrn-qa run --project-root /Users/khofmeyer/Develo
 
 Runtime browser, accessibility, API, and performance checks should be run separately against an explicit target site when this plugin change affects rendered output or live WordPress behavior.
 
-## Guarded MainWP maintenance (0.8.5 candidate)
+## Guarded MainWP maintenance (0.8.6 candidate)
 
 After each successful native update, the batch admits only the selected item's
 approved version and new code tree into its next expected state. Activation,
@@ -118,3 +118,15 @@ MainWP Child 6.2.1 omits the native Updraft request argument. The backup-options
 bridge preserves only the fixed MRN label for a new, remote, full-database
 backup requested through that signed flow. It never changes existing history,
 starts a backup, changes credentials, or relaxes receipt verification.
+
+The October 23 maintenance repair returns closed per-item preflight and update
+stages/codes through the signed transport. Native exception text, URLs and logs
+remain withheld. A failed batch explicitly marks remaining items not attempted.
+Independent readback distinguishes changed installed state from unknown mutation
+history after an attempted replacement. No-change evidence requires unchanged
+versions, trees, activation and core, plus proof that destination processing never
+started. Temporary protection of `active_plugins` prevents updater hooks from
+leaving an initially active plugin deactivated on failure; an attempted activation
+change fails the batch. No activation/deactivation tool or raw execution path is
+added. The Dashboard and connector repairs must be released together before
+claiming the new diagnostics are available to chats.

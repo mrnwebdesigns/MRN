@@ -38,7 +38,27 @@ final class MRN_Updraft_MainWP_Maintenance {
 		'download_certificate_failed', 'download_http_denied', 'download_http_unavailable',
 		'download_http_limited', 'download_http_server_error', 'download_http_status',
 		'download_empty', 'download_size_limit',
+		'package_changed', 'mainwp_rollback_contract_unavailable', 'installed_version_changed',
+		'backup_expired_before_write', 'postinstall_state_changed', 'native_update_failed',
+		'stale_plan', 'operation_identity', 'operation_locked', 'request_conflict',
+		'request_already_reserved', 'audit_capacity', 'ledger_unavailable',
+		'backup_nonce_consumed', 'ledger_readback_failed', 'operation_unavailable',
+		'read_identity', 'read_selection', 'stale_preinstall', 'activation_change_blocked',
+		'not_attempted',
 	);
+	/** Closed diagnostic context, reset for every authenticated dispatch. */
+	private static $stage = 'child_validation';
+	private static $item_results = array();
+	private static $replacement_started = false;
+
+	/** Map native exceptions to closed codes; never retain their text.
+	 *
+	 * @param Throwable $error Native error.
+	 * @return string
+	 */
+	private static function code( $error ) {
+		return $error instanceof RuntimeException && in_array( $error->getMessage(), self::DIAGNOSTIC_CODES, true ) ? $error->getMessage() : 'internal_error';
+	}
 
 	/**
 	 * Register only MainWP Child's post-authentication hook.
@@ -66,6 +86,8 @@ final class MRN_Updraft_MainWP_Maintenance {
 			return $information;
 		}
 		$operation = '';
+		self::$stage = 'child_validation';
+		self::$item_results = array();
 		try {
 			if ( 'extra_execution' !== ( $post['function'] ?? '' ) || ! is_string( $post[ self::REQUEST_KEY ] ) || strlen( $post[ self::REQUEST_KEY ] ) > 262144 ) {
 				throw new RuntimeException( 'invalid_transport' );
@@ -96,15 +118,16 @@ final class MRN_Updraft_MainWP_Maintenance {
 				'data'    => $data,
 			);
 		} catch ( Throwable $error ) {
+			$code = self::code( $error );
 			// Exception text may contain a download URL or a native provider secret.
 			if ( 'preflight' === $operation ) {
-				$code = $error instanceof RuntimeException && in_array( $error->getMessage(), self::DIAGNOSTIC_CODES, true ) ? $error->getMessage() : 'internal_error';
 				set_transient( self::DIAGNOSTIC_KEY, array( 'schema_version' => 1, 'code' => $code, 'recorded_at' => time() ), self::DIAGNOSTIC_TTL );
 			}
 			unset( $error );
 			return array(
 				'success'    => false,
 				'error_code' => 'mrn_maintenance_refused',
+				'failure' => array( 'stage' => self::$stage, 'code' => $code, 'items' => self::$item_results ),
 			);
 		}
 	}
@@ -498,6 +521,7 @@ final class MRN_Updraft_MainWP_Maintenance {
 	 */
 	private static function inspect( $input ) {
 		self::selection( $input );
+		self::$stage = 'child_backup';
 		$backup = MRN_Updraft_MainWP_Policy::maintenance_backup( $input['backup_nonce'] );
 		if ( is_wp_error( $backup ) ) {
 			$raw  = $backup->get_error_code();
@@ -505,17 +529,36 @@ final class MRN_Updraft_MainWP_Maintenance {
 			$code = in_array( $code, self::DIAGNOSTIC_CODES, true ) ? $code : 'backup_unverified';
 			throw new RuntimeException( esc_html( $code ) );
 		}
+		self::$stage = 'child_snapshot';
 		$before   = self::state();
-		$offers   = self::offers( $input, $before );
 		$packages = array();
+		self::$item_results = array();
+		$failed = false;
 		foreach ( $input['items'] as $item ) {
-			$file = self::download( $offers[ $item['slug'] ]['package'] );
+			$file = null;
 			try {
+				self::$stage = 'child_offer';
+				$single = $input;
+				$single['items'] = array( $item );
+				$offers = self::offers( $single, $before );
+				self::$stage = 'child_download';
+				$file = self::download( $offers[ $item['slug'] ]['package'] );
+				self::$stage = 'child_package';
 				$packages[] = self::package( $file, $item, $input['kind'], $before );
+				self::$item_results[] = array( 'slug' => $item['slug'], 'success' => true, 'stage' => 'child_package', 'code' => 'verified' );
+			} catch ( Throwable $error ) {
+				$failed = true;
+				self::$item_results[] = array( 'slug' => $item['slug'], 'success' => false, 'stage' => self::$stage, 'code' => self::code( $error ) );
 			} finally {
-				wp_delete_file( $file );
+				if ( is_string( $file ) ) {
+					wp_delete_file( $file );
+				}
 			}
 		}
+		if ( $failed ) {
+			throw new RuntimeException( 'package_invalid' );
+		}
+		self::$stage = 'child_snapshot';
 		if ( self::digest( self::state() ) !== self::digest( $before ) ) {
 			throw new RuntimeException( 'preflight_state_changed' );
 		}
@@ -576,8 +619,11 @@ final class MRN_Updraft_MainWP_Maintenance {
 	 * @throws RuntimeException When the closed contract cannot be proven.
 	 */
 	private static function upgrade( $input, $item, $package, $offer, $expected ) {
+		self::$replacement_started = false;
+		self::$stage = 'child_download';
 		$file = self::download( $offer['package'] );
 		try {
+			self::$stage = 'child_package';
 			if ( self::package( $file, $item, $input['kind'], $input['before'] ) !== $package ) {
 				throw new RuntimeException( 'package_changed' );
 			}
@@ -597,6 +643,7 @@ final class MRN_Updraft_MainWP_Maintenance {
 			}
 			\MainWP\Child\MainWP_Child_Updates::enable_pre_auto_rollback_hooking();
 			$preinstall = static function ( $reply ) use ( $input, $expected ) {
+				self::$stage = 'child_preinstall';
 				if ( is_wp_error( $reply ) || is_wp_error( MRN_Updraft_MainWP_Policy::maintenance_backup( $input['backup_nonce'] ) ) || self::digest( self::state() ) !== self::digest( $expected ) ) {
 					return new WP_Error( 'mrn_maintenance_stale_preinstall', 'The approved state or backup changed before replacement.' );
 				}
@@ -604,21 +651,57 @@ final class MRN_Updraft_MainWP_Maintenance {
 			};
 			add_filter( 'upgrader_pre_install', $preinstall, PHP_INT_MAX );
 			add_filter( 'upgrader_pre_download', $guard, PHP_INT_MAX, 4 );
+			// A guarded update never authorizes activation changes, including on failure.
+			$activation_blocked = false;
+			$activation = static function ( $value, $old ) use ( &$activation_blocked ) {
+				if ( $value !== $old ) {
+					$activation_blocked = true;
+				}
+				return $old;
+			};
+			add_filter( 'pre_update_option_active_plugins', $activation, PHP_INT_MAX, 2 );
+			$replacement = static function ( $reply ) {
+				// Destination processing can mutate bytes even when the updater later fails.
+				self::$replacement_started = true;
+				self::$stage = 'child_update';
+				return $reply;
+			};
+			add_filter( 'upgrader_clear_destination', $replacement, 0 );
 			try {
 				$skin     = new Automatic_Upgrader_Skin();
 				$upgrader = 'plugin' === $input['kind'] ? new Plugin_Upgrader( $skin ) : new Theme_Upgrader( $skin );
 				do_action( 'mainwp_child_before_update', $input['kind'], array( $item['slug'] ) );
+				if ( $activation_blocked ) {
+					throw new RuntimeException( 'activation_change_blocked' );
+				}
+				self::$stage = 'child_update';
 				if ( 'plugin' === $input['kind'] ) {
 					// The native one-item bulk path preserves activation, unlike upgrade().
 					$results = $upgrader->bulk_upgrade( array( $item['slug'] ), array( 'clear_update_cache' => false ) );
 					$result  = is_array( $results ) ? ( $results[ $item['slug'] ] ?? false ) : false;
 					do_action( 'mainwp_child_after_update', 'plugin', $results, array( $item['slug'] ) );
+					if ( $activation_blocked ) {
+						self::$stage = 'child_postinstall';
+						throw new RuntimeException( 'activation_change_blocked' );
+					}
+					if ( is_wp_error( $result ) || false === $result || null === $result ) {
+						throw new RuntimeException( 'mrn_maintenance_stale_preinstall' === ( is_wp_error( $result ) ? $result->get_error_code() : '' ) ? 'stale_preinstall' : 'native_update_failed' );
+					}
 					return true === $result || is_array( $result );
 				}
 				$result = $upgrader->upgrade( $item['slug'], array( 'clear_update_cache' => false ) );
 				do_action( 'mainwp_child_after_update', 'theme', array( $item['slug'] => $result ), array( $item['slug'] ) );
+				if ( $activation_blocked ) {
+					self::$stage = 'child_postinstall';
+					throw new RuntimeException( 'activation_change_blocked' );
+				}
+				if ( true !== $result ) {
+					throw new RuntimeException( 'mrn_maintenance_stale_preinstall' === ( is_wp_error( $result ) ? $result->get_error_code() : '' ) ? 'stale_preinstall' : 'native_update_failed' );
+				}
 				return true === $result;
 			} finally {
+				remove_filter( 'upgrader_clear_destination', $replacement, 0 );
+				remove_filter( 'pre_update_option_active_plugins', $activation, PHP_INT_MAX );
 				remove_filter( 'upgrader_pre_install', $preinstall, PHP_INT_MAX );
 				remove_filter( 'upgrader_pre_download', $guard, PHP_INT_MAX );
 			}
@@ -691,7 +774,9 @@ final class MRN_Updraft_MainWP_Maintenance {
 			$offers   = self::offers( $input, $inspection['before'] );
 			$expected = $inspection['before'];
 			foreach ( $input['items'] as $index => $item ) {
+				self::$replacement_started = false;
 				try {
+					self::$stage = 'child_snapshot';
 					// Recheck current installed version immediately before each native updater.
 					$current = self::state();
 					if ( self::digest( $current ) !== self::digest( $expected ) || ( $current[ $input['kind'] . 's' ][ $item['slug'] ]['version'] ?? null ) !== $item['from'] ) {
@@ -702,6 +787,7 @@ final class MRN_Updraft_MainWP_Maintenance {
 					}
 					$ok                  = self::upgrade( $input, $item, $input['packages'][ $index ], $offers[ $item['slug'] ], $expected );
 					if ( $ok ) {
+						self::$stage = 'child_postinstall';
 						$after = self::state();
 						$next  = $expected;
 						$kind  = $input['kind'] . 's';
@@ -716,18 +802,26 @@ final class MRN_Updraft_MainWP_Maintenance {
 					$result['results'][] = array(
 						'slug'    => $item['slug'],
 						'success' => $ok,
+						'stage' => 'child_postinstall',
+						'code' => $ok ? 'verified' : 'native_update_failed',
+						'replacement_started' => self::$replacement_started,
 					);
 					if ( ! $ok ) {
 						break;
 					}
 				} catch ( Throwable $error ) {
-					unset( $error );
 					$result['results'][] = array(
 						'slug'    => $item['slug'],
 						'success' => false,
+						'stage' => self::$stage,
+						'code' => self::code( $error ),
+						'replacement_started' => self::$replacement_started,
 					);
 					break;
 				}
+			}
+			foreach ( array_slice( $input['items'], count( $result['results'] ) ) as $item ) {
+				$result['results'][] = array( 'slug' => $item['slug'], 'success' => false, 'stage' => 'child_update', 'code' => 'not_attempted', 'replacement_started' => false );
 			}
 			$result['status'] = count( $result['results'] ) === count( $input['items'] ) && ! in_array( false, array_column( $result['results'], 'success' ), true ) ? 'complete' : 'partial';
 			$record['result'] = $result;
@@ -761,6 +855,19 @@ final class MRN_Updraft_MainWP_Maintenance {
 		}
 		$after  = self::state();
 		$before = $record['before'];
+		$changed = self::digest( $after ) !== self::digest( $before );
+		// Retained pre-repair ledgers omit replacement evidence. Never turn those
+		// omissions (or partial/duplicate rows) into a claim that no write occurred.
+		$no_replacement = in_array( $result['status'], array( 'complete', 'partial' ), true ) && is_array( $result['results'] ?? null ) && count( $result['results'] ) === count( $input['slugs'] );
+		if ( $no_replacement ) {
+			foreach ( $input['slugs'] as $index => $slug ) {
+				$row = $result['results'][ $index ] ?? null;
+				if ( ! is_array( $row ) || ( $row['slug'] ?? null ) !== $slug || ! is_bool( $row['success'] ?? null ) || false !== ( $row['replacement_started'] ?? null ) ) {
+					$no_replacement = false;
+					break;
+				}
+			}
+		}
 		$items  = array();
 		foreach ( $input['slugs'] as $slug ) {
 			if ( ! is_string( $slug ) || ! isset( $after[ $input['kind'] . 's' ][ $slug ], $before[ $input['kind'] . 's' ][ $slug ] ) ) {
@@ -786,6 +893,9 @@ final class MRN_Updraft_MainWP_Maintenance {
 			'provider_status'     => $result['status'],
 			'unrelated_unchanged' => self::digest( $before ) === self::digest( $after ),
 			'core_unchanged'      => $before['core'] === $after['core'],
+			'change_reached_site' => $changed ? true : ( $no_replacement ? false : 'unknown' ),
+			'installed_state_changed' => $changed,
+			'results' => $result['results'],
 		);
 	}
 }
