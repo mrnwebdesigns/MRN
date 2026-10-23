@@ -133,6 +133,17 @@ tokens and signatures are excluded. Six diagnostic tests, lint and the staged
 MRN QA gate pass. A new native run must qualify the complete capture/recovery
 path before production composition can proceed.
 
+The next disposable candidate selects provider fixture source
+`f7ca46f54ca383d5708548652f0d6a5b3d334bf7`, whose exact parent is a199 above.
+Independent full-range review confirms only two Python test files changed:
+one Dashboard-clone `proxy_read_timeout 120s` directive and a regression
+preserving the callback route and its closed fallback. The provider owner
+reports 23 fixture tests and MRN QA passing; local nginx/Docker execution was
+unavailable, so hosted native proof remains required. The imported contract
+bytes, plugin runtime, original 180-second intent/hook and 120-second capture
+limits are unchanged. This selects test source only, adopts no aa05 owner
+format, and does not change production configuration or workspace tools.
+
 ## Earlier candidate evidence, 2026-10-22
 
 The earlier disposable integration candidate selected provider
