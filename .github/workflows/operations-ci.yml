@@ -33,12 +33,12 @@ jobs:
     name: Disposable gateway MainWP transport
     needs: controlled-contracts
     runs-on: ubuntu-24.04
-    # The expanded suite produced all eight passing reports at 25f5d35, then
-    # reached the 25-minute job cap during final validation/cleanup. Allow room
-    # for the complete suite and artifact retention, not longer operations:
-    # Individual request/authority deadlines are independently enforced. The
-    # synthetic grant and aggregate native-hook allocation are pinned below.
-    timeout-minutes: 30
+    # Source-context composition b2b6698 passed in 29m14s, leaving only 46s at
+    # the old whole-job cap. Include room for the added catalog composition and
+    # original artifact retention. This is only the overall CI job allocation:
+    # individual request/authority deadlines, the 300s synthetic grant and
+    # the 300s native-hook allocation remain independently enforced below.
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
         with:
@@ -128,6 +128,7 @@ jobs:
           # Separate cloned Dashboard; never initializes the legacy fixture.
           MRN_DISPOSABLE_EXISTING_BINDING_TEST: '1'
           MRN_DISPOSABLE_EXISTING_SOURCE_CONTEXT_TEST: '1'
+          MRN_DISPOSABLE_EXISTING_SOURCE_CATALOG_TEST: '1'
           MRN_DISPOSABLE_EXISTING_BINDING_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/existing-binding-hook.sh
           # Qualified provider; actual gateway custody remains a required CI gate.
           MRN_DISPOSABLE_REPORT_CUSTODY_TEST: '1'
@@ -241,6 +242,7 @@ jobs:
             'One native capture survives a lost response and SQLite reopen with identical bounded read recovery and no recapture',
             'Native measurement read matches the independently retained capture receipt under the original authority',
             'Canonical source lookup refuses an invalid signature, binds two reads to retained evidence and refuses a third',
+            'Root-signed v2 owner catalog matches independent pre-queue configuration without source admission',
             'Fresh exact-site sync and full Child readback prove the preview, binding and qualification did not edit content',
             'Revocation during actual provider context lookup returns a signed denial and blocks later local dispatch',
           ]);
@@ -299,6 +301,12 @@ jobs:
           assert.equal(sourceAudit.capture_artifact_sha256, binding.capture.artifact_sha256);
           assert.equal(sourceAudit.measurement_record_sha256, binding.capture.measurements_sha256);
           assert.equal(sourceAudit.parity_sha256, binding.sourceContext.parity_sha256);
+          for (const field of ['catalog_sha256', 'registry_sha256', 'configuration_sha256']) assert.match(binding.sourceCatalog[field], /^[a-f0-9]{64}$/);
+          assert.equal(binding.sourceCatalog.catalog_sha256, binding.sourceContext.owner.source_recipe_catalog_sha256);
+          assert.deepEqual(binding.sourceCatalog, { schema: 2, configuration_reads: 2,
+            catalog_sha256: binding.sourceCatalog.catalog_sha256, registry_sha256: binding.sourceCatalog.registry_sha256,
+            configuration_sha256: binding.sourceCatalog.configuration_sha256, catalog_artifacts: 0, native_reads: true,
+            original_authorization_unchanged: true, source_bytes_verified: false, slot_created: false, admitted: false });
           assert.ok(Number.isSafeInteger(binding.currentAccess.signed_callbacks) && binding.currentAccess.signed_callbacks >= binding.capture.native_calls + 4
             && binding.currentAccess.signed_callbacks <= 512);
           assert.deepEqual(binding.currentAccess, { context_requests: 2, signed_callbacks: binding.currentAccess.signed_callbacks,

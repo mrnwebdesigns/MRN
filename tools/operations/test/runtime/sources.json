@@ -2,7 +2,7 @@
   "schema": 1,
   "provider": {
     "repository": "mrnwebdesigns/mrn-mainwp-operations-api",
-    "commit": "99e5d585d1ab836aa11bca4d3a67e869114cade4"
+    "commit": "25cb8d339e7068f62dd18674ffe6eddf8acbd083"
   },
   "transport": {
     "repository": "mrnwebdesigns/mainwp-mcp",

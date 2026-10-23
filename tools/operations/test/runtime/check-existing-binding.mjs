@@ -29,6 +29,7 @@ import { ExistingManagementMeasurements, ExistingManagementMeasurementsReader,
   existingManagementMeasurementsTool } from '../../src/existing-management-measurements.mjs';
 import { ExistingManagementSourceContext, ExistingManagementSourceContextReader,
   existingManagementSourceContextTool } from '../../src/existing-management-source-context.mjs';
+import { ExistingManagementSourceCatalogRegistry } from '../../src/existing-management-source-catalog.mjs';
 import { createHttpServer } from '../../src/http.mjs';
 
 process.umask(0o077);
@@ -89,6 +90,7 @@ try {
   assert.equal(process.env.GITHUB_ACTIONS, 'true');
   assert.equal(process.env.MRN_DISPOSABLE_EXISTING_BINDING_TEST, '1');
   assert.equal(process.env.MRN_DISPOSABLE_EXISTING_SOURCE_CONTEXT_TEST, '1');
+  assert.equal(process.env.MRN_DISPOSABLE_EXISTING_SOURCE_CATALOG_TEST, '1');
   const [directory, certificate, runtimeCli, contextFile] = process.argv.slice(2);
   assert.equal(process.argv.length, 6); assert.equal(resolve(directory), directory);
   assert.equal(realpathSync(directory), directory);
@@ -108,6 +110,14 @@ try {
       source_recipe_catalog_sha256: record.source_recipe_catalog_sha256 };
   };
   sourceOwner();
+  const sourceCatalogPath = join(directory, 'existing-binding-v2/source-catalog-registry.json');
+  const sourceCatalogBytes = privateFile(sourceCatalogPath, 262144), sourceCatalogFileHash = digest(sourceCatalogBytes);
+  const sourceCatalogRegistryHash = delegationDigest(JSON.parse(sourceCatalogBytes));
+  let catalogConfigReads = 0;
+  const sourceCatalogConfiguration = () => {
+    const bytes = privateFile(sourceCatalogPath, 262144); assert.equal(digest(bytes), sourceCatalogFileHash);
+    catalogConfigReads++; return JSON.parse(bytes);
+  };
   sidecar = parseExistingBindingAccess(privateFile(join(directory, 'existing-binding-v2/access.json'), 4096), directory);
   const routeInfo = lstatSync(sidecar.route_switch);
   assert.ok(routeInfo.isFile() && !routeInfo.isSymbolicLink() && (routeInfo.mode & 0o777) === 0o700);
@@ -553,6 +563,23 @@ try {
     owner: sourceOwner(), original_authorization_unchanged: true, source_bytes_verified: false, slot_created: false, admitted: false };
   pass('Canonical source lookup refuses an invalid signature, binds two reads to retained evidence and refuses a third');
 
+  phase = 'private-source-catalog-resolution';
+  const sourceCatalogRegistry = new ExistingManagementSourceCatalogRegistry({ ledger: resumed.captureLedger,
+    owner: sourceOwner, current: sourceCatalogConfiguration, expectedSha256: () => sourceCatalogRegistryHash });
+  const sourceCatalog = await sourceCatalogRegistry.resolve(jobId);
+  assert.equal(sourceCatalog.catalog.schema, 2);
+  assert.equal(sourceCatalog.catalog.adapter, 'content-management-existing-source-catalog-v2');
+  assert.equal(sourceCatalog.ownerCatalogSha256, sourceFirst.source_context.source_recipe_catalog_sha256);
+  assert.equal(sourceCatalog.registrySha256, sourceCatalogRegistryHash);
+  assert.ok(sourceCatalog.catalog.issued_at <= queued.binding.created_at && sourceCatalog.catalog.expires_at >= queued.binding.expires_at);
+  assert.equal(sourceCatalog.catalog.artifacts.length, 0); assert.equal(sourceCatalog.catalog.native_reads, true);
+  assert.equal(catalogConfigReads, 2);
+  report.sourceCatalog = { schema: 2, configuration_reads: catalogConfigReads, catalog_sha256: sourceCatalog.ownerCatalogSha256,
+    registry_sha256: sourceCatalogRegistryHash, configuration_sha256: sourceCatalogFileHash,
+    catalog_artifacts: 0, native_reads: true, original_authorization_unchanged: true,
+    source_bytes_verified: false, slot_created: false, admitted: false };
+  pass('Root-signed v2 owner catalog matches independent pre-queue configuration without source admission');
+
   phase = 'unchanged-child';
   const freshClient = new DelegatedMainwpClient(await rawClient(), nextActor, signer);
   const freshSession = new MainwpSession(freshClient, registry, store, nextActor,
@@ -594,6 +621,7 @@ try {
   await assert.rejects(() => resumed.runtime.capture.recover(jobId, captureExpected)); assert.equal(recoveryReads, 1);
   await assert.rejects(() => measurementRuntime.read(jobId)); assert.equal(measurementReads, 1);
   await assert.rejects(() => sourceRuntime.read(jobId, measured)); assert.equal(sourceContextReads, 3);
+  await assert.rejects(() => sourceCatalogRegistry.resolve(jobId)); assert.equal(catalogConfigReads, 2);
   report.currentAccess = { context_requests: contextCalls, signed_callbacks: accessRows.length, clear: accessRows.length - 1, pending_revocation: 1,
     repeated_revoked_read_dispatched: false };
   pass('Revocation during actual provider context lookup returns a signed denial and blocks later local dispatch');

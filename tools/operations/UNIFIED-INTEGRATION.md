@@ -36,7 +36,35 @@ separate provider rollout and does not replace posts/pages/ACF delivery here.
 This gateway retains the existing Google login and plugin; no production,
 workspace-tool, credential or access configuration changes accompany this source.
 
-The qualified disposable composition is gateway
+The latest qualified existing-record composition is gateway
+`b2b6698f059ed2eda14f0ef657a6f84ecbcb4f3d` with provider
+`99e5d585d1ab836aa11bca4d3a67e869114cade4`.
+[Operations CI 40021432056](https://github.com/mrnwebdesigns/MRN/actions/runs/40021432056)
+and [MRN QA 40021432049](https://github.com/mrnwebdesigns/MRN/actions/runs/40021432049)
+pass. All nine original reports and source pins were independently verified;
+artifact `12531289132` matches SHA-256
+`e24755da2c22dd630bb10c16ccff73f3bdaf29f6828a46c937a6c1eaedfaf455`.
+The two permitted source-context reads completed in 15,431 and 15,014 ms with
+3,176 and 3,153 ms of signed lifetime remaining. A third read was refused while
+its grant remained valid. The closed independent SQL audit proves exactly two
+markers and all seven related records, with original job/binding/capture/
+measurement/parity/context hashes matching the gateway evidence. The 237,659 ms
+hook preserved its 300-second allocation and original authority, completed all
+76 staff checks and 54 signed callbacks, refused revocation, left Child content
+unchanged and disabled the callback route. This closes the earlier source-context
+latency failure for this disposable scope; live acceptance remains unverified.
+
+The separate runner format correction `53e534502227c9ddfab5515d8fdc83bb8297b887`
+passes all 163 tests, staged MRN QA and [hosted isolation 40024009019](https://github.com/mrnwebdesigns/mrn-code-qa-runner/actions/runs/40024009019).
+Eight original code/content QA reports pass API/browser/accessibility/performance
+rows. Provider `f4358bd` supplies immutable PHP array/stream golden vectors;
+JavaScript assembly and final readback agree in both authority domains. Only the
+byte envelope uses the frozen v1 format; existing-v2 authority validators and
+schema-2 results remain unchanged. This runner is separately reviewed in
+[PR #8](https://github.com/mrnwebdesigns/mrn-code-qa-runner/pull/8) and is not yet
+selected by the gateway. Actual protected source delivery remains a separate gate.
+
+An earlier qualified disposable composition is gateway
 `84aaf09d4279370e6dc28e5ec2ec87be5d5a6e6a`, provider
 `a199464c725d01611164d07b77183727c98ebf5e` and MCP transport
 `16a0e1e719077deb98f8d3b9a0ca57e85b301406` (MCP 1.5.1 compatibility).
@@ -2135,3 +2163,26 @@ The gateway now preserves its closed `MANAGEMENT_EXISTING_SOURCE_CONTEXT_TIMEOUT
 error code when the original deadline expires, so failure reports identify the
 actual gate instead of a generic binding failure. It does not extend a deadline
 or retry a dispatched lookup.
+
+### Native existing-record catalog composition
+
+Provider `25cb8d339e7068f62dd18674ffe6eddf8acbd083` merges the fully native-qualified
+`99e5d58` lineage with catalog prerequisite `f5e24b1`. Its tree exactly matches
+provider staged MRN QA proof `0ea7a781fa75e3e0f819c49abab201ebc951f60e`. All prior
+product/Child/contract bytes and the eleven gateway imports are unchanged; the
+only existing plugin entrypoint addition loads the unregistered catalog verifier.
+The catalog delta matches its reviewed source exactly, and CI retains both suites.
+
+The next native composition explicitly enables synthetic pre-queue root signing,
+uses the actual owner-preparation path and reads the independently exported
+public-key registry. The gateway resolves the exact root-signed schema-2 catalog
+under fresh original authority before and after reading configuration, compares
+it with the source-context owner pin and refuses resolution after revocation.
+It proves neither source-byte delivery nor admission. Native qualification is
+pending; the gateway runner pins remain unchanged.
+
+The overall CI job allocation increases from 30 to 35 minutes because the passing
+source-context composition took 29m14s, leaving only 46 seconds for the added
+catalog work and original artifact retention. All per-operation, signed-request,
+original-intent, five-second access, 300-second fixture/grant/hook and 320-second
+owner limits remain unchanged. No production timeout or credential is modified.

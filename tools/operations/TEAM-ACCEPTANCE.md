@@ -44,6 +44,22 @@ Use already-authorized test identities or separately reviewed administrative tes
 
 ## Latest source evidence, 2026-10-23
 
+Gateway `b2b6698` with provider `99e5d58` now passes native integration
+`40021432056` and MRN QA `40021432049`. All nine original reports and source
+pins were independently verified. Both allowed source-context reads completed
+within their unchanged limits; the third was refused, revoked access could not
+redispatch, the full independent SQL history matched and Child content remained
+unchanged. The 237,659 ms hook completed cleanup within its original allocation.
+This qualifies that private source gate only. Every live acceptance row above
+remains unverified.
+
+The source-format mismatch also has a separately qualified runner correction,
+`53e5345`, with 163 tests and hosted code/content isolation `40024009019` passing.
+It preserves existing-v2 authority and result schemas and has not been selected
+by the gateway. Native protected source delivery and report admission remain open.
+
+Earlier checkpoints and failures are retained below as historical evidence.
+
 Capture/recovery plus measurement is qualified at gateway
 `6b484e3e365fb05e28d279d564f863a5279d5861`: combined CI `39999779123`
 and MRN QA `39999779280` pass, with all eight original reports and their
