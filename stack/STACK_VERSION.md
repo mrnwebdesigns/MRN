@@ -1,8 +1,8 @@
 # Stack Version
 
 ## Candidate Release
-- Stack release: `2026.10.22-fleet-auto-c8adffac26e5`
-- Release date: `2026-10-22`
+- Stack release: `2026.10.23-fleet-auto-e5a6aa620209`
+- Release date: `2026-10-23`
 - Status: `source snapshot; qualification/publication evidence establishes Fleet readiness; site rollout separate`
 
 ## Included MRN-Owned Components
@@ -19,7 +19,7 @@
 | `mrn-base-stack` | `1.6.9` |
 | `mrn-base-stack-child` | `1.1.0` |
 | `mrn-comment-management` | `1.3.0` |
-| `mrn-config-helper` | `0.1.74` |
+| `mrn-config-helper` | `0.1.75` |
 | `mrn-dashboard-support` | `1.3.0` |
 | `mrn-disable-comments` | `1.2.5` |
 | `mrn-editor-lockdown` | `1.0.34` |
@@ -49,7 +49,7 @@
 | `mrn-tokens` | `0.1.4` |
 | `mrn-universal-sticky-bar` | `1.3.0` |
 | `mrn-updraft-backup-policy-loader` | `0.6.1` |
-| `mrn-updraft-local-retention` | `0.8.5` |
+| `mrn-updraft-local-retention` | `0.8.6` |
 
 ## Stack Manifests
 - Plugins manifest: [`manifests/plugins.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/plugins.txt)

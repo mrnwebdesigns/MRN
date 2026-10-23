@@ -1,6 +1,6 @@
 # New-site Stack bootstrap release
 
-Platform candidate: `2026.10.22-fleet-auto-c8adffac26e5`; plugin input bundle: `2026.10.22-fleet-auto-c8adffac26e5`. Scope: qualified source installation inputs; site deployment remains separate.
+Platform candidate: `2026.10.23-fleet-auto-e5a6aa620209`; plugin input bundle: `2026.10.23-fleet-auto-e5a6aa620209`. Scope: qualified source installation inputs; site deployment remains separate.
 
 The Stack profile selects **33 standard plugins**. The plain profile selects **32**, excluding only Reusable Block Library. Community versions are pinned in `plugins.txt`; every plugin archive is checksum-bound in `manifests/bootstrap-packages.lock.json`. The MRN platform lock separately covers the parent/child pair, MU components and shared runtime.
 
@@ -20,7 +20,7 @@ The Stack profile selects **33 standard plugins**. The plain profile selects **3
 | MRN Comment Management (`mrn-comment-management`) | 1.3.0 | all |
 | MRN Font Awesome Profile Manager (`mrn-fontawesome-profile-manager`) | 0.5.1 | all |
 | MRN Google Fonts (`mrn-google-fonts`) | 1.0.7 | all |
-| MRN Config Helper (`mrn-config-helper`) | 0.1.74 | all |
+| MRN Config Helper (`mrn-config-helper`) | 0.1.75 | all |
 | MRN Media Tools (`mrn-media-bulk-tools`) | 0.13.1 | all |
 | MRN Mega Menu (`mrn-mega-menu`) | 0.17.3 | all |
 | MRN reCAPTCHA Enterprise Manager (`mrn-recaptcha-enterprise-manager`) | 0.2.3 | all |
