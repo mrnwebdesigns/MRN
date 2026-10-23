@@ -34,6 +34,7 @@ import { ExistingManagementMeasurements, ExistingManagementMeasurementsReader, e
   createExistingManagementMeasurementsRuntime } from '../src/existing-management-measurements.mjs';
 import { ExistingManagementSourceContext, ExistingManagementSourceContextReader, existingManagementSourceContextTool,
   createExistingManagementSourceContextRuntime } from '../src/existing-management-source-context.mjs';
+import { ExistingManagementEvidenceDispatcher } from '../src/existing-management-evidence-dispatch.mjs';
 import { existingWorkerContractSha256, existingWorkerPurpose, verifyExistingManagementWorkerRecord } from '../src/existing-management-worker-contract.mjs';
 import { ExistingManagementSourceCatalogRegistry } from '../src/existing-management-source-catalog.mjs';
 
@@ -2223,13 +2224,14 @@ test('queued-capture observation rejects changed history and current authority d
 });
 
 
-async function workerHistoryFixture(t, captured = true) {
+async function workerHistoryFixture(t, captured = true, configure = () => {}) {
   const configuration = { schema: 2, worker_contract_sha256: existingWorkerContractSha256, app_actor_id: '40',
     policy: { schema: 1, enabled: false, policy_epoch: 1, qa_key_ids: ['fixture-qa'],
       repository: 'mrnwebdesigns/mrn-code-qa-runner', repository_id: '10', ref: 'refs/heads/main', workflow_id: '20',
       workflow_path: '.github/workflows/management.yml', workflow_sha256: 'a'.repeat(64), runner_source_sha: 'b'.repeat(40),
       engine_commit: 'c'.repeat(40), engine_configuration_sha256: 'd'.repeat(64), runtime_sha256: 'e'.repeat(64),
       performance_budget_sha256: 'f'.repeat(64), render_assertions_sha256: '1'.repeat(64), hook_policy_sha256: '2'.repeat(64) } };
+  configure(configuration);
   const f = await existingCaptureFixture(t, () => configuration);
   if (captured) await f.runCapture();
   const measurement = { qualification_job_id: f.job, binding_sha256: f.context.binding_sha256,
@@ -2366,4 +2368,136 @@ test('late or failed worker observation consumes its handle and retains uncertai
     await assert.rejects(() => f.ledger.recordWorkerDispatch(handle, '31'));
     assert.equal((await f.ledger.readWorkerHistory(f.job)).state, 'prepared');
   }
+});
+
+
+async function existingDispatcherFixture(t) {
+  const content = 'name: MRN existing management fixture\non: workflow_dispatch\n';
+  const f = await workerHistoryFixture(t, true, configuration => {
+    configuration.policy.workflow_path = '.github/workflows/management-existing.yml';
+    configuration.policy.workflow_sha256 = digest(content);
+  });
+  const policy = f.configuration.policy, repo = policy.repository, commit = policy.runner_source_sha;
+  const root = 'a'.repeat(40), githubTree = 'c'.repeat(40), workflowTree = 'd'.repeat(40), blob = 'e'.repeat(40);
+  const rows = {
+    '/git/ref/heads/main': { ref: 'refs/heads/main', object: { type: 'commit', sha: commit } },
+    '/actions/workflows/20': { id: 20, path: policy.workflow_path, state: 'active' },
+    [`/git/commits/${commit}`]: { sha: commit, tree: { sha: root } },
+    [`/git/trees/${root}`]: { sha: root, truncated: false, tree: [{ path: '.github', type: 'tree', mode: '040000', sha: githubTree }] },
+    [`/git/trees/${githubTree}`]: { sha: githubTree, truncated: false, tree: [{ path: 'workflows', type: 'tree', mode: '040000', sha: workflowTree }] },
+    [`/git/trees/${workflowTree}`]: { sha: workflowTree, truncated: false, tree: [{ path: 'management-existing.yml', type: 'blob', mode: '100644', sha: blob }] },
+    [`/git/blobs/${blob}`]: { sha: blob, encoding: 'base64', size: Buffer.byteLength(content), content: Buffer.from(content).toString('base64') },
+  };
+  const response = { workflow_run_id: 30, run_url: `https://api.github.com/repos/${repo}/actions/runs/30`, html_url: `https://github.com/${repo}/actions/runs/30` };
+  const run = { id: 30, repository: { id: 10, full_name: repo }, head_repository: { id: 10, full_name: repo },
+    workflow_id: 20, path: policy.workflow_path, head_sha: commit, head_branch: 'main', event: 'workflow_dispatch', run_attempt: 1,
+    actor: { id: 40 }, triggering_actor: { id: 40 }, status: 'queued', conclusion: null };
+  const calls = [], state = { mono: 0 };
+  const github = { repositories: { [repo]: 10 }, scoped: async (repository, purpose, authorize) => {
+    assert.equal(repository, repo); assert.equal(purpose, 'qa'); calls.push({ path: 'grant' }); await authorize();
+    return async (path, method = 'GET', body) => {
+      await authorize(); calls.push({ path, method, body }); await state.duringCall?.(path, method);
+      if (method === 'POST') {
+        assert.equal(path, '/actions/workflows/20/dispatches'); assert.equal(body.ref, 'main');
+        const request = JSON.parse(Buffer.from(body.inputs.request, 'base64'));
+        assert.equal(Buffer.from(body.inputs.request, 'base64').toString(), delegationCanonical(request));
+        assert.equal(request.dispatch_id, body.inputs.dispatch_id); assert.equal(request.worker_contract_sha256, existingWorkerContractSha256);
+        assert.equal(f.ledger.originalWorkerHistory(f.job).state, 'prepared');
+        run.display_title = `MRN Existing Management QA ${request.dispatch_id}`;
+        run.created_at = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+        await state.afterPost?.(); return response;
+      }
+      if (path === '/actions/runs/30') return run;
+      assert.ok(Object.hasOwn(rows, path), `Unexpected fixture route: ${path}`); return rows[path];
+    };
+  } };
+  const dispatcher = new ExistingManagementEvidenceDispatcher({ github, ledger: f.ledger, monotonic: () => state.mono });
+  return { ...f, dispatcherState: state, policy, calls, rows, response, run, content, root, workflowTree, blob, github, dispatcher,
+    execute: () => dispatcher.dispatch(f.job, f.measurement), posts: () => calls.filter(c => c.method === 'POST') };
+}
+
+test('existing dispatcher binds actual durable v2 reservation to exact protected source and observed App run', async t => {
+  const f = await existingDispatcherFixture(t), result = await f.execute();
+  assert.equal(result.retained.provenance.run_id, '30'); assert.equal(result.url, f.response.html_url);
+  assert.equal(result.source_verified, false); assert.equal(result.admitted, false); assert.equal(f.posts().length, 1);
+  const request = JSON.parse(Buffer.from(f.posts()[0].body.inputs.request, 'base64'));
+  assert.deepEqual(Object.keys(request), ['context_sha256', 'dispatch_id', 'schema', 'worker_contract_sha256']);
+  assert.equal(request.schema, 2); assert.equal(result.retained.provenance.dispatch_request_sha256, delegationDigest(request));
+  assert.deepEqual((await f.open().ledger.readWorkerHistory(f.job)).value.retained, result.retained);
+  assert.equal(f.calls.filter(c => c.path === '/git/ref/heads/main').length, 2);
+  await assert.rejects(f.execute); assert.equal(f.posts().length, 1);
+});
+
+test('existing dispatcher refuses changed workflow, source, grant and staff before reserving or posting', async t => {
+  for (const mutate of [
+    f => { f.rows['/git/ref/heads/main'].object.sha = 'f'.repeat(40); },
+    f => { f.github.repositories[f.policy.repository] = 11; },
+    f => { f.rows['/actions/workflows/20'].state = 'disabled_manually'; },
+    f => { f.rows['/actions/workflows/20'].path = '.github/workflows/legacy.yml'; },
+    f => { f.rows[`/git/trees/${f.root}`].tree[0].mode = '120000'; },
+    f => { f.rows[`/git/trees/${f.workflowTree}`].truncated = true; },
+    f => { f.rows[`/git/trees/${f.workflowTree}`].tree[0].mode = '100755'; },
+    f => { f.rows[`/git/blobs/${f.blob}`].content = Buffer.from('changed').toString('base64'); },
+    f => { f.state.duringCheck = () => { throw new Error('Directory suspended'); }; },
+  ]) {
+    const f = await existingDispatcherFixture(t); mutate(f); await assert.rejects(f.execute);
+    assert.equal(f.posts().length, 0); assert.equal(f.ledger.originalWorkerHistory(f.job).state, 'unused');
+  }
+});
+
+test('existing dispatcher never retries lost responses or substituted returned run identity', async t => {
+  for (const mutate of [
+    f => { f.dispatcherState.afterPost = () => { throw new Error('lost response'); }; },
+    f => { f.response.workflow_run_id = Number.MAX_SAFE_INTEGER + 1; },
+    f => { f.response.run_url = 'https://outsider.invalid/run'; },
+    f => { f.run.repository.id++; }, f => { f.run.head_repository.full_name = 'outsider/fork'; },
+    f => { f.run.workflow_id++; }, f => { f.run.actor.id++; }, f => { f.run.triggering_actor.id++; },
+    f => { f.run.head_sha = 'f'.repeat(40); }, f => { f.run.run_attempt++; },
+    f => { f.run.event = 'push'; }, f => { f.run.head_branch = 'candidate'; },
+    f => { f.dispatcherState.afterPost = () => { f.run.created_at = '2026-02-31T12:00:00Z'; }; },
+    f => { f.dispatcherState.afterPost = () => { f.run.display_title = 'MRN Management QA legacy'; }; },
+    f => { f.run.status = 'completed'; f.run.conclusion = 'failure'; },
+  ]) {
+    const f = await existingDispatcherFixture(t); mutate(f); await assert.rejects(f.execute);
+    assert.equal(f.posts().length, 1); assert.equal(f.ledger.originalWorkerHistory(f.job).state, 'prepared');
+    await assert.rejects(f.execute); assert.equal(f.posts().length, 1);
+  }
+});
+
+test('existing dispatcher withholds mapping after revocation, configuration drift or elapsed dispatch deadline', async t => {
+  for (const mutate of [
+    f => f.ledger.recordQueuePendingRevocation(f.job), f => { f.policy.policy_epoch++; },
+    f => { f.dispatcherState.mono = 60000; }, f => { f.dispatcherState.mono = -1; },
+    f => { f.state.duringCheck = () => { throw new Error('Directory revoked'); }; },
+    f => { f.store.db.exec('DELETE FROM original_management_capture_history'); },
+  ]) {
+    const f = await existingDispatcherFixture(t); f.dispatcherState.afterPost = () => mutate(f);
+    await assert.rejects(f.execute); assert.equal(f.posts().length, 1);
+    assert.equal(f.store.db.prepare('SELECT count(*) n FROM original_management_worker_history WHERE ordinal=2').get().n, 0);
+    await assert.rejects(f.execute); assert.equal(f.posts().length, 1);
+  }
+});
+
+test('timed-out existing dispatch cannot use a late GitHub response to create an observed mapping', async t => {
+  const f = await existingDispatcherFixture(t); let release;
+  f.dispatcherState.duringCall = (path, method) => {
+    if (path === '/git/ref/heads/main') f.dispatcherState.mono = 59900;
+    if (method === 'POST') return new Promise(resolve => { release = resolve; });
+  };
+  await assert.rejects(f.execute, { code: 'MANAGEMENT_EXISTING_DISPATCH' });
+  assert.equal(f.posts().length, 1); release(); await new Promise(resolve => globalThis.setImmediate(resolve));
+  assert.equal(f.ledger.originalWorkerHistory(f.job).state, 'prepared');
+});
+
+test('late original-staff check inside observation cannot commit beyond the dispatcher deadline', async t => {
+  const f = await existingDispatcherFixture(t); let release;
+  f.dispatcherState.duringCall = path => { if (path === '/actions/runs/30') f.dispatcherState.mono = 59900; };
+  const record = f.ledger.recordWorkerDispatch.bind(f.ledger);
+  t.mock.method(f.ledger, 'recordWorkerDispatch', (...args) => {
+    const pending = new Promise(resolve => { release = resolve; }); f.state.duringCheck = () => pending;
+    return record(...args);
+  });
+  await assert.rejects(f.execute, { code: 'MANAGEMENT_EXISTING_DISPATCH' });
+  assert.equal(f.posts().length, 1); release(); await new Promise(resolve => globalThis.setImmediate(resolve));
+  assert.equal(f.ledger.originalWorkerHistory(f.job).state, 'prepared');
 });

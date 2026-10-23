@@ -882,10 +882,11 @@ export class OriginalManagementAuthorizationLedger {
   }
   // No GitHub call or source admission: reserve one opaque protected dispatch
   // before I/O. A lost response or restart consumes it permanently.
-  async prepareWorkerDispatch(jobId, measurement) {
+  async prepareWorkerDispatch(jobId, measurement, within = () => {}) {
     const measured = existingManagementTypes.qualification.measurement_output.parse(measurement);
     const { current: before } = await this.currentQueuedCapture(jobId);
     return this.store.transaction(() => {
+      within();
       const current = this.#currentQueued(jobId); this.#sameCaptureAuthority(current, before);
       const history = this.#workerHistory(current), capture = this.#captureHistory(current), b = current.queue.context.binding;
       check(history.state === 'unused' && capture.state === 'captured' && measured.qualification_job_id === jobId
@@ -905,16 +906,18 @@ export class OriginalManagementAuthorizationLedger {
       const saved = this.#workerHistory(current), handle = Object.freeze({ jobId, dispatchId: request.dispatch_id });
       this.#workerHandles.set(handle, { current, historyDigest: saved.historyDigest });
       this.store.audit(current.original.mapping.actor, current.original.mapping.site, current.original.mapping.requestId, 'original-worker-dispatch', 'prepared');
+      within();
       return { handle, request: structuredClone(request) };
     });
   }
   // A private dispatcher must independently verify the actual protected GitHub
   // run before calling this. Public tools/callbacks never receive the handle.
-  async recordWorkerDispatch(handle, runId) {
+  async recordWorkerDispatch(handle, runId, within = () => {}) {
     const held = this.#workerHandles.get(handle); check(held, 'Original worker handle is missing or consumed.');
     this.#workerHandles.delete(handle); existingManagementTypes.evidence.id.parse(runId);
     const before = await this.currentQueuedJob(handle.jobId);
     return this.store.transaction(() => {
+      within();
       const current = this.#currentQueued(handle.jobId); this.#sameCaptureAuthority(current, before); this.#sameCaptureAuthority(current, held.current);
       const history = this.#workerHistory(current);
       check(history.state === 'prepared' && history.historyDigest === held.historyDigest
@@ -927,7 +930,14 @@ export class OriginalManagementAuthorizationLedger {
       this.#appendWorkerHistory(current.original.mapping, { schema: 2, state: 'observed', retained }, history.historyDigest);
       this.#workerHistory(current);
       this.store.audit(current.original.mapping.actor, current.original.mapping.site, current.original.mapping.requestId, 'original-worker-dispatch', 'observed');
+      within();
       return retained;
+    });
+  }
+  originalWorkerHistory(jobId) {
+    return this.store.transaction(() => {
+      const current = this.#currentQueued(jobId);
+      return { ...this.#workerHistory(current), current };
     });
   }
   async readWorkerHistory(jobId) {

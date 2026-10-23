@@ -169,6 +169,25 @@ previous development-only audit findings remain; this is not a clean full audit.
 The transport source revision is selected in `test/runtime/sources.json`;
 combined native qualification must be repeated against that exact source.
 
+### Private original worker dispatcher
+
+The next source candidate adds a separate fixed-v2 dispatcher over the existing
+central GitHub App client. It reads the immutable original's service-owned
+configuration, checks exact repository/workflow identity and source bytes,
+rechecks protected `main`, and durably reserves the one-use request before POST.
+It independently reads the returned run and checks repository, source, workflow,
+App actor/triggering actor, event, first attempt, exact request title and creation
+time before retaining provenance. Original staff, scope, policy and lifetime
+are rechecked throughout. A single 60-second ceiling also applies inside the
+final ledger transactions, so delayed authorization cannot commit after timeout.
+
+Six controlled groups exercise real SQLite reservations with a mocked GitHub
+API: valid provenance, changed workflow/source/grant, lost and substituted run
+responses, revoked access, a late GitHub response and a late staff check inside
+final observation. This does not prove an actual protected GitHub dispatch or
+hosted OIDC. No workflow, App grant, HTTP endpoint, workspace tool or production
+startup is created or activated; those remain separate integration gates.
+
 ### Next protected source-delivery checkpoint
 
 The existing-v2 source-context/catalog readers and byte validators do not yet
