@@ -42,9 +42,30 @@ All results and necessary decisions must appear in chat. Any request for a WordP
 
 Use already-authorized test identities or separately reviewed administrative test changes. Do not suspend a real staff member, weaken a policy, forge a production identity or grant an outsider access to manufacture test evidence. A local negative test is not a live denial result.
 
-## Latest source evidence, 2026-10-22
+## Latest source evidence, 2026-10-23
 
-The current isolated candidate is provider
+Gateway `84aaf09d4279370e6dc28e5ec2ec87be5d5a6e6a` with provider
+`a199464c725d01611164d07b77183727c98ebf5e` and MCP transport
+`16a0e1e719077deb98f8d3b9a0ca57e85b301406` passes
+[combined CI 39936250677](https://github.com/mrnwebdesigns/MRN/actions/runs/39936250677)
+and [MRN QA 39936250701](https://github.com/mrnwebdesigns/MRN/actions/runs/39936250701).
+All 609 gateway tests, 13 Fleet regressions and eight runtime reports pass.
+Independent verification confirms 61 provider native checks, 29 private HTTP
+route checks, exact two-call MCP confirmation with one confirmed queue POST,
+actual TLS access/revocation callbacks and cleanup. Artifact `12494652971`
+has SHA-256 `0596fccc9c1438009d5de76d22b918a551bd6c5c7fd5476ff09b20f2f3c42ce1`;
+the five relevant tested source objects match the exact gateway composition.
+The source-only status and remaining boundaries are recorded in
+[UNIFIED-INTEGRATION.md](UNIFIED-INTEGRATION.md#current-content-integration-2026-10-23).
+
+This replaces the older candidate checkpoint below. It does not establish
+production deployment, real Google identity/denial or ordinary-member acceptance.
+Every live acceptance row above remains unverified. No staff nomination or
+individual access approval is introduced.
+
+## Earlier candidate evidence, 2026-10-22
+
+The earlier isolated candidate was provider
 `534990b273c9ad70f4290d408b6f2190751e5e78`, which adds the five exact private
 POST routes missing from the central REST guard. All twenty imported contract
 and fixture files match immutable source; signature, capability and machine-only

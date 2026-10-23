@@ -4,14 +4,62 @@
 
 One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebdesigns.com/mcp. Active MRN Google Workspace members get automatic portfolio access; there is no individual approval or enrollment step. Necessary approvals apply to concrete site changes. No teammate WordPress account, Application Password, API key, terminal, Codex, SSH or site token.
 
-## Current content integration, 2026-10-22
+## Current content integration, 2026-10-23
 
 The unified release remains unaccepted. Routine maintenance belongs to its
 separate provider rollout and does not replace posts/pages/ACF delivery here.
 This gateway retains the existing Google login and plugin; no production,
 workspace-tool, credential or access configuration changes accompany this source.
 
-The current disposable integration candidate selects provider
+The qualified disposable composition is gateway
+`84aaf09d4279370e6dc28e5ec2ec87be5d5a6e6a`, provider
+`a199464c725d01611164d07b77183727c98ebf5e` and MCP transport
+`16a0e1e719077deb98f8d3b9a0ca57e85b301406` (MCP 1.5.1 compatibility).
+[Combined CI 39936250677](https://github.com/mrnwebdesigns/MRN/actions/runs/39936250677)
+and [MRN QA 39936250701](https://github.com/mrnwebdesigns/MRN/actions/runs/39936250701)
+pass for that exact gateway commit: 609 gateway tests, 13 Fleet regressions,
+lint and a dependency audit reporting zero vulnerabilities. All eight original
+runtime reports were independently verified. The five relevant tested source
+objects match merge `5142b2dfb222be3594748da9a1c3ce8e87738775`.
+Artifact `12494652971` has SHA-256
+`0596fccc9c1438009d5de76d22b918a551bd6c5c7fd5476ff09b20f2f3c42ce1`.
+
+Provider a199 passes all four jobs in
+[CI 39846198181](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/39846198181).
+Its 61 native queue/capture checks prove the same-original retry through an
+independent committed reader while preserving scoped raw-reader denial.
+The gateway composition also passes all 29 private HTTP route checks, both
+identical-input MCP confirmation calls, zero queue POSTs before confirmation
+and exactly one afterward. Actual TLS callbacks cover clear access, pending
+revocation and refusal of a later dispatch, with unchanged Child content and
+callback-route cleanup. This closes the earlier candidate failures retained
+below; it does not turn their failed runs into passing evidence.
+
+Two local full-suite attempts were interrupted by Mac sleep and retain their
+timeout failures. The unchanged suite passed on the hosted runner; no assertion,
+deadline or runtime gate was weakened. Synthetic identity, backup and protected
+QA authorities remain distinct from production evidence.
+
+| Boundary | Current evidence | Remaining work |
+| --- | --- | --- |
+| Queue, context and access callback | Exact composition above passes isolated native/TLS tests | Register only after protected production setup is qualified |
+| Capture and recovery | Provider native proof passes | Gateway captured/uncertain history and fixed capture/recovery adapter |
+| Existing-record qualification | Contracts and original binding are retained | Stateful owner preparation/migration, source delivery, protected producer, rendered WordPress/ACF PRO QA and report admission |
+| Content workflows | Disposable native edit/readback/rollback evidence exists | Retry-safe drafts and qualified ACF/menu/media delivery |
+| Hosted service and workspace | Existing plugin and authentication infrastructure are retained | Concrete configuration/deployment approvals, installed proof and same-plugin tool refresh |
+| Ordinary team acceptance | Not accepted | Real ChatGPT Google sign-in, discovery, approved content edit, company-pilot code edit/rollback and outsider/suspended/revoked denial |
+
+The separately reviewed aa05 owner-metadata format is not selected by the
+gateway. Its helper provides no owner transition, migration or write authority.
+Maintenance confirmation repairs likewise require their own coherent source
+qualification and approved rollout. Neither development line changes this
+baseline, expands the company code pilot or grants staff access through source
+tests alone. Deployment examples and the serving process have not been repinned
+by this compatibility test.
+
+## Earlier candidate evidence, 2026-10-22
+
+The earlier disposable integration candidate selected provider
 `534990b273c9ad70f4290d408b6f2190751e5e78`. It repairs the central REST guard's
 missing five exact POST routes for the private existing-v2 context, access
 readback and capture/recovery controls. Each route retains its independent
