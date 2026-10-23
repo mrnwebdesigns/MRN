@@ -698,7 +698,7 @@
         "state": "confirmed"
       },
       "target_tier": "platform-required",
-      "version": "0.8.5"
+      "version": "0.8.6"
     },
     {
       "classification": "shared-feature",

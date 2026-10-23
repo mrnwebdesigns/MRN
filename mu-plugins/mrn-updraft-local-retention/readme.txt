@@ -1,6 +1,6 @@
 === MRN Updraft Backup Policy ===
 Contributors: mrnwebdesigns
-Stable tag: 0.8.5
+Stable tag: 0.8.6
 Tested up to: 7.1
 Requires PHP: 7.4
 
@@ -14,6 +14,10 @@ Supports the shared Stack loader or the standalone MU bootstrap. See README.md
 for configuration, prerequisites, domain cutover, and verification details.
 
 == Changelog ==
+
+= 0.8.6 =
+* Preserve activation during guarded maintenance and report each failed preflight or execution stage.
+* Retain conservative mutation evidence for incomplete historical operation records.
 
 = 0.8.5 =
 * Advance a batch only after verifying the completed item's requested version.

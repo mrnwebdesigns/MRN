@@ -63,7 +63,7 @@ MRN_QA_CODE_ANALYSIS_SCOPE=all mrn-qa run --project-root /Users/khofmeyer/Develo
 
 Runtime browser, accessibility, API, and performance checks should be run separately against an explicit target site when this plugin change affects rendered output or live WordPress behavior.
 
-## Guarded MainWP maintenance (0.8.5 candidate)
+## Guarded MainWP maintenance (0.8.6 candidate)
 
 After each successful native update, the batch admits only the selected item's
 approved version and new code tree into its next expected state. Activation,
