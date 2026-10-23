@@ -27,6 +27,8 @@ import { managementCaptureContract } from '../src/content-management-capture.mjs
 import { createHttpServer } from '../src/http.mjs';
 import { ExistingManagementContext, ExistingManagementContextReader, existingManagementContextTool,
   createExistingManagementContextRuntime } from '../src/existing-management-context.mjs';
+import { ExistingManagementCapture, ExistingManagementCaptureReader, existingManagementCaptureTools,
+  createExistingManagementCaptureRuntime, validateExistingManagementCapture } from '../src/existing-management-capture.mjs';
 
 const audience = 'https://operations.mrnwebdesigns.com/mcp', issuer = 'https://identity.example.test/';
 async function fixture(t, durable = false) {
@@ -1545,4 +1547,203 @@ test('existing context has no legacy capability fallback and private lifecycle c
   await assert.rejects(() => runtime.context.read(f.context.binding.qualification_job_id));
   await assert.rejects(() => createExistingManagementContextRuntime({ enabled: true, ledger: {}, registrar: f.registrar,
     connect: async () => f.contextClient })); assert.equal(f.contextState.closes, 2);
+});
+
+async function existingCaptureFixture(t) {
+  const f = await existingAccessFixture(t), state = { calls: [], closes: 0, mono: 0 };
+  const keys = generateKeyPairSync('ed25519'), registrar = { keyId: 'capture-registrar', privateKey: keys.privateKey };
+  const value = JSON.parse(readFileSync(new URL('./fixtures/content-management-qualification-v1.json', import.meta.url))).capture_output;
+  const artifact = value.capture_artifact, b = f.context.binding;
+  Object.assign(artifact, { binding: structuredClone(b), binding_sha256: f.context.binding_sha256,
+    review: structuredClone(f.values.expected.evidence.review), migration: structuredClone(f.values.expected.evidence.migration) });
+  artifact.dataset.read = structuredClone(f.values.expected.evidence.read);
+  artifact.dataset.source_binding_sha256 = b.source_binding_sha256;
+  const rehash = output => {
+    const a = output.capture_artifact, d = a.dataset;
+    a.binding_sha256 = delegationDigest(a.binding); d.parity_sha256 = delegationDigest(d.parity_manifest);
+    a.dataset_sha256 = delegationDigest(d); output.capture_artifact_sha256 = delegationDigest(a);
+    Object.assign(output.measurements, { binding_sha256: a.binding_sha256, capture_artifact_sha256: output.capture_artifact_sha256,
+      dataset_sha256: a.dataset_sha256, snapshot_sha256: a.binding.before_sha256, source_binding_sha256: d.source_binding_sha256,
+      parity_sha256: d.parity_sha256, dataset_bytes: Buffer.byteLength(delegationCanonical(d)),
+      readback_bytes: Buffer.byteLength(delegationCanonical(d.read)), readback_sha256: delegationDigest(d.read) });
+    output.measurements.chunks_received = Math.ceil(output.measurements.dataset_bytes / 32768);
+    output.measurements.readback_chunks = Math.ceil(output.measurements.readback_bytes / 32768);
+    output.measurements.native_calls = output.measurements.chunks_received + output.measurements.readback_chunks;
+  };
+  value.qualification_job_id = b.qualification_job_id; value.measurements.captured_at = Math.floor(Date.now() / 1000); rehash(value);
+  const tools = Object.values(existingManagementCaptureTools).map(name => ({ name, annotations: { readOnlyHint: false, destructiveHint: false } }));
+  const client = {
+    readResource: () => f.client.readResource(), listTools: async () => ({ tools }), close: async () => { state.closes++; },
+    async callTool({ name, arguments: input }, _schema, options) {
+      const bytes = Buffer.from(input.signed_request.payload_base64, 'base64'), claims = JSON.parse(bytes);
+      const action = claims.action;
+      assert.equal(name, existingManagementCaptureTools[action]);
+      assert.equal(options.timeout, action === 'capture' ? 120000 : 20000);
+      assert.equal(claims.schema, 2); assert.deepEqual(claims.binding, b); assert.equal(claims.binding_sha256, f.context.binding_sha256);
+      assert.ok(claims.expires_at <= b.expires_at && claims.expires_at <= f.actor.expiresAt / 1000);
+      assert.ok(verify(null, Buffer.concat([Buffer.from(existingManagementWires.qualification.purposes[action]), bytes]),
+        keys.publicKey, Buffer.from(input.signed_request.signature_base64, 'base64')));
+      assert.equal(verify(null, Buffer.concat([Buffer.from(managementCaptureContract.purposes[action]), bytes]),
+        keys.publicKey, Buffer.from(input.signed_request.signature_base64, 'base64')), false);
+      const row = f.store.db.prepare('SELECT body FROM original_management_capture_history ORDER BY ordinal DESC LIMIT 1').get();
+      assert.equal(JSON.parse(row.body).requestId, claims.request_id); assert.equal(JSON.parse(row.body).phase, 'dispatched');
+      state.calls.push({ action, claims }); await state.duringRead?.(input);
+      const veto = decodeEnvelope((await f.call({ ...f.query(), phase: action })).signed_veto); assert.equal(veto.state, 'clear');
+      await state.afterCallback?.(); if (state.failure) throw new Error('Lost private capture response');
+      return { content: [{ type: 'text', text: JSON.stringify(state.output ?? value) }] };
+    },
+  };
+  const reader = new ExistingManagementCaptureReader(client); await reader.initialize();
+  const make = ledger => new ExistingManagementCapture({ ledger, reader, registrar, monotonic: () => state.mono });
+  const capture = make(f.ledger), job = b.qualification_job_id;
+  return { ...f, value, rehash, captureState: state, captureTools: tools, captureClient: client, captureReader: reader,
+    registrar, makeCapture: make, capture, job, runCapture: () => capture.capture(job, f.values.expected),
+    recoverCapture: () => capture.recover(job, f.values.expected) };
+}
+
+test('existing capture uses the fixed registrar route and retains only immutable metadata before and after I/O', async t => {
+  const f = await existingCaptureFixture(t);
+  assert.deepEqual(await f.runCapture(), f.value);
+  assert.deepEqual(await f.ledger.readCapture(f.job), { state: 'captured', recoveryReads: 0, receipt: {
+    bindingSha256: f.context.binding_sha256, captureArtifactSha256: f.value.capture_artifact_sha256,
+    measurementSha256: delegationDigest(f.value.measurements), datasetSha256: f.value.capture_artifact.dataset_sha256 } });
+  await assert.rejects(f.runCapture); assert.equal(f.captureState.calls.length, 1);
+  const rows = f.store.db.prepare('SELECT body FROM original_management_capture_history ORDER BY ordinal').all();
+  assert.deepEqual(rows.map(r => JSON.parse(r.body).phase), ['dispatched', 'observed']);
+  for (const forbidden of [f.raw, f.value.capture_artifact.dataset.read.snapshot.core.post_content, JSON.stringify(f.request.changes)])
+    assert.equal(JSON.stringify(rows).includes(forbidden), false);
+  assert.equal(f.store.db.prepare("SELECT count(*) n FROM audit WHERE event='original-qualification-capture'").get().n, 2);
+});
+
+test('lost response and process restart permit only exact original read recovery, never another capture or grant renewal', async t => {
+  const f = await existingCaptureFixture(t); f.captureState.failure = true;
+  await assert.rejects(f.runCapture);
+  assert.deepEqual(await f.ledger.readCapture(f.job), { state: 'uncertain', recoveryReads: 0, receipt: null });
+  const next = f.open(), recovered = f.makeCapture(next.ledger); f.captureState.failure = false;
+  await assert.rejects(() => recovered.capture(f.job, f.values.expected));
+  assert.deepEqual(await recovered.recover(f.job, f.values.expected), f.value);
+  assert.equal((await next.ledger.readCapture(f.job)).state, 'captured');
+  assert.deepEqual(f.captureState.calls.map(c => c.action), ['capture', 'read-capture']);
+  assert.equal((await next.ledger.currentQueuedJob(f.job)).original.mapping.authorization.expiresAt, f.actor.expiresAt);
+  assert.notEqual(f.captureState.calls[0].claims.request_id, f.captureState.calls[1].claims.request_id);
+});
+
+test('capture recovery requires an existing attempt and its durable eight-read limit survives reopen', async t => {
+  const f = await existingCaptureFixture(t); await assert.rejects(f.recoverCapture); assert.equal(f.captureState.calls.length, 0);
+  f.captureState.failure = true; await assert.rejects(f.runCapture);
+  for (let i = 0; i < 8; i++) await assert.rejects(() => f.makeCapture(f.open().ledger).recover(f.job, f.values.expected));
+  await assert.rejects(f.recoverCapture); assert.equal(f.captureState.calls.length, 9);
+  assert.equal((await f.ledger.readCapture(f.job)).recoveryReads, 8);
+});
+
+test('concurrent capture claims have one winner and an older observation cannot override later recovery', async t => {
+  const f = await existingCaptureFixture(t), second = f.open().ledger;
+  const results = await Promise.allSettled([f.ledger.claimCapture(f.job, 'capture'), second.claimCapture(f.job, 'capture')]);
+  assert.equal(results.filter(r => r.status === 'fulfilled').length, 1);
+  const index = results.findIndex(r => r.status === 'fulfilled'), ledger = index === 0 ? f.ledger : second;
+  const handle = results[index].value;
+  await second.claimCapture(f.job, 'read-capture');
+  const receipt = { bindingSha256: f.context.binding_sha256, captureArtifactSha256: f.value.capture_artifact_sha256,
+    measurementSha256: delegationDigest(f.value.measurements), datasetSha256: f.value.capture_artifact.dataset_sha256 };
+  await assert.rejects(() => ledger.recordCapture(handle, receipt));
+  assert.equal((await f.ledger.readCapture(f.job)).state, 'uncertain');
+});
+
+test('missing, rewritten or rewound capture history cannot become an unused allowance after restart', async t => {
+  for (const damage of ['rows', 'marker', 'hash', 'body', 'rewind']) {
+    const f = await existingCaptureFixture(t); await f.runCapture();
+    if (damage === 'rows') f.store.db.exec('DELETE FROM original_management_capture_history');
+    if (damage === 'marker') f.store.db.exec("UPDATE original_management_attempts SET capture_count=0,capture_digest=''");
+    if (damage === 'hash') f.store.db.exec("UPDATE original_management_capture_history SET digest='bad'");
+    if (damage === 'body') f.store.db.exec("UPDATE original_management_capture_history SET body='{}'");
+    if (damage === 'rewind') f.store.db.exec('DELETE FROM original_management_capture_history WHERE ordinal=2');
+    const next = f.open().ledger;
+    await assert.rejects(() => next.readCapture(f.job), damage);
+    await assert.rejects(() => next.claimCapture(f.job, 'capture'), damage);
+    await assert.rejects(() => next.claimCapture(f.job, 'read-capture'), damage);
+  }
+});
+
+test('capture persistence failure rolls back events, independent markers and audit together', async t => {
+  for (const phase of ['dispatched', 'observed']) {
+    const f = await existingCaptureFixture(t);
+    f.store.db.exec(`CREATE TRIGGER reject_capture BEFORE INSERT ON audit WHEN NEW.event='original-qualification-capture'
+      AND NEW.outcome='capture:${phase}' BEGIN SELECT RAISE(ABORT,'fixture'); END`);
+    await assert.rejects(f.runCapture);
+    const marker = f.store.db.prepare('SELECT capture_count FROM original_management_attempts').get();
+    assert.equal(marker.capture_count, phase === 'dispatched' ? 0 : 1);
+    assert.equal(f.captureState.calls.length, phase === 'dispatched' ? 0 : 1);
+    assert.equal((await f.ledger.readCapture(f.job)).state, phase === 'dispatched' ? 'not-started' : 'uncertain');
+  }
+});
+
+test('current staff, source, policy and revocation gate capture and recovery before dispatch and after I/O', async t => {
+  for (const action of ['capture', 'recover']) for (const stage of ['before', 'after'])
+    for (const kind of ['staff', 'revoked', 'source', 'policy', 'epoch']) {
+      const f = await existingCaptureFixture(t);
+      if (action === 'recover') { f.captureState.failure = true; await assert.rejects(f.runCapture); f.captureState.failure = false; }
+      const baseline = f.captureState.calls.length;
+      const mutate = () => {
+        if (kind === 'staff') f.state.duringCheck = () => { throw new Error('Directory denied'); };
+        if (kind === 'revoked') f.accessLedger.recordPendingRevocation(f.job);
+        if (kind === 'source') f.queueState.pins.installed_manifest_sha256 = 'f'.repeat(64);
+        if (kind === 'policy') f.policy.emailDomains[0].portfolio.actions = ['read'];
+        if (kind === 'epoch') f.queueState.epoch = 'f'.repeat(64);
+      };
+      if (stage === 'before') mutate(); else f.captureState.afterCallback = mutate;
+      await assert.rejects(action === 'capture' ? f.runCapture : f.recoverCapture, `${action}/${stage}/${kind}`);
+      assert.equal(f.captureState.calls.length, baseline + (stage === 'before' ? 0 : 1));
+      assert.equal(f.store.db.prepare('SELECT capture_count FROM original_management_attempts').get().capture_count,
+        baseline + (stage === 'before' ? 0 : 1));
+    }
+});
+
+test('rehashed capture substitutions, input mutation, late responses and changed recovered bytes never become captured', async t => {
+  for (const kind of ['site', 'person', 'content', 'parity', 'measurement', 'input', 'monotonic', 'expiry', 'legacy']) {
+    const f = await existingCaptureFixture(t), value = structuredClone(f.value);
+    if (kind === 'site') value.capture_artifact.binding.site_id++;
+    if (kind === 'person') value.capture_artifact.binding.requester_binding_sha256 = 'f'.repeat(64);
+    if (kind === 'content') value.capture_artifact.dataset.read.snapshot.core.post_title = 'Unapproved';
+    if (kind === 'parity') value.capture_artifact.dataset.parity_manifest.wordpress_version = '0.0.1';
+    if (kind === 'legacy') value.capture_artifact.binding.schema = 1;
+    f.rehash(value); if (kind === 'measurement') value.measurements.native_calls++;
+    f.captureState.output = value;
+    if (kind === 'input') f.captureState.duringRead = input => { input.signed_request.key_id = 'changed'; };
+    if (kind === 'monotonic') f.captureState.afterCallback = () => { f.captureState.mono = 120000; };
+    if (kind === 'expiry') f.captureState.afterCallback = () => t.mock.method(Date, 'now', () => f.context.binding.expires_at * 1000);
+    await assert.rejects(f.runCapture, kind); t.mock.restoreAll();
+    assert.equal((await f.ledger.readCapture(f.job)).state, 'uncertain');
+  }
+  const f = await existingCaptureFixture(t); await f.runCapture();
+  const other = structuredClone(f.value); other.measurements.captured_at++;
+  t.mock.method(Date, 'now', () => other.measurements.captured_at * 1000);
+  assert.doesNotThrow(() => validateExistingManagementCapture(other, f.ledger.originalQueuedJob(f.job), f.values.expected));
+  f.captureState.output = other; await assert.rejects(f.recoverCapture);
+  assert.equal((await f.ledger.readCapture(f.job)).receipt.measurementSha256, delegationDigest(f.value.measurements));
+});
+
+test('capture history alone prevents reinitializing a lost principal through any content protocol', async t => {
+  const f = await existingCaptureFixture(t); await f.runCapture(); const write = writers(f);
+  f.store.db.exec(`DELETE FROM content_access_principals; DELETE FROM content_access_principal_history;
+    DELETE FROM original_management_authorizations; DELETE FROM original_management_attempts; DELETE FROM original_management_reviews;
+    DELETE FROM original_management_controls; DELETE FROM original_management_control_history; DELETE FROM original_management_bindings;
+    DELETE FROM original_management_queues; DELETE FROM original_management_queue_history; DELETE FROM original_management_access_queries;`);
+  for (const create of Object.values(write)) await assert.rejects(async () => create());
+  assert.equal(f.store.db.prepare('SELECT count(*) n FROM content_access_principals').get().n, 0);
+});
+
+test('private capture lifecycle requires both exact v2 tools and closes without a legacy fallback or production registration', async t => {
+  assert.equal(await createExistingManagementCaptureRuntime(), null);
+  for (const change of ['missing', 'unsafe', 'host']) {
+    const f = await existingCaptureFixture(t);
+    if (change === 'missing') f.captureTools.pop();
+    if (change === 'unsafe') f.captureTools[0].annotations.destructiveHint = true;
+    if (change === 'host') f.status.dashboardHost = 'other.example.invalid';
+    await assert.rejects(() => f.captureReader.initialize()); await assert.rejects(f.runCapture);
+    assert.equal(f.captureState.calls.length, 0);
+  }
+  const f = await existingCaptureFixture(t), runtime = await createExistingManagementCaptureRuntime({ enabled: true,
+    ledger: f.ledger, registrar: f.registrar, connect: async () => f.captureClient });
+  await runtime.close(); await runtime.close(); assert.equal(f.captureState.closes, 1);
+  await assert.rejects(() => runtime.capture.capture(f.job, f.values.expected)); assert.equal(f.captureState.calls.length, 0);
 });

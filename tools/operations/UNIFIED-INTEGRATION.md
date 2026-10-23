@@ -68,7 +68,7 @@ QA authorities remain distinct from production evidence.
 | Boundary | Current evidence | Remaining work |
 | --- | --- | --- |
 | Queue, context and access callback | Exact composition above passes isolated native/TLS tests | Register only after protected production setup is qualified |
-| Capture and recovery | Provider native proof passes | Gateway captured/uncertain history and fixed capture/recovery adapter |
+| Capture and recovery | Provider native proof passes; gateway adapter and durable history pass local tests | Combined native capture/recovery qualification and protected production composition |
 | Existing-record qualification | Contracts and original binding are retained | Stateful owner preparation/migration, source delivery, protected producer, rendered WordPress/ACF PRO QA and report admission |
 | Content workflows | Disposable native edit/readback/rollback evidence exists | Retry-safe drafts and qualified ACF/menu/media delivery |
 | Hosted service and workspace | Existing plugin and authentication infrastructure are retained | Concrete configuration/deployment approvals, installed proof and same-plugin tool refresh |
@@ -81,6 +81,27 @@ qualification and approved rollout. Neither development line changes this
 baseline, expands the company code pilot or grants staff access through source
 tests alone. Deployment examples and the serving process have not been repinned
 by this compatibility test.
+
+The next gateway slice adds fixed existing-v2 capture and recovery calls with
+separate registrar signature purposes. It verifies the capture against the
+original queued binding and independently retained preview. A one-time capture
+claim is committed before provider I/O; lost responses remain uncertain across
+SQLite reopen. Recovery reads the same slot, has a durable eight-read limit,
+retains the original grant/intent expiry and refuses a changed artifact or
+measurement digest. Staff/Directory, revocation, site policy, source pins and
+protected readiness are checked before dispatch and after I/O. Atomic history
+and independent attempt markers store only metadata hashes, not captured
+content, OAuth tokens or signatures. Surviving capture history also prevents
+recreating a missing principal through another protocol.
+
+All 619 gateway tests and ESLint pass locally, including concurrent claims,
+late responses, persistence failure, tampering and restart recovery. The native
+TLS hook now requires one successful provider capture with a deliberately lost
+response, SQLite reopen, exactly one recovery read, identical artifact and
+measurement hashes, unchanged Child content and revoked-read refusal. That
+expanded native proof remains pending until its original report is reviewed.
+The pinned provider/transport and frozen contracts are unchanged. Production
+startup and workspace registration remain disabled for this private path.
 
 ## Earlier candidate evidence, 2026-10-22
 

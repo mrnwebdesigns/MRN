@@ -33,6 +33,12 @@ const reviewSchema = z.object({ schema: z.literal(2), operationId: z.string().uu
   qualification: qualificationAnchorSchema }).strict();
 export const originalQualificationAbility = 'mrn-mainwp/request-content-edit-qualification-existing-v2';
 const queueRequestSchema = existingManagementTypes.qualification.request_input;
+const captureReceiptSchema = z.object({ bindingSha256: sha, captureArtifactSha256: sha,
+  measurementSha256: sha, datasetSha256: sha }).strict();
+const captureEventSchema = z.object({ schema: z.literal(1), job: z.string().uuid(), original: z.string().uuid(),
+  queueDigest: sha, bindingSha256: sha, principal: sha, requester: sha, requestId: z.string().uuid(),
+  action: z.enum(['capture', 'read-capture']), phase: z.enum(['dispatched', 'observed']),
+  at: z.number().int().positive().safe(), receipt: captureReceiptSchema.nullable() }).strict();
 const queueSchema = z.object({ schema: z.literal(1), id: z.string().uuid(), original: z.string().uuid(),
   actor: accessActorSchema, principal: sha, requester: sha, originalDigest: sha, reviewDigest: sha, bindingDigest: sha,
   coherenceEpochSha256: sha, request: queueRequestSchema, pins: z.unknown(),
@@ -59,6 +65,7 @@ export class OriginalManagementAuthorizationLedger {
   #handles = new WeakMap();
   #controlHandles = new WeakMap();
   #queueHandles = new WeakMap();
+  #captureHandles = new WeakMap();
   constructor(store, { signer, registry, policy, verifyStaff, queueReadiness, now = () => Date.now() }) {
     check(signer instanceof IdentitySigner && typeof policy === 'function' && typeof verifyStaff === 'function',
       'The existing service identity signer, policy and active staff check are required.');
@@ -86,7 +93,9 @@ export class OriginalManagementAuthorizationLedger {
       original TEXT NOT NULL, state TEXT NOT NULL, digest TEXT NOT NULL, dispatched_at INTEGER NOT NULL,
       response_digest TEXT NOT NULL, principal TEXT NOT NULL, requester TEXT NOT NULL, PRIMARY KEY(id,ordinal));
       CREATE TABLE IF NOT EXISTS original_management_access_queries(id TEXT PRIMARY KEY, job TEXT NOT NULL,
-      check_id TEXT NOT NULL UNIQUE, body TEXT NOT NULL, digest TEXT NOT NULL);`);
+      check_id TEXT NOT NULL UNIQUE, body TEXT NOT NULL, digest TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS original_management_capture_history(job TEXT NOT NULL, ordinal INTEGER NOT NULL,
+      body TEXT NOT NULL, digest TEXT NOT NULL, principal TEXT NOT NULL, requester TEXT NOT NULL, PRIMARY KEY(job,ordinal));`);
     if (!this.store.db.prepare('PRAGMA table_info(original_management_queues)').all().some(c => c.name === 'provider_job'))
       this.store.db.exec('ALTER TABLE original_management_queues ADD COLUMN provider_job TEXT');
     this.store.db.exec('CREATE UNIQUE INDEX IF NOT EXISTS original_queue_provider_job ON original_management_queues(provider_job)');
@@ -107,6 +116,10 @@ export class OriginalManagementAuthorizationLedger {
       this.store.db.exec('ALTER TABLE original_management_attempts ADD COLUMN access_count INTEGER NOT NULL DEFAULT 0');
     if (!columns.some(c => c.name === 'access_digest'))
       this.store.db.exec("ALTER TABLE original_management_attempts ADD COLUMN access_digest TEXT NOT NULL DEFAULT ''");
+    if (!columns.some(c => c.name === 'capture_count'))
+      this.store.db.exec('ALTER TABLE original_management_attempts ADD COLUMN capture_count INTEGER NOT NULL DEFAULT 0');
+    if (!columns.some(c => c.name === 'capture_digest'))
+      this.store.db.exec("ALTER TABLE original_management_attempts ADD COLUMN capture_digest TEXT NOT NULL DEFAULT ''");
   }
   #actor(value) {
     // Never accept a caller-created actor, hash or session ID at this boundary.
@@ -681,6 +694,97 @@ export class OriginalManagementAuthorizationLedger {
         && after.queue.digest === before.queue.digest && delegationDigest(after.queue.context) === delegationDigest(before.queue.context),
       'The original queued job changed during current staff and protected readiness checks.');
       this.#sameQueueAdmission(after.queue.queue, admission); return after;
+    });
+  }
+
+  // Metadata only: never retain content, signatures or OAuth tokens here. An
+  // independent original-attempt counter/digest anchors every dispatch and
+  // observation, including failures whose response is lost across a restart.
+  #captureHistory(current) {
+    const { original, queue } = current, m = original.mapping, job = queue.context.binding.qualification_job_id;
+    const marker = this.store.db.prepare('SELECT capture_count,capture_digest FROM original_management_attempts WHERE attempt=?').get(m.attempt);
+    const rows = this.store.db.prepare('SELECT * FROM original_management_capture_history WHERE job=? ORDER BY ordinal LIMIT 19').all(job);
+    check(marker && Number.isSafeInteger(marker.capture_count) && marker.capture_count >= 0 && marker.capture_count <= 18
+      && rows.length === marker.capture_count && marker.capture_digest === (rows.length ? delegationDigest(rows) : ''),
+    'Original capture history is unavailable or changed; never reset or recapture.');
+    let reads = 0, receipt = null, previous = null; const requests = new Set();
+    const base = { schema: 1, job, original: m.requestId, queueDigest: queue.digest,
+      bindingSha256: queue.context.binding_sha256, principal: m.principal, requester: m.requester };
+    for (const [index, row] of rows.entries()) {
+      check(row.ordinal === index + 1 && row.job === job && row.principal === m.principal && row.requester === m.requester
+        && digest(row.body) === row.digest, 'Original capture event integrity is unavailable.');
+      let raw; try { raw = JSON.parse(row.body); } catch { check(false, 'Original capture event is corrupt.'); }
+      const event = parse(captureEventSchema, raw);
+      check(Object.entries(base).every(([key, value]) => event[key] === value)
+        && event.at >= (previous?.at ?? queue.dispatchedAt) && event.at <= this.now(), 'Original capture event binding changed.');
+      if (event.phase === 'dispatched') {
+        check(event.receipt === null && !requests.has(event.requestId)
+          && event.action === (index === 0 ? 'capture' : 'read-capture'), 'Original capture dispatch history changed.');
+        requests.add(event.requestId); if (event.action === 'read-capture') reads++;
+      } else {
+        check(previous?.phase === 'dispatched' && previous.requestId === event.requestId && previous.action === event.action
+          && event.receipt?.bindingSha256 === base.bindingSha256
+          && (!receipt || delegationDigest(receipt) === delegationDigest(event.receipt)), 'Original capture observation changed.');
+        receipt = event.receipt;
+      }
+      previous = event;
+    }
+    check(reads <= 8, 'Original capture recovery budget is exhausted.');
+    return { marker, rows, base, reads, receipt, previous,
+      state: receipt ? 'captured' : rows.length ? 'uncertain' : 'not-started' };
+  }
+  #captureEvent(current, history, event) {
+    const value = parse(captureEventSchema, { ...history.base, ...event }), body = JSON.stringify(value);
+    this.store.db.prepare('INSERT INTO original_management_capture_history VALUES(?,?,?,?,?,?)')
+      .run(value.job, history.rows.length + 1, body, digest(body), value.principal, value.requester);
+    const rows = this.store.db.prepare('SELECT * FROM original_management_capture_history WHERE job=? ORDER BY ordinal').all(value.job);
+    check(this.store.db.prepare('UPDATE original_management_attempts SET capture_count=?,capture_digest=? WHERE attempt=? AND capture_count=? AND capture_digest=?')
+      .run(rows.length, delegationDigest(rows), current.original.mapping.attempt, history.marker.capture_count, history.marker.capture_digest).changes === 1,
+    'Original capture history changed before commit.');
+    this.store.audit(current.original.mapping.actor, current.original.mapping.site, value.original, 'original-qualification-capture',
+      `${value.action}:${value.phase}`);
+    return this.#captureHistory(current);
+  }
+  #sameCaptureAuthority(current, before) {
+    check(current.original.digest === before.original.digest && current.revision === before.revision
+      && current.queue.digest === before.queue.digest
+      && delegationDigest(current.queue.context) === delegationDigest(before.queue.context), 'Original capture authority changed.');
+  }
+  async readCapture(jobId) {
+    const before = await this.currentQueuedJob(jobId);
+    return this.store.transaction(() => {
+      const current = this.#currentQueued(jobId); this.#sameCaptureAuthority(current, before);
+      const history = this.#captureHistory(current);
+      return { state: history.state, recoveryReads: history.reads, receipt: history.receipt };
+    });
+  }
+  async claimCapture(jobId, action, within = () => {}) {
+    check(['capture', 'read-capture'].includes(action), 'Only fixed capture and recovery actions are supported.');
+    const before = await this.currentQueuedJob(jobId);
+    return this.store.transaction(() => {
+      within(); const current = this.#currentQueued(jobId); this.#sameCaptureAuthority(current, before);
+      const history = this.#captureHistory(current);
+      check(action === 'capture' ? history.state === 'not-started' : history.state !== 'not-started' && history.reads < 8,
+        'Capture is consumed or recovery is unavailable; never retry the capture.');
+      const event = { action, phase: 'dispatched', requestId: randomUUID(), at: this.now(), receipt: null };
+      const saved = this.#captureEvent(current, history, event);
+      within(); const handle = Object.freeze({ jobId, requestId: event.requestId });
+      this.#captureHandles.set(handle, { current, event, digest: saved.marker.capture_digest }); return handle;
+    });
+  }
+  async recordCapture(handle, value, within = () => {}) {
+    const held = this.#captureHandles.get(handle); check(held, 'Original capture handle is unavailable or consumed.');
+    this.#captureHandles.delete(handle);
+    const receipt = parse(captureReceiptSchema, value), before = await this.currentQueuedJob(handle.jobId);
+    return this.store.transaction(() => {
+      within(); const current = this.#currentQueued(handle.jobId);
+      this.#sameCaptureAuthority(current, before); this.#sameCaptureAuthority(current, held.current);
+      const history = this.#captureHistory(current);
+      check(history.marker.capture_digest === held.digest && receipt.bindingSha256 === history.base.bindingSha256
+        && (!history.receipt || delegationDigest(history.receipt) === delegationDigest(receipt)),
+      'Capture response is stale, superseded or differs from the retained artifact.');
+      this.#captureEvent(current, history, { ...held.event, phase: 'observed', at: this.now(), receipt });
+      within(); return receipt;
     });
   }
   recordQueuePendingRevocation(jobId) {

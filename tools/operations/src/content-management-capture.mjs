@@ -56,6 +56,12 @@ export function validateManagementContext(queuedContext, { evidence, request, pr
   insist(context.state === 'queued' && context.capture_artifact_sha256 === null && context.binding_sha256 === delegationDigest(b)
     && b.target.post_id > 0 && b.expected_target_revision === 0 && b.created_at <= at && b.expires_at > at
     && b.expires_at === Math.min(evidence.review.expires_at, b.created_at + b.job_intent_ttl_seconds));
+  return { context, original: validateManagementReviewBinding(b, { evidence, request, profile, now }) };
+}
+
+// Shared content semantics only. Each protocol must independently validate its
+// own retained binding, identity and expiry before reaching this helper.
+export function validateManagementReviewBinding(b, { evidence, request, profile, now = Date.now() }) {
   const original = validateManagementEvidence(evidence, { site: { id: b.site_id, url: b.site_url }, target: b.target,
     request, profile, rollbackOf: evidence.review.rollback_operation_id, now });
   const review = original.review, migration = original.migration;
@@ -66,14 +72,19 @@ export function validateManagementContext(queuedContext, { evidence, request, pr
     && b.before_paths_sha256 === delegationDigest(original.read.affected_paths)
     && b.acf_schema_sha256 === delegationDigest(original.read.snapshot.acf_definitions)
     && b.management_contract_sha256 === managementContractHash);
-  return { context, original };
+  return original;
 }
 
 export function validateManagementCapture(value, expected) {
   const { context, original } = validateManagementContext(expected.queuedContext, expected);
+  return validateManagementCapturePayload(managementCaptureTypes.capture_output.parse(value), { context, original, now: expected.now });
+}
+
+// Receives an already schema-validated payload and independent original review.
+// This function grants no dispatch, recovery or report-admission authority.
+export function validateManagementCapturePayload(result, { context, original, now = Date.now() }) {
   const b = context.binding, { review, migration } = original;
-  const at = Math.floor((expected.now ?? Date.now()) / 1000);
-  const result = managementCaptureTypes.capture_output.parse(value), artifact = result.capture_artifact;
+  const at = Math.floor(now / 1000), artifact = result.capture_artifact;
   insist(size(artifact) <= 5000000 && result.qualification_job_id === b.qualification_job_id
     && same(artifact.binding, b) && artifact.binding_sha256 === context.binding_sha256
     && same(artifact.review, review) && same(artifact.migration, migration)

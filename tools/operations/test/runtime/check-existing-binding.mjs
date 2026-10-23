@@ -22,12 +22,14 @@ import { bindingFixtureDiagnostic } from './existing-binding-diagnostics.mjs';
 import { parseExistingBindingAccess } from './existing-binding-access.mjs';
 import { createExistingManagementAccessRuntime } from '../../src/content-access-runtime.mjs';
 import { createExistingManagementContextRuntime, existingManagementContextTool } from '../../src/existing-management-context.mjs';
+import { createExistingManagementCaptureRuntime, existingManagementCaptureTools,
+  validateExistingManagementCapture } from '../../src/existing-management-capture.mjs';
 import { createHttpServer } from '../../src/http.mjs';
 
 process.umask(0o077);
 const clients = new Set(), transports = new Set();
 const recentCalls = [];
-let store, deadline, hardDeadline, reportPath, sidecar, callbackServer, accessRuntime, routingTouched = false, closingAccess, started;
+let store, captureStore, deadline, hardDeadline, reportPath, sidecar, callbackServer, accessRuntime, routingTouched = false, closingAccess, started;
 let checksComplete = false;
 const report = { schema: 2, result: 'INCOMPLETE', scope: 'disposable-native-existing-queue-access-v2-only', passed: [],
   productionCredentials: false, productionActivation: false, liveGoogleVerified: false, protectedWorkerVerified: false,
@@ -367,6 +369,49 @@ try {
   assert.equal(contextCalls, 1);
   pass('Actual registrar context request triggers the provider TLS callback and separate signed identity readback');
 
+  phase = 'private-capture-interruption';
+  const captureExpected = { evidence, request, profile };
+  let captureDispatches = 0, recoveryReads = 0, interceptedCapture;
+  const openCapture = async interrupt => {
+    captureStore = new Store(join(work, 'original-binding.sqlite'));
+    const captureLedger = new OriginalManagementAuthorizationLedger(captureStore,
+      { signer, registry, policy: () => pins, verifyStaff, queueReadiness });
+    const raw = await rawClient();
+    const runtime = await createExistingManagementCaptureRuntime({ enabled: true, ledger: captureLedger, registrar,
+      connect: async () => ({ readResource: (...args) => raw.readResource(...args), listTools: (...args) => raw.listTools(...args),
+        close: () => raw.close(), callTool: async (...args) => {
+          const name = args[0].name;
+          assert.ok(Object.values(existingManagementCaptureTools).includes(name));
+          if (name === existingManagementCaptureTools.capture) captureDispatches++; else recoveryReads++;
+          const result = await raw.callTool(...args);
+          if (interrupt && name === existingManagementCaptureTools.capture) {
+            const captured = validateExistingManagementCapture(payload(result), await captureLedger.currentQueuedJob(jobId), captureExpected);
+            interceptedCapture = { artifact: captured.capture_artifact_sha256, measurements: delegationDigest(captured.measurements) };
+            throw new Error('DISPOSABLE_POST_SUCCESS_CAPTURE_INTERRUPTION');
+          }
+          return result;
+        } }) });
+    transports.add(runtime); return { runtime, captureLedger };
+  };
+  const interrupted = await openCapture(true);
+  await assert.rejects(() => interrupted.runtime.capture.capture(jobId, captureExpected), { message: 'DISPOSABLE_POST_SUCCESS_CAPTURE_INTERRUPTION' });
+  assert.equal(captureDispatches, 1); assert.match(interceptedCapture.artifact, /^[a-f0-9]{64}$/);
+  assert.deepEqual(await interrupted.captureLedger.readCapture(jobId), { state: 'uncertain', recoveryReads: 0, receipt: null });
+  await interrupted.runtime.close(); captureStore.close(); captureStore = undefined;
+  const resumed = await openCapture(false);
+  await assert.rejects(() => resumed.runtime.capture.capture(jobId, captureExpected)); assert.equal(captureDispatches, 1);
+  const recoveredCapture = await resumed.runtime.capture.recover(jobId, captureExpected);
+  assert.equal(recoveredCapture.capture_artifact_sha256, interceptedCapture.artifact);
+  assert.equal(delegationDigest(recoveredCapture.measurements), interceptedCapture.measurements);
+  assert.deepEqual(recoveredCapture.capture_artifact.dataset.read, read);
+  assert.equal((await resumed.captureLedger.readCapture(jobId)).state, 'captured');
+  assert.equal(recoveryReads, 1);
+  report.capture = { dispatches: captureDispatches, recovery_reads: recoveryReads, uncertain_before_recovery: true,
+    artifact_sha256: interceptedCapture.artifact, measurements_sha256: interceptedCapture.measurements,
+    binding_sha256: recoveredCapture.capture_artifact.binding_sha256, native_calls: recoveredCapture.measurements.native_calls,
+    original_expires_at: originalAnchor.expiresAt / 1000, job_expires_at: queued.binding.expires_at };
+  pass('One native capture survives a lost response and SQLite reopen with identical bounded read recovery and no recapture');
+
   phase = 'unchanged-child';
   const freshClient = new DelegatedMainwpClient(await rawClient(), nextActor, signer);
   const freshSession = new MainwpSession(freshClient, registry, store, nextActor,
@@ -377,14 +422,15 @@ try {
   const mappings = store.db.prepare('SELECT body FROM original_management_authorizations').all().map(row => JSON.parse(row.body));
   assert.ok(mappings.every(m => m.actor.googleSubject === '222222' && m.actor.verifiedEmail === 'bob@mrnwebdesigns.com'));
   const audit = store.db.prepare('SELECT subject,event,outcome,identity FROM audit WHERE operation=? ORDER BY seq').all(originalRequestId);
-  assert.deepEqual(audit.map(row => [row.event, row.outcome]), [
+  assert.deepEqual(audit.filter(row => !['original-queue-access', 'original-qualification-capture'].includes(row.event)).map(row => [row.event, row.outcome]), [
     ['original-authorization-retained', 'prepared'], ['original-preview-dispatch', 'claimed'],
     ['original-preview-retained', 'reviewed'], ['original-authorization-bind', 'prepared'],
     ['original-authorization-bind', 'dispatched'], ['original-authorization-read', 'prepared'],
     ['original-authorization-read', 'dispatched'], ['original-provider-binding', 'observed'],
     ['original-qualification-queue', 'prepared'], ['original-qualification-queue', 'dispatched'], ['original-qualification-queue', 'observed'],
-    ['original-queue-access', 'clear'],
   ]);
+  assert.deepEqual(audit.filter(row => row.event === 'original-qualification-capture').map(row => row.outcome),
+    ['capture:dispatched', 'read-capture:dispatched', 'read-capture:observed']);
   for (const row of audit) {
     assert.equal(row.subject, 'google-oauth2|222222');
     assert.deepEqual(JSON.parse(row.identity), { googleSubject: '222222', email: 'bob@mrnwebdesigns.com', provider: 'google-oauth2' });
@@ -397,11 +443,14 @@ try {
   await assert.rejects(() => contextRuntime.context.read(jobId));
   assert.equal(contextCalls, 2);
   const accessRows = store.db.prepare('SELECT body FROM original_management_access_queries WHERE job=? ORDER BY rowid').all(jobId).map(r => JSON.parse(r.body));
-  assert.deepEqual(accessRows.map(r => [r.state, r.phase]), [['clear', 'read-capture'], ['pending-revocation', 'read-capture']]);
+  assert.deepEqual(accessRows.at(-1) && [accessRows.at(-1).state, accessRows.at(-1).phase], ['pending-revocation', 'read-capture']);
+  assert.ok(accessRows.slice(0, -1).every(r => r.state === 'clear' && ['capture', 'read-capture'].includes(r.phase)));
+  assert.ok(accessRows.filter(r => r.phase === 'capture').length >= recoveredCapture.measurements.native_calls + 2);
   assert.ok(accessRows.every(r => r.actor.subject === context.actor.subject && r.actor.verifiedEmail === context.actor.verifiedEmail));
-  assert.equal(store.db.prepare('SELECT access_count FROM original_management_attempts WHERE request=?').get(originalRequestId).access_count, 2);
+  assert.equal(store.db.prepare('SELECT access_count FROM original_management_attempts WHERE request=?').get(originalRequestId).access_count, accessRows.length);
   await assert.rejects(() => contextRuntime.context.read(jobId)); assert.equal(contextCalls, 2);
-  report.currentAccess = { context_requests: contextCalls, signed_callbacks: accessRows.length, clear: 1, pending_revocation: 1,
+  await assert.rejects(() => resumed.runtime.capture.recover(jobId, captureExpected)); assert.equal(recoveryReads, 1);
+  report.currentAccess = { context_requests: contextCalls, signed_callbacks: accessRows.length, clear: accessRows.length - 1, pending_revocation: 1,
     repeated_revoked_read_dispatched: false };
   pass('Revocation during actual provider context lookup returns a signed denial and blocks later local dispatch');
   phase = 'network-verification';
@@ -410,12 +459,18 @@ try {
   const accessPosts = network.filter(row => /\/read-management-access-veto-query-existing-v2\/run$/.test(row.path));
   const contextPosts = network.filter(row => /\/get-content-edit-qualification-context-existing-v2\/run$/.test(row.path));
   const queuePosts = network.filter(row => row.ability === originalQualificationAbility);
+  const capturePosts = network.filter(row => /\/capture-content-edit-qualification-existing-v2\/run$/.test(row.path));
+  const recoveryPosts = network.filter(row => /\/read-content-edit-qualification-capture-existing-v2\/run$/.test(row.path));
   report.network = { signed_control_posts: controls.length, context_posts: contextPosts.length, access_readback_posts: accessPosts.length,
-    queue_posts: queuePosts.length, network_log_sha256: digest(readFileSync(join(work, 'gateway-network.jsonl'))) }; save();
+    queue_posts: queuePosts.length, capture_posts: capturePosts.length, recovery_posts: recoveryPosts.length,
+    network_log_sha256: digest(readFileSync(join(work, 'gateway-network.jsonl'))) }; save();
   assert.equal(controls.length, 2); assert.ok(controls.every(row => row.method === 'POST' && row.status === 200));
-  assert.equal(accessPosts.length, 2); assert.ok(accessPosts.every(row => row.method === 'POST' && row.status === 200));
+  assert.equal(accessPosts.length, accessRows.length); assert.ok(accessPosts.every(row => row.method === 'POST' && row.status === 200));
   assert.equal(contextPosts.length, 2); assert.ok(contextPosts.every(row => row.method === 'POST'));
   assert.equal(queuePosts.length, 1); assert.ok(queuePosts.every(row => row.method === 'POST' && row.status === 200));
+  for (const posts of [capturePosts, recoveryPosts]) {
+    assert.equal(posts.length, 1); assert.ok(posts.every(row => row.method === 'POST' && row.status === 200));
+  }
   checksComplete = true;
 } catch (error) {
   report.result = 'FAIL'; report.failure = { phase, recentCalls,
@@ -429,7 +484,7 @@ try {
   }
   await Promise.allSettled([...transports].map(runtime => runtime.close()));
   await Promise.allSettled([...clients].map(client => client.close()));
-  store?.close();
+  captureStore?.close(); store?.close();
   if (checksComplete && report.result !== 'FAIL') report.result = 'PASS';
   if (started !== undefined) report.elapsedMs = Math.ceil(performance.now() - started);
   save(); clearTimeout(deadline); clearTimeout(hardDeadline);

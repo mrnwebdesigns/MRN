@@ -63,7 +63,8 @@ export class AccessPrincipals {
           'ACCESS_UNAVAILABLE', 'Surviving workflow history forbids recreating missing principal state.');
       }
     }
-    for (const table of ['original_management_attempts', 'original_management_control_history', 'original_management_queue_history']) {
+    for (const table of ['original_management_attempts', 'original_management_control_history', 'original_management_queue_history',
+      'original_management_capture_history']) {
       if (!this.store.db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?").get(table)) continue;
       for (const row of this.store.db.prepare(`SELECT principal,requester FROM ${table}`).iterate()) {
         requireThat(/^[a-f0-9]{64}$/.test(row.principal) && /^[a-f0-9]{64}$/.test(row.requester),
