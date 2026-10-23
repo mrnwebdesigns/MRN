@@ -60,8 +60,8 @@ export class ExistingManagementSourceContext {
         within(); return value;
       } finally { clearTimeout(timer); }
     };
-    const original = await bounded(() => this.ledger.currentQueuedJob(jobId));
-    const captured = await bounded(() => this.ledger.readCapture(jobId)), queued = original.queue.context, receipt = captured.receipt;
+    const { current: original, capture: captured } = await bounded(() => this.ledger.currentQueuedCapture(jobId));
+    const queued = original.queue.context, receipt = captured.receipt;
     check(captured.state === 'captured' && receipt?.bindingSha256 === queued.binding_sha256
       && measured.qualification_job_id === jobId && measured.binding_sha256 === queued.binding_sha256
       && measured.measurement_record_sha256 === delegationDigest(measured.measurements)
@@ -85,8 +85,7 @@ export class ExistingManagementSourceContext {
     check(sent === delegationDigest(input) && output.request_sha256 === sent
       && output.source_context_sha256 === delegationDigest(output.source_context) && same(output.source_context, expected)
       && expires * 1000 > this.now());
-    const current = await bounded(() => this.ledger.currentQueuedJob(jobId));
-    const after = await bounded(() => this.ledger.readCapture(jobId));
+    const { current, capture: after } = await bounded(() => this.ledger.currentQueuedCapture(jobId));
     check(current.original.digest === original.original.digest && current.revision === original.revision
       && current.queue.digest === original.queue.digest && same(current.queue.context, queued)
       && same(after, captured) && expires * 1000 > this.now());

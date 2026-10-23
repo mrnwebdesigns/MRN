@@ -382,6 +382,17 @@ the exact first provider refusal still requires its phase evidence. The whole
 MRN QA `40006021391` passed. No passing source-context or catalog-native gate
 is inferred from either failed run.
 
+A separately tested gateway change pairs the queued original and complete
+capture-history observation in one SQLite transaction after the existing fresh
+staff/readiness check. Source-context and catalog readers use that same complete
+observation before and after their work, removing duplicate remote membership
+checks used to assemble a single snapshot. Revocation, current policy/source,
+original expiry, independent capture marker/history and the total 20-second
+deadline remain enforced. No access decision is cached. All 650 local gateway
+tests pass, including restart, history corruption and authority changes during
+the fresh check. This has not yet demonstrated native latency or closed the
+failed source-context gate.
+
 ### Existing-record owner catalog resolution
 
 The private gateway catalog resolver accepts only the retained job ID. It

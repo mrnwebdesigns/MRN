@@ -750,14 +750,18 @@ export class OriginalManagementAuthorizationLedger {
       && current.queue.digest === before.queue.digest
       && delegationDigest(current.queue.context) === delegationDigest(before.queue.context), 'Original capture authority changed.');
   }
-  async readCapture(jobId) {
+  // Pair the original queue and its capture history in one transaction after
+  // the existing fresh staff/readiness checks. Internal consumers needing both
+  // must not repeat the same remote membership checks to assemble one snapshot.
+  async currentQueuedCapture(jobId) {
     const before = await this.currentQueuedJob(jobId);
     return this.store.transaction(() => {
       const current = this.#currentQueued(jobId); this.#sameCaptureAuthority(current, before);
       const history = this.#captureHistory(current);
-      return { state: history.state, recoveryReads: history.reads, receipt: history.receipt };
+      return { current, capture: { state: history.state, recoveryReads: history.reads, receipt: history.receipt } };
     });
   }
+  async readCapture(jobId) { return (await this.currentQueuedCapture(jobId)).capture; }
   async claimCapture(jobId, action, within = () => {}) {
     check(['capture', 'read-capture'].includes(action), 'Only fixed capture and recovery actions are supported.');
     const before = await this.currentQueuedJob(jobId);

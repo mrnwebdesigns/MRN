@@ -2186,3 +2186,36 @@ test('existing catalog bounds a stalled fresh staff check and never dispatches s
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(f.catalogState.reads, 0);
 });
+
+test('one fresh queued-capture observation atomically binds original authority and complete capture history across restart', async t => {
+  const f = await existingCaptureFixture(t);
+  const initial = await f.ledger.currentQueuedCapture(f.job);
+  assert.equal(initial.capture.state, 'not-started'); assert.equal(initial.capture.receipt, null);
+  await f.runCapture();
+  const n = f.state.checks, saved = await f.ledger.currentQueuedCapture(f.job);
+  assert.equal(f.state.checks - n, 2, 'fresh staff checks still bracket protected readiness');
+  assert.equal(saved.capture.state, 'captured');
+  assert.equal(saved.capture.receipt.bindingSha256, saved.current.queue.context.binding_sha256);
+  assert.equal(saved.current.original.mapping.authorization.expiresAt, f.actor.expiresAt);
+  assert.deepEqual((await f.ledger.currentQueuedJob(f.job)).queue.context, saved.current.queue.context);
+  assert.deepEqual(await f.ledger.readCapture(f.job), saved.capture);
+  assert.deepEqual(await f.open().ledger.currentQueuedCapture(f.job), saved);
+  saved.capture.receipt.bindingSha256 = 'f'.repeat(64);
+  assert.notEqual((await f.ledger.currentQueuedCapture(f.job)).capture.receipt.bindingSha256, 'f'.repeat(64));
+});
+
+test('queued-capture observation rejects changed history and current authority during its fresh check', async t => {
+  for (const kind of ['capture-body', 'capture-marker', 'revoked', 'staff', 'source', 'queue']) {
+    const f = await existingCaptureFixture(t); await f.runCapture();
+    f.state.duringCheck = () => {
+      if (kind === 'capture-body') f.store.db.exec("UPDATE original_management_capture_history SET digest='bad'");
+      if (kind === 'capture-marker') f.store.db.exec('UPDATE original_management_attempts SET capture_count=0');
+      if (kind === 'revoked') f.accessLedger.recordPendingRevocation(f.job);
+      if (kind === 'staff') throw new Error('Directory denied');
+      if (kind === 'source') f.queueState.pins.installed_manifest_sha256 = 'f'.repeat(64);
+      if (kind === 'queue') f.store.db.exec("UPDATE original_management_queues SET response_digest='bad'");
+    };
+    await assert.rejects(() => f.ledger.currentQueuedCapture(f.job), kind);
+    assert.equal(f.captureState.calls.length, 1);
+  }
+});

@@ -38,15 +38,14 @@ export class ExistingManagementSourceCatalogRegistry {
         within(); return result;
       } finally { clearTimeout(timer); }
     };
-    const original = await bounded(() => this.ledger.currentQueuedJob(jobId));
-    const captured = await bounded(() => this.ledger.readCapture(jobId)), queued = original.queue.context;
+    const { current: original, capture: captured } = await bounded(() => this.ledger.currentQueuedCapture(jobId));
+    const queued = original.queue.context;
     check(captured.state === 'captured' && captured.receipt?.bindingSha256 === queued.binding_sha256);
     const configuration = this.current(), pin = this.expectedSha256(), validationStarted = this.monotonic();
     const catalog = validate(configuration, pin, owner.source_recipe_catalog_sha256, queued.binding, this.now());
     check(this.monotonic() >= validationStarted && this.monotonic() - validationStarted < 5000);
     within();
-    const current = await bounded(() => this.ledger.currentQueuedJob(jobId));
-    const after = await bounded(() => this.ledger.readCapture(jobId));
+    const { current, capture: after } = await bounded(() => this.ledger.currentQueuedCapture(jobId));
     check(current.original.digest === original.original.digest && current.revision === original.revision
       && current.queue.digest === original.queue.digest && same(current.queue.context, queued) && same(after, captured)
       && this.expectedSha256() === pin && delegationDigest(this.current()) === pin
