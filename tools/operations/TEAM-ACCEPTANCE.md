@@ -44,14 +44,31 @@ Use already-authorized test identities or separately reviewed administrative tes
 
 ## Latest source evidence, 2026-10-23
 
-The expanded original-capture/recovery composition is **not qualified**:
+The expanded private original-capture/recovery composition is now qualified
+for its disposable native scope at gateway
+`948f6d6da3d9c3af0a2a07c39a42ca584bc02807`, provider fixture
+`f7ca46f54ca383d5708548652f0d6a5b3d334bf7` and transport
+`16a0e1e719077deb98f8d3b9a0ca57e85b301406`.
+[Combined CI 39985770653](https://github.com/mrnwebdesigns/MRN/actions/runs/39985770653)
+and [MRN QA 39985770424](https://github.com/mrnwebdesigns/MRN/actions/runs/39985770424)
+pass: 621 gateway tests, 13 Fleet regressions and eight original runtime reports.
+Artifact `12517251055` independently matches SHA-256
+`62c8c65006bcd492b01ffdc5e74605be5777e09f9b5766692740ff4aa5ce71b4`.
+The 145,440 ms native hook proves exactly one capture, lost-response recovery
+after SQLite reopen, identical data, 58 fresh signed staff checks, revocation
+refusal, unchanged Child content and callback cleanup. Original deadlines stay
+unchanged. This closes that private source gate only; every live team acceptance
+row above remains unverified, and ordinary plugin/theme maintenance still needs
+the Google-delegated chat integration.
+
+Earlier candidates failed and remain recorded:
 native runs `39978255035`, `39979454472` and `39983906354` failed during capture.
 The second stopped after 60,068 ms despite a 120-second client limit; after the
 isolated proxy correction, the third hit the 170-second cleanup deadline.
 The cause is still under investigation. Gateway `a182a7e` passed 619 local tests; `a82c61b` adds bounded
 HTTP failure diagnostics with six focused tests and staged MRN QA passing.
-These results do not replace the narrower passing baseline below or establish
-any live acceptance row.
+Those failed results do not override the later passing checkpoint, and none
+establishes any live acceptance row.
 
 Gateway `84aaf09d4279370e6dc28e5ec2ec87be5d5a6e6a` with provider
 `a199464c725d01611164d07b77183727c98ebf5e` and MCP transport

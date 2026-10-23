@@ -68,7 +68,8 @@ QA authorities remain distinct from production evidence.
 | Boundary | Current evidence | Remaining work |
 | --- | --- | --- |
 | Queue, context and access callback | Exact composition above passes isolated native/TLS tests | Register only after protected production setup is qualified |
-| Capture and recovery | Provider native proof passes; gateway adapter and durable history pass local tests | Combined native capture/recovery qualification and protected production composition |
+| Capture and recovery | Gateway `948f6d6` passes combined native capture, lost-response recovery and revocation checks | Protected production composition and activation |
+| Ordinary plugin/theme maintenance | Backend tools exist; the company diagnostic guard is installed | Canonical sync latency fix and a qualified Google-delegated chat workflow |
 | Existing-record qualification | Contracts and original binding are retained | Stateful owner preparation/migration, source delivery, protected producer, rendered WordPress/ACF PRO QA and report admission |
 | Content workflows | Disposable native edit/readback/rollback evidence exists | Retry-safe drafts and qualified ACF/menu/media delivery |
 | Hosted service and workspace | Existing plugin and authentication infrastructure are retained | Concrete configuration/deployment approvals, installed proof and same-plugin tool refresh |
@@ -99,7 +100,8 @@ late responses, persistence failure, tampering and restart recovery. The native
 TLS hook now requires one successful provider capture with a deliberately lost
 response, SQLite reopen, exactly one recovery read, identical artifact and
 measurement hashes, unchanged Child content and revoked-read refusal. That
-expanded native proof failed in both runs described below and remains required.
+expanded native proof initially failed in the runs retained below; the passing
+`948f6d6` checkpoint later in this section supersedes those candidate results.
 The pinned provider/transport and frozen contracts are unchanged. Production
 startup and workspace registration remain disabled for this private path.
 
@@ -161,6 +163,40 @@ route and retains pending capture timing and completed deadline cleanup.
 Twenty-four focused tests, including revocation between checks on the shared
 connection, and lint pass. This removes repeated subprocess setup; it does not
 prove the remaining latency cause or relax any original authorization deadline.
+
+### Qualified private capture checkpoint
+
+Gateway `948f6d6da3d9c3af0a2a07c39a42ca584bc02807`, provider fixture
+`f7ca46f54ca383d5708548652f0d6a5b3d334bf7` and unchanged transport
+`16a0e1e719077deb98f8d3b9a0ca57e85b301406` pass
+[combined CI 39985770653](https://github.com/mrnwebdesigns/MRN/actions/runs/39985770653)
+and [MRN QA 39985770424](https://github.com/mrnwebdesigns/MRN/actions/runs/39985770424).
+All 621 gateway tests, 13 Fleet regressions and eight original runtime reports
+pass; the dependency audit reports zero vulnerabilities. Artifact `12517251055`
+was independently verified against SHA-256
+`62c8c65006bcd492b01ffdc5e74605be5777e09f9b5766692740ff4aa5ce71b4`.
+
+The existing-v2 hook completed in 145,440 ms without extending any original
+deadline. It proves one native capture, a deliberately lost response, SQLite
+reopen, one recovery of the identical artifact/measurements and unchanged
+Child content after fresh sync/readback. Twenty-one native calls produced 50
+signed access callbacks: 49 clear and one pending-revocation denial. All 58
+staff checks made fresh signed POSTs through one separate transport. The
+callback route was disabled, and a later revoked read was not dispatched.
+
+This closes the combined private capture/recovery gate. It does not establish
+stateful owner migration, protected source/producer delivery, rendered QA,
+production activation, a live content/code write, remote backup, live Google
+denial or ChatGPT acceptance. All corresponding report flags remain false.
+The earlier failed artifacts remain evidence of their failed candidates.
+
+The current gateway and selected provider delegation map also lack ordinary
+plugin/theme maintenance integration. The provider owner is qualifying an
+existing canonical background-sync job route locally before proposing a
+versioned prepare/poll contract. Pending jobs must grant no confirmation or
+write authority; individual Google attribution, original expiry, exact-site
+binding, verified completion and all change gates remain required. No such
+contract or production gateway activation is included in this checkpoint.
 
 ## Earlier candidate evidence, 2026-10-22
 
