@@ -198,6 +198,36 @@ write authority; individual Google attribution, original expiry, exact-site
 binding, verified completion and all change gates remain required. No such
 contract or production gateway activation is included in this checkpoint.
 
+### Original authorization lifetime follow-up
+
+Review of the maintenance authority interface exposed a separate lifetime
+mismatch: authentication enforced a one-hour token-age limit, but a retained
+actor/anchor used the token's later `exp` directly. A local synthetic bearer
+issued 3,500 seconds earlier retained 3,600 seconds of authority while the
+existing age policy had only 100 seconds left. No production token or service
+was used in that reproduction.
+
+The candidate correction derives actor and anchor `expiresAt` from
+`min(verified exp, verified iat + 3600) * 1000`, using the same one-hour constant
+for JWT verification. It rejects invalid timestamps and expiry both before
+and after staff verification. Verification clock tolerance never extends
+retained authority. The frozen anchor shape remains
+`{schema: 1, authorizationSha256, expiresAt}`; the exact-bearer hash and purpose
+are unchanged. Only the authenticator can brand an actor. Identity and trusted
+issuer/audience configuration remain separate from this historical metadata.
+
+Each operation must still retain its own intent deadline at first reservation
+and apply the earlier ceiling. Neither a later poll nor renewed sign-in can
+replace the old original grant. Maintenance needs its own reviewed purpose and
+claims, and may not reuse the content-original schema or treat a native
+WordPress job owner as the verified Google identity.
+
+Three new regression tests fail against the previous code and pass with the
+correction, including exact expiry and expiry during asynchronous staff checks.
+All 106 focused identity/original-ledger/HTTP tests and lint pass. This new
+authenticator candidate requires its own source/runtime qualification; the
+earlier `948f6d6` capture checkpoint does not by itself qualify changed auth code.
+
 ## Earlier candidate evidence, 2026-10-22
 
 The earlier disposable integration candidate selected provider

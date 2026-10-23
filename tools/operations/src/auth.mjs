@@ -11,6 +11,7 @@ import { operationsScope, operationsScopes } from './scopes.mjs';
 // This is historical binding metadata, never a substitute for a fresh
 // principal/Directory/current-access check or permission to dispatch.
 const originalAuthorizations = new WeakMap();
+const maximumAuthorizationAgeSeconds = 60 * 60;
 export function originalAuthorizationAnchor(actor) {
   const value = originalAuthorizations.get(actor);
   requireThat(value && Number.isSafeInteger(value.expiresAt) && value.expiresAt > Date.now(),
@@ -26,8 +27,16 @@ export function createAuthenticator(config, keySet = createRemoteJWKSet(new URL(
     try {
       const { payload } = await jwtVerify(header.slice(7), keySet, {
         issuer: config.issuer, audience: config.audience, algorithms: ['RS256', 'ES256'],
-        requiredClaims: ['sub', 'exp', 'iat'], maxTokenAge: '1h', clockTolerance: 5,
+        requiredClaims: ['sub', 'exp', 'iat'], maxTokenAge: maximumAuthorizationAgeSeconds, clockTolerance: 5,
       });
+      // A retained actor must never outlive the same original bearer under the
+      // resource's admission policy. Clock tolerance permits verification skew;
+      // it is not extra authority for a later dispatch or recovery.
+      requireThat(Number.isSafeInteger(payload.exp) && Number.isSafeInteger(payload.iat),
+        'AUTH_REQUIRED', 'The access token has invalid authorization timestamps.');
+      const expiresAt = Math.min(payload.exp, payload.iat + maximumAuthorizationAgeSeconds) * 1000;
+      requireThat(Number.isSafeInteger(expiresAt) && expiresAt > Date.now(),
+        'AUTH_REQUIRED', 'The original authorization has expired.');
       requireThat(typeof payload.scope === 'string' && payload.scope.length <= 4096
         && /^[\x21\x23-\x5b\x5d-\x7e]+(?: [\x21\x23-\x5b\x5d-\x7e]+)*$/.test(payload.scope), 'AUTH_REQUIRED', 'The access token has invalid OAuth scopes.');
       const scopes = Object.freeze(operationsScopes.filter(scope => payload.scope.split(' ').includes(scope)));
@@ -39,7 +48,7 @@ export function createAuthenticator(config, keySet = createRemoteJWKSet(new URL(
       const verifiedEmail = config.verifiedEmailClaims === true && payload[`${config.audience}/email_verified`] === true
         && typeof email === 'string' && email.length <= 254 && /^[\x21-\x7e]+$/.test(email) && z.string().email().safeParse(email).success
         ? email.toLowerCase() : undefined;
-      const identity = { subject: payload.sub, expiresAt: payload.exp * 1000, scopes, ...(verifiedEmail ? { verifiedEmail } : {}) };
+      const identity = { subject: payload.sub, expiresAt, scopes, ...(verifiedEmail ? { verifiedEmail } : {}) };
       if (config.googleWorkspace) {
         const googleSubject = payload[`${config.audience}/google_sub`];
         const googleConnection = payload[`${config.audience}/google_connection`];
@@ -57,13 +66,12 @@ export function createAuthenticator(config, keySet = createRemoteJWKSet(new URL(
       if (config.googleWorkspace) {
         requireThat(typeof verifyStaff === 'function', 'AUTH_REQUIRED', 'Active Google Workspace verification is unavailable.');
         await verifyStaff(actor);
-        if (Number.isSafeInteger(payload.exp) && Number.isSafeInteger(identity.expiresAt) && identity.expiresAt > Date.now()) {
-          // Hash the exact already-verified resource bearer in memory. Never
-          // retain the token or accept a caller-provided token/session hash.
-          originalAuthorizations.set(actor, Object.freeze({ schema: 1,
-            authorizationSha256: createHash('sha256').update('mrn-operations-original-authorization-v1\0').update(header.slice(7)).digest('hex'),
-            expiresAt: identity.expiresAt }));
-        }
+        requireThat(identity.expiresAt > Date.now(), 'AUTH_REQUIRED', 'The original authorization expired during staff verification.');
+        // Hash the exact already-verified resource bearer in memory. Never
+        // retain the token or accept a caller-provided token/session hash.
+        originalAuthorizations.set(actor, Object.freeze({ schema: 1,
+          authorizationSha256: createHash('sha256').update('mrn-operations-original-authorization-v1\0').update(header.slice(7)).digest('hex'),
+          expiresAt: identity.expiresAt }));
       }
       return actor;
     } catch { throw new OpsError('AUTH_REQUIRED', 'The individual access token is invalid, expired or intended for another service.'); }
