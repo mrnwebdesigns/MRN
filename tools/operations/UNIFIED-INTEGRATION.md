@@ -87,6 +87,27 @@ passes all twelve local checks, including revocation refusal and independent
 source reconstruction. Native composition and actual protected existing-v2
 source delivery remain separate gates.
 
+### Additive worker-record contract proposal
+
+The separate `content-management-existing-worker-v2-proposal.json` and
+`existing-management-worker-contract.mjs` define a closed identity-signed
+existing-v2 worker record. Imported evidence definitions remain identical to
+the frozen provider wire; the six-contract v2 map is unchanged. A schema-2
+dispatch observation pins this additive wire, original evidence context,
+protected source/run metadata and original expiry. Canonical UTF-8 envelopes,
+exact signatures, independently retained records and a five-second receipt
+window are required.
+
+This is a consistency verifier only. It registers no endpoint, records no
+dispatch, creates no authority and makes no network or source request. Its result
+explicitly leaves current staff access, hosted OIDC provenance, source
+verification and admission false. The original marker/history, independently
+pinned current identity registry, fresh staff checks and protected dispatch
+still require implementation and separate qualification. Nineteen focused
+checks cover substitutions, legacy/other-v2 signature domains, original-expiry
+extension, duplicate keys and byte limits; these synthetic records prove no
+live access or content operation.
+
 ### Next protected source-delivery checkpoint
 
 The existing-v2 source-context/catalog readers and byte validators do not yet
