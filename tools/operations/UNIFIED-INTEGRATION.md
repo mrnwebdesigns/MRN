@@ -382,6 +382,19 @@ the exact first provider refusal still requires its phase evidence. The whole
 MRN QA `40006021391` passed. No passing source-context or catalog-native gate
 is inferred from either failed run.
 
+The diagnostic baseline `d0055b5` failed native run `40007496015` at
+`release`. Artifact `12525082195` independently matches SHA-256
+`f86ebb6a78eae878c1654b8d6a946ac571a44efd5a12cfb7a5b3e393bde0ad97`.
+The provider had committed the lookup and completed its post-callback history
+check. At refusal it had 3,914 ms of lookup time, 2,076 ms of signed lifetime
+and 168,076 ms of original lifetime left, but the five-second access receipt
+was expired by 1,006 ms. This identifies stale access confirmation as this
+run's failed gate, rather than inferring the cause from transport duration.
+The invalid-signature control failed before a claim. The 131,198 ms hook stayed
+within its allocation and disabled its callback; controlled contracts and
+MRN QA `40007495827` passed. Provider remediation must preserve fresh access,
+complete independent post-callback history and all existing deadlines.
+
 A separately tested gateway change pairs the queued original and complete
 capture-history observation in one SQLite transaction after the existing fresh
 staff/readiness check. Source-context and catalog readers use that same complete
@@ -390,8 +403,35 @@ checks used to assemble a single snapshot. Revocation, current policy/source,
 original expiry, independent capture marker/history and the total 20-second
 deadline remain enforced. No access decision is cached. All 650 local gateway
 tests pass, including restart, history corruption and authority changes during
-the fresh check. This has not yet demonstrated native latency or closed the
-failed source-context gate.
+the fresh check. Its native run `40007877230` at `d4d7504` also failed the
+first valid lookup; MRN QA `40007877173` passed. Artifact `12525900527`
+matches SHA-256
+`4c9370ab51a263e9372e983ec6a5771e67532dd853dc94c3be417ab81a2ea77e`.
+The call returned after 19,011 ms with -259 ms of signed lifetime; only the
+invalid-signature provider diagnostic was retained before the bounded failure
+snapshot. No valid-request phase is inferred. The 204,075 ms hook stayed
+within its aggregate allocation and cleanup completed. This atomic gateway
+change alone has not qualified source-context access.
+
+The next qualification candidate pins provider
+`6e8c396627cc8024f4b474263cab2a13413ec590`, exact child of diagnostic `e7ed7a1`.
+Independent diff review confirms that its only runtime change moves preparatory
+reauthentication, context/key comparison and output validation ahead of the
+short-lived access callback. All seven full current projections, both signature
+checks and both independent history reads remain. The full current check and
+complete independent history still run after the callback; the final 20-second,
+signed, original and five-second freshness bounds are unchanged. All eleven
+imported qualification files match this immutable provider's Git bytes.
+
+The provider owner reports a regression that fails on the exact old reader and
+99 SQL checks passing on each PHP 8.2/8.4, including callback-time identity,
+policy, registrar and source changes, history deletion, expired access and
+post-callback delay refusal. Those SQL fixtures explicitly mock original,
+Google and marker helpers; they do not qualify the full integration. The
+paired gateway's 650 tests, seven diagnostic tests and lint pass. The native
+failure report now refreshes its bounded observations after transport cleanup,
+without retrying or extending a deadline. Canonical native composition and its
+original audit remain required before claiming this gate passed.
 
 ### Existing-record owner catalog resolution
 
@@ -1577,7 +1617,15 @@ The historical qualification trail below retains earlier failures and correction
 
 ## Identity and transport
 
-Read-only refresh after the restart on 2026-10-16: `mainwp://status` reports
+Read-only refresh on 2026-10-23 confirms `connected: true`,
+`dashboardHost: wpcontrol.mrndev.io`, 118 abilities and a complete two-page
+provider catalog. This session exposes 69 MainWP tools. The desktop abilities
+resource remains invalid truncated JSON, so it is not a complete schema
+inventory. Maintenance reports provider/execution readiness with core disabled;
+this does not prove the Google-delegated hosted adapter or team acceptance.
+No child-site sync or mutation was performed for this directory check.
+
+Earlier read-only refresh after the restart on 2026-10-16: `mainwp://status` reports
 `connected: true`, `dashboardHost: wpcontrol.mrndev.io` and 115 abilities across
 two catalog pages. This session exposes 67 MainWP tools, including seven
 knowledge tools without a qualified team workflow. The desktop abilities

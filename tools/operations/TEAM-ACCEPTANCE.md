@@ -59,6 +59,19 @@ catalog resolver passes 647 local gateway tests but still requires genuine
 pre-queue provider preparation and native qualification. Neither checkpoint
 changes the live acceptance rows above.
 
+Diagnostic run `40007496015` isolates a provider performance failure: the
+five-second access receipt expired during repeated post-callback validation,
+while the original authorization, signed request and lookup deadline remained
+valid. The provider refused the result and cleanup completed. The fix must
+retain those deadlines and fresh post-callback checks; this is not a reason
+to weaken staff revocation or call the plugin accepted.
+
+The next provider candidate `6e8c396` reorders preparatory checks before the
+fresh access callback and retains complete current/history checks afterward.
+Its delay regression and 99 SQL checks on each PHP 8.2/8.4 pass. The paired
+gateway passes 650 tests; full native qualification is pending. This remains
+source work with no production deployment or new staff access requirement.
+
 The expanded private original-capture/recovery composition is now qualified
 for its disposable native scope at gateway
 `948f6d6da3d9c3af0a2a07c39a42ca584bc02807`, provider fixture

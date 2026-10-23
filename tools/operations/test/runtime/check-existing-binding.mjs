@@ -643,6 +643,13 @@ try {
   }
   await Promise.allSettled([...transports].map(runtime => runtime.close()));
   await Promise.allSettled([...clients].map(client => client.close()));
+  // An outer deadline can win before an already-dispatched call settles.
+  // Keep the original failure phase, but retain all bounded observations that
+  // arrived before transport cleanup completed; never wait or retry for them.
+  if (report.failure) {
+    report.failure.network = networkDiagnostic();
+    report.failure.sourceContextProvider = sourceDiagnostic();
+  }
   captureStore?.close(); store?.close();
   if (checksComplete && report.result !== 'FAIL') report.result = 'PASS';
   if (started !== undefined) report.elapsedMs = Math.ceil(performance.now() - started);
