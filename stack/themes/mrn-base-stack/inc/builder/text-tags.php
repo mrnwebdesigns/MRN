@@ -9,7 +9,7 @@ function mrn_base_stack_get_text_tag_fields( $seed ) {
 			array( 'key' => $seed . '_tag_url', 'name' => 'url', 'label' => 'Optional URL', 'type' => 'text', 'instructions' => 'Use a complete or site-relative URL. Blank or # renders a text tag. Unsafe URL protocols are never rendered as links.' ),
 		) ),
 	);
-	$fields[] = array( 'key' => $seed . '_heading_link_icon', 'name' => 'heading_link_icon', 'label' => 'Heading Action Treatment', 'type' => 'select', 'choices' => array( '' => 'Use Existing Link Style', 'arrow-reveal' => 'Reveal Arrow on Hover or Focus' ), 'default_value' => '' );
+	$fields[] = array( 'key' => $seed . '_heading_link_icon', 'name' => 'heading_link_icon', 'label' => 'Heading Action Treatment', 'type' => 'select', 'choices' => array( '' => 'Use Existing Link Style', 'arrow-reveal' => 'Reveal Arrow on Hover or Focus', 'arrow' => 'Always Show Arrow' ), 'default_value' => '' );
 	foreach ( array( 'size', 'gap' ) as $part ) { $fields[] = array( 'key' => $seed . '_heading_link_icon_' . $part, 'name' => 'heading_link_icon_' . $part, 'label' => 'Heading Action Icon ' . ucfirst( $part ), 'type' => 'text', 'instructions' => 'Optional non-negative CSS length.' ); }
 	$field = mrn_base_stack_get_background_color_field( $seed . '_heading_link_hover_color' ); $field['name'] = 'heading_link_hover_color'; $field['label'] = 'Heading Action Hover/Focus Color'; $fields[] = $field;
 	foreach ( array( 'gap' => 'Space Between Tags', 'space_before' => 'Space Before Tags', 'padding_inline' => 'Tag Horizontal Padding', 'padding_block' => 'Tag Vertical Padding', 'radius' => 'Tag Corner Radius', 'line_height' => 'Tag Line Height', 'font_size' => 'Tag Font Size', 'font_size_mobile' => 'Small-Screen Tag Font Size (767px)' ) as $name => $label ) {
@@ -29,8 +29,8 @@ function mrn_base_stack_get_body_heading_markup( $heading, $link, array $row = a
 	if ( '' === $url || '#' === $url ) { return $html; }
 	$blank = '_blank' === ( $link['target'] ?? '' );
 	$styles = array(); $icon = ''; $class = '';
-	if ( 'arrow-reveal' === ( $row['heading_link_icon'] ?? '' ) ) {
-		$class = ' class="mrn-heading-action mrn-heading-action--reveal"';
+	if ( in_array( $row['heading_link_icon'] ?? '', array( 'arrow-reveal', 'arrow' ), true ) ) {
+		$class = ' class="mrn-heading-action mrn-heading-action--' . ( 'arrow' === $row['heading_link_icon'] ? 'always' : 'reveal' ) . '"';
 		foreach ( array( 'size', 'gap' ) as $part ) { $value = mrn_base_stack_validate_hero_frame_dimension( $row[ 'heading_link_icon_' . $part ] ?? '' ); if ( '' !== $value ) { $styles[] = '--mrn-heading-action-icon-' . $part . ':' . $value; } }
 		$color = mrn_base_stack_get_frame_palette_color( $row['heading_link_hover_color'] ?? '' ); if ( '' !== $color ) { $styles[] = '--mrn-heading-action-hover-color:' . $color; }
 		$icon = '<svg class="mrn-heading-action__icon" width="12" height="10" viewBox="0 0 12 10" aria-hidden="true" focusable="false"><path d="M4.608 9.952L9.584 4.96 4.624 0H6.4L11.36 4.976 6.384 9.952ZM0 4.32H10.56V5.632H0Z" fill="currentColor"/></svg>';

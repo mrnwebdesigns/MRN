@@ -107,8 +107,8 @@ add_action( 'acf/init', 'mrn_base_stack_register_cloned_acf_ajax_fields', 30 );
  */
 function mrn_base_stack_register_cloned_acf_field_key( $field_key ) {
 
-	if ( preg_match( '/^field_mrn_split_stats_(.+)_field_mrn_stats_/', $field_key, $matches ) && function_exists( 'acf_get_field' ) ) {
-		$column = acf_get_field( $matches[1] );
+	if ( preg_match( '/^field_mrn_split_(stats|logos)_(.+)_field_mrn_\1_/', $field_key, $matches ) && function_exists( 'acf_get_field' ) ) {
+		$column = acf_get_field( $matches[2] );
 		if ( is_array( $column ) ) {
 			mrn_base_stack_populate_split_stats_column_field( $column );
 		}
@@ -962,6 +962,7 @@ function mrn_base_stack_get_two_column_column_layout_source_names() {
 		'reusable_block',
 		'faq_jump_nav',
 		'faq',
+		'logos',
 	);
 
 	$names = mrn_base_stack_normalize_builder_layout_source_names(
@@ -973,9 +974,9 @@ function mrn_base_stack_get_two_column_column_layout_source_names() {
 }
 
 /**
- * Add Stats after root registration so shared generated controls cannot collide.
+ * Add Stats and Logos after root registration with isolated generated controls.
  *
- * Hydrate only Stats; never recursively load the enclosing Tabs or Split row.
+ * Hydrate only the selected leaf layout; never recursively load Tabs or Split.
  * Each column clone has its own keys, including root, Hero and Tab contexts.
  *
  * @param array<string, mixed> $field Split column field.
@@ -983,29 +984,27 @@ function mrn_base_stack_get_two_column_column_layout_source_names() {
  */
 function mrn_base_stack_populate_split_stats_column_field( $field ) {
 	$key = (string) ( $field['key'] ?? '' );
-	if ( ! preg_match( '/field_mrn_two_column_split_(?:left|right)_column$/D', $key ) || ! in_array( 'stats', mrn_base_stack_get_two_column_column_layout_source_names(), true ) ) {
-		return $field;
-	}
+	if ( ! preg_match( '/field_mrn_two_column_split_(?:left|right)_column$/D', $key ) ) { return $field; }
+	$allowed = array_intersect( array( 'stats', 'logos' ), mrn_base_stack_get_two_column_column_layout_source_names() );
+	$existing_logos = -1 === ( $field['layouts']['layout_mrn_nested_logos']['max'] ?? null );
+	if ( $existing_logos ) { $allowed = array_unique( array_merge( $allowed, array( 'logos' ) ) ); }
 	$root = function_exists( 'acf_get_local_field' ) ? acf_get_local_field( 'field_mrn_page_content_rows' ) : false;
-	if ( ! is_array( $root ) ) {
-		return $field;
-	}
-	$layouts = mrn_base_stack_get_hydrated_local_flexible_layouts( $root, array( 'stats' ) );
-	foreach ( $layouts as $layout ) {
-		if ( 'stats' !== ( $layout['name'] ?? '' ) ) {
-			continue;
-		}
-		$clone = mrn_base_stack_clone_acf_keys_with_prefix( $layout, 'field_mrn_split_stats_' . $key . '_' );
-		$clone['key'] = 'layout_mrn_nested_stats';
-		foreach ( $clone['sub_fields'] as &$child ) {
-			if ( 'stat_items' === ( $child['name'] ?? '' ) ) {
-				$child['collapsed'] = 'field_mrn_split_stats_' . $key . '_field_mrn_stats_item_value';
+	if ( ! $allowed || ! is_array( $root ) ) { return $field; }
+	foreach ( $allowed as $name ) {
+		foreach ( mrn_base_stack_get_hydrated_local_flexible_layouts( $root, array( $name ) ) as $layout ) {
+			if ( $name !== ( $layout['name'] ?? '' ) ) { continue; }
+			$prefix = 'field_mrn_split_' . $name . '_' . $key . '_';
+			$clone = mrn_base_stack_clone_acf_keys_with_prefix( $layout, $prefix );
+			$clone['key'] = 'layout_mrn_nested_' . $name;
+			if ( 'logos' === $name && $existing_logos ) { $clone['max'] = -1; }
+			foreach ( $clone['sub_fields'] as &$child ) {
+				if ( 'stats' === $name && 'stat_items' === ( $child['name'] ?? '' ) ) { $child['collapsed'] = $prefix . 'field_mrn_stats_item_value'; }
 			}
+			unset( $child );
+			$clones = mrn_base_stack_maybe_finalize_cloned_acf_layouts( array( $clone['key'] => $clone ), $key );
+			$field['layouts'][ $clone['key'] ] = $clones[ $clone['key'] ];
+			break;
 		}
-		unset( $child );
-		$clones = mrn_base_stack_maybe_finalize_cloned_acf_layouts( array( 'layout_mrn_nested_stats' => $clone ), $key );
-		$field['layouts']['layout_mrn_nested_stats'] = $clones['layout_mrn_nested_stats'];
-		break;
 	}
 	return $field;
 }
@@ -13689,6 +13688,12 @@ function mrn_base_stack_get_two_column_column_layouts() {
 
 		$layout_name = isset( $layout['name'] ) ? sanitize_key( (string) $layout['name'] ) : '';
 		if ( '' === $layout_name || ! isset( $allowed_lookup[ $layout_name ] ) ) {
+			continue;
+		}
+
+		// Logos is hydrated from the registered root by the isolated column loader.
+		if ( 'logos' === $layout_name ) {
+			if ( isset( $existing_only_lookup[ $layout_name ] ) ) { $layout['sub_fields'] = array(); $layout['max'] = -1; $layouts[ $layout_key ] = $layout; }
 			continue;
 		}
 

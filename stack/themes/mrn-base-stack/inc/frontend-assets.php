@@ -595,7 +595,7 @@ function mrn_base_stack_collect_front_end_component_needs_for_post( $post_id, ar
 				} elseif (
 					'logos' === $layout_name
 					&& 'slider' === sanitize_key( mrn_base_stack_get_front_end_meta_scalar( $post_meta, $row_prefix . 'display_mode' ) )
-					&& 'labeled' !== mrn_base_stack_get_front_end_meta_scalar( $post_meta, $row_prefix . 'logos_presentation' )
+					&& ! in_array( mrn_base_stack_get_front_end_meta_scalar( $post_meta, $row_prefix . 'logos_presentation' ), array( 'labeled', 'icons' ), true )
 					&& mrn_base_stack_front_end_meta_value_is_enabled( mrn_base_stack_get_front_end_meta_scalar( $post_meta, $row_prefix . 'logo_items' ) )
 				) {
 					$needs['slider'] = true;
@@ -643,7 +643,7 @@ function mrn_base_stack_collect_front_end_component_needs_for_post( $post_id, ar
 	} elseif (
 		'mrn_reusable_partner' === $post_type
 		&& 'slider' === sanitize_key( mrn_base_stack_get_front_end_meta_scalar( $post_meta, 'display_mode' ) )
-		&& 'labeled' !== mrn_base_stack_get_front_end_meta_scalar( $post_meta, 'logos_presentation' )
+		&& ! in_array( mrn_base_stack_get_front_end_meta_scalar( $post_meta, 'logos_presentation' ), array( 'labeled', 'icons' ), true )
 		&& mrn_base_stack_front_end_meta_value_is_enabled( mrn_base_stack_get_front_end_meta_scalar( $post_meta, 'logo_items' ) )
 	) {
 		$needs['slider'] = true;

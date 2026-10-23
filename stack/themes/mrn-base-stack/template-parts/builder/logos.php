@@ -16,6 +16,7 @@ $subheading       = isset( $row['subheading'] ) ? trim( (string) $row['subheadin
 $subheading_tag   = isset( $row['subheading_tag'] ) ? strtolower( (string) $row['subheading_tag'] ) : 'p';
 $items            = isset( $row['logo_items'] ) && is_array( $row['logo_items'] ) ? $row['logo_items'] : array();
 $labeled          = 'labeled' === ( $row['logos_presentation'] ?? '' );
+$icon_strip       = 'icons' === ( $row['logos_presentation'] ?? '' );
 $logos_description = $labeled && is_string( $row['logos_description'] ?? '' ) ? $row['logos_description'] : '';
 $display_mode     = isset( $row['display_mode'] ) ? sanitize_key( (string) $row['display_mode'] ) : 'grid';
 $logos_per_page   = isset( $row['per_page'] ) ? max( 3, min( 7, (int) $row['per_page'] ) ) : 6;
@@ -48,7 +49,7 @@ if ( ! in_array( $subheading_tag, $allowed_tags, true ) ) {
 	$subheading_tag = 'p';
 }
 
-$display_mode = $labeled ? 'grid' : mrn_base_stack_normalize_builder_layout_display_mode( $display_mode, 'logos' );
+$display_mode = $labeled || $icon_strip ? 'grid' : mrn_base_stack_normalize_builder_layout_display_mode( $display_mode, 'logos' );
 
 $valid_items = array();
 foreach ( $items as $item ) {
