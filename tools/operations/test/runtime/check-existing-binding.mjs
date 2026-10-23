@@ -492,16 +492,33 @@ try {
 
   phase = 'private-source-context-read';
   let sourceContextReads = 0;
+  report.sourceContextCalls = [];
   const sourceReader = new ExistingManagementSourceContextReader({
     readResource: (...args) => contextClient.readResource(...args), listTools: (...args) => contextClient.listTools(...args),
-    callTool: (...args) => {
+    callTool: async (...args) => {
       assert.equal(args[0].name, existingManagementSourceContextTool); sourceContextReads++;
-      return contextClient.callTool(...args);
+      const claims = JSON.parse(Buffer.from(args[0].arguments.signed_request.payload_base64, 'base64'));
+      const began = Date.now(), call = { ordinal: sourceContextReads, elapsed_ms: 0,
+        granted_ms: claims.expires_at * 1000 - began, remaining_ms: 0,
+        transport_timeout_ms: args[2].timeout, kind: 'pending', provider_code: 'none' };
+      assert.ok(sourceContextReads <= 3 && Number.isSafeInteger(call.granted_ms) && call.granted_ms > 0 && call.granted_ms <= 20000);
+      report.sourceContextCalls.push(call); save();
+      try {
+        const result = await contextClient.callTool(...args), diagnostic = bindingFixtureDiagnostic(args[0].name, result);
+        call.kind = diagnostic.kind; call.provider_code = diagnostic.provider_code; return result;
+      } catch (error) {
+        const diagnostic = bindingFixtureDiagnostic(args[0].name, error, false, true);
+        call.kind = diagnostic.kind; call.provider_code = diagnostic.provider_code; throw error;
+      } finally {
+        const ended = Date.now(); call.elapsed_ms = Math.max(0, Math.min(300000, ended - began));
+        call.remaining_ms = Math.max(-300000, Math.min(20000, claims.expires_at * 1000 - ended)); save();
+      }
     },
   });
   await sourceReader.initialize();
   // A schema-valid envelope with no valid registrar signature must reach and
   // fail the canonical HTTP controller; an SDK-only validation error is not proof.
+  phase = 'private-source-context-invalid-signature';
   await assert.rejects(async () => payload(await contextClient.callTool({ name: existingManagementSourceContextTool,
     arguments: { signed_request: { key_id: registrar.keyId, payload_base64: Buffer.from('{}').toString('base64'),
       signature_base64: Buffer.alloc(64).toString('base64') } } }, undefined, { timeout: 20000 })),
@@ -509,13 +526,17 @@ try {
   assert.equal(recentCalls.at(-1)?.provider_code, 'mrn_management_existing_source_context');
   const sourceRuntime = new ExistingManagementSourceContext({ ledger: resumed.captureLedger, reader: sourceReader,
     registrar, owner: sourceOwner });
-  const sourceFirst = await sourceRuntime.read(jobId, measured), sourceSecond = await sourceRuntime.read(jobId, measured);
+  phase = 'private-source-context-first';
+  const sourceFirst = await sourceRuntime.read(jobId, measured);
+  phase = 'private-source-context-second';
+  const sourceSecond = await sourceRuntime.read(jobId, measured);
   assert.deepEqual(sourceFirst.source_context, sourceSecond.source_context);
   assert.deepEqual(sourceFirst.source_context.management.binding, queued.binding);
   assert.equal(sourceFirst.source_context.management.capture_artifact_sha256, interceptedCapture.artifact);
   assert.equal(sourceFirst.source_context.management.measurement_record_sha256, measured.measurement_record_sha256);
   assert.equal(sourceFirst.source_context.management.parity_sha256, measured.measurements.parity_sha256);
   assert.notEqual(sourceFirst.request_sha256, sourceSecond.request_sha256);
+  phase = 'private-source-context-budget-refusal';
   await assert.rejects(() => sourceRuntime.read(jobId, measured), error => error?.code === 'MAINWP_FAILED');
   assert.equal(recentCalls.at(-1)?.provider_code, 'mrn_management_existing_source_context');
   assert.equal(sourceContextReads, 3);

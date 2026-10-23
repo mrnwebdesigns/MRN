@@ -284,6 +284,15 @@ jobs:
             source_context_sha256: binding.sourceContext.source_context_sha256, independent_owner_sha256: binding.sourceContext.independent_owner_sha256,
             parity_sha256: binding.sourceContext.parity_sha256,
             owner: binding.sourceContext.owner, original_authorization_unchanged: true, source_bytes_verified: false, slot_created: false, admitted: false });
+          assert.equal(binding.sourceContextCalls.length, 3);
+          binding.sourceContextCalls.forEach((call, index) => {
+            assert.ok(Number.isSafeInteger(call.elapsed_ms) && call.elapsed_ms >= 0 && call.elapsed_ms < 20000);
+            assert.ok(Number.isSafeInteger(call.granted_ms) && call.granted_ms > 0 && call.granted_ms <= 20000);
+            assert.ok(Number.isSafeInteger(call.remaining_ms) && call.remaining_ms > 0 && call.remaining_ms <= call.granted_ms);
+            assert.deepEqual(call, { ordinal: index + 1, elapsed_ms: call.elapsed_ms, granted_ms: call.granted_ms,
+              remaining_ms: call.remaining_ms, transport_timeout_ms: 20000,
+              kind: index < 2 ? 'returned' : 'tool-error', provider_code: index < 2 ? 'none' : 'mrn_management_existing_source_context' });
+          });
           assert.equal(sourceAudit.qualification_job_id, binding.qualification.job_id);
           assert.equal(sourceAudit.binding_sha256, binding.capture.binding_sha256);
           assert.equal(sourceAudit.source_context_sha256, binding.sourceContext.source_context_sha256);

@@ -44,6 +44,21 @@ Use already-authorized test identities or separately reviewed administrative tes
 
 ## Latest source evidence, 2026-10-23
 
+Capture/recovery plus measurement is qualified at gateway
+`6b484e3e365fb05e28d279d564f863a5279d5861`: combined CI `39999779123`
+and MRN QA `39999779280` pass, with all eight original reports and their
+immutable source pins independently verified. The complete native hook ran
+186,981 ms within its fixed fixture allocation, preserved the original grant
+and Child content, and completed revocation and callback cleanup.
+
+The next source-context composition at `b6a6fc9` failed run `40004266848`
+on its first valid signed lookup after capture/recovery/measurement passed.
+Its provider refusal and original artifact are retained in
+`UNIFIED-INTEGRATION.md`; the gate remains closed. The additive v2 owner
+catalog resolver passes 647 local gateway tests but still requires genuine
+pre-queue provider preparation and native qualification. Neither checkpoint
+changes the live acceptance rows above.
+
 The expanded private original-capture/recovery composition is now qualified
 for its disposable native scope at gateway
 `948f6d6da3d9c3af0a2a07c39a42ca584bc02807`, provider fixture

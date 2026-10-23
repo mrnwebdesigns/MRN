@@ -345,6 +345,20 @@ All eleven imported qualification files were compared to immutable Git bytes;
 frozen contracts are unchanged. This is a test candidate, not an activated or
 native-qualified production selection.
 
+That composition failed native run `40004266848` on gateway `b6a6fc9`;
+hosted MRN QA `40004266797` and controlled contracts passed. Original artifact
+`12523632170` matches SHA-256
+`4b22ca54ef06abe8994abd1753d399f8178fa9a127f310dbe3472a0fd47c5755`.
+Preview, queue, native capture, recovery and measurement passed. The invalid
+signature was refused, then the first valid source lookup returned HTTP 500
+`mrn_management_existing_source_context` after its access callback returned 200.
+The 166,094 ms hook did not exceed its aggregate deadline and callback cleanup
+passed. The exact refusal cause is not established. The follow-up fixture
+separates each lookup phase and records bounded numeric request timing and
+remaining signed lifetime, with no raw request, signature, identity or error
+message. Passing source calls must finish with time remaining; budget refusal
+must also occur before expiry. No deadline or authority gate is widened.
+
 ### Existing-record owner catalog resolution
 
 The private gateway catalog resolver accepts only the retained job ID. It
