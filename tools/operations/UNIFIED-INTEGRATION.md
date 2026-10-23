@@ -228,6 +228,16 @@ All 106 focused identity/original-ledger/HTTP tests and lint pass. This new
 authenticator candidate requires its own source/runtime qualification; the
 earlier `948f6d6` capture checkpoint does not by itself qualify changed auth code.
 
+The first hosted candidate `58397f0` passed MRN QA run `39990886053`, but
+combined run `39990886048` failed controlled test 536 and skipped native
+qualification. Its changed-measurement fixture set the clock to the provider's
+measurement second plus one after capture completed, which could rewind behind
+the retained observation on a slower runner. Simulating a capture two seconds
+later reproduces the same rejection locally. The test correction preserves
+forward time and requires both actual capture/recovery dispatches and the exact
+changed-receipt rejection. No runtime guard, authority ceiling or timeout is
+relaxed. The corrected candidate still requires hosted qualification.
+
 ## Earlier candidate evidence, 2026-10-22
 
 The earlier disposable integration candidate selected provider

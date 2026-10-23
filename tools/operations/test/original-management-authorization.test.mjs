@@ -1714,11 +1714,19 @@ test('rehashed capture substitutions, input mutation, late responses and changed
     await assert.rejects(f.runCapture, kind); t.mock.restoreAll();
     assert.equal((await f.ledger.readCapture(f.job)).state, 'uncertain');
   }
-  const f = await existingCaptureFixture(t); await f.runCapture();
+  const f = await existingCaptureFixture(t);
+  // Capture can finish in a later second than its provider measurement.
+  let captureNow = Date.now() + 2000;
+  t.mock.method(Date, 'now', () => captureNow);
+  await f.runCapture();
   const other = structuredClone(f.value); other.measurements.captured_at++;
-  t.mock.method(Date, 'now', () => other.measurements.captured_at * 1000);
+  // Make the substituted timestamp valid without rewinding retained events.
+  captureNow = Math.max(captureNow, other.measurements.captured_at * 1000);
   assert.doesNotThrow(() => validateExistingManagementCapture(other, f.ledger.originalQueuedJob(f.job), f.values.expected));
-  f.captureState.output = other; await assert.rejects(f.recoverCapture);
+  f.captureState.output = other;
+  await assert.rejects(f.recoverCapture, { code: 'ORIGINAL_AUTHORIZATION',
+    message: 'Capture response is stale, superseded or differs from the retained artifact.' });
+  assert.deepEqual(f.captureState.calls.map(call => call.action), ['capture', 'read-capture']);
   assert.equal((await f.ledger.readCapture(f.job)).receipt.measurementSha256, delegationDigest(f.value.measurements));
 });
 
