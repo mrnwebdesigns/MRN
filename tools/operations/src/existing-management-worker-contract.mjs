@@ -71,6 +71,8 @@ export function verifyExistingManagementWorkerRecord({ raw, pointer, retained, o
       && claims.expires_at * 1000 > completedAt && claims.expires_at * 1000 <= o.original_expires_at
       && b.created_at * 1000 <= o.requested_at && o.requested_at <= o.observed_at
       && o.observed_at <= completedAt && o.observed_at < (claims.issued_at + 1) * 1000
+      && completedAt < o.requested_at + wire.limits.worker_ttl_seconds * 1000
+      && claims.expires_at * 1000 <= o.requested_at + wire.limits.worker_ttl_seconds * 1000
       && o.original_expires_at > completedAt && o.original_expires_at <= b.expires_at * 1000);
     return { state: 'existing-worker-record-consistent', context: claims.context,
       recorded_dispatch: p, dispatch_record: o, current_access_proven: false,

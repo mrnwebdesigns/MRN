@@ -216,6 +216,22 @@ All 698 gateway tests and lint pass. GitHub and Google identities remain synthet
 this is not hosted OIDC or ordinary-team acceptance. The independent runner HTTP
 bootstrap, protected environment configuration and real dispatch remain open.
 
+### Worker-record lifetime correction
+
+Additional boundary review reproduced both pure record verifiers accepting a
+signed, otherwise consistent record 300.5 seconds after dispatch while its
+900-second original remained valid. The private HTTP handler already refused
+that read, and both verifiers still returned false for admission/current-access;
+this did not establish a production authorization bypass.
+
+Both independent verifiers now enforce the frozen 300-second worker window at
+receipt and require signed readback expiry to fit inside it. Matching expired
+records and a fresh signature that outlives the worker are refused. A readback
+may expire exactly at the worker deadline if actual receipt occurs earlier.
+No contract bytes, signature domain, original grant or configured limit changes.
+The new runner source must pass its own qualification and be selected explicitly;
+prior passing native runs remain evidence only for their recorded source pins.
+
 ### Separate native storage seed composition candidate
 
 Provider `bdebc36d824996707a52a8dc30499a75df68d1b2`, with parent

@@ -64,6 +64,27 @@ test('exact signed v2 worker record proves consistency only, using independent o
   assert.equal(result.readback.worker_contract_sha256, existingWorkerContractSha256);
 });
 
+test('worker expiry bounds both actual receipt and signed readback even while the original remains valid', () => {
+  const prepare = (age, seconds = 5) => {
+    const f = fixture(), at = f.input.startedAt, { context, provenance, observation } = f.input.retained;
+    context.binding.created_at = at / 1000 - 400; context.binding.expires_at = at / 1000 + 100;
+    context.binding.job_intent_ttl_seconds = 900; f.input.originalBinding = structuredClone(context.binding);
+    context.management_context_sha256 = delegationDigest(context.binding);
+    f.input.pointer.context_sha256 = delegationDigest(context);
+    observation.context_sha256 = f.input.pointer.context_sha256;
+    observation.request.context_sha256 = f.input.pointer.context_sha256;
+    observation.requested_at = at - age; observation.observed_at = observation.requested_at + 1000;
+    observation.original_expires_at = context.binding.expires_at * 1000;
+    provenance.dispatch_request_sha256 = delegationDigest(observation.request);
+    provenance.dispatch_record_sha256 = delegationDigest(observation);
+    Object.assign(f.claims, { context: structuredClone(context), context_sha256: f.input.pointer.context_sha256,
+      dispatch_record: structuredClone(observation), recorded_dispatch: structuredClone(provenance), expires_at: at / 1000 + seconds });
+    return f;
+  };
+  for (const age of [300000, 298000]) assert.throws(prepare(age).verify, refused);
+  for (const [age, seconds] of [[295000, 5], [298000, 2]]) assert.equal(prepare(age, seconds).verify().admitted, false);
+});
+
 for (const [label, mutate] of [
   ['legacy schema', f => { f.claims.schema = 1; }],
   ['caller identity', f => { f.claims.email = 'caller@mrnwebdesigns.com'; }],
