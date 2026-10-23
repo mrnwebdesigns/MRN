@@ -5,7 +5,7 @@ import https from 'node:https';
 import { mock } from 'node:test';
 import { generateKeyPairSync } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -19,6 +19,7 @@ import { managementEvidenceFixture } from '../fixtures/management-evidence.mjs';
 import { sourceBrokerFixture } from '../fixtures/management-source.mjs';
 import { retainManagementSourceFixture } from './check-management-source-capture.mjs';
 import { checkManagementCache } from './check-management-cache.mjs';
+import { checkExistingManagementWorker } from './check-existing-management-worker.mjs';
 
 process.umask(0o077);
 const runner = resolve(process.env.MRN_GATEWAY_MANAGEMENT_RUNNER_SOURCE);
@@ -152,12 +153,19 @@ try {
   passed.push('gateway-cache-acquisition-to-independent-full-source-reconstruction');
   passed.push('retained-original-capture-to-protected-broker-without-status-polling');
   passed.push('authenticated-source-context-constructs-independent-recipient-over-tls');
-  process.stdout.write(JSON.stringify({ result: 'PASS', scope: 'disposable-context-tls-and-source-codec', passed,
+  const existingWorkerConsistency = await checkExistingManagementWorker(runner);
+  passed.push('independent-existing-worker-record-positive-and-denial-agreement');
+  const report = { result: 'PASS', scope: 'disposable-context-tls-and-source-codec', passed, source: lock,
     runnerSource: lock.managementWorker.commit, productionCredentials: false, liveGoogleVerified: false,
     sourceHttpVerified: true, sourceCaptureMappingVerified: true, sourceContextHttpVerified: true, providerSourceBootstrapVerified: false,
     fullSourceClosureVerified: false, hostedOidcVerified: false,
-    ...cacheIntegration,
-    contentWriteVerified: false, chatgptAcceptanceVerified: false }) + '\n');
+    ...cacheIntegration, existingWorkerConsistency,
+    contentWriteVerified: false, chatgptAcceptanceVerified: false };
+  const encoded = JSON.stringify(report) + '\n';
+  assert.ok(Buffer.byteLength(encoded) <= 16384);
+  if (process.env.MRN_GATEWAY_WORKER_REPORT)
+    writeFileSync(process.env.MRN_GATEWAY_WORKER_REPORT, encoded, { mode: 0o600, flag: 'wx' });
+  process.stdout.write(encoded);
 } finally {
   hook.mock.restore(); for (const socket of sockets) socket.destroy();
   await new Promise(r => server.close(r)); cleanup.forEach(cb => cb()); rmSync(directory, { recursive: true, force: true });

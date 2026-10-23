@@ -44,26 +44,25 @@ Use already-authorized test identities or separately reviewed administrative tes
 
 ## Latest source evidence, 2026-10-23
 
-Gateway `b2b6698` with provider `99e5d58` now passes native integration
-`40021432056` and MRN QA `40021432049`. All nine original reports and source
-pins were independently verified. Both allowed source-context reads completed
-within their unchanged limits; the third was refused, revoked access could not
-redispatch, the full independent SQL history matched and Child content remained
-unchanged. The 237,659 ms hook completed cleanup within its original allocation.
-This qualifies that private source gate only. Every live acceptance row above
-remains unverified.
+Gateway `4e63c1d` with provider `25cb8d3`, patched transport `6449815` and
+management worker `53e5345` passes native integration `40029031523` and MRN QA
+`40029031543`. All nine original reports and exact pins were independently
+verified; artifact `12534597810` matches SHA-256
+`9b4cc8f69d6caaea96d81f00616bfe4a7db0889f6c00a974e69ee1ef4873e9b0`.
+The root-signed catalog matches independent pre-queue owner configuration.
+Both allowed source-context reads complete within their original limits; the
+third and revoked redispatch are refused. Complete SQL history matches, Child
+content is unchanged, and callback cleanup completes within the 144,169 ms hook.
+The earlier dependency-audit failure was repaired without suppressing findings
+or changing per-operation limits. This is disposable integration evidence;
+every live acceptance row above remains unverified.
 
-The subsequent catalog run `40026067552` stopped at the Zod dependency
-audit before native testing. MRN QA `40026067544` passed. A patched dependency
-and byte-preserving URL validation pass 652 local gateway tests; this does not
-replace the pending native catalog or live acceptance gates.
-
-The source-format mismatch also has a separately qualified runner correction,
-`53e5345`, with 163 tests and hosted code/content isolation `40024009019` passing.
-It preserves existing-v2 authority and result schemas. The next gateway
-composition selects it as the management worker; twelve local gateway/runner
-TLS checks and three closure-vector cases pass. Native protected existing-v2
-source delivery and report admission remain open.
+The next worker-record consistency candidate `aa92593` passes all 197 runner
+tests and staged MRN QA. Gateway/runner comparison agrees on one positive record
+and 59 denial cases. Its pure reader does not establish current staff access,
+hosted OIDC, source verification or admission. Hosted isolation and the next
+combined candidate remain separate gates. Actual protected existing-v2 source
+delivery, rendered management QA and report admission remain open.
 
 Earlier checkpoints and failures are retained below as historical evidence.
 

@@ -36,23 +36,28 @@ separate provider rollout and does not replace posts/pages/ACF delivery here.
 This gateway retains the existing Google login and plugin; no production,
 workspace-tool, credential or access configuration changes accompany this source.
 
-The latest qualified existing-record composition is gateway
-`b2b6698f059ed2eda14f0ef657a6f84ecbcb4f3d` with provider
-`99e5d585d1ab836aa11bca4d3a67e869114cade4`.
-[Operations CI 40021432056](https://github.com/mrnwebdesigns/MRN/actions/runs/40021432056)
-and [MRN QA 40021432049](https://github.com/mrnwebdesigns/MRN/actions/runs/40021432049)
+The latest qualified existing-record/catalog composition is gateway
+`4e63c1d6525c2c8a1b287da92955354ea86612c5`, provider
+`25cb8d339e7068f62dd18674ffe6eddf8acbd083`, transport
+`64498151d7d5dc8e7adcb7423d160a280a1939e7` and management worker
+`53e534502227c9ddfab5515d8fdc83bb8297b887`.
+[Operations CI 40029031523](https://github.com/mrnwebdesigns/MRN/actions/runs/40029031523)
+and [MRN QA 40029031543](https://github.com/mrnwebdesigns/MRN/actions/runs/40029031543)
 pass. All nine original reports and source pins were independently verified;
-artifact `12531289132` matches SHA-256
-`e24755da2c22dd630bb10c16ccff73f3bdaf29f6828a46c937a6c1eaedfaf455`.
-The two permitted source-context reads completed in 15,431 and 15,014 ms with
-3,176 and 3,153 ms of signed lifetime remaining. A third read was refused while
-its grant remained valid. The closed independent SQL audit proves exactly two
-markers and all seven related records, with original job/binding/capture/
-measurement/parity/context hashes matching the gateway evidence. The 237,659 ms
-hook preserved its 300-second allocation and original authority, completed all
-76 staff checks and 54 signed callbacks, refused revocation, left Child content
-unchanged and disabled the callback route. This closes the earlier source-context
-latency failure for this disposable scope; live acceptance remains unverified.
+artifact `12534597810` matches SHA-256
+`9b4cc8f69d6caaea96d81f00616bfe4a7db0889f6c00a974e69ee1ef4873e9b0`.
+The two permitted source-context reads completed in 9,284 and 9,337 ms; a third
+was refused in 3,171 ms while its signed grant remained valid. The root-signed
+schema-2 catalog matches independently exported pre-queue configuration and the
+provider's owner digest. Both configuration reads are retained; revocation
+prevents another read. The independent SQL audit proves two lookup markers and
+all seven related records, with original job/binding/capture/measurement/parity/
+context hashes matching. The 144,169 ms hook completed 80 staff checks and 54
+signed callbacks, refused revoked redispatch, left Child content unchanged and
+disabled the callback route. All per-operation limits are unchanged. This
+qualifies disposable catalog composition, not source delivery or live acceptance.
+The preceding source-context-only checkpoint `b2b6698` also passed runs
+`40021432056` and `40021432049`; its original artifact remains retained.
 
 The next catalog candidate `002bdbd` with provider `25cb8d3` passed 650
 controlled tests and 13 Fleet regressions in CI, but Operations run `40026067552`
@@ -62,8 +67,8 @@ passed. The audit identified Zod advisory
 The gateway dependency repair pins patched Zod 4.6.7 and preserves byte-exact
 URL validation instead of adopting Zod 4's trimming behavior. All 652 gateway
 tests and lint pass locally, and the production dependency audit reports zero
-vulnerabilities. Native catalog composition still requires a fresh passing run.
-The next composition selects transport `64498151d7d5dc8e7adcb7423d160a280a1939e7`,
+vulnerabilities. Native catalog composition now passes the exact `4e63c1d` run above.
+That qualified composition selects transport `64498151d7d5dc8e7adcb7423d160a280a1939e7`,
 which pins Zod 4.6.7 and the compatible transitive ip-address 10.7.4 patch. Its
 production audit reports zero findings; 3,155 tests pass on each of Node 20/22/26,
 with coverage, packed fixture and extracted-bundle startup checks passing. Six
@@ -80,12 +85,11 @@ rows. Provider `f4358bd` supplies immutable PHP array/stream golden vectors;
 JavaScript assembly and final readback agree in both authority domains. Only the
 byte envelope uses the frozen v1 format; existing-v2 authority validators and
 schema-2 results remain unchanged. This runner is separately reviewed in
-[PR #8](https://github.com/mrnwebdesigns/mrn-code-qa-runner/pull/8). The next gateway
-composition selects it as the management worker and adds its three immutable
-PHP/JavaScript vector cases to CI. The actual gateway/runner TLS integration
+[PR #8](https://github.com/mrnwebdesigns/mrn-code-qa-runner/pull/8). The passing
+`4e63c1d` composition selects it as the management worker and includes its three
+immutable PHP/JavaScript vector cases in CI. The actual gateway/runner TLS integration
 passes all twelve local checks, including revocation refusal and independent
-source reconstruction. Native composition and actual protected existing-v2
-source delivery remain separate gates.
+source reconstruction. Actual protected existing-v2 source delivery remains open.
 
 ### Additive worker-record contract proposal
 
@@ -107,6 +111,17 @@ still require implementation and separate qualification. Nineteen focused
 checks cover substitutions, legacy/other-v2 signature domains, original-expiry
 extension, duplicate keys and byte limits; these synthetic records prove no
 live access or content operation.
+
+Runner `aa92593c56ff5d6f9febeaef7a9ee21be307392e` independently implements this
+reader in [PR #9](https://github.com/mrnwebdesigns/mrn-code-qa-runner/pull/9), stacked
+on the closure correction. Thirty-four focused and all 197 runner tests pass;
+exact staged MRN QA proof is `8b6fd24d0ba4401028c718008d840276bdfb15d7`.
+The gateway/runner integration passes thirteen groups, including one positive
+record and 59 signed/domain/encoding denial cases accepted or refused identically
+by the two implementations. Its input contract matches gateway commit `89aa9a7`
+byte for byte. The next candidate selects this runner; hosted isolation and
+combined native qualification remain separate gates. No HTTP/OIDC/dispatch,
+source producer or signing environment is activated by this reader.
 
 ### Next protected source-delivery checkpoint
 

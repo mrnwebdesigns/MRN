@@ -120,6 +120,7 @@ jobs:
           MRN_GATEWAY_MANAGEMENT_RUNNER_SOURCE: ${{ github.workspace }}/.runtime/management-worker
           MRN_GATEWAY_RUNNER_SOURCE: ${{ github.workspace }}/.runtime/runner
           MRN_GATEWAY_PROVIDER_SOURCE: ${{ github.workspace }}/.runtime/provider
+          MRN_GATEWAY_WORKER_REPORT: ${{ runner.temp }}/gateway-worker-report.json
         run: node tools/operations/test/runtime/check-management-worker.mjs
       - name: Exercise actual gateway, MCP and WordPress authorization
         env:
@@ -372,6 +373,7 @@ jobs:
             ${{ runner.temp }}/gateway-provider-report.json
             ${{ runner.temp }}/gateway-native-content-report.json
             ${{ runner.temp }}/capture-transport-report.json
+            ${{ runner.temp }}/gateway-worker-report.json
             ${{ runner.temp }}/gateway-access-report.json
             ${{ runner.temp }}/gateway-management-report.json
             ${{ runner.temp }}/gateway-native-source-report.json
