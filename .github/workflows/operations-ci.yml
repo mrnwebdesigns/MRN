@@ -33,10 +33,11 @@ jobs:
     name: Disposable gateway MainWP transport
     needs: controlled-contracts
     runs-on: ubuntu-24.04
-    # Native provider report checks plus the complete source/access scenarios
-    # took 19m39s at 60e4f65. This outer allocation does not extend any request,
-    # actor, owner barrier or disposable hook deadline.
-    timeout-minutes: 25
+    # The expanded suite produced all eight passing reports at 25f5d35, then
+    # reached the 25-minute job cap during final validation/cleanup. Allow room
+    # for the complete suite and artifact retention, not longer operations:
+    # request, actor, owner barrier and disposable hook deadlines are unchanged.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
