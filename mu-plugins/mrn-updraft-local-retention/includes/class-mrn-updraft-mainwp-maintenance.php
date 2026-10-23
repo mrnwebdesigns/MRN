@@ -19,6 +19,8 @@ final class MRN_Updraft_MainWP_Maintenance {
 	const MAX_FILES   = 50000;
 	const DIAGNOSTIC_KEY = 'mrn_maintenance_preflight_refusal_v1';
 	const DIAGNOSTIC_TTL = 600;
+	const CHECKPOINT_KEY = 'mrn_maintenance_preflight_checkpoint_v1';
+	const CHECKPOINT_STAGES = array( 'child_backup', 'child_snapshot_plugins', 'child_snapshot_themes', 'child_snapshot_core', 'child_offer', 'child_download', 'child_package' );
 	const DIAGNOSTIC_CODES = array(
 		'unsupported_runtime', 'invalid_schema', 'selection_required', 'invalid_override',
 		'invalid_target', 'unknown_version', 'version_refused', 'unused_override',
@@ -50,6 +52,45 @@ final class MRN_Updraft_MainWP_Maintenance {
 	private static $stage = 'child_validation';
 	private static $item_results = array();
 	private static $replacement_started = false;
+	/** Observational metadata only; never used by a validation or write gate. */
+	private static $checkpoint = null;
+	private static $record_checkpoint = false;
+
+	/** Retain a bounded phase before blocking work, including hard interruptions.
+	 *
+	 * @param string $stage Closed phase.
+	 * @param string|null $slug Selected item, never a path or download URL.
+	 */
+	private static function checkpoint( $stage, $slug = null ) {
+		if ( ! self::$record_checkpoint || ! is_array( self::$checkpoint ) || ! in_array( $stage, self::CHECKPOINT_STAGES, true ) ) {
+			return;
+		}
+		self::$checkpoint['stage'] = $stage;
+		self::$checkpoint['item_slug'] = $slug;
+		self::$checkpoint['updated_at'] = time();
+		set_transient( self::CHECKPOINT_KEY, self::$checkpoint, self::DIAGNOSTIC_TTL );
+	}
+
+	/** Mark only the observed preflight result; a checkpoint grants no authority.
+	 *
+	 * @param string $state Complete or refused.
+	 */
+	private static function finish_checkpoint( $state ) {
+		if ( self::$record_checkpoint && is_array( self::$checkpoint ) ) {
+			self::$checkpoint['state'] = $state;
+			self::$checkpoint['updated_at'] = time();
+			set_transient( self::CHECKPOINT_KEY, self::$checkpoint, self::DIAGNOSTIC_TTL );
+		}
+	}
+
+	/** Read one validated, secret-free observation through the existing report. */
+	private static function reported_checkpoint() {
+		$value = get_transient( self::CHECKPOINT_KEY );
+		if ( ! is_array( $value ) || array_keys( $value ) !== array( 'schema_version', 'site_id', 'request_sha256', 'stage', 'state', 'started_at', 'updated_at', 'item_slug' ) || 1 !== $value['schema_version'] || ! is_int( $value['site_id'] ) || $value['site_id'] < 1 || ! self::is_hash( $value['request_sha256'] ) || ! in_array( $value['stage'], self::CHECKPOINT_STAGES, true ) || ! in_array( $value['state'], array( 'in_progress', 'complete', 'refused' ), true ) || ! is_int( $value['started_at'] ) || ! is_int( $value['updated_at'] ) || $value['started_at'] > $value['updated_at'] || $value['updated_at'] > time() || time() - $value['started_at'] >= self::DIAGNOSTIC_TTL || ( null !== $value['item_slug'] && ( ! is_string( $value['item_slug'] ) || strlen( $value['item_slug'] ) > 200 || ( false !== strpos( $value['item_slug'], '..' ) || ! preg_match( '#^[A-Za-z0-9_-][A-Za-z0-9._-]*(?:/[A-Za-z0-9_-][A-Za-z0-9._-]*\.php)?$#D', $value['item_slug'] ) ) ) ) ) {
+			return null;
+		}
+		return $value;
+	}
 
 	/** Map native exceptions to closed codes; never retain their text.
 	 *
@@ -82,12 +123,18 @@ final class MRN_Updraft_MainWP_Maintenance {
 				if ( is_array( $diagnostic ) && array_keys( $diagnostic ) === array( 'schema_version', 'code', 'recorded_at' ) && 1 === $diagnostic['schema_version'] && in_array( $diagnostic['code'], self::DIAGNOSTIC_CODES, true ) && is_int( $diagnostic['recorded_at'] ) && $diagnostic['recorded_at'] <= time() && time() - $diagnostic['recorded_at'] < self::DIAGNOSTIC_TTL ) {
 					$information['report']['last_maintenance_preflight_refusal'] = $diagnostic;
 				}
+				$checkpoint = self::reported_checkpoint();
+				if ( null !== $checkpoint ) {
+					$information['report']['last_maintenance_preflight_checkpoint'] = $checkpoint;
+				}
 			}
 			return $information;
 		}
 		$operation = '';
 		self::$stage = 'child_validation';
 		self::$item_results = array();
+		self::$checkpoint = null;
+		self::$record_checkpoint = false;
 		try {
 			if ( 'extra_execution' !== ( $post['function'] ?? '' ) || ! is_string( $post[ self::REQUEST_KEY ] ) || strlen( $post[ self::REQUEST_KEY ] ) > 262144 ) {
 				throw new RuntimeException( 'invalid_transport' );
@@ -100,6 +147,7 @@ final class MRN_Updraft_MainWP_Maintenance {
 			self::libraries();
 			if ( 'preflight' === $operation ) {
 				self::keys( $input, array( 'protocol', 'operation', 'site_id', 'site_url', 'kind', 'items', 'major_overrides', 'backup_nonce' ) );
+				self::$record_checkpoint = true;
 				$data = self::inspect( $input );
 			} elseif ( 'execute' === $operation ) {
 				self::keys( $input, array( 'protocol', 'operation', 'site_id', 'site_url', 'kind', 'items', 'major_overrides', 'backup_nonce', 'before', 'packages', 'plan_sha256', 'request_id' ) );
@@ -112,6 +160,7 @@ final class MRN_Updraft_MainWP_Maintenance {
 			}
 			if ( 'preflight' === $operation ) {
 				delete_transient( self::DIAGNOSTIC_KEY );
+				self::finish_checkpoint( 'complete' );
 			}
 			return array(
 				'success' => true,
@@ -122,6 +171,7 @@ final class MRN_Updraft_MainWP_Maintenance {
 			// Exception text may contain a download URL or a native provider secret.
 			if ( 'preflight' === $operation ) {
 				set_transient( self::DIAGNOSTIC_KEY, array( 'schema_version' => 1, 'code' => $code, 'recorded_at' => time() ), self::DIAGNOSTIC_TTL );
+				self::finish_checkpoint( 'refused' );
 			}
 			unset( $error );
 			return array(
@@ -305,6 +355,7 @@ final class MRN_Updraft_MainWP_Maintenance {
 	private static function state() {
 		wp_clean_plugins_cache( false );
 		wp_clean_themes_cache( false );
+		self::checkpoint( 'child_snapshot_plugins' );
 		$plugins = array();
 		foreach ( get_plugins() as $slug => $plugin ) {
 			$root             = dirname( $slug );
@@ -321,6 +372,7 @@ final class MRN_Updraft_MainWP_Maintenance {
 		}
 		ksort( $plugins, SORT_STRING );
 		$themes = array();
+		self::checkpoint( 'child_snapshot_themes' );
 		foreach ( wp_get_themes() as $slug => $theme ) {
 			if ( $theme->errors() ) {
 				throw new RuntimeException( 'theme_invalid' );
@@ -343,6 +395,7 @@ final class MRN_Updraft_MainWP_Maintenance {
 				throw new RuntimeException( 'core_unavailable' );
 			}
 		}
+		self::checkpoint( 'child_snapshot_core' );
 		$core = array(
 			'version'    => $GLOBALS['wp_version'],
 			'db_version' => get_option( 'db_version' ),
@@ -521,7 +574,11 @@ final class MRN_Updraft_MainWP_Maintenance {
 	 */
 	private static function inspect( $input ) {
 		self::selection( $input );
+		if ( self::$record_checkpoint ) {
+			self::$checkpoint = array( 'schema_version' => 1, 'site_id' => $input['site_id'], 'request_sha256' => self::digest( $input ), 'stage' => 'child_backup', 'state' => 'in_progress', 'started_at' => time(), 'updated_at' => time(), 'item_slug' => null );
+		}
 		self::$stage = 'child_backup';
+		self::checkpoint( 'child_backup' );
 		$backup = MRN_Updraft_MainWP_Policy::maintenance_backup( $input['backup_nonce'] );
 		if ( is_wp_error( $backup ) ) {
 			$raw  = $backup->get_error_code();
@@ -538,12 +595,15 @@ final class MRN_Updraft_MainWP_Maintenance {
 			$file = null;
 			try {
 				self::$stage = 'child_offer';
+				self::checkpoint( 'child_offer', $item['slug'] );
 				$single = $input;
 				$single['items'] = array( $item );
 				$offers = self::offers( $single, $before );
 				self::$stage = 'child_download';
+				self::checkpoint( 'child_download', $item['slug'] );
 				$file = self::download( $offers[ $item['slug'] ]['package'] );
 				self::$stage = 'child_package';
+				self::checkpoint( 'child_package', $item['slug'] );
 				$packages[] = self::package( $file, $item, $input['kind'], $before );
 				self::$item_results[] = array( 'slug' => $item['slug'], 'success' => true, 'stage' => 'child_package', 'code' => 'verified' );
 			} catch ( Throwable $error ) {

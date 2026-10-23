@@ -11,6 +11,7 @@ $transients = array(); $writes = array(); $backup_calls = 0; $runtime = 'direct'
 function wp_unslash( $value ) { return stripslashes( $value ); }
 function untrailingslashit( $value ) { return rtrim( $value, '/' ); }
 function wp_parse_url( $value ) { return parse_url( $value ); }
+function wp_json_encode( $value, $flags = 0 ) { return json_encode( $value, $flags ); }
 function home_url( $path = '' ) { return 'https://example.com/'; }
 function is_multisite() { return false; }
 function get_filesystem_method() { return $GLOBALS['runtime']; }
@@ -58,7 +59,7 @@ try {
 	check_diagnostic( 'backup_unverified' === diagnostic_report()['report']['last_maintenance_preflight_refusal']['code'], 'unknown provider code remains generic' );
 	$runtime = 'ftpext'; MRN_Updraft_MainWP_Maintenance::dispatch( array(), $post ); $runtime = 'direct';
 	check_diagnostic( 'unsupported_runtime' === diagnostic_report()['report']['last_maintenance_preflight_refusal']['code'], 'unsupported runtime remains refused and diagnosable' );
-	check_diagnostic( count( $transients ) === 1 && array( MRN_Updraft_MainWP_Maintenance::DIAGNOSTIC_KEY, 600 ) === $writes[0], 'one fixed key with a ten-minute TTL' );
+	check_diagnostic( count( $transients ) === 2 && in_array( array( MRN_Updraft_MainWP_Maintenance::DIAGNOSTIC_KEY, 600 ), $writes, true ) && in_array( array( MRN_Updraft_MainWP_Maintenance::CHECKPOINT_KEY, 600 ), $writes, true ), 'two fixed diagnostic keys with ten-minute TTLs' );
 	$original = $transients; $bad = $input; $bad['site_url'] = 'https://wrong.invalid';
 	MRN_Updraft_MainWP_Maintenance::dispatch( array(), array( 'function' => 'extra_execution', 'mrn_maintenance_request' => json_encode( $bad ) ) );
 	check_diagnostic( $original === $transients, 'wrong site cannot overwrite diagnostics' );

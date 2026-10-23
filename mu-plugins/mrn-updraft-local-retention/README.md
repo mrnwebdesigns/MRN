@@ -63,7 +63,7 @@ MRN_QA_CODE_ANALYSIS_SCOPE=all mrn-qa run --project-root /Users/khofmeyer/Develo
 
 Runtime browser, accessibility, API, and performance checks should be run separately against an explicit target site when this plugin change affects rendered output or live WordPress behavior.
 
-## Guarded MainWP maintenance (0.8.6 candidate)
+## Guarded MainWP maintenance (0.8.7 candidate)
 
 After each successful native update, the batch admits only the selected item's
 approved version and new code tree into its next expected state. Activation,
@@ -130,3 +130,28 @@ leaving an initially active plugin deactivated on failure; an attempted activati
 change fails the batch. No activation/deactivation tool or raw execution path is
 added. The Dashboard and connector repairs must be released together before
 claiming the new diagnostics are available to chats.
+
+### Timeout checkpoints
+
+The same authenticated runtime report may include
+`last_maintenance_preflight_checkpoint`: a schema version, exact site ID,
+request SHA-256, closed phase/state, timestamps and optional selected-item slug.
+It is stored under one fixed transient key for at most ten minutes. It contains
+no raw request, receipt, backup nonce, exception text, download URL or credentials.
+The separate existing refusal record is unchanged.
+
+A checkpoint is written **before** remote backup proof, each inventory class,
+offer refresh, package download and package validation. Abrupt worker death or
+a proxy timeout can therefore leave an `in_progress` observation. It does not
+prove the worker is still running, a check passed, a write happened or nothing
+changed. Concurrent preflights can replace this diagnostic history. Match its
+request digest and timestamps before using it to locate the last phase reached.
+Never use this record for authorization, readiness, confirmation, stale-state
+validation, receipt validation, retry or lock release. All those gates continue
+to use their existing independent evidence. Execute/read operations do not
+create these checkpoints. Reading the report performs no new scan or write.
+
+`php tests/maintenance-checkpoints.php` terminates a disposable worker during
+backup verification and verifies the surviving observation, closed metadata,
+read-only reporting and unchanged target/core/backup refusal behavior. The
+normal native WordPress maintenance fixture must also pass before a release.
