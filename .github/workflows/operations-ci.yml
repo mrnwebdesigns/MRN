@@ -234,6 +234,7 @@ jobs:
             'Actual signed qualification queues the retained original once with unchanged grant and intent ceilings',
             'Actual registrar context request triggers the provider TLS callback and separate signed identity readback',
             'One native capture survives a lost response and SQLite reopen with identical bounded read recovery and no recapture',
+            'Native measurement read matches the independently retained capture receipt under the original authority',
             'Fresh exact-site sync and full Child readback prove the preview, binding and qualification did not edit content',
             'Revocation during actual provider context lookup returns a signed denial and blocks later local dispatch',
           ]);
@@ -267,6 +268,8 @@ jobs:
           assert.equal(binding.capture.original_expires_at, binding.binding.original_expires_at);
           assert.equal(binding.capture.job_expires_at, binding.qualification.job_expires_at);
           assert.ok(Number.isSafeInteger(binding.capture.native_calls) && binding.capture.native_calls >= 2 && binding.capture.native_calls <= 151);
+          assert.deepEqual(binding.measurements, { reads: 1, measurement_record_sha256: binding.capture.measurements_sha256,
+            matches_retained_capture: true, original_authorization_unchanged: true, admitted: false });
           assert.ok(Number.isSafeInteger(binding.currentAccess.signed_callbacks) && binding.currentAccess.signed_callbacks >= binding.capture.native_calls + 4
             && binding.currentAccess.signed_callbacks <= 512);
           assert.deepEqual(binding.currentAccess, { context_requests: 2, signed_callbacks: binding.currentAccess.signed_callbacks,
@@ -281,6 +284,7 @@ jobs:
           assert.equal(binding.network.signed_control_posts, 2); assert.match(binding.network.network_log_sha256, /^[a-f0-9]{64}$/);
           assert.equal(binding.network.context_posts, 2); assert.equal(binding.network.access_readback_posts, binding.currentAccess.signed_callbacks);
           assert.equal(binding.network.capture_posts, 1); assert.equal(binding.network.recovery_posts, 1);
+          assert.equal(binding.network.measurement_posts, 1);
           assert.equal(binding.network.queue_posts, 1);
           assert.equal(binding.staffChecks.connections, 1);
           assert.ok(Number.isSafeInteger(binding.staffChecks.dispatched) && binding.staffChecks.dispatched > 0);
