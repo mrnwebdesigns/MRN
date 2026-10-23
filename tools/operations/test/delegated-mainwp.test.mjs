@@ -244,6 +244,9 @@ test('shared backend connection keeps parallel people isolated with no caller-su
   assert.equal(f.state.consumed.size, 4);
   assert.ok(f.state.calls.every(n => Object.values(delegationTools).includes(n)));
   f.state.revoked.add('123');
+  await assert.rejects(() => f.delegated('123').verifyStaff(), /Membership revoked/);
+  assert.equal((await f.delegated('456').verifyStaff()).google_sub, '456');
+  assert.equal(f.state.consumed.size, 6, 'New adapters on one connection perform new signed membership reads');
   await assert.rejects(() => alice.callTool({ name: 'get_site_v1', arguments: { site_id_or_domain: 'https://example.test' } }));
   assert.equal(f.state.dispatched.length, 2);
   await bob.callTool({ name: 'get_site_v1', arguments: { site_id_or_domain: 'https://another.test' } });

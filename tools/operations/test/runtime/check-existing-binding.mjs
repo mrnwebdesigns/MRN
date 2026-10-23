@@ -31,12 +31,15 @@ const clients = new Set(), transports = new Set();
 const recentCalls = [];
 let store, captureStore, deadline, hardDeadline, reportPath, sidecar, callbackServer, accessRuntime, routingTouched = false, closingAccess, started;
 let checksComplete = false;
-let networkPath;
+let networkPath, captureStarted;
 const report = { schema: 2, result: 'INCOMPLETE', scope: 'disposable-native-existing-queue-access-v2-only', passed: [],
   productionCredentials: false, productionActivation: false, liveGoogleVerified: false, protectedWorkerVerified: false,
   renderedQaVerified: false, consumerBindingIssued: false, contentWriteVerified: false, codeWriteVerified: false,
   remoteBackupVerified: false, chatgptAcceptanceVerified: false, afterTransportExpiryVerified: false };
-const save = () => { if (reportPath) writeFileSync(reportPath, JSON.stringify(report, null, 2) + '\n', { mode: 0o600 }); };
+const save = () => {
+  if (report.captureCall?.kind === 'pending') report.captureCall.elapsed_ms = Math.ceil(performance.now() - captureStarted);
+  if (reportPath) writeFileSync(reportPath, JSON.stringify(report, null, 2) + '\n', { mode: 0o600 });
+};
 const networkDiagnostic = () => {
   try {
     if (!networkPath) return bindingFixtureNetworkDiagnostic();
@@ -97,7 +100,8 @@ try {
   deadline = setTimeout(async () => {
     report.result = 'FAIL'; report.failure = { phase, recentCalls, network: networkDiagnostic(), deadlineExceeded: true }; save();
     process.stderr.write('FAIL disposable v2 binding deadline; private output withheld\n');
-    try { await closeAccess(); } finally { process.exit(1); }
+    try { await closeAccess(); }
+    finally { report.elapsedMs = Math.ceil(performance.now() - started); save(); process.exit(1); }
   }, (context.limits.hook_seconds - 10) * 1000);
   hardDeadline = setTimeout(() => process.exit(1), context.limits.hook_seconds * 1000);
   const lock = JSON.parse(readFileSync(new URL('./sources.json', import.meta.url)));
@@ -185,10 +189,18 @@ try {
         }
       } };
   };
+  // Reuse only the subprocess connection. Each invocation constructs a new
+  // actor-bound adapter, rechecks transport metadata, obtains a new challenge
+  // and performs a fresh signed staff read. No access result is cached. This
+  // connection is separate from the capture and callback readers and is closed
+  // once by the fixture lifecycle, including after a failed check.
+  const staffConnection = await rawClient();
+  report.staffChecks = { connections: 1, dispatched: 0, completed: 0 };
   const verifyStaff = async actor => {
-    const client = new DelegatedMainwpClient(await rawClient(), actor, signer);
-    try { const access = await client.verifyStaff(); assert.equal(access.policy_sha256, context.pins.delegation_policy_sha256); }
-    finally { await client.close(); }
+    const client = new DelegatedMainwpClient(staffConnection, actor, signer);
+    report.staffChecks.dispatched++;
+    const access = await client.verifyStaff(); assert.equal(access.policy_sha256, context.pins.delegation_policy_sha256);
+    report.staffChecks.completed++;
   };
   const pins = { provider_source_sha: context.pins.provider_source_sha, authorization_policy_sha256: context.pins.authorization_policy_sha256,
     delegation_policy_sha256: context.pins.delegation_policy_sha256 };
@@ -398,7 +410,9 @@ try {
           const name = args[0].name;
           assert.ok(Object.values(existingManagementCaptureTools).includes(name));
           if (name === existingManagementCaptureTools.capture) captureDispatches++; else recoveryReads++;
-          const callStarted = performance.now();
+          const callStarted = performance.now(); captureStarted = callStarted;
+          report.captureCall = { ...bindingFixtureDiagnostic(name, {}), kind: 'pending', elapsed_ms: 0,
+            transport_timeout_ms: 120000, automatic_retries: false }; save();
           const record = (value, transportError = false) => {
             report.captureCall = { ...bindingFixtureDiagnostic(name, value, false, transportError),
               elapsed_ms: Math.ceil(performance.now() - callStarted), transport_timeout_ms: 120000, automatic_retries: false };
@@ -485,6 +499,11 @@ try {
   const queuePosts = network.filter(row => row.ability === originalQualificationAbility);
   const capturePosts = network.filter(row => /\/capture-content-edit-qualification-existing-v2\/run$/.test(row.path));
   const recoveryPosts = network.filter(row => /\/read-content-edit-qualification-capture-existing-v2\/run$/.test(row.path));
+  const staffPosts = network.filter(row => /\/get-team-access-v1\/run$/.test(row.path));
+  assert.equal(report.staffChecks.dispatched, report.staffChecks.completed);
+  assert.equal(staffPosts.length, report.staffChecks.dispatched);
+  assert.ok(staffPosts.length > 0 && staffPosts.every(row => row.method === 'POST' && row.status === 200));
+  report.staffChecks.verified_posts = staffPosts.length;
   report.network = { signed_control_posts: controls.length, context_posts: contextPosts.length, access_readback_posts: accessPosts.length,
     queue_posts: queuePosts.length, capture_posts: capturePosts.length, recovery_posts: recoveryPosts.length,
     network_log_sha256: digest(readFileSync(join(work, 'gateway-network.jsonl'))) }; save();

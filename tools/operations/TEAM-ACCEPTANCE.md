@@ -45,9 +45,10 @@ Use already-authorized test identities or separately reviewed administrative tes
 ## Latest source evidence, 2026-10-23
 
 The expanded original-capture/recovery composition is **not qualified**:
-native runs `39978255035` and `39979454472` failed during capture. The latter
-stopped after 60,068 ms despite a 120-second client limit; the cause is under
-investigation. Gateway `a182a7e` passed 619 local tests; `a82c61b` adds bounded
+native runs `39978255035`, `39979454472` and `39983906354` failed during capture.
+The second stopped after 60,068 ms despite a 120-second client limit; after the
+isolated proxy correction, the third hit the 170-second cleanup deadline.
+The cause is still under investigation. Gateway `a182a7e` passed 619 local tests; `a82c61b` adds bounded
 HTTP failure diagnostics with six focused tests and staged MRN QA passing.
 These results do not replace the narrower passing baseline below or establish
 any live acceptance row.

@@ -144,6 +144,24 @@ bytes, plugin runtime, original 180-second intent/hook and 120-second capture
 limits are unchanged. This selects test source only, adopts no aa05 owner
 format, and does not change production configuration or workspace tools.
 
+That candidate's native run `39983906354` on gateway `99025a9` failed at the
+170-second cleanup deadline while capture was still pending. No successful
+capture, recovery or callback-cleanup completion is retained in that report.
+Artifact `12514652824` was verified against SHA-256
+`6663f2edaa10c7a50156ce1e7e4240cdb09e9bff98a625bfc77c2e73bb534a4c`.
+All 621 gateway tests, Fleet regressions, dependency audit and hosted MRN QA
+`39983906295` passed; none overrides the failed native gate.
+
+The follow-up fixture reuses one separate staff MCP connection, while each
+check constructs a new actor-bound adapter, verifies metadata, obtains a fresh
+challenge and performs a signed membership read. Access decisions are never
+cached. Native assertions must match every dispatched staff check to an actual
+successful POST. The failure projection also accepts the fixed GET readiness
+route and retains pending capture timing and completed deadline cleanup.
+Twenty-four focused tests, including revocation between checks on the shared
+connection, and lint pass. This removes repeated subprocess setup; it does not
+prove the remaining latency cause or relax any original authorization deadline.
+
 ## Earlier candidate evidence, 2026-10-22
 
 The earlier disposable integration candidate selected provider

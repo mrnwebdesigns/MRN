@@ -76,7 +76,9 @@ export function bindingFixtureNetworkDiagnostic(bytes) {
       if (!row || typeof row !== 'object' || Array.isArray(row)) return { state: 'malformed', requests: [] };
       const tool = routeLabels.get(row.path);
       if (!tool) continue;
-      if (row.method !== 'POST' || !Number.isInteger(row.status) || row.status < 100 || row.status > 599)
+      // Readiness uses GET; private registrar and delegated controls use POST.
+      // Their request-method gates remain in the actual transport guard.
+      if (!['GET', 'POST'].includes(row.method) || !Number.isInteger(row.status) || row.status < 100 || row.status > 599)
         return { state: 'malformed', requests: [] };
       requests.push({ tool, status: row.status,
         provider_code: codes.has(row.errorCode) ? row.errorCode : row.status >= 400 ? 'unclassified' : 'none' });

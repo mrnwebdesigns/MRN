@@ -282,6 +282,10 @@ jobs:
           assert.equal(binding.network.context_posts, 2); assert.equal(binding.network.access_readback_posts, binding.currentAccess.signed_callbacks);
           assert.equal(binding.network.capture_posts, 1); assert.equal(binding.network.recovery_posts, 1);
           assert.equal(binding.network.queue_posts, 1);
+          assert.equal(binding.staffChecks.connections, 1);
+          assert.ok(Number.isSafeInteger(binding.staffChecks.dispatched) && binding.staffChecks.dispatched > 0);
+          assert.equal(binding.staffChecks.dispatched, binding.staffChecks.completed);
+          assert.equal(binding.staffChecks.completed, binding.staffChecks.verified_posts);
           assert.ok(Number.isSafeInteger(binding.elapsedMs) && binding.elapsedMs > 0 && binding.elapsedMs < 180000);
           for (const name of ['provider', 'transport', 'runner']) assert.equal(execFileSync('git', ['-C', `.runtime/${name}`, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), sources[name].commit);
           assert.equal(execFileSync('git', ['-C', '.runtime/management-worker', 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), sources.managementWorker.commit);
