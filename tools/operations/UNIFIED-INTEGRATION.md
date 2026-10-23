@@ -345,6 +345,27 @@ All eleven imported qualification files were compared to immutable Git bytes;
 frozen contracts are unchanged. This is a test candidate, not an activated or
 native-qualified production selection.
 
+### Existing-record owner catalog resolution
+
+The private gateway catalog resolver accepts only the retained job ID. It
+requires its accepted capture and current original authority, then selects the
+catalog from independent service configuration and owner pins. The root signature
+must cover the exact canonical frozen-v2 preimage, predate the original queue
+and cover its whole lifetime. Registrar, identity and QA keys cannot sign it or
+alias the root key. Policy, catalog configuration, capture and original access
+are checked again before returning; stalled or expired checks release nothing.
+The existing v1 resolver shares only pure signature/shape validation, retaining
+its original ledger and fixed v1 purpose. No version or catalog selector is
+added to a team tool.
+
+All 647 gateway tests and ESLint pass locally, including eight new original-v2
+catalog groups and unchanged legacy catalog tests. This is not owner preparation
+or source admission. The current source-context fixture's older v1 catalog must
+not be relabeled after capture: a real v2 catalog must be prepared and pinned
+before a fresh original is queued. Provider preparation and native composition
+remain required. No source slot, catalog configuration or production authority
+is created by this local resolver.
+
 ## Earlier candidate evidence, 2026-10-22
 
 The earlier disposable integration candidate selected provider

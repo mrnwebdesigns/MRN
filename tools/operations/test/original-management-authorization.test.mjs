@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createPublicKey, generateKeyPairSync, randomUUID, verify } from 'node:crypto';
+import { createPublicKey, generateKeyPairSync, randomUUID, sign, verify } from 'node:crypto';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -34,6 +34,7 @@ import { ExistingManagementMeasurements, ExistingManagementMeasurementsReader, e
   createExistingManagementMeasurementsRuntime } from '../src/existing-management-measurements.mjs';
 import { ExistingManagementSourceContext, ExistingManagementSourceContextReader, existingManagementSourceContextTool,
   createExistingManagementSourceContextRuntime } from '../src/existing-management-source-context.mjs';
+import { ExistingManagementSourceCatalogRegistry } from '../src/existing-management-source-catalog.mjs';
 
 const audience = 'https://operations.mrnwebdesigns.com/mcp', issuer = 'https://identity.example.test/';
 async function fixture(t, durable = false) {
@@ -2025,4 +2026,163 @@ test('source context remains private and requires the exact v2 route with shutdo
     ledger: f.ledger, registrar: f.registrar, owner: () => f.sourceOwner, connect: async () => f.sourceClient });
   await runtime.close(); await runtime.close(); assert.equal(f.sourceState.closes, 1);
   await assert.rejects(() => runtime.sourceContext.read(f.job, f.measurementValue)); assert.equal(f.sourceState.calls, 0);
+});
+
+async function existingCatalogFixture(t, captured = true) {
+  const f = await existingCaptureFixture(t); if (captured) await f.runCapture();
+  const pair = Object.fromEntries(['root', 'registrar', 'identity', 'qa'].map(role => [role, generateKeyPairSync('ed25519')]));
+  const keys = Object.fromEntries(Object.entries(pair).map(([role, key]) => [role, [{ id: role,
+    public_key_base64: key.publicKey.export({ format: 'der', type: 'spki' }).subarray(-32).toString('base64') }]]));
+  const binding = f.context.binding;
+  const catalog = { schema: 2, adapter: 'content-management-existing-source-catalog-v2', catalog_id: randomUUID(),
+    issued_at: binding.created_at - 10, expires_at: binding.expires_at + 10, native_reads: true, artifacts: [] };
+  const purpose = existingManagementWires.source_transfer.purposes.catalog;
+  const envelope = (bytes = Buffer.from(delegationCanonical(catalog)), selectedPurpose = purpose, role = 'root') => ({
+    key_id: role, payload_base64: bytes.toString('base64'),
+    signature_base64: sign(null, Buffer.concat([Buffer.from(selectedPurpose), bytes]), pair[role].privateKey).toString('base64') });
+  const owner = { evidence_policy_epoch: 1, evidence_policy_sha256: 'b'.repeat(64), source_recipe_catalog_sha256: 'c'.repeat(64) };
+  const state = { registry: { schema: 1, keys, catalogs: [] }, pin: null, mono: 0, offset: 0, reads: 0, duringRead: null };
+  const repin = () => { state.pin = delegationDigest(state.registry); };
+  const publish = () => {
+    owner.source_recipe_catalog_sha256 = delegationDigest(catalog);
+    state.registry.catalogs = [{ sha256: owner.source_recipe_catalog_sha256, envelope: envelope() }]; repin();
+  };
+  publish();
+  const options = { ledger: f.ledger, owner: () => owner, current: () => { state.duringRead?.(++state.reads); return state.registry; },
+    expectedSha256: () => state.pin, now: () => Date.now() + state.offset, monotonic: () => state.mono };
+  const registry = new ExistingManagementSourceCatalogRegistry(options);
+  return { ...f, catalog, catalogOwner: owner, catalogState: state, catalogRegistry: registry, catalogOptions: options,
+    catalogEnvelope: envelope, publishCatalog: publish, repinCatalog: repin, resolveCatalog: () => registry.resolve(f.job) };
+}
+
+test('existing catalog is absent by default and only resolves independent frozen-v2 owner signatures for the original captured job', async t => {
+  const f = await existingCatalogFixture(t), before = await f.ledger.readCapture(f.job);
+  await assert.rejects(() => new ExistingManagementSourceCatalogRegistry({ ledger: f.ledger }).resolve(f.job),
+    { code: 'MANAGEMENT_SOURCE_MISSING_CATALOG' });
+  for (const patch of [{ ledger: {} }, { owner: undefined }, { expectedSha256: undefined }, { current: undefined }])
+    assert.throws(() => new ExistingManagementSourceCatalogRegistry({ ...f.catalogOptions, ...patch }));
+  const n = f.store.db.prepare('SELECT total_changes() n').get().n, first = await f.resolveCatalog();
+  assert.deepEqual(first.catalog, f.catalog); assert.equal(first.ownerCatalogSha256, f.catalogOwner.source_recipe_catalog_sha256);
+  assert.equal(first.registrySha256, f.catalogState.pin);
+  assert.equal(f.store.db.prepare('SELECT total_changes() n').get().n, n);
+  const reopened = new ExistingManagementSourceCatalogRegistry({ ...f.catalogOptions, ledger: f.open().ledger });
+  assert.deepEqual(await reopened.resolve(f.job), first);
+  first.catalog.native_reads = false; first.signedCatalog.key_id = 'caller';
+  assert.equal((await f.resolveCatalog()).catalog.native_reads, true);
+  assert.equal((await f.resolveCatalog()).signedCatalog.key_id, 'root');
+  assert.deepEqual(await f.ledger.readCapture(f.job), before);
+  assert.equal(f.captureState.calls.length, 1);
+});
+
+test('existing catalog refuses missing, uncertain and corrupt original capture without reconstructing it', async t => {
+  for (const kind of ['missing', 'uncertain', 'corrupt', 'unknown-job']) {
+    const f = await existingCatalogFixture(t, kind === 'corrupt' || kind === 'unknown-job');
+    if (kind === 'uncertain') { f.captureState.failure = true; await assert.rejects(f.runCapture); }
+    if (kind === 'corrupt') f.store.db.exec("UPDATE original_management_capture_history SET digest='bad'");
+    await assert.rejects(() => f.catalogRegistry.resolve(kind === 'unknown-job' ? randomUUID() : f.job));
+    assert.equal(f.catalogState.reads, 0);
+  }
+});
+
+test('existing catalog refuses legacy schemas, cross-purpose signatures and signer-role substitution', async t => {
+  for (const kind of ['legacy-schema', 'legacy-purpose', 'capture-purpose', 'identity', 'registrar', 'qa', 'bad-signature']) {
+    const f = await existingCatalogFixture(t);
+    if (kind === 'legacy-schema') {
+      f.catalog.schema = 1; f.catalog.adapter = 'content-management-source-catalog-v1'; f.publishCatalog();
+    } else if (kind === 'bad-signature') f.catalogState.registry.catalogs[0].envelope.signature_base64 = Buffer.alloc(64).toString('base64');
+    else {
+      const purpose = kind === 'legacy-purpose' ? 'mrn-content-management-source-catalog-v1:'
+        : kind === 'capture-purpose' ? existingManagementWires.source_transfer.purposes.capture
+          : existingManagementWires.source_transfer.purposes.catalog;
+      f.catalogState.registry.catalogs[0].envelope = f.catalogEnvelope(undefined, purpose,
+        ['identity', 'registrar', 'qa'].includes(kind) ? kind : 'root');
+    }
+    f.repinCatalog(); await assert.rejects(f.resolveCatalog, kind);
+  }
+});
+
+test('existing catalog refuses role aliases, duplicates, malformed or noncanonical preimages and false owner labels', async t => {
+  for (const kind of ['role-alias', 'duplicate-catalog', 'duplicate-key', 'duplicate-artifact', 'label', 'hash', 'noncanonical', 'malformed', 'extra', 'oversized']) {
+    const f = await existingCatalogFixture(t), registry = f.catalogState.registry;
+    if (kind === 'role-alias') registry.keys.qa[0].public_key_base64 = registry.keys.root[0].public_key_base64;
+    if (kind === 'duplicate-catalog') registry.catalogs.push(structuredClone(registry.catalogs[0]));
+    if (kind === 'duplicate-key') registry.keys.root.push(structuredClone(registry.keys.root[0]));
+    if (kind === 'duplicate-artifact') {
+      const a = { artifact_id: 'fixture', root_kind: 'directory', relative_inventory_sha256: 'a'.repeat(64),
+        archive_sha256: 'b'.repeat(64), archive_format: 'zip', maximum_archive_bytes: 1024 };
+      f.catalog.artifacts = [a, { ...a }]; f.publishCatalog();
+    }
+    if (kind === 'label') registry.catalogs[0].sha256 = f.catalogOwner.source_recipe_catalog_sha256 = 'e'.repeat(64);
+    if (kind === 'hash') f.catalogOwner.source_recipe_catalog_sha256 = 'e'.repeat(64);
+    const invalid = { noncanonical: Buffer.from(JSON.stringify(f.catalog, null, 2)), malformed: Buffer.from([255]),
+      extra: Buffer.from(delegationCanonical({ ...f.catalog, authority_verified: true })), oversized: Buffer.alloc(98305, 32) };
+    if (invalid[kind]) registry.catalogs[0].envelope = f.catalogEnvelope(invalid[kind]);
+    f.repinCatalog(); await assert.rejects(f.resolveCatalog, kind);
+  }
+});
+
+test('existing catalog must predate the original queue and cover its entire unchanged lifetime', async t => {
+  for (const kind of ['late-issue', 'early-expiry', 'invalid-range']) {
+    const f = await existingCatalogFixture(t);
+    if (kind === 'late-issue') f.catalog.issued_at = f.context.binding.created_at + 1;
+    if (kind === 'early-expiry') f.catalog.expires_at = f.context.binding.expires_at - 1;
+    if (kind === 'invalid-range') f.catalog.issued_at = f.catalog.expires_at;
+    f.publishCatalog(); await assert.rejects(f.resolveCatalog, kind);
+  }
+  const f = await existingCatalogFixture(t);
+  f.catalog.issued_at = f.context.binding.created_at; f.catalog.expires_at = f.context.binding.expires_at; f.publishCatalog();
+  assert.deepEqual((await f.resolveCatalog()).catalog, f.catalog);
+});
+
+test('existing catalog rechecks fresh staff, original source, policy, capture and owner state before releasing configuration', async t => {
+  for (const stage of ['before', 'during']) for (const kind of ['staff', 'revoked', 'source', 'policy', 'epoch', 'capture', 'owner', 'registry']) {
+    const f = await existingCatalogFixture(t), change = () => {
+      if (kind === 'staff') f.state.duringCheck = () => { throw new Error('Directory denied'); };
+      if (kind === 'revoked') f.accessLedger.recordPendingRevocation(f.job);
+      if (kind === 'source') f.queueState.pins.installed_manifest_sha256 = 'f'.repeat(64);
+      if (kind === 'policy') f.policy.emailDomains[0].portfolio.actions = ['read'];
+      if (kind === 'epoch') f.queueState.epoch = 'f'.repeat(64);
+      if (kind === 'capture') f.store.db.exec("UPDATE original_management_capture_history SET digest='bad'");
+      if (kind === 'owner') f.catalogOwner.source_recipe_catalog_sha256 = 'e'.repeat(64);
+      if (kind === 'registry') f.catalogState.registry.catalogs[0].sha256 = 'e'.repeat(64);
+    };
+    if (stage === 'before') change(); else f.catalogState.duringRead = count => { if (count === 1) change(); };
+    await assert.rejects(f.resolveCatalog, `${stage}/${kind}`);
+  }
+  for (const field of ['evidence_policy_epoch', 'evidence_policy_sha256', 'source_recipe_catalog_sha256']) {
+    const f = await existingCatalogFixture(t);
+    f.catalogState.duringRead = count => { if (count === 1) f.catalogOwner[field] = field === 'evidence_policy_epoch' ? 2 : 'd'.repeat(64); };
+    await assert.rejects(f.resolveCatalog, field);
+  }
+  const f = await existingCatalogFixture(t);
+  f.catalogState.duringRead = count => { if (count === 2) { f.catalog.native_reads = false; f.publishCatalog(); } };
+  await assert.rejects(f.resolveCatalog);
+});
+
+test('existing catalog rejects original expiry, clock reversal and late resolution without extending authority', async t => {
+  for (const kind of ['monotonic', 'wall', 'reverse', 'expiry']) {
+    const f = await existingCatalogFixture(t);
+    f.catalogState.duringRead = count => { if (count === 1) {
+      if (kind === 'monotonic') f.catalogState.mono = 20000;
+      if (kind === 'wall') f.catalogState.offset = 20000;
+      if (kind === 'reverse') f.catalogState.mono = -1;
+      if (kind === 'expiry') f.catalogState.offset = f.context.binding.expires_at * 1000 - Date.now();
+    } };
+    await assert.rejects(f.resolveCatalog, kind);
+    assert.equal((await f.ledger.currentQueuedJob(f.job)).original.mapping.authorization.expiresAt, f.actor.expiresAt);
+  }
+});
+
+test('existing catalog bounds a stalled fresh staff check and never dispatches source capture', async t => {
+  const f = await existingCatalogFixture(t), schedule = globalThis.setTimeout;
+  let release;
+  f.state.duringCheck = () => new Promise(resolve => { release = resolve; });
+  t.mock.method(globalThis, 'setTimeout', (callback, ms, ...args) => {
+    assert.ok(ms > 0 && ms <= 20000); return schedule(callback, 0, ...args);
+  });
+  await assert.rejects(f.resolveCatalog, { message: 'MANAGEMENT_EXISTING_SOURCE_CATALOG_TIMEOUT' });
+  assert.equal(f.catalogState.reads, 0); assert.equal(f.captureState.calls.length, 1);
+  t.mock.restoreAll(); f.state.duringCheck = null; release();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(f.catalogState.reads, 0);
 });

@@ -15,6 +15,7 @@ const same = (a, b) => delegationDigest(a) === delegationDigest(b);
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
 const ownerType = z.object({ evidence_policy_epoch: z.number().int().positive().safe(),
   evidence_policy_sha256: hash, source_recipe_catalog_sha256: hash }).strict();
+export const parseExistingManagementSourceOwner = value => ownerType.parse(value);
 export const existingManagementSourceContextTool = 'mrn_mainwp__read_content_edit_qualification_source_context_existing_v2';
 
 export class ExistingManagementSourceContextReader extends createPrivateQueryReader(existingManagementSourceContextTool) {
