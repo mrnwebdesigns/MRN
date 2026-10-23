@@ -64,7 +64,7 @@ function mrn_base_stack_get_split_aside_fields( $seed ) {
 		$fields[] = array( 'key' => $seed . '_split_' . $name, 'name' => 'split_' . $name, 'label' => $label, 'type' => 'text', 'default_value' => '', 'instructions' => 'Optional non-negative CSS length or clamp(). Width accepts none; line height accepts unitless numbers. Outer section spacing uses row presets.', 'wrapper' => array( 'width' => '50' ) );
 	}
 	foreach ( array( 'first_column_min' => 'First Column Minimum Width', 'first_column_max' => 'First Column Maximum Width', 'second_column_max' => 'Second Column Maximum Width', 'column_gap_tablet' => 'Column Gap at 1024px and Below', 'first_column_max_tablet' => 'First Column Maximum at 1024px', 'second_column_max_tablet' => 'Second Column Maximum at 1024px' ) as $name => $label ) {
-		$fields[] = array( 'key' => $seed . '_split_' . $name, 'name' => 'split_' . $name, 'label' => $label, 'type' => 'text', 'default_value' => '', 'instructions' => 'Optional non-negative length or clamp(). Only applies to Bounded Columns; outer spacing remains in row presets.', 'wrapper' => array( 'width' => '50' ) );
+		$fields[] = array( 'key' => $seed . '_split_' . $name, 'name' => 'split_' . $name, 'label' => $label, 'type' => 'text', 'default_value' => '', 'instructions' => 'Optional non-negative length or clamp(). Column bounds also accept calc(45% - 40px), with 0–100% and 0–200px. Only applies to Bounded Columns; outer spacing remains in row presets.', 'wrapper' => array( 'width' => '50' ) );
 	}
 	$fields[] = array( 'key' => $seed . '_split_stack_breakpoint', 'name' => 'split_stack_breakpoint', 'label' => 'Columns Stack Below', 'type' => 'select', 'choices' => array( '767' => '768px', '900' => '901px', '991' => '992px' ), 'default_value' => '991' );
 	$fields[] = array( 'key' => $seed . '_split_heading_alignment', 'name' => 'split_heading_alignment', 'label' => 'Section Heading Alignment', 'type' => 'select', 'choices' => array( '' => 'Use Existing Alignment', 'start' => 'Start', 'center' => 'Center', 'end' => 'End' ), 'default_value' => '' );
@@ -101,6 +101,7 @@ function mrn_base_stack_get_split_aside_contract( array $row ) {
 	if ( 'bounded' === $row['split_frame'] ) {
 		foreach ( array( 'first_column_min', 'first_column_max', 'second_column_max', 'column_gap_tablet', 'first_column_max_tablet', 'second_column_max_tablet' ) as $name ) {
 			$value = mrn_base_stack_validate_hero_frame_dimension( $row[ 'split_' . $name ] ?? '', false, false );
+			if ( '' === $value && 'column_gap_tablet' !== $name ) { $value = mrn_base_stack_validate_split_column_bound( $row[ 'split_' . $name ] ?? '' ); }
 			if ( '' !== $value ) { $styles[] = '--mrn-split-frame-' . str_replace( '_', '-', $name ) . ':' . $value; }
 		}
 	}
@@ -109,4 +110,10 @@ function mrn_base_stack_get_split_aside_contract( array $row ) {
 	if ( '' !== $color ) { $styles[] = '--mrn-split-frame-heading-color:' . $color; $result['classes'][] = 'has-split-heading-color'; }
 	if ( $styles ) { $result['attributes']['style'] = implode( ';', $styles ); }
 	return $result;
+}
+
+/** Permit one bounded percentage subtraction for proportional column widths. */
+function mrn_base_stack_validate_split_column_bound( $raw ) {
+	if ( ! is_string( $raw ) || strlen( $raw ) > 64 || ! preg_match( '/^calc\(\s*([0-9]+(?:\.[0-9]+)?)%\s+-\s+([0-9]+(?:\.[0-9]+)?)px\s*\)$/D', $raw, $parts ) || (float) $parts[1] > 100 || (float) $parts[2] > 200 ) { return ''; }
+	return 'calc(' . (float) $parts[1] . '% - ' . (float) $parts[2] . 'px)';
 }

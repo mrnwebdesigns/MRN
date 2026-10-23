@@ -442,6 +442,7 @@ function mrn_base_stack_collect_front_end_component_needs_from_content( $content
 		'faq'            => array( 'mrn-faq__item' ),
 		'gallery'        => array( 'data-gallery-root' ),
 		'image_action'   => array( 'data-mrn-image-action-follow' ),
+		'presentation'   => array( 'data-mrn-image-drift' ),
 		'motion'         => array( 'data-mrn-motion-effect', 'data-mrn-surface' ),
 		'slider'         => array( 'mrn-splide' ),
 		'tabs'           => array( 'data-mrn-tabbed-layout' ),

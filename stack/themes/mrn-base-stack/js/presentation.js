@@ -100,6 +100,28 @@
 			} );
 		} );
 	}
+	function initImageDrift( stage ) {
+		const image = stage.querySelector( ':scope > img, :scope > .mrn-image-action > img' );
+		if ( ! image || ! ( 'translate' in image.style ) || image.style.translate ) { return; }
+		let settings;
+		try { settings = JSON.parse( stage.dataset.mrnImageDrift ); } catch ( error ) { return; }
+		if ( ! settings || ! Number.isFinite( settings.speed ) || settings.speed < .01 || settings.speed > .15 || ! Number.isInteger( settings.maximum ) || settings.maximum < 1 || settings.maximum > 100 ) { return; }
+		const section = stage.closest( '.mrn-content-builder__row--two-column-split' ) || stage.closest( '.mrn-content-builder__row' ) || stage;
+		const pointer = window.matchMedia( '(hover: hover) and (pointer: fine)' );
+		const desktop = window.matchMedia( '(min-width: 768px)' );
+		const update = () => {
+			if ( reduced.matches || ! pointer.matches || ! desktop.matches ) { image.style.translate = ''; return; }
+			const rect = section.getBoundingClientRect();
+			if ( rect.bottom < -200 || rect.top > window.innerHeight + 200 ) { return; }
+			const distance = window.innerHeight / 2 - ( rect.top + rect.height / 2 );
+			const travel = Math.max( -settings.maximum, Math.min( settings.maximum, distance * settings.speed ) );
+			image.style.translate = '0 ' + travel.toFixed( 2 ) + 'px';
+		};
+		pointer.addEventListener( 'change', update );
+		desktop.addEventListener( 'change', update );
+		watch( stage, update );
+		if ( 'ResizeObserver' in window ) { new ResizeObserver( update ).observe( section ); }
+	}
 	function initStrip( range ) {
 		const viewport = range.querySelector( '.mrn-scroll-strip__viewport' );
 		const track = viewport?.querySelector( '.mrn-showcase-row__grid' );
@@ -251,6 +273,7 @@
 		if ( header && 'ResizeObserver' in window ) { new ResizeObserver( measureHeader ).observe( header ); }
 		document.querySelectorAll( '[data-mrn-rotation-group]' ).forEach( initRotation );
 		document.querySelectorAll( '[data-mrn-image-stage]' ).forEach( initImage );
+		document.querySelectorAll( '[data-mrn-image-drift]' ).forEach( initImageDrift );
 		document.querySelectorAll( '[data-mrn-scroll-strip]' ).forEach( initStrip );
 		document.querySelectorAll( '[data-mrn-timeline]' ).forEach( initTimeline );
 		document.querySelectorAll( '[data-mrn-hover-video]' ).forEach( initHover );

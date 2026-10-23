@@ -43,6 +43,12 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 			$make( 'list_alignment', 'List Alignment', 'select', array( 'choices' => array( 'start' => 'Start', 'end' => 'End', 'end-start' => 'End, Start on Small Screens' ), 'default_value' => 'start' ) ),
 			$make( 'list_gap', 'Space Between List Columns', 'text', array( 'instructions' => 'Optional non-negative CSS length, for example 30px. Does not change row margin or padding.' ) ),
 		);
+		foreach ( array( 'space_before' => 'Space Before List', 'space_after' => 'Space After List', 'item_space_after' => 'Space After List Items', 'following_paragraph_space_before' => 'Space Before Paragraphs After a List', 'item_size' => 'List Item Font Size', 'item_line_height' => 'List Item Line Height' ) as $name => $label ) {
+			$fields[] = $make( 'list_' . $name, $label, 'text', array( 'instructions' => 'Optional non-negative CSS length. Font size and line height also accept Site Text tokens. Applies only to top-level lists; section spacing stays in row presets.' ) );
+		}
+		$fields[] = $make( 'list_item_weight', 'List Item Weight', 'select', array( 'choices' => array( '' => 'Use Existing Weight' ) + array_combine( range( 100, 900, 100 ), range( 100, 900, 100 ) ), 'default_value' => '' ) );
+		$fields[] = $make( 'list_item_font', 'List Item Font', 'select', array( 'choices' => array( '' => 'Use Existing Font', 'body' => 'Site Body Font', 'heading' => 'Site Heading Font' ), 'default_value' => '' ) );
+		$color = mrn_base_stack_get_background_color_field( $seed . '_list_item_color' ); $color['name'] = 'list_item_color'; $color['label'] = 'List Item Color'; $fields[] = $color;
 		foreach ( $fields as &$field ) {
 			if ( 'list_columns' !== $field['name'] ) {
 				$field['conditional_logic'] = array( array( array( 'field' => $seed . '_list_columns', 'operator' => '!=', 'value' => '' ) ) );
@@ -117,11 +123,14 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 					'choices'       => array(
 						'standard'       => 'Standard',
 						'scroll-zoom'    => 'Scroll Zoom',
+						'scroll-drift'   => 'Scroll Drift',
 						'tilted-gallery' => 'Rotated Column Gallery',
 					),
 					'default_value' => 'standard',
 				)
 			),
+			$make( 'image_drift_speed', 'Scroll Drift Speed', 'number', array( 'min' => 0.01, 'max' => 0.15, 'step' => 0.01, 'default_value' => 0.08, 'instructions' => 'Fraction of the distance between the section center and viewport center. Runs only with a fine hover pointer at 768px and above; reduced motion stays still.', 'conditional_logic' => array( array( array( 'field' => $seed . '_image_presentation', 'operator' => '==', 'value' => 'scroll-drift' ) ) ) ) ),
+			$make( 'image_drift_maximum', 'Maximum Scroll Drift (px)', 'number', array( 'min' => 1, 'max' => 100, 'step' => 1, 'default_value' => 36, 'instructions' => 'Maximum travel in either direction. A nested image follows its nearest Split section. Image size and section spacing stay unchanged.', 'conditional_logic' => array( array( array( 'field' => $seed . '_image_presentation', 'operator' => '==', 'value' => 'scroll-drift' ) ) ) ) ),
 			$make( 'media_height', 'Media Height', 'text', array( 'instructions' => 'Optional CSS length, such as 52rem or 80vh. Applies to the media, not row spacing.' ) ),
 			$make( 'media_height_mobile', 'Mobile Media Height', 'text', array( 'instructions' => 'Optional CSS length for narrow screens.' ) ),
 			$make(
@@ -368,6 +377,13 @@ function mrn_base_stack_get_body_list_contract( array $row ) {
 	if ( '' !== $gap ) {
 		$styles[] = '--mrn-list-column-gap:' . $gap;
 	}
+	foreach ( array( 'space_before', 'space_after', 'item_space_after', 'following_paragraph_space_before', 'item_size', 'item_line_height' ) as $name ) {
+		$value = mrn_base_stack_get_content_frame_dimension( $row[ 'list_' . $name ] ?? '', $name );
+		if ( '' !== $value ) { $styles[] = '--mrn-list-' . str_replace( '_', '-', $name ) . ':' . $value; $classes[] = 'has-list-' . str_replace( '_', '-', $name ); }
+	}
+	$weight = $row['list_item_weight'] ?? ''; if ( is_scalar( $weight ) && in_array( (string) $weight, array_map( 'strval', range( 100, 900, 100 ) ), true ) ) { $styles[] = '--mrn-list-item-weight:' . $weight; $classes[] = 'has-list-item-weight'; }
+	if ( in_array( $row['list_item_font'] ?? '', array( 'body', 'heading' ), true ) ) { $classes[] = 'has-list-item-font-' . $row['list_item_font']; }
+	$color = mrn_base_stack_get_frame_palette_color( $row['list_item_color'] ?? '' ); if ( '' !== $color ) { $styles[] = '--mrn-list-item-color:' . $color; $classes[] = 'has-list-item-color'; }
 	return array( 'classes' => $classes, 'styles' => $styles );
 }
 
@@ -493,6 +509,17 @@ function mrn_base_stack_validate_media_height( $value ) {
  */
 function mrn_base_stack_get_image_stage_attributes( array $row ) {
 	$mode = $row['image_presentation'] ?? 'standard';
+	if ( 'scroll-drift' === $mode ) {
+		$values = array();
+		foreach ( array( 'speed' => array( 0.08, 0.01, 0.15 ), 'maximum' => array( 36, 1, 100 ) ) as $name => $bounds ) {
+			$raw = $row[ 'image_drift_' . $name ] ?? $bounds[0];
+			if ( '' === $raw ) { $raw = $bounds[0]; }
+			if ( ! is_scalar( $raw ) || is_bool( $raw ) || ! is_numeric( $raw ) || ! is_finite( (float) $raw ) || $raw < $bounds[1] || $raw > $bounds[2] || ( 'maximum' === $name && (float) $raw !== (float) (int) $raw ) ) { return ''; }
+			$values[ $name ] = (float) $raw;
+		}
+		mrn_base_stack_enqueue_presentation();
+		return mrn_base_stack_get_html_attributes( array( 'data-mrn-image-drift' => wp_json_encode( $values ) ) );
+	}
 	if ( ! in_array( $mode, array( 'scroll-zoom', 'tilted-gallery' ), true ) ) {
 		return '';
 	}
