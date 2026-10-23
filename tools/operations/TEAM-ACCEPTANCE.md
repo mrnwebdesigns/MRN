@@ -69,8 +69,12 @@ to weaken staff revocation or call the plugin accepted.
 The next provider candidate `6e8c396` reorders preparatory checks before the
 fresh access callback and retains complete current/history checks afterward.
 Its delay regression and 99 SQL checks on each PHP 8.2/8.4 pass. The paired
-gateway passes 650 tests; full native qualification is pending. This remains
-source work with no production deployment or new staff access requirement.
+gateway passes 650 tests, but native run `40010197845` failed the overall
+20-second lookup deadline. Reordering alone is insufficient; full native
+qualification remains open. Provider `99e5d58` now removes a duplicate full
+check within one read while retaining complete fresh checks before release;
+its full native qualification is pending. This remains source work with no production
+deployment or new staff access requirement.
 
 The expanded private original-capture/recovery composition is now qualified
 for its disposable native scope at gateway

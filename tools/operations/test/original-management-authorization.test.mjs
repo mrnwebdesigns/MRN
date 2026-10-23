@@ -2004,7 +2004,8 @@ test('source context bounded timer rejects a stalled transport without a second 
     assert.ok(milliseconds > 0 && milliseconds <= 20000);
     return schedule(callback, 0, ...args);
   });
-  await assert.rejects(f.readSource, { message: 'MANAGEMENT_EXISTING_SOURCE_CONTEXT_TIMEOUT' });
+  await assert.rejects(f.readSource, { code: 'MANAGEMENT_EXISTING_SOURCE_CONTEXT_TIMEOUT',
+    message: 'The original source-context lookup exceeded its time limit; no retry was dispatched.' });
   assert.equal(f.sourceState.calls, 1); assert.equal(typeof release, 'function');
   t.mock.restoreAll(); release();
   await new Promise(resolve => setImmediate(resolve));

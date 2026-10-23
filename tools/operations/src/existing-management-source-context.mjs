@@ -1,6 +1,6 @@
 import { randomBytes, randomUUID } from 'node:crypto';
 import { z } from 'zod';
-import { requireThat } from './contracts.mjs';
+import { OpsError, requireThat } from './contracts.mjs';
 import { delegationCanonical, delegationDigest } from './delegation.mjs';
 import { createPrivateQueryReader } from './access-control.mjs';
 import { payload } from './mainwp.mjs';
@@ -54,7 +54,8 @@ export class ExistingManagementSourceContext {
       within(); let timer;
       try {
         const value = await Promise.race([Promise.resolve().then(perform), new Promise((_, reject) => {
-          timer = setTimeout(() => reject(new Error('MANAGEMENT_EXISTING_SOURCE_CONTEXT_TIMEOUT')),
+          timer = setTimeout(() => reject(new OpsError('MANAGEMENT_EXISTING_SOURCE_CONTEXT_TIMEOUT',
+            'The original source-context lookup exceeded its time limit; no retry was dispatched.')),
             Math.max(1, limit - (this.monotonic() - started)));
         })]);
         within(); return value;

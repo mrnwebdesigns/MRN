@@ -433,6 +433,21 @@ failure report now refreshes its bounded observations after transport cleanup,
 without retrying or extending a deadline. Canonical native composition and its
 original audit remain required before claiming this gate passed.
 
+The order-only composition `9d78816` failed native `40010197845`; hosted
+MRN QA `40010197879` and all 650 controlled tests passed. Original artifact
+`12526646988` independently matches SHA-256
+`b08fdcfcb4dbb6019cf8e39f750b51ed2b452fa087ccde2161856cd84849848e`.
+The first legitimate lookup timed out at 20,002 ms with -1,593 ms of signed
+lifetime. Cleanup retained its late provider refusal: `post-veto-current`,
+20,912 ms elapsed, -912 ms lookup time, -2,568 ms signed time, 99,432 ms of
+original authority left and no usable access receipt. The provider had committed
+the lookup. Its underlying access error is not further classified; no valid
+lookup callback was retained. The 199,219 ms hook preserved capture/measurement
+success, stayed within its aggregate limit and completed callback cleanup.
+Reordering alone is not qualified. The next remediation targets duplicate full
+authority observations inside a single captured-original read, preserving the
+complete check after reading and every separate I/O boundary.
+
 ### Existing-record owner catalog resolution
 
 The private gateway catalog resolver accepts only the retained job ID. It
@@ -2102,3 +2117,21 @@ It neither creates nor approves catalogs; default configuration is missing.
 Production startup does not construct this resolver. Authenticated provider
 source-context bootstrap, capture/slot mapping, central cache publication and
 protected worker orchestration still require their separate integration proofs.
+
+### Fresh original-read observation candidate
+
+Provider `99e5d585d1ab836aa11bca4d3a67e869114cade4` has exact parent
+`6e8c396627cc8024f4b474263cab2a13413ec590`. For the private existing-record
+path, it checks the closed binding and complete digest before dependent reads,
+then retains the complete fresh authority and query-budget check after all
+capture reads and hash checks. Legacy pre-read authorization remains unchanged.
+Every separate controller boundary, independent SQL history check, callback and
+deadline remains in place. All eleven imported contract/vector files match the
+new immutable provider revision byte for byte. Provider facade checks (26) and
+controller SQL checks (99) pass on PHP 8.2 and 8.4; their mocked portions do not
+prove full native composition. Native qualification is pending.
+
+The gateway now preserves its closed `MANAGEMENT_EXISTING_SOURCE_CONTEXT_TIMEOUT`
+error code when the original deadline expires, so failure reports identify the
+actual gate instead of a generic binding failure. It does not extend a deadline
+or retry a dispatched lookup.
