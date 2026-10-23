@@ -188,6 +188,40 @@ final observation. This does not prove an actual protected GitHub dispatch or
 hosted OIDC. No workflow, App grant, HTTP endpoint, workspace tool or production
 startup is created or activated; those remain separate integration gates.
 
+### Separate native storage seed composition candidate
+
+Provider `bdebc36d824996707a52a8dc30499a75df68d1b2`, with parent
+`9a1903950ab1c4524441c83306c0b524c57fcda1`, adds original-bound source storage
+without registering a source API or activating acquisition. Its source QA tree
+is `c6ad2e9c0c2ac7fff8861f392c05da0f15a6a492`. The provider reports 73 actual
+MariaDB checks on each of PHP 8.2 and 8.4, 24 focused fixture files on each,
+38 fixture boundary checks, and passing source/staged MRN QA. External identity
+and Child responses in the local SQL suite are synthetic. The eleven gateway
+contract imports were independently compared with this exact revision and remain
+byte-identical.
+
+The combined disposable workflow selects this immutable provider and explicitly
+enables its separate seed audit. The closed, 29-field report is limited to 8192
+bytes and must identify the same original job, binding, capture, measurements,
+parity and source context as both the gateway and the existing SQL context audit.
+It requires one original marker, one empty encrypted budget, no source claims,
+reservation, completion, slots or frames, and independent consistent readback.
+The existing two-read/seven-record context audit stays unchanged. Missing or
+substituted evidence fails qualification; retained reports never claim current
+access, native acquisition, content admission or production changes. Four new
+intake test groups exercise all required fields, spent-state refusal, cross-job
+substitution, strict byte bounds and absence of authority claims.
+
+Peer review reproduced a completed slot being rolled back to an earlier
+reservation in the initial provider candidate. The corrected source commits a
+completion digest to the original marker in the same database transaction as
+the frames and audit. Its regression checks refuse reuse after slot/audit/frame
+rollback. No history repair, automatic retry or forced unlock was added.
+
+This source composition still requires its own complete native CI run and original
+artifact inspection. It does not deploy the provider, authorize a hosted worker,
+qualify source acquisition or complete ordinary-member ChatGPT acceptance.
+
 ### Next protected source-delivery checkpoint
 
 The existing-v2 source-context/catalog readers and byte validators do not yet

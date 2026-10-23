@@ -133,6 +133,7 @@ jobs:
           MRN_DISPOSABLE_EXISTING_BINDING_TEST: '1'
           MRN_DISPOSABLE_EXISTING_SOURCE_CONTEXT_TEST: '1'
           MRN_DISPOSABLE_EXISTING_SOURCE_CATALOG_TEST: '1'
+          MRN_DISPOSABLE_EXISTING_SOURCE_STORAGE_TEST: '1'
           MRN_DISPOSABLE_EXISTING_BINDING_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/existing-binding-hook.sh
           # Qualified provider; actual gateway custody remains a required CI gate.
           MRN_DISPOSABLE_REPORT_CUSTODY_TEST: '1'
@@ -305,6 +306,9 @@ jobs:
           assert.equal(sourceAudit.capture_artifact_sha256, binding.capture.artifact_sha256);
           assert.equal(sourceAudit.measurement_record_sha256, binding.capture.measurements_sha256);
           assert.equal(sourceAudit.parity_sha256, binding.sourceContext.parity_sha256);
+          const { verifyExistingSourceStorageAudit } = await import('./tools/operations/test/runtime/existing-source-storage-audit.mjs');
+          verifyExistingSourceStorageAudit(readFileSync('.runtime/provider/reports/native-existing-source-storage-audit.json'),
+            readFileSync('.runtime/provider/reports/native-existing-source-context-audit.json'), binding);
           for (const field of ['catalog_sha256', 'registry_sha256', 'configuration_sha256']) assert.match(binding.sourceCatalog[field], /^[a-f0-9]{64}$/);
           assert.equal(binding.sourceCatalog.catalog_sha256, binding.sourceContext.owner.source_recipe_catalog_sha256);
           assert.deepEqual(binding.sourceCatalog, { schema: 2, configuration_reads: 2,
@@ -364,6 +368,23 @@ jobs:
             copyFileSync(path, process.env.MRN_SOURCE_AUDIT_OUTPUT);
           }
           JS
+      - name: Retain separate bounded original source-storage seed audit
+        if: always()
+        env:
+          MRN_SOURCE_STORAGE_AUDIT_OUTPUT: ${{ runner.temp }}/native-existing-source-storage-audit.json
+        run: |
+          node --input-type=module <<'JS'
+          import { copyFileSync, existsSync, lstatSync, readFileSync } from 'node:fs';
+          import assert from 'node:assert/strict';
+          import { parseExistingSourceStorageAudit } from './tools/operations/test/runtime/existing-source-storage-audit.mjs';
+          const path = '.runtime/provider/reports/native-existing-source-storage-audit.json';
+          if (existsSync(path)) {
+            const info = lstatSync(path);
+            assert.ok(info.isFile() && !info.isSymbolicLink() && info.size <= 8192 && (info.mode & 0o777) === 0o600);
+            parseExistingSourceStorageAudit(readFileSync(path));
+            copyFileSync(path, process.env.MRN_SOURCE_STORAGE_AUDIT_OUTPUT);
+          }
+          JS
       - name: Retain bounded integration evidence only
         if: always()
         uses: actions/upload-artifact@v4
@@ -380,5 +401,6 @@ jobs:
             ${{ runner.temp }}/gateway-report-custody-report.json
             ${{ runner.temp }}/gateway-existing-binding-report.json
             ${{ runner.temp }}/native-existing-source-context-audit.json
+            ${{ runner.temp }}/native-existing-source-storage-audit.json
           if-no-files-found: error
           retention-days: 14
