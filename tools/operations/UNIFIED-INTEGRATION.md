@@ -169,6 +169,17 @@ previous development-only audit findings remain; this is not a clean full audit.
 The transport source revision is selected in `test/runtime/sources.json`;
 combined native qualification must be repeated against that exact source.
 
+The subsequent lifetime-correction run `40040906007` stopped at the dependency
+audit before native testing. Newly published advisories cover
+[fast-uri](https://github.com/advisories/GHSA-w74x-v6f9-j3xg) and
+[undici](https://github.com/advisories/GHSA-4qv8-2p9j-2685), including the
+[integrity-token issue](https://github.com/advisories/GHSA-f72v-6w45-q472).
+Both locks now select compatible patches fast-uri 3.1.9 and undici 7.30.1.
+Production audits again report zero findings; the transport's 12 development-only
+findings remain. Gateway tests (699), lint, transport tests (3,155) and build pass.
+The selected transport is `d772652973a2d05cc09e81d13d8ff113d8a48696`.
+The audit remains enforced, and the failed run does not count as native proof.
+
 ### Private original worker dispatcher
 
 The next source candidate adds a separate fixed-v2 dispatcher over the existing

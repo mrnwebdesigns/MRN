@@ -44,6 +44,16 @@ Use already-authorized test identities or separately reviewed administrative tes
 
 ## Latest source evidence, 2026-10-23
 
+The current gateway has 699 passing local tests and lint. Its lifetime-correction
+run `40040906007` failed the dependency audit before native testing; MRN QA
+`40040905945` passed. Compatible fast-uri 3.1.9 and undici 7.30.1 patches restore
+zero-finding production audits in gateway and transport. Transport
+`d772652973a2d05cc09e81d13d8ff113d8a48696` passes 3,155 tests and build;
+12 development-only findings remain. Fresh combined native qualification is
+required for this selection. These source results satisfy no live row above.
+
+The following checkpoints retain their exact source and test boundaries.
+
 Gateway `4e63c1d` with provider `25cb8d3`, patched transport `6449815` and
 management worker `53e5345` passes native integration `40029031523` and MRN QA
 `40029031543`. All nine original reports and exact pins were independently
