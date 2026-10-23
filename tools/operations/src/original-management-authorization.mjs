@@ -940,6 +940,27 @@ export class OriginalManagementAuthorizationLedger {
       return { ...this.#workerHistory(current), current };
     });
   }
+  #workerDispatch(dispatchId) {
+    parse(z.string().uuid(), dispatchId);
+    const row = this.store.db.prepare('SELECT original FROM original_management_worker_history WHERE dispatch=?').get(dispatchId);
+    check(row, 'The original worker dispatch is unavailable; a pointer cannot create it.');
+    const original = this.#load(row.original), queue = this.#queue(original);
+    check(queue?.state === 'observed', 'The original worker queue is unavailable.');
+    const current = this.#currentQueued(queue.context.binding.qualification_job_id), history = this.#workerHistory(current);
+    check(history.state === 'observed' && history.value.retained.provenance.dispatch_id === dispatchId,
+      'The original worker run has not been independently observed.');
+    return { ...history, current };
+  }
+  originalWorkerDispatch(dispatchId) { return this.store.transaction(() => this.#workerDispatch(dispatchId)); }
+  // The private reader signs and checks final state inside one audit transaction.
+  // The synchronous read callback cannot start another transaction or do I/O.
+  withOriginalWorkerDispatch(dispatchId, readback) {
+    return this.store.transaction(() => {
+      const result = readback(() => this.#workerDispatch(dispatchId));
+      check(!result?.then, 'Worker readback must complete synchronously inside its original transaction.');
+      return result;
+    });
+  }
   async readWorkerHistory(jobId) {
     const before = await this.currentQueuedJob(jobId);
     return this.store.transaction(() => {

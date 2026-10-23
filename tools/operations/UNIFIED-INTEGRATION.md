@@ -188,6 +188,34 @@ final observation. This does not prove an actual protected GitHub dispatch or
 hosted OIDC. No workflow, App grant, HTTP endpoint, workspace tool or production
 startup is created or activated; those remain separate integration gates.
 
+### Private existing-worker context readback candidate
+
+`ExistingManagementWorkerContext` adds the fixed v2 HTTP readback behind an
+explicit optional handler. Production startup never constructs it, so the route
+remains absent. It uses GitHub's fixed signing-key endpoint, exact original run,
+repository, protected source, App actor, environment and first-attempt claims.
+The caller supplies only the opaque original dispatch/context pointer. The
+Google identity comes solely from the original SQLite mapping, and its current
+staff authorization is checked before signing with the existing service identity
+key. The OIDC token never becomes a staff identity or a stored credential.
+
+Readback and its audit share one transaction. Final original history, principal
+revision, source/policy, current trust and signing key checks run after audit and
+before return. A five-second total HTTP deadline includes request-body receipt,
+and the original 300-second worker window cannot be renewed by a new OIDC token.
+Responses use the frozen v2 signature domain and canonical bounded bytes. They
+never admit a source or authorize a content write. Existing callback/query
+counters and all v1 routes retain their limits and behavior.
+
+Eight new controlled groups pass, using actual original SQLite history, signed
+synthetic OIDC, service signing and a real local HTTP server. They cover correct
+readback, 32 wrong token-claim variants, caller-selected pointer fields, unobserved
+dispatch, changed staff/source/trust/key/history, atomic audit rollback, late
+authorization, original worker expiry, body-receipt deadline and disabled startup.
+All 698 gateway tests and lint pass. GitHub and Google identities remain synthetic;
+this is not hosted OIDC or ordinary-team acceptance. The independent runner HTTP
+bootstrap, protected environment configuration and real dispatch remain open.
+
 ### Separate native storage seed composition candidate
 
 Provider `bdebc36d824996707a52a8dc30499a75df68d1b2`, with parent

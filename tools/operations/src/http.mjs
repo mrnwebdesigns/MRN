@@ -9,6 +9,7 @@ import { existingManagementAccessPath } from './existing-management-access.mjs';
 import { delegationCanonical, delegationIssuer } from './delegation.mjs';
 import { managementEvidencePath } from './management-evidence-callback.mjs';
 import { managementWorkerPath } from './management-worker-context.mjs';
+import { existingManagementWorkerPath } from './existing-management-worker-context.mjs';
 import { managementSourceRecipientPath, managementSourceBatchPath } from './management-source-broker.mjs';
 import { managementSourceContextPath } from './management-source-context.mjs';
 
@@ -23,9 +24,9 @@ async function readBody(req, { limit = 65536, canonical = false } = {}) {
   }
   catch (e) { if (e instanceof OpsError) throw e; throw new OpsError('BODY_INVALID', 'Invalid JSON request.'); }
 }
-export function createHttpServer({ service, authenticate, publicUrl, issuer, origins = [], accessVeto = null, managementAccessVeto = null, existingManagementAccessVeto = null, managementEvidence = null, managementWorker = null, managementSource = null, managementSourceContext = null }) {
+export function createHttpServer({ service, authenticate, publicUrl, issuer, origins = [], accessVeto = null, managementAccessVeto = null, existingManagementAccessVeto = null, managementEvidence = null, managementWorker = null, existingManagementWorker = null, managementSource = null, managementSourceContext = null }) {
   const canonical = new URL(publicUrl); const rate = new Map(); let active = 0;
-  requireThat(!(accessVeto || managementAccessVeto || existingManagementAccessVeto || managementEvidence || managementWorker || managementSource || managementSourceContext) || canonical.origin === delegationIssuer, 'ACCESS_TRANSPORT', 'Private access callbacks require the fixed MRN gateway origin.');
+  requireThat(!(accessVeto || managementAccessVeto || existingManagementAccessVeto || managementEvidence || managementWorker || existingManagementWorker || managementSource || managementSourceContext) || canonical.origin === delegationIssuer, 'ACCESS_TRANSPORT', 'Private access callbacks require the fixed MRN gateway origin.');
   let controlActive = 0, controlCount = 0, controlUntil = 0;
   let evidenceActive = 0, evidenceCount = 0, evidenceUntil = 0;
   let workerActive = 0, workerCount = 0, workerUntil = 0;
@@ -58,7 +59,8 @@ export function createHttpServer({ service, authenticate, publicUrl, issuer, ori
           'BODY_LIMIT', 'The protected source response exceeds its separate limit.');
         return json(res, 200, response, delegationCanonical);
       }
-      const contextReader = req.url === managementWorkerPath ? managementWorker : req.url === managementSourceContextPath ? managementSourceContext : null;
+      const contextReader = req.url === existingManagementWorkerPath ? existingManagementWorker
+        : req.url === managementWorkerPath ? managementWorker : req.url === managementSourceContextPath ? managementSourceContext : null;
       if (contextReader) {
         requireThat(req.method === 'POST' && !req.headers.origin && req.headers['content-type'] === 'application/json',
           'BODY_INVALID', 'Use the protected worker POST readback.');
@@ -68,9 +70,11 @@ export function createHttpServer({ service, authenticate, publicUrl, issuer, ori
         workerActive++; workerAdmitted = true;
         controlTimer = setTimeout(() => req.destroy(), 5000); controlTimer.unref();
         const body = await readBody(req, { limit: 512, canonical: true });
-        const response = await contextReader.read(req.headers.authorization, body);
+        const response = req.url === existingManagementWorkerPath
+          ? await contextReader.read(req.headers.authorization, body, { deadlineAt: now + 5000 })
+          : await contextReader.read(req.headers.authorization, body);
         requireThat(Buffer.byteLength(delegationCanonical(response)) <= (req.url === managementSourceContextPath ? 32768 : 65536), 'BODY_LIMIT', 'The protected context exceeds its limit.');
-        return json(res, 200, response, req.url === managementSourceContextPath ? delegationCanonical : JSON.stringify);
+        return json(res, 200, response, [managementSourceContextPath, existingManagementWorkerPath].includes(req.url) ? delegationCanonical : JSON.stringify);
       }
       if (managementEvidence && req.url === managementEvidencePath) {
         requireThat(req.method === 'POST' && !req.headers.origin && !req.headers.authorization
@@ -130,7 +134,7 @@ export function createHttpServer({ service, authenticate, publicUrl, issuer, ori
     } catch (error) {
       const safe = safeError(error);
       const status = ['AUTH_REQUIRED', 'MANAGEMENT_WORKER_AUTH'].includes(safe.code) ? 401 : safe.code === 'NOT_FOUND' ? 404 : safe.code === 'RATE_LIMIT' ? 429 : ['HOST_DENIED', 'ORIGIN_DENIED', 'FORBIDDEN'].includes(safe.code) ? 403 : 400;
-      if (status === 401) res.setHeader('WWW-Authenticate', [managementWorkerPath, managementSourceContextPath].includes(req.url) || sourcePath(req.url) ? 'Bearer realm="MRN protected QA"' : oauthChallenge(publicUrl));
+      if (status === 401) res.setHeader('WWW-Authenticate', [managementWorkerPath, managementSourceContextPath, existingManagementWorkerPath].includes(req.url) || sourcePath(req.url) ? 'Bearer realm="MRN protected QA"' : oauthChallenge(publicUrl));
       if (!res.headersSent) json(res, status, { error: safe }); else res.destroy();
     } finally {
       clearTimeout(controlTimer);

@@ -35,7 +35,8 @@ import { ExistingManagementMeasurements, ExistingManagementMeasurementsReader, e
 import { ExistingManagementSourceContext, ExistingManagementSourceContextReader, existingManagementSourceContextTool,
   createExistingManagementSourceContextRuntime } from '../src/existing-management-source-context.mjs';
 import { ExistingManagementEvidenceDispatcher } from '../src/existing-management-evidence-dispatch.mjs';
-import { existingWorkerContractSha256, existingWorkerPurpose, verifyExistingManagementWorkerRecord } from '../src/existing-management-worker-contract.mjs';
+import { existingWorkerContractSha256, existingWorkerPurpose, existingWorkerUrl, verifyExistingManagementWorkerRecord } from '../src/existing-management-worker-contract.mjs';
+import { ExistingManagementWorkerContext, existingManagementWorkerPath } from '../src/existing-management-worker-context.mjs';
 import { ExistingManagementSourceCatalogRegistry } from '../src/existing-management-source-catalog.mjs';
 
 const audience = 'https://operations.mrnwebdesigns.com/mcp', issuer = 'https://identity.example.test/';
@@ -2500,4 +2501,141 @@ test('late original-staff check inside observation cannot commit beyond the disp
   await assert.rejects(f.execute, { code: 'MANAGEMENT_EXISTING_DISPATCH' });
   assert.equal(f.posts().length, 1); release(); await new Promise(resolve => globalThis.setImmediate(resolve));
   assert.equal(f.ledger.originalWorkerHistory(f.job).state, 'prepared');
+});
+
+const existingWorkerOidc = generateKeyPairSync('rsa', { modulusLength: 2048 });
+const existingWorkerKeys = createLocalJWKSet({ keys: [{ ...await exportJWK(existingWorkerOidc.publicKey), alg: 'RS256', kid: 'existing-worker-fixture' }] });
+async function existingWorkerContextFixture(t) {
+  const f = await existingDispatcherFixture(t), dispatched = await f.execute(), retained = dispatched.retained;
+  const workerState = { now: Date.now(), mono: 0 };
+  const trust = { repositoryOwnerId: '98', environment: 'MRN QA', runnerEnvironment: 'github-hosted',
+    subject: 'repo:mrnwebdesigns/mrn-code-qa-runner:environment:MRN QA' };
+  const p = retained.provenance, o = retained.observation, second = Math.floor(workerState.now / 1000);
+  const claims = { iss: 'https://token.actions.githubusercontent.com', aud: existingWorkerUrl, sub: trust.subject,
+    iat: second, nbf: second, exp: second + 60, jti: 'private-existing-worker-token',
+    repository: p.repository, repository_id: p.repository_id, repository_owner: 'mrnwebdesigns', repository_owner_id: '98',
+    repository_visibility: 'private', run_id: p.run_id, run_attempt: '1', actor_id: o.app_actor_id,
+    workflow_ref: `${p.repository}/${p.workflow_path}@${p.ref}`, workflow_sha: p.runner_source_sha, sha: p.runner_source_sha,
+    ref: p.ref, ref_type: 'branch', event_name: 'workflow_dispatch', environment: trust.environment,
+    runner_environment: trust.runnerEnvironment, head_ref: '', base_ref: '' };
+  const pointer = { dispatch_id: p.dispatch_id, context_sha256: delegationDigest(retained.context) };
+  const options = { ledger: f.ledger, trust: () => trust, keys: existingWorkerKeys,
+    now: () => workerState.now, monotonic: () => workerState.mono };
+  const reader = new ExistingManagementWorkerContext(options);
+  const token = () => new SignJWT(claims).setProtectedHeader({ alg: 'RS256', kid: 'existing-worker-fixture' }).sign(existingWorkerOidc.privateKey);
+  const call = async (input = pointer) => reader.read(`Bearer ${await token()}`, input);
+  f.state.checks = 0;
+  return { ...f, workerState, trust, claims, pointer, options, reader, retained, token, call,
+    audits: () => f.store.db.prepare("SELECT * FROM audit WHERE event='original-worker-context-read'").all() };
+}
+
+test('existing worker context signs the independently retained original using the service identity key', async t => {
+  const f = await existingWorkerContextFixture(t), result = await f.call();
+  const raw = Buffer.from(delegationCanonical(result)), payload = Buffer.from(result.signed_context.payload_base64, 'base64');
+  const verified = verifyExistingManagementWorkerRecord({ raw, pointer: f.pointer, retained: f.retained,
+    originalBinding: f.context.binding, identityKeyId: f.signer.keyId, identityPublicKey: f.keys.publicKey,
+    startedAt: f.workerState.now, completedAt: f.workerState.now + 1 });
+  assert.equal(verified.current_access_proven, false); assert.equal(verified.admitted, false);
+  assert.equal(f.state.checks, 1); assert.equal(f.audits().length, 1);
+  assert.deepEqual(f.ledger.originalWorkerDispatch(f.pointer.dispatch_id).value.retained, f.retained);
+  assert.deepEqual(f.open().ledger.originalWorkerDispatch(f.pointer.dispatch_id).value.retained, f.retained);
+  for (const secret of [f.raw, f.actor.verifiedEmail, 'private-existing-worker-token', JSON.stringify(f.request.changes),
+    f.value.capture_artifact.dataset.read.snapshot.core.post_content]) assert.equal(payload.includes(secret), false);
+});
+
+test('existing worker context refuses validly signed wrong OIDC identities before checking original staff', async t => {
+  const f = await existingWorkerContextFixture(t), original = structuredClone(f.claims);
+  for (const change of [{ iss: 'https://outsider.invalid' }, { aud: audience }, { aud: [existingWorkerUrl, audience] },
+    { sub: 'outsider' }, { repository: 'outsider/fork' }, { repository_id: '11' }, { repository_owner: 'outsider' },
+    { repository_owner_id: '99' }, { repository_visibility: 'public' }, { run_id: '31' }, { run_attempt: '2' }, { run_attempt: 1 },
+    { actor_id: '41' }, { workflow_ref: 'changed' }, { workflow_sha: 'f'.repeat(40) }, { sha: 'f'.repeat(40) },
+    { ref: 'refs/heads/feature' }, { ref_type: 'tag' }, { event_name: 'pull_request' }, { environment: 'unprotected' },
+    { runner_environment: 'self-hosted' }, { job_workflow_ref: 'reusable' }, { job_workflow_sha: 'f'.repeat(40) },
+    { head_ref: 'fork' }, { base_ref: 'main' }, { jti: '' }, { jti: 'x'.repeat(201) },
+    { exp: original.iat }, { iat: original.iat + 1 }, { nbf: original.iat + 1 }, { iat: original.iat - 1 },
+    { exp: original.iat + 301 }]) {
+    for (const key of Object.keys(f.claims)) delete f.claims[key]; Object.assign(f.claims, original, change);
+    await assert.rejects(f.call, JSON.stringify(change));
+  }
+  assert.equal(f.state.checks, 0); assert.equal(f.audits().length, 0);
+});
+
+test('existing worker pointers cannot choose staff, keys, source, a different job or an unobserved dispatch', async t => {
+  const f = await existingWorkerContextFixture(t);
+  for (const patch of [{ email: f.actor.verifiedEmail }, { run_id: '30' }, { key_id: 'fixture' }, { schema: 1 },
+    { context_sha256: 'f'.repeat(64) }, { dispatch_id: randomUUID() }]) await assert.rejects(() => f.call({ ...f.pointer, ...patch }));
+  for (const header of [undefined, 'Bearer staff-token', 'Bearer a.b.c']) await assert.rejects(() => f.reader.read(header, f.pointer));
+  assert.equal(f.state.checks, 0); assert.equal(f.audits().length, 0);
+  const pending = await workerHistoryFixture(t), prepared = await pending.prepareWorker();
+  assert.throws(() => pending.ledger.originalWorkerDispatch(prepared.request.dispatch_id));
+});
+
+test('existing worker readback withholds output after staff, source, trust, key or durable history changes', async t => {
+  for (const change of [f => { throw new Error(`suspended ${f.actor.googleSubject}`); },
+    f => f.ledger.recordQueuePendingRevocation(f.job), f => { f.configuration.policy.policy_epoch++; },
+    f => { f.trust.environment = 'other'; }, f => { f.ledger.signer.keyId = 'rotated'; },
+    f => { f.ledger.signer.privateKey = generateKeyPairSync('ed25519').privateKey; },
+    f => { f.store.db.exec('DELETE FROM original_management_worker_history WHERE ordinal=2'); },
+    f => { f.store.db.exec('DELETE FROM original_management_capture_history'); },
+    f => { f.workerState.mono = 5000; }, f => { f.workerState.mono = -1; },
+    f => { f.workerState.now++; f.workerState.now += 5000; }, f => { f.workerState.now--; },
+  ]) {
+    const f = await existingWorkerContextFixture(t); f.state.duringCheck = () => change(f);
+    await assert.rejects(f.call, String(change)); assert.equal(f.audits().length, 0);
+  }
+});
+
+test('existing worker readback audits atomically and discards late original-staff results', async t => {
+  const f = await existingWorkerContextFixture(t), audit = f.store.audit.bind(f.store);
+  t.mock.method(f.store, 'audit', (...args) => { audit(...args); f.workerState.mono = 5000; });
+  await assert.rejects(f.call); assert.equal(f.audits().length, 0);
+  const late = await existingWorkerContextFixture(t); let release;
+  late.reader.keys = async (...args) => { late.workerState.mono = 4990; return existingWorkerKeys(...args); };
+  late.state.duringCheck = () => new Promise(resolve => { release = resolve; });
+  await assert.rejects(late.call); assert.equal(late.audits().length, 0);
+  release(); await new Promise(resolve => globalThis.setImmediate(resolve)); assert.equal(late.audits().length, 0);
+});
+
+test('a newly minted OIDC token cannot extend the existing worker beyond its original dispatch window', async t => {
+  const f = await existingWorkerContextFixture(t);
+  f.workerState.now = f.retained.observation.requested_at + 300000;
+  f.claims.iat = Math.floor(f.workerState.now / 1000); f.claims.nbf = f.claims.iat; f.claims.exp = f.claims.iat + 60;
+  await assert.rejects(f.call); assert.equal(f.state.checks, 0); assert.equal(f.audits().length, 0);
+});
+
+test('existing worker context preserves the HTTP deadline already spent receiving its body', async t => {
+  const f = await existingWorkerContextFixture(t); let release;
+  f.state.duringCheck = () => new Promise(resolve => { release = resolve; });
+  await assert.rejects(() => f.reader.read('Bearer invalid', f.pointer, { deadlineAt: f.workerState.now }));
+  await assert.rejects(() => f.reader.read('Bearer invalid', f.pointer, { deadlineAt: 'later' }));
+  const token = `Bearer ${await f.token()}`;
+  await assert.rejects(() => f.reader.read(token, f.pointer, { deadlineAt: f.workerState.now + 10 }));
+  assert.equal(f.audits().length, 0); release();
+  await new Promise(resolve => globalThis.setImmediate(resolve)); assert.equal(f.audits().length, 0);
+});
+
+test('fixed existing worker HTTP readback is canonical, Google-independent at the client, and absent by default', async t => {
+  const f = await existingWorkerContextFixture(t);
+  assert.throws(() => createHttpServer({ publicUrl: 'https://other.invalid/mcp', existingManagementWorker: f.reader }));
+  const server = createHttpServer({ publicUrl: audience, existingManagementWorker: f.reader });
+  const disabled = createHttpServer({ publicUrl: audience });
+  for (const s of [server, disabled]) { await new Promise(resolve => s.listen(0, '127.0.0.1', resolve)); t.after(() => s.close()); }
+  const post = (s, header, body = delegationCanonical(f.pointer), extra = {}) => new Promise((resolve, reject) => {
+    const req = httpRequest({ host: '127.0.0.1', port: s.address().port, path: existingManagementWorkerPath, method: 'POST', agent: false,
+      headers: { host: 'operations.mrnwebdesigns.com', 'content-type': 'application/json', ...(header ? { authorization: header } : {}), ...extra } }, res => {
+      const chunks = []; res.on('data', c => chunks.push(c)); res.on('end', () => resolve({ status: res.statusCode, headers: res.headers, raw: Buffer.concat(chunks) }));
+    }); req.on('error', reject); req.end(body);
+  });
+  const denied = await post(server); assert.equal(denied.status, 401);
+  assert.equal(denied.headers['www-authenticate'], 'Bearer realm="MRN protected QA"');
+  const token = `Bearer ${await f.token()}`;
+  for (const body of [` ${delegationCanonical(f.pointer)}`, 'x'.repeat(513)]) assert.equal((await post(server, token, body)).status, 400);
+  assert.equal((await post(server, token, undefined, { origin: 'https://operations.mrnwebdesigns.com' })).status, 403);
+  const accepted = await post(server, token); assert.equal(accepted.status, 200);
+  assert.equal(accepted.headers['cache-control'], 'no-store');
+  assert.equal(accepted.raw.toString(), delegationCanonical(JSON.parse(accepted.raw)));
+  assert.equal(verifyExistingManagementWorkerRecord({ raw: accepted.raw, pointer: f.pointer, retained: f.retained,
+    originalBinding: f.context.binding, identityKeyId: f.signer.keyId, identityPublicKey: f.keys.publicKey,
+    startedAt: f.workerState.now, completedAt: f.workerState.now + 1 }).admitted, false);
+  assert.equal((await post(disabled, token)).status, 404);
 });
