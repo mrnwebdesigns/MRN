@@ -1,7 +1,7 @@
 # Stack Version
 
 ## Candidate Release
-- Stack release: `2026.10.23-fleet-auto-e5a6aa620209`
+- Stack release: `2026.10.23-fleet-auto-ff9049738de4`
 - Release date: `2026-10-23`
 - Status: `source snapshot; qualification/publication evidence establishes Fleet readiness; site rollout separate`
 
@@ -49,7 +49,7 @@
 | `mrn-tokens` | `0.1.4` |
 | `mrn-universal-sticky-bar` | `1.3.0` |
 | `mrn-updraft-backup-policy-loader` | `0.6.1` |
-| `mrn-updraft-local-retention` | `0.8.6` |
+| `mrn-updraft-local-retention` | `0.8.7` |
 
 ## Stack Manifests
 - Plugins manifest: [`manifests/plugins.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/plugins.txt)
