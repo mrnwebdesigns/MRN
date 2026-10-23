@@ -359,6 +359,29 @@ remaining signed lifetime, with no raw request, signature, identity or error
 message. Passing source calls must finish with time remaining; budget refusal
 must also occur before expiry. No deadline or authority gate is widened.
 
+The coordinated provider diagnostic preserves its refusal code and all guards,
+adding only a closed phase/timing observation to the error. The disposable HTTP
+logger projects that object before MCP deliberately removes arbitrary write-only
+error details. Only the exact route/code, fifteen fixed phases, seven bounded
+fields and optional WordPress status 500 are accepted. The retained sidecar
+contains at most four records; unknown fields or values are withheld. It changes
+neither MCP normalization nor production authentication, and proves no authority.
+The selected diagnostic-only provider is
+`e7ed7a1c7a860f547f03ea4a421e3ff94fdea4cc`, exact child of `161864ac`.
+Only the reader's bounded failure data, SQL diagnostics tests and its document
+changed; all frozen contracts and eleven imported files remain unchanged.
+
+The intervening gateway timing run `40006021379` at `2c7a7ef` failed the
+first signed lookup again. Its original artifact `12524417744` independently
+matches SHA-256
+`97b1c9f549e37cffca62e8834d6202efb26135bcd8a99ceb24b974dcca50b027`.
+The request had 17,370 ms of signed lifetime when dispatched and returned after
+17,375 ms, with -5 ms remaining. The signed deadline was expired at receipt;
+the exact first provider refusal still requires its phase evidence. The whole
+202,350 ms hook and cleanup were within their allocation. Controlled tests and
+MRN QA `40006021391` passed. No passing source-context or catalog-native gate
+is inferred from either failed run.
+
 ### Existing-record owner catalog resolution
 
 The private gateway catalog resolver accepts only the retained job ID. It
@@ -379,6 +402,17 @@ not be relabeled after capture: a real v2 catalog must be prepared and pinned
 before a fresh original is queued. Provider preparation and native composition
 remain required. No source slot, catalog configuration or production authority
 is created by this local resolver.
+
+Two further producer blockers are recorded before source admission: the pinned
+runner `cd74e2030c9c090ac287ca5d371165d3c8ccac23` has no
+`.github/workflows/management-source-cache.yml`, so local synthetic cache
+descriptors cannot stand in for hosted cache provenance. Frozen transfer
+invariant 15 still names `source-closure-v1`, while that runner's existing-v2
+assembler/verifier uses schema 2 and
+`mrn-content-management-existing-source-closure-v2`. The provider's shared
+closure encoder remains v1. Reconcile and explicitly qualify the complete
+preimage before exchanging closure digests; never equate or relabel them.
+Neither issue is bypassed by a valid empty catalog or source-context metadata.
 
 ## Earlier candidate evidence, 2026-10-22
 

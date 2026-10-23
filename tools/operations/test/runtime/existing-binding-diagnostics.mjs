@@ -88,3 +88,43 @@ export function bindingFixtureNetworkDiagnostic(bytes) {
   } catch { return { state: 'malformed', requests: [] }; }
   return { state: 'available', requests: requests.slice(-32) };
 }
+
+const sourcePhases = new Set(['authenticate', 'authenticated-current', 'original-guard', 'guard-current', 'claim',
+  'precommit-current', 'first-history', 'post-first-history-current', 'access-veto', 'post-veto-current',
+  'reauthenticate', 'post-reauth-current', 'output-current', 'final-history', 'release']);
+const sourceFields = ['phase', 'elapsed_ms', 'lookup_remaining_ms', 'claim_committed',
+  'signed_remaining_ms', 'original_remaining_ms', 'veto_remaining_ms'];
+const integer = (value, min, max) => Number.isSafeInteger(value) && value >= min && value <= max;
+function sourceDiagnostic(value, allowStatus = false) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)
+    || sourceFields.some(key => !Object.hasOwn(value, key))
+    || Object.keys(value).some(key => !sourceFields.includes(key) && !(allowStatus && key === 'status'))
+    || (Object.hasOwn(value, 'status') && value.status !== 500)
+    || !sourcePhases.has(value.phase) || typeof value.claim_committed !== 'boolean'
+    || !integer(value.elapsed_ms, 0, 120000) || value.lookup_remaining_ms !== 20000 - value.elapsed_ms
+    || ['signed_remaining_ms', 'original_remaining_ms'].some(key => value[key] !== null && !integer(value[key], -900000, 900000))
+    || (value.veto_remaining_ms !== null && !integer(value.veto_remaining_ms, -900000, 5000))) return null;
+  return Object.fromEntries(sourceFields.map(key => [key, value[key]]));
+}
+
+// HTTP fixture only: MCP deliberately withholds arbitrary write-only error
+// bodies. Select the provider's exact closed diagnostic before normalization;
+// never retain the upstream message, other data or unrecognized fields.
+export function bindingSourceContextFailure(bytes) {
+  if (typeof bytes !== 'string' || Buffer.byteLength(bytes) > 16384) return null;
+  try {
+    const body = JSON.parse(bytes);
+    return body?.code === 'mrn_management_existing_source_context' ? sourceDiagnostic(body.data, true) : null;
+  } catch { return null; }
+}
+
+export function bindingSourceContextHistory(bytes) {
+  if (bytes === undefined) return { state: 'unavailable', requests: [] };
+  if (typeof bytes !== 'string' || Buffer.byteLength(bytes) > 16384) return { state: 'not-inspected', requests: [] };
+  const lines = bytes.trim() ? bytes.trim().split('\n') : [];
+  if (lines.length > 4) return { state: 'not-inspected', requests: [] };
+  try {
+    const requests = lines.map(line => sourceDiagnostic(JSON.parse(line)));
+    return requests.some(row => row === null) ? { state: 'malformed', requests: [] } : { state: 'available', requests };
+  } catch { return { state: 'malformed', requests: [] }; }
+}

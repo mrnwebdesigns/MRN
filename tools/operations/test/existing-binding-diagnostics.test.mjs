@@ -90,3 +90,32 @@ test('existing context and identity callback diagnostics preserve only fixed rou
     result({ error: { code: 'mrn_management_existing_source_context', message: 'PRIVATE' } }, true)),
   { tool: 'existing-source-context', kind: 'tool-error', confirmed: false, provider_code: 'mrn_management_existing_source_context' });
 });
+
+test('source-context failure retains only exact closed provider phase and bounded timing before MCP normalization', async () => {
+  const { bindingSourceContextFailure, bindingSourceContextHistory } = await import('./runtime/existing-binding-diagnostics.mjs');
+  const value = { phase: 'post-reauth-current', elapsed_ms: 15001, lookup_remaining_ms: 4999,
+    claim_committed: true, signed_remaining_ms: 3999, original_remaining_ms: 90000, veto_remaining_ms: -1 };
+  const project = data => bindingSourceContextFailure(JSON.stringify({ code: 'mrn_management_existing_source_context',
+    message: 'PRIVATE_FIXTURE_MATERIAL', data }));
+  assert.deepEqual(project(value), value);
+  assert.deepEqual(project({ ...value, status: 500 }), value);
+  assert.equal(JSON.stringify(project(value)).includes('PRIVATE'), false);
+  const before = { ...value, phase: 'authenticate', claim_committed: false,
+    signed_remaining_ms: null, original_remaining_ms: null, veto_remaining_ms: null };
+  assert.deepEqual(project(before), before);
+  for (const key of Object.keys(value)) { const missing = { ...value }; delete missing[key]; assert.equal(project(missing), null); }
+  for (const patch of [{ phase: 'PRIVATE' }, { exception: 'PRIVATE' }, { status: '500' }, { status: 501 }, { status: 600 },
+    { claim_committed: 1 }, { elapsed_ms: -1 }, { elapsed_ms: 120001 }, { lookup_remaining_ms: 5000 },
+    { signed_remaining_ms: 900001 }, { original_remaining_ms: -900001 }, { veto_remaining_ms: 5001 },
+    { veto_remaining_ms: '0' }, { elapsed_ms: 1.5 }]) assert.equal(project({ ...value, ...patch }), null);
+  for (const bytes of [undefined, {}, 'PRIVATE', 'null', 'x'.repeat(16385),
+    JSON.stringify({ code: 'other', data: value })]) assert.equal(bindingSourceContextFailure(bytes), null);
+  assert.deepEqual(bindingSourceContextHistory([before, value].map(row => JSON.stringify(row)).join('\n')),
+    { state: 'available', requests: [before, value] });
+  assert.deepEqual(bindingSourceContextHistory(), { state: 'unavailable', requests: [] });
+  assert.deepEqual(bindingSourceContextHistory(''), { state: 'available', requests: [] });
+  for (const bytes of [JSON.stringify({ ...value, status: 500 }), JSON.stringify({ ...value, raw: 'PRIVATE' }), 'null', 'PRIVATE'])
+    assert.deepEqual(bindingSourceContextHistory(bytes), { state: 'malformed', requests: [] });
+  for (const bytes of ['x'.repeat(16385), Array(5).fill(JSON.stringify(value)).join('\n')])
+    assert.deepEqual(bindingSourceContextHistory(bytes), { state: 'not-inspected', requests: [] });
+});
