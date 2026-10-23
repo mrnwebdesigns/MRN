@@ -47,7 +47,8 @@ export function bindingFixtureDiagnostic(name, value, confirmed = false, transpo
       } catch { kind = 'unparseable'; }
     }
   }
-  let code = codes.has(remote?.code) ? remote.code : codes.has(remote) ? remote : undefined;
+  let code = codes.has(remote?.code) ? remote.code : codes.has(remote?.data?.upstream_code)
+    ? remote.data.upstream_code : codes.has(remote) ? remote : undefined;
   const message = typeof remote === 'string' ? remote : remote?.message;
   if (!code && typeof message === 'string' && message.length <= 131072) {
     const symbol = /^(?:MainWP failed: )?Ability execution failed: ([a-z0-9_]+)(?: - | \(HTTP [1-5][0-9]{2}\)\.)/.exec(message)?.[1];
@@ -55,4 +56,31 @@ export function bindingFixtureDiagnostic(name, value, confirmed = false, transpo
   }
   return { tool: toolLabels.get(name) ?? 'other', kind, confirmed: confirmed === true,
     provider_code: code ?? (['tool-error', 'transport-error'].includes(kind) ? 'unclassified' : 'none') };
+}
+
+const routeLabels = new Map([...toolLabels].map(([tool, label]) =>
+  [`/wp-json/wp-abilities/v1/abilities/mrn-mainwp/${tool.slice('mrn_mainwp__'.length).replaceAll('_', '-')}/run`, label]));
+
+// Publish only fixed labels and numeric HTTP status. Raw paths, subjects,
+// request bodies and arbitrary error strings stay out of the retained report.
+export function bindingFixtureNetworkDiagnostic(bytes) {
+  if (bytes === undefined) return { state: 'unavailable', requests: [] };
+  if (typeof bytes !== 'string' || Buffer.byteLength(bytes) > 1048576)
+    return { state: 'not-inspected', requests: [] };
+  const lines = bytes.trim() ? bytes.trim().split('\n') : [];
+  if (lines.length > 4096) return { state: 'not-inspected', requests: [] };
+  const requests = [];
+  try {
+    for (const line of lines) {
+      const row = JSON.parse(line);
+      if (!row || typeof row !== 'object' || Array.isArray(row)) return { state: 'malformed', requests: [] };
+      const tool = routeLabels.get(row.path);
+      if (!tool) continue;
+      if (row.method !== 'POST' || !Number.isInteger(row.status) || row.status < 100 || row.status > 599)
+        return { state: 'malformed', requests: [] };
+      requests.push({ tool, status: row.status,
+        provider_code: codes.has(row.errorCode) ? row.errorCode : row.status >= 400 ? 'unclassified' : 'none' });
+    }
+  } catch { return { state: 'malformed', requests: [] }; }
+  return { state: 'available', requests: requests.slice(-32) };
 }

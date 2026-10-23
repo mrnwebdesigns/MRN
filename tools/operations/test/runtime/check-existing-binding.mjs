@@ -18,7 +18,7 @@ import { createOriginalAuthorizationTransport, parseOriginalBindingProjection } 
 import { Store } from '../../src/store.mjs';
 import { accessRegistry } from '../fixtures/access-registry.mjs';
 import { existingBindingProfile, existingBindingProfileFiles, parseExistingBindingContext } from './existing-binding-context.mjs';
-import { bindingFixtureDiagnostic } from './existing-binding-diagnostics.mjs';
+import { bindingFixtureDiagnostic, bindingFixtureNetworkDiagnostic } from './existing-binding-diagnostics.mjs';
 import { parseExistingBindingAccess } from './existing-binding-access.mjs';
 import { createExistingManagementAccessRuntime } from '../../src/content-access-runtime.mjs';
 import { createExistingManagementContextRuntime, existingManagementContextTool } from '../../src/existing-management-context.mjs';
@@ -31,11 +31,18 @@ const clients = new Set(), transports = new Set();
 const recentCalls = [];
 let store, captureStore, deadline, hardDeadline, reportPath, sidecar, callbackServer, accessRuntime, routingTouched = false, closingAccess, started;
 let checksComplete = false;
+let networkPath;
 const report = { schema: 2, result: 'INCOMPLETE', scope: 'disposable-native-existing-queue-access-v2-only', passed: [],
   productionCredentials: false, productionActivation: false, liveGoogleVerified: false, protectedWorkerVerified: false,
   renderedQaVerified: false, consumerBindingIssued: false, contentWriteVerified: false, codeWriteVerified: false,
   remoteBackupVerified: false, chatgptAcceptanceVerified: false, afterTransportExpiryVerified: false };
 const save = () => { if (reportPath) writeFileSync(reportPath, JSON.stringify(report, null, 2) + '\n', { mode: 0o600 }); };
+const networkDiagnostic = () => {
+  try {
+    if (!networkPath) return bindingFixtureNetworkDiagnostic();
+    return bindingFixtureNetworkDiagnostic(privateFile(networkPath, 1048576).toString('utf8'));
+  } catch { return bindingFixtureNetworkDiagnostic(); }
+};
 const pass = label => { report.passed.push(label); save(); process.stdout.write(`PASS ${label}\n`); };
 const switchCallback = async mode => {
   assert.ok(sidecar && ['node', 'disabled'].includes(mode));
@@ -88,7 +95,7 @@ try {
   // Reserve cleanup inside the unchanged 180-second maximum. The original
   // hard deadline still exits even if a subprocess or close becomes stuck.
   deadline = setTimeout(async () => {
-    report.result = 'FAIL'; report.failure = { phase, recentCalls, deadlineExceeded: true }; save();
+    report.result = 'FAIL'; report.failure = { phase, recentCalls, network: networkDiagnostic(), deadlineExceeded: true }; save();
     process.stderr.write('FAIL disposable v2 binding deadline; private output withheld\n');
     try { await closeAccess(); } finally { process.exit(1); }
   }, (context.limits.hook_seconds - 10) * 1000);
@@ -126,6 +133,7 @@ try {
   pass('Separate synthetic v2 descriptor and installed immutable source independently verified');
 
   const work = join(directory, 'actual-gateway-existing-binding-v2'); mkdirSync(work, { mode: 0o700 });
+  networkPath = join(work, 'gateway-network.jsonl');
   const home = join(work, 'home'); mkdirSync(home, { mode: 0o700 });
   for (const file of ['fixture-network.mjs', 'existing-binding-network.mjs']) copyFileSync(new URL(file, import.meta.url), join(work, file));
   copyFileSync(certificate, join(work, 'tls.crt'));
@@ -390,9 +398,16 @@ try {
           const name = args[0].name;
           assert.ok(Object.values(existingManagementCaptureTools).includes(name));
           if (name === existingManagementCaptureTools.capture) captureDispatches++; else recoveryReads++;
-          const callStarted = performance.now(), result = await raw.callTool(...args);
-          report.captureCall = { ...bindingFixtureDiagnostic(name, result), elapsed_ms: Math.ceil(performance.now() - callStarted),
-            transport_timeout_ms: 120000, automatic_retries: false }; save();
+          const callStarted = performance.now();
+          const record = (value, transportError = false) => {
+            report.captureCall = { ...bindingFixtureDiagnostic(name, value, false, transportError),
+              elapsed_ms: Math.ceil(performance.now() - callStarted), transport_timeout_ms: 120000, automatic_retries: false };
+            save();
+          };
+          let result;
+          try { result = await raw.callTool(...args); }
+          catch (error) { record(error, true); throw error; }
+          record(result);
           if (interrupt && name === existingManagementCaptureTools.capture) {
             const captured = validateExistingManagementCapture(payload(result), await captureLedger.currentQueuedJob(jobId), captureExpected);
             interceptedCapture = { artifact: captured.capture_artifact_sha256, measurements: delegationDigest(captured.measurements) };
@@ -482,7 +497,7 @@ try {
   }
   checksComplete = true;
 } catch (error) {
-  report.result = 'FAIL'; report.failure = { phase, recentCalls,
+  report.result = 'FAIL'; report.failure = { phase, recentCalls, network: networkDiagnostic(),
     code: typeof error?.code === 'string' && /^[A-Z0-9_]{1,80}$/.test(error.code) ? error.code : 'DISPOSABLE_BINDING_CHECK_FAILED' };
   save(); process.stderr.write(`FAIL disposable v2 binding at ${phase}; private output withheld\n`); process.exitCode = 1;
 } finally {
