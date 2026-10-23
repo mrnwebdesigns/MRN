@@ -143,8 +143,15 @@ try {
   const queueCalls = [];
   const networkRows = () => readFileSync(join(work, 'gateway-network.jsonl'), 'utf8').trim().split('\n').map(line => JSON.parse(line));
   const queuePostCount = () => networkRows().filter(row => row.ability === originalQualificationAbility).length;
-  const rawClient = async () => {
-    const raw = await connectMainwp(config, environment); clients.add(raw);
+  const rawClient = async (captureConnection = false) => {
+    assert.equal(typeof captureConnection, 'boolean');
+    // The dedicated private capture connection must carry the existing 120s
+    // contract. Its SDK/worker/original-intent limits remain independently
+    // enforced; ordinary reads keep their existing transport configuration.
+    const selected = captureConnection ? { ...config, envRefs: { ...config.envRefs,
+      MAINWP_REQUEST_TIMEOUT: { env: 'FIXTURE_CAPTURE_TIMEOUT' }, MAINWP_RETRY_ENABLED: { env: 'FIXTURE_CAPTURE_RETRY' } } } : config;
+    const raw = await connectMainwp(selected, captureConnection ? { ...environment,
+      FIXTURE_CAPTURE_TIMEOUT: '120000', FIXTURE_CAPTURE_RETRY: 'false' } : environment); clients.add(raw);
     const observe = row => { recentCalls.push(row); if (recentCalls.length > 8) recentCalls.shift(); };
     return { readResource: (...args) => raw.readResource(...args), listTools: (...args) => raw.listTools(...args),
       close: () => raw.close(), callTool: async (...args) => {
@@ -376,14 +383,16 @@ try {
     captureStore = new Store(join(work, 'original-binding.sqlite'));
     const captureLedger = new OriginalManagementAuthorizationLedger(captureStore,
       { signer, registry, policy: () => pins, verifyStaff, queueReadiness });
-    const raw = await rawClient();
+    const raw = await rawClient(true);
     const runtime = await createExistingManagementCaptureRuntime({ enabled: true, ledger: captureLedger, registrar,
       connect: async () => ({ readResource: (...args) => raw.readResource(...args), listTools: (...args) => raw.listTools(...args),
         close: () => raw.close(), callTool: async (...args) => {
           const name = args[0].name;
           assert.ok(Object.values(existingManagementCaptureTools).includes(name));
           if (name === existingManagementCaptureTools.capture) captureDispatches++; else recoveryReads++;
-          const result = await raw.callTool(...args);
+          const callStarted = performance.now(), result = await raw.callTool(...args);
+          report.captureCall = { ...bindingFixtureDiagnostic(name, result), elapsed_ms: Math.ceil(performance.now() - callStarted),
+            transport_timeout_ms: 120000, automatic_retries: false }; save();
           if (interrupt && name === existingManagementCaptureTools.capture) {
             const captured = validateExistingManagementCapture(payload(result), await captureLedger.currentQueuedJob(jobId), captureExpected);
             interceptedCapture = { artifact: captured.capture_artifact_sha256, measurements: delegationDigest(captured.measurements) };

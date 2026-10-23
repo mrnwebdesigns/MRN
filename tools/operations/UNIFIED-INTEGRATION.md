@@ -103,6 +103,17 @@ expanded native proof remains pending until its original report is reviewed.
 The pinned provider/transport and frozen contracts are unchanged. Production
 startup and workspace registration remain disabled for this private path.
 
+The first expanded run, `39978255035`, failed at native capture after the
+original queue and TLS access callback passed; callback-route cleanup passed.
+Its artifact `12512736237` was independently verified against SHA-256
+`c63abb73ca9241ba1e53a222201994dafa7166438e8356cb275c80f18a6b0e58`.
+The retained tool error was unclassified, so the failure's cause is not yet
+confirmed. The follow-up fixture recognizes the pinned transport's sanitized
+HTTP error format and records bounded call timing. Its dedicated capture
+connection uses the existing 120-second capture allowance instead of the
+transport's 30-second default, with automatic retry disabled. Worker, SDK,
+original-grant, intent, recovery and overall hook deadlines are unchanged.
+
 ## Earlier candidate evidence, 2026-10-22
 
 The earlier disposable integration candidate selected provider

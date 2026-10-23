@@ -4,6 +4,8 @@ const toolLabels = new Map([
   ['mrn_mainwp__bind_content_edit_authorization_v2', 'bind'],
   ['mrn_mainwp__read_content_edit_authorization_v2', 'binding-read'],
   ['mrn_mainwp__get_content_edit_qualification_context_existing_v2', 'existing-context'],
+  ['mrn_mainwp__capture_content_edit_qualification_existing_v2', 'existing-capture'],
+  ['mrn_mainwp__read_content_edit_qualification_capture_existing_v2', 'existing-capture-read'],
   ['mrn_mainwp__read_management_access_veto_query_existing_v2', 'existing-access-read'],
   ['mrn_mainwp__get_delegation_challenge_v1', 'challenge'],
   ['mrn_mainwp__get_team_access_v1', 'staff-access'],
@@ -48,7 +50,7 @@ export function bindingFixtureDiagnostic(name, value, confirmed = false, transpo
   let code = codes.has(remote?.code) ? remote.code : codes.has(remote) ? remote : undefined;
   const message = typeof remote === 'string' ? remote : remote?.message;
   if (!code && typeof message === 'string' && message.length <= 131072) {
-    const symbol = /^(?:MainWP failed: )?Ability execution failed: ([a-z0-9_]+) - /.exec(message)?.[1];
+    const symbol = /^(?:MainWP failed: )?Ability execution failed: ([a-z0-9_]+)(?: - | \(HTTP [1-5][0-9]{2}\)\.)/.exec(message)?.[1];
     if (codes.has(symbol)) code = symbol;
   }
   return { tool: toolLabels.get(name) ?? 'other', kind, confirmed: confirmed === true,

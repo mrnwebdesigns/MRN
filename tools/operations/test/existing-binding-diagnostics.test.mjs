@@ -10,6 +10,7 @@ test('fixture diagnostics retain a known refusal without messages, identity or p
   for (const error of [
     { code: 'mrn_delegation_required', message: secret, data: { token: secret } },
     `Ability execution failed: mrn_delegation_required - ${secret}`,
+    `Ability execution failed: mrn_delegation_required (HTTP 400). ${secret}`,
   ]) {
     const projected = bindingFixtureDiagnostic(name, result({ error, subject: secret }, true));
     assert.deepEqual(projected, { tool: 'readiness', kind: 'tool-error', confirmed: false, provider_code: 'mrn_delegation_required' });
@@ -40,6 +41,8 @@ test('existing context and identity callback diagnostics preserve only fixed rou
   for (const [name, label] of [
     ['mrn_mainwp__get_content_edit_qualification_context_existing_v2', 'existing-context'],
     ['mrn_mainwp__read_management_access_veto_query_existing_v2', 'existing-access-read'],
+    ['mrn_mainwp__capture_content_edit_qualification_existing_v2', 'existing-capture'],
+    ['mrn_mainwp__read_content_edit_qualification_capture_existing_v2', 'existing-capture-read'],
   ]) {
     assert.deepEqual(bindingFixtureDiagnostic(name, result({ error: { code: 'mrn_existing_control', message: 'PRIVATE' } }, true)),
       { tool: label, kind: 'tool-error', confirmed: false, provider_code: 'mrn_existing_control' });
