@@ -57,11 +57,12 @@ The earlier dependency-audit failure was repaired without suppressing findings
 or changing per-operation limits. This is disposable integration evidence;
 every live acceptance row above remains unverified.
 
-The next worker-record consistency candidate `aa92593` passes all 197 runner
+The next worker-record consistency candidate `2c369e8` passes all 205 runner
 tests and staged MRN QA. Gateway/runner comparison agrees on one positive record
-and 59 denial cases. Its pure reader does not establish current staff access,
-hosted OIDC, source verification or admission. Hosted isolation and the next
-combined candidate remain separate gates. Actual protected existing-v2 source
+and 66 denial cases. Its pure reader does not establish current staff access,
+hosted OIDC, source verification or admission. The correction rejects malformed site URLs that the
+initial runner reader accepted because its shared schema helper omitted URI
+formats. Fresh hosted isolation and combined qualification remain separate gates. Actual protected existing-v2 source
 delivery, rendered management QA and report admission remain open.
 
 Earlier checkpoints and failures are retained below as historical evidence.

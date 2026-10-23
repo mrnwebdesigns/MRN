@@ -107,21 +107,30 @@ dispatch, creates no authority and makes no network or source request. Its resul
 explicitly leaves current staff access, hosted OIDC provenance, source
 verification and admission false. The original marker/history, independently
 pinned current identity registry, fresh staff checks and protected dispatch
-still require implementation and separate qualification. Nineteen focused
+still require implementation and separate qualification. Twenty focused
 checks cover substitutions, legacy/other-v2 signature domains, original-expiry
 extension, duplicate keys and byte limits; these synthetic records prove no
 live access or content operation.
 
-Runner `aa92593c56ff5d6f9febeaef7a9ee21be307392e` independently implements this
+Runner `2c369e8656dc280a262d5fb75829d66da3a0c60b` independently implements this
 reader in [PR #9](https://github.com/mrnwebdesigns/mrn-code-qa-runner/pull/9), stacked
-on the closure correction. Thirty-four focused and all 197 runner tests pass;
-exact staged MRN QA proof is `8b6fd24d0ba4401028c718008d840276bdfb15d7`.
+on the closure correction. Forty-two focused and all 205 runner tests pass;
+exact staged MRN QA proof is `a00fdba13e67041060852223f7916924fca21ed7`.
 The gateway/runner integration passes thirteen groups, including one positive
-record and 59 signed/domain/encoding denial cases accepted or refused identically
+record and 66 signed/domain/encoding denial cases accepted or refused identically
 by the two implementations. Its input contract matches gateway commit `89aa9a7`
 byte for byte. The next candidate selects this runner; hosted isolation and
 combined native qualification remain separate gates. No HTTP/OIDC/dispatch,
 source producer or signing environment is activated by this reader.
+
+The earlier `aa92593` reader passed hosted isolation but differential review
+found that its shared schema helper ignored `format:uri`. It accepted malformed
+site URLs that the gateway refused when all other hashes matched. The corrected
+reader checks the frozen URI syntax explicitly without normalizing signed bytes;
+legacy helpers and contracts are unchanged. Seven new matching-record denials
+and a byte-preservation test cover the correction. The earlier gateway `41a1df8`
+composition remains a historical baseline, not acceptance of the corrected pin.
+New hosted isolation and native composition are required for this source.
 
 ### Next protected source-delivery checkpoint
 

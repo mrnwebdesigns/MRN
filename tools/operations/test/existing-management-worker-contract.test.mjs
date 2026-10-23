@@ -109,6 +109,25 @@ test('legacy or other v2 domains cannot sign the new worker record', () => {
   }
 });
 
+test('matching signed and retained records still require the frozen site URI format', () => {
+  for (const url of ['https://', 'https://managed-content.example.org ', 'https://managed-content.example.org/%G1',
+    'https://managed-content.example.org/\\bad', 'https://managed-content.example.org/\tbad',
+    'https://managed-content.example.org/\nbad', 'https://managed-content.example.org/\u007fbad']) {
+    const f = fixture(), r = f.input.retained;
+    r.context.binding.site_url = url;
+    r.context.management_context_sha256 = delegationDigest(r.context.binding);
+    f.input.originalBinding = structuredClone(r.context.binding);
+    f.input.pointer.context_sha256 = delegationDigest(r.context);
+    r.observation.context_sha256 = f.input.pointer.context_sha256;
+    r.observation.request.context_sha256 = f.input.pointer.context_sha256;
+    r.provenance.dispatch_request_sha256 = delegationDigest(r.observation.request);
+    r.provenance.dispatch_record_sha256 = delegationDigest(r.observation);
+    Object.assign(f.claims, { context: structuredClone(r.context), context_sha256: f.input.pointer.context_sha256,
+      recorded_dispatch: structuredClone(r.provenance), dispatch_record: structuredClone(r.observation) });
+    assert.throws(f.verify, refused);
+  }
+});
+
 test('signed noncanonical, duplicate-key and oversized payloads are refused before record admission', () => {
   const f = fixture();
   const canonical = delegationCanonical(f.claims);
