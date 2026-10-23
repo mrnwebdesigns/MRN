@@ -7,6 +7,7 @@ const toolLabels = new Map([
   ['mrn_mainwp__capture_content_edit_qualification_existing_v2', 'existing-capture'],
   ['mrn_mainwp__read_content_edit_qualification_capture_existing_v2', 'existing-capture-read'],
   ['mrn_mainwp__read_content_edit_qualification_measurements_existing_v2', 'existing-measurements-read'],
+  ['mrn_mainwp__read_content_edit_qualification_source_context_existing_v2', 'existing-source-context'],
   ['mrn_mainwp__read_management_access_veto_query_existing_v2', 'existing-access-read'],
   ['mrn_mainwp__get_delegation_challenge_v1', 'challenge'],
   ['mrn_mainwp__get_team_access_v1', 'staff-access'],
@@ -16,7 +17,7 @@ const toolLabels = new Map([
 ]);
 const codes = new Set([
   'mrn_binding_contract', 'mrn_binding_control', 'mrn_binding_readiness',
-  'mrn_existing_control',
+  'mrn_existing_control', 'mrn_management_existing_source_context',
   'mrn_management_original_authorization', 'mrn_management_existing_original', 'mrn_management_qualification',
   'mrn_requester_initialize', 'mrn_requester_review', 'mrn_requester_state',
   'mrn_content_approval', 'mrn_content_consumed', 'mrn_content_epoch', 'mrn_content_input',

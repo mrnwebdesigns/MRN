@@ -127,6 +127,7 @@ jobs:
           MRN_DISPOSABLE_SOURCE_TEST: '1'
           # Separate cloned Dashboard; never initializes the legacy fixture.
           MRN_DISPOSABLE_EXISTING_BINDING_TEST: '1'
+          MRN_DISPOSABLE_EXISTING_SOURCE_CONTEXT_TEST: '1'
           MRN_DISPOSABLE_EXISTING_BINDING_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/existing-binding-hook.sh
           # Qualified provider; actual gateway custody remains a required CI gate.
           MRN_DISPOSABLE_REPORT_CUSTODY_TEST: '1'
@@ -226,6 +227,8 @@ jobs:
           }
           const sources = JSON.parse(readFileSync('tools/operations/test/runtime/sources.json', 'utf8'));
           const binding = JSON.parse(readFileSync(process.env.MRN_GATEWAY_EXISTING_BINDING_REPORT, 'utf8'));
+          const { parseExistingSourceContextAudit } = await import('./tools/operations/test/runtime/existing-binding-context.mjs');
+          const sourceAudit = parseExistingSourceContextAudit(readFileSync('.runtime/provider/reports/native-existing-source-context-audit.json'));
           assert.equal(binding.schema, 2); assert.equal(binding.result, 'PASS');
           assert.equal(binding.scope, 'disposable-native-existing-queue-access-v2-only');
           assert.deepEqual(binding.passed, [
@@ -237,6 +240,7 @@ jobs:
             'Actual registrar context request triggers the provider TLS callback and separate signed identity readback',
             'One native capture survives a lost response and SQLite reopen with identical bounded read recovery and no recapture',
             'Native measurement read matches the independently retained capture receipt under the original authority',
+            'Canonical source lookup refuses an invalid signature, binds two reads to retained evidence and refuses a third',
             'Fresh exact-site sync and full Child readback prove the preview, binding and qualification did not edit content',
             'Revocation during actual provider context lookup returns a signed denial and blocks later local dispatch',
           ]);
@@ -272,6 +276,20 @@ jobs:
           assert.ok(Number.isSafeInteger(binding.capture.native_calls) && binding.capture.native_calls >= 2 && binding.capture.native_calls <= 151);
           assert.deepEqual(binding.measurements, { reads: 1, measurement_record_sha256: binding.capture.measurements_sha256,
             matches_retained_capture: true, original_authorization_unchanged: true, admitted: false });
+          for (const field of ['source_context_sha256', 'independent_owner_sha256', 'parity_sha256']) assert.match(binding.sourceContext[field], /^[a-f0-9]{64}$/);
+          assert.deepEqual(Object.keys(binding.sourceContext.owner).sort(), ['evidence_policy_epoch', 'evidence_policy_sha256', 'source_recipe_catalog_sha256']);
+          assert.ok(Number.isSafeInteger(binding.sourceContext.owner.evidence_policy_epoch) && binding.sourceContext.owner.evidence_policy_epoch > 0);
+          for (const field of ['evidence_policy_sha256', 'source_recipe_catalog_sha256']) assert.match(binding.sourceContext.owner[field], /^[a-f0-9]{64}$/);
+          assert.deepEqual(binding.sourceContext, { unsigned_refused: 1, successful_reads: 2, refused_reads: 1, dispatches: 3,
+            source_context_sha256: binding.sourceContext.source_context_sha256, independent_owner_sha256: binding.sourceContext.independent_owner_sha256,
+            parity_sha256: binding.sourceContext.parity_sha256,
+            owner: binding.sourceContext.owner, original_authorization_unchanged: true, source_bytes_verified: false, slot_created: false, admitted: false });
+          assert.equal(sourceAudit.qualification_job_id, binding.qualification.job_id);
+          assert.equal(sourceAudit.binding_sha256, binding.capture.binding_sha256);
+          assert.equal(sourceAudit.source_context_sha256, binding.sourceContext.source_context_sha256);
+          assert.equal(sourceAudit.capture_artifact_sha256, binding.capture.artifact_sha256);
+          assert.equal(sourceAudit.measurement_record_sha256, binding.capture.measurements_sha256);
+          assert.equal(sourceAudit.parity_sha256, binding.sourceContext.parity_sha256);
           assert.ok(Number.isSafeInteger(binding.currentAccess.signed_callbacks) && binding.currentAccess.signed_callbacks >= binding.capture.native_calls + 4
             && binding.currentAccess.signed_callbacks <= 512);
           assert.deepEqual(binding.currentAccess, { context_requests: 2, signed_callbacks: binding.currentAccess.signed_callbacks,
@@ -287,6 +305,7 @@ jobs:
           assert.equal(binding.network.context_posts, 2); assert.equal(binding.network.access_readback_posts, binding.currentAccess.signed_callbacks);
           assert.equal(binding.network.capture_posts, 1); assert.equal(binding.network.recovery_posts, 1);
           assert.equal(binding.network.measurement_posts, 1);
+          assert.equal(binding.network.source_context_posts, 4);
           assert.equal(binding.network.queue_posts, 1);
           assert.equal(binding.staffChecks.connections, 1);
           assert.ok(Number.isSafeInteger(binding.staffChecks.dispatched) && binding.staffChecks.dispatched > 0);
@@ -307,6 +326,23 @@ jobs:
           path: .runtime/provider/reports/native-job-worker-failure.json
           if-no-files-found: ignore
           retention-days: 7
+      - name: Retain bounded original source-context audit
+        if: always()
+        env:
+          MRN_SOURCE_AUDIT_OUTPUT: ${{ runner.temp }}/native-existing-source-context-audit.json
+        run: |
+          node --input-type=module <<'JS'
+          import { copyFileSync, existsSync, lstatSync, readFileSync } from 'node:fs';
+          import assert from 'node:assert/strict';
+          import { parseExistingSourceContextAudit } from './tools/operations/test/runtime/existing-binding-context.mjs';
+          const path = '.runtime/provider/reports/native-existing-source-context-audit.json';
+          if (existsSync(path)) {
+            const info = lstatSync(path);
+            assert.ok(info.isFile() && !info.isSymbolicLink() && info.size <= 4096 && (info.mode & 0o777) === 0o600);
+            parseExistingSourceContextAudit(readFileSync(path));
+            copyFileSync(path, process.env.MRN_SOURCE_AUDIT_OUTPUT);
+          }
+          JS
       - name: Retain bounded integration evidence only
         if: always()
         uses: actions/upload-artifact@v4
@@ -321,5 +357,6 @@ jobs:
             ${{ runner.temp }}/gateway-native-source-report.json
             ${{ runner.temp }}/gateway-report-custody-report.json
             ${{ runner.temp }}/gateway-existing-binding-report.json
+            ${{ runner.temp }}/native-existing-source-context-audit.json
           if-no-files-found: error
           retention-days: 14

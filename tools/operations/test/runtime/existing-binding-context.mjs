@@ -20,6 +20,17 @@ export const existingBindingProfileFiles = Object.freeze([
   'contracts/content-management-original-authorization-v2.json',
 ]);
 const sha = z.string().regex(/^[a-f0-9]{64}$/);
+const sourceOwnerType = z.object({ schema: z.literal(2), mode: z.literal('disposable-existing-source-context-owner-v2'),
+  production_credentials: z.literal(false), production_activation: z.literal(false),
+  evidence_policy_epoch: z.number().int().positive().safe(), evidence_policy_sha256: sha,
+  source_recipe_catalog_sha256: sha }).strict();
+const sourceAuditType = z.object({ result: z.literal('PASS'), schema: z.literal(2),
+  qualification_job_id: z.string().regex(/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/),
+  binding_sha256: sha, source_context_sha256: sha, capture_artifact_sha256: sha, measurement_record_sha256: sha, parity_sha256: sha,
+  actual_original_marker_count: z.literal(2),
+  independent_consistent_readback: z.literal(true), complete_sidecar_relation: z.literal(true), sidecar_records: z.literal(7),
+  at_rest_only: z.literal(true), current_access_proven: z.literal(false), admitted: z.literal(false),
+  production_changes: z.literal(false) }).strict();
 const contextType = z.object({
   schema: z.literal(2), mode: z.literal('disposable-existing-binding-v2'),
   production_credentials: z.literal(false), production_activation: z.literal(false), consumer_binding_issued: z.literal(false),
@@ -48,6 +59,18 @@ export function parseExistingBindingContext(bytes, now = Date.now()) {
   if (result.actor.expiresAt <= now || result.actor.expiresAt > now + existingBindingFixtureLimits.initial_grant_seconds * 1000)
     throw new Error('Expired or extended disposable v2 context');
   return result;
+}
+
+export function parseExistingSourceContextOwner(bytes) {
+  if (!Buffer.isBuffer(bytes) || bytes.length > 4096) throw new Error('Invalid disposable source owner');
+  try { return sourceOwnerType.parse(JSON.parse(bytes.toString('utf8'))); }
+  catch { throw new Error('Invalid disposable source owner'); }
+}
+
+export function parseExistingSourceContextAudit(bytes) {
+  if (!Buffer.isBuffer(bytes) || bytes.length > 4096) throw new Error('Invalid disposable source audit');
+  try { return sourceAuditType.parse(JSON.parse(bytes.toString('utf8'))); }
+  catch { throw new Error('Invalid disposable source audit'); }
 }
 
 export function existingBindingProfile(read, context) {

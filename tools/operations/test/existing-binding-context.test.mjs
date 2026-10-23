@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existingBindingProfileFiles, parseExistingBindingContext } from './runtime/existing-binding-context.mjs';
+import { existingBindingProfileFiles, parseExistingBindingContext,
+  parseExistingSourceContextOwner, parseExistingSourceContextAudit } from './runtime/existing-binding-context.mjs';
 
 const now = 1800000000000;
 function fixture() {
@@ -44,4 +45,37 @@ test('every descriptor boundary is closed and every profile file and immutable p
   }
   assert.throws(() => parseExistingBindingContext(Buffer.alloc(32769), now));
   assert.throws(() => parseExistingBindingContext(Buffer.from('{broken'), now));
+});
+
+test('independent source owner sidecar is bounded, closed and synthetic only', () => {
+  const value = { schema: 2, mode: 'disposable-existing-source-context-owner-v2', production_credentials: false,
+    production_activation: false, evidence_policy_epoch: 1, evidence_policy_sha256: 'a'.repeat(64),
+    source_recipe_catalog_sha256: 'b'.repeat(64) };
+  const parse = v => parseExistingSourceContextOwner(Buffer.from(JSON.stringify(v)));
+  assert.deepEqual(parse(value), value);
+  for (const key of Object.keys(value)) { const missing = { ...value }; delete missing[key]; assert.throws(() => parse(missing)); }
+  for (const change of [{ schema: 1 }, { mode: 'production' }, { production_credentials: true }, { production_activation: true },
+    { evidence_policy_epoch: 0 }, { evidence_policy_epoch: 1.5 }, { evidence_policy_sha256: 'bad' },
+    { source_recipe_catalog_sha256: 'bad' }, { signed_request: {} }]) assert.throws(() => parse({ ...value, ...change }));
+  for (const bytes of [Buffer.alloc(4097), Buffer.from('{bad'), {}, Buffer.from('null')])
+    assert.throws(() => parseExistingSourceContextOwner(bytes));
+});
+
+test('source audit requires complete original-bound at-rest proof without claiming current access', () => {
+  const value = { result: 'PASS', schema: 2, qualification_job_id: '11111111-1111-4111-8111-111111111111',
+    binding_sha256: 'a'.repeat(64), source_context_sha256: 'b'.repeat(64), capture_artifact_sha256: 'c'.repeat(64),
+    measurement_record_sha256: 'd'.repeat(64), parity_sha256: 'e'.repeat(64), actual_original_marker_count: 2,
+    independent_consistent_readback: true, complete_sidecar_relation: true, sidecar_records: 7,
+    at_rest_only: true, current_access_proven: false, admitted: false, production_changes: false };
+  const parse = v => parseExistingSourceContextAudit(Buffer.from(JSON.stringify(v)));
+  assert.deepEqual(parse(value), value);
+  for (const key of Object.keys(value)) { const missing = { ...value }; delete missing[key]; assert.throws(() => parse(missing)); }
+  for (const change of [{ result: 'FAIL' }, { schema: 1 }, { qualification_job_id: 'bad' }, { binding_sha256: 'bad' },
+    { source_context_sha256: 'bad' }, { capture_artifact_sha256: 'bad' }, { measurement_record_sha256: 'bad' }, { parity_sha256: 'bad' },
+    { actual_original_marker_count: 1 }, { sidecar_records: 6 },
+    { independent_consistent_readback: false }, { complete_sidecar_relation: false }, { at_rest_only: false },
+    { current_access_proven: true }, { admitted: true }, { production_changes: true }, { raw: 'PRIVATE' }])
+    assert.throws(() => parse({ ...value, ...change }));
+  for (const bytes of [Buffer.alloc(4097), Buffer.from('{bad'), {}, Buffer.from('null')])
+    assert.throws(() => parseExistingSourceContextAudit(bytes));
 });

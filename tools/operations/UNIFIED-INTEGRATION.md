@@ -291,8 +291,14 @@ flag even if cleanup causes a later request failure. The paired provider is `be3
 four fixture/test files beyond `f7ca46f`: initial synthetic allocation, parent
 barrier, hook timeout and regression. All provider runtime and protocol bytes
 are unchanged; the eleven imported qualification files were independently
-compared to that commit. All 24 provider fixture checks pass. The complete
-hosted suite must pass before this new allocation is accepted.
+compared to that commit. All 24 provider fixture checks pass. Gateway
+`6b484e3e365fb05e28d279d564f863a5279d5861` now passes combined CI
+`39999779123` and MRN QA `39999779280`. All eight original native reports
+pass; artifact `12522034976` was independently verified against SHA-256
+`b5c0fda67c6dcffc3a4fd4a18baa3c17805f3d1689e46bb8a0d1174e0dbfa0f4`.
+The complete hook took 186,981 ms with no aggregate deadline exceeded, one
+capture, one recovery, one measurement POST, 66 fresh staff checks and 52
+signed callbacks. The original grant and Child content remain unchanged.
 
 ### Existing-record source-context consumer
 
@@ -315,6 +321,29 @@ source-context registration still need independent native qualification.
 Production startup and workspace tools do not import this consumer. It returns
 metadata with source verification, slot creation and admission all false; no
 source transfer, catalog approval or content write follows from this checkpoint.
+
+The native fixture is being extended to register only that exact private ability
+inside the explicitly opted-in disposable Dashboard clone. It requires a fresh
+real capture, canonical HTTP refusal of an invalid registrar signature, two
+successful canonical lookups and refusal of a third, followed
+by refusal of local dispatch after revocation. Expected owner policy and catalog
+pins come from a separate bounded private file, not the lookup response. A second
+read-only SQL connection audits the protected original count and complete seven-row
+history afterward. CI compares that audit's job, binding, source context, capture,
+measurement and parity hashes to the gateway's retained evidence. The audit
+explicitly proves only stored state, not current access after revocation.
+No native success is claimed until the exact composite provider and gateway run
+passes and its original reports are independently verified.
+
+The selected qualification candidate is provider
+`161864ac84d9743117eb08148724ddcccba5bbbe`: the new reader `15032f8`, fixture
+allocation `be3efa1`, their isolated registration/audit seam `9b59680`, and one
+exact-route REST guard addition. The guard still requires POST and no delegated
+staff scope; the controller independently checks permission, signature and
+current original authority. Production ability registration remains absent.
+All eleven imported qualification files were compared to immutable Git bytes;
+frozen contracts are unchanged. This is a test candidate, not an activated or
+native-qualified production selection.
 
 ## Earlier candidate evidence, 2026-10-22
 

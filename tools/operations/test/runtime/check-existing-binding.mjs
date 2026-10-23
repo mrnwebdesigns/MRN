@@ -18,7 +18,7 @@ import { createOriginalAuthorizationTransport, parseOriginalBindingProjection } 
 import { Store } from '../../src/store.mjs';
 import { accessRegistry } from '../fixtures/access-registry.mjs';
 import { existingBindingFixtureLimits, existingBindingProfile, existingBindingProfileFiles,
-  parseExistingBindingContext } from './existing-binding-context.mjs';
+  parseExistingBindingContext, parseExistingSourceContextOwner } from './existing-binding-context.mjs';
 import { bindingFixtureDiagnostic, bindingFixtureNetworkDiagnostic } from './existing-binding-diagnostics.mjs';
 import { parseExistingBindingAccess } from './existing-binding-access.mjs';
 import { createExistingManagementAccessRuntime } from '../../src/content-access-runtime.mjs';
@@ -27,6 +27,8 @@ import { createExistingManagementCaptureRuntime, existingManagementCaptureTools,
   validateExistingManagementCapture } from '../../src/existing-management-capture.mjs';
 import { ExistingManagementMeasurements, ExistingManagementMeasurementsReader,
   existingManagementMeasurementsTool } from '../../src/existing-management-measurements.mjs';
+import { ExistingManagementSourceContext, ExistingManagementSourceContextReader,
+  existingManagementSourceContextTool } from '../../src/existing-management-source-context.mjs';
 import { createHttpServer } from '../../src/http.mjs';
 
 process.umask(0o077);
@@ -81,6 +83,7 @@ let phase = 'fixture-validation';
 try {
   assert.equal(process.env.GITHUB_ACTIONS, 'true');
   assert.equal(process.env.MRN_DISPOSABLE_EXISTING_BINDING_TEST, '1');
+  assert.equal(process.env.MRN_DISPOSABLE_EXISTING_SOURCE_CONTEXT_TEST, '1');
   const [directory, certificate, runtimeCli, contextFile] = process.argv.slice(2);
   assert.equal(process.argv.length, 6); assert.equal(resolve(directory), directory);
   assert.equal(realpathSync(directory), directory);
@@ -91,6 +94,15 @@ try {
   reportPath = process.env.MRN_GATEWAY_EXISTING_BINDING_REPORT;
   assert.ok(typeof reportPath === 'string' && resolve(reportPath) === reportPath);
   const context = parseExistingBindingContext(readFileSync(contextFile));
+  const sourceOwnerPath = join(directory, 'existing-binding-v2/source-context-owner.json');
+  const sourceOwnerHash = digest(privateFile(sourceOwnerPath, 4096));
+  const sourceOwner = () => {
+    const bytes = privateFile(sourceOwnerPath, 4096); assert.equal(digest(bytes), sourceOwnerHash);
+    const record = parseExistingSourceContextOwner(bytes);
+    return { evidence_policy_epoch: record.evidence_policy_epoch, evidence_policy_sha256: record.evidence_policy_sha256,
+      source_recipe_catalog_sha256: record.source_recipe_catalog_sha256 };
+  };
+  sourceOwner();
   sidecar = parseExistingBindingAccess(privateFile(join(directory, 'existing-binding-v2/access.json'), 4096), directory);
   const routeInfo = lstatSync(sidecar.route_switch);
   assert.ok(routeInfo.isFile() && !routeInfo.isSymbolicLink() && (routeInfo.mode & 0o777) === 0o700);
@@ -478,6 +490,41 @@ try {
     matches_retained_capture: true, original_authorization_unchanged: true, admitted: false };
   pass('Native measurement read matches the independently retained capture receipt under the original authority');
 
+  phase = 'private-source-context-read';
+  let sourceContextReads = 0;
+  const sourceReader = new ExistingManagementSourceContextReader({
+    readResource: (...args) => contextClient.readResource(...args), listTools: (...args) => contextClient.listTools(...args),
+    callTool: (...args) => {
+      assert.equal(args[0].name, existingManagementSourceContextTool); sourceContextReads++;
+      return contextClient.callTool(...args);
+    },
+  });
+  await sourceReader.initialize();
+  // A schema-valid envelope with no valid registrar signature must reach and
+  // fail the canonical HTTP controller; an SDK-only validation error is not proof.
+  await assert.rejects(async () => payload(await contextClient.callTool({ name: existingManagementSourceContextTool,
+    arguments: { signed_request: { key_id: registrar.keyId, payload_base64: Buffer.from('{}').toString('base64'),
+      signature_base64: Buffer.alloc(64).toString('base64') } } }, undefined, { timeout: 20000 })),
+  error => error?.code === 'MAINWP_FAILED');
+  assert.equal(recentCalls.at(-1)?.provider_code, 'mrn_management_existing_source_context');
+  const sourceRuntime = new ExistingManagementSourceContext({ ledger: resumed.captureLedger, reader: sourceReader,
+    registrar, owner: sourceOwner });
+  const sourceFirst = await sourceRuntime.read(jobId, measured), sourceSecond = await sourceRuntime.read(jobId, measured);
+  assert.deepEqual(sourceFirst.source_context, sourceSecond.source_context);
+  assert.deepEqual(sourceFirst.source_context.management.binding, queued.binding);
+  assert.equal(sourceFirst.source_context.management.capture_artifact_sha256, interceptedCapture.artifact);
+  assert.equal(sourceFirst.source_context.management.measurement_record_sha256, measured.measurement_record_sha256);
+  assert.equal(sourceFirst.source_context.management.parity_sha256, measured.measurements.parity_sha256);
+  assert.notEqual(sourceFirst.request_sha256, sourceSecond.request_sha256);
+  await assert.rejects(() => sourceRuntime.read(jobId, measured), error => error?.code === 'MAINWP_FAILED');
+  assert.equal(recentCalls.at(-1)?.provider_code, 'mrn_management_existing_source_context');
+  assert.equal(sourceContextReads, 3);
+  report.sourceContext = { unsigned_refused: 1, successful_reads: 2, refused_reads: 1, dispatches: sourceContextReads,
+    source_context_sha256: sourceFirst.source_context_sha256, independent_owner_sha256: sourceOwnerHash,
+    parity_sha256: measured.measurements.parity_sha256,
+    owner: sourceOwner(), original_authorization_unchanged: true, source_bytes_verified: false, slot_created: false, admitted: false };
+  pass('Canonical source lookup refuses an invalid signature, binds two reads to retained evidence and refuses a third');
+
   phase = 'unchanged-child';
   const freshClient = new DelegatedMainwpClient(await rawClient(), nextActor, signer);
   const freshSession = new MainwpSession(freshClient, registry, store, nextActor,
@@ -510,13 +557,15 @@ try {
   assert.equal(contextCalls, 2);
   const accessRows = store.db.prepare('SELECT body FROM original_management_access_queries WHERE job=? ORDER BY rowid').all(jobId).map(r => JSON.parse(r.body));
   assert.deepEqual(accessRows.at(-1) && [accessRows.at(-1).state, accessRows.at(-1).phase], ['pending-revocation', 'read-capture']);
-  assert.ok(accessRows.slice(0, -1).every(r => r.state === 'clear' && ['capture', 'read-capture'].includes(r.phase)));
+  assert.ok(accessRows.slice(0, -1).every(r => r.state === 'clear' && ['capture', 'read-capture', 'retain-report'].includes(r.phase)));
+  assert.equal(accessRows.filter(r => r.phase === 'retain-report').length, 2);
   assert.ok(accessRows.filter(r => r.phase === 'capture').length >= recoveredCapture.measurements.native_calls + 2);
   assert.ok(accessRows.every(r => r.actor.subject === context.actor.subject && r.actor.verifiedEmail === context.actor.verifiedEmail));
   assert.equal(store.db.prepare('SELECT access_count FROM original_management_attempts WHERE request=?').get(originalRequestId).access_count, accessRows.length);
   await assert.rejects(() => contextRuntime.context.read(jobId)); assert.equal(contextCalls, 2);
   await assert.rejects(() => resumed.runtime.capture.recover(jobId, captureExpected)); assert.equal(recoveryReads, 1);
   await assert.rejects(() => measurementRuntime.read(jobId)); assert.equal(measurementReads, 1);
+  await assert.rejects(() => sourceRuntime.read(jobId, measured)); assert.equal(sourceContextReads, 3);
   report.currentAccess = { context_requests: contextCalls, signed_callbacks: accessRows.length, clear: accessRows.length - 1, pending_revocation: 1,
     repeated_revoked_read_dispatched: false };
   pass('Revocation during actual provider context lookup returns a signed denial and blocks later local dispatch');
@@ -529,6 +578,7 @@ try {
   const capturePosts = network.filter(row => /\/capture-content-edit-qualification-existing-v2\/run$/.test(row.path));
   const recoveryPosts = network.filter(row => /\/read-content-edit-qualification-capture-existing-v2\/run$/.test(row.path));
   const measurementPosts = network.filter(row => /\/read-content-edit-qualification-measurements-existing-v2\/run$/.test(row.path));
+  const sourceContextPosts = network.filter(row => /\/read-content-edit-qualification-source-context-existing-v2\/run$/.test(row.path));
   const staffPosts = network.filter(row => /\/get-team-access-v1\/run$/.test(row.path));
   assert.equal(report.staffChecks.dispatched, report.staffChecks.completed);
   assert.equal(staffPosts.length, report.staffChecks.dispatched);
@@ -536,6 +586,7 @@ try {
   report.staffChecks.verified_posts = staffPosts.length;
   report.network = { signed_control_posts: controls.length, context_posts: contextPosts.length, access_readback_posts: accessPosts.length,
     queue_posts: queuePosts.length, capture_posts: capturePosts.length, recovery_posts: recoveryPosts.length, measurement_posts: measurementPosts.length,
+    source_context_posts: sourceContextPosts.length,
     network_log_sha256: digest(readFileSync(join(work, 'gateway-network.jsonl'))) }; save();
   assert.equal(controls.length, 2); assert.ok(controls.every(row => row.method === 'POST' && row.status === 200));
   assert.equal(accessPosts.length, accessRows.length); assert.ok(accessPosts.every(row => row.method === 'POST' && row.status === 200));
@@ -543,6 +594,13 @@ try {
   assert.equal(queuePosts.length, 1); assert.ok(queuePosts.every(row => row.method === 'POST' && row.status === 200));
   for (const posts of [capturePosts, recoveryPosts, measurementPosts]) {
     assert.equal(posts.length, 1); assert.ok(posts.every(row => row.method === 'POST' && row.status === 200));
+  }
+  assert.equal(sourceContextPosts.length, 4);
+  assert.ok(sourceContextPosts.every(row => row.method === 'POST'));
+  assert.ok(sourceContextPosts.slice(1, 3).every(row => row.status === 200));
+  for (const rejected of [sourceContextPosts[0], sourceContextPosts[3]]) {
+    assert.ok(rejected.status >= 400 && rejected.status <= 599);
+    assert.equal(rejected.errorCode, 'mrn_management_existing_source_context');
   }
   checksComplete = true;
 } catch (error) {

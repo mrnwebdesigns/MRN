@@ -80,8 +80,13 @@ test('existing context and identity callback diagnostics preserve only fixed rou
     ['mrn_mainwp__read_management_access_veto_query_existing_v2', 'existing-access-read'],
     ['mrn_mainwp__capture_content_edit_qualification_existing_v2', 'existing-capture'],
     ['mrn_mainwp__read_content_edit_qualification_capture_existing_v2', 'existing-capture-read'],
+    ['mrn_mainwp__read_content_edit_qualification_measurements_existing_v2', 'existing-measurements-read'],
+    ['mrn_mainwp__read_content_edit_qualification_source_context_existing_v2', 'existing-source-context'],
   ]) {
     assert.deepEqual(bindingFixtureDiagnostic(name, result({ error: { code: 'mrn_existing_control', message: 'PRIVATE' } }, true)),
       { tool: label, kind: 'tool-error', confirmed: false, provider_code: 'mrn_existing_control' });
   }
+  assert.deepEqual(bindingFixtureDiagnostic('mrn_mainwp__read_content_edit_qualification_source_context_existing_v2',
+    result({ error: { code: 'mrn_management_existing_source_context', message: 'PRIVATE' } }, true)),
+  { tool: 'existing-source-context', kind: 'tool-error', confirmed: false, provider_code: 'mrn_management_existing_source_context' });
 });
