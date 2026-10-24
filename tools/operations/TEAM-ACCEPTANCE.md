@@ -45,7 +45,10 @@ Use already-authorized test identities or separately reviewed administrative tes
 ## Latest source evidence, 2026-10-24
 
 The bootstrap journal source candidate has 725 passing local tests, lint and
-staged MRN QA. Independent source review is ongoing; the journal stays disabled.
+staged MRN QA. Independent source review found no concrete security finding in
+the three changed modules and their supporting tests; all four reviewed file
+hashes match `fa5ab040`. Its six focused groups also passed independently.
+The journal stays disabled and the review proves no delivery or live authority.
 The preceding candidate passed fourteen cross-repository groups, including SQLite/gateway/TLS/
 runner checks with synthetic identities. The newly committed bootstrap verifier
 checks independent keys, policies and original/run relations but is disabled;
@@ -66,6 +69,13 @@ capability discovery: the selected provider package omits the source API's
 required declaration. Four original reports and their exact source were retained;
 hosted MRN QA `40050639825` passed. All twelve mandatory native acceptance
 reports remain unverified; timing reports are diagnostic evidence only.
+
+The next composition selects provider `9c58c709043308303a41a81f23721e7e44faeb13`,
+which includes the missing declaration and requires it in installed source
+verification. Its packaged WordPress registry regression reproduces the omission
+and discovers exactly the three source tools when restored. The combined run
+must independently prove actual MCP/native transfer; package discovery alone
+does not qualify it.
 
 The last completed seed/worker checkpoint was gateway `c3d23055`, combined run
 `40042925780`, with eleven independently verified original reports. Compatible

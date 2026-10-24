@@ -32,7 +32,7 @@ backup provider, and this target correction does not change shared backup policy
 ## Current content integration, 2026-10-23
 
 The next native-transfer composition selects provider
-`8bbd667a2526750af6954eb2103fc69916bb21ed`. It preserves the earlier empty-storage
+`9c58c709043308303a41a81f23721e7e44faeb13`. It preserves the earlier empty-storage
 checkpoint before capture, then exercises the three fixed private source routes
 and independently checks all returned frames against original inventory. A
 separate final SQL/frame audit must match the gateway, seed and context reports.
@@ -70,6 +70,13 @@ and artifact `12543600906` (SHA-256
 `b96d31e84ffcf401cf448ce951d85b3b511ace051c575649e643cc57af5957ea`)
 are retained; hosted MRN QA `40050639825` passed. The measured staff checks took
 0.38–0.43 seconds each and provide no reason to remove them.
+
+The selected successor includes the missing API declaration and requires it in
+installed source verification. Its extracted-package WordPress registry test
+reproduces the missing-declaration failure and checks exactly the three canonical
+tools, their unchanged annotations and core REST discovery. Provider phase
+timings are restricted to the explicit disposable fixture. The new combined
+run must still prove MCP/native transfer with the exact selected package.
 
 The bootstrap review permits a distinct one-use metadata delivery marker for
 new originals without spending or expanding provider source/control budgets.
