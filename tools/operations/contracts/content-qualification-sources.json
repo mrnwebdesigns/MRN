@@ -1,0 +1,62 @@
+{
+  "schema": 1,
+  "repository": "mrnwebdesigns/mrn-mainwp-operations-api",
+  "commit": "9c58c709043308303a41a81f23721e7e44faeb13",
+  "files": [
+    {
+      "source": "contracts/content-qualification-v1.json",
+      "local": "contracts/content-qualification-v1.json",
+      "sha256": "9c8d3fa9e27d7e4aa36109ccb33d76f7babf5bc6aea4f3661fcfd6e26ab62e03"
+    },
+    {
+      "source": "contracts/content-recipe-catalog-v1.json",
+      "local": "contracts/content-recipe-catalog-v1.json",
+      "sha256": "f50689675056aafdebacf22cb4b3f0c09d4e9247c61e73f2bd03b8b1d2850057"
+    },
+    {
+      "source": "contracts/content-target-binding-v1.json",
+      "local": "contracts/content-target-binding-v1.json",
+      "sha256": "5433dcd0da6558088d785f0055b4602c8fc9563ede46a83fb87980c5519f31a4"
+    },
+    {
+      "source": "contracts/content-recipe-install-v1.json",
+      "local": "contracts/content-recipe-install-v1.json",
+      "sha256": "9d1cd1afaf58b748d9981a88df85735d22d9ef6b8b08b5e0f8bcc05eb8408216"
+    },
+    {
+      "source": "contracts/content-qualification-handoff-v1.json",
+      "local": "contracts/content-qualification-handoff-v1.json",
+      "sha256": "400149d7164dc67b89d58a443f1eeabeba4b5241018ab544426566c1c5be826f"
+    },
+    {
+      "source": "tests/fixtures/content-qualification-v1.json",
+      "local": "test/fixtures/content-qualification-contract.json",
+      "sha256": "515fbff54171b59e493adb6ef9fbfccc51cddfc0e1dc9e9a9374c8508b98e818"
+    },
+    {
+      "source": "contracts/content-policy-v2-proposal.json",
+      "local": "test/fixtures/content-policy-v2-provider.json",
+      "sha256": "82fb9cf0804228d4f9b97901391ea09c99bbe4b521475ef578ce5123f3d7c58f"
+    },
+    {
+      "source": "contracts/content-capture-read-v1.json",
+      "local": "contracts/content-capture-read-v1.json",
+      "sha256": "218d8fb98fb99322e2dbfb18ceef150be1d642d5acd6b57939ec21559000e5eb"
+    },
+    {
+      "source": "contracts/content-qualification-report-v1.json",
+      "local": "contracts/content-qualification-report-v1.json",
+      "sha256": "c502c8b20b1b673f627866bec8787e6e38f39cb4ef39040686e98dd6c4e66bfa"
+    },
+    {
+      "source": "tests/fixtures/content-qualification-additive-v1.json",
+      "local": "test/fixtures/content-qualification-additive-v1.json",
+      "sha256": "0fab947e147d1a9a0aa795123e6b1514fe12ff4fd25d6ad8b04fa9601e3f2aac"
+    },
+    {
+      "source": "contracts/content-current-access-v1.json",
+      "local": "contracts/content-current-access-v1.json",
+      "sha256": "02fa1caca043f61a92a0e7cfe369db4f271dcebcaf2599b6a4422a3a4885d172"
+    }
+  ]
+}

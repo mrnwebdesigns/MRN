@@ -1,0 +1,708 @@
+{
+    "schema": 1,
+    "contract_sha256": "8f524002fc5fd900f10e2851d0edd475b4e6ecfe3e6db2a1335573a6e3b7a579",
+    "positive": [
+        {
+            "type": "readiness_input",
+            "value": {
+                "action": "status"
+            }
+        },
+        {
+            "type": "authorization_projection",
+            "value": {
+                "schema": 2,
+                "qualification_protocol": "content-management-existing-v2",
+                "protocol_contracts_sha256": {
+                    "qualification": "1e652a77e369a341c4fa1d179ff6c69379b84661bdcd787850708adc6c01630e",
+                    "report": "dd20dc082d006e4e53d02eddb5cdfc1543e3056281ef304dd750687856030114",
+                    "evidence": "e511e4c9bc62eb839c68b59e64996e6b0d013f61ad8961520486ad821d4de6ff",
+                    "source_transfer": "c99c352961aaf7f289352e6aeacd4ad914747fdff69072cf54151c4d1e2f64d5",
+                    "source_context": "3996f36dc37181d1952b31ad32a2a231823954b4c058be1d3cb18e927a78b6c1",
+                    "wire_registry": "dd375ecdc7e33b8e8e8f80ed0846ab76a5f3ad038be83d349b2902f8ae8fcef6"
+                },
+                "operation_id": "11111111-1111-4111-8111-111111111111",
+                "reviewed_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "original_delegation_request_id": "33333333-3333-4333-8333-333333333333",
+                "original_resource_authorization_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                "original_resource_authorization_expires_at": 1800001500,
+                "state": "bound-blocked",
+                "authorization_binding_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "production_qualified": false,
+                "consumer_binding_issued": false
+            }
+        },
+        {
+            "type": "readiness_output",
+            "value": {
+                "schema": 2,
+                "dashboard_origin": "https://wpcontrol.mrndev.io",
+                "qualification_protocol": "content-management-existing-v2",
+                "lifetime_domain": "original-resource-authorization-v2",
+                "protocol_contracts_sha256": {
+                    "qualification": "1e652a77e369a341c4fa1d179ff6c69379b84661bdcd787850708adc6c01630e",
+                    "report": "dd20dc082d006e4e53d02eddb5cdfc1543e3056281ef304dd750687856030114",
+                    "evidence": "e511e4c9bc62eb839c68b59e64996e6b0d013f61ad8961520486ad821d4de6ff",
+                    "source_transfer": "c99c352961aaf7f289352e6aeacd4ad914747fdff69072cf54151c4d1e2f64d5",
+                    "source_context": "3996f36dc37181d1952b31ad32a2a231823954b4c058be1d3cb18e927a78b6c1",
+                    "wire_registry": "dd375ecdc7e33b8e8e8f80ed0846ab76a5f3ad038be83d349b2902f8ae8fcef6"
+                },
+                "original_authorization_contract_sha256": "3a77cf8ad2131fd1e2255e74d2a3dcd9ca1d18051e5acc1d51bdb6b7d6fa73c2",
+                "dispatch_contract_sha256": "8f524002fc5fd900f10e2851d0edd475b4e6ecfe3e6db2a1335573a6e3b7a579",
+                "provider_source_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "authorization_policy_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "observed_at": 1800000000,
+                "expires_at": 1800000030,
+                "production_qualified": false,
+                "consumer_binding_issued": false,
+                "binding_readiness": "ready",
+                "coherence_ready": true,
+                "coherence_epoch_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "source_selected_preview_enabled": true,
+                "machine_binding_enabled": true
+            }
+        },
+        {
+            "type": "readiness_output",
+            "value": {
+                "schema": 2,
+                "dashboard_origin": "https://wpcontrol.mrndev.io",
+                "qualification_protocol": "content-management-existing-v2",
+                "lifetime_domain": "original-resource-authorization-v2",
+                "protocol_contracts_sha256": {
+                    "qualification": "1e652a77e369a341c4fa1d179ff6c69379b84661bdcd787850708adc6c01630e",
+                    "report": "dd20dc082d006e4e53d02eddb5cdfc1543e3056281ef304dd750687856030114",
+                    "evidence": "e511e4c9bc62eb839c68b59e64996e6b0d013f61ad8961520486ad821d4de6ff",
+                    "source_transfer": "c99c352961aaf7f289352e6aeacd4ad914747fdff69072cf54151c4d1e2f64d5",
+                    "source_context": "3996f36dc37181d1952b31ad32a2a231823954b4c058be1d3cb18e927a78b6c1",
+                    "wire_registry": "dd375ecdc7e33b8e8e8f80ed0846ab76a5f3ad038be83d349b2902f8ae8fcef6"
+                },
+                "original_authorization_contract_sha256": "3a77cf8ad2131fd1e2255e74d2a3dcd9ca1d18051e5acc1d51bdb6b7d6fa73c2",
+                "dispatch_contract_sha256": "8f524002fc5fd900f10e2851d0edd475b4e6ecfe3e6db2a1335573a6e3b7a579",
+                "provider_source_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "authorization_policy_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "observed_at": 1800000000,
+                "expires_at": 1800000030,
+                "production_qualified": false,
+                "consumer_binding_issued": false,
+                "binding_readiness": "disabled",
+                "coherence_ready": true,
+                "coherence_epoch_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "source_selected_preview_enabled": false,
+                "machine_binding_enabled": false
+            }
+        },
+        {
+            "type": "readiness_output",
+            "value": {
+                "schema": 2,
+                "dashboard_origin": "https://wpcontrol.mrndev.io",
+                "qualification_protocol": "content-management-existing-v2",
+                "lifetime_domain": "original-resource-authorization-v2",
+                "protocol_contracts_sha256": {
+                    "qualification": "1e652a77e369a341c4fa1d179ff6c69379b84661bdcd787850708adc6c01630e",
+                    "report": "dd20dc082d006e4e53d02eddb5cdfc1543e3056281ef304dd750687856030114",
+                    "evidence": "e511e4c9bc62eb839c68b59e64996e6b0d013f61ad8961520486ad821d4de6ff",
+                    "source_transfer": "c99c352961aaf7f289352e6aeacd4ad914747fdff69072cf54151c4d1e2f64d5",
+                    "source_context": "3996f36dc37181d1952b31ad32a2a231823954b4c058be1d3cb18e927a78b6c1",
+                    "wire_registry": "dd375ecdc7e33b8e8e8f80ed0846ab76a5f3ad038be83d349b2902f8ae8fcef6"
+                },
+                "original_authorization_contract_sha256": "3a77cf8ad2131fd1e2255e74d2a3dcd9ca1d18051e5acc1d51bdb6b7d6fa73c2",
+                "dispatch_contract_sha256": "8f524002fc5fd900f10e2851d0edd475b4e6ecfe3e6db2a1335573a6e3b7a579",
+                "provider_source_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "authorization_policy_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "observed_at": 1800000000,
+                "expires_at": 1800000030,
+                "production_qualified": false,
+                "consumer_binding_issued": false,
+                "binding_readiness": "disabled",
+                "coherence_ready": false,
+                "coherence_epoch_sha256": null,
+                "source_selected_preview_enabled": false,
+                "machine_binding_enabled": false
+            }
+        },
+        {
+            "type": "readiness_output",
+            "value": {
+                "schema": 2,
+                "dashboard_origin": "https://wpcontrol.mrndev.io",
+                "qualification_protocol": "content-management-existing-v2",
+                "lifetime_domain": "original-resource-authorization-v2",
+                "protocol_contracts_sha256": {
+                    "qualification": "1e652a77e369a341c4fa1d179ff6c69379b84661bdcd787850708adc6c01630e",
+                    "report": "dd20dc082d006e4e53d02eddb5cdfc1543e3056281ef304dd750687856030114",
+                    "evidence": "e511e4c9bc62eb839c68b59e64996e6b0d013f61ad8961520486ad821d4de6ff",
+                    "source_transfer": "c99c352961aaf7f289352e6aeacd4ad914747fdff69072cf54151c4d1e2f64d5",
+                    "source_context": "3996f36dc37181d1952b31ad32a2a231823954b4c058be1d3cb18e927a78b6c1",
+                    "wire_registry": "dd375ecdc7e33b8e8e8f80ed0846ab76a5f3ad038be83d349b2902f8ae8fcef6"
+                },
+                "original_authorization_contract_sha256": "3a77cf8ad2131fd1e2255e74d2a3dcd9ca1d18051e5acc1d51bdb6b7d6fa73c2",
+                "dispatch_contract_sha256": "8f524002fc5fd900f10e2851d0edd475b4e6ecfe3e6db2a1335573a6e3b7a579",
+                "provider_source_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "authorization_policy_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "observed_at": 1800000000,
+                "expires_at": 1800000030,
+                "production_qualified": false,
+                "consumer_binding_issued": false,
+                "binding_readiness": "blocked",
+                "coherence_ready": false,
+                "coherence_epoch_sha256": null,
+                "source_selected_preview_enabled": false,
+                "machine_binding_enabled": false
+            }
+        },
+        {
+            "type": "authorization_input",
+            "value": {
+                "signed_request": {
+                    "key_id": "identity-fixture",
+                    "payload_base64": "eyJhY3Rpb24iOiJiaW5kLWV4aXN0aW5nLW1hbmFnZW1lbnQtYXV0aG9yaXphdGlvbiIsImF1ZGllbmNlIjoiaHR0cHM6Ly93cGNvbnRyb2wubXJuZGV2LmlvIiwiYXV0aG9yaXphdGlvbl9wb2xpY3lfc2hhMjU2IjoiYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYSIsImV4cGlyZXNfYXQiOjE4MDAwMDAwNjAsImlzc3VlZF9hdCI6MTgwMDAwMDAwMCwiaXNzdWVyIjoiaHR0cHM6Ly9vcGVyYXRpb25zLm1ybndlYmRlc2lnbnMuY29tIiwibGlmZXRpbWVfZG9tYWluIjoib3JpZ2luYWwtcmVzb3VyY2UtYXV0aG9yaXphdGlvbi12MiIsIm5vbmNlIjoiZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZSIsIm9wZXJhdGlvbl9pZCI6IjExMTExMTExLTExMTEtNDExMS04MTExLTExMTExMTExMTExMSIsIm9yaWdpbmFsX2RlbGVnYXRpb25fcmVxdWVzdF9pZCI6IjMzMzMzMzMzLTMzMzMtNDMzMy04MzMzLTMzMzMzMzMzMzMzMyIsIm9yaWdpbmFsX3Jlc291cmNlX2F1dGhvcml6YXRpb25fY3VycmVudCI6dHJ1ZSwib3JpZ2luYWxfcmVzb3VyY2VfYXV0aG9yaXphdGlvbl9leHBpcmVzX2F0IjoxODAwMDAxNTAwLCJvcmlnaW5hbF9yZXNvdXJjZV9hdXRob3JpemF0aW9uX3NoYTI1NiI6ImZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmYiLCJwcm90b2NvbF9jb250cmFjdHNfc2hhMjU2Ijp7ImV2aWRlbmNlIjoiZTUxMWU0YzliYzYyZWI4MzljNjhiNTllNjQ5OTZlNmIwZDAxM2Y2MWFkODk2MTUyMDQ4NmFkODIxZDRkZTZmZiIsInF1YWxpZmljYXRpb24iOiIxZTY1MmE3N2UzNjlhMzQxYzRmYTFkMTc5ZmY2YzY5Mzc5Yjg0NjYxYmRjZDc4Nzg1MDcwOGFkYzZjMDE2MzBlIiwicmVwb3J0IjoiZGQyMGRjMDgyZDAwNmU0ZTUzZDAyZWRkYjVjZGZjMTU0M2UzMDU2MjgxZWYzMDRkZDc1MDY4Nzg1NjAzMDExNCIsInNvdXJjZV9jb250ZXh0IjoiMzk5NmYzNmRjMzcxODFkMTk1MmIzMWFkMzJhMmEyMzE4MjM5NTRiNGMwNThiZTFkM2NiMThlOTI3YTc4YjZjMSIsInNvdXJjZV90cmFuc2ZlciI6ImM5OWMzNTI5NjFhYWY3ZjI4OTM1MmU2YWVhY2Q0YWQ5MTQ3NDdmZGZmNjkwNzJjZjU0MTUxYzRkMWUyZjY0ZDUiLCJ3aXJlX3JlZ2lzdHJ5IjoiZGQzNzVlY2RjN2UzM2I4ZThlOGY4MGVkMDg0NmFiNzZhNWYzYWQwMzhiZTgzZDM0OWIyOTAyZjhhZThmY2VmNiJ9LCJwcm92aWRlcl9zb3VyY2Vfc2hhIjoiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYiIsInF1YWxpZmljYXRpb25fcHJvdG9jb2wiOiJjb250ZW50LW1hbmFnZW1lbnQtZXhpc3RpbmctdjIiLCJyZXF1ZXN0X2lkIjoiMjIyMjIyMjItMjIyMi00MjIyLTgyMjItMjIyMjIyMjIyMjIyIiwicmVxdWVzdGVyX2JpbmRpbmdfc2hhMjU2IjoiYmRmZjllY2FjYzA1YzMxNzgxNjU2NzllYTI1NDI4NWNhN2QxMmRjNzkzNGFkNGExMmZlN2RmYTM4NThiYjM5YiIsInJldmlld2VkX2RpZ2VzdCI6ImNjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2MiLCJzY2hlbWEiOjJ9",
+                    "signature_base64": "X40FzlNpscfx13nq/rl9QphobSAkO6OscmsBOuKpYUeJ3wKVLWIeFlio+ad7eQX7BmsFnIg3yseXCMrbcMvqBw=="
+                }
+            }
+        }
+    ],
+    "negative": [
+        {
+            "label": "missing projection schema",
+            "type": "authorization_projection",
+            "value": {
+                "qualification_protocol": "content-management-existing-v2",
+                "protocol_contracts_sha256": {
+                    "qualification": "1e652a77e369a341c4fa1d179ff6c69379b84661bdcd787850708adc6c01630e",
+                    "report": "dd20dc082d006e4e53d02eddb5cdfc1543e3056281ef304dd750687856030114",
+                    "evidence": "e511e4c9bc62eb839c68b59e64996e6b0d013f61ad8961520486ad821d4de6ff",
+                    "source_transfer": "c99c352961aaf7f289352e6aeacd4ad914747fdff69072cf54151c4d1e2f64d5",
+                    "source_context": "3996f36dc37181d1952b31ad32a2a231823954b4c058be1d3cb18e927a78b6c1",
+                    "wire_registry": "dd375ecdc7e33b8e8e8f80ed0846ab76a5f3ad038be83d349b2902f8ae8fcef6"
+                },
+                "operation_id": "11111111-1111-4111-8111-111111111111",
+                "reviewed_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "original_delegation_request_id": "33333333-3333-4333-8333-333333333333",
+                "original_resource_authorization_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                "original_resource_authorization_expires_at": 1800001500,
+                "state": "bound-blocked",
+                "authorization_binding_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "production_qualified": false,
+                "consumer_binding_issued": false
+            }
+        },
+        {
+            "label": "missing projection qualification_protocol",
+            "type": "authorization_projection",
+            "value": {
+                "schema": 2,
+                "protocol_contracts_sha256": {
+                    "qualification": "1e652a77e369a341c4fa1d179ff6c69379b84661bdcd787850708adc6c01630e",
+                    "report": "dd20dc082d006e4e53d02eddb5cdfc1543e3056281ef304dd750687856030114",
+                    "evidence": "e511e4c9bc62eb839c68b59e64996e6b0d013f61ad8961520486ad821d4de6ff",
+                    "source_transfer": "c99c352961aaf7f289352e6aeacd4ad914747fdff69072cf54151c4d1e2f64d5",
+                    "source_context": "3996f36dc37181d1952b31ad32a2a231823954b4c058be1d3cb18e927a78b6c1",
+                    "wire_registry": "dd375ecdc7e33b8e8e8f80ed0846ab76a5f3ad038be83d349b2902f8ae8fcef6"
+                },
+                "operation_id": "11111111-1111-4111-8111-111111111111",
+                "reviewed_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "original_delegation_request_id": "33333333-3333-4333-8333-333333333333",
+                "original_resource_authorization_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                "original_resource_authorization_expires_at": 1800001500,
+                "state": "bound-blocked",
+                "authorization_binding_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "production_qualified": false,
+                "consumer_binding_issued": false
+            }
+        },
+        {
+            "label": "missing projection protocol_contracts_sha256",
+            "type": "authorization_projection",
+            "value": {
+                "schema": 2,
+                "qualification_protocol": "content-management-existing-v2",
+                "operation_id": "11111111-1111-4111-8111-111111111111",
+                "reviewed_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "original_delegation_request_id": "33333333-3333-4333-8333-333333333333",
+                "original_resource_authorization_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                "original_resource_authorization_expires_at": 1800001500,
+                "state": "bound-blocked",
+                "authorization_binding_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "production_qualified": false,
+                "consumer_binding_issued": false
+            }
+        },
+        {
+            "label": "missing projection operation_id",
+            "type": "authorization_projection",
+            "value": {
+                "schema": 2,
+                "qualification_protocol": "content-management-existing-v2",
+                "protocol_contracts_sha256": {
+                    "qualification": "1e652a77e369a341c4fa1d179ff6c69379b84661bdcd787850708adc6c01630e",
+                    "report": "dd20dc082d006e4e53d02eddb5cdfc1543e3056281ef304dd750687856030114",
+                    "evidence": "e511e4c9bc62eb839c68b59e64996e6b0d013f61ad8961520486ad821d4de6ff",
+                    "source_transfer": "c99c352961aaf7f289352e6aeacd4ad914747fdff69072cf54151c4d1e2f64d5",
+                    "source_context": "3996f36dc37181d1952b31ad32a2a231823954b4c058be1d3cb18e927a78b6c1",
+                    "wire_registry": "dd375ecdc7e33b8e8e8f80ed0846ab76a5f3ad038be83d349b2902f8ae8fcef6"
+                },
+                "reviewed_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "original_delegation_request_id": "33333333-3333-4333-8333-333333333333",
+                "original_resource_authorization_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                "original_resource_authorization_expires_at": 1800001500,
+                "state": "bound-blocked",
+                "authorization_binding_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "production_qualified": false,
+                "consumer_binding_issued": false
+            }
+        },
+        {
+            "label": "missing projection reviewed_digest",
+            "type": "authorization_projection",
+            "value": {
+                "schema": 2,
+                "qualification_protocol": "content-management-existing-v2",
+                "protocol_contracts_sha256": {
+                    "qualification": "1e652a77e369a341c4fa1d179ff6c69379b84661bdcd787850708adc6c01630e",
+                    "report": "dd20dc082d006e4e53d02eddb5cdfc1543e3056281ef304dd750687856030114",
+                    "evidence": "e511e4c9bc62eb839c68b59e64996e6b0d013f61ad8961520486ad821d4de6ff",
+                    "source_transfer": "c99c352961aaf7f289352e6aeacd4ad914747fdff69072cf54151c4d1e2f64d5",
+                    "source_context": "3996f36dc37181d1952b31ad32a2a231823954b4c058be1d3cb18e927a78b6c1",
+                    "wire_registry": "dd375ecdc7e33b8e8e8f80ed0846ab76a5f3ad038be83d349b2902f8ae8fcef6"
+                },
+                "operation_id": "11111111-1111-4111-8111-111111111111",
+                "original_delegation_request_id": "33333333-3333-4333-8333-333333333333",
+                "original_resource_authorization_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                "original_resource_authorization_expires_at": 1800001500,
+                "state": "bound-blocked",
+                "authorization_binding_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "production_qualified": false,
+                "consumer_binding_issued": false
+            }
+        },
+        {
+            "label": "missing projection original_delegation_request_id",
+            "type": "authorization_projection",
+            "value": {
+                "schema": 2,
+                "qualification_protocol": "content-management-existing-v2",
+                "protocol_contracts_sha256": {
+                    "qualification": "1e652a77e369a341c4fa1d179ff6c69379b84661bdcd787850708adc6c01630e",
+                    "report": "dd20dc082d006e4e53d02eddb5cdfc1543e3056281ef304dd750687856030114",
+                    "evidence": "e511e4c9bc62eb839c68b59e64996e6b0d013f61ad8961520486ad821d4de6ff",
+                    "source_transfer": "c99c352961aaf7f289352e6aeacd4ad914747fdff69072cf54151c4d1e2f64d5",
+                    "source_context": "3996f36dc37181d1952b31ad32a2a231823954b4c058be1d3cb18e927a78b6c1",
+                    "wire_registry": "dd375ecdc7e33b8e8e8f80ed0846ab76a5f3ad038be83d349b2902f8ae8fcef6"
+                },
+                "operation_id": "11111111-1111-4111-8111-111111111111",
+                "reviewed_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "original_resource_authorization_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                "original_resource_authorization_expires_at": 1800001500,
+                "state": "bound-blocked",
+                "authorization_binding_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "production_qualified": false,
+                "consumer_binding_issued": false
+            }
+        },
+        {
+            "label": "missing projection original_resource_authorization_sha256",
+            "type": "authorization_projection",
+            "value": {
+                "schema": 2,
+                "qualification_protocol": "content-management-existing-v2",
+                "protocol_contracts_sha256": {
+                    "qualification": "1e652a77e369a341c4fa1d179ff6c69379b84661bdcd787850708adc6c01630e",
+                    "report": "dd20dc082d006e4e53d02eddb5cdfc1543e3056281ef304dd750687856030114",
+                    "evidence": "e511e4c9bc62eb839c68b59e64996e6b0d013f61ad8961520486ad821d4de6ff",
+                    "source_transfer": "c99c352961aaf7f289352e6aeacd4ad914747fdff69072cf54151c4d1e2f64d5",
+                    "source_context": "3996f36dc37181d1952b31ad32a2a231823954b4c058be1d3cb18e927a78b6c1",
+                    "wire_registry": "dd375ecdc7e33b8e8e8f80ed0846ab76a5f3ad038be83d349b2902f8ae8fcef6"
+                },
+                "operation_id": "11111111-1111-4111-8111-111111111111",
+                "reviewed_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "original_delegation_request_id": "33333333-3333-4333-8333-333333333333",
+                "original_resource_authorization_expires_at": 1800001500,
+                "state": "bound-blocked",
+                "authorization_binding_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "production_qualified": false,
+                "consumer_binding_issued": false
+            }
+        },
+        {
+            "label": "missing projection original_resource_authorization_expires_at",
+            "type": "authorization_projection",
+            "value": {
+                "schema": 2,
+                "qualification_protocol": "content-management-existing-v2",
+                "protocol_contracts_sha256": {
+                    "qualification": "1e652a77e369a341c4fa1d179ff6c69379b84661bdcd787850708adc6c01630e",
+                    "report": "dd20dc082d006e4e53d02eddb5cdfc1543e3056281ef304dd750687856030114",
+                    "evidence": "e511e4c9bc62eb839c68b59e64996e6b0d013f61ad8961520486ad821d4de6ff",
+                    "source_transfer": "c99c352961aaf7f289352e6aeacd4ad914747fdff69072cf54151c4d1e2f64d5",
+                    "source_context": "3996f36dc37181d1952b31ad32a2a231823954b4c058be1d3cb18e927a78b6c1",
+                    "wire_registry": "dd375ecdc7e33b8e8e8f80ed0846ab76a5f3ad038be83d349b2902f8ae8fcef6"
+                },
+                "operation_id": "11111111-1111-4111-8111-111111111111",
+                "reviewed_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "original_delegation_request_id": "33333333-3333-4333-8333-333333333333",
+                "original_resource_authorization_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                "state": "bound-blocked",
+                "authorization_binding_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "production_qualified": false,
+                "consumer_binding_issued": false
+            }
+        },
+        {
+            "label": "missing projection state",
+            "type": "authorization_projection",
+            "value": {
+                "schema": 2,
+                "qualification_protocol": "content-management-existing-v2",
+                "protocol_contracts_sha256": {
+                    "qualification": "1e652a77e369a341c4fa1d179ff6c69379b84661bdcd787850708adc6c01630e",
+                    "report": "dd20dc082d006e4e53d02eddb5cdfc1543e3056281ef304dd750687856030114",
+                    "evidence": "e511e4c9bc62eb839c68b59e64996e6b0d013f61ad8961520486ad821d4de6ff",
+                    "source_transfer": "c99c352961aaf7f289352e6aeacd4ad914747fdff69072cf54151c4d1e2f64d5",
+                    "source_context": "3996f36dc37181d1952b31ad32a2a231823954b4c058be1d3cb18e927a78b6c1",
+                    "wire_registry": "dd375ecdc7e33b8e8e8f80ed0846ab76a5f3ad038be83d349b2902f8ae8fcef6"
+                },
+                "operation_id": "11111111-1111-4111-8111-111111111111",
+                "reviewed_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "original_delegation_request_id": "33333333-3333-4333-8333-333333333333",
+                "original_resource_authorization_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                "original_resource_authorization_expires_at": 1800001500,
+                "authorization_binding_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "production_qualified": false,
+                "consumer_binding_issued": false
+            }
+        },
+        {
+            "label": "missing projection authorization_binding_sha256",
+            "type": "authorization_projection",
+            "value": {
+                "schema": 2,
+                "qualification_protocol": "content-management-existing-v2",
+                "protocol_contracts_sha256": {
+                    "qualification": "1e652a77e369a341c4fa1d179ff6c69379b84661bdcd787850708adc6c01630e",
+                    "report": "dd20dc082d006e4e53d02eddb5cdfc1543e3056281ef304dd750687856030114",
+                    "evidence": "e511e4c9bc62eb839c68b59e64996e6b0d013f61ad8961520486ad821d4de6ff",
+                    "source_transfer": "c99c352961aaf7f289352e6aeacd4ad914747fdff69072cf54151c4d1e2f64d5",
+                    "source_context": "3996f36dc37181d1952b31ad32a2a231823954b4c058be1d3cb18e927a78b6c1",
+                    "wire_registry": "dd375ecdc7e33b8e8e8f80ed0846ab76a5f3ad038be83d349b2902f8ae8fcef6"
+                },
+                "operation_id": "11111111-1111-4111-8111-111111111111",
+                "reviewed_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "original_delegation_request_id": "33333333-3333-4333-8333-333333333333",
+                "original_resource_authorization_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                "original_resource_authorization_expires_at": 1800001500,
+                "state": "bound-blocked",
+                "production_qualified": false,
+                "consumer_binding_issued": false
+            }
+        },
+        {
+            "label": "missing projection production_qualified",
+            "type": "authorization_projection",
+            "value": {
+                "schema": 2,
+                "qualification_protocol": "content-management-existing-v2",
+                "protocol_contracts_sha256": {
+                    "qualification": "1e652a77e369a341c4fa1d179ff6c69379b84661bdcd787850708adc6c01630e",
+                    "report": "dd20dc082d006e4e53d02eddb5cdfc1543e3056281ef304dd750687856030114",
+                    "evidence": "e511e4c9bc62eb839c68b59e64996e6b0d013f61ad8961520486ad821d4de6ff",
+                    "source_transfer": "c99c352961aaf7f289352e6aeacd4ad914747fdff69072cf54151c4d1e2f64d5",
+                    "source_context": "3996f36dc37181d1952b31ad32a2a231823954b4c058be1d3cb18e927a78b6c1",
+                    "wire_registry": "dd375ecdc7e33b8e8e8f80ed0846ab76a5f3ad038be83d349b2902f8ae8fcef6"
+                },
+                "operation_id": "11111111-1111-4111-8111-111111111111",
+                "reviewed_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "original_delegation_request_id": "33333333-3333-4333-8333-333333333333",
+                "original_resource_authorization_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                "original_resource_authorization_expires_at": 1800001500,
+                "state": "bound-blocked",
+                "authorization_binding_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "consumer_binding_issued": false
+            }
+        },
+        {
+            "label": "missing projection consumer_binding_issued",
+            "type": "authorization_projection",
+            "value": {
+                "schema": 2,
+                "qualification_protocol": "content-management-existing-v2",
+                "protocol_contracts_sha256": {
+                    "qualification": "1e652a77e369a341c4fa1d179ff6c69379b84661bdcd787850708adc6c01630e",
+                    "report": "dd20dc082d006e4e53d02eddb5cdfc1543e3056281ef304dd750687856030114",
+                    "evidence": "e511e4c9bc62eb839c68b59e64996e6b0d013f61ad8961520486ad821d4de6ff",
+                    "source_transfer": "c99c352961aaf7f289352e6aeacd4ad914747fdff69072cf54151c4d1e2f64d5",
+                    "source_context": "3996f36dc37181d1952b31ad32a2a231823954b4c058be1d3cb18e927a78b6c1",
+                    "wire_registry": "dd375ecdc7e33b8e8e8f80ed0846ab76a5f3ad038be83d349b2902f8ae8fcef6"
+                },
+                "operation_id": "11111111-1111-4111-8111-111111111111",
+                "reviewed_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "original_delegation_request_id": "33333333-3333-4333-8333-333333333333",
+                "original_resource_authorization_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                "original_resource_authorization_expires_at": 1800001500,
+                "state": "bound-blocked",
+                "authorization_binding_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "production_qualified": false
+            }
+        },
+        {
+            "label": "invalid ready coherence_ready",
+            "type": "readiness_output",
+            "value": {
+                "schema": 2,
+                "dashboard_origin": "https://wpcontrol.mrndev.io",
+                "qualification_protocol": "content-management-existing-v2",
+                "lifetime_domain": "original-resource-authorization-v2",
+                "protocol_contracts_sha256": {
+                    "qualification": "1e652a77e369a341c4fa1d179ff6c69379b84661bdcd787850708adc6c01630e",
+                    "report": "dd20dc082d006e4e53d02eddb5cdfc1543e3056281ef304dd750687856030114",
+                    "evidence": "e511e4c9bc62eb839c68b59e64996e6b0d013f61ad8961520486ad821d4de6ff",
+                    "source_transfer": "c99c352961aaf7f289352e6aeacd4ad914747fdff69072cf54151c4d1e2f64d5",
+                    "source_context": "3996f36dc37181d1952b31ad32a2a231823954b4c058be1d3cb18e927a78b6c1",
+                    "wire_registry": "dd375ecdc7e33b8e8e8f80ed0846ab76a5f3ad038be83d349b2902f8ae8fcef6"
+                },
+                "original_authorization_contract_sha256": "3a77cf8ad2131fd1e2255e74d2a3dcd9ca1d18051e5acc1d51bdb6b7d6fa73c2",
+                "dispatch_contract_sha256": "8f524002fc5fd900f10e2851d0edd475b4e6ecfe3e6db2a1335573a6e3b7a579",
+                "provider_source_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "authorization_policy_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "observed_at": 1800000000,
+                "expires_at": 1800000030,
+                "production_qualified": false,
+                "consumer_binding_issued": false,
+                "binding_readiness": "ready",
+                "coherence_ready": false,
+                "coherence_epoch_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "source_selected_preview_enabled": true,
+                "machine_binding_enabled": true
+            }
+        },
+        {
+            "label": "invalid ready coherence_epoch_sha256",
+            "type": "readiness_output",
+            "value": {
+                "schema": 2,
+                "dashboard_origin": "https://wpcontrol.mrndev.io",
+                "qualification_protocol": "content-management-existing-v2",
+                "lifetime_domain": "original-resource-authorization-v2",
+                "protocol_contracts_sha256": {
+                    "qualification": "1e652a77e369a341c4fa1d179ff6c69379b84661bdcd787850708adc6c01630e",
+                    "report": "dd20dc082d006e4e53d02eddb5cdfc1543e3056281ef304dd750687856030114",
+                    "evidence": "e511e4c9bc62eb839c68b59e64996e6b0d013f61ad8961520486ad821d4de6ff",
+                    "source_transfer": "c99c352961aaf7f289352e6aeacd4ad914747fdff69072cf54151c4d1e2f64d5",
+                    "source_context": "3996f36dc37181d1952b31ad32a2a231823954b4c058be1d3cb18e927a78b6c1",
+                    "wire_registry": "dd375ecdc7e33b8e8e8f80ed0846ab76a5f3ad038be83d349b2902f8ae8fcef6"
+                },
+                "original_authorization_contract_sha256": "3a77cf8ad2131fd1e2255e74d2a3dcd9ca1d18051e5acc1d51bdb6b7d6fa73c2",
+                "dispatch_contract_sha256": "8f524002fc5fd900f10e2851d0edd475b4e6ecfe3e6db2a1335573a6e3b7a579",
+                "provider_source_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "authorization_policy_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "observed_at": 1800000000,
+                "expires_at": 1800000030,
+                "production_qualified": false,
+                "consumer_binding_issued": false,
+                "binding_readiness": "ready",
+                "coherence_ready": true,
+                "coherence_epoch_sha256": null,
+                "source_selected_preview_enabled": true,
+                "machine_binding_enabled": true
+            }
+        },
+        {
+            "label": "invalid ready source_selected_preview_enabled",
+            "type": "readiness_output",
+            "value": {
+                "schema": 2,
+                "dashboard_origin": "https://wpcontrol.mrndev.io",
+                "qualification_protocol": "content-management-existing-v2",
+                "lifetime_domain": "original-resource-authorization-v2",
+                "protocol_contracts_sha256": {
+                    "qualification": "1e652a77e369a341c4fa1d179ff6c69379b84661bdcd787850708adc6c01630e",
+                    "report": "dd20dc082d006e4e53d02eddb5cdfc1543e3056281ef304dd750687856030114",
+                    "evidence": "e511e4c9bc62eb839c68b59e64996e6b0d013f61ad8961520486ad821d4de6ff",
+                    "source_transfer": "c99c352961aaf7f289352e6aeacd4ad914747fdff69072cf54151c4d1e2f64d5",
+                    "source_context": "3996f36dc37181d1952b31ad32a2a231823954b4c058be1d3cb18e927a78b6c1",
+                    "wire_registry": "dd375ecdc7e33b8e8e8f80ed0846ab76a5f3ad038be83d349b2902f8ae8fcef6"
+                },
+                "original_authorization_contract_sha256": "3a77cf8ad2131fd1e2255e74d2a3dcd9ca1d18051e5acc1d51bdb6b7d6fa73c2",
+                "dispatch_contract_sha256": "8f524002fc5fd900f10e2851d0edd475b4e6ecfe3e6db2a1335573a6e3b7a579",
+                "provider_source_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "authorization_policy_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "observed_at": 1800000000,
+                "expires_at": 1800000030,
+                "production_qualified": false,
+                "consumer_binding_issued": false,
+                "binding_readiness": "ready",
+                "coherence_ready": true,
+                "coherence_epoch_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "source_selected_preview_enabled": false,
+                "machine_binding_enabled": true
+            }
+        },
+        {
+            "label": "invalid ready machine_binding_enabled",
+            "type": "readiness_output",
+            "value": {
+                "schema": 2,
+                "dashboard_origin": "https://wpcontrol.mrndev.io",
+                "qualification_protocol": "content-management-existing-v2",
+                "lifetime_domain": "original-resource-authorization-v2",
+                "protocol_contracts_sha256": {
+                    "qualification": "1e652a77e369a341c4fa1d179ff6c69379b84661bdcd787850708adc6c01630e",
+                    "report": "dd20dc082d006e4e53d02eddb5cdfc1543e3056281ef304dd750687856030114",
+                    "evidence": "e511e4c9bc62eb839c68b59e64996e6b0d013f61ad8961520486ad821d4de6ff",
+                    "source_transfer": "c99c352961aaf7f289352e6aeacd4ad914747fdff69072cf54151c4d1e2f64d5",
+                    "source_context": "3996f36dc37181d1952b31ad32a2a231823954b4c058be1d3cb18e927a78b6c1",
+                    "wire_registry": "dd375ecdc7e33b8e8e8f80ed0846ab76a5f3ad038be83d349b2902f8ae8fcef6"
+                },
+                "original_authorization_contract_sha256": "3a77cf8ad2131fd1e2255e74d2a3dcd9ca1d18051e5acc1d51bdb6b7d6fa73c2",
+                "dispatch_contract_sha256": "8f524002fc5fd900f10e2851d0edd475b4e6ecfe3e6db2a1335573a6e3b7a579",
+                "provider_source_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "authorization_policy_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "observed_at": 1800000000,
+                "expires_at": 1800000030,
+                "production_qualified": false,
+                "consumer_binding_issued": false,
+                "binding_readiness": "ready",
+                "coherence_ready": true,
+                "coherence_epoch_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "source_selected_preview_enabled": true,
+                "machine_binding_enabled": false
+            }
+        },
+        {
+            "label": "invalid ready production_qualified",
+            "type": "readiness_output",
+            "value": {
+                "schema": 2,
+                "dashboard_origin": "https://wpcontrol.mrndev.io",
+                "qualification_protocol": "content-management-existing-v2",
+                "lifetime_domain": "original-resource-authorization-v2",
+                "protocol_contracts_sha256": {
+                    "qualification": "1e652a77e369a341c4fa1d179ff6c69379b84661bdcd787850708adc6c01630e",
+                    "report": "dd20dc082d006e4e53d02eddb5cdfc1543e3056281ef304dd750687856030114",
+                    "evidence": "e511e4c9bc62eb839c68b59e64996e6b0d013f61ad8961520486ad821d4de6ff",
+                    "source_transfer": "c99c352961aaf7f289352e6aeacd4ad914747fdff69072cf54151c4d1e2f64d5",
+                    "source_context": "3996f36dc37181d1952b31ad32a2a231823954b4c058be1d3cb18e927a78b6c1",
+                    "wire_registry": "dd375ecdc7e33b8e8e8f80ed0846ab76a5f3ad038be83d349b2902f8ae8fcef6"
+                },
+                "original_authorization_contract_sha256": "3a77cf8ad2131fd1e2255e74d2a3dcd9ca1d18051e5acc1d51bdb6b7d6fa73c2",
+                "dispatch_contract_sha256": "8f524002fc5fd900f10e2851d0edd475b4e6ecfe3e6db2a1335573a6e3b7a579",
+                "provider_source_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "authorization_policy_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "observed_at": 1800000000,
+                "expires_at": 1800000030,
+                "production_qualified": true,
+                "consumer_binding_issued": false,
+                "binding_readiness": "ready",
+                "coherence_ready": true,
+                "coherence_epoch_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "source_selected_preview_enabled": true,
+                "machine_binding_enabled": true
+            }
+        },
+        {
+            "label": "invalid ready consumer_binding_issued",
+            "type": "readiness_output",
+            "value": {
+                "schema": 2,
+                "dashboard_origin": "https://wpcontrol.mrndev.io",
+                "qualification_protocol": "content-management-existing-v2",
+                "lifetime_domain": "original-resource-authorization-v2",
+                "protocol_contracts_sha256": {
+                    "qualification": "1e652a77e369a341c4fa1d179ff6c69379b84661bdcd787850708adc6c01630e",
+                    "report": "dd20dc082d006e4e53d02eddb5cdfc1543e3056281ef304dd750687856030114",
+                    "evidence": "e511e4c9bc62eb839c68b59e64996e6b0d013f61ad8961520486ad821d4de6ff",
+                    "source_transfer": "c99c352961aaf7f289352e6aeacd4ad914747fdff69072cf54151c4d1e2f64d5",
+                    "source_context": "3996f36dc37181d1952b31ad32a2a231823954b4c058be1d3cb18e927a78b6c1",
+                    "wire_registry": "dd375ecdc7e33b8e8e8f80ed0846ab76a5f3ad038be83d349b2902f8ae8fcef6"
+                },
+                "original_authorization_contract_sha256": "3a77cf8ad2131fd1e2255e74d2a3dcd9ca1d18051e5acc1d51bdb6b7d6fa73c2",
+                "dispatch_contract_sha256": "8f524002fc5fd900f10e2851d0edd475b4e6ecfe3e6db2a1335573a6e3b7a579",
+                "provider_source_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "authorization_policy_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "observed_at": 1800000000,
+                "expires_at": 1800000030,
+                "production_qualified": false,
+                "consumer_binding_issued": true,
+                "binding_readiness": "ready",
+                "coherence_ready": true,
+                "coherence_epoch_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "source_selected_preview_enabled": true,
+                "machine_binding_enabled": true
+            }
+        },
+        {
+            "label": "invalid ready extra",
+            "type": "readiness_output",
+            "value": {
+                "schema": 2,
+                "dashboard_origin": "https://wpcontrol.mrndev.io",
+                "qualification_protocol": "content-management-existing-v2",
+                "lifetime_domain": "original-resource-authorization-v2",
+                "protocol_contracts_sha256": {
+                    "qualification": "1e652a77e369a341c4fa1d179ff6c69379b84661bdcd787850708adc6c01630e",
+                    "report": "dd20dc082d006e4e53d02eddb5cdfc1543e3056281ef304dd750687856030114",
+                    "evidence": "e511e4c9bc62eb839c68b59e64996e6b0d013f61ad8961520486ad821d4de6ff",
+                    "source_transfer": "c99c352961aaf7f289352e6aeacd4ad914747fdff69072cf54151c4d1e2f64d5",
+                    "source_context": "3996f36dc37181d1952b31ad32a2a231823954b4c058be1d3cb18e927a78b6c1",
+                    "wire_registry": "dd375ecdc7e33b8e8e8f80ed0846ab76a5f3ad038be83d349b2902f8ae8fcef6"
+                },
+                "original_authorization_contract_sha256": "3a77cf8ad2131fd1e2255e74d2a3dcd9ca1d18051e5acc1d51bdb6b7d6fa73c2",
+                "dispatch_contract_sha256": "8f524002fc5fd900f10e2851d0edd475b4e6ecfe3e6db2a1335573a6e3b7a579",
+                "provider_source_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "authorization_policy_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "observed_at": 1800000000,
+                "expires_at": 1800000030,
+                "production_qualified": false,
+                "consumer_binding_issued": false,
+                "binding_readiness": "ready",
+                "coherence_ready": true,
+                "coherence_epoch_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "source_selected_preview_enabled": true,
+                "machine_binding_enabled": true,
+                "extra": true
+            }
+        },
+        {
+            "label": "invalid ready qualification_protocol",
+            "type": "readiness_output",
+            "value": {
+                "schema": 2,
+                "dashboard_origin": "https://wpcontrol.mrndev.io",
+                "qualification_protocol": "content-management-fixture-v1",
+                "lifetime_domain": "original-resource-authorization-v2",
+                "protocol_contracts_sha256": {
+                    "qualification": "1e652a77e369a341c4fa1d179ff6c69379b84661bdcd787850708adc6c01630e",
+                    "report": "dd20dc082d006e4e53d02eddb5cdfc1543e3056281ef304dd750687856030114",
+                    "evidence": "e511e4c9bc62eb839c68b59e64996e6b0d013f61ad8961520486ad821d4de6ff",
+                    "source_transfer": "c99c352961aaf7f289352e6aeacd4ad914747fdff69072cf54151c4d1e2f64d5",
+                    "source_context": "3996f36dc37181d1952b31ad32a2a231823954b4c058be1d3cb18e927a78b6c1",
+                    "wire_registry": "dd375ecdc7e33b8e8e8f80ed0846ab76a5f3ad038be83d349b2902f8ae8fcef6"
+                },
+                "original_authorization_contract_sha256": "3a77cf8ad2131fd1e2255e74d2a3dcd9ca1d18051e5acc1d51bdb6b7d6fa73c2",
+                "dispatch_contract_sha256": "8f524002fc5fd900f10e2851d0edd475b4e6ecfe3e6db2a1335573a6e3b7a579",
+                "provider_source_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "authorization_policy_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "observed_at": 1800000000,
+                "expires_at": 1800000030,
+                "production_qualified": false,
+                "consumer_binding_issued": false,
+                "binding_readiness": "ready",
+                "coherence_ready": true,
+                "coherence_epoch_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "source_selected_preview_enabled": true,
+                "machine_binding_enabled": true
+            }
+        },
+        {
+            "label": "caller protocol selector",
+            "type": "readiness_input",
+            "value": {
+                "action": "status",
+                "protocol": "caller"
+            }
+        }
+    ],
+    "schema_only": true,
+    "runtime_registered": false
+}

@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+gateway_test_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+[[ "$#" == 3 || "$#" == 4 ]]
+if [[ "$#" == 4 ]]; then
+  node "$gateway_test_root/check-management.mjs" "$@"
+else
+  node "$gateway_test_root/check-provider.mjs" "$@" native
+fi
