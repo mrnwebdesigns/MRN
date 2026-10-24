@@ -607,7 +607,8 @@ try {
   report.sourceTransfer = await qualifyExistingSourceTransfer({ client: await rawClient(true), ledger: resumed.captureLedger,
     jobId, context: sourceFirst.source_context, catalog: sourceCatalog, parity: recoveredCapture.capture_artifact.dataset.parity_manifest,
     registrar, runtimeCli, runner: process.env.MRN_GATEWAY_MANAGEMENT_RUNNER_SOURCE,
-    observe: call => { report.sourceTransferCalls[call.ordinal - 1] = call; save(); } });
+    observe: call => { report.sourceTransferCalls[call.ordinal - 1] = call; save(); },
+    observeCheckpoint: checkpoint => { report.sourceTransferCheckpoint = checkpoint; save(); } });
   const afterSourceAccess = Object.freeze(accessBodies());
   assert.deepEqual(afterSourceAccess.slice(0, beforeSourceAccess.length), beforeSourceAccess);
   const sourceAccessRows = afterSourceAccess.slice(beforeSourceAccess.length).map(body => JSON.parse(body));

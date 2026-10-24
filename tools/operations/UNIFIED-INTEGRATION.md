@@ -84,6 +84,21 @@ The correction aligns the qualification and measurement runtime pins plus the
 explicit assertion only after confirming the eleven qualification files are
 byte-identical at `9c58c709`. The mixed-source refusal remains enforced.
 
+The corrected `dc360faa` selection passed hosted MRN QA `40053002131` and all
+controlled tests. Native run `40053002143` discovered the source tools and
+received capture/status/read replies, then stopped at an assertion. Both source
+contexts completed in 10.069/10.131 seconds; capture took 76.534 seconds, status
+9.536 and the first read 9.596, within the unchanged bounds. The strict runner
+parser produces null-prototype objects; the fixture's strict comparison against
+a normal context object rejects matching wire data. A valid v2 manifest
+reproduces that precise failure independently. Canonical value comparison fixes
+the fixture while preserving byte/schema checks and rejecting changed or missing
+context fields. Fixed checkpoint labels contain no payload data. Original
+artifact `12544094089` matches SHA-256
+`8261b36f5c45b99d1050764d9f971d694b44d65b388763a636465401e26b105b`;
+all four reports and the optional provider timing diagnostic were checked.
+The new complete native run remains required.
+
 The bootstrap review permits a distinct one-use metadata delivery marker for
 new originals without spending or expanding provider source/control budgets.
 An additive disabled source wire and pure verifier now check separate registrar

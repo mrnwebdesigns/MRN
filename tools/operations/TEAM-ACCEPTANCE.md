@@ -83,6 +83,17 @@ The correction aligns both manifests and the explicit pin assertion after
 verifying all eleven qualification files against the new committed provider.
 It preserves the tests that reject mixed source; a fresh combined run is required.
 
+Gateway `dc360faa` passed hosted MRN QA `40053002131` and controlled tests.
+Native run `40053002143` verified source-tool discovery and received capture,
+status and a frame batch, then stopped at an assertion. The actual runner parser
+uses null-prototype objects, which the fixture's strict object comparison rejects
+despite identical wire values. That failure was reproduced independently with a
+valid v2 manifest. The correction compares canonical context values while keeping
+the strict parser, closed schema and byte hashes. Original artifact `12544094089`
+matches SHA-256 `8261b36f5c45b99d1050764d9f971d694b44d65b388763a636465401e26b105b`;
+four original reports and the bounded timing diagnostic are retained. Native
+transfer completion and all live rows still require verification.
+
 The last completed seed/worker checkpoint was gateway `c3d23055`, combined run
 `40042925780`, with eleven independently verified original reports. Compatible
 dependency repairs retain zero-finding production audits. Transport

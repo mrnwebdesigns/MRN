@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { delegationCanonical } from '../../src/delegation.mjs';
-import { existingSourceInventoryWithin } from './existing-source-transfer-fixture.mjs';
+import { existingSourceInventoryWithin, assertExistingSourceManifestContext } from './existing-source-transfer-fixture.mjs';
 import { existingWorkerContractSha256, existingWorkerPurpose,
   verifyExistingManagementWorkerRecord } from '../../src/existing-management-worker-contract.mjs';
 
@@ -14,8 +14,20 @@ export async function checkExistingManagementWorker(runner) {
   const { existingWorkerFixture, workerDenialCases } = await import(pathToFileURL(join(runner, 'test/fixtures/management-existing-worker-context.mjs')));
   const { existingManagementSourceInventory } = await import(pathToFileURL(join(runner, 'src/management-source.mjs')));
   const { existingSourceFixture } = await import(pathToFileURL(join(runner, 'test/fixtures/management-existing-source.mjs')));
+  const { sourceManifestJson } = await import(pathToFileURL(join(runner, 'src/measurement-json.mjs')));
+  const { validateExistingSourceShape } = await import(pathToFileURL(join(runner, 'src/management-existing-contracts.mjs')));
   const source = existingSourceFixture();
   try {
+    const bytes = Buffer.from(delegationCanonical(source.manifest)), manifest = sourceManifestJson(bytes);
+    validateExistingSourceShape('transfer_manifest', manifest);
+    assert.equal(delegationCanonical(manifest), bytes.toString());
+    assert.equal(Object.getPrototypeOf(manifest.context), null);
+    assert.throws(() => assert.deepEqual(manifest.context, source.input.context), { code: 'ERR_ASSERTION' });
+    assertExistingSourceManifestContext(manifest, source.input.context);
+    const wrong = structuredClone(source.input.context); wrong.management.binding.site_id++;
+    assert.throws(() => assertExistingSourceManifestContext(manifest, wrong), { code: 'ERR_ASSERTION' });
+    const missing = structuredClone(source.input.context); delete missing.source_recipe_catalog_sha256;
+    assert.throws(() => assertExistingSourceManifestContext(manifest, missing), { code: 'ERR_ASSERTION' });
     let checks = 0, now = source.now;
     const current = () => { checks++; assert.ok(now < source.input.context.management.binding.expires_at * 1000); };
     const args = [existingManagementSourceInventory, source.input.context.management, source.input.parityManifest, source.input.recipe];
@@ -60,5 +72,6 @@ export async function checkExistingManagementWorker(runner) {
     Buffer.alloc(65537), Buffer.alloc(0), Buffer.from([0xff]), Buffer.from('{')]) deny(positive.input, bytes);
   return { scope: 'synthetic-existing-worker-record-consistency-only', wire_sha256: existingWorkerContractSha256,
     positive_records: 1, negative_records: negatives, independent_implementations: 2, source_inventory_checks: 3,
+    source_manifest_context_checks: 3,
     current_access_proven: false, hosted_oidc_proven: false, source_verified: false, admitted: false };
 }

@@ -34,7 +34,14 @@ export function existingSourceInventoryWithin(inventory, context, parity, recipe
   within(); return result;
 }
 
-export async function qualifyExistingSourceTransfer({ client, ledger, jobId, context, catalog, parity, registrar, runtimeCli, runner, observe = () => {} }) {
+export function assertExistingSourceManifestContext(manifest, context) {
+  // The strict runner parser uses null-prototype objects. Compare exact wire
+  // values after closed-schema validation without normalizing the source bytes.
+  assert.equal(delegationCanonical(manifest.context), delegationCanonical(context));
+}
+
+export async function qualifyExistingSourceTransfer({ client, ledger, jobId, context, catalog, parity, registrar, runtimeCli, runner,
+  observe = () => {}, observeCheckpoint = () => {} }) {
   assert.equal(process.env.GITHUB_ACTIONS, 'true');
   assert.equal(process.env.MRN_DISPOSABLE_EXISTING_SOURCE_TRANSPORT_TEST, '1');
   const lock = JSON.parse(readFileSync(new URL('./sources.json', import.meta.url)));
@@ -61,7 +68,9 @@ export async function qualifyExistingSourceTransfer({ client, ledger, jobId, con
     parity_sha256: context.management.parity_sha256, expires_at: b.expires_at,
     roots: parity.roots.map(({ path, kind }) => ({ path, kind })), native_reads: catalog.catalog.native_reads };
   const inventory = existingSourceInventoryWithin(existingManagementSourceInventory, context.management, parity, recipe, current);
+  observeCheckpoint('capability-discovery');
   for (const tool of Object.values(existingSourceTransferTools)) await new (createPrivateQueryReader(tool))(client).initialize();
+  observeCheckpoint('empty-storage');
   const seedResult = await promisify(execFile)(runtimeCli, ['source-storage-seed-audit'], { timeout: 20000, maxBuffer: 16384 });
   const seed = parseExistingSourceStorageAudit(Buffer.from(seedResult.stdout.trim()));
   assert.equal(seed.qualification_job_id, jobId); assert.equal(seed.source_context_sha256, delegationDigest(context));
@@ -110,20 +119,25 @@ export async function qualifyExistingSourceTransfer({ client, ledger, jobId, con
     calls.push({ action, elapsed_ms: Date.now() - started, request_sha256: sent });
     return { output, claims, input };
   };
+  observeCheckpoint('capture');
   const captured = await call('capture'), slot = captured.output.slot;
   assert.equal(slot.recipe_sha256, delegationDigest(recipe));
+  observeCheckpoint('status');
   const status = await call('status'); assert.equal(status.output.state, 'complete'); assert.deepEqual(status.output.slot, slot);
+  observeCheckpoint('frame-batches');
   for (let batch = 0; batch * 16 < slot.total_frames; batch++) {
     const value = await call('read', { transfer_id: slot.transfer_id, transfer_manifest_sha256: slot.transfer_manifest_sha256, batch_index: batch });
     frames.push(...validateExistingSourceBatch(value.output, context, slot, value.claims, value.input, b).frames);
   }
   assert.equal(frames.length, slot.total_frames);
+  observeCheckpoint('manifest');
   const manifestBytes = Buffer.concat(frames.slice(0, slot.manifest_frames).map(frame => Buffer.from(frame.data_base64, 'base64')));
   assert.equal(manifestBytes.length, slot.manifest_bytes); assert.equal(digest(manifestBytes), slot.transfer_manifest_sha256);
   const manifest = sourceManifestJson(manifestBytes); validateExistingSourceShape('transfer_manifest', manifest);
   assert.equal(delegationCanonical(manifest), manifestBytes.toString('utf8')); manifestBytes.fill(0);
-  assert.deepEqual(manifest.context, context); assert.equal(manifest.recipe_sha256, delegationDigest(recipe));
+  assertExistingSourceManifestContext(manifest, context); assert.equal(manifest.recipe_sha256, delegationDigest(recipe));
   assert.equal(manifest.transfer_id, slot.transfer_id);
+  observeCheckpoint('original-inventory');
   const expected = new Map();
   for (const root of [...parity.roots, { kind: 'core-php', path: '', files: parity.core_php }]) {
     if (!root.files.length) continue;
@@ -149,11 +163,13 @@ export async function qualifyExistingSourceTransfer({ client, ledger, jobId, con
     finally { bytes.fill(0); }
     nativeFrames += origin.native_frame_count; nativeFiles++; nativeBytes += origin.bytes;
   }
+  observeCheckpoint('native-summary');
   for (const [key, value] of Object.entries({ native_frames: nativeFrames, native_files: nativeFiles, native_bytes: nativeBytes })) {
     assert.equal(slot[key], value); assert.equal(manifest[key], value);
   }
   assert.ok(nativeFiles > 0 && nativeBytes > 0 && nativeFrames > 0);
   current();
+  observeCheckpoint('complete');
   return { schema: 2, result: 'PASS', transfer_id: slot.transfer_id, transfer_manifest_sha256: slot.transfer_manifest_sha256,
     source_context_sha256: delegationDigest(context), recipe_sha256: slot.recipe_sha256, calls,
     source_controls: calls.length, source_status: 1, source_reads: calls.length - 2, source_recovery: 0,
