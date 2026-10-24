@@ -31,12 +31,38 @@ backup provider, and this target correction does not change shared backup policy
 
 ## Current content integration, 2026-10-23
 
+The next native-transfer composition selects provider
+`ea2f17070b24c2e3c380975cfc2c948dd65834f3`. It preserves the earlier empty-storage
+checkpoint before capture, then exercises the three fixed private source routes
+and independently checks all returned frames against original inventory. A
+separate final SQL/frame audit must match the gateway, seed and context reports.
+The actual combined run is still required; local provider QA is not this proof.
+No production ability, staff tool, credential or permission is activated.
+
+The bootstrap review permits a distinct one-use metadata delivery marker for
+new originals without spending or expanding provider source/control budgets.
+Its wire and atomic retention/delivery implementation remain unqualified. A
+draft wire is retained outside deployable source; it is not selected by runtime.
+
 The unified release remains unaccepted. Routine maintenance belongs to its
 separate provider rollout and does not replace posts/pages/ACF delivery here.
 This gateway retains the existing Google login and plugin; no production,
 workspace-tool, credential or access configuration changes accompany this source.
 
-The latest qualified existing-record/catalog composition is gateway
+The latest completed combined checkpoint is gateway
+`c3d23055bebd50441e63a49ed597507383031ad1`, provider
+`bdebc36d824996707a52a8dc30499a75df68d1b2`, transport `d772652973a2d05cc09e81d13d8ff113d8a48696`
+and management worker `1d64092956c75717dd93c8775df0d266bd044ba4`.
+[Operations CI 40042925780](https://github.com/mrnwebdesigns/MRN/actions/runs/40042925780)
+and [MRN QA 40042925740](https://github.com/mrnwebdesigns/MRN/actions/runs/40042925740)
+passed. All eleven original reports and the four integration source paths were
+independently verified; artifact `12540624304` matches SHA-256
+`7b05a162da99181e68fee65f02feb516eee9de7564c6b38f9c65a13f209504e7`.
+Its fourteen worker integration groups include five actual SQLite/TLS/runner
+cases. This is the preceding seed/worker checkpoint; it does not qualify the
+new source-transfer composition or production acceptance.
+
+The earlier existing-record/catalog composition was gateway
 `4e63c1d6525c2c8a1b287da92955354ea86612c5`, provider
 `25cb8d339e7068f62dd18674ffe6eddf8acbd083`, transport
 `64498151d7d5dc8e7adcb7423d160a280a1939e7` and management worker

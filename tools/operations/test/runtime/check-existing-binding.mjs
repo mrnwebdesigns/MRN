@@ -30,6 +30,7 @@ import { ExistingManagementMeasurements, ExistingManagementMeasurementsReader,
 import { ExistingManagementSourceContext, ExistingManagementSourceContextReader,
   existingManagementSourceContextTool } from '../../src/existing-management-source-context.mjs';
 import { ExistingManagementSourceCatalogRegistry } from '../../src/existing-management-source-catalog.mjs';
+import { qualifyExistingSourceTransfer } from './existing-source-transfer-fixture.mjs';
 import { createHttpServer } from '../../src/http.mjs';
 
 process.umask(0o077);
@@ -91,6 +92,7 @@ try {
   assert.equal(process.env.MRN_DISPOSABLE_EXISTING_BINDING_TEST, '1');
   assert.equal(process.env.MRN_DISPOSABLE_EXISTING_SOURCE_CONTEXT_TEST, '1');
   assert.equal(process.env.MRN_DISPOSABLE_EXISTING_SOURCE_CATALOG_TEST, '1');
+  assert.equal(process.env.MRN_DISPOSABLE_EXISTING_SOURCE_TRANSPORT_TEST, '1');
   const [directory, certificate, runtimeCli, contextFile] = process.argv.slice(2);
   assert.equal(process.argv.length, 6); assert.equal(resolve(directory), directory);
   assert.equal(realpathSync(directory), directory);
@@ -572,13 +574,31 @@ try {
   assert.equal(sourceCatalog.ownerCatalogSha256, sourceFirst.source_context.source_recipe_catalog_sha256);
   assert.equal(sourceCatalog.registrySha256, sourceCatalogRegistryHash);
   assert.ok(sourceCatalog.catalog.issued_at <= queued.binding.created_at && sourceCatalog.catalog.expires_at >= queued.binding.expires_at);
-  assert.equal(sourceCatalog.catalog.artifacts.length, 0); assert.equal(sourceCatalog.catalog.native_reads, true);
+  assert.ok(sourceCatalog.catalog.artifacts.length >= 1 && sourceCatalog.catalog.artifacts.length <= 64);
+  assert.equal(sourceCatalog.catalog.native_reads, true);
   assert.equal(catalogConfigReads, 2);
   report.sourceCatalog = { schema: 2, configuration_reads: catalogConfigReads, catalog_sha256: sourceCatalog.ownerCatalogSha256,
     registry_sha256: sourceCatalogRegistryHash, configuration_sha256: sourceCatalogFileHash,
-    catalog_artifacts: 0, native_reads: true, original_authorization_unchanged: true,
+    catalog_artifacts: sourceCatalog.catalog.artifacts.length, native_reads: true, original_authorization_unchanged: true,
     source_bytes_verified: false, slot_created: false, admitted: false };
   pass('Root-signed v2 owner catalog matches independent pre-queue configuration without source admission');
+
+  phase = 'private-existing-source-transfer';
+  const accessBodies = () => store.db.prepare('SELECT body FROM original_management_access_queries WHERE job=? ORDER BY rowid')
+    .all(jobId).map(row => row.body);
+  const beforeSourceAccess = Object.freeze(accessBodies());
+  assert.equal(beforeSourceAccess.map(body => JSON.parse(body)).filter(row => row.phase === 'retain-report').length, 2);
+  report.sourceTransferCalls = [];
+  report.sourceTransfer = await qualifyExistingSourceTransfer({ client: await rawClient(true), ledger: resumed.captureLedger,
+    jobId, context: sourceFirst.source_context, catalog: sourceCatalog, parity: recoveredCapture.capture_artifact.dataset.parity_manifest,
+    registrar, runtimeCli, runner: process.env.MRN_GATEWAY_MANAGEMENT_RUNNER_SOURCE,
+    observe: call => { report.sourceTransferCalls[call.ordinal - 1] = call; save(); } });
+  const afterSourceAccess = Object.freeze(accessBodies());
+  assert.deepEqual(afterSourceAccess.slice(0, beforeSourceAccess.length), beforeSourceAccess);
+  const sourceAccessRows = afterSourceAccess.slice(beforeSourceAccess.length).map(body => JSON.parse(body));
+  assert.ok(sourceAccessRows.length > 0 && afterSourceAccess.length < 512);
+  assert.ok(sourceAccessRows.every(row => row.state === 'clear' && row.phase === 'retain-report'));
+  pass('Preserved empty seed precedes actual native source capture and all canonical frame batches match independent original inventory');
 
   phase = 'unchanged-child';
   const freshClient = new DelegatedMainwpClient(await rawClient(), nextActor, signer);
@@ -610,10 +630,12 @@ try {
   revokeDuringContext = true;
   await assert.rejects(() => contextRuntime.context.read(jobId));
   assert.equal(contextCalls, 2);
-  const accessRows = store.db.prepare('SELECT body FROM original_management_access_queries WHERE job=? ORDER BY rowid').all(jobId).map(r => JSON.parse(r.body));
+  const finalAccessBodies = accessBodies(), accessRows = finalAccessBodies.map(body => JSON.parse(body));
+  assert.deepEqual(finalAccessBodies.slice(0, -1), afterSourceAccess);
   assert.deepEqual(accessRows.at(-1) && [accessRows.at(-1).state, accessRows.at(-1).phase], ['pending-revocation', 'read-capture']);
   assert.ok(accessRows.slice(0, -1).every(r => r.state === 'clear' && ['capture', 'read-capture', 'retain-report'].includes(r.phase)));
-  assert.equal(accessRows.filter(r => r.phase === 'retain-report').length, 2);
+  assert.equal(accessRows.filter(r => r.phase === 'retain-report').length, 2 + sourceAccessRows.length);
+  assert.ok(accessRows.length <= 512);
   assert.ok(accessRows.filter(r => r.phase === 'capture').length >= recoveredCapture.measurements.native_calls + 2);
   assert.ok(accessRows.every(r => r.actor.subject === context.actor.subject && r.actor.verifiedEmail === context.actor.verifiedEmail));
   assert.equal(store.db.prepare('SELECT access_count FROM original_management_attempts WHERE request=?').get(originalRequestId).access_count, accessRows.length);
@@ -623,6 +645,7 @@ try {
   await assert.rejects(() => sourceRuntime.read(jobId, measured)); assert.equal(sourceContextReads, 3);
   await assert.rejects(() => sourceCatalogRegistry.resolve(jobId)); assert.equal(catalogConfigReads, 2);
   report.currentAccess = { context_requests: contextCalls, signed_callbacks: accessRows.length, clear: accessRows.length - 1, pending_revocation: 1,
+    pre_source_callbacks: beforeSourceAccess.length, pre_source_retain_callbacks: 2, source_callbacks: sourceAccessRows.length,
     repeated_revoked_read_dispatched: false };
   pass('Revocation during actual provider context lookup returns a signed denial and blocks later local dispatch');
   phase = 'network-verification';
@@ -635,6 +658,12 @@ try {
   const recoveryPosts = network.filter(row => /\/read-content-edit-qualification-capture-existing-v2\/run$/.test(row.path));
   const measurementPosts = network.filter(row => /\/read-content-edit-qualification-measurements-existing-v2\/run$/.test(row.path));
   const sourceContextPosts = network.filter(row => /\/read-content-edit-qualification-source-context-existing-v2\/run$/.test(row.path));
+  const sourceTransferPosts = Object.fromEntries(Object.entries({ capture: 'capture', status: 'get', read: 'read' }).map(([action, verb]) =>
+    [action, network.filter(row => row.path.endsWith(`/${verb}-content-edit-qualification-source-existing-v2/run`))]));
+  for (const [action, posts] of Object.entries(sourceTransferPosts)) {
+    assert.equal(posts.length, report.sourceTransfer.calls.filter(call => call.action === action).length);
+    assert.ok(posts.length > 0 && posts.every(row => row.method === 'POST' && row.status === 200));
+  }
   const staffPosts = network.filter(row => /\/get-team-access-v1\/run$/.test(row.path));
   assert.equal(report.staffChecks.dispatched, report.staffChecks.completed);
   assert.equal(staffPosts.length, report.staffChecks.dispatched);
@@ -643,6 +672,8 @@ try {
   report.network = { signed_control_posts: controls.length, context_posts: contextPosts.length, access_readback_posts: accessPosts.length,
     queue_posts: queuePosts.length, capture_posts: capturePosts.length, recovery_posts: recoveryPosts.length, measurement_posts: measurementPosts.length,
     source_context_posts: sourceContextPosts.length,
+    source_capture_posts: sourceTransferPosts.capture.length, source_status_posts: sourceTransferPosts.status.length,
+    source_read_posts: sourceTransferPosts.read.length,
     network_log_sha256: digest(readFileSync(join(work, 'gateway-network.jsonl'))) }; save();
   assert.equal(controls.length, 2); assert.ok(controls.every(row => row.method === 'POST' && row.status === 200));
   assert.equal(accessPosts.length, accessRows.length); assert.ok(accessPosts.every(row => row.method === 'POST' && row.status === 200));

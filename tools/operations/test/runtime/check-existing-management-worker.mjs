@@ -5,12 +5,31 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { delegationCanonical } from '../../src/delegation.mjs';
+import { existingSourceInventoryWithin } from './existing-source-transfer-fixture.mjs';
 import { existingWorkerContractSha256, existingWorkerPurpose,
   verifyExistingManagementWorkerRecord } from '../../src/existing-management-worker-contract.mjs';
 
 export async function checkExistingManagementWorker(runner) {
   const independent = await import(pathToFileURL(join(runner, 'src/management-existing-worker-context.mjs')));
   const { existingWorkerFixture, workerDenialCases } = await import(pathToFileURL(join(runner, 'test/fixtures/management-existing-worker-context.mjs')));
+  const { existingManagementSourceInventory } = await import(pathToFileURL(join(runner, 'src/management-source.mjs')));
+  const { existingSourceFixture } = await import(pathToFileURL(join(runner, 'test/fixtures/management-existing-source.mjs')));
+  const source = existingSourceFixture();
+  try {
+    let checks = 0, now = source.now;
+    const current = () => { checks++; assert.ok(now < source.input.context.management.binding.expires_at * 1000); };
+    const args = [existingManagementSourceInventory, source.input.context.management, source.input.parityManifest, source.input.recipe];
+    const inventory = existingSourceInventoryWithin(...args, current);
+    assert.equal(inventory.files.size, source.data.size); assert.equal(checks, 3);
+    now = source.input.context.management.binding.expires_at * 1000;
+    assert.throws(() => existingSourceInventoryWithin(...args, current));
+    checks = 0; now = source.now;
+    assert.throws(() => existingSourceInventoryWithin(...args, () => {
+      if (checks === 1) now = source.input.context.management.binding.expires_at * 1000;
+      current();
+    }));
+    assert.equal(checks, 2);
+  } finally { source.close(); }
   assert.equal(independent.existingWorkerContractSha256, existingWorkerContractSha256);
   assert.equal(independent.existingWorkerPurpose, existingWorkerPurpose);
   assert.deepEqual(readFileSync(join(runner, 'contracts/content-management-existing-worker-v2-proposal.json')),
@@ -40,6 +59,6 @@ export async function checkExistingManagementWorker(runner) {
   for (const bytes of [Buffer.from(' ' + raw.toString()), Buffer.from('{"signed_context":null,' + raw.toString().slice(1)),
     Buffer.alloc(65537), Buffer.alloc(0), Buffer.from([0xff]), Buffer.from('{')]) deny(positive.input, bytes);
   return { scope: 'synthetic-existing-worker-record-consistency-only', wire_sha256: existingWorkerContractSha256,
-    positive_records: 1, negative_records: negatives, independent_implementations: 2,
+    positive_records: 1, negative_records: negatives, independent_implementations: 2, source_inventory_checks: 3,
     current_access_proven: false, hosted_oidc_proven: false, source_verified: false, admitted: false };
 }

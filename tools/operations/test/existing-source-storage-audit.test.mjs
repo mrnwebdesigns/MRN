@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { parseExistingSourceStorageAudit, verifyExistingSourceStorageAudit } from './runtime/existing-source-storage-audit.mjs';
+import { parseExistingSourceTransferAudit, verifyExistingSourceTransferAudit } from './runtime/existing-source-transfer-audit.mjs';
+import { digest } from '../src/contracts.mjs';
 
 const bytes = value => Buffer.from(JSON.stringify(value));
 function fixture() {
@@ -61,4 +63,72 @@ test('storage seed audit refuses substituted originals even when each artifact i
 test('storage audit intake is bounded and refuses malformed or non-object output', () => {
   for (const value of [Buffer.alloc(8193), Buffer.from('{bad'), Buffer.from('null'), Buffer.from('[]'), {}, 'not bytes'])
     assert.throws(() => parseExistingSourceStorageAudit(value));
+});
+
+function transferFixture() {
+  const f = fixture();
+  const transfer = { schema: 2, result: 'PASS', transfer_id: '33333333-3333-4333-8333-333333333333',
+    transfer_manifest_sha256: '2'.repeat(64), source_context_sha256: f.storage.source_context_sha256,
+    source_controls: 4, source_status: 1, source_reads: 2, source_recovery: 0, source_frames: 17,
+    native_files: 2, native_bytes: 524288, native_frames: 16, native_frame_bytes_verified: true,
+    seed_checkpoint_preserved: true, cache_provenance_verified: false, full_source_verified: false, authority_verified: false, admitted: false,
+    calls: ['capture', 'status', 'read', 'read'].map((action, i) => ({ action, elapsed_ms: 100, request_sha256: String(i).repeat(64) })) };
+  f.binding.sourceTransfer = transfer;
+  const audit = { result: 'PASS', schema: 2, scope: 'existing-source-transfer-at-rest-v2',
+    qualification_job_id: f.storage.qualification_job_id, completion_sha256: '3'.repeat(64),
+    ...Object.fromEntries(['transfer_id', 'transfer_manifest_sha256', 'source_context_sha256', 'source_controls', 'source_status',
+      'source_reads', 'source_recovery', 'source_frames', 'native_files', 'native_bytes', 'native_frames'].map(k => [k, transfer[k]])),
+    ...Object.fromEntries(['binding_sha256', 'capture_artifact_sha256', 'measurement_record_sha256', 'parity_sha256'].map(k => [k, f.storage[k]])),
+    seed_checkpoint_sha256: digest(bytes(f.storage)), native_signing_packets: 18,
+    independent_consistent_readback: true, complete_sidecar_relation: true, actual_native_frame_bytes_verified: true,
+    actual_mainwp_signing_observed: true, at_rest_only: true, current_access_proven: false, live_google_proven: false,
+    hosted_oidc_proven: false, cache_provenance_verified: false, full_source_verified: false, admitted: false, production_changes: false };
+  return { ...f, audit };
+}
+const transferVerify = f => verifyExistingSourceTransferAudit(bytes(f.audit), bytes(f.storage), bytes(f.context), f.binding);
+
+test('final transfer audit crosslinks preserved empty seed, original context and actual received bytes', () => {
+  const f = transferFixture(); assert.deepEqual(transferVerify(f), f.audit);
+  assert.equal(f.audit.full_source_verified, false); assert.equal(f.storage.source_frames, 0);
+});
+
+test('final transfer audit refuses changed scope, authority claims, missing fields and oversized output', () => {
+  const good = transferFixture().audit;
+  for (const key of Object.keys(good)) {
+    const value = { ...good }; delete value[key]; assert.throws(() => parseExistingSourceTransferAudit(bytes(value)), key);
+    if (typeof good[key] === 'boolean') assert.throws(() => parseExistingSourceTransferAudit(bytes({ ...good, [key]: !good[key] })), key);
+  }
+  for (const patch of [{ schema: 1 }, { scope: 'existing-source-storage-seed-v2' }, { raw_source: 'forbidden' },
+    { source_controls: 49 }, { native_bytes: 4194305 }, { native_signing_packets: 259 }, { source_frames: 0 }])
+    assert.throws(() => parseExistingSourceTransferAudit(bytes({ ...good, ...patch })));
+  for (const value of [Buffer.alloc(8193), Buffer.from('null'), Buffer.from('{broken'), {}])
+    assert.throws(() => parseExistingSourceTransferAudit(value));
+});
+
+test('final audit rejects substituted or reconstructed earlier checkpoints and different received transfers', () => {
+  for (const field of ['binding_sha256', 'capture_artifact_sha256', 'measurement_record_sha256', 'parity_sha256',
+    'source_context_sha256', 'seed_checkpoint_sha256', 'transfer_manifest_sha256']) {
+    const f = transferFixture(); f.audit[field] = '9'.repeat(64); assert.throws(() => transferVerify(f), field);
+  }
+  const spent = transferFixture(); spent.storage.source_controls = 1; spent.audit.seed_checkpoint_sha256 = digest(bytes(spent.storage));
+  assert.throws(() => transferVerify(spent));
+  const f = transferFixture();
+  assert.throws(() => verifyExistingSourceTransferAudit(bytes(f.audit), Buffer.from(JSON.stringify(f.storage, null, 2)), bytes(f.context), f.binding));
+});
+
+test('matching counters alone cannot hide incomplete frame reads, extra recovery or missing native signatures', () => {
+  for (const patch of [{ source_reads: 1, source_controls: 3 }, { source_status: 2, source_controls: 5 },
+    { source_recovery: 1 }, { native_frames: 17 }]) {
+    const f = transferFixture(); Object.assign(f.audit, patch); Object.assign(f.binding.sourceTransfer, patch);
+    assert.throws(() => transferVerify(f));
+  }
+  const f = transferFixture(); f.audit.native_signing_packets--; assert.throws(() => transferVerify(f));
+});
+
+test('received transfer audit requires unique exact requests, original deadlines and no admission claim', () => {
+  for (const change of [t => { t.calls[0].elapsed_ms = 120000; }, t => { t.calls[1].elapsed_ms = 20000; },
+    t => { t.calls[3].request_sha256 = t.calls[2].request_sha256; }, t => { t.calls[1].action = 'capture'; },
+    t => { t.seed_checkpoint_preserved = false; }, t => { t.authority_verified = true; }, t => { t.calls[0].elapsed_ms = -1; }]) {
+    const f = transferFixture(); change(f.binding.sourceTransfer); assert.throws(() => transferVerify(f));
+  }
 });

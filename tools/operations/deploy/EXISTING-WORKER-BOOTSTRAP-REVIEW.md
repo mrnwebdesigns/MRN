@@ -67,10 +67,12 @@ member still adds one workspace plugin and signs in with Google.
 - Specify the exact authoritative GitHub fields the supervisor obtains from
   its protected environment and independently verified hosted identity. No
   workflow input or response field can supply its expected run or source.
-- Identify the existing durable worker-query counter that delivery charges.
-  Preserve its 64-query ceiling and the original 512 access-query ceiling;
-  do not create a parallel allowance. Define the one-time delivery marker and
-  lost-response behavior without refill, lazy initialization or repair.
+- Metadata delivery uses its own one-use marker, seeded atomically with a
+  genuinely new original. It neither charges nor expands provider worker64 or
+  source48; it is not another allowance for provider actions. Any actual provider
+  context call still uses its existing signed action and normal64/512 budgets.
+  A headroom observation is not a charge. Define consumption before release and
+  lost-response behavior without refill, lazy initialization, repair or backfill.
 - Freeze bounded canonical schemas, maximum bytes, signature purposes and
   deadlines only after checking actual context sizes and timing. Reuse the
   existing five-second read, 300-second worker and 900-second original limits;
