@@ -8,6 +8,9 @@ const toolLabels = new Map([
   ['mrn_mainwp__read_content_edit_qualification_capture_existing_v2', 'existing-capture-read'],
   ['mrn_mainwp__read_content_edit_qualification_measurements_existing_v2', 'existing-measurements-read'],
   ['mrn_mainwp__read_content_edit_qualification_source_context_existing_v2', 'existing-source-context'],
+  ['mrn_mainwp__capture_content_edit_qualification_source_existing_v2', 'existing-source-capture'],
+  ['mrn_mainwp__get_content_edit_qualification_source_existing_v2', 'existing-source-status'],
+  ['mrn_mainwp__read_content_edit_qualification_source_existing_v2', 'existing-source-read'],
   ['mrn_mainwp__read_management_access_veto_query_existing_v2', 'existing-access-read'],
   ['mrn_mainwp__get_delegation_challenge_v1', 'challenge'],
   ['mrn_mainwp__get_team_access_v1', 'staff-access'],
@@ -18,6 +21,8 @@ const toolLabels = new Map([
 const codes = new Set([
   'mrn_binding_contract', 'mrn_binding_control', 'mrn_binding_readiness',
   'mrn_existing_control', 'mrn_management_existing_source_context',
+  'mrn_existing_source_api', 'mrn_existing_source_seed', 'mrn_existing_source_storage',
+  'mrn_existing_source_capture', 'mrn_existing_source_status', 'mrn_existing_source_read',
   'mrn_management_original_authorization', 'mrn_management_existing_original', 'mrn_management_qualification',
   'mrn_requester_initialize', 'mrn_requester_review', 'mrn_requester_state',
   'mrn_content_approval', 'mrn_content_consumed', 'mrn_content_epoch', 'mrn_content_input',
@@ -34,7 +39,12 @@ const codes = new Set([
   'rest_forbidden', 'rest_invalid_param', 'rest_missing_callback_param',
 ]);
 
-export function bindingFixtureDiagnostic(name, value, confirmed = false, transportError = false) {
+const transportFailures = new Map([[-32001, 'mcp-request-timeout'], ['ECONNRESET', 'connection-reset'],
+  ['ECONNREFUSED', 'connection-refused'], ['ETIMEDOUT', 'connection-timeout'],
+  ['UND_ERR_CONNECT_TIMEOUT', 'connect-timeout'], ['UND_ERR_HEADERS_TIMEOUT', 'headers-timeout'],
+  ['UND_ERR_BODY_TIMEOUT', 'body-timeout'], ['ABORT_ERR', 'aborted']]);
+
+export function bindingFixtureDiagnostic(name, value, confirmed = false, transportError = false, timing) {
   let kind = 'returned', remote;
   if (transportError) { kind = 'transport-error'; remote = value; }
   else {
@@ -56,7 +66,12 @@ export function bindingFixtureDiagnostic(name, value, confirmed = false, transpo
     const symbol = /^(?:MainWP failed: )?Ability execution failed: ([a-z0-9_]+)(?: - | \(HTTP [1-5][0-9]{2}\)\.)/.exec(message)?.[1];
     if (codes.has(symbol)) code = symbol;
   }
+  const transportFailure = transportError ? transportFailures.get(value?.code) ?? transportFailures.get(value?.cause?.code)
+    ?? (value?.name === 'AbortError' ? 'aborted' : value?.name === 'TimeoutError' ? 'timeout' : 'unclassified') : undefined;
   return { tool: toolLabels.get(name) ?? 'other', kind, confirmed: confirmed === true,
+    ...(transportFailure ? { transport_failure: transportFailure } : {}),
+    ...(integer(timing?.elapsedMs, 0, 300000) ? { elapsed_ms: timing.elapsedMs } : {}),
+    ...(integer(timing?.timeoutMs, 1, 120000) ? { request_timeout_ms: timing.timeoutMs } : {}),
     provider_code: code ?? (['tool-error', 'transport-error'].includes(kind) ? 'unclassified' : 'none') };
 }
 

@@ -213,6 +213,9 @@ try {
     return { readResource: (...args) => raw.readResource(...args), listTools: (...args) => raw.listTools(...args),
       close: () => raw.close(), callTool: async (...args) => {
         const request = args[0], confirmed = request?.arguments?.user_confirmed === true;
+        const callStarted = performance.now();
+        const timing = () => ({ elapsedMs: Math.max(0, Math.min(300000, Math.ceil(performance.now() - callStarted))),
+          timeoutMs: args[2]?.timeout });
         const queueInput = request?.name === delegationTools.run && request?.arguments?.ability === originalQualificationAbility;
         let queueCall;
         if (queueInput) {
@@ -228,9 +231,9 @@ try {
             queueCall.after = queuePostCount();
             if (!confirmed) assert.equal(payload(result).status, 'CONFIRMATION_REQUIRED');
           }
-          observe(bindingFixtureDiagnostic(request?.name, result, confirmed)); return result;
+          observe(bindingFixtureDiagnostic(request?.name, result, confirmed, false, timing())); return result;
         } catch (error) {
-          observe(bindingFixtureDiagnostic(request?.name, error, confirmed, true)); throw error;
+          observe(bindingFixtureDiagnostic(request?.name, error, confirmed, true, timing())); throw error;
         }
       } };
   };

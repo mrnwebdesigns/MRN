@@ -99,6 +99,16 @@ artifact `12544094089` matches SHA-256
 all four reports and the optional provider timing diagnostic were checked.
 The new complete native run remains required.
 
+Run `40053970315` at `8cce7caa` passed controlled tests, but stopped at the
+`capture` checkpoint after a private access-readback transport error. Capture
+was refused after 76.306 seconds, within its unchanged 120-second allowance;
+the corrected manifest comparison was not reached. Hosted MRN QA `40053970345`
+passed. Original artifact `12544243356` matches SHA-256
+`47fd48bea42ad148ef91d39503d6aed314577a514bef26320399858b77ae27af`.
+The original report does not distinguish a request timeout from another transport
+failure. Fixed error categories and bounded per-call timing now retain that
+distinction. No timeout, current-access check, retry or protocol limit changes.
+
 The bootstrap review permits a distinct one-use metadata delivery marker for
 new originals without spending or expanding provider source/control budgets.
 An additive disabled source wire and pure verifier now check separate registrar

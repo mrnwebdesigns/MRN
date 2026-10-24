@@ -1,9 +1,42 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 import { bindingFixtureDiagnostic, bindingFixtureNetworkDiagnostic, createBindingSourceTimings } from './runtime/existing-binding-diagnostics.mjs';
 
 const name = 'mrn_mainwp__get_content_edit_binding_readiness_v2';
 const result = (body, isError = false) => ({ content: [{ type: 'text', text: JSON.stringify(body) }], isError });
+
+test('actual SDK timeouts retain only a fixed class and bounded request timing', () => {
+  const error = McpError.fromError(ErrorCode.RequestTimeout, 'PRIVATE', { timeout: 2000, token: 'PRIVATE' });
+  const projected = bindingFixtureDiagnostic('mrn_mainwp__read_management_access_veto_query_existing_v2',
+    error, false, true, { elapsedMs: 2001, timeoutMs: 2000, input: 'PRIVATE' });
+  assert.deepEqual(projected, { tool: 'existing-access-read', kind: 'transport-error', confirmed: false,
+    transport_failure: 'mcp-request-timeout', elapsed_ms: 2001, request_timeout_ms: 2000, provider_code: 'unclassified' });
+  assert.equal(JSON.stringify(projected).includes('PRIVATE'), false);
+  for (const [code, expected] of [['ECONNRESET', 'connection-reset'], ['UND_ERR_HEADERS_TIMEOUT', 'headers-timeout'],
+    ['PRIVATE', 'unclassified']]) {
+    const row = bindingFixtureDiagnostic(name, { message: 'PRIVATE', cause: { code, secret: 'PRIVATE' } }, false, true,
+      { elapsedMs: 'PRIVATE', timeoutMs: 120001 });
+    assert.equal(row.transport_failure, expected); assert.equal(Object.hasOwn(row, 'elapsed_ms'), false);
+    assert.equal(Object.hasOwn(row, 'request_timeout_ms'), false); assert.equal(JSON.stringify(row).includes('PRIVATE'), false);
+  }
+  for (const elapsedMs of [null, -1, 0.1, 300001, Infinity])
+    assert.equal(Object.hasOwn(bindingFixtureDiagnostic(name, {}, false, false, { elapsedMs }), 'elapsed_ms'), false);
+});
+
+test('source-transfer failures have fixed labels without retaining provider data or payloads', () => {
+  for (const [tool, label, code] of [
+    ['capture_content_edit_qualification_source_existing_v2', 'existing-source-capture', 'mrn_existing_source_capture'],
+    ['get_content_edit_qualification_source_existing_v2', 'existing-source-status', 'mrn_existing_source_status'],
+    ['read_content_edit_qualification_source_existing_v2', 'existing-source-read', 'mrn_existing_source_read'],
+  ]) {
+    const row = bindingFixtureDiagnostic('mrn_mainwp__' + tool, result({ error: { code, message: 'PRIVATE',
+      data: { payload: 'PRIVATE' } } }, true), false, false, { elapsedMs: 76306, timeoutMs: 120000 });
+    assert.deepEqual(row, { tool: label, kind: 'tool-error', confirmed: false,
+      elapsed_ms: 76306, request_timeout_ms: 120000, provider_code: code });
+    assert.equal(JSON.stringify(row).includes('PRIVATE'), false);
+  }
+});
 
 test('fixture diagnostics retain a known refusal without messages, identity or private error data', () => {
   const secret = 'PRIVATE_FIXTURE_MATERIAL';

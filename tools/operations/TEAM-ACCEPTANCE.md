@@ -94,6 +94,16 @@ matches SHA-256 `8261b36f5c45b99d1050764d9f971d694b44d65b388763a636465401e26b105
 four original reports and the bounded timing diagnostic are retained. Native
 transfer completion and all live rows still require verification.
 
+The fixture correction at `8cce7caa` passed hosted MRN QA `40053970345` and
+controlled tests, but native run `40053970315` stopped earlier: source capture
+was refused after a private access-readback transport error. Capture elapsed
+76.306 seconds within its 120-second limit; no status/read or corrected manifest
+comparison was reached. Artifact `12544243356` matches SHA-256
+`47fd48bea42ad148ef91d39503d6aed314577a514bef26320399858b77ae27af`.
+The next fixture records bounded elapsed/request timeout values and a fixed
+transport-error category to distinguish the failure without exposing payloads
+or changing the two-second readback request or five-second authorization limits.
+
 The last completed seed/worker checkpoint was gateway `c3d23055`, combined run
 `40042925780`, with eleven independently verified original reports. Compatible
 dependency repairs retain zero-finding production audits. Transport
