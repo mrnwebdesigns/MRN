@@ -1,8 +1,20 @@
 # Existing-worker original delivery: review proposal
 
-Status: design only, not a frozen contract or enabled route. This proposal does
-not qualify a worker, create credentials, change access or authorize deployment.
+Status: disabled source candidate with a pure consistency verifier; no delivery,
+retention implementation or enabled route. This proposal does not qualify a
+worker, create credentials, change access or authorize deployment.
 It leaves all six existing-v2 contracts and the worker readback wire unchanged.
+
+The additive `content-management-existing-bootstrap-v2-proposal.json` and
+`existing-worker-bootstrap-contract.mjs` check the two registrar signatures
+against independent public keys, complete policy pins and current run metadata.
+The bootstrap policy also pins the complete owner/environment run policy; a
+configuration change cannot silently substitute those expectations. The
+[normative semantics](EXISTING-WORKER-BOOTSTRAP-SEMANTICS.md) define exact digest
+preimages, lifetime units and the still-required durable lifecycle. Nine focused
+test groups exercise consistency and denials. All results explicitly leave
+retention, delivery consumption, hosted OIDC, current Google access and admission
+unproved. No service startup or private endpoint constructs this verifier.
 
 ## Integration blocker
 
@@ -57,14 +69,14 @@ The registrar commitment supplies a separate authority purpose and retained
 pre-dispatch record; it is not a second team login or connector. The ordinary
 member still adds one workspace plugin and signs in with Google.
 
-## Questions that must close before freezing a wire
+## Required implementation and activation evidence
 
 - Confirm that the existing registrar role may sign this specific original
   commitment, where signing occurs, and how its reviewed public trust reaches
   the protected supervisor. Do not repurpose a provider, root or identity key
   merely because it is accessible. New credential provisioning, if needed,
   requires a concrete separate approval.
-- Specify the exact authoritative GitHub fields the supervisor obtains from
+- Prove the exact authoritative GitHub fields the supervisor obtains from
   its protected environment and independently verified hosted identity. No
   workflow input or response field can supply its expected run or source.
 - Metadata delivery uses its own one-use marker, seeded atomically with a
@@ -73,11 +85,11 @@ member still adds one workspace plugin and signs in with Google.
   context call still uses its existing signed action and normal64/512 budgets.
   A headroom observation is not a charge. Define consumption before release and
   lost-response behavior without refill, lazy initialization, repair or backfill.
-- Freeze bounded canonical schemas, maximum bytes, signature purposes and
-  deadlines only after checking actual context sizes and timing. Reuse the
+- Qualify the bounded canonical schemas, maximum bytes, signature purposes and
+  deadlines against actual context sizes and timing. Reuse the
   existing five-second read, 300-second worker and 900-second original limits;
   delivery never extends them. No endpoint or timeout change is implied here.
-- Define at-rest integrity and atomicity across prepare, dispatch observation,
+- Prove at-rest integrity and atomicity across prepare, dispatch observation,
   delivery and supervisor retention, including partial database/history loss.
   The API's own returned bytes must never become their only expected digest.
 

@@ -51,8 +51,12 @@ Combined native acceptance of this correction remains pending.
 
 The bootstrap review permits a distinct one-use metadata delivery marker for
 new originals without spending or expanding provider source/control budgets.
-Its wire and atomic retention/delivery implementation remain unqualified. A
-draft wire is retained outside deployable source; it is not selected by runtime.
+An additive disabled source wire and pure verifier now check separate registrar
+signatures, independent policy/key/run inputs, the original relations and
+receipt lifetimes. The bootstrap policy additionally pins the complete protected
+owner/environment policy. Nine focused consistency/denial test groups pass;
+atomic original retention, one-use delivery and actual hosted bootstrap remain
+unimplemented and unqualified. No startup, endpoint or team tool selects it.
 
 The unified release remains unaccepted. Routine maintenance belongs to its
 separate provider rollout and does not replace posts/pages/ACF delivery here.
