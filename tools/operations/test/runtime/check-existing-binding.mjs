@@ -1,6 +1,7 @@
 // Separate native v2 fixture: real TLS/MCP/provider SQL, synthetic Google and
 // Directory. No content execution, QA admission, production or team acceptance.
 import assert from 'node:assert/strict';
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { createPrivateKey, randomUUID } from 'node:crypto';
 import { copyFileSync, lstatSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -19,7 +20,8 @@ import { Store } from '../../src/store.mjs';
 import { accessRegistry } from '../fixtures/access-registry.mjs';
 import { existingBindingFixtureLimits, existingBindingProfile, existingBindingProfileFiles,
   parseExistingBindingContext, parseExistingSourceContextOwner } from './existing-binding-context.mjs';
-import { bindingFixtureDiagnostic, bindingFixtureNetworkDiagnostic, bindingSourceContextHistory } from './existing-binding-diagnostics.mjs';
+import { bindingFixtureDiagnostic, bindingFixtureNetworkDiagnostic, bindingSourceContextHistory,
+  createBindingSourceTimings } from './existing-binding-diagnostics.mjs';
 import { parseExistingBindingAccess } from './existing-binding-access.mjs';
 import { createExistingManagementAccessRuntime } from '../../src/content-access-runtime.mjs';
 import { createExistingManagementContextRuntime, existingManagementContextTool } from '../../src/existing-management-context.mjs';
@@ -36,6 +38,11 @@ import { createHttpServer } from '../../src/http.mjs';
 process.umask(0o077);
 const clients = new Set(), transports = new Set();
 const recentCalls = [];
+const sourceTimingScope = new AsyncLocalStorage(), sourceTimings = createBindingSourceTimings();
+const timedSourceStep = (step, perform) => {
+  const span = sourceTimingScope.getStore();
+  return span ? sourceTimings.measure(span, step, perform) : perform();
+};
 let store, captureStore, deadline, hardDeadline, reportPath, sidecar, callbackServer, accessRuntime, routingTouched = false, closingAccess, started;
 let checksComplete = false;
 let networkPath, captureStarted;
@@ -46,6 +53,7 @@ const report = { schema: 2, result: 'INCOMPLETE', scope: 'disposable-native-exis
   fixtureLimits: existingBindingFixtureLimits, aggregateDeadlineExceeded: false };
 const save = () => {
   if (report.captureCall?.kind === 'pending') report.captureCall.elapsed_ms = Math.ceil(performance.now() - captureStarted);
+  report.sourceContextTimings = sourceTimings.snapshot();
   if (reportPath) writeFileSync(reportPath, JSON.stringify(report, null, 2) + '\n', { mode: 0o600 });
 };
 const networkDiagnostic = () => {
@@ -236,7 +244,7 @@ try {
   const verifyStaff = async actor => {
     const client = new DelegatedMainwpClient(staffConnection, actor, signer);
     report.staffChecks.dispatched++;
-    const access = await client.verifyStaff(); assert.equal(access.policy_sha256, context.pins.delegation_policy_sha256);
+    const access = await timedSourceStep('staff', () => client.verifyStaff()); assert.equal(access.policy_sha256, context.pins.delegation_policy_sha256);
     report.staffChecks.completed++;
   };
   const pins = { provider_source_sha: context.pins.provider_source_sha, authorization_policy_sha256: context.pins.authorization_policy_sha256,
@@ -244,7 +252,7 @@ try {
   const queueReadiness = async (actor, input) => {
     assert.equal(actor.googleSubject, context.actor.googleSubject);
     assert.equal(input.site_id, context.site.site_id); assert.equal(input.site_url, context.site.site_url);
-    const current = await ready();
+    const current = await timedSourceStep('readiness', ready);
     // Explicit disposable catalog expectation from the pinned catalog-owner
     // fixture, not a production protected-worker/provenance claim.
     return { coherenceEpochSha256: current.coherence_epoch_sha256,
@@ -523,7 +531,7 @@ try {
       assert.ok(sourceContextReads <= 3 && Number.isSafeInteger(call.granted_ms) && call.granted_ms > 0 && call.granted_ms <= 20000);
       report.sourceContextCalls.push(call); save();
       try {
-        const result = await contextClient.callTool(...args), diagnostic = bindingFixtureDiagnostic(args[0].name, result);
+        const result = await timedSourceStep('provider', () => contextClient.callTool(...args)), diagnostic = bindingFixtureDiagnostic(args[0].name, result);
         call.kind = diagnostic.kind; call.provider_code = diagnostic.provider_code; return result;
       } catch (error) {
         const diagnostic = bindingFixtureDiagnostic(args[0].name, error, false, true);
@@ -545,10 +553,17 @@ try {
   assert.equal(recentCalls.at(-1)?.provider_code, 'mrn_management_existing_source_context');
   const sourceRuntime = new ExistingManagementSourceContext({ ledger: resumed.captureLedger, reader: sourceReader,
     registrar, owner: sourceOwner });
+  // Observe the real ledger call without replacing its implementation, actor,
+  // fresh checks or limits. Async context preserves pending postflight timings
+  // when the outer 20-second deadline has already rejected.
+  const currentQueuedCapture = resumed.captureLedger.currentQueuedCapture.bind(resumed.captureLedger);
+  resumed.captureLedger.currentQueuedCapture = (...args) => timedSourceStep('queued-capture', () => currentQueuedCapture(...args));
+  const readSource = span => sourceTimingScope.run(span,
+    () => timedSourceStep('total', () => sourceRuntime.read(jobId, measured)));
   phase = 'private-source-context-first';
-  const sourceFirst = await sourceRuntime.read(jobId, measured);
+  const sourceFirst = await readSource('first');
   phase = 'private-source-context-second';
-  const sourceSecond = await sourceRuntime.read(jobId, measured);
+  const sourceSecond = await readSource('second');
   assert.deepEqual(sourceFirst.source_context, sourceSecond.source_context);
   assert.deepEqual(sourceFirst.source_context.management.binding, queued.binding);
   assert.equal(sourceFirst.source_context.management.capture_artifact_sha256, interceptedCapture.artifact);
@@ -556,7 +571,7 @@ try {
   assert.equal(sourceFirst.source_context.management.parity_sha256, measured.measurements.parity_sha256);
   assert.notEqual(sourceFirst.request_sha256, sourceSecond.request_sha256);
   phase = 'private-source-context-budget-refusal';
-  await assert.rejects(() => sourceRuntime.read(jobId, measured), error => error?.code === 'MAINWP_FAILED');
+  await assert.rejects(() => readSource('budget-refusal'), error => error?.code === 'MAINWP_FAILED');
   assert.equal(recentCalls.at(-1)?.provider_code, 'mrn_management_existing_source_context');
   assert.equal(sourceContextReads, 3);
   report.sourceContext = { unsigned_refused: 1, successful_reads: 2, refused_reads: 1, dispatches: sourceContextReads,

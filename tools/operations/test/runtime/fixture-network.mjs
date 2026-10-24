@@ -34,7 +34,9 @@ globalThis.fetch = async (input, options = {}) => {
   const method = options.method || 'GET';
   const delegated = /\/mrn-mainwp\/(?:get-delegation-challenge|get-team-access|read-delegated-operation|sync-delegated-site|run-delegated-operation|queue-delegated-qualification|read-access-veto-query|read-management-access-veto-query)-v1\/run$/.test(url.pathname);
   if (delegated) { assert.equal(method, 'POST'); assert.equal(url.search, ''); }
+  const started = performance.now();
   const response = await originalFetch(input, options);
+  const response_headers_ms = Math.max(0, Math.min(300000, Math.ceil(performance.now() - started)));
   let errorCode;
   if (!response.ok) {
     try {
@@ -51,6 +53,6 @@ globalThis.fetch = async (input, options = {}) => {
       person = { subject: claims.oauth_subject, ability: claims.ability };
     }
   }
-  appendFileSync(join(directory, 'gateway-network.jsonl'), `${JSON.stringify({ path: url.pathname, method, status: response.status, errorCode, ...person })}\n`, { mode: 0o600 });
+  appendFileSync(join(directory, 'gateway-network.jsonl'), `${JSON.stringify({ path: url.pathname, method, status: response.status, response_headers_ms, errorCode, ...person })}\n`, { mode: 0o600 });
   return response;
 };

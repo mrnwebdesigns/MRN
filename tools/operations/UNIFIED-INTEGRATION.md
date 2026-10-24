@@ -36,7 +36,7 @@ The next native-transfer composition selects provider
 checkpoint before capture, then exercises the three fixed private source routes
 and independently checks all returned frames against original inventory. A
 separate final SQL/frame audit must match the gateway, seed and context reports.
-The actual combined run is still required; local provider QA is not this proof.
+The combined native transfer still needs a passing run; local provider QA is not this proof.
 No production ability, staff tool, credential or permission is activated.
 
 The first native attempt, gateway `63c4988f` with provider `ea2f170`, passed
@@ -47,7 +47,17 @@ error by preparing a separate, checksummed archive set from the actual Child
 before the early clone and owner clocks start. The later archive flow remains
 separate. This candidate also rejects a cache-only run as insufficient native
 transport proof: actual native files, bytes and frames must all be nonzero.
-Combined native acceptance of this correction remains pending.
+Gateway `8171f83f` verified that setup fix in hosted run `40048166430`:
+three archives contained 1,865 actual child files. Both source-context provider
+requests returned HTTP 200 in about 14.8 seconds, but the second gateway lookup
+exceeded its unchanged 20-second aggregate allowance during final checks.
+Capture/transfer therefore did not start. Four original reports and artifact
+`12542412414` (SHA-256
+`9dfda2f5dbb221f898806763ab9e8503081a072c67eff2ca2697f93d3e0647ad`)
+are retained. Hosted MRN QA `40048166486` passed for that exact candidate.
+Disposable timing diagnostics now distinguish staff checks, readiness,
+queue/capture validation and provider I/O, including pending work after timeout.
+No authorization check, retry budget or deadline has been removed or extended.
 
 The bootstrap review permits a distinct one-use metadata delivery marker for
 new originals without spending or expanding provider source/control budgets.

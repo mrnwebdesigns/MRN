@@ -82,11 +82,37 @@ export function bindingFixtureNetworkDiagnostic(bytes) {
       // Their request-method gates remain in the actual transport guard.
       if (!['GET', 'POST'].includes(row.method) || !Number.isInteger(row.status) || row.status < 100 || row.status > 599)
         return { state: 'malformed', requests: [] };
+      if (Object.hasOwn(row, 'response_headers_ms') && !integer(row.response_headers_ms, 0, 300000))
+        return { state: 'malformed', requests: [] };
       requests.push({ tool, status: row.status,
+        ...(Object.hasOwn(row, 'response_headers_ms') ? { response_headers_ms: row.response_headers_ms } : {}),
         provider_code: codes.has(row.errorCode) ? row.errorCode : row.status >= 400 ? 'unclassified' : 'none' });
     }
   } catch { return { state: 'malformed', requests: [] }; }
   return { state: 'available', requests: requests.slice(-32) };
+}
+
+// Disposable timing only: fixed labels, monotonic durations, no identities,
+// inputs, error strings or authorization decisions. Pending I/O remains visible
+// if the outer deadline rejects before a child operation settles.
+export function createBindingSourceTimings(now = () => performance.now()) {
+  const rows = [], origin = now();
+  const bounded = value => Math.max(0, Math.min(300000, Math.ceil(value)));
+  return {
+    async measure(span, step, perform) {
+      if (!['first', 'second', 'budget-refusal'].includes(span)
+        || !['total', 'queued-capture', 'staff', 'readiness', 'provider'].includes(step)
+        || typeof perform !== 'function' || rows.length >= 64) throw new Error('Invalid disposable timing scope');
+      const row = { span, step, start: now(), end: null, kind: 'pending' }; rows.push(row);
+      try { const result = await perform(); row.kind = 'returned'; return result; }
+      catch (error) { row.kind = 'rejected'; throw error; }
+      finally { row.end = now(); }
+    },
+    snapshot() {
+      return rows.map(row => ({ span: row.span, step: row.step, kind: row.kind,
+        started_ms: bounded(row.start - origin), elapsed_ms: bounded((row.end ?? now()) - row.start) }));
+    },
+  };
 }
 
 const sourcePhases = new Set(['authenticate', 'authenticated-current', 'original-guard', 'guard-current', 'claim',

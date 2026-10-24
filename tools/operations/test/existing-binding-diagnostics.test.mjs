@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { bindingFixtureDiagnostic, bindingFixtureNetworkDiagnostic } from './runtime/existing-binding-diagnostics.mjs';
+import { bindingFixtureDiagnostic, bindingFixtureNetworkDiagnostic, createBindingSourceTimings } from './runtime/existing-binding-diagnostics.mjs';
 
 const name = 'mrn_mainwp__get_content_edit_binding_readiness_v2';
 const result = (body, isError = false) => ({ content: [{ type: 'text', text: JSON.stringify(body) }], isError });
@@ -53,6 +53,37 @@ test('failure network projection refuses malformed and oversized evidence withou
     { state: 'malformed', requests: [] });
   for (const bytes of ['x'.repeat(1048577), Array(4097).fill('{}').join('\n'), {}])
     assert.deepEqual(bindingFixtureNetworkDiagnostic(bytes), { state: 'not-inspected', requests: [] });
+});
+
+test('HTTP timings retain only bounded numeric header durations and preserve older observations', () => {
+  const row = { path: '/wp-json/wp-abilities/v1/abilities/mrn-mainwp/get-team-access-v1/run', method: 'POST', status: 200,
+    response_headers_ms: 2301, headers: 'PRIVATE', subject: 'PRIVATE', body: 'PRIVATE' };
+  assert.deepEqual(bindingFixtureNetworkDiagnostic(JSON.stringify(row)), { state: 'available', requests: [
+    { tool: 'staff-access', status: 200, response_headers_ms: 2301, provider_code: 'none' },
+  ] });
+  for (const value of ['PRIVATE', null, -1, 300001, 0.1])
+    assert.deepEqual(bindingFixtureNetworkDiagnostic(JSON.stringify({ ...row, response_headers_ms: value })),
+      { state: 'malformed', requests: [] });
+});
+
+test('source timing preserves pending and rejected I/O without recording results, errors or arbitrary labels', async () => {
+  let at = 100, finish;
+  const timing = createBindingSourceTimings(() => at), secret = new Error('PRIVATE');
+  const pending = timing.measure('first', 'staff', () => new Promise(resolve => { finish = resolve; }));
+  at += 51;
+  await assert.rejects(() => timing.measure('first', 'total', async () => { at += 9; throw secret; }), error => error === secret);
+  assert.deepEqual(timing.snapshot(), [
+    { span: 'first', step: 'staff', kind: 'pending', started_ms: 0, elapsed_ms: 60 },
+    { span: 'first', step: 'total', kind: 'rejected', started_ms: 51, elapsed_ms: 9 },
+  ]);
+  at += 12; finish({ token: 'PRIVATE' }); assert.deepEqual(await pending, { token: 'PRIVATE' });
+  assert.equal(timing.snapshot()[0].kind, 'returned'); assert.equal(timing.snapshot()[0].elapsed_ms, 72);
+  for (const [span, step] of [['PRIVATE', 'staff'], ['first', 'PRIVATE']])
+    await assert.rejects(() => timing.measure(span, step, () => { throw new Error('must not dispatch'); }));
+  assert.equal(JSON.stringify(timing.snapshot()).includes('PRIVATE'), false);
+  for (let i = 2; i < 64; i++) await timing.measure('second', 'readiness', async () => {});
+  await assert.rejects(() => timing.measure('second', 'readiness', async () => {}));
+  assert.equal(timing.snapshot().length, 64);
 });
 
 test('unknown tools and error codes cannot reflect arbitrary provider or transport data', () => {
