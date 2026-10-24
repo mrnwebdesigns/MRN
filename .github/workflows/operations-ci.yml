@@ -417,6 +417,24 @@ jobs:
             copyFileSync(path, process.env.MRN_SOURCE_TRANSFER_AUDIT_OUTPUT);
           }
           JS
+      - name: Retain separate bounded provider source-context phase timings
+        if: always()
+        env:
+          MRN_SOURCE_TIMING_OUTPUT: ${{ runner.temp }}/native-existing-source-context-timing.json
+        run: |
+          node --input-type=module <<'JS'
+          import { existsSync, lstatSync, readFileSync, writeFileSync } from 'node:fs';
+          import assert from 'node:assert/strict';
+          import { parseExistingSourceContextTiming } from './tools/operations/test/runtime/existing-source-context-timing.mjs';
+          const path = '.runtime/provider/reports/native-existing-source-context-timing.json';
+          if (existsSync(path)) {
+            const info = lstatSync(path);
+            assert.ok(info.isFile() && !info.isSymbolicLink() && info.size <= 32768 && (info.mode & 0o777) === 0o600);
+            const report = parseExistingSourceContextTiming(readFileSync(path));
+            // Retain the closed parsed projection, never arbitrary raw bytes.
+            writeFileSync(process.env.MRN_SOURCE_TIMING_OUTPUT, JSON.stringify(report) + '\n', { mode: 0o600, flag: 'wx' });
+          }
+          JS
       - name: Retain bounded integration evidence only
         if: always()
         uses: actions/upload-artifact@v4
@@ -435,5 +453,6 @@ jobs:
             ${{ runner.temp }}/native-existing-source-context-audit.json
             ${{ runner.temp }}/native-existing-source-storage-audit.json
             ${{ runner.temp }}/native-existing-source-transfer-audit.json
+            ${{ runner.temp }}/native-existing-source-context-timing.json
           if-no-files-found: error
           retention-days: 14

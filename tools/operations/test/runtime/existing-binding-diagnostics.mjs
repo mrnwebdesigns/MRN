@@ -62,6 +62,7 @@ export function bindingFixtureDiagnostic(name, value, confirmed = false, transpo
 
 const routeLabels = new Map([...toolLabels].map(([tool, label]) =>
   [`/wp-json/wp-abilities/v1/abilities/mrn-mainwp/${tool.slice('mrn_mainwp__'.length).replaceAll('_', '-')}/run`, label]));
+routeLabels.set('/wp-json/wp-abilities/v1/abilities', 'capability-catalog');
 
 // Publish only fixed labels and numeric HTTP status. Raw paths, subjects,
 // request bodies and arbitrary error strings stay out of the retained report.

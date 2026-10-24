@@ -61,6 +61,9 @@ test('HTTP timings retain only bounded numeric header durations and preserve old
   assert.deepEqual(bindingFixtureNetworkDiagnostic(JSON.stringify(row)), { state: 'available', requests: [
     { tool: 'staff-access', status: 200, response_headers_ms: 2301, provider_code: 'none' },
   ] });
+  assert.deepEqual(bindingFixtureNetworkDiagnostic(JSON.stringify({ ...row, method: 'GET',
+    path: '/wp-json/wp-abilities/v1/abilities' })).requests,
+  [{ tool: 'capability-catalog', status: 200, response_headers_ms: 2301, provider_code: 'none' }]);
   for (const value of ['PRIVATE', null, -1, 300001, 0.1])
     assert.deepEqual(bindingFixtureNetworkDiagnostic(JSON.stringify({ ...row, response_headers_ms: value })),
       { state: 'malformed', requests: [] });
