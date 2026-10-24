@@ -132,3 +132,12 @@ test('received transfer audit requires unique exact requests, original deadlines
     const f = transferFixture(); change(f.binding.sourceTransfer); assert.throws(() => transferVerify(f));
   }
 });
+
+test('native transport qualification refuses a cache-only run with no native bytes even when all counters match', () => {
+  const f = transferFixture(), values = { native_files: 0, native_bytes: 0, native_frames: 0,
+    source_frames: 1, source_reads: 1, source_controls: 3 };
+  Object.assign(f.audit, values, { native_signing_packets: 2 });
+  Object.assign(f.binding.sourceTransfer, values);
+  f.binding.sourceTransfer.calls.pop();
+  assert.throws(() => transferVerify(f), /actual native file bytes/);
+});

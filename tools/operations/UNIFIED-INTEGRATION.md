@@ -32,12 +32,22 @@ backup provider, and this target correction does not change shared backup policy
 ## Current content integration, 2026-10-23
 
 The next native-transfer composition selects provider
-`ea2f17070b24c2e3c380975cfc2c948dd65834f3`. It preserves the earlier empty-storage
+`8bbd667a2526750af6954eb2103fc69916bb21ed`. It preserves the earlier empty-storage
 checkpoint before capture, then exercises the three fixed private source routes
 and independently checks all returned frames against original inventory. A
 separate final SQL/frame audit must match the gateway, seed and context reports.
 The actual combined run is still required; local provider QA is not this proof.
 No production ability, staff tool, credential or permission is activated.
+
+The first native attempt, gateway `63c4988f` with provider `ea2f170`, passed
+hosted MRN QA and controlled contracts but stopped in early disposable owner
+setup before any source-transfer request. Its three original early reports and
+source hashes are retained. Provider `8bbd667a` fixes that established ordering
+error by preparing a separate, checksummed archive set from the actual Child
+before the early clone and owner clocks start. The later archive flow remains
+separate. This candidate also rejects a cache-only run as insufficient native
+transport proof: actual native files, bytes and frames must all be nonzero.
+Combined native acceptance of this correction remains pending.
 
 The bootstrap review permits a distinct one-use metadata delivery marker for
 new originals without spending or expanding provider source/control budgets.

@@ -40,6 +40,8 @@ export function verifyExistingSourceTransferAudit(bytes, seedBytes, contextBytes
   assert.equal(audit.source_status, 1); assert.equal(audit.source_recovery, 0);
   assert.equal(audit.source_controls, 1 + audit.source_reads + audit.source_status);
   assert.equal(audit.native_signing_packets, audit.native_frames + 2);
+  assert.ok(audit.native_files > 0 && audit.native_bytes > 0 && audit.native_frames > 0,
+    'This native transport qualification must exercise actual native file bytes');
   assert.ok(audit.source_frames > audit.native_frames);
   assert.equal(transfer.native_frame_bytes_verified, true); assert.equal(transfer.seed_checkpoint_preserved, true);
   for (const key of ['cache_provenance_verified', 'full_source_verified', 'authority_verified', 'admitted']) assert.equal(transfer[key], false);

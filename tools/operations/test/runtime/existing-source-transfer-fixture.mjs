@@ -152,6 +152,7 @@ export async function qualifyExistingSourceTransfer({ client, ledger, jobId, con
   for (const [key, value] of Object.entries({ native_frames: nativeFrames, native_files: nativeFiles, native_bytes: nativeBytes })) {
     assert.equal(slot[key], value); assert.equal(manifest[key], value);
   }
+  assert.ok(nativeFiles > 0 && nativeBytes > 0 && nativeFrames > 0);
   current();
   return { schema: 2, result: 'PASS', transfer_id: slot.transfer_id, transfer_manifest_sha256: slot.transfer_manifest_sha256,
     source_context_sha256: delegationDigest(context), recipe_sha256: slot.recipe_sha256, calls,
