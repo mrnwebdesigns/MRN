@@ -201,6 +201,25 @@ startup is created or activated; those remain separate integration gates.
 
 ### Private existing-worker context readback candidate
 
+The independent runner client now acquires the frozen existing-v2 record over
+the same bounded TLS reader used by its legacy worker route. Gateway CI invokes
+an explicit cross-repository test using the actual original SQLite ledger and
+HTTP handler with synthetic Google/GitHub identities. Five groups prove the
+matching signed readback, refusal of a different independently held original
+before networking, wrong OIDC run denial, revoked-original denial and absent
+default production route. The parent integration report retains these results
+separately from the 1-positive/68-negative pure consistency corpus.
+
+Runner `1d64092956c75717dd93c8775df0d266bd044ba4` passes 217 local tests and
+staged MRN QA. Local combined interoperability passes 14 groups, including this
+new TLS composition. The gateway has 700 passing unit tests and lint; an OIDC
+negative test now uses the recorded dispatch second as its issuance boundary,
+with a positive regression for dispatch/readback crossing a second. Its own hosted isolation and fresh combined native run
+remain separate gates. No protected worker bootstrap supplies independent
+original state yet; the TLS response cannot be reused as its own independent
+trust anchor. Hosted OIDC, current Google identity and live acceptance remain
+unverified.
+
 `ExistingManagementWorkerContext` adds the fixed v2 HTTP readback behind an
 explicit optional handler. Production startup never constructs it, so the route
 remains absent. It uses GitHub's fixed signing-key endpoint, exact original run,

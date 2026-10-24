@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createPublicKey, generateKeyPairSync, randomUUID, sign, verify } from 'node:crypto';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { request as httpRequest } from 'node:http';
@@ -38,6 +38,7 @@ import { ExistingManagementEvidenceDispatcher } from '../src/existing-management
 import { existingWorkerContractSha256, existingWorkerPurpose, existingWorkerUrl, verifyExistingManagementWorkerRecord } from '../src/existing-management-worker-contract.mjs';
 import { ExistingManagementWorkerContext, existingManagementWorkerPath } from '../src/existing-management-worker-context.mjs';
 import { ExistingManagementSourceCatalogRegistry } from '../src/existing-management-source-catalog.mjs';
+import { existingWorkerHttpFixture } from './runtime/existing-worker-http-fixture.mjs';
 
 const audience = 'https://operations.mrnwebdesigns.com/mcp', issuer = 'https://identity.example.test/';
 async function fixture(t, durable = false, workerConfiguration) {
@@ -2552,12 +2553,23 @@ test('existing worker context refuses validly signed wrong OIDC identities befor
     { ref: 'refs/heads/feature' }, { ref_type: 'tag' }, { event_name: 'pull_request' }, { environment: 'unprotected' },
     { runner_environment: 'self-hosted' }, { job_workflow_ref: 'reusable' }, { job_workflow_sha: 'f'.repeat(40) },
     { head_ref: 'fork' }, { base_ref: 'main' }, { jti: '' }, { jti: 'x'.repeat(201) },
-    { exp: original.iat }, { iat: original.iat + 1 }, { nbf: original.iat + 1 }, { iat: original.iat - 1 },
+    { exp: original.iat }, { iat: original.iat + 1 }, { nbf: original.iat + 1 },
+    { iat: Math.floor(f.retained.observation.requested_at / 1000) - 1 },
     { exp: original.iat + 301 }]) {
     for (const key of Object.keys(f.claims)) delete f.claims[key]; Object.assign(f.claims, original, change);
     await assert.rejects(f.call, JSON.stringify(change));
   }
   assert.equal(f.state.checks, 0); assert.equal(f.audits().length, 0);
+});
+
+test('existing worker OIDC may start at the original dispatch second before a later readback second', async t => {
+  const f = await existingWorkerContextFixture(t);
+  // Dispatch and readback can cross a wall-clock second. The lower issuance
+  // bound is the retained dispatch, not the time the later fixture was built.
+  f.workerState.now += 1000;
+  f.claims.iat = Math.floor(f.retained.observation.requested_at / 1000);
+  const response = await f.call();
+  assert.ok(response.signed_context); assert.equal(f.state.checks, 1); assert.equal(f.audits().length, 1);
 });
 
 test('existing worker pointers cannot choose staff, keys, source, a different job or an unobserved dispatch', async t => {
@@ -2638,4 +2650,14 @@ test('fixed existing worker HTTP readback is canonical, Google-independent at th
     originalBinding: f.context.binding, identityKeyId: f.signer.keyId, identityPublicKey: f.keys.publicKey,
     startedAt: f.workerState.now, completedAt: f.workerState.now + 1 }).admitted, false);
   assert.equal((await post(disabled, token)).status, 404);
+});
+
+// Invoked explicitly by the cross-repository check with its pinned runner.
+// Ordinary gateway unit tests do not require another repository checkout.
+if (process.env.MRN_EXISTING_WORKER_HTTP_TEST === '1') test('existing-v2 worker actual TLS cross-repository acquisition', async t => {
+  assert.ok(process.env.MRN_GATEWAY_MANAGEMENT_RUNNER_SOURCE);
+  assert.ok(process.env.MRN_EXISTING_WORKER_HTTP_REPORT);
+  const f = await existingWorkerContextFixture(t);
+  const result = await existingWorkerHttpFixture(f, process.env.MRN_GATEWAY_MANAGEMENT_RUNNER_SOURCE);
+  writeFileSync(process.env.MRN_EXISTING_WORKER_HTTP_REPORT, JSON.stringify(result) + '\n', { mode: 0o600, flag: 'wx' });
 });

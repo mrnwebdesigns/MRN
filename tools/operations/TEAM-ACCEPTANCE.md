@@ -44,7 +44,7 @@ Use already-authorized test identities or separately reviewed administrative tes
 
 ## Latest source evidence, 2026-10-23
 
-The current gateway has 699 passing local tests and lint. Its lifetime-correction
+The current gateway has 700 passing local tests and lint. Its lifetime-correction
 run `40040906007` failed the dependency audit before native testing; MRN QA
 `40040905945` passed. Compatible fast-uri 3.1.9 and undici 7.30.1 patches restore
 zero-finding production audits in gateway and transport. Transport
@@ -53,6 +53,20 @@ zero-finding production audits in gateway and transport. Transport
 required for this selection. These source results satisfy no live row above.
 
 The following checkpoints retain their exact source and test boundaries.
+
+The storage candidate at `a1d07349` passed combined run `40038889490`; all eleven
+original reports and exact tested source were independently verified. The
+gateway worker HTTP candidate at `7a7c55b4` passed `40039654901`; all eleven
+original reports and tested source were independently verified. Runner `f401758` passed `40040817199`, with both
+original artifact digests and all eight runtime QA reports independently
+verified. Its tested tree exactly matches the candidate; some INP measurements
+remain unavailable.
+
+The next independent runner TLS client passes 217 local tests, staged MRN QA
+and 14 local cross-repository groups. It uses the actual gateway ledger and
+handler with synthetic identities and verifies denials. Protected worker
+bootstrap, hosted identity, native source delivery and all live acceptance rows
+remain open. This does not add staff enrollment or per-person approval.
 
 Gateway `4e63c1d` with provider `25cb8d3`, patched transport `6449815` and
 management worker `53e5345` passes native integration `40029031523` and MRN QA

@@ -155,11 +155,21 @@ try {
   passed.push('authenticated-source-context-constructs-independent-recipient-over-tls');
   const existingWorkerConsistency = await checkExistingManagementWorker(runner);
   passed.push('independent-existing-worker-record-positive-and-denial-agreement');
+  const existingWorkerHttpReport = join(directory, 'existing-worker-http.json');
+  execFileSync(process.execPath, ['--test', '--test-name-pattern=^existing-v2 worker actual TLS cross-repository acquisition$',
+    new URL('../original-management-authorization.test.mjs', import.meta.url).pathname], {
+    env: { ...process.env, MRN_EXISTING_WORKER_HTTP_TEST: '1', MRN_EXISTING_WORKER_HTTP_REPORT: existingWorkerHttpReport },
+    timeout: 30000, maxBuffer: 1048576, stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  const existingWorkerHttp = JSON.parse(readFileSync(existingWorkerHttpReport));
+  assert.equal(existingWorkerHttp.result, 'PASS'); assert.equal(existingWorkerHttp.passed.length, 5);
+  assert.equal(existingWorkerHttp.runnerSource, lock.managementWorker.commit);
+  passed.push('actual-existing-original-worker-acquisition-over-tls');
   const report = { result: 'PASS', scope: 'disposable-context-tls-and-source-codec', passed, source: lock,
     runnerSource: lock.managementWorker.commit, productionCredentials: false, liveGoogleVerified: false,
     sourceHttpVerified: true, sourceCaptureMappingVerified: true, sourceContextHttpVerified: true, providerSourceBootstrapVerified: false,
     fullSourceClosureVerified: false, hostedOidcVerified: false,
-    ...cacheIntegration, existingWorkerConsistency,
+    ...cacheIntegration, existingWorkerConsistency, existingWorkerHttp,
     contentWriteVerified: false, chatgptAcceptanceVerified: false };
   const encoded = JSON.stringify(report) + '\n';
   assert.ok(Buffer.byteLength(encoded) <= 16384);
