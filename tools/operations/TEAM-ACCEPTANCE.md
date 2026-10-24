@@ -42,15 +42,30 @@ All results and necessary decisions must appear in chat. Any request for a WordP
 
 Use already-authorized test identities or separately reviewed administrative test changes. Do not suspend a real staff member, weaken a policy, forge a production identity or grant an outsider access to manufacture test evidence. A local negative test is not a live denial result.
 
-## Latest source evidence, 2026-10-23
+## Latest source evidence, 2026-10-24
 
-The current gateway has 700 passing local tests and lint. Its lifetime-correction
-run `40040906007` failed the dependency audit before native testing; MRN QA
-`40040905945` passed. Compatible fast-uri 3.1.9 and undici 7.30.1 patches restore
-zero-finding production audits in gateway and transport. Transport
+The source candidate has 719 passing local tests, lint and staged MRN QA.
+Fourteen cross-repository groups pass, including actual SQLite/gateway/TLS/
+runner checks with synthetic identities. The newly committed bootstrap verifier
+checks independent keys, policies and original/run relations but is disabled;
+durable original handoff and actual hosted bootstrap remain unimplemented.
+
+Gateway `8171f83f` passed hosted MRN QA `40048166486`, but combined run
+`40048166430` stopped during the second source-context lookup. Archive setup
+succeeded, and both provider requests returned HTTP 200 in about 14.8 seconds;
+the gateway exhausted its unchanged 20-second allowance during final checks.
+Native source transfer did not start. The next candidate adds bounded gateway
+phase timings and accepts a separate provider timing report when available,
+to diagnose this gate without removing checks or extending deadlines.
+Its twelve required native acceptance reports remain
+unverified; the additional timing report is diagnostic evidence only.
+
+The last completed seed/worker checkpoint was gateway `c3d23055`, combined run
+`40042925780`, with eleven independently verified original reports. Compatible
+dependency repairs retain zero-finding production audits. Transport
 `d772652973a2d05cc09e81d13d8ff113d8a48696` passes 3,155 tests and build;
 12 development-only findings remain. Fresh combined native qualification is
-required for this selection. These source results satisfy no live row above.
+required for the new selection. These source results satisfy no live row above.
 
 The following checkpoints retain their exact source and test boundaries.
 
