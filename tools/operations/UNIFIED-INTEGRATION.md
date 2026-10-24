@@ -78,6 +78,12 @@ tools, their unchanged annotations and core REST discovery. Provider phase
 timings are restricted to the explicit disposable fixture. The new combined
 run must still prove MCP/native transfer with the exact selected package.
 
+Gateway `f5c26316` / run `40052773219` stopped in controlled tests before native
+integration because two provenance references still selected `8bbd667a`.
+The correction aligns the qualification and measurement runtime pins plus the
+explicit assertion only after confirming the eleven qualification files are
+byte-identical at `9c58c709`. The mixed-source refusal remains enforced.
+
 The bootstrap review permits a distinct one-use metadata delivery marker for
 new originals without spending or expanding provider source/control budgets.
 An additive disabled source wire and pure verifier now check separate registrar

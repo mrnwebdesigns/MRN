@@ -77,6 +77,12 @@ and discovers exactly the three source tools when restored. The combined run
 must independently prove actual MCP/native transfer; package discovery alone
 does not qualify it.
 
+The first gateway selection, `f5c26316` / run `40052773219`, stopped before
+native integration: two provenance references still selected the old provider.
+The correction aligns both manifests and the explicit pin assertion after
+verifying all eleven qualification files against the new committed provider.
+It preserves the tests that reject mixed source; a fresh combined run is required.
+
 The last completed seed/worker checkpoint was gateway `c3d23055`, combined run
 `40042925780`, with eleven independently verified original reports. Compatible
 dependency repairs retain zero-finding production audits. Transport
