@@ -26,6 +26,9 @@ export const existingBootstrapPurposes = Object.freeze({ ...wire.purposes });
 const types = Object.fromEntries(['pointer', 'output', 'worker_policy', 'bootstrap_policy', 'commitment', 'observation'].map(name =>
   [name, compileManagementEvidenceSchema({ $ref: '#/$defs/' + name, $defs: wire.$defs })]));
 const parse = (name, value) => { const r = types[name].safeParse(value); need(r.success); return r.data; };
+export function parseExistingBootstrapRecord(name, value) {
+  need(Object.hasOwn(types, name)); return parse(name, value);
+}
 const same = (a, b) => need(delegationDigest(a) === delegationDigest(b));
 const positive = value => Number.isSafeInteger(value) && value > 0;
 const id = z.string().regex(/^[1-9][0-9]{0,19}$/), hash = z.string().regex(/^[a-f0-9]{64}$/);

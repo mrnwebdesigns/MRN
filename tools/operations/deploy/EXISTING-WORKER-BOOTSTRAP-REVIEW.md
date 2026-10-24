@@ -1,7 +1,7 @@
 # Existing-worker original delivery: review proposal
 
-Status: disabled source candidate with a pure consistency verifier; no delivery,
-retention implementation or enabled route. This proposal does not qualify a
+Status: disabled source candidate with a pure verifier and atomic gateway
+journal; no metadata delivery, supervisor retention or enabled route. This does not qualify a
 worker, create credentials, change access or authorize deployment.
 It leaves all six existing-v2 contracts and the worker readback wire unchanged.
 
@@ -15,6 +15,21 @@ preimages, lifetime units and the still-required durable lifecycle. Nine focused
 test groups exercise consistency and denials. All results explicitly leave
 retention, delivery consumption, hosted OIDC, current Google access and admission
 unproved. No service startup or private endpoint constructs this verifier.
+
+The private original ledger can now opt into an `ExistingWorkerBootstrapJournal`.
+Only a genuine new original snapshots its complete bootstrap configuration and
+seeds the journal in the original transaction. Worker preparation atomically
+retains the exact registrar-signed commitment; verified dispatch observation
+atomically adds a separate registrar-signed observation tied to the final worker
+journal. SQLite failure rolls back both journals. Old originals cannot gain this
+state through a restart or configuration addition.
+
+Six focused SQLite/crypto groups cover reopen, failed seed/prepare/observation
+writes, missing or rewound history, valid signatures for another original,
+coherent policy changes, key substitution, original expiry and revocation.
+The private getter performs retained-state inspection only. Repeated inspection
+does not prove or perform one-use network delivery. Hosted OIDC, fresh staff at
+delivery, consumption before release and supervisor durability remain required.
 
 ## Integration blocker
 

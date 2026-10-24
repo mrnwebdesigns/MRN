@@ -59,13 +59,29 @@ Disposable timing diagnostics now distinguish staff checks, readiness,
 queue/capture validation and provider I/O, including pending work after timeout.
 No authorization check, retry budget or deadline has been removed or extended.
 
+The diagnostic retry, gateway `485007d5` / run `40050639777`, passed both
+source-context reads in 16.906/16.834 seconds and ten native binding groups with
+unchanged checks. It then stopped at source-transfer capability discovery
+(`ACCESS_TRANSPORT`), before any transfer call. The selected provider package
+omits its required `content-management-existing-source-api-v2.json` declaration,
+leaving the three private source abilities unregistered. A package correction
+and actual packaged-registry qualification are required. Four original reports
+and artifact `12543600906` (SHA-256
+`b96d31e84ffcf401cf448ce951d85b3b511ace051c575649e643cc57af5957ea`)
+are retained; hosted MRN QA `40050639825` passed. The measured staff checks took
+0.38–0.43 seconds each and provide no reason to remove them.
+
 The bootstrap review permits a distinct one-use metadata delivery marker for
 new originals without spending or expanding provider source/control budgets.
 An additive disabled source wire and pure verifier now check separate registrar
 signatures, independent policy/key/run inputs, the original relations and
 receipt lifetimes. The bootstrap policy additionally pins the complete protected
-owner/environment policy. Nine focused consistency/denial test groups pass;
-atomic original retention, one-use delivery and actual hosted bootstrap remain
+owner/environment policy. Nine focused consistency/denial test groups pass.
+The optional private gateway journal now atomically retains a new-original seed,
+pre-dispatch registrar commitment and observed-run registrar attestation with
+the original worker journal. Six SQLite/crypto groups verify atomic failures,
+restart integrity, substitutions, revocation and no old-original backfill.
+One-use network delivery, supervisor retention and actual hosted bootstrap remain
 unimplemented and unqualified. No startup, endpoint or team tool selects it.
 
 The unified release remains unaccepted. Routine maintenance belongs to its

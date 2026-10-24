@@ -39,6 +39,7 @@ import { existingWorkerContractSha256, existingWorkerPurpose, existingWorkerUrl,
 import { ExistingManagementWorkerContext, existingManagementWorkerPath } from '../src/existing-management-worker-context.mjs';
 import { ExistingManagementSourceCatalogRegistry } from '../src/existing-management-source-catalog.mjs';
 import { existingWorkerHttpFixture } from './runtime/existing-worker-http-fixture.mjs';
+import { existingBootstrapContractSha256, existingBootstrapPurposes, verifyExistingWorkerBootstrap } from '../src/existing-worker-bootstrap-contract.mjs';
 
 const audience = 'https://operations.mrnwebdesigns.com/mcp', issuer = 'https://identity.example.test/';
 async function fixture(t, durable = false, workerConfiguration) {
@@ -61,7 +62,9 @@ async function fixture(t, durable = false, workerConfiguration) {
   const state = { checks: 0, duringCheck: null };
   const pins = { provider_source_sha: 'a'.repeat(40), authorization_policy_sha256: 'b'.repeat(64), delegation_policy_sha256: 'c'.repeat(64) };
   const signer = new IdentitySigner({ keyId: 'fixture', privateKey: keys.privateKey, connectionId: 'con_fixture' });
-  const options = { signer, registry, workerConfiguration, policy: () => pins, verifyStaff: async value => {
+  const options = { signer, registry, workerConfiguration,
+    bootstrap: workerConfiguration?.bootstrapFactory?.({ keys, signer, configuration: workerConfiguration() }),
+    policy: () => pins, verifyStaff: async value => {
     assert.equal(value.googleSubject, '123'); state.checks++; await state.duringCheck?.(value);
   } };
   const open = () => { const store = new Store(file); stores.push(store); return { store, ledger: new OriginalManagementAuthorizationLedger(store, options) }; };
@@ -2226,7 +2229,7 @@ test('queued-capture observation rejects changed history and current authority d
 });
 
 
-async function workerHistoryFixture(t, captured = true, configure = () => {}) {
+async function workerHistoryFixture(t, captured = true, configure = () => {}, bootstrapFactory) {
   const configuration = { schema: 2, worker_contract_sha256: existingWorkerContractSha256, app_actor_id: '40',
     policy: { schema: 1, enabled: false, policy_epoch: 1, qa_key_ids: ['fixture-qa'],
       repository: 'mrnwebdesigns/mrn-code-qa-runner', repository_id: '10', ref: 'refs/heads/main', workflow_id: '20',
@@ -2234,7 +2237,8 @@ async function workerHistoryFixture(t, captured = true, configure = () => {}) {
       engine_commit: 'c'.repeat(40), engine_configuration_sha256: 'd'.repeat(64), runtime_sha256: 'e'.repeat(64),
       performance_budget_sha256: 'f'.repeat(64), render_assertions_sha256: '1'.repeat(64), hook_policy_sha256: '2'.repeat(64) } };
   configure(configuration);
-  const f = await existingCaptureFixture(t, () => configuration);
+  const source = () => configuration; source.bootstrapFactory = bootstrapFactory;
+  const f = await existingCaptureFixture(t, source);
   if (captured) await f.runCapture();
   const measurement = { qualification_job_id: f.job, binding_sha256: f.context.binding_sha256,
     measurement_record_sha256: delegationDigest(f.value.measurements), measurements: structuredClone(f.value.measurements) };
@@ -2660,4 +2664,149 @@ if (process.env.MRN_EXISTING_WORKER_HTTP_TEST === '1') test('existing-v2 worker 
   const f = await existingWorkerContextFixture(t);
   const result = await existingWorkerHttpFixture(f, process.env.MRN_GATEWAY_MANAGEMENT_RUNNER_SOURCE);
   writeFileSync(process.env.MRN_EXISTING_WORKER_HTTP_REPORT, JSON.stringify(result) + '\n', { mode: 0o600, flag: 'wx' });
+});
+
+async function bootstrapJournalFixture(t) {
+  const registrar = generateKeyPairSync('ed25519'); let protectedConfiguration;
+  const runPolicy = { repository_owner_id: '99', environment: 'MRN QA', runner_environment: 'github-hosted' };
+  const fingerprint = key => digest(key.export({ type: 'spki', format: 'der' }));
+  const f = await workerHistoryFixture(t, true, () => {}, ({ keys, signer, configuration }) => {
+    const policy = { schema: 2, policy_epoch: 1, contract_sha256: existingBootstrapContractSha256,
+      worker_policy_sha256: delegationDigest(configuration.policy), run_policy_sha256: delegationDigest(runPolicy),
+      app_actor_id: configuration.app_actor_id, registrar_key_id: 'bootstrap-registrar',
+      registrar_public_key_sha256: fingerprint(registrar.publicKey), identity_key_id: signer.keyId,
+      identity_public_key_sha256: fingerprint(keys.publicKey) };
+    protectedConfiguration = { policy, policySha256: delegationDigest(policy), runPolicy };
+    return { keyId: policy.registrar_key_id, privateKey: registrar.privateKey, configuration: () => protectedConfiguration };
+  });
+  const rows = () => f.store.db.prepare('SELECT * FROM original_management_bootstrap_history ORDER BY ordinal').all();
+  const run = runId => ({ ...Object.fromEntries(['repository', 'repository_id', 'workflow_id', 'workflow_path',
+    'workflow_sha256', 'runner_source_sha', 'ref'].map(key => [key, f.configuration.policy[key]])), ...runPolicy,
+    run_id: runId, run_attempt: 1, repository_visibility: 'private', app_actor_id: f.configuration.app_actor_id,
+    event_name: 'workflow_dispatch' });
+  return { ...f, registrar, protectedConfiguration, rows, run };
+}
+
+test('bootstrap seed, pre-dispatch commitment and observed run are atomic with the genuine original worker history', async t => {
+  const f = await bootstrapJournalFixture(t), first = f.ledger.originalWorkerHistory(f.job);
+  assert.equal(f.rows().length, 1);
+  assert.equal(first.current.original.mapping.bootstrapConfigurationSha256, delegationDigest(f.protectedConfiguration));
+  const prepared = await f.prepareWorker(); assert.equal(f.rows().length, 2);
+  assert.equal(f.open().ledger.originalWorkerHistory(f.job).state, 'prepared');
+  const retained = await f.ledger.recordWorkerDispatch(prepared.handle, '30'); assert.equal(f.rows().length, 3);
+  const output = f.open().ledger.originalWorkerBootstrap(prepared.request.dispatch_id), at = Date.now();
+  const checked = verifyExistingWorkerBootstrap({ raw: Buffer.from(delegationCanonical(output)),
+    pointer: { dispatch_id: prepared.request.dispatch_id, context_sha256: prepared.request.context_sha256 },
+    bootstrapPolicy: f.protectedConfiguration.policy, bootstrapPolicySha256: f.protectedConfiguration.policySha256,
+    workerPolicy: f.configuration.policy, runPolicy: f.protectedConfiguration.runPolicy,
+    registrarPublicKey: f.registrar.publicKey, identityPublicKey: f.keys.publicKey,
+    run: f.run('30'), startedAt: at, completedAt: at });
+  assert.deepEqual(checked.retained, retained);
+  assert.equal(checked.worker_history_sha256, f.ledger.originalWorkerHistory(f.job).historyDigest);
+  for (const key of ['delivery_consumed', 'original_retained', 'hosted_oidc_proven', 'live_google_proven', 'source_verified', 'admitted'])
+    assert.equal(checked[key], false);
+  assert.deepEqual(f.open().ledger.originalWorkerBootstrap(prepared.request.dispatch_id), output);
+  await assert.rejects(() => f.prepareWorker());
+  await assert.rejects(() => f.ledger.recordWorkerDispatch(prepared.handle, '31'));
+});
+
+test('bootstrap persistence failures roll back both journals before any dispatch or observation can escape', async t => {
+  const f = await bootstrapJournalFixture(t), initial = f.rows();
+  const originals = f.store.db.prepare('SELECT count(*) n FROM original_management_authorizations').get().n;
+  f.store.db.exec("CREATE TRIGGER fail_bootstrap_seed BEFORE INSERT ON original_management_bootstrap_history WHEN NEW.ordinal=0 BEGIN SELECT RAISE(ABORT,'fixture seed failure'); END");
+  await assert.rejects(() => f.prepare(f.actor, f.request, randomUUID()));
+  assert.equal(f.store.db.prepare('SELECT count(*) n FROM original_management_authorizations').get().n, originals);
+  assert.deepEqual(f.rows(), initial); f.store.db.exec('DROP TRIGGER fail_bootstrap_seed');
+  f.store.db.exec("CREATE TRIGGER fail_bootstrap_prepare BEFORE INSERT ON original_management_bootstrap_history WHEN NEW.ordinal=1 BEGIN SELECT RAISE(ABORT,'fixture persistence failure'); END");
+  await assert.rejects(() => f.prepareWorker());
+  assert.deepEqual(f.rows(), initial); assert.equal(f.ledger.originalWorkerHistory(f.job).state, 'unused');
+  f.store.db.exec('DROP TRIGGER fail_bootstrap_prepare');
+  const prepared = await f.prepareWorker(), before = f.rows();
+  f.store.db.exec("CREATE TRIGGER fail_bootstrap_observe BEFORE INSERT ON original_management_bootstrap_history WHEN NEW.ordinal=2 BEGIN SELECT RAISE(ABORT,'fixture persistence failure'); END");
+  await assert.rejects(() => f.ledger.recordWorkerDispatch(prepared.handle, '30'));
+  assert.deepEqual(f.rows(), before); assert.equal(f.ledger.originalWorkerHistory(f.job).state, 'prepared');
+  f.store.db.exec('DROP TRIGGER fail_bootstrap_observe');
+  await assert.rejects(() => f.ledger.recordWorkerDispatch(prepared.handle, '30'));
+});
+
+test('bootstrap loss, partial rewind, changed signatures and bounded-history violations refuse after restart', async t => {
+  for (const kind of ['missing-row', 'missing-marker', 'rewound-pair', 'changed-body', 'changed-signature', 'signed-other-original', 'extra-row', 'oversize']) {
+    const f = await bootstrapJournalFixture(t), originalRows = f.rows();
+    const prepared = await f.prepareWorker(); await f.ledger.recordWorkerDispatch(prepared.handle, '30');
+    const m = f.ledger.originalWorkerHistory(f.job).current.original.mapping;
+    if (kind === 'missing-row') f.store.db.exec('DELETE FROM original_management_bootstrap_history WHERE ordinal=1');
+    if (kind === 'missing-marker') f.store.db.exec("UPDATE original_management_attempts SET bootstrap_history_digest=''");
+    if (kind === 'rewound-pair') {
+      f.store.db.exec('DELETE FROM original_management_bootstrap_history WHERE ordinal>0');
+      f.store.db.prepare('UPDATE original_management_attempts SET bootstrap_history_digest=? WHERE attempt=?')
+        .run(delegationDigest(originalRows), m.attempt);
+    }
+    if (['changed-body', 'changed-signature', 'signed-other-original', 'oversize'].includes(kind)) {
+      const value = JSON.parse(f.rows()[1].body);
+      if (kind === 'changed-body') value.unknown = 'PRIVATE';
+      if (kind === 'changed-signature') value.commitment.signature_base64 = Buffer.alloc(64).toString('base64');
+      if (kind === 'signed-other-original') {
+        const claims = JSON.parse(Buffer.from(value.commitment.payload_base64, 'base64'));
+        claims.context.binding.site_id++;
+        const bytes = Buffer.from(delegationCanonical(claims));
+        value.commitment.payload_base64 = bytes.toString('base64');
+        value.commitment.signature_base64 = sign(null, Buffer.concat([Buffer.from(existingBootstrapPurposes.commitment), bytes]), f.registrar.privateKey).toString('base64');
+      }
+      const body = kind === 'oversize' ? 'x'.repeat(65537) : delegationCanonical(value);
+      f.store.db.prepare('UPDATE original_management_bootstrap_history SET body=?,digest=? WHERE ordinal=1').run(body, digest(body));
+      f.store.db.prepare('UPDATE original_management_attempts SET bootstrap_history_digest=? WHERE attempt=?')
+        .run(delegationDigest(f.rows()), m.attempt);
+    }
+    if (kind === 'extra-row') f.store.db.prepare('INSERT INTO original_management_bootstrap_history VALUES(?,?,?,?)')
+      .run(m.requestId, 3, '{}', digest('{}'));
+    assert.throws(() => f.open().ledger.originalWorkerBootstrap(prepared.request.dispatch_id), kind);
+    await assert.rejects(() => f.open().ledger.readWorkerHistory(f.job), kind);
+  }
+});
+
+test('bootstrap trust changes and removed configuration stop the retained original without replacing keys or policy', async t => {
+  for (const kind of ['policy', 'run-policy', 'key', 'missing']) {
+    const f = await bootstrapJournalFixture(t), prepared = await f.prepareWorker();
+    await f.ledger.recordWorkerDispatch(prepared.handle, '30');
+    if (kind === 'policy') {
+      f.protectedConfiguration.policy.policy_epoch++;
+      f.protectedConfiguration.policySha256 = delegationDigest(f.protectedConfiguration.policy);
+    }
+    if (kind === 'run-policy') {
+      f.protectedConfiguration.runPolicy.environment = 'Changed';
+      f.protectedConfiguration.policy.run_policy_sha256 = delegationDigest(f.protectedConfiguration.runPolicy);
+      f.protectedConfiguration.policySha256 = delegationDigest(f.protectedConfiguration.policy);
+    }
+    if (kind === 'key') f.options.bootstrap.privateKey = generateKeyPairSync('ed25519').privateKey;
+    if (kind === 'missing') delete f.options.bootstrap;
+    assert.throws(() => f.open().ledger.originalWorkerBootstrap(prepared.request.dispatch_id), kind);
+  }
+});
+
+test('adding bootstrap configuration cannot backfill an older original or reuse the identity signing key', async t => {
+  const old = await workerHistoryFixture(t), source = await bootstrapJournalFixture(t);
+  const prepared = await old.prepareWorker(); await old.ledger.recordWorkerDispatch(prepared.handle, '30');
+  old.options.bootstrap = source.options.bootstrap;
+  const reopened = old.open().ledger;
+  assert.throws(() => reopened.originalWorkerBootstrap(prepared.request.dispatch_id));
+  assert.equal(old.store.db.prepare('SELECT count(*) n FROM original_management_bootstrap_history').get().n, 0);
+  source.options.bootstrap.privateKey = source.keys.privateKey;
+  assert.throws(() => source.open());
+});
+
+test('original revocation, expiry and bootstrap changes during fresh staff checks withhold retained bootstrap metadata', async t => {
+  for (const kind of ['revocation', 'expiry', 'during-staff']) {
+    const f = await bootstrapJournalFixture(t);
+    if (kind === 'during-staff') {
+      f.state.duringCheck = async () => {
+        f.protectedConfiguration.policy.policy_epoch++;
+        f.protectedConfiguration.policySha256 = delegationDigest(f.protectedConfiguration.policy);
+      };
+      await assert.rejects(() => f.prepareWorker()); assert.equal(f.rows().length, 1); continue;
+    }
+    const prepared = await f.prepareWorker(); await f.ledger.recordWorkerDispatch(prepared.handle, '30');
+    if (kind === 'revocation') f.ledger.recordQueuePendingRevocation(f.job);
+    else f.ledger.now = () => f.context.binding.expires_at * 1000;
+    assert.throws(() => f.ledger.originalWorkerBootstrap(prepared.request.dispatch_id));
+  }
 });

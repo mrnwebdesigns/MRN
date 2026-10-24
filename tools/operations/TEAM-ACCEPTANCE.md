@@ -44,11 +44,14 @@ Use already-authorized test identities or separately reviewed administrative tes
 
 ## Latest source evidence, 2026-10-24
 
-The source candidate has 719 passing local tests, lint and staged MRN QA.
-Fourteen cross-repository groups pass, including actual SQLite/gateway/TLS/
+The bootstrap journal source candidate has 725 passing local tests, lint and
+staged MRN QA. Independent source review is ongoing; the journal stays disabled.
+The preceding candidate passed fourteen cross-repository groups, including SQLite/gateway/TLS/
 runner checks with synthetic identities. The newly committed bootstrap verifier
 checks independent keys, policies and original/run relations but is disabled;
-durable original handoff and actual hosted bootstrap remain unimplemented.
+its optional gateway journal now retains signed records atomically with the
+original worker history. One-use delivery, supervisor retention and actual
+hosted bootstrap remain unimplemented.
 
 Gateway `8171f83f` passed hosted MRN QA `40048166486`, but combined run
 `40048166430` stopped during the second source-context lookup. Archive setup
@@ -57,8 +60,12 @@ the gateway exhausted its unchanged 20-second allowance during final checks.
 Native source transfer did not start. The next candidate adds bounded gateway
 phase timings and accepts a separate provider timing report when available,
 to diagnose this gate without removing checks or extending deadlines.
-Its twelve required native acceptance reports remain
-unverified; the additional timing report is diagnostic evidence only.
+Gateway `485007d5` subsequently passed both checks in 16.906/16.834 seconds
+without changing guards. Run `40050639777` then stopped before transfer at
+capability discovery: the selected provider package omits the source API's
+required declaration. Four original reports and their exact source were retained;
+hosted MRN QA `40050639825` passed. All twelve mandatory native acceptance
+reports remain unverified; timing reports are diagnostic evidence only.
 
 The last completed seed/worker checkpoint was gateway `c3d23055`, combined run
 `40042925780`, with eleven independently verified original reports. Compatible

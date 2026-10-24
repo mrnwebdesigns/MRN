@@ -12,6 +12,7 @@ import { originalBindingObservation, originalReadinessObservation, parseOriginal
 import { validateExistingManagementQueue } from './existing-management-queue.mjs';
 import { existingWorkerContractSha256, parseExistingWorkerRecord } from './existing-management-worker-contract.mjs';
 import { validateManagementQueuePins } from './content-management-access-store.mjs';
+import { ExistingWorkerBootstrapJournal } from './existing-worker-bootstrap-journal.mjs';
 
 const check = (ok, message) => requireThat(ok, 'ORIGINAL_AUTHORIZATION', message);
 const parse = (schema, value) => {
@@ -56,7 +57,7 @@ const workerSourceFields = ['repository', 'repository_id', 'ref', 'workflow_id',
   'runner_source_sha', 'engine_commit', 'engine_configuration_sha256', 'runtime_sha256'];
 const mappingSchema = z.object({ schema: z.literal(1), attempt: z.string().uuid(), requestId: z.string().uuid(),
   actor: accessActorSchema, site: registryTargetSchema, requester: sha, principal: sha, pins: pinsSchema,
-  workerConfigurationSha256: sha.optional(),
+  workerConfigurationSha256: sha.optional(), bootstrapConfigurationSha256: sha.optional(),
   memberPolicySha256: sha, argumentsSha256: sha, envelopeSha256: sha, readiness: readinessSchema,
   authorization: z.object({ schema: z.literal(1), authorizationSha256: sha, expiresAt: z.number().int().positive().safe() }).strict(),
   transportExpiresAt: z.number().int().positive().safe(),
@@ -74,7 +75,8 @@ export class OriginalManagementAuthorizationLedger {
   #queueHandles = new WeakMap();
   #captureHandles = new WeakMap();
   #workerHandles = new WeakMap();
-  constructor(store, { signer, registry, policy, verifyStaff, queueReadiness, workerConfiguration, now = () => Date.now() }) {
+  #bootstrap;
+  constructor(store, { signer, registry, policy, verifyStaff, queueReadiness, workerConfiguration, bootstrap, now = () => Date.now() }) {
     check(signer instanceof IdentitySigner && typeof policy === 'function' && typeof verifyStaff === 'function',
       'The existing service identity signer, policy and active staff check are required.');
     check(queueReadiness === undefined || typeof queueReadiness === 'function', 'Protected qualification readiness must be service-owned.');
@@ -134,6 +136,7 @@ export class OriginalManagementAuthorizationLedger {
       this.store.db.exec('ALTER TABLE original_management_attempts ADD COLUMN capture_count INTEGER NOT NULL DEFAULT 0');
     if (!columns.some(c => c.name === 'capture_digest'))
       this.store.db.exec("ALTER TABLE original_management_attempts ADD COLUMN capture_digest TEXT NOT NULL DEFAULT ''");
+    if (bootstrap !== undefined) this.#bootstrap = new ExistingWorkerBootstrapJournal(store, bootstrap, signer);
   }
   #actor(value) {
     // Never accept a caller-created actor, hash or session ID at this boundary.
@@ -215,6 +218,7 @@ export class OriginalManagementAuthorizationLedger {
     const args = managementSchemas['preview-content-edit-v1'].input.parse(input);
     check(args.post_id > 0, 'Only an existing exact content record can retain original authorization.');
     const worker = this.workerConfiguration ? parse(workerConfigurationSchema, this.workerConfiguration()) : null;
+    const bootstrap = this.#bootstrap ? this.#bootstrap.configuration(worker) : null;
     const initial = this.#actor(value), site = this.#site(initial.actor, args), pins = this.#pins();
     const readinessAnchor = this.#readiness(readiness, pins);
     const principalBefore = this.store.db.prepare('SELECT * FROM content_access_principals WHERE principal=?').get(digest(initial.actor.googleSubject));
@@ -225,6 +229,8 @@ export class OriginalManagementAuthorizationLedger {
     return this.store.transaction(() => {
       check(delegationDigest(this.workerConfiguration ? parse(workerConfigurationSchema, this.workerConfiguration()) : null)
         === delegationDigest(worker), 'Worker configuration changed during original preparation.');
+      check(delegationDigest(this.#bootstrap ? this.#bootstrap.configuration(worker) : null) === delegationDigest(bootstrap),
+        'Bootstrap configuration changed during original preparation.');
       const { actor, authorization } = this.#actor(value);
       const principalAfter = this.store.db.prepare('SELECT * FROM content_access_principals WHERE principal=?').get(digest(actor.googleSubject));
       check(delegationDigest(principalBefore ?? null) === delegationDigest(principalAfter ?? null),
@@ -239,7 +245,8 @@ export class OriginalManagementAuthorizationLedger {
       'This original preview attempt is already retained; read its state instead of retrying.');
       const envelope = Object.freeze(this.signer.sign(value, 'mrn-mainwp/preview-content-edit-v1', args, c));
       const claims = JSON.parse(Buffer.from(envelope.payload_base64, 'base64'));
-      const mapping = parse(mappingSchema, { ...(worker ? { workerConfigurationSha256: delegationDigest(worker) } : {}), schema: 1, attempt: attemptId, requestId: claims.request_id, readiness: readinessAnchor,
+      const mapping = parse(mappingSchema, { ...(worker ? { workerConfigurationSha256: delegationDigest(worker) } : {}),
+        ...(bootstrap ? { bootstrapConfigurationSha256: delegationDigest(bootstrap) } : {}), schema: 1, attempt: attemptId, requestId: claims.request_id, readiness: readinessAnchor,
         actor, authorization, site, pins, requester: requesterDigest(actor), principal: digest(actor.googleSubject),
         memberPolicySha256, argumentsSha256: claims.arguments_sha256, envelopeSha256: delegationDigest(envelope),
         transportExpiresAt: claims.expires_at * 1000,
@@ -252,6 +259,7 @@ export class OriginalManagementAuthorizationLedger {
         .run(attemptId, mapping.requestId, hash, mapping.principal, mapping.requester);
       if (worker) this.#appendWorkerHistory(mapping, { schema: 2, state: 'unused', original: mapping.requestId,
         original_sha256: hash, configuration: worker }, '');
+      if (bootstrap) this.#bootstrap.seed(mapping, hash, worker);
       this.store.audit(actor, site, mapping.requestId, 'original-authorization-retained', 'prepared');
       this.#current(mapping.requestId, value);
       const handle = Object.freeze({ requestId: mapping.requestId });
@@ -832,7 +840,7 @@ export class OriginalManagementAuthorizationLedger {
     check(this.store.db.prepare('UPDATE original_management_attempts SET worker_history_digest=? WHERE attempt=? AND worker_history_digest=?')
       .run(delegationDigest(after), mapping.attempt, previousDigest).changes === 1, 'Original worker history changed before commit.');
   }
-  #workerHistory(current) {
+  #workerHistory(current, completeBootstrap = true) {
     const { original } = current, m = original.mapping;
     check(m.workerConfigurationSha256 && typeof this.workerConfiguration === 'function',
       'This original has no prepared worker history; existing jobs cannot be enrolled or backfilled.');
@@ -878,7 +886,12 @@ export class OriginalManagementAuthorizationLedger {
           && o.observed_at >= p.requested_at && o.observed_at <= this.now(), 'Original worker observation changed.');
       }
     }
-    return { state: values.at(-1).state, value: values.at(-1), configuration, historyDigest: marker.worker_history_digest };
+    const result = { state: values.at(-1).state, value: values.at(-1), configuration, historyDigest: marker.worker_history_digest };
+    if (m.bootstrapConfigurationSha256) {
+      check(this.#bootstrap, 'This original requires its unchanged bootstrap configuration.');
+      if (completeBootstrap) this.#bootstrap.read(original, result, rows);
+    }
+    return result;
   }
   // No GitHub call or source admission: reserve one opaque protected dispatch
   // before I/O. A lost response or restart consumes it permanently.
@@ -903,6 +916,11 @@ export class OriginalManagementAuthorizationLedger {
       const prepared = { request, context_sha256: request.context_sha256, evidence_policy_sha256: context.evidence_policy_sha256,
         requested_at: this.now(), original_expires_at: b.expires_at * 1000, app_actor_id: history.configuration.app_actor_id };
       this.#appendWorkerHistory(current.original.mapping, { schema: 2, state: 'prepared', context, prepared }, history.historyDigest);
+      if (current.original.mapping.bootstrapConfigurationSha256) {
+        // The transaction cannot expose either intermediate journal. A signing
+        // or persistence failure rolls back both; no new dispatch is returned.
+        this.#bootstrap.advance(current.original, this.#workerHistory(current, false), this.#workerRows(current.original.mapping.requestId));
+      }
       const saved = this.#workerHistory(current), handle = Object.freeze({ jobId, dispatchId: request.dispatch_id });
       this.#workerHandles.set(handle, { current, historyDigest: saved.historyDigest });
       this.store.audit(current.original.mapping.actor, current.original.mapping.site, current.original.mapping.requestId, 'original-worker-dispatch', 'prepared');
@@ -928,6 +946,8 @@ export class OriginalManagementAuthorizationLedger {
         run_id: runId, run_attempt: 1 });
       const retained = parseExistingWorkerRecord('retained_record', { context: history.value.context, provenance, observation });
       this.#appendWorkerHistory(current.original.mapping, { schema: 2, state: 'observed', retained }, history.historyDigest);
+      if (current.original.mapping.bootstrapConfigurationSha256)
+        this.#bootstrap.advance(current.original, this.#workerHistory(current, false), this.#workerRows(current.original.mapping.requestId));
       this.#workerHistory(current);
       this.store.audit(current.original.mapping.actor, current.original.mapping.site, current.original.mapping.requestId, 'original-worker-dispatch', 'observed');
       within();
@@ -952,6 +972,20 @@ export class OriginalManagementAuthorizationLedger {
     return { ...history, current };
   }
   originalWorkerDispatch(dispatchId) { return this.store.transaction(() => this.#workerDispatch(dispatchId)); }
+  // Private retained metadata only. OIDC/current-staff delivery, consume-before-
+  // release and supervisor durability remain separate, disabled integration.
+  originalWorkerBootstrap(dispatchId) {
+    return this.store.transaction(() => {
+      const worker = this.#workerDispatch(dispatchId), original = worker.current.original;
+      check(original.mapping.bootstrapConfigurationSha256 && this.#bootstrap,
+        'This original cannot receive a bootstrap through backfill or a new login.');
+      const observation = worker.value.retained.observation, at = this.now();
+      check(at >= observation.requested_at && at < Math.min(observation.original_expires_at, observation.requested_at + 300000),
+        'The original worker bootstrap lifetime ended; it cannot be renewed.');
+      const saved = this.#bootstrap.read(original, worker, this.#workerRows(original.mapping.requestId));
+      return { commitment: saved.commitment, observation: saved.observation };
+    });
+  }
   // The private reader signs and checks final state inside one audit transaction.
   // The synchronous read callback cannot start another transaction or do I/O.
   withOriginalWorkerDispatch(dispatchId, readback) {
