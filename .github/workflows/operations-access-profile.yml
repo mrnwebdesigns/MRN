@@ -82,6 +82,7 @@ jobs:
           npm audit --omit=dev --prefix .runtime/transport
           npm run build --prefix .runtime/transport
       - name: Build isolated profiler before original authorization starts
+        # Compilation stays inside the builder; the source mount is read-only.
         run: tools/operations/test/runtime/build-access-profiler.sh "${{ runner.temp }}/mrn-access-profiler"
       - name: One genuine access readback, then stop (never acceptance)
         env:

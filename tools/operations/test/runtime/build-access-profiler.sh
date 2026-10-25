@@ -23,11 +23,12 @@ docker pull "$profile_image" >/dev/null
 # Build before the original authorization fixture starts. No make install,
 # no application source mutation and no alternate PHP image/ABI.
 if ! docker run --name "$profile_builder" --user 0:0 --entrypoint sh \
-  -v "$profile_build/source:/build" -v "$profile_output:/out" "$profile_image" -c '
+  -v "$profile_build/source:/source:ro" -v "$profile_output:/out" "$profile_image" -c '
     set -eu
     apt-get update -qq
     apt-get install -y --no-install-recommends $PHPIZE_DEPS
-    cd /build
+    cp -a /source /tmp/profile-build
+    cd /tmp/profile-build
     phpize
     ./configure --enable-xdebug
     make -j2
