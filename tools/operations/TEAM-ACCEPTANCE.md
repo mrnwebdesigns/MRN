@@ -42,7 +42,23 @@ All results and necessary decisions must appear in chat. Any request for a WordP
 
 Use already-authorized test identities or separately reviewed administrative test changes. Do not suspend a real staff member, weaken a policy, forge a production identity or grant an outsider access to manufacture test evidence. A local negative test is not a live denial result.
 
-## Latest source evidence, 2026-10-24
+## Latest source evidence, 2026-10-25
+
+Gateway `863a2a65` passed hosted MRN QA `40054902586` and controlled tests.
+Native run `40054902601` reached the unchanged 290-second cleanup boundary
+during source capture. Retained access reads completed in 656–705ms, below
+their 2-second limit; this run does not demonstrate a readback timeout. Original
+artifact `12545216525` has SHA-256
+`dd2b4446442d2b96e56d7321a6f7e615491027230574b47d8b9804d173a780b6`.
+
+A separate opt-in CI diagnostic profiles one genuine disposable access readback
+and stops before capture. It keeps the provider pin, ordinary workflow and all
+authorization/request deadlines unchanged. Its isolated Xdebug build precedes
+the original grant; private raw output is capped by the clone's at-most-64MiB
+tmpfs, with a 32MiB parser limit. Only fixed-label timing JSON is retained;
+the clone and private toolchain are removed. `PROFILE_ONLY` proves instrumented
+timing, never native acceptance, live Google access or a production change.
+The diagnostic's local tests pass; its hosted result remains unverified.
 
 The bootstrap journal source candidate has 725 passing local tests, lint and
 staged MRN QA. Independent source review found no concrete security finding in

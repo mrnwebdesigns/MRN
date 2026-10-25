@@ -1,0 +1,133 @@
+name: MRN disposable access profile (diagnostic only)
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/unified-mainwp-team]
+    paths: [.github/workflows/operations-access-profile.yml]
+permissions:
+  contents: read
+jobs:
+  profile-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      MRN_EXISTING_ACCESS_PROFILE_ONLY: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Read immutable integration inputs
+        id: sources
+        run: |
+          node --input-type=module <<'JS'
+          import { readFileSync, appendFileSync } from 'node:fs';
+          import assert from 'node:assert/strict';
+          const lock = JSON.parse(readFileSync('tools/operations/test/runtime/sources.json', 'utf8'));
+          assert.equal(lock.schema, 1);
+          for (const [name, repository] of [['provider', 'mrnwebdesigns/mrn-mainwp-operations-api'], ['transport', 'mrnwebdesigns/mainwp-mcp'], ['runner', 'mrnwebdesigns/mrn-code-qa-runner'], ['managementWorker', 'mrnwebdesigns/mrn-code-qa-runner']]) {
+            assert.equal(lock[name].repository, repository);
+            assert.match(lock[name].commit, /^[a-f0-9]{40}$/);
+            appendFileSync(process.env.GITHUB_OUTPUT, `${name}=${lock[name].commit}\n`);
+          }
+          JS
+      - name: Request existing read-only access to pinned provider and runner sources
+        id: provider-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.MRN_CI_STANDALONE_REPOS_APP_ID }}
+          private-key: ${{ secrets.MRN_CI_STANDALONE_REPOS_PRIVATE_KEY }}
+          owner: mrnwebdesigns
+          repositories: |
+            mrn-mainwp-operations-api
+            mrn-code-qa-runner
+          permission-contents: read
+      - name: Check out the accepted provider checkpoint
+        uses: actions/checkout@v4
+        with:
+          repository: mrnwebdesigns/mrn-mainwp-operations-api
+          ref: ${{ steps.sources.outputs.provider }}
+          token: ${{ steps.provider-token.outputs.token }}
+          path: .runtime/provider
+          persist-credentials: false
+      - name: Check out the canonical MCP transport
+        uses: actions/checkout@v4
+        with:
+          repository: mrnwebdesigns/mainwp-mcp
+          ref: ${{ steps.sources.outputs.transport }}
+          path: .runtime/transport
+          persist-credentials: false
+      - name: Check out the qualified acquisition runner
+        uses: actions/checkout@v4
+        with:
+          repository: mrnwebdesigns/mrn-code-qa-runner
+          ref: ${{ steps.sources.outputs.runner }}
+          token: ${{ steps.provider-token.outputs.token }}
+          path: .runtime/runner
+          persist-credentials: false
+      - name: Check out the management context reader candidate
+        uses: actions/checkout@v4
+        with:
+          repository: mrnwebdesigns/mrn-code-qa-runner
+          ref: ${{ steps.sources.outputs.managementWorker }}
+          token: ${{ steps.provider-token.outputs.token }}
+          path: .runtime/management-worker
+          persist-credentials: false
+      - name: Install locked test dependencies and build MCP
+        run: |
+          npm ci --ignore-scripts --prefix tools/operations
+          npm ci --ignore-scripts --prefix .runtime/transport
+          npm audit --omit=dev --prefix .runtime/transport
+          npm run build --prefix .runtime/transport
+      - name: Build isolated profiler before original authorization starts
+        run: tools/operations/test/runtime/build-access-profiler.sh "${{ runner.temp }}/mrn-access-profiler"
+      - name: One genuine access readback, then stop (never acceptance)
+        env:
+          MRN_DISPOSABLE_API_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/provider-hook.sh
+          MRN_DISPOSABLE_NATIVE_CHILD: '1'
+          MRN_DISPOSABLE_EXISTING_BINDING_TEST: '1'
+          MRN_DISPOSABLE_EXISTING_SOURCE_CONTEXT_TEST: '1'
+          MRN_DISPOSABLE_EXISTING_SOURCE_CATALOG_TEST: '1'
+          MRN_DISPOSABLE_EXISTING_SOURCE_STORAGE_TEST: '1'
+          MRN_DISPOSABLE_EXISTING_SOURCE_TRANSPORT_TEST: '1'
+          MRN_DISPOSABLE_EXISTING_BINDING_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/access-profile-hook.sh
+          MRN_GATEWAY_MCP_SOURCE: ${{ github.workspace }}/.runtime/transport
+          MRN_GATEWAY_PROVIDER_SOURCE: ${{ github.workspace }}/.runtime/provider
+          MRN_GATEWAY_RUNNER_SOURCE: ${{ github.workspace }}/.runtime/runner
+          MRN_GATEWAY_MANAGEMENT_RUNNER_SOURCE: ${{ github.workspace }}/.runtime/management-worker
+          MRN_GATEWAY_REPORT: ${{ runner.temp }}/gateway-provider-report.json
+          MRN_GATEWAY_EXISTING_BINDING_REPORT: ${{ runner.temp }}/profile-private-binding-report.json
+          MRN_ACCESS_PROFILER_BUILD: ${{ runner.temp }}/mrn-access-profiler
+          MRN_ACCESS_PROFILE_REPORT: ${{ runner.temp }}/access-profile.json
+        run: |
+          if .runtime/provider/tests/runtime/run-dashboard-api.sh; then
+            echo 'Unexpected ordinary completion in diagnostic mode' >&2
+            exit 1
+          fi
+          python3 - "${MRN_ACCESS_PROFILE_REPORT}" <<'PYCODE'
+          import json, pathlib, sys
+          p = pathlib.Path(sys.argv[1])
+          assert p.is_file() and not p.is_symlink() and p.stat().st_size <= 16384
+          r = json.loads(p.read_text())
+          assert r['scope'] == 'disposable-access-profile-only'
+          assert r['result'] == 'PROFILE_ONLY' and r['cleanup'] is True
+          assert r['selected_requests'] == 1 and r['source_unchanged'] is True
+          for field in ('acceptance', 'native_capture', 'full_source', 'admission', 'live_google', 'production_changes'):
+              assert r[field] is False
+          print('PROFILE_ONLY: instrumented timings retained; acceptance remains unverified.')
+          PYCODE
+      - name: Retain only redacted function timings
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: disposable-access-profile-only
+          path: ${{ runner.temp }}/access-profile.json
+          if-no-files-found: error
+          retention-days: 7
+      - name: Remove private profiler build and reports
+        if: always()
+        run: |
+          rm -rf "${{ runner.temp }}/mrn-access-profiler"
+          rm -f "${{ runner.temp }}/profile-private-binding-report.json" "${{ runner.temp }}/gateway-provider-report.json"

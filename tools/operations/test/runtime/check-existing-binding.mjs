@@ -95,12 +95,15 @@ const privateFile = (path, maximum) => {
   return readFileSync(path);
 };
 let phase = 'fixture-validation';
+const profileOnly = process.env.MRN_EXISTING_ACCESS_PROFILE_ONLY === '1';
+const profileStop = new Error('Disposable profile-only stop');
 try {
   assert.equal(process.env.GITHUB_ACTIONS, 'true');
   assert.equal(process.env.MRN_DISPOSABLE_EXISTING_BINDING_TEST, '1');
   assert.equal(process.env.MRN_DISPOSABLE_EXISTING_SOURCE_CONTEXT_TEST, '1');
   assert.equal(process.env.MRN_DISPOSABLE_EXISTING_SOURCE_CATALOG_TEST, '1');
   assert.equal(process.env.MRN_DISPOSABLE_EXISTING_SOURCE_TRANSPORT_TEST, '1');
+  assert.ok(process.env.MRN_EXISTING_ACCESS_PROFILE_ONLY === undefined || profileOnly);
   const [directory, certificate, runtimeCli, contextFile] = process.argv.slice(2);
   assert.equal(process.argv.length, 6); assert.equal(resolve(directory), directory);
   assert.equal(realpathSync(directory), directory);
@@ -185,15 +188,21 @@ try {
   const home = join(work, 'home'); mkdirSync(home, { mode: 0o700 });
   for (const file of ['fixture-network.mjs', 'existing-binding-network.mjs', 'existing-binding-diagnostics.mjs'])
     copyFileSync(new URL(file, import.meta.url), join(work, file));
+  if (profileOnly) for (const file of ['access-profile-network.mjs', 'access-profile-trigger.mjs'])
+    copyFileSync(new URL(file, import.meta.url), join(work, file));
   copyFileSync(certificate, join(work, 'tls.crt'));
   writeFileSync(join(work, 'gateway-network.json'), JSON.stringify({
     address: readFileSync(join(directory, 'existing-binding-v2/tls-ip'), 'utf8').trim(), certificate: join(work, 'tls.crt'),
   }));
   const credentials = JSON.parse(readFileSync(join(directory, 'credentials.json')));
-  const config = { command: process.execPath, args: ['--import', join(work, 'existing-binding-network.mjs'), join(transportRoot, 'dist/index.js')], cwd: home,
+  const config = { command: process.execPath, args: ['--import', join(work, profileOnly ? 'access-profile-network.mjs' : 'existing-binding-network.mjs'), join(transportRoot, 'dist/index.js')], cwd: home,
     envRefs: Object.fromEntries(['MAINWP_URL', 'MAINWP_USER', 'MAINWP_APP_PASSWORD', 'MAINWP_SAFE_MODE', 'HOME'].map(k => [k, { env: `FIXTURE_${k}` }])) };
   const environment = { PATH: process.env.PATH, FIXTURE_MAINWP_URL: 'https://wpcontrol.mrndev.io', FIXTURE_MAINWP_USER: credentials.username,
     FIXTURE_MAINWP_APP_PASSWORD: credentials.password, FIXTURE_MAINWP_SAFE_MODE: 'false', FIXTURE_HOME: home };
+  if (profileOnly) {
+    config.envRefs.MAINWP_PROFILE_DIAGNOSTIC = { env: 'FIXTURE_PROFILE_GATE' };
+    environment.FIXTURE_PROFILE_GATE = 'github-disposable-profile-only';
+  }
   const signer = new IdentitySigner({ keyId: 'disposable-identity-only', connectionId: 'con_RuntimeFixture',
     privateKey: createPrivateKey({ key: readFileSync(join(directory, 'identity.der')), type: 'pkcs8', format: 'der' }) });
   const { registry } = accessRegistry(context.site.site_url);
@@ -438,6 +447,16 @@ try {
   }) });
   transports.add(contextRuntime);
   phase = 'private-context-and-callback';
+  if (profileOnly) {
+    writeFileSync(join(work, 'access-profile-armed'), 'PROFILE_ONLY\n', { mode: 0o600, flag: 'wx' });
+    try {
+      assert.deepEqual(await contextRuntime.context.read(jobId), queued);
+      report.profileContextCompleted = true;
+    } catch { report.profileContextCompleted = false; }
+    // Diagnostic mode stops even when instrumentation causes the normal request
+    // deadline to reject. Never capture, extend authority, retry or claim PASS.
+    throw profileStop;
+  }
   assert.deepEqual(await contextRuntime.context.read(jobId), queued);
   const consumed = store.db.prepare('SELECT body FROM original_management_access_queries WHERE job=?').all(jobId).map(r => JSON.parse(r.body));
   assert.equal(consumed.length, 1); assert.equal(consumed[0].state, 'clear'); assert.equal(consumed[0].phase, 'read-capture');
@@ -710,9 +729,10 @@ try {
   }
   checksComplete = true;
 } catch (error) {
-  report.result = 'FAIL'; report.failure = { phase, recentCalls, network: networkDiagnostic(), sourceContextProvider: sourceDiagnostic(),
+  report.result = profileOnly && error === profileStop ? 'PROFILE_ONLY' : 'FAIL';
+  report.failure = { phase, recentCalls, network: networkDiagnostic(), sourceContextProvider: sourceDiagnostic(),
     code: typeof error?.code === 'string' && /^[A-Z0-9_]{1,80}$/.test(error.code) ? error.code : 'DISPOSABLE_BINDING_CHECK_FAILED' };
-  save(); process.stderr.write(`FAIL disposable v2 binding at ${phase}; private output withheld\n`); process.exitCode = 1;
+  save(); process.stderr.write(`${report.result} disposable v2 binding at ${phase}; private output withheld\n`); process.exitCode = 1;
 } finally {
   try { await closeAccess(); }
   catch {

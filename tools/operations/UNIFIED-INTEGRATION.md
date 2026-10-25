@@ -109,6 +109,16 @@ The original report does not distinguish a request timeout from another transpor
 failure. Fixed error categories and bounded per-call timing now retain that
 distinction. No timeout, current-access check, retry or protocol limit changes.
 
+Run `40054902601` at `863a2a65` then exhausted the unchanged 290-second cleanup
+allocation during source capture; hosted MRN QA `40054902586` passed. Retained
+access readbacks took 656–705ms. A separate opt-in profiling workflow now
+selects one genuine original-bound readback and stops before native capture.
+It builds pinned Xdebug against the same disposable PHP image before the grant,
+keeps provider `9c58c709` and the ordinary workflow unchanged, and exports only
+bounded fixed-label costs after freezing PHP. Raw profiles and the disposable
+clone are deleted; all authority/time limits remain. This is diagnostic work,
+with hosted evidence pending, and cannot satisfy acceptance or source admission.
+
 The bootstrap review permits a distinct one-use metadata delivery marker for
 new originals without spending or expanding provider source/control budgets.
 An additive disabled source wire and pure verifier now check separate registrar
