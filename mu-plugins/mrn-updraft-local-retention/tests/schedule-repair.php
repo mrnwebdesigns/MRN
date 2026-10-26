@@ -27,6 +27,7 @@ $mrn_test_backup_hostname = getenv('MRN_TEST_BACKUP_HOSTNAME');
 $mrn_test_history = array();
 $mrn_test_s3_filename = '';
 $mrn_test_s3_delete_calls = 0;
+$mrn_test_transients = array();
 if (false !== $mrn_test_backup_hostname) {
 	define('MRN_UPDRAFT_BACKUP_HOSTNAME', $mrn_test_backup_hostname);
 }
@@ -64,6 +65,10 @@ function has_filter(string $hook) {
 function get_option(string $name, $default = false) {
 	global $mrn_test_intervals;
 	return $mrn_test_intervals[$name] ?? $default;
+}
+
+function get_transient(string $key) {
+	return $GLOBALS['mrn_test_transients'][$key] ?? false;
 }
 
 function update_option(string $name, $value, $autoload = null): bool {
@@ -237,6 +242,36 @@ $mrn_test_intervals['updraft_s3'] = array(
 );
 
 $report = mrn_updraft_backup_policy_add_runtime_report(array('ok' => true));
+if (MRN_UPDRAFT_LOCAL_RETENTION_VERSION !== $report['backup_policy']['plugin_version']) {
+	throw new RuntimeException('Reported guard version differs from its release constant.');
+}
+$diagnostic_files = array('admin.php' => hash('sha256', 'fixture-code-hash-only'));
+$mrn_test_transients[MRN_Updraft_MainWP_Maintenance::FILE_DIAGNOSTIC_KEY] = array(
+	'schema_version' => 1, 'site_id' => 17, 'request_sha256' => hash('sha256', 'fixture-request'),
+	'recorded_at' => time(), 'sha256' => MRN_Updraft_MainWP_Maintenance::digest($diagnostic_files),
+	'files' => $diagnostic_files, 'last_change' => null,
+);
+$inspection_request = array(
+	'protocol' => 1, 'operation' => 'inspect',
+	'expected_host' => wp_parse_url(home_url('/'), PHP_URL_HOST),
+	'request_ref' => null, 'payload' => array('offset' => 0, 'limit' => 1),
+);
+$settings_before_inspection = $mrn_test_intervals;
+$inspection = MRN_Updraft_MainWP_Policy::dispatch(array(), array(
+	'function' => 'extra_execution',
+	MRN_Updraft_MainWP_Policy::REQUEST_KEY => wp_json_encode($inspection_request, JSON_UNESCAPED_SLASHES),
+));
+if (empty($inspection['ok']) || 17 !== ($inspection['data']['maintenance_file_diagnostics']['site_id'] ?? null) || isset($inspection['data']['maintenance_file_diagnostics']['files']) || $settings_before_inspection !== $mrn_test_intervals) {
+	throw new RuntimeException('Existing policy inspection did not expose bounded read-only diagnostics.');
+}
+$inspection_request['expected_host'] = 'wrong.example';
+$wrong_inspection = MRN_Updraft_MainWP_Policy::dispatch(array(), array(
+	'function' => 'extra_execution',
+	MRN_Updraft_MainWP_Policy::REQUEST_KEY => wp_json_encode($inspection_request, JSON_UNESCAPED_SLASHES),
+));
+if (false !== ($wrong_inspection['ok'] ?? null) || isset($wrong_inspection['data'])) {
+	throw new RuntimeException('Wrong-site policy inspection gained diagnostic access.');
+}
 if (empty($report['backup_policy']['compliant'])) {
 	fwrite(STDERR, "The MainWP runtime report did not expose a compliant backup policy.\n");
 	exit(1);

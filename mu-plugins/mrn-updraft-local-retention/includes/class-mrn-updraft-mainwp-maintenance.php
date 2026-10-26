@@ -20,6 +20,9 @@ final class MRN_Updraft_MainWP_Maintenance {
 	const DIAGNOSTIC_KEY = 'mrn_maintenance_preflight_refusal_v1';
 	const DIAGNOSTIC_TTL = 600;
 	const CHECKPOINT_KEY = 'mrn_maintenance_preflight_checkpoint_v1';
+	const FILE_DIAGNOSTIC_KEY = 'mrn_maintenance_admin_files_v1';
+	const FILE_DIAGNOSTIC_BYTES = 262144;
+	const FILE_DIAGNOSTIC_CHANGES = 64;
 	const CHECKPOINT_STAGES = array( 'child_backup', 'child_snapshot_plugins', 'child_snapshot_themes', 'child_snapshot_core', 'child_offer', 'child_download', 'child_package' );
 	const DIAGNOSTIC_CODES = array(
 		'unsupported_runtime', 'invalid_schema', 'selection_required', 'invalid_override',
@@ -90,6 +93,111 @@ final class MRN_Updraft_MainWP_Maintenance {
 			return null;
 		}
 		return $value;
+	}
+
+	/** Validate a fixed core-relative name, never an absolute path or file content.
+	 *
+	 * @param mixed $path Relative name below wp-admin.
+	 * @return bool
+	 */
+	private static function diagnostic_path( $path ) {
+		return is_string( $path ) && strlen( $path ) <= 240 && preg_match( '#^[A-Za-z0-9._/-]+$#D', $path ) && ! array_intersect( explode( '/', $path ), array( '', '.', '..' ) );
+	}
+
+	/** Read only a bounded, self-consistent observation; it grants no authority.
+	 *
+	 * @return array|null
+	 */
+	private static function file_observation() {
+		$value = get_transient( self::FILE_DIAGNOSTIC_KEY );
+		if ( ! is_array( $value ) || array_keys( $value ) !== array( 'schema_version', 'site_id', 'request_sha256', 'recorded_at', 'sha256', 'files', 'last_change' ) || 1 !== $value['schema_version'] || ! is_int( $value['site_id'] ) || $value['site_id'] < 1 || ! self::is_hash( $value['request_sha256'] ) || ! is_int( $value['recorded_at'] ) || $value['recorded_at'] > time() || time() - $value['recorded_at'] >= self::DIAGNOSTIC_TTL || ! self::is_hash( $value['sha256'] ) || ! is_array( $value['files'] ) || strlen( wp_json_encode( $value ) ) > self::FILE_DIAGNOSTIC_BYTES ) {
+			return null;
+		}
+		foreach ( $value['files'] as $path => $hash ) {
+			if ( ! self::diagnostic_path( $path ) || ! self::is_hash( $hash ) ) {
+				return null;
+			}
+		}
+		$files = $value['files'];
+		ksort( $files, SORT_STRING );
+		if ( self::digest( $files ) !== $value['sha256'] ) {
+			return null;
+		}
+		$change = $value['last_change'];
+		if ( null !== $change ) {
+			if ( ! is_array( $change ) || array_keys( $change ) !== array( 'request_sha256', 'previous_at', 'recorded_at', 'previous_sha256', 'current_sha256', 'changed_count', 'truncated', 'changes' ) || ! self::is_hash( $change['request_sha256'] ) || ! is_int( $change['previous_at'] ) || ! is_int( $change['recorded_at'] ) || $change['previous_at'] > $change['recorded_at'] || $change['recorded_at'] > $value['recorded_at'] || time() - $change['previous_at'] >= self::DIAGNOSTIC_TTL || ! self::is_hash( $change['previous_sha256'] ) || ! self::is_hash( $change['current_sha256'] ) || $change['current_sha256'] !== $value['sha256'] || ! is_int( $change['changed_count'] ) || $change['changed_count'] < 1 || ! is_bool( $change['truncated'] ) || ! is_array( $change['changes'] ) || count( $change['changes'] ) !== min( $change['changed_count'], self::FILE_DIAGNOSTIC_CHANGES ) || $change['truncated'] !== ( $change['changed_count'] > self::FILE_DIAGNOSTIC_CHANGES ) ) {
+				return null;
+			}
+			$seen = array();
+			foreach ( $change['changes'] as $item ) {
+				if ( ! is_array( $item ) || array_keys( $item ) !== array( 'path', 'previous_sha256', 'current_sha256' ) || ! self::diagnostic_path( $item['path'] ) || isset( $seen[ $item['path'] ] ) || ( null === $item['previous_sha256'] && null === $item['current_sha256'] ) || ( null !== $item['previous_sha256'] && ! self::is_hash( $item['previous_sha256'] ) ) || ( null !== $item['current_sha256'] && ! self::is_hash( $item['current_sha256'] ) ) || $item['previous_sha256'] === $item['current_sha256'] || $item['current_sha256'] !== ( $value['files'][ $item['path'] ] ?? null ) ) {
+					return null;
+				}
+				$seen[ $item['path'] ] = true;
+			}
+		}
+		return $value;
+	}
+
+	/** Return diagnostic metadata only; never scan, write or expose the manifest.
+	 *
+	 * @return array|null
+	 */
+	public static function file_diagnostics() {
+		$value = self::file_observation();
+		if ( null === $value ) {
+			return null;
+		}
+		return array(
+			'schema_version' => 1,
+			'site_id' => $value['site_id'],
+			'component' => 'core:admin',
+			'recorded_at' => $value['recorded_at'],
+			'current_sha256' => $value['sha256'],
+			'last_change' => $value['last_change'],
+		);
+	}
+
+	/** Observe the exact existing tree hash only after site/backup validation.
+	 *
+	 * @param array  $files Existing snapshot's sorted name/hash map.
+	 * @param string $hash Existing snapshot's unchanged digest.
+	 */
+	private static function observe_admin_files( $files, $hash ) {
+		if ( ! self::$record_checkpoint || ! is_array( self::$checkpoint ) || ! is_array( $files ) || strlen( wp_json_encode( $files ) ) > 200000 ) {
+			return;
+		}
+		foreach ( $files as $path => $file_hash ) {
+			if ( ! self::diagnostic_path( $path ) || ! self::is_hash( $file_hash ) ) {
+				return;
+			}
+		}
+		$previous = self::file_observation();
+		$change = null;
+		if ( null !== $previous && $previous['site_id'] === self::$checkpoint['site_id'] ) {
+			$change = $previous['last_change'];
+			if ( $previous['sha256'] !== $hash ) {
+				$names = array_unique( array_merge( array_keys( $previous['files'] ), array_keys( $files ) ) );
+				sort( $names, SORT_STRING );
+				$changes = array();
+				$count = 0;
+				foreach ( $names as $path ) {
+					$before = $previous['files'][ $path ] ?? null;
+					$after = $files[ $path ] ?? null;
+					if ( $before !== $after ) {
+						++$count;
+						if ( count( $changes ) < self::FILE_DIAGNOSTIC_CHANGES ) {
+							$changes[] = array( 'path' => $path, 'previous_sha256' => $before, 'current_sha256' => $after );
+						}
+					}
+				}
+				$change = array( 'request_sha256' => self::$checkpoint['request_sha256'], 'previous_at' => $previous['recorded_at'], 'recorded_at' => time(), 'previous_sha256' => $previous['sha256'], 'current_sha256' => $hash, 'changed_count' => $count, 'truncated' => $count > self::FILE_DIAGNOSTIC_CHANGES, 'changes' => $changes );
+			}
+		}
+		$value = array( 'schema_version' => 1, 'site_id' => self::$checkpoint['site_id'], 'request_sha256' => self::$checkpoint['request_sha256'], 'recorded_at' => time(), 'sha256' => $hash, 'files' => $files, 'last_change' => $change );
+		if ( strlen( wp_json_encode( $value ) ) <= self::FILE_DIAGNOSTIC_BYTES ) {
+			set_transient( self::FILE_DIAGNOSTIC_KEY, $value, self::DIAGNOSTIC_TTL );
+		}
 	}
 
 	/** Map native exceptions to closed codes; never retain their text.
@@ -311,10 +419,11 @@ final class MRN_Updraft_MainWP_Maintenance {
 	 * Hash fixed runtime trees; reject symlinks and unbounded inventories.
 	 *
 	 * @param string $root Fixed WP directory.
+	 * @param array|null $observed_files Optional existing name/hash map for diagnostics.
 	 * @return string
 	 * @throws RuntimeException When the closed contract cannot be proven.
 	 */
-	private static function tree( $root ) {
+	private static function tree( $root, &$observed_files = null ) {
 		if ( ! is_dir( $root ) || is_link( $root ) ) {
 			throw new RuntimeException( 'tree_unavailable' );
 		}
@@ -343,6 +452,7 @@ final class MRN_Updraft_MainWP_Maintenance {
 			$files[ substr( $path, strlen( $root ) + 1 ) ] = $hash;
 		}
 		ksort( $files, SORT_STRING );
+		$observed_files = $files;
 		return self::digest( $files );
 	}
 
@@ -396,10 +506,13 @@ final class MRN_Updraft_MainWP_Maintenance {
 			}
 		}
 		self::checkpoint( 'child_snapshot_core' );
+		$admin_files = null;
+		$admin_hash = self::tree( ABSPATH . 'wp-admin', $admin_files );
+		self::observe_admin_files( $admin_files, $admin_hash );
 		$core = array(
 			'version'    => $GLOBALS['wp_version'],
 			'db_version' => get_option( 'db_version' ),
-			'admin'      => self::tree( ABSPATH . 'wp-admin' ),
+			'admin'      => $admin_hash,
 			'includes'   => self::tree( ABSPATH . WPINC ),
 			'root'       => self::digest( $root ),
 		);

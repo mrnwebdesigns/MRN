@@ -60,6 +60,7 @@ try {
 	$runtime = 'ftpext'; MRN_Updraft_MainWP_Maintenance::dispatch( array(), $post ); $runtime = 'direct';
 	check_diagnostic( 'unsupported_runtime' === diagnostic_report()['report']['last_maintenance_preflight_refusal']['code'], 'unsupported runtime remains refused and diagnosable' );
 	check_diagnostic( count( $transients ) === 2 && in_array( array( MRN_Updraft_MainWP_Maintenance::DIAGNOSTIC_KEY, 600 ), $writes, true ) && in_array( array( MRN_Updraft_MainWP_Maintenance::CHECKPOINT_KEY, 600 ), $writes, true ), 'two fixed diagnostic keys with ten-minute TTLs' );
+	check_diagnostic( ! isset( $transients[ MRN_Updraft_MainWP_Maintenance::FILE_DIAGNOSTIC_KEY ] ), 'failed backup proof never reaches file observation or changes the guarded refusal' );
 	$original = $transients; $bad = $input; $bad['site_url'] = 'https://wrong.invalid';
 	MRN_Updraft_MainWP_Maintenance::dispatch( array(), array( 'function' => 'extra_execution', 'mrn_maintenance_request' => json_encode( $bad ) ) );
 	check_diagnostic( $original === $transients, 'wrong site cannot overwrite diagnostics' );
