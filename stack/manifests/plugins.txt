@@ -16,6 +16,7 @@ post-smtp|4.0.2
 /home/mrndev-stack-manager/stack/packages/mrn-announcements.zip
 /home/mrndev-stack-manager/stack/packages/mrn-comment-management.zip
 /home/mrndev-stack-manager/stack/packages/mrn-fontawesome-profile-manager.zip
+/home/mrndev-stack-manager/stack/packages/mrn-form-success.zip
 /home/mrndev-stack-manager/stack/packages/mrn-google-fonts.zip
 /home/mrndev-stack-manager/stack/packages/mrn-config-helper.zip
 /home/mrndev-stack-manager/stack/packages/mrn-media-bulk-tools.zip

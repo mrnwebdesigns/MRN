@@ -5,7 +5,9 @@ import json
 import os
 from pathlib import Path
 import re
+import shutil
 import subprocess
+from urllib.parse import urlparse
 
 from common import ReleaseError, canonical, clean_main, digest, file_hash, read, write
 from fixture import WordPressFixture
@@ -31,6 +33,54 @@ def require_engine_pass(report, *, runtime):
             row = next((line for line in text.splitlines() if line.startswith('| ' + label + ' |')), '')
             if '| Ran | Pass |' not in row:
                 raise ReleaseError('Required MRN runtime row did not pass: ' + label)
+    return True
+
+
+def qualify_form_success(fixture, source, settings, evidence, env):
+    """Require real acceptance/negative cases when Form Success is a default."""
+    if 'mrn-form-success/mrn-form-success.php' not in fixture.inventory['plugins']:
+        return False
+    if urlparse(fixture.url).hostname != '127.0.0.1':
+        raise ReleaseError('Form Success qualification must stay on loopback')
+    source, evidence = Path(source), Path(evidence)
+    inactive = fixture.php("do_action('wp_enqueue_scripts');echo json_encode(["
+                           "'settings'=>MRN_Form_Success::settings(),"
+                           "'script'=>wp_script_is('mrn-form-success','enqueued'),"
+                           "'woocommerce'=>class_exists('WooCommerce'),"
+                           "'wpforms'=>WPFORMS_VERSION]);")
+    if (inactive['settings'] != {'enabled': False, 'diagnostics': False, 'forms': []}
+            or inactive['script'] or inactive['woocommerce']):
+        raise ReleaseError('Form Success must be inactive on an unconfigured new site')
+    write(evidence / 'form-success-default.json', inactive)
+    report = evidence / 'component-mrn-form-success.md'
+    execute([settings['qa_engine'], 'run', '--project-root', source, '--mode', 'release',
+             '--site-path', fixture.public, '--site-url', fixture.url,
+             '--run-smoke', 'never', '--run-accessibility', 'never', '--run-performance', 'never',
+             '--run-cwv', 'never', '--output-file', report],
+            evidence / 'component-mrn-form-success.log', env=env, timeout=1800, cwd=source)
+    require_engine_pass(report, runtime=False)
+    # Default browser/API/AA/performance checks already ran on this disposable
+    # database. Replace only its synthetic form to run the plugin's native cases.
+    shutil.copyfile(source / 'tests/local-safety.php',
+                    fixture.content / 'mu-plugins/001-form-success-test-safety.php')
+    fixture.php("foreach((array)wpforms()->obj('form')->get() as $form)"
+                "wp_delete_post($form->ID,true);echo json_encode(['cleared'=>true]);")
+    forms = fixture.php('require ' + repr(str(source / 'tests/create-fixture.php')) + ';')
+    fixture.php('$fixture=json_decode(' + repr(json.dumps(forms)) + ',true);'
+                'foreach($fixture["forms"] as $row){$id=url_to_postid($row["url"]);'
+                'update_field("field_mrn_page_content_rows",[["acf_fc_layout"=>"wpforms",'
+                '"heading"=>"Form acceptance fixture","form"=>$row["form_id"]]],$id);}'
+                'echo json_encode(["native_builder"=>true]);')
+    write(evidence / 'form-success-forms.json', forms)
+    database = fixture.php('ob_start();require ' + repr(str(source / 'tests/integration.php'))
+                            + ';$out=ob_get_clean();echo json_encode(["result"=>$out]);')
+    write(evidence / 'form-success-database.json', database)
+    execute([settings['node'], source / 'tests/browser.mjs'], evidence / 'form-success-browser.log',
+            env={**env, 'MRN_FS_FIXTURE': str(evidence / 'form-success-forms.json'),
+                 'MRN_PLAYWRIGHT_ROOT': settings['qa_engine_root'],
+                 'MRN_FS_SCREENSHOT': str(evidence / 'form-success-browser.png')},
+            timeout=900, cwd=source)
+    fixture.assert_clean_diagnostics()
     return True
 
 
@@ -90,6 +140,8 @@ def qualify(repo, standalone, built, settings, evidence, selected):
             observed = by_slug.get(item['slug'])
             if not observed or observed.get('matches_release') is not True:
                 raise ReleaseError('Reference runtime component differs: ' + item['slug'])
+        form_success = qualify_form_success(fixture, Path(standalone) / 'mrn-form-success',
+                                            settings, evidence, env)
         fixture.close()
         additional_fixture = WordPressFixture(built['bootstrap'], evidence / 'optional-fixture',
                                                settings, additional=built['optional'])
@@ -136,6 +188,8 @@ def qualify(repo, standalone, built, settings, evidence, selected):
                               for p in sorted(evidence.rglob('*')) if p.is_file()
                               and p.suffix in ('.md', '.json', '.log')},
                  'site_adoption_verified': False, 'site_writes': False}
+        if form_success:
+            proof['coverage'].append('native-form-success')
         write(evidence / 'qualification.json', proof)
         return proof
     finally:

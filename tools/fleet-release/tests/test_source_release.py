@@ -10,6 +10,7 @@ import tarfile
 import tempfile
 import unittest
 from unittest.mock import patch
+from types import SimpleNamespace
 import zipfile
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -298,6 +299,24 @@ class QualificationContracts(unittest.TestCase):
             report.write_text('**Release QA Result: 100% SUCCESS**\n| Accessibility smoke | Skipped | Pass |\n')
             with self.assertRaises(common.ReleaseError): qualify.require_engine_pass(report, runtime=True)
 
+    def test_form_success_rejects_enabled_new_site_before_submitting_or_running_qa(self):
+        native = SimpleNamespace(
+            inventory={'plugins': {'mrn-form-success/mrn-form-success.php': '0.1.2'}},
+            url='http://127.0.0.1:12345',
+            php=lambda body: {'settings': {'enabled': True, 'diagnostics': False, 'forms': []},
+                              'script': False, 'woocommerce': False})
+        with patch.object(qualify, 'execute') as execute:
+            with self.assertRaisesRegex(common.ReleaseError, 'inactive'):
+                qualify.qualify_form_success(native, '.', {}, '.', {})
+            execute.assert_not_called()
+
+    def test_form_success_rejects_remote_fixture_before_any_runtime_access(self):
+        native = SimpleNamespace(
+            inventory={'plugins': {'mrn-form-success/mrn-form-success.php': '0.1.2'}},
+            url='https://example.invalid')
+        with self.assertRaisesRegex(common.ReleaseError, 'loopback'):
+            qualify.qualify_form_success(native, '.', {}, '.', {})
+
     def test_deterministic_build_mismatch_blocks(self):
         with tempfile.TemporaryDirectory() as temporary:
             first = Path(temporary) / 'first'; first.write_bytes(b'first')
@@ -344,6 +363,27 @@ class QualificationContracts(unittest.TestCase):
                     archive.writestr('example/plugin.php',b'second')
                 self.assertTrue(observed)
             with self.assertRaises(common.ReleaseError): build.package_files(path,'example')
+
+    def test_new_git_default_rebuild_requires_exact_locked_bytes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            files = {'example.php': b'<?php /* Plugin Name: Example\nVersion: 1.0.0 */'}
+            archive = root / 'locked.zip'
+            build.fleet.deterministic_zip(archive, {'example/' + k: v for k, v in files.items()})
+            lock = {'plugins': [{'slug': 'example', 'version': '1.0.0', 'package': 'example.zip',
+                                 'main_file': 'example/example.php', 'source': {'type': 'git'},
+                                 'sha256': common.file_hash(archive), 'size_bytes': archive.stat().st_size}]}
+            def read(path): return lock if Path(path).name == 'bootstrap-packages.lock.json' else {'releases': []}
+            with patch.object(build, 'read', side_effect=read), \
+                 patch.object(build, 'roster', return_value=[{'slug': 'example', 'repository': 'MRN', 'relative_source': '.'}]), \
+                 patch.object(build, 'git_files', return_value=files), \
+                 patch.object(build.lock_tool, 'read_header_version', return_value='1.0.0'):
+                result = build.default_packages(root, root, {'held_defaults': {}}, root / 'absent', root / 'out')
+                self.assertEqual(result, lock)
+                self.assertEqual((root / 'out/example.zip').read_bytes(), archive.read_bytes())
+                files['example.php'] += b' changed without a version bump'
+                with self.assertRaises(common.ReleaseError):
+                    build.default_packages(root, root, {'held_defaults': {}}, root / 'absent', root / 'changed')
 
     def test_changed_same_version_package_is_rejected(self):
         with tempfile.TemporaryDirectory() as temporary:

@@ -272,6 +272,14 @@ def default_packages(repo, standalone, policy, inputs, output, registry_inputs=N
             prior = Path(inputs) / str(relative(item['package']))
             known = prior.is_file() and file_hash(prior) == item['sha256']
             same = known and package_files(prior, slug) == files
+            if item['version'] == version and not prior.exists() and not prior.is_symlink():
+                # A newly enrolled Git package need not exist in the historic
+                # vendor input directory. Rebuild only the exact accepted lock;
+                # unknown bytes and same-version source changes still fail.
+                fleet.deterministic_zip(destination, {slug + '/' + k: v for k, v in files.items()})
+                if (file_hash(destination) == item['sha256']
+                        and destination.stat().st_size == item['size_bytes']):
+                    continue
             if item['version'] == version and not same:
                 raise ReleaseError('Changed package source requires a version bump: ' + slug)
             if same and item['version'] == version:
@@ -385,6 +393,13 @@ def prepare_metadata(repo, standalone, policy, inputs, job, selected, registry_i
         + ' over parent ' + theme_versions['mrn-base-stack'] + '. Child content remains site-owned.',
         bootstrap_text, flags=re.M)
     bootstrap_doc.write_text(bootstrap_text)
+    catalog_doc = repo / 'stack/PLUGIN_CATALOG.md'
+    catalog_text = catalog_doc.read_text()
+    for item in catalog['components']:
+        pattern = r'^(\| `' + re.escape(item['slug']) + r'` \| )[^|]+(\|)'
+        catalog_text = re.sub(pattern, lambda match, version=item['version']:
+                              match[1] + version + ' ' + match[2], catalog_text, flags=re.M)
+    catalog_doc.write_text(catalog_text)
     version_path = repo / 'stack/STACK_VERSION.md'
     version_text = version_path.read_text()
     version_text = re.sub(r'^- Stack release: `[^`]+`',

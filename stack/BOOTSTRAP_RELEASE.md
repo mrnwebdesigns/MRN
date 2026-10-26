@@ -38,6 +38,7 @@ The Stack profile selects **33 standard plugins**. The plain profile selects **3
 | WPForms (`wpforms`) | 1.10.2.1 | all |
 | SEOPress (`wp-seopress`) | 10.3 | all |
 | SEOPress PRO (`wp-seopress-pro`) | 10.3 | all |
+| MRN Form Success (`mrn-form-success`) | 0.1.2 | all |
 | MRN Hierarchical Menu Taxonomies (`mrn-hierarchical-menu-taxonomies`) | 0.1.1 | all |
 | MRN Layout Import/Export (`mrn-layout-import-export`) | 0.1.3 | all |
 | MRN Tokens (`mrn-tokens`) | 0.1.4 | all |
@@ -47,10 +48,12 @@ The Stack profile selects **33 standard plugins**. The plain profile selects **3
 - Activate the MRN Base Stack Child 1.1.0 over parent 1.6.9. Child content remains site-owned.
 - Keep SEOPress Free/PRO 10.3 active for native editing. Development disables indexing, tracking and external jobs.
 - Post SMTP 4.0.2 is installed and inactive in development. Provider configuration and verified delivery belong to launch.
-- reCAPTCHA uses qualified 0.1.4. The 0.2.2 Gloves pilot source is accepted, but generic native-controller qualification and broader adoption remain gated.
+- reCAPTCHA Manager uses the qualified source package pinned in the bootstrap lock. Provider credentials, assessment and any site cutover remain separately verified operations.
 - The MRN MU loader supplies the 12 documented platform components plus wrapper/shared support.
 - Premium licenses, reCAPTCHA/UptimeRobot credentials and backup destination settings stay in the existing secure manager configuration; no credentials are shipped in the release archive.
 - Development scheduled backups remain manual. Shared-runtime writes still require the established fresh remote database-backup gate.
+
+- Form Success is installed with tracking inactive. Configure the site’s own lead forms in Settings → MRN Form Success; existing consent and GTM/GA4 rules own analytics delivery.
 
 ## Excluded defaults
 

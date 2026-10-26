@@ -99,7 +99,8 @@ def commit(repo, message, epoch, settings, evidence):
     git(repo, 'add', '--', 'stack/manifests/component-catalog.json',
         'stack/manifests/bootstrap-packages.lock.json', 'stack/manifests/stack-plugin-releases.json',
         'stack/manifests/optional-plugin-releases.json',
-        'stack/manifests/release-locks', 'stack/BOOTSTRAP_RELEASE.md', 'stack/STACK_VERSION.md', 'stack/CHANGELOG.md')
+        'stack/manifests/release-locks', 'stack/BOOTSTRAP_RELEASE.md', 'stack/PLUGIN_CATALOG.md',
+        'stack/STACK_VERSION.md', 'stack/CHANGELOG.md')
     if git(repo, 'diff', '--cached', '--name-only'):
         staged_gate(repo, settings, evidence)
         # Full source/runtime qualification and normal PR checks still precede
