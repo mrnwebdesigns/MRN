@@ -5,7 +5,9 @@ import re
 # Instrumentation revision 2: the selected HTTP profile file measured 34,092,391
 # bytes. This read-only diagnostic budget stays below its 64MiB storage cap.
 MAXIMUM = 40 * 1024 * 1024
-MAX_LINES = 1_000_000
+# Revision 3: the admitted file contained 3,919,774 lines. This parser-work
+# budget is diagnostic only; reference, line-width and byte limits stay fixed.
+MAX_LINES = 5_000_000
 GROUPS = {
     'Content_Access': ('management_existing_readback', 'readback_for'),
     'Content_Source': ('verify', 'readback'),
@@ -54,10 +56,12 @@ def parse_profile(stream):
             raise ValueError('Unresolved profile reference')
         return table[key] if functions else None
 
-    for count in range(MAX_LINES):
+    for count in range(MAX_LINES + 1):
         raw = stream.readline(16385)
         if not raw:
             break
+        if count >= MAX_LINES:
+            raise ValueError('Excessive profile lines')
         total_bytes += len(raw)
         if total_bytes > MAXIMUM or len(raw) > 16384 or not raw.endswith(b'\n'):
             raise ValueError('Oversized or truncated profile')

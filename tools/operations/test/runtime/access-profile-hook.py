@@ -95,7 +95,7 @@ def main():
     assert toolchain['php_api'] == 'nts' and re.fullmatch('[a-f0-9]{40}', toolchain['xdebug_tree'])
     assert hashlib.sha256(private(build / 'xdebug.so', 16 * 1024 * 1024)).hexdigest() == toolchain['extension_sha256']
     lock = json.loads((HERE / 'sources.json').read_text())
-    report = {'schema': 1, 'diagnostic_revision': 2, 'result': 'PROFILE_INCOMPLETE', 'scope': 'disposable-access-profile-only',
+    report = {'schema': 1, 'diagnostic_revision': 3, 'result': 'PROFILE_INCOMPLETE', 'scope': 'disposable-access-profile-only',
               'acceptance': False, 'native_capture': False, 'full_source': False, 'admission': False,
               'live_google': False, 'production_changes': False, 'source': lock, 'toolchain': toolchain,
               'capture_cap_bytes': 67108864, 'parser_cap_bytes': parser.MAXIMUM, 'parser_cap_lines': parser.MAX_LINES,

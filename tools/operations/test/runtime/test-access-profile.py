@@ -52,6 +52,17 @@ class ProfileTests(unittest.TestCase):
         raw = sample().replace(b'MRN_MainWP_Content_Access::management_existing_readback', b'unknown_function')
         self.assertFalse(parser.parse_profile(io.BytesIO(raw))['representative_path'])
 
+    def test_exact_parser_line_boundary_and_one_more(self):
+        raw = sample(); lines = raw.count(b'\n')
+        with patch.object(parser, 'MAX_LINES', lines):
+            self.assertTrue(parser.parse_profile(io.BytesIO(raw))['representative_path'])
+            with self.assertRaisesRegex(ValueError, '^Excessive profile lines$'):
+                parser.parse_profile(io.BytesIO(raw + b'\n'))
+        truncated = raw.rsplit(b'summary:', 1)[0] + b'summary: 100'
+        with patch.object(parser, 'MAX_LINES', truncated.count(b'\n') + 1):
+            with self.assertRaisesRegex(ValueError, '^Oversized or truncated profile$'):
+                parser.parse_profile(io.BytesIO(truncated))
+
     def test_malformed_truncated_and_oversized(self):
         invalid = [sample()[:-20], sample().replace(b'3.5.3', b'3.4.0'),
                    sample().replace(b'Time_(10ns)', b'Other'), sample() + b'extra\n',

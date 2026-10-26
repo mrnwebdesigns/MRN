@@ -44,6 +44,16 @@ Use already-authorized test identities or separately reviewed administrative tes
 
 ## Latest source evidence, 2026-10-26
 
+Revision2 at `624aeff9` / run `40319019668` admitted one 33,941,479-byte file
+and counted 3,919,774 lines, then correctly refused its one-million-line work
+budget. Original artifact `12647837899` SHA-256
+`04dac48c00a3961a1e61737c02a7fcae7da8ef770cc1e62b6fca7bb271695a60` remains
+incomplete. Hosted MRN QA `40319024772` passed. Diagnostic revision3 now budgets
+five million lines based on that measured volume, preserving the 40MiB reader,
+64MiB storage, 16KiB export, 50,000 references and complete-profile checks.
+An EOF sentinel fixes exact line-boundary handling; one line beyond still fails.
+No product or authorization budget changes; no usable timings are claimed yet.
+
 The independently reviewed `0faef367` diagnostic produced exact metadata in run
 `40317416169`: one regular 34,092,391-byte trace, refused by its 33,554,432-byte
 reader limit. HTTP200, active profiling, unchanged provider source, frozen

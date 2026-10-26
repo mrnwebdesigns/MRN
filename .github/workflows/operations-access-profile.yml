@@ -123,7 +123,7 @@ jobs:
           print('PROFILE_ONLY: instrumented timings retained; acceptance remains unverified.')
           PYCODE
       - name: Retain only redacted function timings
-        # Diagnostic revision 2 retains the original 64MiB storage/16KiB export caps.
+        # Diagnostic revision 3 retains 40MiB read/64MiB storage/16KiB export caps.
         if: always()
         uses: actions/upload-artifact@v4
         with:
