@@ -20,6 +20,7 @@
 
 			var summary = item.querySelector( '.mrn-faq__question' );
 			var answer = item.querySelector( '.mrn-faq__answer' );
+			var transitionHandler;
 			var prefersReducedMotion = window.matchMedia && window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches;
 
 			if ( ! summary || ! answer ) {
@@ -33,6 +34,19 @@
 				answer.classList.remove( 'is-expanded' );
 				answer.style.height = '0px';
 			}
+
+			// Native named details may close a sibling without clicking its summary.
+			item.addEventListener( 'toggle', function() {
+				if ( ! item.open && item.hasAttribute( 'name' ) ) {
+					if ( transitionHandler ) {
+						answer.removeEventListener( 'transitionend', transitionHandler );
+						transitionHandler = null;
+					}
+					answer.classList.remove( 'is-expanded' );
+					answer.style.height = '0px';
+					item.dataset.mrnFaqAnimating = 'false';
+				}
+			} );
 
 			summary.addEventListener( 'click', function( event ) {
 				var startHeight;
@@ -60,7 +74,7 @@
 					answer.classList.remove( 'is-expanded' );
 					setFaqAnswerHeight( answer, '0px' );
 
-					answer.addEventListener( 'transitionend', function handleClose( transitionEvent ) {
+					transitionHandler = function handleClose( transitionEvent ) {
 						if ( transitionEvent.propertyName !== 'height' ) {
 							return;
 						}
@@ -68,7 +82,9 @@
 						item.open = false;
 						item.dataset.mrnFaqAnimating = 'false';
 						answer.removeEventListener( 'transitionend', handleClose );
-					} );
+						transitionHandler = null;
+					};
+					answer.addEventListener( 'transitionend', transitionHandler );
 
 					return;
 				}
@@ -80,7 +96,7 @@
 				endHeight = answer.scrollHeight;
 				setFaqAnswerHeight( answer, endHeight + 'px' );
 
-				answer.addEventListener( 'transitionend', function handleOpen( transitionEvent ) {
+				transitionHandler = function handleOpen( transitionEvent ) {
 					if ( transitionEvent.propertyName !== 'height' ) {
 						return;
 					}
@@ -88,7 +104,9 @@
 					setFaqAnswerHeight( answer, 'auto' );
 					item.dataset.mrnFaqAnimating = 'false';
 					answer.removeEventListener( 'transitionend', handleOpen );
-				} );
+					transitionHandler = null;
+				};
+				answer.addEventListener( 'transitionend', transitionHandler );
 			} );
 
 			item.dataset.mrnFaqMounted = 'true';

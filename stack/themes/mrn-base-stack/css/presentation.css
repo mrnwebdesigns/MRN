@@ -59,3 +59,5 @@
 	.mrn-record--comparisons { position: static; }
 	.mrn-record__media video { display: none; }
 }
+/* Word wrappers preserve the original text nodes' whitespace and inline markup. */
+.mrn-scroll-word { display: inline-block; }

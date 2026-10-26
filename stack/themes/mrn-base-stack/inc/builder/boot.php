@@ -13,11 +13,23 @@ require_once __DIR__ . '/acf-field-finalization.php';
 
 require_once __DIR__ . '/helpers.php';
 
+require_once __DIR__ . '/list-pagination.php';
+
+require_once __DIR__ . '/list-pagination-seo.php';
+
 require_once __DIR__ . '/presentation.php';
 
 require_once __DIR__ . '/hero-frame.php';
 
 require_once __DIR__ . '/cta-frame.php';
+require_once __DIR__ . '/faq-aside.php';
+require_once __DIR__ . '/text-tags.php';
+require_once __DIR__ . '/image-action.php';
+require_once __DIR__ . '/card-frame.php';
+require_once __DIR__ . '/content-frame.php';
+require_once __DIR__ . '/logos-labeled.php';
+require_once __DIR__ . '/tabs-frame.php';
+require_once __DIR__ . '/showcase-bento.php';
 
 require_once __DIR__ . '/lazy-layouts.php';
 
@@ -28,5 +40,7 @@ require_once __DIR__ . '/performance.php';
 require_once __DIR__ . '/repeater-limits.php';
 
 require_once __DIR__ . '/render.php';
+
+require_once __DIR__ . '/seopress-analysis.php';
 
 require_once __DIR__ . '/field-groups.php';

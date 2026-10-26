@@ -570,7 +570,7 @@ final class MRN_Updraft_MainWP_Policy {
 		return $plan;
 	}
 
-	/** @return object|WP_Error Updraft's existing S3 engine, scoped to one reviewed instance. */
+	/** @return array{object: object, settings: array}|WP_Error Existing S3 engine and its reviewed instance settings. */
 	private static function provider( $id, $expected_path = null ) {
 		$storage = UpdraftPlus_Storage_Methods_Interface::get_storage_objects_and_ids( array( 's3' ) );
 		$object = $storage['s3']['object'] ?? null;
