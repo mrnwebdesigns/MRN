@@ -776,7 +776,7 @@
         "state": "confirmed-symlinked"
       },
       "target_tier": "platform-required",
-      "version": "0.7.0"
+      "version": "0.7.1"
     },
     {
       "classification": "development-tool",
@@ -2019,7 +2019,7 @@
         "state": "confirmed-independent-dashboard"
       },
       "target_tier": "dashboard-only",
-      "version": "0.13.11"
+      "version": "0.13.12"
     },
     {
       "classification": "operations-policy",

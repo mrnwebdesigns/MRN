@@ -1,7 +1,7 @@
 # Stack Version
 
 ## Candidate Release
-- Stack release: `2026.10.26-fleet-auto-b2a69f405ae5`
+- Stack release: `2026.10.26-fleet-auto-a32c6ce9617d`
 - Release date: `2026-10-26`
 - Status: `source snapshot; qualification/publication evidence establishes Fleet readiness; site rollout separate`
 
@@ -27,6 +27,7 @@
 | `mrn-environment-runtime` | `0.6.1` |
 | `mrn-environment-runtime-loader` | `0.6.1` |
 | `mrn-fontawesome-profile-manager` | `0.5.1` |
+| `mrn-form-success` | `0.1.2` |
 | `mrn-google-fonts` | `1.0.7` |
 | `mrn-hierarchical-menu-taxonomies` | `0.1.1` |
 | `mrn-layout-import-export` | `0.1.3` |
@@ -37,7 +38,7 @@
 | `mrn-public-security-hardening-loader` | `0.4.4` |
 | `mrn-recaptcha-enterprise-manager` | `0.2.3` |
 | `mrn-reusable-block-library` | `0.2.3` |
-| `mrn-schema-bridge` | `0.7.0` |
+| `mrn-schema-bridge` | `0.7.1` |
 | `mrn-schema-bridge-loader` | `0.7.0` |
 | `mrn-shared-assets` | `0.2.2` |
 | `mrn-shared-assets-loader` | `0.2.2` |
@@ -49,7 +50,7 @@
 | `mrn-tokens` | `0.1.4` |
 | `mrn-universal-sticky-bar` | `1.3.0` |
 | `mrn-updraft-backup-policy-loader` | `0.6.1` |
-| `mrn-updraft-local-retention` | `0.8.7` |
+| `mrn-updraft-local-retention` | `0.8.9` |
 
 ## Stack Manifests
 - Plugins manifest: [`manifests/plugins.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/plugins.txt)
