@@ -229,6 +229,7 @@ final class MRN_Updraft_MainWP_Policy {
 			'backups' => $rows, 'next_offset' => $offset + count( $rows ) < count( $history ) ? $offset + count( $rows ) : null,
 			'remote_objects_verified' => false,
 			'maintenance_file_diagnostics' => class_exists( 'MRN_Updraft_MainWP_Maintenance', false ) ? MRN_Updraft_MainWP_Maintenance::file_diagnostics() : null,
+			'maintenance_runtime_log_policy' => class_exists( 'MRN_Updraft_MainWP_Maintenance', false ) ? MRN_Updraft_MainWP_Maintenance::runtime_log_policy() : null,
 		);
 	}
 

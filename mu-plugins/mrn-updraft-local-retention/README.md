@@ -63,7 +63,7 @@ MRN_QA_CODE_ANALYSIS_SCOPE=all mrn-qa run --project-root /Users/khofmeyer/Develo
 
 Runtime browser, accessibility, API, and performance checks should be run separately against an explicit target site when this plugin change affects rendered output or live WordPress behavior.
 
-## Guarded MainWP maintenance (0.8.8 candidate)
+## Guarded MainWP maintenance (0.8.9 candidate)
 
 After each successful native update, the batch admits only the selected item's
 approved version and new code tree into its next expected state. Activation,
@@ -161,9 +161,10 @@ normal native WordPress maintenance fixture must also pass before a release.
 Version 0.8.8 adds `maintenance_file_diagnostics` to existing authenticated
 `get_backup_policy_v1` inspection, including standalone sites without a full
 Stack loader. It observes the existing `wp-admin` name/hash map only after the
-site and remote-backup checks in a maintenance preflight. The original complete
-tree hash and all stale-state refusals remain unchanged, including changes to
-logs, hidden files and non-PHP files. No names are ignored to make an update pass.
+site and remote-backup checks in a maintenance preflight. The diagnostic aggregate always uses the complete
+tree, including logs, hidden files and non-PHP files. In 0.8.9 the code-protection
+aggregate separately applies the single approved runtime-log policy below; the
+two hashes must not be interpreted as the same fingerprint when it applies.
 
 One fixed ten-minute transient retains a bounded map of relative filenames and
 SHA-256 values. Inspection returns only the component, site ID, timestamps,
@@ -182,3 +183,57 @@ and a null `last_change` does not prove no file ever changed. Use
 `php tests/maintenance-file-diagnostics.php` for real disposable filesystem
 coverage, and the unchanged Dashboard native maintenance fixture for update,
 backup, authorization, activation, stale-state and core-refusal coverage.
+
+### Approved native runtime-log policy (0.8.9)
+
+Kyle approved this exact exception on October 26, 2026 after two Banks previews
+proved that only `wp-admin/php_errorlog` changed. This deliberately changes the
+previous all-file stale-state rule; it does not infer the same cause on other sites.
+
+Only the contents of the existing fixed `wp-admin/php_errorlog` may use a
+policy marker in the code-protection digest. PHP must have `log_errors` enabled
+and its native `error_log` must be exactly `php_errorlog` or that exact absolute
+path. Missing, disabled, relative aliases or different configuration retain full
+content hashing. There is no caller-supplied path, pattern or override.
+
+The qualifying log must be readable, regular and have one hard link, with no
+symlink or physical-path alias in its fixed admin location. Unsafe paths refuse.
+Identity/configuration changes during the full scan refuse with
+`runtime_log_policy_changed`. The complete scan, file-count and 512 MiB aggregate
+limits remain in force. Full log hashes remain diagnostic evidence. Its presence
+is still in the code digest: creation or removal changes the plan. Changing PHP's
+qualifying configuration also changes the marker. Every other file keeps literal
+hashing, including other logs, nested php_errorlog files, all PHP, wp-includes,
+plugins and themes. No log is deleted, moved, truncated or returned.
+
+Existing authenticated backup-policy inspection exposes
+`maintenance_runtime_log_policy` with the fixed relative path, policy version,
+`applied`, closed `reason`, `presence_bound` and `full_hash_diagnostics`. It reads
+only native configuration/fixed file metadata, never log bodies, and performs no
+write or recursive scan. It exposes no absolute path, inode or configuration
+value. Unknown configuration is reported as `native_configuration_unproven`;
+missing logs as `log_absent`, unsafe paths as `unsafe_log_path`. This metadata
+is informational; the guard independently rechecks before every snapshot.
+
+Remote Updraft proof, exact site/package/versions, confirmation, per-plugin major
+overrides, activation protection, core refusal, durable once-only ledgers, other
+code fingerprints and independent readback are unchanged. Run
+`php tests/maintenance-runtime-log.php` for real filesystem regression coverage.
+`tests/maintenance-runtime-log-native.php` adds native Dashboard/child update
+coverage when loaded by the existing disposable native-maintenance harness.
+No production update or fleet adoption is implied by these fixture passes.
+
+Repeat the native extension with the existing MRN provider source:
+
+```bash
+python3 tests/run-maintenance-runtime-log-native.py \
+  --provider-root /path/to/mrn-mainwp-operations-api \
+  --wordpress-source /path/to/reproducible-public-wordpress-core \
+  --evidence /path/to/new-private-evidence-directory \
+  --php /path/to/php8.2
+```
+
+Repeat with PHP 8.4 and a different evidence directory. The wrapper copies the
+provider's existing fixture into evidence, inserts this test at its one explicit
+anchor and refuses an incompatible harness. No existing worktree, database or
+site is modified. The provider fixture creates and removes its own database.
