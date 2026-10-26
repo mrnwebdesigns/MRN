@@ -194,6 +194,18 @@ function mrn_base_stack_wrap_cloned_reusable_builder_markup( $inner_markup, arra
 		$row_attributes = mrn_base_stack_merge_builder_attributes( $row_attributes, $frame_contract['attributes'] );
 	}
 
+	if ( in_array( $layout_name, array( 'faq', 'faq_block' ), true ) ) {
+		$frame_contract = mrn_base_stack_get_faq_frame_contract( $row );
+		$row_classes = trim( $row_classes . ' ' . implode( ' ', $frame_contract['classes'] ) );
+		$row_attributes = mrn_base_stack_merge_builder_attributes( $row_attributes, $frame_contract['attributes'] );
+		if ( ! empty( $frame_contract['classes'] ) && ! empty( $row['faq_exclusive'] ) && class_exists( 'WP_HTML_Tag_Processor' ) ) {
+			$tags = new WP_HTML_Tag_Processor( $inner_markup );
+			$group = wp_unique_id( 'mrn-faq-' );
+			while ( $tags->next_tag( array( 'tag_name' => 'DETAILS', 'class_name' => 'mrn-faq__item' ) ) ) { $tags->set_attribute( 'name', $group ); }
+			$inner_markup = $tags->get_updated_html();
+		}
+	}
+
 	$row_attribute_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $row_attributes ) : '';
 
 		$anchor_fallback = '';

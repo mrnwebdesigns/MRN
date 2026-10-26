@@ -15,6 +15,10 @@ $heading_tag      = isset( $row['heading_tag'] ) ? strtolower( (string) $row['he
 $subheading       = isset( $row['subheading'] ) ? trim( (string) $row['subheading'] ) : '';
 $subheading_tag   = isset( $row['subheading_tag'] ) ? strtolower( (string) $row['subheading_tag'] ) : 'p';
 $items            = isset( $row['logo_items'] ) && is_array( $row['logo_items'] ) ? $row['logo_items'] : array();
+$labeled          = 'labeled' === ( $row['logos_presentation'] ?? '' );
+$auto_grid        = 'auto-grid' === ( $row['logos_presentation'] ?? '' );
+$icon_strip       = 'icons' === ( $row['logos_presentation'] ?? '' );
+$logos_description = $labeled && is_string( $row['logos_description'] ?? null ) ? $row['logos_description'] : '';
 $display_mode     = isset( $row['display_mode'] ) ? sanitize_key( (string) $row['display_mode'] ) : 'grid';
 $logos_per_page   = isset( $row['per_page'] ) ? max( 3, min( 7, (int) $row['per_page'] ) ) : 6;
 $responsive       = mrn_base_stack_get_logos_responsive_config( $row );
@@ -46,7 +50,7 @@ if ( ! in_array( $subheading_tag, $allowed_tags, true ) ) {
 	$subheading_tag = 'p';
 }
 
-$display_mode = mrn_base_stack_normalize_builder_layout_display_mode( $display_mode, 'logos' );
+$display_mode = $labeled || $icon_strip || $auto_grid ? 'grid' : mrn_base_stack_normalize_builder_layout_display_mode( $display_mode, 'logos' );
 
 $valid_items = array();
 foreach ( $items as $item ) {
@@ -59,17 +63,19 @@ foreach ( $items as $item ) {
 		? mrn_base_stack_get_repeater_item_primary_link( $item )
 		: array();
 
-	if ( ! function_exists( 'mrn_base_stack_image_has_content' ) || ! mrn_base_stack_image_has_content( $image ) ) {
+	$item_label = $labeled && is_string( $item['item_label'] ?? null ) ? $item['item_label'] : '';
+	if ( ( ! function_exists( 'mrn_base_stack_image_has_content' ) || ! mrn_base_stack_image_has_content( $image ) ) && '' === $item_label ) {
 		continue;
 	}
 
 	$valid_items[] = array(
 		'image' => $image,
 		'link'  => $item_link,
+		'item_label' => $item_label,
 	);
 }
 
-if ( '' === $label && '' === $heading && '' === $subheading && empty( $valid_items ) ) {
+if ( '' === $label && '' === $heading && '' === $subheading && empty( $valid_items ) && '' === trim( wp_strip_all_tags( $logos_description ) ) ) {
 	return;
 }
 
@@ -99,6 +105,9 @@ $section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_clas
 $section_attrs     = $display_contract['attributes'];
 $section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array() );
 $section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
+$labeled_contract = mrn_base_stack_get_labeled_logos_contract( $row );
+$section_classes = mrn_base_stack_merge_builder_section_classes( $section_classes, $labeled_contract );
+$section_attrs = mrn_base_stack_merge_builder_attributes( $section_attrs, $labeled_contract['attributes'] );
 $slider_id         = 'mrn-logos-' . $row_index . '-' . wp_generate_password( 6, false, false );
 $section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';
 $surface_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $section_styles ) : implode( '; ', $section_styles );
@@ -188,8 +197,14 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 					$item_link   = $item['link'];
 					$url         = isset( $item_link['url'] ) ? (string) $item_link['url'] : '';
 					$link_target = isset( $item_link['target'] ) ? (string) $item_link['target'] : '';
+					$image_info = $labeled ? wp_get_attachment_image_src( mrn_base_stack_get_image_attachment_id( $image ), 'full' ) : false;
+					$image_width = is_array( $image_info ) ? absint( $image_info[1] ) : 0;
 					?>
 						<div class="mrn-logos-row__item mrn-logos-row__item--logo-wall mrn-ui__item">
+						<?php if ( $labeled ) : ?>
+							<?php if ( '' !== $item['item_label'] ) : ?><p class="mrn-logos-row__item-label"><?php echo esc_html( $item['item_label'] ); ?></p><?php endif; ?>
+							<span class="mrn-logos-row__labeled-image"<?php if ( $image_width ) : ?> style="--mrn-logos-image-width:<?php echo esc_attr( (string) $image_width ); ?>px"<?php endif; ?>>
+						<?php endif; ?>
 						<?php if ( '' !== $url ) : ?>
 							<a
 									class="mrn-ui__link"
@@ -202,14 +217,17 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 								<?php endif; ?>
 							>
 						<?php endif; ?>
-						<?php echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image( $image, 'mrn-logo' ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						<?php echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image( $image, $labeled || $auto_grid ? 'full' : 'mrn-logo' ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 						<?php if ( '' !== $url ) : ?>
 							</a>
 						<?php endif; ?>
+						<?php if ( $labeled ) : ?></span><?php endif; ?>
 					</div>
 				<?php endforeach; ?>
 			</div>
 		<?php endif; ?>
+		<?php if ( '' !== trim( $logos_description ) ) : ?><div class="mrn-logos-row__description"><?php echo apply_filters( 'the_content', $logos_description ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Native WYSIWYG content uses the standard content filters. ?>
+		</div><?php endif; ?>
 			</div>
 		</div>
 	</div>

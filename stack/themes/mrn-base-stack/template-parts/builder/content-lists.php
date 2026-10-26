@@ -18,11 +18,7 @@ $subheading     = isset( $row['subheading'] ) ? trim( (string) $row['subheading'
 $subheading_tag = mrn_base_stack_normalize_text_tag( $row['subheading_tag'] ?? '', 'p' );
 $intro          = isset( $row['content'] ) ? (string) $row['content'] : '';
 
-$post_type_choices = mrn_base_stack_get_content_list_post_type_choices();
-$list_post_type    = isset( $row['list_post_type'] ) ? sanitize_key( (string) $row['list_post_type'] ) : 'post';
-if ( ! isset( $post_type_choices[ $list_post_type ] ) ) {
-	$list_post_type = isset( $post_type_choices['post'] ) ? 'post' : (string) array_key_first( $post_type_choices );
-}
+$list_post_type = mrn_base_stack_get_content_list_source_type( $row );
 
 $list_style = isset( $row['list_style'] ) ? sanitize_key( (string) $row['list_style'] ) : 'unordered';
 if ( ! in_array( $list_style, array( 'unordered', 'ordered' ), true ) ) {
@@ -42,28 +38,7 @@ if ( '' !== $display_style && ! isset( $available_display_styles[ $display_style
 	$display_style = '';
 }
 
-$orderby_choices = mrn_base_stack_get_content_list_orderby_choices();
-$list_orderby    = isset( $row['orderby'] ) ? sanitize_key( (string) $row['orderby'] ) : 'date';
-if ( ! isset( $orderby_choices[ $list_orderby ] ) ) {
-	$list_orderby = 'date';
-}
-
-$sort_order = isset( $row['order'] ) ? strtoupper( sanitize_key( (string) $row['order'] ) ) : 'DESC';
-if ( ! in_array( $sort_order, array( 'ASC', 'DESC' ), true ) ) {
-	$sort_order = 'DESC';
-}
-
-if ( 'grid' === $display_style ) {
-	$list_orderby = 'menu_order';
-	$sort_order   = 'ASC';
-}
-
-$posts_per_page      = max( 1, absint( $row['posts_per_page'] ?? 10 ) );
-$offset              = absint( $row['offset'] ?? 0 );
-$filter_source       = isset( $row['filter_source'] ) ? sanitize_key( (string) $row['filter_source'] ) : 'none';
-$manual_post_ids     = 'manual_posts' === $filter_source ? mrn_base_stack_get_content_list_manual_post_ids( $row, $list_post_type ) : array();
-$tax_query           = mrn_base_stack_get_content_list_tax_query( $row, $context_post_id, $list_post_type );
-$show_pagination     = ! empty( $row['enable_pagination'] );
+$show_pagination     = mrn_base_stack_content_list_can_paginate( $row );
 $show_featured_image = ! empty( $row['show_featured_image'] );
 $show_publish_date   = ! empty( $row['show_publish_date'] );
 $show_excerpt        = ! empty( $row['show_excerpt'] );
@@ -80,35 +55,7 @@ $accent_slug         = isset( $row['bottom_accent_style'] ) ? (string) $row['bot
 $width_layers = mrn_base_stack_get_section_width_layers( $row['section_width'] ?? '', 'wide', 'wide' );
 
 $current_page = $show_pagination ? mrn_base_stack_get_content_list_current_page( $context_post_id, $index ) : 1;
-$query_args   = array(
-	'post_type'           => $list_post_type,
-	'post_status'         => 'publish',
-	'posts_per_page'      => $posts_per_page,
-	'orderby'             => $list_orderby,
-	'order'               => $sort_order,
-	'ignore_sticky_posts' => true,
-	'no_found_rows'       => ! $show_pagination,
-);
-
-if ( 'manual_posts' === $filter_source ) {
-	$query_args['post__in'] = ! empty( $manual_post_ids ) ? $manual_post_ids : array( 0 );
-	$query_args['orderby']  = 'post__in';
-	$query_args['order']    = 'ASC';
-}
-
-if ( $show_pagination ) {
-	$query_args['paged'] = max( 1, $current_page );
-} elseif ( $offset > 0 ) {
-	$query_args['offset'] = $offset;
-}
-
-if ( ! empty( $tax_query ) ) {
-	// Builder term filters intentionally constrain the query by taxonomy selections.
-	// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
-	$query_args['tax_query'] = $tax_query;
-}
-
-$query = new WP_Query( $query_args );
+$query        = mrn_base_stack_query_content_list( $row, $context_post_id, $index );
 
 $has_intro      = '' !== trim( wp_strip_all_tags( $intro ) );
 $has_heading    = '' !== $heading;

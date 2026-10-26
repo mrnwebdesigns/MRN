@@ -1,6 +1,6 @@
 === MRN Updraft Backup Policy ===
 Contributors: mrnwebdesigns
-Stable tag: 0.8.9
+Stable tag: 0.8.10
 Tested up to: 7.1
 Requires PHP: 7.4
 
@@ -14,6 +14,9 @@ Supports the shared Stack loader or the standalone MU bootstrap. See README.md
 for configuration, prerequisites, domain cutover, and verification details.
 
 == Changelog ==
+
+= 0.8.10 =
+* Correct the static-analysis return contract for the existing provider/settings tuple; runtime behavior is unchanged.
 
 = 0.8.9 =
 * Apply the owner-approved content-only exception for PHP-configured wp-admin/php_errorlog; preserve full diagnostic hashes and log presence.

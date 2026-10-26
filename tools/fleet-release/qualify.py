@@ -11,6 +11,7 @@ from urllib.parse import urlparse
 
 from common import ReleaseError, canonical, clean_main, digest, file_hash, read, write
 from fixture import WordPressFixture
+from presentation import qualify_presentations
 
 
 def execute(command, evidence, *, env=None, stdin=None, timeout=3600, cwd=None):
@@ -112,10 +113,12 @@ def qualify(repo, standalone, built, settings, evidence, selected):
         browser['login_url'] = fixture.inventory['login_url']
         execute([settings['node'], Path(__file__).with_name('fixture-browser.cjs')],
                 evidence / 'native-browser.log', stdin=json.dumps(browser), timeout=900, cwd=repo)
+        presentations = qualify_presentations(fixture, repo, settings, evidence / 'presentations')
         env = {**os.environ, 'MRN_QA_SITE_PATH': str(fixture.public),
                'MRN_QA_SITE_URL': fixture.url, 'MRN_QA_STACK_ROOT': str(repo),
                'MRN_STANDALONE_PLUGINS_ROOT': str(standalone),
                'MRN_QA_CODE_ANALYSIS_SCOPE': 'all', 'MRN_QA_SCOPE': 'site-only',
+               'MRN_QA_SAMPLE_PATH': '/presentation-qualification/',
                'MRN_QA_PLAYWRIGHT_PROVIDER': 'engine'}
         # CLI arguments override repository-owned .mrn-qa.env and prevent a
         # future source change from redirecting qualification to a real site.
@@ -176,13 +179,14 @@ def qualify(repo, standalone, built, settings, evidence, selected):
                  'material_sha256': selected['material_sha256'],
                  'toolchain': toolchain,
                  'held_defaults': read(Path(__file__).with_name('policy.json'))['held_defaults'],
+                 'native_presentations': presentations,
                  'lock_sha256': built['proof']['lock_sha256'],
                  'fleet_sha256': file_hash(built['fleet']),
                  'bootstrap_sha256': file_hash(built['bootstrap_archive']),
                  'optional_sha256': file_hash(built['optional_archive']),
                  'coverage': ['source', 'contracts', 'installed-default-packages', 'no-woocommerce',
                               'installed-optional-packages',
-                              'native-editor', 'native-wpforms', 'api', 'browser',
+                              'native-editor', 'native-wpforms', 'native-presentations', 'api', 'browser',
                               'accessibility', 'performance', 'core-web-vitals', 'distribution'],
                  'evidence': {p.relative_to(evidence).as_posix(): file_hash(p)
                               for p in sorted(evidence.rglob('*')) if p.is_file()

@@ -393,6 +393,8 @@
 			return;
 		}
 
+		if ( root.mrnResponsiveTabs ) { root.mrnResponsiveTabs.activate( nextIndex, moveFocus ); return; }
+
 		if ( getTransitionEffect( root ) === 'text-swipe' ) {
 			activateTextSwipe( root, nextIndex, moveFocus, preferredDirection );
 			return;
@@ -450,6 +452,52 @@
 		activateTab( root, nextIndex, true, direction );
 	}
 
+	// One panel copy: native details is the fallback; JS enhances wide screens to tabs.
+	function mountResponsiveTabs( root, buttons, initialIndex ) {
+		var breakpoint = root.getAttribute( 'data-mrn-tab-accordion' );
+		var drawers = root.querySelectorAll( '[data-mrn-tab-drawer]' );
+		var panels = getTabPanels( root );
+		if ( ! /^(767|991)$/.test( breakpoint || '' ) || drawers.length !== buttons.length || ! window.matchMedia ) {
+			return false;
+		}
+		var query = window.matchMedia( '(max-width: ' + breakpoint + 'px)' );
+		var activeIndex = initialIndex;
+		function sync( nextIndex, moveFocus ) {
+			activeIndex = Math.max( 0, Math.min( buttons.length - 1, nextIndex ) );
+			updateTabButtons( buttons, activeIndex );
+			root.classList.toggle( 'is-mobile-tabs', query.matches );
+			root.classList.toggle( 'is-desktop-tabs', ! query.matches );
+			drawers.forEach( function( drawer, index ) {
+				var summary = drawer.querySelector( 'summary' );
+				drawer.open = ! query.matches || index === activeIndex;
+				panels[ index ].hidden = ! query.matches && index !== activeIndex;
+				panels[ index ].classList.toggle( 'is-active', index === activeIndex );
+				panels[ index ].setAttribute( 'role', query.matches ? 'region' : 'tabpanel' );
+				panels[ index ].setAttribute( 'aria-labelledby', query.matches ? summary.id : buttons[ index ].id );
+				summary.removeAttribute( 'aria-disabled' );
+				if ( query.matches && index === activeIndex ) { summary.setAttribute( 'aria-disabled', 'true' ); }
+			} );
+			if ( moveFocus ) { ( query.matches ? drawers[ activeIndex ].querySelector( 'summary' ) : buttons[ activeIndex ] ).focus(); }
+		}
+		root.mrnResponsiveTabs = { activate: sync };
+		drawers.forEach( function( drawer, index ) {
+			drawer.querySelector( 'summary' ).addEventListener( 'click', function( event ) {
+				if ( query.matches ) { event.preventDefault(); sync( index, false ); }
+			} );
+			drawer.addEventListener( 'toggle', function() {
+				if ( query.matches && drawer.open && index !== activeIndex ) { sync( index, false ); }
+			} );
+		} );
+		function onModeChange() {
+			var focus = document.activeElement;
+			var moveFocus = Array.prototype.some.call( buttons, function( button ) { return button === focus; } ) || Array.prototype.some.call( drawers, function( drawer ) { return drawer.querySelector( 'summary' ) === focus; } );
+			sync( activeIndex, moveFocus );
+		}
+		if ( typeof query.addEventListener === 'function' ) { query.addEventListener( 'change', onModeChange ); } else { query.addListener( onModeChange ); }
+		sync( activeIndex, false );
+		return true;
+	}
+
 	function mountTabbedLayout( root ) {
 		var buttons;
 		var initialIndex = 0;
@@ -473,6 +521,11 @@
 
 			button.addEventListener( 'keydown', onTabKeydown );
 		} );
+
+		if ( root.hasAttribute( 'data-mrn-tab-accordion' ) ) {
+			if ( mountResponsiveTabs( root, buttons, initialIndex ) ) { root.setAttribute( 'data-mrn-tabs-mounted', 'true' ); } else { root.classList.add( 'is-mobile-tabs' ); }
+			return; // Keep native disclosures usable if responsive enhancement is unavailable.
+		}
 
 		bindPanelHeightRecalculation( root );
 		if ( getTransitionEffect( root ) === 'text-swipe' ) {

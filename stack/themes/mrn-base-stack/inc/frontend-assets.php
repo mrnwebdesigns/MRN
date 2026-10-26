@@ -348,6 +348,7 @@ function mrn_base_stack_get_default_front_end_component_needs() {
 		'deferred_media' => false,
 		'faq'            => false,
 		'gallery'        => false,
+		'image_action'   => false,
 		'motion'         => false,
 		'presentation'   => false,
 		'slider'         => false,
@@ -440,6 +441,8 @@ function mrn_base_stack_collect_front_end_component_needs_from_content( $content
 		'deferred_media' => array( 'data-video-src' ),
 		'faq'            => array( 'mrn-faq__item' ),
 		'gallery'        => array( 'data-gallery-root' ),
+		'image_action'   => array( 'data-mrn-image-action-follow' ),
+		'presentation'   => array( 'data-mrn-image-drift', 'data-mrn-scroll-words' ),
 		'motion'         => array( 'data-mrn-motion-effect', 'data-mrn-surface' ),
 		'slider'         => array( 'mrn-splide' ),
 		'tabs'           => array( 'data-mrn-tabbed-layout' ),
@@ -550,8 +553,11 @@ function mrn_base_stack_collect_front_end_component_needs_for_post( $post_id, ar
 			}
 		}
 
-		if ( preg_match( '/(?:^|_)(?:image_presentation|showcase_presentation|card_presentation|record_presentation|video_presentation|rotating_phrases_one|rotating_phrases_two)$/', $meta_key ) ) {
+		if ( preg_match( '/_image_action_follow_pointer$/', $meta_key ) ) { foreach ( $meta_values as $value ) { if ( mrn_base_stack_front_end_meta_value_is_enabled( $value ) ) { $needs['image_action'] = true; } } }
+
+		if ( preg_match( '/(?:^|_)(?:image_presentation|text_presentation|showcase_presentation|card_presentation|record_presentation|video_presentation|rotating_phrases_one|rotating_phrases_two)$/', $meta_key ) ) {
 			foreach ( $meta_values as $presentation_value ) {
+				if ( 'bento' === $presentation_value && preg_match( '/(?:^|_)showcase_presentation$/', $meta_key ) ) { continue; }
 				if ( ! in_array( (string) $presentation_value, array( '', '0', 'standard' ), true ) ) {
 					$needs['presentation'] = true;
 				}
@@ -590,6 +596,7 @@ function mrn_base_stack_collect_front_end_component_needs_for_post( $post_id, ar
 				} elseif (
 					'logos' === $layout_name
 					&& 'slider' === sanitize_key( mrn_base_stack_get_front_end_meta_scalar( $post_meta, $row_prefix . 'display_mode' ) )
+					&& ! in_array( mrn_base_stack_get_front_end_meta_scalar( $post_meta, $row_prefix . 'logos_presentation' ), array( 'labeled', 'icons', 'auto-grid' ), true )
 					&& mrn_base_stack_front_end_meta_value_is_enabled( mrn_base_stack_get_front_end_meta_scalar( $post_meta, $row_prefix . 'logo_items' ) )
 				) {
 					$needs['slider'] = true;
@@ -637,6 +644,7 @@ function mrn_base_stack_collect_front_end_component_needs_for_post( $post_id, ar
 	} elseif (
 		'mrn_reusable_partner' === $post_type
 		&& 'slider' === sanitize_key( mrn_base_stack_get_front_end_meta_scalar( $post_meta, 'display_mode' ) )
+		&& ! in_array( mrn_base_stack_get_front_end_meta_scalar( $post_meta, 'logos_presentation' ), array( 'labeled', 'icons', 'auto-grid' ), true )
 		&& mrn_base_stack_front_end_meta_value_is_enabled( mrn_base_stack_get_front_end_meta_scalar( $post_meta, 'logo_items' ) )
 	) {
 		$needs['slider'] = true;
@@ -691,6 +699,7 @@ function mrn_base_stack_get_front_end_component_asset_manifest() {
 			'styles'  => array( 'mrn-base-stack-glightbox' ),
 			'scripts' => array( 'mrn-base-stack-front-end-gallery' ),
 		),
+		'image_action' => array( 'scripts' => array( 'mrn-base-stack-front-end-image-action' ) ),
 		'motion'         => array(
 			'scripts' => array( 'mrn-base-stack-front-end-effects' ),
 		),
@@ -740,6 +749,7 @@ function mrn_base_stack_register_front_end_component_assets() {
 	wp_register_script( 'mrn-base-stack-glightbox', $theme_uri . 'js/vendor/glightbox.min.js', array(), '3.3.1', true );
 	wp_register_script( 'mrn-base-stack-front-end-effects', $theme_uri . 'js/front-end-effects.js', array( $motion_runtime ), $version( 'js/front-end-effects.js', _S_VERSION ), true );
 	wp_register_script( 'mrn-base-stack-front-end-slider', $theme_uri . 'js/front-end-slider.js', array( 'mrn-base-stack-splide' ), $version( 'js/front-end-slider.js', _S_VERSION ), true );
+	wp_register_script( 'mrn-base-stack-front-end-image-action', $theme_uri . 'js/front-end-image-action.js', array(), $version( 'js/front-end-image-action.js', _S_VERSION ), true );
 	wp_register_script( 'mrn-base-stack-front-end-tabs', $theme_uri . 'js/front-end-tabs.js', array( 'mrn-base-stack-splide' ), $version( 'js/front-end-tabs.js', _S_VERSION ), true );
 	wp_register_script( 'mrn-base-stack-front-end-video-modal', $theme_uri . 'js/front-end-video-modal.js', array( 'mrn-base-stack-glightbox' ), $version( 'js/front-end-video-modal.js', _S_VERSION ), true );
 	wp_register_script( 'mrn-base-stack-front-end-gallery', $theme_uri . 'js/front-end-gallery.js', array( 'mrn-base-stack-glightbox' ), $version( 'js/front-end-gallery.js', _S_VERSION ), true );

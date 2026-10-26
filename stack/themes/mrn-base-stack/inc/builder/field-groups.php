@@ -2639,6 +2639,9 @@ function mrn_base_stack_register_acf_field_groups() {
 													'width' => '50',
 												),
 											),
+											array( 'key' => 'field_mrn_showcase_item_alt_override', 'name' => 'image_alt_override', 'label' => 'Image Alt Override', 'type' => 'text', 'instructions' => 'Optional per-use alternative text; blank retains Media Library alt text.' ),
+											array( 'key' => 'field_mrn_showcase_item_column_span', 'name' => 'column_span', 'label' => 'Bento Column Span', 'type' => 'select', 'choices' => array( '1' => '1', '2' => '2', '3' => '3' ), 'default_value' => '1', 'instructions' => 'Used only by the Bento presentation; spans clamp to available columns on smaller screens.' ),
+											array( 'key' => 'field_mrn_showcase_item_row_span', 'name' => 'row_span', 'label' => 'Bento Row Span', 'type' => 'select', 'choices' => array( '1' => '1', '2' => '2', '3' => '3' ), 'default_value' => '1', 'instructions' => 'Used only by the Bento presentation.' ),
 											array(
 												'key'     => 'field_mrn_showcase_item_link',
 												'label'   => 'Link',

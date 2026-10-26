@@ -122,6 +122,16 @@ $section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_clas
 $section_attrs     = isset( $display_contract['attributes'] ) && is_array( $display_contract['attributes'] ) ? $display_contract['attributes'] : array();
 $section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array() );
 $section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
+$frame_contract = mrn_base_stack_get_content_frame_contract( $row, 'image_content' );
+$section_classes = mrn_base_stack_merge_builder_section_classes( $section_classes, $frame_contract );
+if ( in_array( 'has-image-frame', $section_classes, true ) && '' === $label && '' === $heading && '' === $subheading && '' === trim( wp_strip_all_tags( $content ) ) && empty( $content_links ) ) { $section_classes[] = 'has-image-only-frame'; }
+$image_attributes = array();
+if ( in_array( 'has-image-only-frame', $section_classes, true ) && in_array( $row['image_presentation'] ?? 'standard', array( 'standard', 'scroll-drift' ), true ) ) {
+	// Keep WordPress auto-sizes containment proportional to the requested media.
+	$dimensions = mrn_base_stack_get_attachment_image_src( $image, 'mrn-content-media' );
+	if ( is_array( $dimensions ) && (int) $dimensions[1] > 0 && (int) $dimensions[2] > 0 ) { $image_attributes['style'] = sprintf( 'aspect-ratio:auto %d / %d', (int) $dimensions[1], (int) $dimensions[2] ); }
+}
+$section_attrs = mrn_base_stack_merge_builder_attributes( $section_attrs, $frame_contract['attributes'] );
 $section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';
 $surface_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $section_styles ) : implode( '; ', $section_styles );
 $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
@@ -205,9 +215,9 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 				<?php if ( $has_image ) : ?>
 					<div class="mrn-layout-content mrn-layout-content--media mrn-layout-content--media-stack-media mrn-image-content-row__media mrn-ui__media">
 						<figure class="<?php echo esc_attr( implode( ' ', $figure_classes ) ); ?>" <?php echo $image_stage_attributes; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped attribute helper. ?>>
-							<?php echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image( $image, 'mrn-content-media' ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+							<?php echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_wrap_image_action( mrn_base_stack_get_attachment_image( $image, 'mrn-content-media', $image_attributes ), $row, $image ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 							<?php echo $column_gallery_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Gallery images escaped by the Stack image helper. ?>
-							<?php if ( ! empty( $row['image_overlay'] ) && '' !== $image_stage_attributes ) : ?><span class="mrn-image-stage__overlay" aria-hidden="true"></span><?php endif; ?>
+							<?php if ( ! empty( $row['image_overlay'] ) && '' !== $image_stage_attributes && in_array( $row['image_presentation'] ?? '', array( 'scroll-zoom', 'tilted-gallery' ), true ) ) : ?><span class="mrn-image-stage__overlay" aria-hidden="true"></span><?php endif; ?>
 							<?php if ( '' !== $image_caption_markup ) : ?>
 								<figcaption class="mrn-image-content-row__caption"><?php echo $image_caption_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></figcaption>
 							<?php endif; ?>

@@ -100,6 +100,78 @@
 			} );
 		} );
 	}
+	function initImageDrift( stage ) {
+		const image = stage.querySelector( ':scope > img, :scope > .mrn-image-action > img' );
+		if ( ! image || ! ( 'translate' in image.style ) || image.style.translate ) { return; }
+		let settings;
+		try { settings = JSON.parse( stage.dataset.mrnImageDrift ); } catch ( error ) { return; }
+		if ( ! settings || ! Number.isFinite( settings.speed ) || settings.speed < .01 || settings.speed > .15 || ! Number.isInteger( settings.maximum ) || settings.maximum < 1 || settings.maximum > 100 ) { return; }
+		const section = stage.closest( '.mrn-content-builder__row--two-column-split' ) || stage.closest( '.mrn-content-builder__row' ) || stage;
+		const pointer = window.matchMedia( '(hover: hover) and (pointer: fine)' );
+		const desktop = window.matchMedia( '(min-width: 768px)' );
+		const update = () => {
+			if ( reduced.matches || ! pointer.matches || ! desktop.matches ) { image.style.translate = ''; return; }
+			const rect = section.getBoundingClientRect();
+			if ( rect.bottom < -200 || rect.top > window.innerHeight + 200 ) { return; }
+			const distance = window.innerHeight / 2 - ( rect.top + rect.height / 2 );
+			const travel = Math.max( -settings.maximum, Math.min( settings.maximum, distance * settings.speed ) );
+			image.style.translate = '0 ' + travel.toFixed( 2 ) + 'px';
+		};
+		pointer.addEventListener( 'change', update );
+		desktop.addEventListener( 'change', update );
+		watch( stage, update );
+		if ( 'ResizeObserver' in window ) { new ResizeObserver( update ).observe( section ); }
+	}
+	function initScrollWords( stage ) {
+		if ( stage.dataset.mrnScrollWordsReady ) { return; }
+		let settings;
+		try { settings = JSON.parse( stage.dataset.mrnScrollWords ); } catch ( error ) { return; }
+		if ( ! settings || ! [ 'row', 'split' ].includes( settings.scope ) ) { return; }
+		const readColor = ( value ) => {
+			if ( typeof value !== 'string' || ! /^var\(--site-color-[a-zA-Z0-9_-]+\)$/.test( value ) ) { return null; }
+			const raw = getComputedStyle( stage ).getPropertyValue( value.slice( 4, -1 ) ).trim();
+			if ( /^#[\da-f]{3}(?:[\da-f]{3})?$/i.test( raw ) ) {
+				const hex = raw.length === 4 ? raw.slice( 1 ).split( '' ).map( ( part ) => part + part ).join( '' ) : raw.slice( 1 );
+				return [ 0, 2, 4 ].map( ( offset ) => parseInt( hex.slice( offset, offset + 2 ), 16 ) );
+			}
+			const rgb = raw.match( /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/i );
+			return rgb && rgb.slice( 1 ).every( ( part ) => Number( part ) <= 255 ) ? rgb.slice( 1 ).map( Number ) : null;
+		};
+		const from = readColor( settings.from ); const to = readColor( settings.to );
+		if ( ! from || ! to ) { return; }
+		const scope = ( settings.scope === 'split' && stage.closest( '.mrn-content-builder__row--two-column-split' ) ) || stage.closest( '.mrn-content-builder__row' ) || stage;
+		const walker = document.createTreeWalker( stage, NodeFilter.SHOW_TEXT );
+		const textNodes = [];
+		while ( walker.nextNode() ) {
+			const node = walker.currentNode;
+			if ( /\S/.test( node.textContent ) && ! node.parentElement.closest( 'script, style, textarea, select, button, svg, math, pre, code, [aria-hidden="true"], [data-mrn-no-word-reveal]' ) ) { textNodes.push( node ); }
+		}
+		const words = [];
+		textNodes.forEach( ( node ) => {
+			const fragment = document.createDocumentFragment();
+			node.textContent.split( /(\s+)/ ).filter( Boolean ).forEach( ( part ) => {
+				if ( /^\s+$/.test( part ) ) { fragment.appendChild( document.createTextNode( part ) ); return; }
+				const word = document.createElement( 'span' ); word.className = 'mrn-scroll-word'; word.textContent = part;
+				fragment.appendChild( word ); words.push( word );
+			} );
+			node.replaceWith( fragment );
+		} );
+		if ( ! words.length ) { return; }
+		stage.dataset.mrnScrollWordsReady = 'true';
+		let previous = '';
+		const update = () => {
+			const rect = scope.getBoundingClientRect();
+			const range = window.innerHeight - ( window.innerHeight - rect.height ) / 2;
+			const p = reduced.matches || range <= 0 ? 1 : clamp( ( window.innerHeight - rect.top ) / range );
+			if ( previous === p ) { return; } previous = p;
+			words.forEach( ( word, index ) => {
+				const fraction = clamp( p * words.length - index );
+				word.style.color = 'rgb(' + from.map( ( channel, position ) => Math.round( channel + ( to[ position ] - channel ) * fraction ) ).join( ',' ) + ')';
+			} );
+		};
+		watch( stage, update );
+		if ( 'ResizeObserver' in window ) { new ResizeObserver( update ).observe( scope ); }
+	}
 	function initStrip( range ) {
 		const viewport = range.querySelector( '.mrn-scroll-strip__viewport' );
 		const track = viewport?.querySelector( '.mrn-showcase-row__grid' );
@@ -251,6 +323,8 @@
 		if ( header && 'ResizeObserver' in window ) { new ResizeObserver( measureHeader ).observe( header ); }
 		document.querySelectorAll( '[data-mrn-rotation-group]' ).forEach( initRotation );
 		document.querySelectorAll( '[data-mrn-image-stage]' ).forEach( initImage );
+		document.querySelectorAll( '[data-mrn-image-drift]' ).forEach( initImageDrift );
+		document.querySelectorAll( '[data-mrn-scroll-words]' ).forEach( initScrollWords );
 		document.querySelectorAll( '[data-mrn-scroll-strip]' ).forEach( initStrip );
 		document.querySelectorAll( '[data-mrn-timeline]' ).forEach( initTimeline );
 		document.querySelectorAll( '[data-mrn-hover-video]' ).forEach( initHover );
