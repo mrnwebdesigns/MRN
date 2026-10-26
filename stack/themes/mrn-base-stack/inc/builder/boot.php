@@ -6,6 +6,7 @@
  */
 
 require_once __DIR__ . '/admin.php';
+require_once __DIR__ . '/editor-save-integrity.php';
 
 require_once __DIR__ . '/layout-allowlist.php';
 

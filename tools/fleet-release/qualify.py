@@ -105,7 +105,10 @@ def qualify(repo, standalone, built, settings, evidence, selected):
             'MRN_STANDALONE_PLUGINS_ROOT': str(standalone),
             'MRN_STACK_AGENT_ROOT': str(Path(standalone) / 'mrn-stack-deployment-agent'),
             'MRN_MAINWP_OPERATIONS_ROOT': str(Path(standalone) / 'mrn-mainwp-operations-api')}, timeout=1800, cwd=repo)
-    fixture = WordPressFixture(built['bootstrap'], evidence / 'native-fixture', settings)
+    # The deliberately large presentation page requires a configured editor
+    # capacity. Incomplete native requests are separately rejected and tested.
+    fixture = WordPressFixture(built['bootstrap'], evidence / 'native-fixture', settings,
+                               max_input_vars=10000)
     try:
         fixture.start()
         fixture.assert_clean_diagnostics()
