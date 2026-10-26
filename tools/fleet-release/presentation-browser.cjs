@@ -122,6 +122,23 @@ const {createRequire} = require('node:module');
     await openRow();
     const heading = row.locator('.acf-field[data-name="heading"] input').first();
     await expect(heading).toHaveValue('Optional presentations');
+    const incomplete = await page.locator('#post').evaluate(form => {
+      const fields = new URLSearchParams(new FormData(form));
+      if (!fields.has('_mrn_builder_save_guard') || !fields.has('_mrn_builder_save_complete')) throw new Error('Missing native editor integrity markers');
+      fields.delete('_mrn_builder_save_complete');
+      fields.set('post_title', 'This incomplete save must never reach the database');
+      return fields.toString();
+    });
+    const rejected = await page.request.post(`${input.url}/wp-admin/post.php`, {
+      data: incomplete, headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+    });
+    assert.equal(rejected.status(), 400, 'Incomplete native form must fail before saving');
+    assert.match(await rejected.text(), /Your saved content is unchanged/);
+    await page.reload({waitUntil: 'networkidle'});
+    await expect(page.locator('#title')).toHaveValue('Presentation qualification');
+    await openRow();
+    await expect(heading).toHaveValue('Optional presentations');
+    checks.push('incomplete native editor submission is rejected without changing saved content');
     await heading.fill('Presentation settings saved through Classic Editor');
     const [saved] = await Promise.all([
       page.waitForResponse(response => response.request().method() === 'POST'

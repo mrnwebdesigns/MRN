@@ -35,14 +35,18 @@ def qualify_presentations(fixture, repo, settings, evidence, *, browser=True):
     scripts += [tests / 'runtime' / (name + '.cjs') for name in ('image-action-pointer', 'responsive-tabs-fallback')]
     for script in scripts:
         with (evidence / (script.stem + '.log')).open('w') as output:
-            subprocess.run([settings['node'], str(script)], stdout=output, stderr=subprocess.STDOUT,
-                           cwd=repo, check=True, timeout=60)
+            result = subprocess.run([settings['node'], str(script)], stdout=output, stderr=subprocess.STDOUT,
+                                    cwd=repo, check=False, timeout=60)
+        if result.returncode:
+            raise ReleaseError('Presentation contract failed; see presentations/' + script.stem + '.log')
     if browser:
         with (evidence / 'browser.log').open('w') as output:
-            subprocess.run([settings['node'], str(Path(__file__).with_name('presentation-browser.cjs'))],
-                           input=json.dumps({**fixture.browser_input(), 'presentation': seed,
-                                             'output': str(evidence / 'browser.json')}), text=True,
-                           stdout=output, stderr=subprocess.STDOUT, cwd=repo, check=True, timeout=900)
+            result = subprocess.run([settings['node'], str(Path(__file__).with_name('presentation-browser.cjs'))],
+                                    input=json.dumps({**fixture.browser_input(), 'presentation': seed,
+                                                      'output': str(evidence / 'browser.json')}), text=True,
+                                    stdout=output, stderr=subprocess.STDOUT, cwd=repo, check=False, timeout=900)
+        if result.returncode:
+            raise ReleaseError('Presentation browser qualification failed; see presentations/browser.json and browser.log')
     fixture.assert_clean_diagnostics()
     result = {'status': 'pass', 'native_cases': len(results),
               'native_assertions': sum(value['count'] for value in results.values()),

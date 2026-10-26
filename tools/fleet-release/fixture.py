@@ -78,7 +78,7 @@ def extract(archive, destination, *, expected=None, prefix=None):
 
 
 class WordPressFixture:
-    def __init__(self, bootstrap, root, settings, *, additional=None):
+    def __init__(self, bootstrap, root, settings, *, additional=None, max_input_vars=1000):
         self.bootstrap, self.root, self.settings = Path(bootstrap), Path(root), settings
         self.public = self.root / 'wordpress'
         self.content = self.public / 'wp-content'
@@ -89,6 +89,9 @@ class WordPressFixture:
         self.database_log = None
         self.password = secrets.token_urlsafe(32)
         self.additional = Path(additional) if additional else None
+        if not isinstance(max_input_vars, int) or not 1000 <= max_input_vars <= 10000:
+            raise ReleaseError('Invalid native fixture input capacity')
+        self.max_input_vars = max_input_vars
         with socket.socket() as probe:
             probe.bind(('127.0.0.1', 0))
             self.port = probe.getsockname()[1]
@@ -265,7 +268,8 @@ add_action('doing_it_wrong_run', static function ($function) {
                                + "if(is_file(__DIR__.'/wordpress'.$path))return false;"
                                + "require __DIR__.'/wordpress/index.php';\n")
         self.log = (self.root / 'http.log').open('w')
-        self.process = subprocess.Popen([self.settings['php'], '-S', '127.0.0.1:' + str(self.port),
+        self.process = subprocess.Popen([self.settings['php'], '-d', 'max_input_vars=' + str(self.max_input_vars),
+                                         '-S', '127.0.0.1:' + str(self.port),
                                          '-t', str(self.public), str(self.router)],
                                         stdout=self.log, stderr=self.log)
         for _ in range(100):
