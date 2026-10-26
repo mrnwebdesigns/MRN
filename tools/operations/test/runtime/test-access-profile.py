@@ -64,6 +64,8 @@ class ProfileTests(unittest.TestCase):
                 parser.parse_profile(io.BytesIO(raw))
         with patch.object(parser, 'MAXIMUM', 100), self.assertRaises(ValueError):
             parser.parse_profile(io.BytesIO(sample()))
+        with patch.object(parser, 'MAX_LINES', 5), self.assertRaises(ValueError):
+            parser.parse_profile(io.BytesIO(sample()))
 
     def test_hook_cleanup_and_incomplete_failures(self):
         for failure in (None, 'reload', 'capture', 'parse', 'cleanup'):
@@ -149,6 +151,25 @@ class ProfileTests(unittest.TestCase):
                     self.assertIsNone(info['name'])
                 if case == 'size-refused':
                     self.assertEqual(info['bytes'], parser.MAXIMUM + 1)
+
+    def test_actual_php_measured_trace_and_reader_boundary(self):
+        for size in (34092391, 40 * 1024 * 1024, 40 * 1024 * 1024 + 1, 40 * 1024 * 1024 + 2):
+            with self.subTest(size=size), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary).resolve(); root.chmod(0o700)
+                file = root / 'cachegrind.out.33'
+                with file.open('wb') as stream:
+                    stream.truncate(size)
+                code = hook.RAW_INFO.replace('/dev/shm/mrn-access-profile', str(root))
+                result = subprocess.run(['php', '-n', '-r', code], capture_output=True, check=True, timeout=5)
+                info = json.loads(result.stdout)
+                self.assertEqual(info['status'], 'ready' if size <= parser.MAXIMUM else 'size-refused')
+                self.assertEqual(info['bytes'], size)
+                # Exercise the separate fixed reader's one-byte sentinel even
+                # for inputs the metadata gate correctly refuses to dispatch.
+                code = hook.RAW_READ.replace('/dev/shm/mrn-access-profile/', str(root) + '/')
+                result = subprocess.run(['php', '-n', '-r', code, file.name], capture_output=True, check=True, timeout=5)
+                self.assertEqual(len(result.stdout), min(size, parser.MAXIMUM + 1))
+                self.assertEqual(result.stderr, b'')
 
 
 if __name__ == '__main__':

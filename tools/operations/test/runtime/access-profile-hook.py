@@ -51,11 +51,11 @@ if(!preg_match('/^cachegrind[.]out[.][1-9][0-9]*$/D',$files[0])){$emit($r);exit;
 $p=$root."/".$files[0];$s=lstat($p);$r["status"]="kind-refused";
 if(($s["mode"]&0170000)!==0100000){$emit($r);exit;}
 $r["bytes"]=min(67108864,max(0,$s["size"]));$r["status"]="size-refused";
-if($s["size"]<1||$s["size"]>33554432){$emit($r);exit;}
+if($s["size"]<1||$s["size"]>41943040){$emit($r);exit;}
 $r["status"]="ready";$r["name"]=$files[0];$emit($r);'''
 RAW_READ = '''$p="/dev/shm/mrn-access-profile/".$argv[1];
 if(!preg_match('/^cachegrind[.]out[.][1-9][0-9]*$/D',$argv[1])||is_link($p)||!is_file($p))exit(2);
-$f=fopen($p,"rb");echo stream_get_contents($f,33554433);fclose($f);'''
+$f=fopen($p,"rb");echo stream_get_contents($f,41943041);fclose($f);'''
 
 
 def command(*args, timeout=15, maximum=65536):
@@ -95,10 +95,10 @@ def main():
     assert toolchain['php_api'] == 'nts' and re.fullmatch('[a-f0-9]{40}', toolchain['xdebug_tree'])
     assert hashlib.sha256(private(build / 'xdebug.so', 16 * 1024 * 1024)).hexdigest() == toolchain['extension_sha256']
     lock = json.loads((HERE / 'sources.json').read_text())
-    report = {'schema': 1, 'result': 'PROFILE_INCOMPLETE', 'scope': 'disposable-access-profile-only',
+    report = {'schema': 1, 'diagnostic_revision': 2, 'result': 'PROFILE_INCOMPLETE', 'scope': 'disposable-access-profile-only',
               'acceptance': False, 'native_capture': False, 'full_source': False, 'admission': False,
               'live_google': False, 'production_changes': False, 'source': lock, 'toolchain': toolchain,
-              'capture_cap_bytes': 67108864, 'parser_cap_bytes': parser.MAXIMUM,
+              'capture_cap_bytes': 67108864, 'parser_cap_bytes': parser.MAXIMUM, 'parser_cap_lines': parser.MAX_LINES,
               'selected_requests': 0, 'cleanup': False, 'source_unchanged': False}
     owned = False
     stage = 'clone-validation'
@@ -180,6 +180,9 @@ def main():
             report['raw_file_bytes'] = info['bytes']
             raw = command('docker', 'exec', container, 'php', '-n', '-r', RAW_READ, info['name'], maximum=parser.MAXIMUM)
             assert len(raw) == info['bytes']
+            # A scalar count within the byte bound explains a separate parser
+            # work refusal without admitting any extra line or exporting data.
+            report['raw_line_count'] = raw.count(b'\n')
             stage = 'parse'
             report['profile'] = parser.parse_profile(io.BytesIO(raw))
             del raw

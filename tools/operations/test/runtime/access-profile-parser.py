@@ -2,7 +2,10 @@
 """Read Xdebug 3.5.3 cachegrind; export fixed labels only, never raw names/paths."""
 import re
 
-MAXIMUM = 32 * 1024 * 1024
+# Instrumentation revision 2: the selected HTTP profile file measured 34,092,391
+# bytes. This read-only diagnostic budget stays below its 64MiB storage cap.
+MAXIMUM = 40 * 1024 * 1024
+MAX_LINES = 1_000_000
 GROUPS = {
     'Content_Access': ('management_existing_readback', 'readback_for'),
     'Content_Source': ('verify', 'readback'),
@@ -51,7 +54,7 @@ def parse_profile(stream):
             raise ValueError('Unresolved profile reference')
         return table[key] if functions else None
 
-    for count in range(1000000):
+    for count in range(MAX_LINES):
         raw = stream.readline(16385)
         if not raw:
             break

@@ -44,6 +44,23 @@ Use already-authorized test identities or separately reviewed administrative tes
 
 ## Latest source evidence, 2026-10-26
 
+The independently reviewed `0faef367` diagnostic produced exact metadata in run
+`40317416169`: one regular 34,092,391-byte trace, refused by its 33,554,432-byte
+reader limit. HTTP200, active profiling, unchanged provider source, frozen
+workers and cleanup were verified. Original artifact `12648185531` SHA-256
+`74f666f130248aef4c8a8654f1b38ba8e8f44e85f672a398abc6c985d713c8fb` remains
+`PROFILE_INCOMPLETE`; hosted MRN QA `40317425219` passed. It provides no timings.
+
+Diagnostic revision2 deliberately budgets a 40MiB reader, still within the
+unchanged 64MiB tmpfs and 16KiB fixed-label
+export. This accommodates the measured instrumentation volume; the original
+32MiB refusal is not relabeled. No product, source-transfer, authorization or
+request budget changes. The complete-profile and representative-path checks
+remain required, and the new diagnostic still cannot satisfy native acceptance.
+The one-million-line and 50,000-reference work bounds stay unchanged. A bounded
+line-count scalar now explains any subsequent parser-work refusal without
+admitting extra lines or exporting raw profile data.
+
 At `26e78cca`, hosted MRN QA `40264266022` passed. Native run `40264266020`
 again reached the unchanged 290-second cleanup boundary during source capture;
 its original artifact `12626321097` is retained at SHA-256
