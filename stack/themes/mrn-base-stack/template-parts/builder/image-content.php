@@ -126,7 +126,7 @@ $frame_contract = mrn_base_stack_get_content_frame_contract( $row, 'image_conten
 $section_classes = mrn_base_stack_merge_builder_section_classes( $section_classes, $frame_contract );
 if ( in_array( 'has-image-frame', $section_classes, true ) && '' === $label && '' === $heading && '' === $subheading && '' === trim( wp_strip_all_tags( $content ) ) && empty( $content_links ) ) { $section_classes[] = 'has-image-only-frame'; }
 $image_attributes = array();
-if ( in_array( 'has-image-only-frame', $section_classes, true ) && in_array( $row['image_presentation'] ?? 'standard', array( 'standard', 'scroll-drift' ), true ) ) {
+if ( in_array( 'has-image-frame', $section_classes, true ) && in_array( $row['image_presentation'] ?? 'standard', array( 'standard', 'scroll-drift' ), true ) ) {
 	// Keep WordPress auto-sizes containment proportional to the requested media.
 	$dimensions = mrn_base_stack_get_attachment_image_src( $image, 'mrn-content-media' );
 	if ( is_array( $dimensions ) && (int) $dimensions[1] > 0 && (int) $dimensions[2] > 0 ) { $image_attributes['style'] = sprintf( 'aspect-ratio:auto %d / %d', (int) $dimensions[1], (int) $dimensions[2] ); }

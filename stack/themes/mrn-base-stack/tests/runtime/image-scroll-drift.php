@@ -29,6 +29,9 @@ try {
 		$dimensions = mrn_base_stack_get_attachment_image_src( $image, 'mrn-content-media' );
 		$expect( str_contains( $framed_html, sprintf( 'aspect-ratio:auto %d / %d', $dimensions[1], $dimensions[2] ) ), 'Native image-only frame reserves the attachment ratio with WordPress auto-sizes: ' . $mode );
 		$expect( ! str_contains( $framed_html, 'class="mrn-image-stage__overlay"' ), 'Dormant crop overlay cannot activate on the intrinsic image frame: ' . $mode );
+		$framed['heading'] = 'Authored heading beside the framed image';
+		ob_start(); mrn_base_stack_render_builder_row( $framed, $id, 2 ); $headed_html = ob_get_clean();
+		$expect( str_contains( $headed_html, sprintf( 'aspect-ratio:auto %d / %d', $dimensions[1], $dimensions[2] ) ), 'A framed image with text also reserves its attachment ratio: ' . $mode );
 	}
 	ob_start(); mrn_base_stack_render_builder_row( $plain, $id, 3 ); $plain_html = ob_get_clean();
 	$expect( ! str_contains( $plain_html, 'aspect-ratio:auto ' ), 'Ordinary Image layouts retain their existing markup' );

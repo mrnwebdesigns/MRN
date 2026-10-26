@@ -63,6 +63,13 @@ const {createRequire} = require('node:module');
         await expect(page.locator('[data-mrn-scroll-words] a')).toHaveAttribute('href', /\/about\/\?one=1&two=2$/);
         await expect(page.locator('blockquote')).toContainText('Preserve the authored quotation');
         await expect(page.getByRole('link', {name: 'Continue to About', exact: true})).toBeVisible();
+        const framedImage = page.locator('[data-mrn-image-drift] img');
+        await framedImage.scrollIntoViewIfNeeded();
+        await expect.poll(() => framedImage.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
+        assert(await framedImage.evaluate(image => {
+          const box = image.getBoundingClientRect();
+          return Math.abs(box.height - box.width * image.naturalHeight / image.naturalWidth) < 2;
+        }), 'An uncropped framed image with a heading retains its natural ratio after lazy loading');
         const swipe = page.locator('[data-mrn-tabbed-layout]:not([data-mrn-tab-accordion])');
         const swipeTabs = swipe.getByRole('tab');
         await expect(swipeTabs).toHaveCount(6);
