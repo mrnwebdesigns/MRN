@@ -13,10 +13,11 @@ LABEL = 'com.mrn.fleet-source'
 
 
 def definition(python, launcher, config, state, executable_path):
-    # Native timing qualification inherits this process policy. Use regular
-    # scheduling so CPU/I/O throttling does not distort its browser metrics.
+    # Native timing qualification inherits this process policy. Standard still
+    # applies CPU/I/O throttling on macOS; the measured local browser workload
+    # needs the same unthrottled policy as an explicitly requested app task.
     return {'Label': LABEL, 'ProgramArguments': [str(python), str(launcher), str(config)],
-            'RunAtLoad': True, 'StartInterval': 300, 'ProcessType': 'Standard',
+            'RunAtLoad': True, 'StartInterval': 300, 'ProcessType': 'Interactive',
             'EnvironmentVariables': {'PATH': executable_path, 'GIT_TERMINAL_PROMPT': '0'},
             'StandardOutPath': str(state / 'service.log'),
             'StandardErrorPath': str(state / 'service-errors.log')}
