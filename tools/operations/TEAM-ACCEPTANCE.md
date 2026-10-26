@@ -42,7 +42,20 @@ All results and necessary decisions must appear in chat. Any request for a WordP
 
 Use already-authorized test identities or separately reviewed administrative test changes. Do not suspend a real staff member, weaken a policy, forge a production identity or grant an outsider access to manufacture test evidence. A local negative test is not a live denial result.
 
-## Latest source evidence, 2026-10-25
+## Latest source evidence, 2026-10-26
+
+At `26e78cca`, hosted MRN QA `40264266022` passed. Native run `40264266020`
+again reached the unchanged 290-second cleanup boundary during source capture;
+its original artifact `12626321097` is retained at SHA-256
+`0f57d54a969e36792cd68a6ff56d253ddc47b62d1bcef2b905181d538a6f33a0`.
+Diagnostic `40264262356` reached exactly one profiled access readback (HTTP200),
+verified unchanged installed provider source, froze the web workers and cleaned
+up, but stopped at raw collection. Artifact `12626145491`, SHA-256
+`39633be43182bdaac68b7b57249fac3a23401665301af51c87158c3350c37670`, was
+independently checked. No usable timing summary or cause of refusal is proven.
+Closed metadata now distinguishes root, entry, name, kind and size refusals
+without exporting private names or bytes; the caps and complete-profile gate
+remain unchanged. Real PHP metadata tests cover all six outcomes locally.
 
 Gateway `863a2a65` passed hosted MRN QA `40054902586` and controlled tests.
 Native run `40054902601` reached the unchanged 290-second cleanup boundary

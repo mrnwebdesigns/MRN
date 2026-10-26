@@ -40,12 +40,19 @@ for f in /proc/[0-9]*/comm; do
   test "$(awk '/^State:/{print $2}' "/proc/$pid/status")" = T
 done'''
 RAW_INFO = '''$root="/dev/shm/mrn-access-profile";
-if(is_link($root)||!is_dir($root)||(fileperms($root)&0777)!==0700)exit(2);
+$r=array("status"=>"root-refused","file_count"=>0,"bytes"=>0,"name"=>null);
+$emit=static function($r){echo json_encode($r);};
+if(is_link($root)||!is_dir($root)||(fileperms($root)&0777)!==0700){$emit($r);exit;}
 $files=array_values(array_diff(scandir($root),array(".","..")));
-if(count($files)!==1||!preg_match('/^cachegrind[.]out[.][1-9][0-9]*$/D',$files[0]))exit(3);
-$p=$root."/".$files[0];$s=lstat($p);
-if(($s["mode"]&0170000)!==0100000||$s["size"]<1||$s["size"]>33554432)exit(4);
-echo json_encode(array("name"=>$files[0],"bytes"=>$s["size"]));'''
+$r["file_count"]=min(100,count($files));$r["status"]="entries-refused";
+if(count($files)!==1){$emit($r);exit;}
+$r["status"]="name-refused";
+if(!preg_match('/^cachegrind[.]out[.][1-9][0-9]*$/D',$files[0])){$emit($r);exit;}
+$p=$root."/".$files[0];$s=lstat($p);$r["status"]="kind-refused";
+if(($s["mode"]&0170000)!==0100000){$emit($r);exit;}
+$r["bytes"]=min(67108864,max(0,$s["size"]));$r["status"]="size-refused";
+if($s["size"]<1||$s["size"]>33554432){$emit($r);exit;}
+$r["status"]="ready";$r["name"]=$files[0];$emit($r);'''
 RAW_READ = '''$p="/dev/shm/mrn-access-profile/".$argv[1];
 if(!preg_match('/^cachegrind[.]out[.][1-9][0-9]*$/D',$argv[1])||is_link($p)||!is_file($p))exit(2);
 $f=fopen($p,"rb");echo stream_get_contents($f,33554433);fclose($f);'''
@@ -161,7 +168,13 @@ def main():
             report['php_workers_frozen'] = True
             stage = 'collect'
             info = json.loads(command('docker', 'exec', container, 'php', '-n', '-r', RAW_INFO, maximum=1024))
-            assert set(info) == {'name', 'bytes'} and re.fullmatch(r'cachegrind\.out\.[1-9][0-9]*', info['name'])
+            assert set(info) == {'status', 'file_count', 'bytes', 'name'}
+            assert info['status'] in ('root-refused', 'entries-refused', 'name-refused', 'kind-refused', 'size-refused', 'ready')
+            assert type(info['file_count']) is int and 0 <= info['file_count'] <= 100
+            assert type(info['bytes']) is int and 0 <= info['bytes'] <= report['capture_cap_bytes']
+            report['raw_metadata'] = {key: info[key] for key in ('status', 'file_count', 'bytes')}
+            assert info['status'] == 'ready' and info['file_count'] == 1
+            assert re.fullmatch(r'cachegrind\.out\.[1-9][0-9]*', info['name'])
             assert type(info['bytes']) is int and 0 < info['bytes'] <= parser.MAXIMUM
             report['raw_file_count'] = 1
             report['raw_file_bytes'] = info['bytes']
@@ -178,6 +191,8 @@ def main():
             # Exception messages/arguments may contain private fixture data.
             report['result'] = 'PROFILE_INCOMPLETE'
             report['failure_stage'] = stage
+            if stage == 'collect' and isinstance(error, subprocess.CalledProcessError):
+                report['collect_returncode'] = max(-255, min(255, error.returncode))
             # Only these local fixed parser categories may leave the fixture.
             categories = ('Profile integer out of bounds', 'Malformed profile reference',
                           'Duplicate or excessive profile references', 'Unresolved profile reference',

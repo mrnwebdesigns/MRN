@@ -5,6 +5,7 @@ import importlib.util
 import io
 import json
 import os
+import subprocess
 from pathlib import Path
 import tempfile
 import unittest
@@ -98,7 +99,7 @@ class ProfileTests(unittest.TestCase):
                         raise ValueError('synthetic secret')
                     raw = b'truncated' if failure == 'parse' else sample()
                     if hook.RAW_INFO in args:
-                        return json.dumps({'name': 'cachegrind.out.10', 'bytes': len(raw)}).encode()
+                        return json.dumps({'status': 'ready', 'file_count': 1, 'name': 'cachegrind.out.10', 'bytes': len(raw)}).encode()
                     if hook.RAW_READ in args:
                         return raw
                     if args[:3] == ('docker', 'rm', '-f') and failure == 'cleanup':
@@ -121,6 +122,33 @@ class ProfileTests(unittest.TestCase):
                     self.assertLess(stop, freeze)
                 self.assertNotIn('synthetic secret', report.read_text())
                 self.assertFalse(result['acceptance'])
+
+    def test_actual_php_metadata_reports_refusals_without_exporting_names(self):
+        for case in ('ready', 'root-refused', 'entries-refused', 'name-refused', 'kind-refused', 'size-refused'):
+            with self.subTest(case=case), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary).resolve(); root.chmod(0o700)
+                file = root / 'cachegrind.out.33'
+                if case == 'root-refused':
+                    root.chmod(0o755)
+                elif case == 'name-refused':
+                    (root / 'PRIVATE_NAME_MUST_NOT_LEAVE').write_text('unused')
+                elif case == 'kind-refused':
+                    file.symlink_to(root / 'PRIVATE_PATH_MUST_NOT_LEAVE')
+                elif case == 'size-refused':
+                    with file.open('wb') as stream:
+                        stream.truncate(parser.MAXIMUM + 1)
+                elif case == 'ready':
+                    file.write_bytes(sample())
+                code = hook.RAW_INFO.replace('/dev/shm/mrn-access-profile', str(root))
+                result = subprocess.run(['php', '-n', '-r', code], capture_output=True, check=True, timeout=5)
+                info = json.loads(result.stdout)
+                self.assertEqual(info['status'], case)
+                self.assertEqual(set(info), {'status', 'file_count', 'bytes', 'name'})
+                self.assertNotIn('PRIVATE_', result.stdout.decode())
+                if case != 'ready':
+                    self.assertIsNone(info['name'])
+                if case == 'size-refused':
+                    self.assertEqual(info['bytes'], parser.MAXIMUM + 1)
 
 
 if __name__ == '__main__':
