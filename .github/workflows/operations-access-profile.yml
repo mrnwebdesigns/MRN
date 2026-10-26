@@ -94,6 +94,9 @@ jobs:
           MRN_DISPOSABLE_EXISTING_SOURCE_STORAGE_TEST: '1'
           MRN_DISPOSABLE_EXISTING_SOURCE_TRANSPORT_TEST: '1'
           MRN_DISPOSABLE_EXISTING_BINDING_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/access-profile-hook.sh
+          # The pinned parent requires its existing access hook whenever runner
+          # source is supplied. The profile hook stops before that later phase.
+          MRN_DISPOSABLE_ACCESS_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/access-hook.sh
           MRN_GATEWAY_MCP_SOURCE: ${{ github.workspace }}/.runtime/transport
           MRN_GATEWAY_PROVIDER_SOURCE: ${{ github.workspace }}/.runtime/provider
           MRN_GATEWAY_RUNNER_SOURCE: ${{ github.workspace }}/.runtime/runner

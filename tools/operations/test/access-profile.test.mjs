@@ -63,4 +63,5 @@ test('ordinary integration workflow remains byte-identical and profile stop prec
   const workflow = readFileSync(new URL('../../../.github/workflows/operations-access-profile.yml', import.meta.url), 'utf8');
   assert.ok(workflow.indexOf('build-access-profiler.sh') < workflow.indexOf('run-dashboard-api.sh'));
   assert.ok(workflow.includes("assert r['result'] == 'PROFILE_ONLY'"));
+  assert.ok(workflow.includes('MRN_DISPOSABLE_ACCESS_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/access-hook.sh'));
 });
