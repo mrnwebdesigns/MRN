@@ -1888,6 +1888,35 @@
         "preserve_active_state": true
       },
       "version": "0.13.12"
+    },
+    {
+      "current_distribution": "catalog-only",
+      "package": {
+        "filename": "mrn-ai-guardrails-0.1.2-7e209cec9056.zip",
+        "main_file": "mrn-ai-guardrails/mrn-ai-guardrails.php",
+        "path": "releases/stack-plugins/mrn-ai-guardrails-0.1.2-7e209cec9056.zip",
+        "sha256": "5bd285e5d10d4fd6718e0754b000539cc227b52e66a491cdded06c651a0d1160",
+        "size_bytes": 28481
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-ai-guardrails",
+      "source": {
+        "git_commit": "7e209cec90568280771aa6a156099fe84f20ee4f",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-ai-guardrails",
+        "repository": "mrnwebdesigns/mrn-ai-guardrails"
+      },
+      "target_tier": "optional-integration",
+      "tree": {
+        "file_count": 18,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "c4e867f8db344e305c538855d60fbff2efc82e25a02b29dc457321ad9d2ff169"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.1.2"
     }
   ],
   "schema_version": 1

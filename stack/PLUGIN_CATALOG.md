@@ -24,7 +24,7 @@ The exact new-site selection and package versions are listed in [BOOTSTRAP_RELEA
 | `mrn-public-security-hardening` | 0.4.4 | MU loader | Platform required | Applies shared public REST and discovery hardening and preserves AME decisions for the native Advanced admin menu. |
 | `mrn-shared-assets` | 0.2.2 | MU loader | Platform required | Provides shared asset and icon interfaces, including consumer-aware ACF admin asset detection. |
 | `mrn-site-colors` | 0.1.39 | MU loader | Platform required | Owns persistent site design tokens and CSS-variable output. |
-| `mrn-updraft-local-retention` | 0.8.9 | MU loader | Platform required | Enforces seven daily, four weekly, and twelve 30-day remote recovery points, uses a stable cross-environment S3 site slug, exposes MainWP compliance evidence, and routes backup-policy warnings to Notifications Center. |
+| `mrn-updraft-local-retention` | 0.8.10 | MU loader | Platform required | Enforces seven daily, four weekly, and twelve 30-day remote recovery points, uses a stable cross-environment S3 site slug, exposes MainWP compliance evidence, and routes backup-policy warnings to Notifications Center. |
 | `mrn-schema-bridge` | 0.7.1 | MU loader | Platform required | Normalizes provider and theme schema behavior, including automatic Article and visible-content JobPosting contracts. |
 | `mrn-active-style-guide` | 0.1.7 | MU loader | Platform required | Logged-in design-system reference and diagnostics. |
 | `mrn-config-helper` | 0.1.75 | Standard bootstrap | Platform required | Provides the shared site configuration shell, native SEOPress breadcrumb integration and launch/admin integrations; retired SendGrid and GTM Injector controls and synchronization, and the custom breadcrumb editor, are excluded. |
@@ -52,7 +52,7 @@ The machine catalog also records each tracked top-level MU wrapper as its own re
 | --- | ---: | --- | --- | --- |
 | `mrn-acf-character-count` | 1.1.9 | Catalog-only; retained for deliberate use | Optional integration | ACF editor character counts with field-aware asset loading. |
 | `mrn-acf-focal-point` | 1.1.2 | Standard bootstrap | Optional integration | ACF image focal-point metadata and rendering. |
-| `mrn-ai-guardrails` | 0.1.1 | Catalog-only; retained for deliberate use | Optional integration | SEOPress AI policy enforcement and human approval for generated image alt text. |
+| `mrn-ai-guardrails` | 0.1.2 | Catalog-only; retained for deliberate use | Optional integration | SEOPress AI policy enforcement and human approval for generated image alt text. |
 | `mrn-cookie-consent` | 1.1.43 | Catalog-only; retained for deliberate use | Optional integration | Silktide and Google Consent Mode. |
 | `mrn-fontawesome-profile-manager` | 0.5.1 | Standard bootstrap | Optional integration | Font Awesome profiles and local assets. |
 | `mrn-google-fonts` | 1.0.7 | Standard bootstrap | Optional integration | Google/local fonts and Site Styles; existing site behavior is unchanged. |
