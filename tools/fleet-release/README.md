@@ -18,9 +18,13 @@ unchanged. Unrelated repository documents remain outside the release material.
 
 `launcher.py` fetches the current accepted controller into its own clean mirror.
 `install.py` installs an owner-local LaunchAgent at five minute intervals. It
-runs with Standard launchd scheduling to give native browser timing qualification
-regular CPU and I/O scheduling. Existing Background definitions must be preserved
-and reinstalled once; the installer refuses to overwrite a different definition.
+runs with Interactive launchd scheduling so the owner's native browser timing
+qualification has the same CPU and I/O policy as an explicitly requested app
+task. macOS still throttles Standard jobs. The worker remains serialized; timing
+thresholds, PHP execution limits and diagnostic gates are unchanged. Existing
+Standard or Background definitions must be preserved and reinstalled once; the
+installer refuses to overwrite a different definition. See
+`docs/releases/2026.10.26-fleet-qualification-scheduling.md` for the measured comparison.
 The service runs while the owner is logged in and this Mac is awake. Its GitHub CLI account
 and business 1Password SSH agent must remain available; authentication failure
 blocks publication without credential fallback. This is not an always-on hosted
