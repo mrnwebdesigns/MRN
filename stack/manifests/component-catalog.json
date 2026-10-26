@@ -1596,6 +1596,46 @@
       "classification": "integration-adapter",
       "current_distribution": "standard-bootstrap",
       "data": {
+        "cron": [
+          "mrn_form_success_expire"
+        ],
+        "external_services": [],
+        "options": [
+          "mrn_form_success_settings",
+          "expiring nonautoloaded one-use acceptance receipts"
+        ],
+        "routes": [
+          "admin-ajax.php:mrn_form_success_claim (exact Origin, nonce and random bearer)"
+        ],
+        "tables": []
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress"
+        ],
+        "release_group": null,
+        "soft": [
+          "WPForms",
+          "existing consent and GTM integration"
+        ]
+      },
+      "lifecycle": "supported",
+      "name": "MRN Form Success",
+      "purpose": "Emits privacy-limited WPForms acceptance events for explicitly configured lead forms. Activation is inactive until configured; no tag installation, provider delivery, or consent management.",
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-form-success",
+      "source": {
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-form-success",
+        "repository": "mrn-form-success",
+        "state": "standalone-clean"
+      },
+      "target_tier": "optional-integration",
+      "version": "0.1.2"
+    },
+    {
+      "classification": "integration-adapter",
+      "current_distribution": "standard-bootstrap",
+      "data": {
         "cron": [],
         "external_services": [
           "Google reCAPTCHA Enterprise",

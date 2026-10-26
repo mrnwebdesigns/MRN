@@ -1,5 +1,5 @@
 {
-  "plain_plugin_count": 32,
+  "plain_plugin_count": 33,
   "plugins": [
     {
       "main_file": "admin-menu-editor-pro/menu-editor.php",
@@ -511,10 +511,26 @@
         "type": "git"
       },
       "version": "0.1.4"
+    },
+    {
+      "main_file": "mrn-form-success/mrn-form-success.php",
+      "manifest_source": "/home/mrndev-stack-manager/stack/packages/mrn-form-success.zip",
+      "name": "MRN Form Success",
+      "package": "mrn-form-success.zip",
+      "profile": "all",
+      "sha256": "f2c5ff3314efc3b895ab201a892e8cda26f7071627d52cdbcf73cabcb368e75d",
+      "size_bytes": 13733,
+      "slug": "mrn-form-success",
+      "source": {
+        "commit": "5cae307336c5d8867b04a463a0cb6d970826fd0d",
+        "repository": "mrn-form-success",
+        "type": "git"
+      },
+      "version": "0.1.2"
     }
   ],
   "release_id": "2026.10.26-fleet-auto-b2a69f405ae5",
   "schema_version": 1,
   "scope": "new-site-bootstrap-inputs",
-  "stack_plugin_count": 33
+  "stack_plugin_count": 34
 }

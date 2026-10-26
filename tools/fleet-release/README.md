@@ -108,3 +108,15 @@ Run the offline publication/recovery tests with:
 python3 -m unittest discover -s tools/fleet-release/tests -v
 node --test tools/fleet-release/tests/published-source.test.mjs
 ```
+
+## Form Success default
+
+Form Success is part of the new-site plugin set and stays inactive until a site
+configures its own lead forms. The coordinator checks inactive defaults, native
+admin accessibility, real WPForms acceptance and rejection, one-use receipt
+redemption, and metadata-only events without WooCommerce or external delivery.
+Executable test fixtures remain in its source repository and are excluded from
+plugin archives. The exact locked Git archive can be rebuilt when it is absent
+from historical vendor inputs; different bytes or an unchanged-version source
+change still fail. Provider tags, consent setup and site configuration remain
+separate onboarding steps.
