@@ -44,6 +44,26 @@ Use already-authorized test identities or separately reviewed administrative tes
 
 ## Latest source evidence, 2026-10-26
 
+Diagnostic revision3 at `930158e8` passed
+[profile run 40321795966](https://github.com/mrnwebdesigns/MRN/actions/runs/40321795966)
+and hosted MRN QA `40321803822`. The original artifact `12649367576` matches
+SHA-256 `6dcdf1ac7ab52ee9b9c20a72f9bf59c30db75140288c4bb45a99f64a0b313690`.
+Its source pins match the committed lock. One complete 33,979,867-byte profile
+contains 3,919,614 lines; the representative signed readback returned HTTP200,
+provider source stayed unchanged, web workers were frozen and cleanup passed.
+The result is `PROFILE_ONLY`; every native/live acceptance flag remains false.
+
+The instrumented request took 993.877ms overall, including 850.627ms in the
+selected access readback and 789.705ms in retained-job verification. It made
+1,145 database queries (220.368ms inclusive), 1,512 file-hash calls (131.100ms
+self), 12 source verifications and 67 catalog-policy checks. Requester descriptor
+validation ran ten times (558.796ms inclusive). Nested inclusive timings overlap
+and must not be added; this is one instrumented sample, not an uninstrumented
+latency baseline or proof of the full native timeout's cause. Review the repeated
+authority work before selecting a change. Fresh state, revocation, source
+integrity and all existing limits remain required. The ordinary native workflow
+was not rerun for this parser-only revision.
+
 Revision2 at `624aeff9` / run `40319019668` admitted one 33,941,479-byte file
 and counted 3,919,774 lines, then correctly refused its one-million-line work
 budget. Original artifact `12647837899` SHA-256
@@ -52,7 +72,7 @@ incomplete. Hosted MRN QA `40319024772` passed. Diagnostic revision3 now budgets
 five million lines based on that measured volume, preserving the 40MiB reader,
 64MiB storage, 16KiB export, 50,000 references and complete-profile checks.
 An EOF sentinel fixes exact line-boundary handling; one line beyond still fails.
-No product or authorization budget changes; no usable timings are claimed yet.
+No product or authorization budget changed; that earlier run produced no usable timings.
 
 The independently reviewed `0faef367` diagnostic produced exact metadata in run
 `40317416169`: one regular 34,092,391-byte trace, refused by its 33,554,432-byte

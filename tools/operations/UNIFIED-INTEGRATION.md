@@ -117,7 +117,23 @@ It builds pinned Xdebug against the same disposable PHP image before the grant,
 keeps provider `9c58c709` and the ordinary workflow unchanged, and exports only
 bounded fixed-label costs after freezing PHP. Raw profiles and the disposable
 clone are deleted; all authority/time limits remain. This is diagnostic work,
-with hosted evidence pending, and cannot satisfy acceptance or source admission.
+and cannot satisfy acceptance or source admission.
+
+The diagnostic now passes at `930158e8` in run `40321795966`; hosted MRN QA
+`40321803822` also passes. Original artifact `12649367576`, SHA-256
+`6dcdf1ac7ab52ee9b9c20a72f9bf59c30db75140288c4bb45a99f64a0b313690`, binds the
+unchanged source lock and proves one complete representative profile, unchanged
+provider source, frozen web workers and cleanup. Measured diagnostic volume
+required a 40MiB reader and five-million-line work cap within the unchanged
+64MiB storage and 16KiB fixed-label export limits. Earlier incomplete artifacts
+remain failures. No product, request or authorization limit changed.
+
+The instrumented access readback took 850.627ms and included 1,145 SQL queries,
+1,512 file hashes, 12 source verifications and 67 catalog-policy checks.
+Retained-job verification accounted for 789.705ms inclusive; nested costs overlap.
+This identifies repeated authority work for a bounded review, not permission to
+cache current access, omit integrity checks or relax time limits. The complete
+native transfer and ordinary-team acceptance remain unverified.
 
 The bootstrap review permits a distinct one-use metadata delivery marker for
 new originals without spending or expanding provider source/control budgets.
