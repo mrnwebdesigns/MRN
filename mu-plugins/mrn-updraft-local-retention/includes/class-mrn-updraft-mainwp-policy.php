@@ -228,6 +228,7 @@ final class MRN_Updraft_MainWP_Policy {
 			'storage' => self::public_storage(), 'history_count' => count( $history ),
 			'backups' => $rows, 'next_offset' => $offset + count( $rows ) < count( $history ) ? $offset + count( $rows ) : null,
 			'remote_objects_verified' => false,
+			'maintenance_file_diagnostics' => class_exists( 'MRN_Updraft_MainWP_Maintenance', false ) ? MRN_Updraft_MainWP_Maintenance::file_diagnostics() : null,
 		);
 	}
 

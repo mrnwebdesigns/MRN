@@ -63,7 +63,7 @@ MRN_QA_CODE_ANALYSIS_SCOPE=all mrn-qa run --project-root /Users/khofmeyer/Develo
 
 Runtime browser, accessibility, API, and performance checks should be run separately against an explicit target site when this plugin change affects rendered output or live WordPress behavior.
 
-## Guarded MainWP maintenance (0.8.7 candidate)
+## Guarded MainWP maintenance (0.8.8 candidate)
 
 After each successful native update, the batch admits only the selected item's
 approved version and new code tree into its next expected state. Activation,
@@ -155,3 +155,30 @@ create these checkpoints. Reading the report performs no new scan or write.
 backup verification and verifies the surviving observation, closed metadata,
 read-only reporting and unchanged target/core/backup refusal behavior. The
 normal native WordPress maintenance fixture must also pass before a release.
+
+### Core-file change observations
+
+Version 0.8.8 adds `maintenance_file_diagnostics` to existing authenticated
+`get_backup_policy_v1` inspection, including standalone sites without a full
+Stack loader. It observes the existing `wp-admin` name/hash map only after the
+site and remote-backup checks in a maintenance preflight. The original complete
+tree hash and all stale-state refusals remain unchanged, including changes to
+logs, hidden files and non-PHP files. No names are ignored to make an update pass.
+
+One fixed ten-minute transient retains a bounded map of relative filenames and
+SHA-256 values. Inspection returns only the component, site ID, timestamps,
+current aggregate hash and the last observed difference: at most 64 relative
+names with previous/current hashes, the exact changed count and a truncation
+flag. Null hashes identify additions or deletions. It never returns the full
+manifest, file contents, physical filesystem paths, raw logs, receipts or native
+exception text. Invalid, stale, oversized or unsafe diagnostic data is withheld.
+Inspection performs no scan or write; ordinary execute/read snapshots do not
+create observations. Diagnostic history cannot authorize an update, retry,
+ignore a changed file, release a lock or replace independent readback.
+
+Match both fingerprints and timestamps to the refused preview/confirmation;
+concurrent preflights can replace history. A first observation is a baseline,
+and a null `last_change` does not prove no file ever changed. Use
+`php tests/maintenance-file-diagnostics.php` for real disposable filesystem
+coverage, and the unchanged Dashboard native maintenance fixture for update,
+backup, authorization, activation, stale-state and core-refusal coverage.

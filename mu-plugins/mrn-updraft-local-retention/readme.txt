@@ -1,6 +1,6 @@
 === MRN Updraft Backup Policy ===
 Contributors: mrnwebdesigns
-Stable tag: 0.8.7
+Stable tag: 0.8.8
 Tested up to: 7.1
 Requires PHP: 7.4
 
@@ -14,6 +14,10 @@ Supports the shared Stack loader or the standalone MU bootstrap. See README.md
 for configuration, prerequisites, domain cutover, and verification details.
 
 == Changelog ==
+
+= 0.8.8 =
+* Report bounded core-relative file/hash changes between authenticated preflight snapshots through existing backup-policy inspection.
+* Keep complete fingerprints and every maintenance gate unchanged; fix the reported policy version.
 
 = 0.8.7 =
 * Retain bounded preflight phase checkpoints across request timeouts, without changing update validation or execution.
