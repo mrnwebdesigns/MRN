@@ -264,6 +264,9 @@ $inspection = MRN_Updraft_MainWP_Policy::dispatch(array(), array(
 if (empty($inspection['ok']) || 17 !== ($inspection['data']['maintenance_file_diagnostics']['site_id'] ?? null) || isset($inspection['data']['maintenance_file_diagnostics']['files']) || $settings_before_inspection !== $mrn_test_intervals) {
 	throw new RuntimeException('Existing policy inspection did not expose bounded read-only diagnostics.');
 }
+if (($inspection['data']['maintenance_runtime_log_policy'] ?? null) !== MRN_Updraft_MainWP_Maintenance::runtime_log_policy() || 'wp-admin/php_errorlog' !== $inspection['data']['maintenance_runtime_log_policy']['path']) {
+	throw new RuntimeException('Existing authenticated policy inspection did not expose the explicit fixed runtime-log policy.');
+}
 $inspection_request['expected_host'] = 'wrong.example';
 $wrong_inspection = MRN_Updraft_MainWP_Policy::dispatch(array(), array(
 	'function' => 'extra_execution',

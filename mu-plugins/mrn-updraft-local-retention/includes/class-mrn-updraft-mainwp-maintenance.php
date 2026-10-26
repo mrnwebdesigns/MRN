@@ -457,6 +457,90 @@ final class MRN_Updraft_MainWP_Maintenance {
 	}
 
 	/**
+	 * Qualify only PHP's fixed native admin log; never accept a caller exclusion.
+	 *
+	 * @return array Private identity plus closed, non-secret policy metadata.
+	 */
+	private static function runtime_log_observation() {
+		$root = ABSPATH . 'wp-admin';
+		$path = $root . '/php_errorlog';
+		$setting = ini_get( 'error_log' );
+		$result = array(
+			'schema_version' => 1,
+			'policy' => 'configured-native-admin-log-v1',
+			'path' => 'wp-admin/php_errorlog',
+			'applied' => false,
+			'reason' => 'native_configuration_unproven',
+			'presence_bound' => true,
+			'full_hash_diagnostics' => true,
+		);
+		if ( ! in_array( strtolower( (string) ini_get( 'log_errors' ) ), array( '1', 'on', 'true' ), true ) || ! in_array( $setting, array( 'php_errorlog', $path ), true ) ) {
+			return $result;
+		}
+		clearstatcache( true, $path );
+		if ( is_link( $root ) || realpath( $root ) !== $root || is_link( $path ) ) {
+			$result['reason'] = 'unsafe_log_path';
+			return $result;
+		}
+		if ( ! file_exists( $path ) ) {
+			$result['reason'] = 'log_absent';
+			return $result;
+		}
+		$stat = lstat( $path );
+		if ( ! is_array( $stat ) || 0100000 !== ( $stat['mode'] & 0170000 ) || 1 !== $stat['nlink'] || ! is_readable( $path ) || realpath( $path ) !== $path ) {
+			$result['reason'] = 'unsafe_log_path';
+			return $result;
+		}
+		$result['applied'] = true;
+		$result['reason'] = 'configured_regular_log';
+		// Identity protects against replacement during the bounded full scan; no metadata is exposed.
+		$result['identity'] = array( $stat['dev'], $stat['ino'], $stat['mode'], $stat['nlink'] );
+		$result['configuration_sha256'] = hash( 'sha256', $setting );
+		return $result;
+	}
+
+	/**
+	 * Report the explicit policy through existing authenticated inspection.
+	 *
+	 * Only native configuration and fixed-path metadata are inspected, never log contents.
+	 * @return array
+	 */
+	public static function runtime_log_policy() {
+		$result = self::runtime_log_observation();
+		unset( $result['identity'], $result['configuration_sha256'] );
+		return $result;
+	}
+
+	/**
+	 * Preserve full diagnostic hashes, then apply the one approved content marker.
+	 *
+	 * Log presence, path safety, tree bounds and every other file remain material.
+	 * @return string Code-protection digest, distinct from the full diagnostic digest.
+	 * @throws RuntimeException When the fixed log is unsafe or changes identity during the scan.
+	 */
+	private static function admin_tree() {
+		$before = self::runtime_log_observation();
+		$files = null;
+		$full_hash = self::tree( ABSPATH . 'wp-admin', $files );
+		$after = self::runtime_log_observation();
+		if ( 'unsafe_log_path' === $before['reason'] || 'unsafe_log_path' === $after['reason'] ) {
+			throw new RuntimeException( 'tree_unsafe' );
+		}
+		if ( $before !== $after ) {
+			throw new RuntimeException( 'preflight_state_changed' );
+		}
+		self::observe_admin_files( $files, $full_hash );
+		if ( $after['applied'] ) {
+			if ( ! isset( $files['php_errorlog'] ) ) {
+				throw new RuntimeException( 'preflight_state_changed' );
+			}
+			$files['php_errorlog'] = self::digest( array( 'policy' => $after['policy'], 'configuration_sha256' => $after['configuration_sha256'] ) );
+			return self::digest( $files );
+		}
+		return $full_hash;
+	}
+
+	/**
 	 * Native code/activation snapshot; configuration secrets are never read.
 	 *
 	 * @return array
@@ -506,9 +590,7 @@ final class MRN_Updraft_MainWP_Maintenance {
 			}
 		}
 		self::checkpoint( 'child_snapshot_core' );
-		$admin_files = null;
-		$admin_hash = self::tree( ABSPATH . 'wp-admin', $admin_files );
-		self::observe_admin_files( $admin_files, $admin_hash );
+		$admin_hash = self::admin_tree();
 		$core = array(
 			'version'    => $GLOBALS['wp_version'],
 			'db_version' => get_option( 'db_version' ),
