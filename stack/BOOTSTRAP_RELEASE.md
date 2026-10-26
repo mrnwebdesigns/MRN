@@ -1,6 +1,6 @@
 # New-site Stack bootstrap release
 
-Platform candidate: `2026.10.26-fleet-auto-a32c6ce9617d`; plugin input bundle: `2026.10.26-fleet-auto-a32c6ce9617d`. Scope: qualified source installation inputs; site deployment remains separate.
+Platform candidate: `2026.10.26-fleet-auto-c3fb3aad731f`; plugin input bundle: `2026.10.26-fleet-auto-c3fb3aad731f`. Scope: qualified source installation inputs; site deployment remains separate.
 
 The Stack profile selects **34 standard plugins**. The plain profile selects **33**, excluding only Reusable Block Library. Community versions are pinned in `plugins.txt`; every plugin archive is checksum-bound in `manifests/bootstrap-packages.lock.json`. The MRN platform lock separately covers the parent/child pair, MU components and shared runtime.
 
@@ -45,7 +45,7 @@ The Stack profile selects **34 standard plugins**. The plain profile selects **3
 
 ## Environment and ownership
 
-- Activate the MRN Base Stack Child 1.1.0 over parent 1.6.9. Child content remains site-owned.
+- Activate the MRN Base Stack Child 1.1.0 over parent 1.6.11. Child content remains site-owned.
 - Keep SEOPress Free/PRO 10.3 active for native editing. Development disables indexing, tracking and external jobs.
 - Post SMTP 4.0.2 is installed and inactive in development. Provider configuration and verified delivery belong to launch.
 - reCAPTCHA Manager uses the qualified source package pinned in the bootstrap lock. Provider credentials, assessment and any site cutover remain separately verified operations.

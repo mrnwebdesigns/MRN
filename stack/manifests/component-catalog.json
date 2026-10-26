@@ -1061,7 +1061,7 @@
         "state": "confirmed-symlinked"
       },
       "target_tier": "optional-integration",
-      "version": "0.1.1"
+      "version": "0.1.2"
     },
     {
       "classification": "shared-feature",
