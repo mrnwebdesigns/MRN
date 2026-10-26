@@ -2,7 +2,7 @@
 
 Platform candidate: `2026.10.26-fleet-auto-b2a69f405ae5`; plugin input bundle: `2026.10.26-fleet-auto-b2a69f405ae5`. Scope: qualified source installation inputs; site deployment remains separate.
 
-The Stack profile selects **33 standard plugins**. The plain profile selects **32**, excluding only Reusable Block Library. Community versions are pinned in `plugins.txt`; every plugin archive is checksum-bound in `manifests/bootstrap-packages.lock.json`. The MRN platform lock separately covers the parent/child pair, MU components and shared runtime.
+The Stack profile selects **34 standard plugins**. The plain profile selects **33**, excluding only Reusable Block Library. Community versions are pinned in `plugins.txt`; every plugin archive is checksum-bound in `manifests/bootstrap-packages.lock.json`. The MRN platform lock separately covers the parent/child pair, MU components and shared runtime.
 
 ## Standard plugins
 
@@ -52,7 +52,6 @@ The Stack profile selects **33 standard plugins**. The plain profile selects **3
 - The MRN MU loader supplies the 12 documented platform components plus wrapper/shared support.
 - Premium licenses, reCAPTCHA/UptimeRobot credentials and backup destination settings stay in the existing secure manager configuration; no credentials are shipped in the release archive.
 - Development scheduled backups remain manual. Shared-runtime writes still require the established fresh remote database-backup gate.
-
 - Form Success is installed with tracking inactive. Configure the site’s own lead forms in Settings → MRN Form Success; existing consent and GTM/GA4 rules own analytics delivery.
 
 ## Excluded defaults

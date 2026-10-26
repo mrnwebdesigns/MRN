@@ -378,6 +378,10 @@ def prepare_metadata(repo, standalone, policy, inputs, job, selected, registry_i
     write(repo / 'stack/manifests/bootstrap-packages.lock.json', packages)
     bootstrap_doc = repo / 'stack/BOOTSTRAP_RELEASE.md'
     bootstrap_text = bootstrap_doc.read_text()
+    bootstrap_text = re.sub(
+        r'The Stack profile selects \*\*\d+ standard plugins\*\*\. The plain profile selects \*\*\d+\*\*',
+        f'The Stack profile selects **{packages["stack_plugin_count"]} standard plugins**. '
+        f'The plain profile selects **{packages["plain_plugin_count"]}**', bootstrap_text)
     bootstrap_text = re.sub(r'^Platform candidate: .*',
         'Platform candidate: `' + release_id + '`; plugin input bundle: `' + release_id
         + '`. Scope: qualified source installation inputs; site deployment remains separate.',
