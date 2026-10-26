@@ -199,7 +199,7 @@ content hashing. There is no caller-supplied path, pattern or override.
 The qualifying log must be readable, regular and have one hard link, with no
 symlink or physical-path alias in its fixed admin location. Unsafe paths refuse.
 Identity/configuration changes during the full scan refuse with
-`runtime_log_policy_changed`. The complete scan, file-count and 512 MiB aggregate
+the existing closed `preflight_state_changed` code (accepted by the deployed MCP). The complete scan, file-count and 512 MiB aggregate
 limits remain in force. Full log hashes remain diagnostic evidence. Its presence
 is still in the code digest: creation or removal changes the plan. Changing PHP's
 qualifying configuration also changes the marker. Every other file keeps literal

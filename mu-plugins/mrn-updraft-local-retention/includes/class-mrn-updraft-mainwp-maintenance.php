@@ -27,7 +27,7 @@ final class MRN_Updraft_MainWP_Maintenance {
 	const DIAGNOSTIC_CODES = array(
 		'unsupported_runtime', 'invalid_schema', 'selection_required', 'invalid_override',
 		'invalid_target', 'unknown_version', 'version_refused', 'unused_override',
-		'tree_unavailable', 'tree_unsafe', 'tree_limit', 'tree_unreadable', 'runtime_log_policy_changed',
+		'tree_unavailable', 'tree_unsafe', 'tree_limit', 'tree_unreadable',
 		'plugin_unreadable', 'theme_invalid', 'core_unavailable', 'offer_changed',
 		'shared_plugin_directory', 'download_unavailable', 'download_failed',
 		'package_invalid', 'package_limit', 'package_alias_or_type', 'package_path',
@@ -527,12 +527,12 @@ final class MRN_Updraft_MainWP_Maintenance {
 			throw new RuntimeException( 'tree_unsafe' );
 		}
 		if ( $before !== $after ) {
-			throw new RuntimeException( 'runtime_log_policy_changed' );
+			throw new RuntimeException( 'preflight_state_changed' );
 		}
 		self::observe_admin_files( $files, $full_hash );
 		if ( $after['applied'] ) {
 			if ( ! isset( $files['php_errorlog'] ) ) {
-				throw new RuntimeException( 'runtime_log_policy_changed' );
+				throw new RuntimeException( 'preflight_state_changed' );
 			}
 			$files['php_errorlog'] = self::digest( array( 'policy' => $after['policy'], 'configuration_sha256' => $after['configuration_sha256'] ) );
 			return self::digest( $files );
