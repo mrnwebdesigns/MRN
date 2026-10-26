@@ -25,7 +25,7 @@ The exact new-site selection and package versions are listed in [BOOTSTRAP_RELEA
 | `mrn-shared-assets` | 0.2.2 | MU loader | Platform required | Provides shared asset and icon interfaces, including consumer-aware ACF admin asset detection. |
 | `mrn-site-colors` | 0.1.39 | MU loader | Platform required | Owns persistent site design tokens and CSS-variable output. |
 | `mrn-updraft-local-retention` | 0.8.9 | MU loader | Platform required | Enforces seven daily, four weekly, and twelve 30-day remote recovery points, uses a stable cross-environment S3 site slug, exposes MainWP compliance evidence, and routes backup-policy warnings to Notifications Center. |
-| `mrn-schema-bridge` | 0.7.0 | MU loader | Platform required | Normalizes provider and theme schema behavior, including automatic Article and visible-content JobPosting contracts. |
+| `mrn-schema-bridge` | 0.7.1 | MU loader | Platform required | Normalizes provider and theme schema behavior, including automatic Article and visible-content JobPosting contracts. |
 | `mrn-active-style-guide` | 0.1.7 | MU loader | Platform required | Logged-in design-system reference and diagnostics. |
 | `mrn-config-helper` | 0.1.75 | Standard bootstrap | Platform required | Provides the shared site configuration shell, native SEOPress breadcrumb integration and launch/admin integrations; retired SendGrid and GTM Injector controls and synchronization, and the custom breadcrumb editor, are excluded. |
 | `mrn-media-bulk-tools` | 0.13.1 | Standard bootstrap | Platform required | Media audit, usage indexing, and bulk maintenance; exact version and tree are enforced by the full Stack release lock. |
@@ -68,7 +68,7 @@ The machine catalog also records each tracked top-level MU wrapper as its own re
 
 | Slug | Version | Responsibility |
 | --- | ---: | --- |
-| `mrn-mainwp-operations-api` | 0.13.11 | Independent repository (`mrnwebdesigns/mrn-mainwp-operations-api`); dashboard-only controller that records exact post-write Stack-plugin overlays, labels matching sites `current_with_approved_overlays`, preserves raw drift evidence, and fails changed or unrecorded artifacts back to hard drift; never installed on child sites. |
+| `mrn-mainwp-operations-api` | 0.13.12 | Independent repository (`mrnwebdesigns/mrn-mainwp-operations-api`); dashboard-only controller that records exact post-write Stack-plugin overlays, labels matching sites `current_with_approved_overlays`, preserves raw drift evidence, and fails changed or unrecorded artifacts back to hard drift; never installed on child sites. |
 | `mrn-wp-control` | 1.1.2 | Independent repository (`mrnwebdesigns/mrn-wp-control`); dashboard-only, not installed in client-site plugins. |
 | `mrn-wp-control-table-exporter` | 1.4.4 | Independent repository (`mrnwebdesigns/mrn-wp-control-table-exporter`); dashboard-only, not installed in client-site plugins. |
 | `mrn-mainwp-mcp` | 0.1.1 | Node MCP adapter exposing MainWP/WPControl workflows to Codex and Claude Code. Agent tooling only; never installed on a WordPress site. |
