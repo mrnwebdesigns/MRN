@@ -2,6 +2,7 @@
 """One genuine disposable callback, then freeze PHP and export redacted costs."""
 import hashlib
 import importlib.util
+import io
 import json
 import os
 from pathlib import Path
@@ -24,6 +25,30 @@ $m=json_decode(file_get_contents($root."release-source.json"),true,512,JSON_THRO
 if($m["source_commit"]!==$argv[1])exit(2);
 foreach($m["files"] as $p=>$sha){if(is_link($root.$p)||hash_file("sha256",$root.$p)!==$sha)exit(3);}
 echo hash_file("sha256",$root."release-source.json");'''
+FREEZE = '''set -eu
+test "$(cat /proc/1/comm)" = apache2
+kill -STOP 1
+for f in /proc/[0-9]*/comm; do
+  test -r "$f" || continue
+  test "$(cat "$f")" = apache2 || continue
+  pid=${f#/proc/}; pid=${pid%/comm}; kill -STOP "$pid"
+done
+for f in /proc/[0-9]*/comm; do
+  test -r "$f" || continue
+  test "$(cat "$f")" = apache2 || continue
+  pid=${f#/proc/}; pid=${pid%/comm}
+  test "$(awk '/^State:/{print $2}' "/proc/$pid/status")" = T
+done'''
+RAW_INFO = '''$root="/dev/shm/mrn-access-profile";
+if(is_link($root)||!is_dir($root)||(fileperms($root)&0777)!==0700)exit(2);
+$files=array_values(array_diff(scandir($root),array(".","..")));
+if(count($files)!==1||!preg_match('/^cachegrind[.]out[.][1-9][0-9]*$/D',$files[0]))exit(3);
+$p=$root."/".$files[0];$s=lstat($p);
+if(($s["mode"]&0170000)!==0100000||$s["size"]<1||$s["size"]>33554432)exit(4);
+echo json_encode(array("name"=>$files[0],"bytes"=>$s["size"]));'''
+RAW_READ = '''$p="/dev/shm/mrn-access-profile/".$argv[1];
+if(!preg_match('/^cachegrind[.]out[.][1-9][0-9]*$/D',$argv[1])||is_link($p)||!is_file($p))exit(2);
+$f=fopen($p,"rb");echo stream_get_contents($f,33554433);fclose($f);'''
 
 
 def command(*args, timeout=15, maximum=65536):
@@ -69,6 +94,7 @@ def main():
               'capture_cap_bytes': 67108864, 'parser_cap_bytes': parser.MAXIMUM,
               'selected_requests': 0, 'cleanup': False, 'source_unchanged': False}
     owned = False
+    stage = 'clone-validation'
     started = time.monotonic()
     # An outer timeout must enter cleanup too. The parent's hard kill remains.
     def interrupted(_signum, _frame):
@@ -87,6 +113,7 @@ def main():
             assert 0 < state['HostConfig']['ShmSize'] <= report['capture_cap_bytes']
             assert not any(m['Destination'].startswith('/dev/shm') for m in state['Mounts'])
             owned = True
+            stage = 'source-before'
             before = command('docker', 'exec', container, 'php', '-r', VERIFY, lock['provider']['commit']).decode()
             assert re.fullmatch('[a-f0-9]{64}', before)
             assert before == json.loads(Path(sys.argv[4]).read_text())['pins']['installed_manifest_sha256']
@@ -119,26 +146,45 @@ def main():
                 assert set(response) == {'profile_header', 'status'}
                 assert type(response['profile_header']) is bool and type(response['status']) is int and 100 <= response['status'] <= 599
             report['selected_response'] = response
+            stage = 'source-after'
             after = command('docker', 'exec', container, 'php', '-r', VERIFY, lock['provider']['commit']).decode()
             report['source_unchanged'] = before == after
-            # Freeze all PHP before reading. docker cp works through the daemon;
-            # no new request/process runs in the paused container.
-            command('docker', 'pause', container)
-            raw = temporary / 'raw'
-            command('docker', 'cp', container + ':/dev/shm/mrn-access-profile', str(raw))
-            files = list(raw.iterdir())
-            assert len(files) == 1 and re.fullmatch(r'cachegrind\.out\.[1-9][0-9]*', files[0].name)
-            info = files[0].lstat()
-            assert stat.S_ISREG(info.st_mode) and 0 < info.st_size <= parser.MAXIMUM
-            with files[0].open('rb') as stream:
-                report['profile'] = parser.parse_profile(stream)
+            # Freeze Apache parent and workers before reading; no HTTP work can
+            # continue. docker cp cannot read /dev/shm reliably. A separate
+            # `php -n` diagnostic process reads only the fixed private profile;
+            # it loads neither WordPress nor the profiler/configuration.
+            stage = 'freeze'
+            command('docker', 'exec', container, 'sh', '-c', FREEZE)
+            report['php_workers_frozen'] = True
+            stage = 'collect'
+            info = json.loads(command('docker', 'exec', container, 'php', '-n', '-r', RAW_INFO, maximum=1024))
+            assert set(info) == {'name', 'bytes'} and re.fullmatch(r'cachegrind\.out\.[1-9][0-9]*', info['name'])
+            assert type(info['bytes']) is int and 0 < info['bytes'] <= parser.MAXIMUM
+            report['raw_file_count'] = 1
+            report['raw_file_bytes'] = info['bytes']
+            raw = command('docker', 'exec', container, 'php', '-n', '-r', RAW_READ, info['name'], maximum=parser.MAXIMUM)
+            assert len(raw) == info['bytes']
+            stage = 'parse'
+            report['profile'] = parser.parse_profile(io.BytesIO(raw))
+            del raw
             # A transport timeout may hide the HTTP header; retain the complete
             # instrumented costs, but do not call that a completed profile run.
             if report['profile']['representative_path'] and response['profile_header'] and report['source_unchanged']:
                 report['result'] = 'PROFILE_ONLY'
-        except Exception:
+        except Exception as error:
             # Exception messages/arguments may contain private fixture data.
             report['result'] = 'PROFILE_INCOMPLETE'
+            report['failure_stage'] = stage
+            # Only these local fixed parser categories may leave the fixture.
+            categories = ('Profile integer out of bounds', 'Malformed profile reference',
+                          'Duplicate or excessive profile references', 'Unresolved profile reference',
+                          'Oversized or truncated profile', 'Malformed profile text', 'Unknown profile version',
+                          'Unqualified profiler or PHP version', 'Missing profile command', 'Multiple profile parts',
+                          'Unknown profile positions', 'Unknown profile events', 'Malformed profile summary',
+                          'Malformed profile cost', 'Trailing profile data', 'Unexpected profile structure',
+                          'Excessive profile lines', 'Incomplete profile')
+            if stage == 'parse' and type(error) is ValueError and str(error) in categories:
+                report['parser_failure'] = str(error)
         finally:
             if owned:
                 try:

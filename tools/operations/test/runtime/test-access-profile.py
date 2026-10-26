@@ -93,11 +93,13 @@ class ProfileTests(unittest.TestCase):
                         return b'a' * 64
                     if 'apache2ctl -k graceful' in str(args) and failure == 'reload':
                         raise ValueError('synthetic secret')
-                    if args[:2] == ('docker', 'pause') and failure == 'capture':
+                    if hook.FREEZE in args and failure == 'capture':
                         raise ValueError('synthetic secret')
-                    if args[:2] == ('docker', 'cp') and args[2].endswith(':/dev/shm/mrn-access-profile'):
-                        raw = Path(args[3]); raw.mkdir()
-                        save(raw / 'cachegrind.out.10', b'truncated' if failure == 'parse' else sample())
+                    raw = b'truncated' if failure == 'parse' else sample()
+                    if hook.RAW_INFO in args:
+                        return json.dumps({'name': 'cachegrind.out.10', 'bytes': len(raw)}).encode()
+                    if hook.RAW_READ in args:
+                        return raw
                     if args[:3] == ('docker', 'rm', '-f') and failure == 'cleanup':
                         raise ValueError('synthetic secret')
                     return b''

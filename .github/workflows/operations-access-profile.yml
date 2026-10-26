@@ -123,6 +123,7 @@ jobs:
           print('PROFILE_ONLY: instrumented timings retained; acceptance remains unverified.')
           PYCODE
       - name: Retain only redacted function timings
+        # Includes fixed failure stage and bounded raw sizes when incomplete.
         if: always()
         uses: actions/upload-artifact@v4
         with:
