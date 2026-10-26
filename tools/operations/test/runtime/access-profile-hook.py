@@ -27,11 +27,11 @@ foreach($m["files"] as $p=>$sha){if(is_link($root.$p)||hash_file("sha256",$root.
 echo hash_file("sha256",$root."release-source.json");'''
 FREEZE = '''set -eu
 test "$(cat /proc/1/comm)" = apache2
-kill -STOP 1
+test "$(awk '/^State:/{print $2}' /proc/1/status)" = T
 for f in /proc/[0-9]*/comm; do
   test -r "$f" || continue
   test "$(cat "$f")" = apache2 || continue
-  pid=${f#/proc/}; pid=${pid%/comm}; kill -STOP "$pid"
+  pid=${f#/proc/}; pid=${pid%/comm}; test "$pid" = 1 || kill -STOP "$pid"
 done
 for f in /proc/[0-9]*/comm; do
   test -r "$f" || continue
@@ -154,6 +154,9 @@ def main():
             # `php -n` diagnostic process reads only the fixed private profile;
             # it loads neither WordPress nor the profiler/configuration.
             stage = 'freeze'
+            # PID-namespace init cannot be stopped from inside its namespace.
+            # Docker sends SIGSTOP from the ancestor; this is not SIGKILL.
+            command('docker', 'kill', '--signal=SIGSTOP', container)
             command('docker', 'exec', container, 'sh', '-c', FREEZE)
             report['php_workers_frozen'] = True
             stage = 'collect'

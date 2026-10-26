@@ -123,7 +123,7 @@ jobs:
           print('PROFILE_ONLY: instrumented timings retained; acceptance remains unverified.')
           PYCODE
       - name: Retain only redacted function timings
-        # Includes fixed failure stage and bounded raw sizes when incomplete.
+        # Includes fixed failure stage and bounded raw sizes; Docker freezes init.
         if: always()
         uses: actions/upload-artifact@v4
         with:

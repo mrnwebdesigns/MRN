@@ -14,8 +14,8 @@ GROUPS = {
     'Content_Management': ('qualification_json', 'qualification_value', 'qualification_record_fresh'),
     'Management_Evidence_Authority': ('authorization',),
 }
-LABELS = {f'MRN_MainWP_{group}::{method}': f'{group}.{method}'
-          for group, methods in GROUPS.items() for method in methods}
+LABELS = {f'MRN_MainWP_{group}{separator}{method}': f'{group}.{method}'
+          for group, methods in GROUPS.items() for method in methods for separator in ('::', '->')}
 LABELS.update({f'wpdb->{method}': f'wpdb.{method}' for method in ('query', 'get_var', 'get_row', 'get_results', 'prepare')})
 LABELS.update({f'php::{method}': method for method in ('hash_file', 'hash', 'json_encode', 'json_decode', 'sodium_crypto_secretbox_open')})
 REQUIRED = ('Content_Access.management_existing_readback', 'Content_Access.readback_for',

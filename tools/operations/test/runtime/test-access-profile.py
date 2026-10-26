@@ -28,7 +28,7 @@ HEADER = b'version: 1\ncreator: xdebug 3.5.3 (PHP 8.3.30)\ncmd: /private/secret-
 def sample():
     # Exact 3.5.3 grammar from src/profiler/profiler.c at the pinned source.
     functions = [next(name for name, label in parser.LABELS.items() if label == required) for required in parser.REQUIRED]
-    functions += ['php::hash_file', '{closure:/private/token.php:3-7}']
+    functions += ['php::hash_file', '{closure:/private/token.php:3-7}', 'MRN_MainWP_Management_Requester_Coherence->descriptor']
     blocks = []
     for i, name in enumerate(functions, 1):
         blocks.append(f'fl=(1){" /private/source.php" if i == 1 else ""}\nfn=({i}) {name}\n1 10 20\n\n')
@@ -42,6 +42,7 @@ class ProfileTests(unittest.TestCase):
         self.assertTrue(result['representative_path'])
         first = next(row for row in result['functions'] if row['label'] == parser.REQUIRED[0])
         self.assertEqual(first, {'label': parser.REQUIRED[0], 'calls': 2, 'self_10ns': 17, 'inclusive_10ns': 26})
+        self.assertTrue(any(row['label'] == 'Management_Requester_Coherence.descriptor' for row in result['functions']))
         encoded = json.dumps(result)
         for private in ('/private', 'token', 'closure', 'source.php', 'secret-script'):
             self.assertNotIn(private, encoded)
@@ -114,6 +115,10 @@ class ProfileTests(unittest.TestCase):
                 self.assertEqual(result['result'], 'PROFILE_ONLY' if failure is None else 'PROFILE_INCOMPLETE')
                 self.assertEqual(result['cleanup'], failure != 'cleanup')
                 self.assertTrue(any(c[:3] == ('docker', 'rm', '-f') for c in calls))
+                if failure != 'reload':
+                    freeze = next(i for i, c in enumerate(calls) if hook.FREEZE in c)
+                    stop = next(i for i, c in enumerate(calls) if c[:3] == ('docker', 'kill', '--signal=SIGSTOP'))
+                    self.assertLess(stop, freeze)
                 self.assertNotIn('synthetic secret', report.read_text())
                 self.assertFalse(result['acceptance'])
 
