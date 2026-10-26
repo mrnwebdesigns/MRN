@@ -1,6 +1,6 @@
 {
   "authority": "Checksum- and tree-locked standard-plugin releases available to explicit one-site Stack component plans. Registration never authorizes a site write or changes the immutable Stack release identity.",
-  "catalog_updated": "2026-10-23",
+  "catalog_updated": "2026-10-26",
   "releases": [
     {
       "current_distribution": "standard-bootstrap",
@@ -1801,6 +1801,35 @@
         "preserve_active_state": true
       },
       "version": "0.1.75"
+    },
+    {
+      "current_distribution": "catalog-only",
+      "package": {
+        "filename": "mrn-mainwp-operations-api-0.13.11-f7271892c72b.zip",
+        "main_file": "mrn-mainwp-operations-api/mrn-mainwp-operations-api.php",
+        "path": "releases/stack-plugins/mrn-mainwp-operations-api-0.13.11-f7271892c72b.zip",
+        "sha256": "fa951609264b7cd8bc6cdde9f515f3621b6fd581b4120254d57a831bd5de3724",
+        "size_bytes": 142212
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-mainwp-operations-api",
+      "source": {
+        "git_commit": "f7271892c72b4e2d54bf084c21d15a805c9a260e",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-mainwp-operations-api",
+        "repository": "mrnwebdesigns/mrn-mainwp-operations-api"
+      },
+      "target_tier": "dashboard-only",
+      "tree": {
+        "file_count": 32,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "0d076ebbeb5923d84bc2f250f020e55413973e5dc25f5c3d1c88b43bde10ab14"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.13.11"
     }
   ],
   "schema_version": 1
