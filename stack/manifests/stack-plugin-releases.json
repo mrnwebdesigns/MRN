@@ -1917,6 +1917,35 @@
         "preserve_active_state": true
       },
       "version": "0.1.2"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-stack-deployment-agent-0.3.3-6ce5a0a6e033.zip",
+        "main_file": "mrn-stack-deployment-agent/mrn-stack-deployment-agent.php",
+        "path": "releases/stack-plugins/mrn-stack-deployment-agent-0.3.3-6ce5a0a6e033.zip",
+        "sha256": "327297027114fe6fbe27ce350a90a8628d2d8544505a27b1240cb3f8e54b24cc",
+        "size_bytes": 72788
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-stack-deployment-agent",
+      "source": {
+        "git_commit": "6ce5a0a6e03341ddd436325cc6d0538f23a55687",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-stack-deployment-agent",
+        "repository": "mrnwebdesigns/mrn-stack-deployment-agent"
+      },
+      "target_tier": "platform-required",
+      "tree": {
+        "file_count": 23,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "165690eeaa5941cdece9281087e2798967da72926bc0d406aa615657aa441512"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.3.3"
     }
   ],
   "schema_version": 1

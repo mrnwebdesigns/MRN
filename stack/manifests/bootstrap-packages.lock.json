@@ -256,15 +256,15 @@
       "name": "MRN Stack Deployment Agent",
       "package": "mrn-stack-deployment-agent.zip",
       "profile": "all",
-      "sha256": "834e1716a2ba74fccfe3205d8944fcfac4a8b685e1edfd1366ae9b42da5f766f",
-      "size_bytes": 62383,
+      "sha256": "327297027114fe6fbe27ce350a90a8628d2d8544505a27b1240cb3f8e54b24cc",
+      "size_bytes": 72788,
       "slug": "mrn-stack-deployment-agent",
       "source": {
-        "commit": "e1d0dc07e8abc81640b76bd04883456900dc7d01",
+        "commit": "6ce5a0a6e03341ddd436325cc6d0538f23a55687",
         "repository": "mrn-stack-deployment-agent",
         "type": "git"
       },
-      "version": "0.3.2"
+      "version": "0.3.3"
     },
     {
       "main_file": "mrn-template-inspector/mrn-template-inspector.php",
@@ -529,7 +529,7 @@
       "version": "0.1.2"
     }
   ],
-  "release_id": "2026.10.27-fleet-auto-fa11a42cb289",
+  "release_id": "2026.10.27-fleet-auto-6380c95191f8",
   "schema_version": 1,
   "scope": "new-site-bootstrap-inputs",
   "stack_plugin_count": 34
