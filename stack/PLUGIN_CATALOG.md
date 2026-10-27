@@ -25,7 +25,7 @@ The exact new-site selection and package versions are listed in [BOOTSTRAP_RELEA
 | `mrn-shared-assets` | 0.2.2 | MU loader | Platform required | Provides shared asset and icon interfaces, including consumer-aware ACF admin asset detection. |
 | `mrn-site-colors` | 0.1.39 | MU loader | Platform required | Owns persistent site design tokens and CSS-variable output. |
 | `mrn-updraft-local-retention` | 0.8.10 | MU loader | Platform required | Enforces seven daily, four weekly, and twelve 30-day remote recovery points, uses a stable cross-environment S3 site slug, exposes MainWP compliance evidence, and routes backup-policy warnings to Notifications Center. |
-| `mrn-schema-bridge` | 0.7.1 | MU loader | Platform required | Normalizes provider and theme schema behavior, including automatic Article and visible-content JobPosting contracts. |
+| `mrn-schema-bridge` | 0.7.2 | MU loader | Platform required | Normalizes provider and theme schema behavior, including automatic Article and visible-content JobPosting contracts. |
 | `mrn-active-style-guide` | 0.1.7 | MU loader | Platform required | Logged-in design-system reference and diagnostics. |
 | `mrn-config-helper` | 0.1.75 | Standard bootstrap | Platform required | Provides the shared site configuration shell, native SEOPress breadcrumb integration and launch/admin integrations; retired SendGrid and GTM Injector controls and synchronization, and the custom breadcrumb editor, are excluded. |
 | `mrn-media-bulk-tools` | 0.13.1 | Standard bootstrap | Platform required | Media audit, usage indexing, and bulk maintenance; exact version and tree are enforced by the full Stack release lock. |
