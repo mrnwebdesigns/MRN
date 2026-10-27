@@ -1,6 +1,6 @@
 # New-site Stack bootstrap release
 
-Platform candidate: `2026.10.26-fleet-auto-d4f28f4d7cf4`; plugin input bundle: `2026.10.26-fleet-auto-d4f28f4d7cf4`. Scope: qualified source installation inputs; site deployment remains separate.
+Platform candidate: `2026.10.27-fleet-auto-46bc4f8ac73e`; plugin input bundle: `2026.10.27-fleet-auto-46bc4f8ac73e`. Scope: qualified source installation inputs; site deployment remains separate.
 
 The Stack profile selects **34 standard plugins**. The plain profile selects **33**, excluding only Reusable Block Library. Community versions are pinned in `plugins.txt`; every plugin archive is checksum-bound in `manifests/bootstrap-packages.lock.json`. The MRN platform lock separately covers the parent/child pair, MU components and shared runtime.
 
