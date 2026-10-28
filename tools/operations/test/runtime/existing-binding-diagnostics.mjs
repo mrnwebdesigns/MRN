@@ -170,3 +170,35 @@ export function bindingSourceContextHistory(bytes) {
     return requests.some(row => row === null) ? { state: 'malformed', requests: [] } : { state: 'available', requests };
   } catch { return { state: 'malformed', requests: [] }; }
 }
+
+const captureStages = new Set(['unavailable', 'claim', 'preflight', 'sync', 'native-program', 'native-response',
+  'native-child', 'dataset-schema', 'dataset-plugins', 'dataset-runtime', 'dataset-paths', 'dataset-binding',
+  'dataset-snapshot', 'dataset-identity', 'current-access', 'slice', 'dataset', 'readback', 'artifact', 'retention', 'post-commit']);
+function captureDiagnostic(value, allowStatus = false) {
+  if (!value || typeof value !== 'object' || Array.isArray(value) || !Object.hasOwn(value, 'stage')
+    || !captureStages.has(value.stage)
+    || Object.keys(value).some(key => key !== 'stage' && !(allowStatus && key === 'status'))
+    || (Object.hasOwn(value, 'status') && value.status !== 500)) return null;
+  return { stage: value.stage };
+}
+
+// This exact symbolic stage is already exposed by the provider. Project it in
+// the disposable HTTP fixture before MCP normalization discards error data.
+export function bindingCaptureFailure(bytes) {
+  if (typeof bytes !== 'string' || Buffer.byteLength(bytes) > 16384) return null;
+  try {
+    const body = JSON.parse(bytes);
+    return body?.code === 'mrn_management_qualification' ? captureDiagnostic(body.data, true) : null;
+  } catch { return null; }
+}
+
+export function bindingCaptureHistory(bytes) {
+  if (bytes === undefined) return { state: 'unavailable', requests: [] };
+  if (typeof bytes !== 'string' || Buffer.byteLength(bytes) > 4096) return { state: 'not-inspected', requests: [] };
+  const lines = bytes.trim() ? bytes.trim().split('\n') : [];
+  if (lines.length > 4) return { state: 'not-inspected', requests: [] };
+  try {
+    const requests = lines.map(line => captureDiagnostic(JSON.parse(line)));
+    return requests.some(row => row === null) ? { state: 'malformed', requests: [] } : { state: 'available', requests };
+  } catch { return { state: 'malformed', requests: [] }; }
+}

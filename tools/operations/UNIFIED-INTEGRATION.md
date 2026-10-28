@@ -29,6 +29,27 @@ must independently resolve its current environment and qualify the applicable
 Kinsta recovery workflow. Platform & Plugins eligibility does not select a
 backup provider, and this target correction does not change shared backup policy.
 
+## Native capture blocker, 2026-10-28
+
+Gateway run `40699459318` stopped at `private-capture-interruption` before the
+fixture could simulate its lost-response boundary. The actual native capture
+returned HTTP 500 / `mrn_management_qualification` after 117,202 ms, within the
+unchanged 120,000 ms transport limit. The aggregate hook deadline was not
+exceeded. Earlier authorization, binding recovery, signed qualification and
+identity callback checks passed; this does not prove capture or editing.
+Original artifact `12821492587` has SHA-256
+`a7a3a7351378d4786e373b70a78bfaa5294ec87e5a3b1eb613e6656d3add7773`.
+The provider's separate full native run `40698901990` passed; it is not a
+replacement for this combined gateway check.
+
+The disposable network diagnostic now projects only the provider's existing
+closed capture-stage label before MCP error normalization discards it. Reports
+retain at most four stage-only observations; private messages, bodies, identity
+and unrecognized data are excluded. The capture, lost-response assertion,
+authorization checks, immutable source selection and every deadline remain
+unchanged. A fresh combined native run is still required. No hosted service,
+Dashboard, credential, access policy or managed site is changed.
+
 ## Current content integration, 2026-10-23
 
 The next native-transfer composition selects provider

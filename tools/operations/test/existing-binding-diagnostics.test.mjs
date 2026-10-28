@@ -186,3 +186,39 @@ test('source-context failure retains only exact closed provider phase and bounde
   for (const bytes of ['x'.repeat(16385), Array(5).fill(JSON.stringify(value)).join('\n')])
     assert.deepEqual(bindingSourceContextHistory(bytes), { state: 'not-inspected', requests: [] });
 });
+
+test('capture failure retains a closed provider stage without messages, raw data or identity', async () => {
+  const { bindingCaptureFailure } = await import('./runtime/existing-binding-diagnostics.mjs');
+  const project = data => bindingCaptureFailure(JSON.stringify({ code: 'mrn_management_qualification',
+    message: 'PRIVATE_FIXTURE_MATERIAL', data, identity: 'PRIVATE_FIXTURE_MATERIAL' }));
+  for (const stage of ['unavailable', 'claim', 'preflight', 'sync', 'native-program', 'native-response',
+    'native-child', 'dataset-schema', 'dataset-plugins', 'dataset-runtime', 'dataset-paths', 'dataset-binding',
+    'dataset-snapshot', 'dataset-identity', 'current-access', 'slice', 'dataset', 'readback', 'artifact', 'retention', 'post-commit']) {
+    assert.deepEqual(project({ stage }), { stage });
+    assert.deepEqual(project({ stage, status: 500 }), { stage });
+    assert.equal(JSON.stringify(project({ stage })).includes('PRIVATE'), false);
+  }
+  for (const value of [null, [], {}, { stage: 'PRIVATE' }, { stage: 1 }, { stage: null },
+    { stage: 'readback', status: 200 }, { stage: 'readback', status: '500' },
+    { stage: 'readback', exception: 'PRIVATE' }, { stage: 'readback', subject: 'PRIVATE' }])
+    assert.equal(project(value), null);
+  for (const bytes of [undefined, {}, 'PRIVATE', 'null', 'x'.repeat(16385),
+    JSON.stringify({ code: 'mrn_management_qualification', data: { stage: 'sync' }, message: 'é'.repeat(8192) }),
+    JSON.stringify({ code: 'other', data: { stage: 'readback' } })])
+    assert.equal(bindingCaptureFailure(bytes), null);
+});
+
+test('capture history bounds observations and refuses unexpected or private fields', async () => {
+  const { bindingCaptureHistory } = await import('./runtime/existing-binding-diagnostics.mjs');
+  const rows = [{ stage: 'readback' }, { stage: 'post-commit' }];
+  assert.deepEqual(bindingCaptureHistory(rows.map(row => JSON.stringify(row)).join('\n')),
+    { state: 'available', requests: rows });
+  assert.deepEqual(bindingCaptureHistory(), { state: 'unavailable', requests: [] });
+  assert.deepEqual(bindingCaptureHistory(''), { state: 'available', requests: [] });
+  for (const bytes of ['PRIVATE', 'null', '[]', '{}', JSON.stringify({ stage: 'PRIVATE' }),
+    JSON.stringify({ stage: 'readback', status: 500 }), JSON.stringify({ stage: 'readback', raw: 'PRIVATE' }),
+    JSON.stringify(rows[0]) + '\nPRIVATE'])
+    assert.deepEqual(bindingCaptureHistory(bytes), { state: 'malformed', requests: [] });
+  for (const bytes of [{}, 'x'.repeat(4097), Array(5).fill(JSON.stringify(rows[0])).join('\n')])
+    assert.deepEqual(bindingCaptureHistory(bytes), { state: 'not-inspected', requests: [] });
+});
