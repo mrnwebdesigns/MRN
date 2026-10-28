@@ -342,6 +342,11 @@ function mrn_base_stack_ensure_presentation_fields( array $fields, $layout, $see
 	if ( ! empty( $fields[0]['key'] ) ) {
 		$seed = sanitize_key( $fields[0]['key'] ) . '_presentation';
 	}
+	if ( in_array( $layout, array( 'cta', 'cta_block' ), true ) ) {
+		// Match the existing reusable CTA renderer's four independent action slots.
+		foreach ( $fields as &$field ) { if ( 'links' === ( $field['name'] ?? '' ) && 'repeater' === ( $field['type'] ?? '' ) ) { $field['max'] = 4; } }
+		unset( $field );
+	}
 	if ( 'showcase' === $layout ) {
 		foreach ( $fields as &$field ) {
 			if ( 'showcase_items' !== ( $field['name'] ?? '' ) || 'repeater' !== ( $field['type'] ?? '' ) ) { continue; }
