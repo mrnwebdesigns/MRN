@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { digest, requireThat, OpsError } from './contracts.mjs';
 import { DelegatedMainwpClient } from './delegated-mainwp.mjs';
 import { payload } from './mainwp.mjs';
+import { emailAuditDeadline } from './email-audit-deadline.mjs';
 
 const prefix = 'mrn_mainwp__';
 const nativePrefix = 'mrn-mainwp/';
@@ -150,7 +151,7 @@ export class EmailAuditWorkflow {
       this.store.audit(actor, eventTarget, args.audit_id, `email-audit:${action}`, 'attempted');
       const transport = { identity: owner,
         fatal: error => error instanceof OpsError,
-        call: async (ability, input, _internal, timeout) => {
+        call: async (ability, input, _internal, timeout, perCallLimit, deadlineAt) => {
           this.check(actor);
           // The shared engine's sync uses MainWP's stock selector; the existing
           // delegation contract deliberately accepts exactly one numeric site.
@@ -158,7 +159,10 @@ export class EmailAuditWorkflow {
           const name = ability.startsWith(nativePrefix) ? prefix + ability.slice(nativePrefix.length).replaceAll('-', '_')
             : ability.slice('mainwp/'.length).replaceAll('-', '_');
           let result;
-          try { result = payload(await client.callTool({ name, arguments: nativeArgs }, undefined, { timeout })); }
+          try {
+            result = await emailAuditDeadline({ action, ability, timeout, perCallLimit, deadlineAt },
+              async options => payload(await client.callTool({ name, arguments: nativeArgs }, undefined, options)));
+          }
           catch (error) {
             this.check(actor);
             if (ability === `${nativePrefix}audit-email-address-v1` && error instanceof OpsError && coverageFailures.has(error.code))

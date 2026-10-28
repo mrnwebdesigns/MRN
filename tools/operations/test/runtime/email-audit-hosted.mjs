@@ -9,6 +9,7 @@ import { join } from 'node:path';
 import { createServer as reservePort } from 'node:net';
 import { EmailAuditWorkflow, EmailAuditStorage, auditOwner } from '../../src/email-audit.mjs';
 import { DelegatedMainwpClient, delegationTools } from '../../src/delegated-mainwp.mjs';
+import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 import { IdentitySigner, delegationDigest, delegationPrefix } from '../../src/delegation.mjs';
 import { Registry, OpsError } from '../../src/contracts.mjs';
 import { Store } from '../../src/store.mjs';
@@ -33,9 +34,9 @@ function fixture(t) {
     async readResource() { return { contents: [{ text: JSON.stringify({ connected: true, dashboardHost: 'wpcontrol.mrndev.io', abilitiesCount: 121 }) }] }; },
     async listTools() { return { tools: Object.values(delegationTools).map(name => ({ name, annotations: { readOnlyHint: false, destructiveHint: name === delegationTools.run } })) }; },
     async close() {},
-    async callTool({ name, arguments: args }) {
-      if (name === delegationTools.challenge) return response({ nonce: randomBytes(32).toString('hex'), expires_at: Math.floor(Date.now() / 1000) + 60,
-        authenticated_connection_sha256: 'a'.repeat(64), policy_sha256: 'b'.repeat(64) });
+    async callTool({ name, arguments: args }, _schema, options) {
+      if (name === delegationTools.challenge) { await state.beforeChallenge?.(args.ability, options); return response({ nonce: randomBytes(32).toString('hex'), expires_at: Math.floor(Date.now() / 1000) + 60,
+        authenticated_connection_sha256: 'a'.repeat(64), policy_sha256: 'b'.repeat(64) }); }
       assert.ok([delegationTools.access, delegationTools.read, delegationTools.sync].includes(name), 'No raw calls or write wrappers');
       const bytes = Buffer.from(args.delegation.payload_base64, 'base64');
       assert.ok(verify(null, Buffer.concat([Buffer.from(delegationPrefix), bytes]), publicKey, Buffer.from(args.delegation.signature_base64, 'base64')));
@@ -46,6 +47,7 @@ function fixture(t) {
       const input = JSON.parse(args.arguments_json);
       assert.equal(delegationDigest(input), claims.arguments_sha256); assert.equal(args.ability, claims.ability);
       state.calls.push({ ability: args.ability, input, actor });
+      await state.beforeCall?.(args.ability, input, options);
       if (state.scanFailure && args.ability === state.failureAbility) {
         if (state.expireOnInspect) state.denied = true;
         return { isError: true, ...response({ error: { code: -32603,
@@ -219,5 +221,112 @@ test('coverage errors on authorization or inventory never become partial scan re
     await assert.rejects(() => complete(f, job.audit_id), { code: 'EMAIL_AUDIT_READER_UNAVAILABLE' });
     assert.equal(f.state.calls.at(-1).ability, ability);
     assert.equal(f.state.page, 0);
+  }
+});
+
+
+test('hosted SDK and injected transport timeout codes cannot impersonate a native budget deferral', async t => {
+  for (const kind of ['sdk-timeout', 'injected-ETIMEDOUT']) {
+    const f = fixture(t); let now = Date.now();
+    const clock = t.mock.method(Date, 'now', () => now);
+    try {
+      f.state.beforeCall = (ability, input, options) => {
+        if (ability === 'mainwp/get-site-knowledge-v1') now += 3000;
+        if (ability === 'mainwp/sync-sites-v1') now += 4000;
+        if (ability === 'mainwp/get-site-v1') now += 3000;
+        if (ability === 'mrn-mainwp/audit-email-address-v1') {
+          if (!input.cursor) now += 3000;
+          else {
+            assert.equal(options.timeout, 2000); now += options.timeout;
+            if (kind === 'sdk-timeout') throw new McpError(ErrorCode.RequestTimeout, 'Request timed out', { timeout: options.timeout });
+            throw Object.assign(new Error('Request timeout'), { code: 'ETIMEDOUT' });
+          }
+        }
+      };
+      f.state.afterCall = (ability, result) => { if (ability === 'mainwp/get-site-v1') result.last_sync = new Date(now).toISOString(); };
+      const job = await start(f);
+      const result = await f.workflow.run(person(), 'continue', { audit_id: job.audit_id, max_duration_ms: 15000 });
+      assert.equal(result.failed, 1); assert.equal(result.pending, 0);
+      const storage = new EmailAuditStorage(f.store, auditOwner(person()));
+      const row = storage.load(job.audit_id).rows[0];
+      assert.equal(row.pages, 1); assert.equal(row.cursor, 'next'); assert.equal(row.matches.length, 1);
+      assert.equal(row.error_code, 'EMAIL_AUDIT_TIMEOUT');
+      const scans = () => f.state.calls.filter(c => c.ability === 'mrn-mainwp/audit-email-address-v1').length;
+      assert.equal(scans(), 2);
+      await f.workflow.run(person(), 'continue', { audit_id: job.audit_id, max_duration_ms: 15000 });
+      assert.equal(scans(), 2); // A failed row never silently retries.
+    } finally { clock.mock.restore(); }
+  }
+});
+
+test('hosted budget exhaustion cannot soften access or unknown OpsErrors and never releases evidence after revocation', async t => {
+  for (const code of ['AUTH_REQUIRED', 'MAINWP_ACCESS', 'DOWNSTREAM_TIMEOUT', 'MAINWP_FAILED']) {
+    const f = fixture(t); let now = Date.now(); const clock = t.mock.method(Date, 'now', () => now);
+    try {
+      const job = await start(f);
+      f.state.beforeCall = (ability, _input, options) => {
+        if (ability === 'mrn-mainwp/audit-email-address-v1') {
+          now += options.timeout;
+          throw new OpsError(code, 'Fixture refusal');
+        }
+      };
+      await assert.rejects(() => f.workflow.run(person(), 'continue', { audit_id: job.audit_id, max_duration_ms: 2000 }), { code });
+      assert.equal(f.store.db.prepare("SELECT COUNT(*) n FROM audit WHERE event='email-audit:continue' AND outcome='returned'").get().n, 0);
+    } finally { clock.mock.restore(); }
+  }
+  const f = fixture(t), job = await start(f);
+  f.state.beforeCall = ability => {
+    if (ability === 'mrn-mainwp/audit-email-address-v1') {
+      f.state.denied = true; throw new McpError(ErrorCode.RequestTimeout, 'Request timed out');
+    }
+  };
+  await assert.rejects(() => complete(f, job.audit_id), { code: 'AUTH_REQUIRED' });
+});
+
+test('owned hosted deadline retains the cursor and resumes without repeating completed preparation', async t => {
+  const f = fixture(t), realNow = Date.now.bind(Date); let offset = 0;
+  const clock = t.mock.method(Date, 'now', () => realNow() + offset);
+  try {
+    f.state.beforeCall = async (ability, input, options) => {
+      if (ability === 'mainwp/get-site-knowledge-v1') offset += 300;
+      if (ability === 'mainwp/sync-sites-v1') offset += 400;
+      if (ability === 'mainwp/get-site-v1') offset += 300;
+      if (ability === 'mrn-mainwp/audit-email-address-v1') {
+        if (!input.cursor) offset += 300;
+        else { await new Promise(resolve => options.signal.addEventListener('abort', resolve, { once: true })); throw options.signal.reason; }
+      }
+    };
+    f.state.afterCall = (ability, result) => { if (ability === 'mainwp/get-site-v1') result.last_sync = new Date(Date.now()).toISOString(); };
+    const job = await start(f);
+    const result = await f.workflow.run(person(), 'continue', { audit_id: job.audit_id, max_duration_ms: 2500 });
+    assert.equal(result.failed, 0); assert.equal(result.pending, 1); assert.equal(result.finished, false);
+    const row = new EmailAuditStorage(f.store, auditOwner(person())).load(job.audit_id).rows[0];
+    assert.equal(row.pages, 1); assert.equal(row.cursor, 'next'); assert.equal(row.matches.length, 1);
+    assert.equal(row.status, 'pending'); assert.ok(!row.error_code);
+    assert.equal(f.state.calls.filter(c => c.ability === 'mrn-mainwp/audit-email-address-v1').length, 2);
+    f.state.beforeCall = null;
+    const resumed = await complete(f, job.audit_id);
+    assert.equal(resumed.finished, true); assert.equal(resumed.failed, 0); assert.equal(resumed.matched, 1);
+    assert.equal(f.state.calls.filter(c => c.ability === 'mainwp/sync-sites-v1').length, 1);
+    assert.equal(f.state.calls.filter(c => c.ability === 'mainwp/get-site-knowledge-v1').length, 1);
+  } finally { clock.mock.restore(); }
+});
+
+test('owned cancellation covers delegation challenges and revoked membership still hides pending evidence', async t => {
+  for (const revoked of [false, true]) {
+    const f = fixture(t), job = await start(f); let aborts = 0;
+    f.state.beforeChallenge = async (ability, options) => {
+      if (ability !== 'mainwp/get-site-knowledge-v1') return;
+      assert.ok(options.signal); assert.ok(options.timeout <= 1500);
+      await new Promise(resolve => options.signal.addEventListener('abort', resolve, { once: true }));
+      aborts++; if (revoked) f.state.denied = true;
+      // A late challenge result must not cause the delegated read to dispatch.
+    };
+    const run = () => f.workflow.run(person(), 'continue', { audit_id: job.audit_id, max_duration_ms: 1500 });
+    if (revoked) await assert.rejects(run, { code: 'AUTH_REQUIRED' });
+    else { const result = await run(); assert.equal(result.pending, 1); assert.equal(result.failed, 0); }
+    assert.equal(aborts, 1);
+    assert.equal(f.state.calls.filter(c => c.ability === 'mainwp/get-site-knowledge-v1').length, 0);
+    if (revoked) assert.equal(f.store.db.prepare("SELECT COUNT(*) n FROM audit WHERE event='email-audit:continue' AND outcome='returned'").get().n, 0);
   }
 });

@@ -8,9 +8,9 @@
   },
   "transport": {
     "repository": "mrnwebdesigns/mainwp-mcp",
-    "commit": "68fc3060d9da92df1bce3e1fc7c08f4c9a757022",
+    "commit": "aef2f2ae4feaf61c512287f05f106b4227e9c904",
     "packageLockSha256": "8a68d9672593c177b0c73008b7d25bcfcb0de27bd2db9c6a0f368e9484c33917",
-    "engineSha256": "03ea13d68d9a62dee78c1028afdba3b491b93023e316c3f6f8c6f5739ccc3de2"
+    "engineSha256": "9a17c4e24314926b0a9930be124a5aee450016a4ffbb8346d1bd2a6a10e7acaf"
   },
   "nativeWordPressCompositionVerified": false,
   "liveGoogleVerified": false,

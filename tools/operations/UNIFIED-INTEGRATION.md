@@ -2,25 +2,34 @@
 
 ## Current source checkpoint, 2026-10-28
 
-The disabled one-use worker bootstrap delivery now has an actual local HTTP
-composition. Exact run OIDC and fresh original staff checks precede an atomic
-SQLite consume/audit transaction, with independent digest/state anchors and no
-backfill. Replay, concurrent readers, loss/restart, partial rewind, expiry,
-revocation, policy/key changes and wrong audience remain denied. The existing
-worker-context reader shares the same authorization helper without broadening
-its audience. Production startup leaves this route absent. Protected supervisor
-retention and actual hosted/bootstrap/source admission remain open.
+The audit source lock now selects MCP `aef2f2ae4feaf61c512287f05f106b4227e9c904`,
+including accepted native timeout fix `d486395` / `cece5a5`. The hosted adapter
+owns one cancellation timer across the delegation challenge and audit request.
+Only its exact abort-reason object can convert a clipped worker timeout to
+pending; remote SDK codes and fatal access/backend errors do not qualify. Saved
+pages/cursor survive, completed preparation is not repeated, and final access
+checks still withhold revoked evidence. Six actual-SDK/deadline groups, fourteen
+real-engine hosted groups, all 756 gateway tests and all 3,242 MCP tests pass
+locally, with lint/typecheck/build and scoped MRN QA. Browser accessibility and
+frontend performance are not applicable to this transport-only change. The
+audit CI pins the exact built-engine hash. Native WordPress audit composition,
+live Google, ChatGPT acceptance and deployment remain unverified/unapproved.
 
-Native run `40717621324` at `9369470e` passed capture interruption/recovery,
-measurement readback, both source-context reads and root catalog. It then reached
-the unchanged 290-second cleanup deadline during the final source transfer.
-Source capture returned HTTP200 in 96.456 seconds and status returned HTTP200 in
-11.855 seconds; final frame read did not complete. Artifact `12829847032` has
-verified SHA-256 `aa514859d7a63aa1772781f4b92e6d9a4e6fa0d4cfcb9ee3661014ec473d2d62`.
-The callback route was disabled. The later no-bytecode acquisition setup was not reached, so it
-remains locally verified only. This result does not establish the cause of
-previous capture failures or close complete native qualification. No limits,
-production configuration, source pins or access grants were changed.
+The disabled one-use worker bootstrap delivery has a local HTTP composition,
+with original staff checks and atomic SQLite consume/audit before release.
+Production startup leaves that route absent. Protected supervisor retention and
+actual hosted/bootstrap/source admission remain open.
+
+Full native run `40721091106` at `d5eb7ca4` passed capture/recovery, measurement,
+both source-context reads and the root catalog, then failed at the unchanged
+290-second aggregate cleanup deadline during source capture. Cleanup disables
+the callback route; the later provider refusal does not establish a provider
+root cause. Artifact `12831318324` has verified SHA-256
+`1964515c013e5fa5e88cf57aa49b763b48ccc97ffded9e2a135b4d5141b60b46`.
+The previous `40717621324` reached the final frame at that same deadline.
+The no-bytecode acquisition fix remains locally verified because these runs did
+not reach it. Content/code pins, request/authority limits, production config and
+access grants remain unchanged. Complete native qualification is still blocked.
 
 ## Required team experience
 

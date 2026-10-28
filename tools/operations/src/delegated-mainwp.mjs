@@ -66,15 +66,16 @@ export class DelegatedMainwpClient {
     this.transportVerified = true;
     this.metadata = metadata;
   }
-  async envelope(ability, args) {
+  async envelope(ability, args, options) {
     if (!this.transportVerified) await this.ready();
-    const challenge = await this.#challenge(ability, args);
+    const challenge = await this.#challenge(ability, args, options);
+    options?.signal?.throwIfAborted();
     const envelope = this.signer.sign(this.actor, ability, args, challenge);
     return { envelope, claims: JSON.parse(Buffer.from(envelope.payload_base64, 'base64').toString('utf8')) };
   }
-  async #challenge(ability, args) {
+  async #challenge(ability, args, options) {
     return payload(await this.client.callTool({ name: delegationTools.challenge,
-      arguments: { ability, arguments_sha256: delegationDigest(args) } }, undefined, { timeout: 30000 }));
+      arguments: { ability, arguments_sha256: delegationDigest(args) } }, undefined, { ...options, timeout: Math.min(30000, options?.timeout ?? 30000) }));
   }
   async verifyStaff() {
     await this.ready();
@@ -98,7 +99,7 @@ export class DelegatedMainwpClient {
   }
   async #dispatch(ability, args, wrapper, options, expectedPolicy) {
     requireThat(Buffer.byteLength(delegationCanonical(args)) <= 98304, 'DELEGATION_INPUT', 'Delegated request exceeds the supported bound.');
-    const signed = await this.envelope(ability, args);
+    const signed = await this.envelope(ability, args, options);
     return this.#dispatchSigned(ability, args, wrapper, options, signed, expectedPolicy);
   }
   async #dispatchSigned(ability, args, wrapper, options, { envelope, claims }, expectedPolicy, beforeConfirmed) {

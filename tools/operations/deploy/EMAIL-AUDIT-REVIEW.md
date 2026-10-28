@@ -67,6 +67,24 @@ complete exact source/dependency package and service filesystem permissions
 must also be verified when packaging and installing. Chat cannot select code,
 paths, keys or hashes. Configured Codex/Claude clients are not repointed.
 
+## Bounded continuation cancellation
+
+The source composition includes the accepted native timeout fix `d486395`
+(merged as `cece5a5`). The shared engine carries the original per-call limit and
+absolute batch deadline into the hosted adapter. Its private timer covers both
+the signed delegation challenge and read. Only an eligible clipped continuation
+worker request cancelled with that exact local abort-reason object may become
+pending; remote SDK timeout codes, injected `ETIMEDOUT`, access errors and unknown
+backend errors cannot impersonate this proof. Inventory and authorization remain
+outside worker deferral. No request limit is increased and no retry is added.
+
+Actual SDK cancellation tests verify identity of the abort reason and downstream
+cancellation notification. Hosted real-engine tests verify saved pages/cursor,
+resume without replaying completed preparation, cancelled challenges, and revoked
+membership withholding results. Late success is withheld; clock rollback cannot
+manufacture a pending result. These are isolated source tests, separate from
+native WordPress composition, production Google access and ChatGPT acceptance.
+
 ## Required production review and gates
 
 Read-only service observation on 2026-10-28 found gateway `a41d1ba7`, MCP

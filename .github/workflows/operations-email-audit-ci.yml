@@ -99,7 +99,7 @@ jobs:
       - name: Hosted source, signed transport and MCP resource custody
         run: |
           npm run lint --prefix tools/operations
-          node --test tools/operations/test/email-audit.test.mjs tools/operations/test/capabilities.test.mjs
+          node --test tools/operations/test/email-audit.test.mjs tools/operations/test/email-audit-deadline.test.mjs tools/operations/test/capabilities.test.mjs
           MRN_EMAIL_AUDIT_ENGINE="$GITHUB_WORKSPACE/.audit/transport/dist/mrn-email-audit.js" node --test tools/operations/test/runtime/email-audit-hosted.mjs
       - name: Preserve acceptance boundaries
         run: |
