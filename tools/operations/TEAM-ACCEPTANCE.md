@@ -42,7 +42,40 @@ All results and necessary decisions must appear in chat. Any request for a WordP
 
 Use already-authorized test identities or separately reviewed administrative test changes. Do not suspend a real staff member, weaken a policy, forge a production identity or grant an outsider access to manufacture test evidence. A local negative test is not a live denial result.
 
-## Latest source evidence, 2026-10-26
+## Latest source evidence, 2026-10-28
+
+Gateway `ff3a53b3` passed the thirteen native existing-record groups plus the
+independent source-context, seed-checkpoint and source-transfer audits in run
+`40713108339`. All source frames matched the actual original inventory, content
+was unchanged, revocation denial and cleanup passed. The complete job remains
+failed at the later Node acquisition setup. Its Python import creates untracked
+bytecode that violates the unchanged clean-source prerequisite; a local
+reproduction and disposable no-bytecode correction are prepared. This does not
+prove the cause of earlier timing failures or qualify a live edit.
+
+Gateway `86296c6d` passed audit source CI `40714479969`; the complete tested
+Operations tree matches head (`c90f9444c08dae5b87c17ba271ca4eb2b1307986`). Its
+artifact `12828030618` has SHA-256
+`ee7167cc82298499ed3ef2cbdb1f721e1d2651e1e15072028b78af63cdbc2117`.
+Local validation passed 740 gateway tests, sixteen engine/delegation/error
+checks, lint and MRN QA. Four closed inspection failures preserve incomplete
+site coverage; access/identity/unknown failures and revocation remain blocking.
+Provider `0a93163` passed its full native WordPress CI `40698901990`. These
+separate source results do not qualify the entire gateway flow or deployment.
+All ordinary-member/live acceptance rows above remain unverified.
+
+
+The next run, `40714480092` at `86296c6d`, failed the interruption assertion
+earlier. Unlike `40699459318`, its capture returned HTTP 200 after 117.049
+seconds; the following validation/current-authority work did not reach the
+expected simulated interruption. No provider failure stage was returned. This
+does not establish a successful capture recovery or a timing root cause. Its
+original artifact `12827418750` matches SHA-256
+`92edb940eb0486dc305655d962e4a50fb30580c26a432f88146a4061af5b1d42`.
+Both original results are retained. The no-bytecode fix addresses the separately
+reproduced later setup failure; capture timing remains an independent open gate.
+
+## Earlier source evidence, 2026-10-26
 
 Diagnostic revision3 at `930158e8` passed
 [profile run 40321795966](https://github.com/mrnwebdesigns/MRN/actions/runs/40321795966)

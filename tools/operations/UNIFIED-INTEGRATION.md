@@ -29,6 +29,41 @@ must independently resolve its current environment and qualify the applicable
 Kinsta recovery workflow. Platform & Plugins eligibility does not select a
 backup provider, and this target correction does not change shared backup policy.
 
+## Native transfer passed; next fixture blocker, 2026-10-28
+
+Gateway `ff3a53b3` / run `40713108339` passed all thirteen existing-record
+gateway groups in 263.788 seconds under unchanged limits. It recovered the
+original capture without recapture, verified both source contexts and the root
+catalog, and checked all eleven frames against the original inventory. Native
+content stayed unchanged; mid-lookup revocation and callback cleanup passed.
+Independent context, empty-seed and final source-transfer audits also passed,
+including four observed MainWP signing packets. Original artifact `12827848147`
+has SHA-256 `ceca8e03e2350403992daf1e64d3d11835bf05186ede4ea6a8aaa0d6f7e36db2`.
+This passing sample does not establish the cause of earlier timing failures or
+prove protected full-source admission, rendering, live Google or ChatGPT use.
+
+The complete job then stopped at `Fixed disposable acquisition preparation
+refused`. The early source-cache preparer imports a Python helper, generating
+untracked `tests/runtime/__pycache__` files in the provider checkout. The later
+Node acquisition preparation requires `git status --porcelain` to be empty.
+A local regression using the actual preparer reproduces that mismatch. Setting
+`PYTHONDONTWRITEBYTECODE=1` on the disposable native step prevents those files;
+the regression proves a real source edit still trips the unchanged cleanliness
+gate. No ignored-file exception, cleanup of changed source, provider pin,
+credential, authorization predicate or timeout is changed. Full CI must pass
+after this fixture correction before the wider native gate is closed.
+
+
+The next run, `40714480092` at `86296c6d`, failed the interruption assertion
+earlier. Unlike `40699459318`, its capture returned HTTP 200 after 117.049
+seconds; the following validation/current-authority work did not reach the
+expected simulated interruption. No provider failure stage was returned. This
+does not establish a successful capture recovery or a timing root cause. Its
+original artifact `12827418750` matches SHA-256
+`92edb940eb0486dc305655d962e4a50fb30580c26a432f88146a4061af5b1d42`.
+Both original results are retained. The no-bytecode fix addresses the separately
+reproduced later setup failure; capture timing remains an independent open gate.
+
 ## Native capture blocker, 2026-10-28
 
 Gateway run `40699459318` stopped at `private-capture-interruption` before the
