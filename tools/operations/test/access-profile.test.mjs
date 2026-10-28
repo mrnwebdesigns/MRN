@@ -53,10 +53,11 @@ test('bounded profile parser, redaction and cleanup failure tests', () => {
   execFileSync('python3', [new URL('./runtime/test-access-profile.py', import.meta.url).pathname], { timeout: 30000, maxBuffer: 65536 });
 });
 
-test('ordinary integration workflow remains byte-identical and profile stop precedes capture', () => {
+test('ordinary integration workflow matches its reviewed checksum and profile stop precedes capture', () => {
   const normal = readFileSync(new URL('../../../.github/workflows/operations-ci.yml', import.meta.url));
-  // This diagnostic checkpoint must not change the ordinary acceptance job.
-  assert.equal(createHash('sha256').update(normal).digest('hex'), '2059bc5d73e9262e90393a3746c41ef0cd13a9069b51bf4616d3c533311e8fdd');
+  // Review 3fd5f2ab adds only the source-cleanliness regression and disables
+  // disposable Python bytecode; diagnostic profiling still cannot alter this job.
+  assert.equal(createHash('sha256').update(normal).digest('hex'), '88f4e23f2ff4232554282419380777581593583ad1a4a4f4cb80d380f69d4382');
   const source = readFileSync(new URL('./runtime/check-existing-binding.mjs', import.meta.url), 'utf8');
   assert.ok(source.indexOf('throw profileStop;') < source.indexOf("phase = 'private-capture-interruption'"));
   assert.ok(source.includes('(context.limits.hook_seconds - 10) * 1000'));
