@@ -90,6 +90,27 @@ MRN QA. This instrumentation does not remove checks, cache authority, raise
 deadlines or retry capture. Native diagnosis, content/code editing and ordinary
 team acceptance remain open; nothing is deployed.
 
+### Native dependency audit gate
+
+Run `40787350342` at gateway `6b26479c` passed all 760 controlled tests but
+stopped before any native WordPress fixture: `npm audit --omit=dev` rejected
+`@hono/node-server` 2.0.12 under GHSA-rmxm-3fg6-px4f, added to the GitHub advisory
+database on 2026-10-28 (affected >=1.19.10, <2.1.3). No source-capture progress
+was produced. Independent MRN QA `40787350300` and hosted audit composition
+`40787350258` passed. The private failure log SHA-256 is
+`667f89cc938dab715ae3a741de31c02845efea7713863e7f4b776262c261755b`.
+
+The next content transport pin is isolated dependency-only commit
+`bc3ede0e0765141653f4303c5237e5041d01141e` on
+`codex/unified-source-transport-deps-20261028`. Only the transitive
+`@hono/node-server` lock entry changed to 2.1.5; existing SDK/Zod and transport
+source remain unchanged. The production-dependency audit is clean; 3,155 tests,
+disposable acceptance, build, typecheck, lint and the exact-index MRN QA pass.
+The untouched development dependency graph still has audit findings; this is
+not an all-dependencies clean claim. No audit threshold or request/authority
+limit changed. This does not assert stdio exploitability or change configured
+MCP clients. The native capture failure and team acceptance remain open.
+
 ## Required team experience
 
 One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebdesigns.com/mcp. Active MRN Google Workspace members get automatic portfolio access; there is no individual approval or enrollment step. Necessary approvals apply to concrete site changes. No teammate WordPress account, Application Password, API key, terminal, Codex, SSH or site token.
