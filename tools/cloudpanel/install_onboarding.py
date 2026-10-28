@@ -43,6 +43,10 @@ def main():
             or hashlib.sha256(cert_script.read_bytes()).hexdigest() != args.expected_cert_script_sha256):
         raise ValueError('Host tooling changed since reviewed preflight')
     site = identify(args.site_path, config)
+    from cert_sync import zone_for
+    key = Path('/etc/nginx/ssl-certificates') / (zone_for(site['domain']) + '.key')
+    if key.is_symlink() or key.stat().st_uid != 0:
+        raise ValueError('Origin private key ownership differs')
     result = {'schema':1, 'site':site['url'], 'old_ref':config['tooling_ref'], 'new_ref':new_ref, 'status':'planned'}
     if not args.execute:
         print(json.dumps(result)); return
@@ -58,6 +62,7 @@ def main():
             if (recovery/name).read_bytes() != path.read_bytes():
                 raise ValueError('Host configuration recovery copy failed verification')
         result['recovery'] = str(recovery)
+        result['previous_origin_key_mode'] = key.stat().st_mode & 0o777
         # Even though the install changes host tooling, protect the exact site's
         # runtime before the ensuing enrollment work and preserve its receipt.
         sys.path.insert(0, str(REPO / 'tools/cloudpanel'))
@@ -75,6 +80,7 @@ def main():
                 notifications={'email':'wordpress_admin@mrnwebdesigns.com',
                                'slack_webhook_file':'/home/mrndev-stack-manager/stack/secrets/slack-webhook-url.txt'})
             save(config_path, config)
+            key.chmod(0o600)
             # Preserve the existing five-minute systemd timer. Its default call
             # verifies only; target imports are explicit through onboarding.
             temporary = cert_script.with_suffix('.new')
@@ -86,6 +92,7 @@ def main():
             git(target, 'checkout', '--detach', args.expected_tooling_ref)
             shutil.copyfile(recovery/'dev-enrollment.json', config_path); config_path.chmod(0o600)
             shutil.copyfile(recovery/'mrn-cert-sync', cert_script); cert_script.chmod(0o750)
+            key.chmod(result['previous_origin_key_mode'])
             result['status']='rolled-back'; save(recovery/'receipt.json',result)
             raise
         print(json.dumps(result))

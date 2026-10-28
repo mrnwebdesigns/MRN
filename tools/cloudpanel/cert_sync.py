@@ -81,6 +81,8 @@ def approved(domain):
     for path in (cert, key):
         if path.is_symlink() or not path.is_file() or path.stat().st_uid != 0 or path.stat().st_mode & 0o022:
             raise ValueError('Approved certificate material must be root-owned')
+    if key.stat().st_mode & 0o077:
+        raise ValueError('Origin private key must be accessible only to root')
     run(['openssl', 'x509', '-in', str(cert), '-noout', '-checkend', '86400'])
     result = run(['openssl', 'x509', '-in', str(cert), '-noout', '-checkhost', domain], text=True)
     if 'does match certificate' not in result:
