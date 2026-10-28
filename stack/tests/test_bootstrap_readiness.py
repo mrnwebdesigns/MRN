@@ -55,6 +55,13 @@ class Notifications(unittest.TestCase):
 
 
 class Certificates(unittest.TestCase):
+    def test_maintenance_reports_custom_application_layouts_without_attempting_import(self):
+        ordinary = {'domain':'site.mrndev.io','user':'owner','root':'/home/owner/htdocs/site.mrndev.io'}
+        custom = {'domain':'manager.mrndev.io','user':'manager','root':'/home/manager/stack'}
+        selected, excluded = self.cert.maintenance_targets([ordinary,custom])
+        self.assertEqual([ordinary], selected)
+        self.assertEqual([{'domain':'manager.mrndev.io','reason':'nonstandard-layout-requires-separate-adapter'}], excluded)
+
     @classmethod
     def setUpClass(cls):
         spec = importlib.util.spec_from_file_location('cert_sync', Path(__file__).parents[2] / 'tools/cloudpanel/cert_sync.py')
