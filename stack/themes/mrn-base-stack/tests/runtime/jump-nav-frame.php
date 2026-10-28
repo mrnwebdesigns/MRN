@@ -1,0 +1,29 @@
+<?php
+/** Native navigation names, bounded inline pills and existing-default regression. */
+if ( ! defined( 'WP_CLI' ) || ! WP_CLI || home_url() !== getenv( 'MRN_STACK_TEST_HOME' ) || ! str_ends_with( (string) wp_parse_url( home_url(), PHP_URL_HOST ), '.localhost' ) || ! current_user_can( 'manage_options' ) ) { throw new RuntimeException( 'An explicitly selected local administrator runtime is required.' ); }
+$checks = array(); $expect = static function ( $ok, $label ) use ( &$checks ) { if ( ! $ok ) { throw new RuntimeException( esc_html( $label ) ); } $checks[] = $label; };
+$layouts = array_column( acf_get_field( 'field_mrn_page_content_rows' )['layouts'], null, 'name' ); $fields = array_column( $layouts['faq_jump_nav']['sub_fields'], null, 'name' );
+$expect( 'standard' === $fields['jump_nav_presentation']['default_value'] && isset( $fields['jump_nav_presentation']['choices']['inline-pills'], $fields['jump_nav_aria_label'] ), 'Optional inline presentation and explicit accessible name exist; Standard remains the default' );
+$expect( 5 === $fields['jump_nav_entries']['max'], 'Existing five-entry capacity stays unchanged' );
+$first = array_column( mrn_base_stack_get_jump_nav_frame_fields( 'field_mrn_first_nav' ), 'key' ); $second = array_column( mrn_base_stack_get_jump_nav_frame_fields( 'field_mrn_second_nav' ), 'key' );
+$expect( count( $first ) === count( array_unique( $first ) ) && ! array_intersect( $first, $second ), 'Root and nested navigation field keys remain isolated' );
+$row = array( 'acf_fc_layout' => 'faq_jump_nav', 'heading' => 'Visible heading', 'jump_nav_aria_label' => 'Specific "section" & navigation', 'jump_nav_source' => 'manual', 'jump_nav_presentation' => 'inline-pills', 'jump_nav_heading_size' => 'var(--site-text-body-3-size)', 'jump_nav_link_line_height' => '1', 'jump_nav_content_width' => '1120px', 'jump_nav_accent_color' => 'burgundy', 'jump_nav_entries' => array( array( 'label' => 'First & repeat', 'anchor' => 'first' ), array( 'label' => 'First & repeat', 'anchor' => 'first' ), array( 'label' => 'Last section', 'anchor' => 'last' ) ) );
+$style = mrn_base_stack_get_jump_nav_frame_contract( $row )['attributes']['style'];
+foreach ( array( '--mrn-jump-nav-heading-size:var(--site-text-body-3-size)', '--mrn-jump-nav-link-line-height:1', '--mrn-jump-nav-content-width:1120px', '--mrn-jump-nav-accent-color:var(--site-color-burgundy)' ) as $part ) { $expect( str_contains( $style, $part ), 'Validated native navigation style: ' . $part ); }
+foreach ( array( '-1px', '1px;color:red', 'var(--unknown)', array( '12px' ) ) as $bad ) { $contract = mrn_base_stack_get_jump_nav_frame_contract( array( 'jump_nav_presentation' => 'inline-pills', 'jump_nav_content_width' => $bad, 'jump_nav_accent_color' => $bad ) ); $expect( '' === $contract['attributes']['style'], 'Malformed controls cannot emit arbitrary CSS' ); }
+$expect( ! mrn_base_stack_get_jump_nav_frame_contract( array_replace( $row, array( 'jump_nav_presentation' => 'standard' ) ) )['attributes'], 'Standard ignores dormant presentation controls' );
+$id = wp_insert_post( array( 'post_type' => 'page', 'post_status' => 'draft', 'post_title' => 'Owned native navigation safety proof' ), true ); $expect( ! is_wp_error( $id ) && $id > 0, 'Owned proof created' );
+try {
+	update_field( 'field_mrn_page_content_rows', wp_slash( array( $row ) ), $id ); acf_flush_value_cache( $id, 'page_content_rows' ); $saved = get_field( 'page_content_rows', $id )[0];
+	$expect( array_column( $row['jump_nav_entries'], 'label' ) === array_column( $saved['jump_nav_entries'], 'label' ) && array_column( $row['jump_nav_entries'], 'anchor' ) === array_column( $saved['jump_nav_entries'], 'anchor' ), 'Ordered repeated entries persist alongside shared empty editor fields' );
+	$expect( $row['jump_nav_aria_label'] === $saved['jump_nav_aria_label'] && $row['jump_nav_aria_label'] === get_post_meta( $id, 'page_content_rows_0_jump_nav_aria_label', true ), 'Custom navigation name persists exactly, including quotes and ampersand' );
+	ob_start(); mrn_base_stack_render_builder_rows( array( $saved ), $id, 'page_content_rows' ); $html = ob_get_clean();
+	$expect( str_contains( $html, 'aria-label="Specific &quot;section&quot; &amp; navigation"' ) && ! str_contains( $html, 'aria-labelledby=' ), 'Explicit navigation name is escaped and takes precedence' );
+	$expect( 2 === substr_count( $html, 'href="#first"' ) && str_contains( $html, 'href="#last"' ) && str_contains( $html, 'First &amp; repeat' ), 'Every ordered and repeated manual link renders safely' );
+	$expect( ! str_contains( $html, '<script' ) && str_contains( $html, 'has-inline-jump-nav' ), 'Static native navigation adds no script' );
+	$saved['jump_nav_presentation'] = 'standard'; unset( $saved['jump_nav_aria_label'] ); ob_start(); mrn_base_stack_render_builder_rows( array( $saved ), $id, 'page_content_rows' ); $standard = ob_get_clean();
+	$expect( str_contains( $standard, 'aria-labelledby="mrn-faq-jump-nav-heading-' ) && ! str_contains( $standard, 'has-inline-jump-nav' ), 'Existing heading-derived accessible name and Standard rendering remain intact' );
+	$saved['heading'] = ''; ob_start(); mrn_base_stack_render_builder_rows( array( $saved ), $id, 'page_content_rows' ); $unheaded = ob_get_clean(); $expect( str_contains( $unheaded, 'aria-label="Page sections"' ), 'Unheaded manual navigation retains its existing fallback name' );
+	$expect( mrn_base_stack_get_faq_jump_nav_entries( $id ) === mrn_base_stack_get_jump_nav_row_entries( array(), $id ), 'Unset source retains automatic FAQ discovery' );
+} finally { wp_delete_post( $id, true ); }
+$expect( null === get_post( $id ), 'Owned proof removed' ); WP_CLI::line( wp_json_encode( array( 'result' => 'passed', 'count' => count( $checks ), 'checks' => $checks, 'candidate_only' => true ), JSON_PRETTY_PRINT ) );
