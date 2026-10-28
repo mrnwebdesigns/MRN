@@ -1270,7 +1270,7 @@
         "state": "confirmed"
       },
       "target_tier": "platform-required",
-      "version": "0.3.6"
+      "version": "0.3.7"
     },
     {
       "classification": "shared-feature",
