@@ -63,7 +63,7 @@ $offset              = absint( $row['offset'] ?? 0 );
 $filter_source       = isset( $row['filter_source'] ) ? sanitize_key( (string) $row['filter_source'] ) : 'none';
 $manual_post_ids     = 'manual_posts' === $filter_source ? mrn_base_stack_get_content_list_manual_post_ids( $row, $list_post_type ) : array();
 $tax_query           = mrn_base_stack_get_content_list_tax_query( $row, $context_post_id, $list_post_type );
-$show_pagination     = ! empty( $row['enable_pagination'] );
+$show_pagination     = ! empty( $row['enable_pagination'] ) && 'all' !== ( $row['list_count_mode'] ?? '' );
 $show_featured_image = ! empty( $row['show_featured_image'] );
 $show_publish_date   = ! empty( $row['show_publish_date'] );
 $show_excerpt        = ! empty( $row['show_excerpt'] );
@@ -108,6 +108,7 @@ if ( ! empty( $tax_query ) ) {
 	$query_args['tax_query'] = $tax_query;
 }
 
+$query_args = mrn_base_stack_get_content_list_collection_query( $row, $query_args );
 $query = new WP_Query( $query_args );
 
 $has_intro      = '' !== trim( wp_strip_all_tags( $intro ) );
@@ -142,6 +143,8 @@ if ( '' !== $display_style ) {
 	$section_classes[] = 'mrn-content-builder__row--content-lists-style-' . $display_style;
 }
 
+$career_contract = mrn_base_stack_get_career_list_contract( $row );
+$section_classes = mrn_base_stack_merge_builder_section_classes( $section_classes, $career_contract );
 $section_styles = array();
 
 if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' ) ) {
@@ -166,7 +169,7 @@ $motion_contract   = mrn_base_stack_get_builder_motion_contract( $row );
 $section_classes   = mrn_base_stack_merge_builder_section_classes( $section_classes, $display_contract );
 $section_classes   = mrn_base_stack_merge_builder_section_classes( $section_classes, $accent_contract );
 $section_classes   = mrn_base_stack_merge_builder_section_classes( $section_classes, $motion_contract );
-$section_attrs     = $display_contract['attributes'];
+$section_attrs     = mrn_base_stack_merge_builder_attributes( $display_contract['attributes'], $career_contract['attributes'] );
 $section_attrs     = mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array() );
 $section_attrs     = mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
 $section_attr_html = mrn_base_stack_get_html_attributes( $section_attrs );
@@ -261,6 +264,7 @@ echo mrn_base_stack_get_builder_anchor_markup( $row ); // phpcs:ignore WordPress
 									array(
 										'display_mode'    => $display_mode,
 										'record_presentation' => $record_presentation,
+										'career_settings' => $row,
 										'display_style'   => $display_style,
 										'show_featured_image' => $show_featured_image,
 										'show_publish_date' => $show_publish_date,

@@ -3256,6 +3256,8 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 		return $pre_rendered_markup;
 	}
 
+	if ( 'careers' === ( $args['record_presentation'] ?? '' ) ) { return mrn_base_stack_render_career_list_item( $item_post, $args ); }
+
 	if ( in_array( $args['record_presentation'] ?? '', array( 'people', 'comparisons' ), true ) && function_exists( 'mrn_base_stack_render_record_presentation' ) ) {
 		return mrn_base_stack_render_record_presentation( $item_post, $args );
 	}
@@ -3419,6 +3421,7 @@ function mrn_base_stack_get_content_list_orderby_choices() {
 		'modified'      => 'Modified Date',
 		'title'         => 'Title',
 		'menu_order'    => 'Menu Order',
+		'menu_order_date' => 'Menu Order Ascending, then Newest Date',
 		'comment_count' => 'Comment Count',
 		'rand'          => 'Random',
 	);

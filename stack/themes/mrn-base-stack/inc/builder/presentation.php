@@ -235,7 +235,7 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 		return array_merge( $fields, mrn_base_stack_get_card_frame_fields( $seed ), mrn_base_stack_get_pricing_fields( $seed ) );
 	}
 	if ( 'content_lists' === $layout ) {
-		return array(
+		return array_merge( array(
 			$make(
 				'record_presentation',
 				'Record Presentation',
@@ -245,12 +245,13 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 						'standard'    => 'Standard',
 						'people'      => 'People with Optional Hover Video',
 						'comparisons' => 'Before / After Comparison Stack',
+						'careers'     => 'Careers with Application Links and Tags',
 					),
 					'default_value' => 'standard',
 					'instructions'  => 'People use designation and hover_video. Comparisons use before_image, after_image and tags. Sources, selection, order and pagination remain controlled by Content Lists.',
 				)
 			),
-		);
+		), mrn_base_stack_get_career_list_fields( $seed ) );
 	}
 	if ( 'video' === $layout ) {
 		return array(
