@@ -79,7 +79,9 @@ backend errors cannot impersonate this proof. Inventory and authorization remain
 outside worker deferral. No request limit is increased and no retry is added.
 
 Actual SDK cancellation tests verify identity of the abort reason and downstream
-cancellation notification. Hosted real-engine tests verify saved pages/cursor,
+cancellation notification. A fresh-process regression proves the bounded timer
+keeps an otherwise idle process alive until checkpoint settlement; the timer is
+cleared on success or refusal. Hosted real-engine tests verify saved pages/cursor,
 resume without replaying completed preparation, cancelled challenges, and revoked
 membership withholding results. Late success is withheld; clock rollback cannot
 manufacture a pending result. These are isolated source tests, separate from

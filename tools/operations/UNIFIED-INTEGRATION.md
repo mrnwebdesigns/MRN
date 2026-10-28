@@ -8,8 +8,8 @@ owns one cancellation timer across the delegation challenge and audit request.
 Only its exact abort-reason object can convert a clipped worker timeout to
 pending; remote SDK codes and fatal access/backend errors do not qualify. Saved
 pages/cursor survive, completed preparation is not repeated, and final access
-checks still withhold revoked evidence. Six actual-SDK/deadline groups, fourteen
-real-engine hosted groups, all 756 gateway tests and all 3,242 MCP tests pass
+checks still withhold revoked evidence. Seven actual-SDK/deadline groups, fourteen
+real-engine hosted groups, all 757 gateway tests and all 3,242 MCP tests pass
 locally, with lint/typecheck/build and scoped MRN QA. Browser accessibility and
 frontend performance are not applicable to this transport-only change. The
 audit CI pins the exact built-engine hash. Native WordPress audit composition,

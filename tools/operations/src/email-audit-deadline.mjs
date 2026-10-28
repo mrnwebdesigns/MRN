@@ -23,7 +23,8 @@ export async function emailAuditDeadline({ action, ability, timeout, perCallLimi
   }
   const controller = new AbortController(); let fired = false;
   const timer = setTimeout(() => { fired = true; controller.abort(localTimeout); }, remaining);
-  timer.unref();
+  // This bounded request owns the timer until settlement, even without another
+  // active handle. Unref would let Node exit before persisting its checkpoint.
   try {
     const result = await perform({ timeout: remaining, signal: controller.signal });
     // An adapter that settles late must not release a post-deadline result.
