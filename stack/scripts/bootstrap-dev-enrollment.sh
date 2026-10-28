@@ -11,7 +11,10 @@ if [[ ! -f "$config" ]]; then
 fi
 # Record intent before depending on the controller/credentials. Site users cannot
 # forge this queue, and a scanner retry never enrolls a previously unqueued site.
-python3 - "$queue" "$config" "$runner" "$python" "$(dirname "${BASH_SOURCE[0]}")" "$@" <<'PY'
+# Resolve command substitutions before attaching the Python heredoc. On macOS,
+# Bash can block writing a large inherited heredoc into the substitution pipe.
+scripts="$(dirname "${BASH_SOURCE[0]}")"
+python3 - "$queue" "$config" "$runner" "$python" "$scripts" "$@" <<'PY'
 import hashlib, json, os, pathlib, subprocess, sys
 queue, config, runner, python, scripts, mode, flag, site = sys.argv[1:]
 sys.path.insert(0, scripts)
