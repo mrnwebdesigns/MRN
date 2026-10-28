@@ -8473,3 +8473,17 @@ a.mrn-social-links__link:focus-visible svg {
 @media (prefers-reduced-motion: no-preference) { .has-inline-jump-nav .mrn-faq-jump-nav__link { transition: background-color .2s ease, color .2s ease; } }
 @media (max-width: 1199px) { .has-inline-jump-nav > .mrn-layout-section--faq-jump-nav > .mrn-layout-container { max-width: calc(var(--mrn-jump-nav-content-width, 70rem) + 2 * var(--mrn-jump-nav-gutter-mobile, .9375rem)); padding-inline: var(--mrn-jump-nav-gutter-mobile, .9375rem); } }
 @media (max-width: 767px) { .has-inline-jump-nav .mrn-faq-jump-nav { flex-direction: column; align-items: flex-start; } }
+
+/* Optional compact content frames: native row presets apply once on the outer row. */
+.mrn-content-builder__row:is(.has-body-inner-gutter-compact, .has-image-inner-gutter-compact) { padding-top: var(--mrn-row-padding-top, 0px); padding-right: var(--mrn-row-padding-right, 0px); padding-bottom: var(--mrn-row-padding-bottom, 0px); padding-left: var(--mrn-row-padding-left, 0px); }
+.mrn-content-builder__row:is(.has-body-inner-gutter-compact, .has-image-inner-gutter-compact) > .mrn-layout-section.mrn-layout-surface { padding: 0; }
+.has-body-frame > .mrn-layout-section--text > .mrn-layout-container { padding-inline: var(--mrn-body-frame-gutter-current, var(--mrn-body-frame-inner-gutter, 0px)); }
+.has-image-frame > .mrn-layout-section--image-content > .mrn-layout-container { padding-inline: var(--mrn-image-frame-gutter-current, var(--mrn-image-frame-inner-gutter, 0px)); }
+.mrn-content-builder__row.has-body-frame.has-body-heading-width > .mrn-layout-section--text > .mrn-layout-container > .mrn-layout-grid > .mrn-layout-content > .mrn-ui__head > .mrn-ui__heading { max-width: var(--mrn-body-frame-heading-width); }
+@media (max-width: 1199px) {
+ .has-body-frame.has-body-inner-gutter-compact { --mrn-body-frame-gutter-current: var(--mrn-body-frame-inner-gutter-compact); }
+ .has-image-frame.has-image-inner-gutter-compact { --mrn-image-frame-gutter-current: var(--mrn-image-frame-inner-gutter-compact); }
+}
+@media (max-width: 767px) { .has-body-frame.has-body-heading-space-before-mobile .mrn-ui__heading { margin-top: var(--mrn-body-frame-heading-space-before-mobile); } }
+
+.has-image-frame.has-image-natural-media .mrn-layout-section--image-content .mrn-image-content-row__media .mrn-image-content-row__figure img { width: 100%; height: auto; max-height: none; object-fit: contain; }
