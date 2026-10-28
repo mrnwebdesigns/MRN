@@ -65,6 +65,49 @@ requesting Dev testing without pushing that work to `main`. Increment the final
 number for another request; never move or reuse a deployment tag. The shared
 controller resolves and checks the exact tagged commit before deployment.
 
+## Certificate and readiness gates
+
+Origin TLS is an exact-site onboarding gate after WordPress installation and
+before enrollment. `tools/cloudpanel/cert_sync.py --site-path <exact-root>`
+resolves the CloudPanel database, site owner and vhost, verifies approved Origin
+CA hostname/key/expiry, and compares the installed and SNI-served certificate.
+A matching certificate is a no-op. An import requires the canonical verified
+remote database backup first and retains target certificate/vhost recovery files
+privately on the host. Import failures are durable failures, never suppressed.
+The five-minute certificate timer calls `--maintenance`: it verifies and reports
+only. Imports require the exact onboarding target; there is no global cooldown
+and no all-sites rewrite. Cloudflare remains Full (strict).
+
+The root-private enrollment configuration may set `certificate_command` to the
+installed certificate helper, `onboarding_state_root` to the private per-site
+status directory, and `notifications` with `email` and `slack_webhook_file`.
+The scanner still runs at minutes 23 and 53; each pass advances one bounded
+stage. `bootstrap-status.env` retains a failed scan rather than clearing to idle.
+Per-site JSON retains installation, SSL and enrollment outcomes separately.
+“WordPress installed” is pending, while “Dev ready” requires deployment,
+rollback, ordinary-push qualification and accepted developer access. Terminal
+notifications are deduplicated; Slack requires HTTP 200 and `ok`. Unknown send
+outcomes require inspection, and failed deliveries remain in the private record.
+Email transport acceptance is not proof of inbox placement. Mailbox routing is
+outside this workflow.
+
+For an inspected failure before first adoption, use the operator-only
+`--recover-preflight --failed-run <exact-run-id>` mode. It refuses changed source,
+armed Dev, ambiguous/running runs, missing transfer backup evidence, foreign job
+paths, adoption evidence or a changed child baseline. It preserves the original
+failed evidence and source, rechecks public HTTPS/REST/no-cache responses, runs
+source QA, then prepares a new source revision pinned to the accepted tooling.
+Normal scanner retries cannot initiate recovery. A later fresh qualification
+still must pass before Dev is armed. Existing post-activation recovery remains
+`--recover-qualification`.
+
+Public verification clients share the deployment user agent and retain only safe
+status, URL (without credentials/query), Cloudflare Ray and numeric error data.
+A preflight failure records `activation_attempted: false`; it does not imply an
+activation or recovery attempt. Dev qualification retains strict API/browser/
+accessibility and rollback checks; speed/CWV tests run on isolated release
+fixtures or explicitly qualified production targets, not Dev.
+
 ## Ownership and boundaries
 
 - `stack/scripts/site-bootstrap.sh` queues only a newly bootstrapped site after
@@ -100,6 +143,24 @@ controller resolves and checks the exact tagged commit before deployment.
 - The canonical GitHub credential is operator-side. Deployment credentials are
   stored as encrypted Dev environment secrets; the QA read credential is a
   repository secret. No account-wide GitHub credential is placed in WordPress.
+
+## Guarded host tooling update
+
+`tools/cloudpanel/install_onboarding.py` plans by default. From a clean checkout
+of the accepted merged revision on the verified host, supply the exact site root,
+prior configured tooling SHA and inspected `/usr/local/sbin/mrn-cert-sync` hash.
+`--execute` takes scanner/certificate locks, verifies private configuration
+recovery copies, creates a verified site database backup, installs the immutable
+controller and exact-target certificate command, and atomically updates the
+configuration. A failed installation restores the prior checkout/configuration/
+certificate entry point. The receipt is under `/var/lib/mrn-onboarding-install`.
+The existing scanner and certificate schedules are preserved. Completed
+previous enrollments retain their original proof; pending enrollments whose
+tooling changed require their explicit recovery operation.
+
+The bootstrap scripts are published independently through the qualified Fleet
+source bundle. Verify both the hosted bootstrap manifest and root-owned
+controller commit before recovering the authorized enrollment.
 
 ## One-time host installation
 

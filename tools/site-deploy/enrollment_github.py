@@ -196,12 +196,12 @@ class GitHub:
         return self.request('GET', self.prefix + '/actions/workflows/' + workflow + '/runs?' +
                             urllib.parse.urlencode(query))['workflow_runs']
 
-    def deployment_evidence(self, run, sha):
+    def deployment_evidence(self, run, sha, allow_incomplete=False):
         artifacts = self.request('GET', self.prefix + '/actions/runs/' + str(run['id']) + '/artifacts?per_page=100')['artifacts']
         matches = [row for row in artifacts if row['name'] == 'site-deployment-dev-' + sha and not row.get('expired')]
         if len(matches) != 1:
             raise ValueError('Exact deployment evidence artifact is missing or ambiguous')
-        return self.evidence(matches[0]['id'])
+        return self.evidence(matches[0]['id'], allow_incomplete=allow_incomplete)
 
     def proof(self, run, sha, url, slug, qualification=False, signal_number=None, prior_release=None):
         if run.get('status') != 'completed':
@@ -241,7 +241,7 @@ class GitHub:
         return {'run_id': run['id'], 'run_url': run['html_url'], 'source_sha': sha,
                 'release_id': receipt['current']['release_id'], 'receipt': receipt, 'browser_checks': len(browser)}
 
-    def evidence(self, artifact_id):
+    def evidence(self, artifact_id, allow_incomplete=False):
         request = urllib.request.Request('https://api.github.com' + self.prefix + '/actions/artifacts/' + str(artifact_id) + '/zip',
                                         headers={'Authorization': 'Bearer ' + self.token})
         try:
@@ -261,9 +261,11 @@ class GitHub:
         if len(body) > 64 * 1024 * 1024:
             raise ValueError('Enrollment evidence exceeds size limit')
         with zipfile.ZipFile(io.BytesIO(body)) as archive:
-            def member(name):
+            def member(name, fallback=None):
                 matches = [row for row in archive.infolist() if row.filename == name]
+                if not matches and allow_incomplete and fallback is not None:
+                    return fallback
                 if len(matches) != 1 or matches[0].file_size > 8 * 1024 * 1024:
                     raise ValueError('Invalid evidence member: ' + name)
                 return json.loads(archive.read(matches[0]))
-            return member('site-deployment.json'), member('site-browser/browser-assets.json'), member('site-runtime-result.json')
+            return member('site-deployment.json'), member('site-browser/browser-assets.json', []), member('site-runtime-result.json', {})

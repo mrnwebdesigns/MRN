@@ -14,6 +14,16 @@ from deploy import digest
 
 
 class HostControllerContract(unittest.TestCase):
+    def test_public_preflight_failure_retains_evidence_without_activation_or_recovery(self):
+        with patch.object(host, 'verify_uncached_html', side_effect=ValueError('HTTP unavailable')), patch.object(host, 'backup') as backup:
+            receipt = host.execute(self.plan)
+        self.assertEqual('preflight-failed', receipt['status'])
+        self.assertFalse(receipt['activation_attempted'])
+        self.assertEqual([], receipt['steps'])
+        self.assertIsNone(self.fixture.store.pointer())
+        self.assertEqual(self.fixture.before, fixture.inventory(self.fixture.theme))
+        backup.assert_not_called()
+
     @classmethod
     def setUpClass(cls):
         fixture.AtomicStoreContract.setUpClass()

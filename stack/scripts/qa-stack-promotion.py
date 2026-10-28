@@ -33,6 +33,7 @@ DEPLOYABLE_ROOTS = (
     "stack/themes/",
 )
 DEPLOYMENT_CONTRACT_PREFIXES = (
+    "tools/cloudpanel/",
     "stack/configs/",
     "stack/scripts/",
     "stack/server-config/",

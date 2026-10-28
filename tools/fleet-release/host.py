@@ -37,7 +37,7 @@ ALLOWED_CONFIGS = {'configs/importers/stack-export-importer.sh',
                    'configs/exports/MRN-Login.png', 'configs/exports/mrn-logo-png.png',
                    'configs/exports/mrn-logo.svg'}
 SCRIPTS = {'scripts/site-bootstrap.sh', 'scripts/bootstrap-new-sites.sh',
-           'scripts/bootstrap-dev-enrollment.sh', 'scripts/source-distribution-lease.sh'}
+           'scripts/bootstrap-dev-enrollment.sh', 'scripts/source-distribution-lease.sh', 'scripts/bootstrap_readiness.py'}
 MANIFESTS = {'plugins.txt', 'themes.txt', 'licenses.txt', 'importers.txt',
              'credential-files.txt', 'license-exemptions.txt', 'stack-release.lock.json',
              'bootstrap-packages.lock.json', 'component-catalog.json', 'retired-capabilities.json'}
@@ -230,7 +230,7 @@ class SourceStore:
         # bundle is installed. Later calls verify the actual guarded entry points.
         if value.get('legacy_consumers_paused') is True:
             return
-        for name in SCRIPTS - {'scripts/bootstrap-dev-enrollment.sh'}:
+        for name in ('scripts/site-bootstrap.sh', 'scripts/bootstrap-new-sites.sh', 'scripts/source-distribution-lease.sh'):
             path = safe(self.root, name)
             if not path.is_file() or 'mrn_source_distribution_lease' not in path.read_text():
                 raise PublicationError('Bootstrap entry point is not source-lease guarded')

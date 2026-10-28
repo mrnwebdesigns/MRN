@@ -22,8 +22,12 @@ from datetime import datetime, timezone
 
 from deploy import allowed, digest
 from enrollment_github import GitHub
+from cache_policy import verify_uncached_html
+from deploy import http_check
 
 TOOLS = Path(__file__).resolve().parent
+sys.path.insert(0, str(TOOLS.parents[1] / 'stack/scripts'))
+from bootstrap_readiness import update as update_readiness
 ACCOUNT = 'mrnwebdesigns.1password.com'
 
 
@@ -382,6 +386,74 @@ class Enrollment:
         self.persist(stage='recover-source', recovery_id=recovery_id, recovery_prior_release=prior,
                      tooling_ref=self.config['tooling_ref'])
 
+    def recover_preflight(self, failed_run):
+        """Explicit recovery before adoption, including the legacy HTTP receipt."""
+        s, gh, site = self.state, self.github, self.site
+        if s['stage'] != 'qualification-dispatched' or gh.head() != s['source_sha']:
+            raise ValueError('Preflight recovery requires unchanged first-qualification source')
+        runs = [r for r in gh.runs('site-deploy.yml', s['source_sha'])
+                if r.get('event') == 'workflow_dispatch' and r.get('display_title') == 'MRN Dev qualification ' + s['binding']]
+        if (len(runs) != 1 or str(runs[0]['id']) != str(failed_run)
+                or runs[0].get('status') != 'completed' or runs[0].get('conclusion') != 'failure'):
+            raise ValueError('Exactly one known failed qualification is required')
+        run = runs[0]
+        for name, expected in (('DEPLOY_READY', '0'), ('DEPLOY_ENROLLMENT_SOURCE_SHA', s['source_sha'])):
+            if gh.request('GET', gh.prefix + '/environments/dev/variables/' + name).get('value') != expected:
+                raise ValueError('Preflight recovery requires Dev to remain disarmed')
+        for name in ('MRN_AUTO_DEV_AFTER', 'MRN_RELEASE_REQUESTS_AFTER'):
+            value = gh.request('GET', gh.prefix + '/actions/variables/' + name, missing=True)
+            if value and value.get('value'):
+                raise ValueError('Preflight recovery cannot change an armed consumer')
+        receipt, browser, runtime = gh.deployment_evidence(run, s['source_sha'], allow_incomplete=True)
+        if receipt.get('transfer_backup', {}).get('valid') is not True:
+            raise ValueError('Failed qualification lacks its verified tool-transfer backup')
+        private_job = receipt.get('private_job', '')
+        if not re.fullmatch(re.escape(site['state_dir']) + r'/jobs/[0-9]+', private_job):
+            raise ValueError('Failed job does not belong to the exact enrolled site')
+        legacy = receipt.get('status') == 'requires-inspection' and any(
+            row.get('type') == 'HTTPError' and
+            any(f.get('file') == 'cache_policy.py' and f.get('function') == 'verify_uncached_html' for f in row.get('frames', []))
+            for row in receipt.get('diagnostics', []))
+        if not legacy:
+            if (receipt.get('status') != 'preflight-failed' or receipt.get('activation_attempted') is not False
+                    or receipt.get('steps') != [] or receipt.get('current') is not None
+                    or any(receipt.get(k) != v for k,v in {'repository':site['repository'], 'url':site['url'],
+                        'environment':'dev', 'slug':site['slug'], 'source_sha':s['source_sha']}.items())
+                    or str(receipt.get('deployment_order', {}).get('run_id')) != str(failed_run)):
+                raise ValueError('Receipt does not establish a failure before activation')
+        code = '''import json,pathlib,sys
+p=pathlib.Path(sys.argv[1]);job=pathlib.Path(sys.argv[2])
+print(json.dumps({'job_present':job.is_dir() and not job.is_symlink(),
+ 'adoption_evidence':sorted(x.name for x in p.iterdir() if x.name.startswith(('current.json','adoption.json','site.json','deployment-order.json'))),
+ 'releases':sorted(x.name for x in (p/'releases').iterdir()) if (p/'releases').exists() else []}))'''
+        observed = json.loads(command(['sudo', '-u', site['user'], '--', 'python3', '-c', code,
+                                      site['state_dir'], private_job], text=True, env=site_process_env()))
+        if observed != {'job_present':True, 'adoption_evidence':[], 'releases':[]} or snapshot(site)[1] != s['baseline']:
+            raise ValueError('Runtime has adoption evidence or differs from its accepted baseline')
+        http_check(site['url'] + '/')
+        http_check(site['url'] + '/wp-json/', rest=True)
+        public = verify_uncached_html(site['url'], [site['url'] + '/'])
+        files = {k:base64.b64decode(v) for k,v in json.loads((self.directory/'source.json').read_text()).items()}
+        files = source_files(site, self.config, files)
+        source_qa(self.config, files, self.directory / ('preflight-recovery-source-' + str(time.time_ns())))
+        recovery_id = str(time.time_ns())
+        save(self.directory / ('recovery-' + recovery_id + '.json'), {
+            'state':dict(s), 'failed_run':run, 'receipt':receipt, 'browser':browser, 'runtime':runtime,
+            'observed':observed, 'public_preflight':public, 'recovery_type':'before-first-adoption'})
+        save(self.directory / ('recovery-' + recovery_id + '-source.json'), {k:base64.b64encode(v).decode() for k,v in files.items()})
+        self.persist(stage='recover-source', recovery_id=recovery_id, recovery_prior_release='',
+                     tooling_ref=self.config['tooling_ref'])
+
+    def readiness(self):
+        root = self.config.get('onboarding_state_root')
+        if not root:
+            return
+        s = self.state
+        status = 'failed' if s.get('last_error') else 'ready' if s['stage'] == 'ready' else 'pending'
+        update_readiness(root, self.site['root'], s['stage'], status, detail=s.get('last_error', ''),
+                         run_url=s.get('deployment_run') or s.get('qualification_run', ''),
+                         notify=status in ('failed', 'ready'), config=self.config.get('notifications', {}))
+
     def tick(self):
         s, site, gh = self.state, self.site, self.github
         stage = s['stage']
@@ -443,6 +515,7 @@ class Enrollment:
                 if age.total_seconds() > 900:
                     raise ValueError('Qualification dispatch outcome is unknown; do not blindly dispatch again')
                 return
+            self.persist(qualification_run=runs[0].get('html_url', ''))
             proof = gh.proof(runs[0], s['source_sha'], site['url'], site['slug'], qualification=True,
                              prior_release=s.get('recovery_prior_release'))
             if proof:
@@ -508,9 +581,13 @@ def main():
     parser.add_argument('--enqueue', action='store_true', help='Only after successful new-site bootstrap')
     parser.add_argument('--resume', action='store_true', help='Advance an existing enrollment; never adopt old sites')
     parser.add_argument('--recover-qualification', action='store_true', help='Operator-only repair after inspecting a failed qualification; preserve all evidence')
+    parser.add_argument('--recover-preflight', action='store_true', help='Operator-only recovery before first adoption')
+    parser.add_argument('--failed-run', help='Exact failed GitHub run required for preflight recovery')
     args = parser.parse_args()
-    if sum((args.enqueue, args.resume, args.recover_qualification)) != 1:
+    if sum((args.enqueue, args.resume, args.recover_qualification, args.recover_preflight)) != 1:
         parser.error('Choose enqueue, resume or recover-qualification')
+    if args.recover_preflight and not re.fullmatch(r'[0-9]+', args.failed_run or ''):
+        parser.error('Preflight recovery requires --failed-run with the inspected run ID')
     config = load_config(args.config)
     binding = hashlib.sha256(args.site_path.encode()).hexdigest()[:24]
     directory = Path(config['state_root']) / binding
@@ -530,26 +607,30 @@ def main():
         site = identify(args.site_path, config)
         if state_path.exists():
             state = json.loads(private_path(state_path).read_text())
-            if state['site'] != site or (state['tooling_ref'] != config['tooling_ref'] and not args.recover_qualification):
+            if state['site'] != site or (state['tooling_ref'] != config['tooling_ref'] and state['stage'] != 'ready' and not (args.recover_qualification or args.recover_preflight)):
                 raise ValueError('Enrollment identity or tooling changed; operator review required')
         else:
             state = {'schema': 1, 'binding': binding, 'site': site, 'tooling_ref': config['tooling_ref'],
                      'stage': 'queued', 'created_at': timestamp()}
             save(state_path, state)
-        if (args.resume or args.recover_qualification) and state['stage'] != 'ready':
+        if (args.resume or args.recover_qualification or args.recover_preflight) and state['stage'] != 'ready':
             secrets = credentials(config, site)
             enrollment = Enrollment(config, directory, state,
                 GitHub(secrets['github_token'], site['repository'], config['github_owner_type']), secrets)
             try:
-                if args.recover_qualification:
+                if args.recover_preflight:
+                    enrollment.recover_preflight(args.failed_run)
+                elif args.recover_qualification:
                     enrollment.recover_qualification()
                 else:
                     enrollment.tick()
                 state.pop('last_error', None)
                 save(state_path, state)
+                enrollment.readiness()
             except (ValueError, RuntimeError) as error:
                 # Messages are generated by this controller, never provider/subprocess response bodies.
                 enrollment.persist(last_error=str(error))
+                enrollment.readiness()
                 raise
         print(json.dumps({'status': state['stage'], 'repository': 'https://github.com/' + site['repository'],
                           'dev_url': site['url'], 'source_sha': state.get('deployed_sha'),

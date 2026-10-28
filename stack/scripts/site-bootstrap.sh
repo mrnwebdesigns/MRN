@@ -158,90 +158,18 @@ case "${SITE_PROFILE}" in
 esac
 
 send_notification() {
-  local subject body
-  subject="$1"
-  body="$2"
-  if [[ -z "${NOTIFY_EMAIL}" ]]; then
-    echo "Email notification skipped: no recipient configured."
-    return 0
-  fi
-  if command -v mail >/dev/null 2>&1; then
-    if printf '%s\n' "${body}" | mail -s "${subject}" "${NOTIFY_EMAIL}"; then
-      echo "Email notification sent via mail to ${NOTIFY_EMAIL}: ${subject}"
-    else
-      echo "WARNING: Email notification failed via mail to ${NOTIFY_EMAIL}: ${subject}" >&2
-    fi
-    return 0
-  fi
-  if command -v sendmail >/dev/null 2>&1; then
-    if {
-      printf 'To: %s\n' "${NOTIFY_EMAIL}"
-      printf 'Subject: %s\n' "${subject}"
-      printf '\n'
-      printf '%s\n' "${body}"
-    } | sendmail -t; then
-      echo "Email notification sent via sendmail to ${NOTIFY_EMAIL}: ${subject}"
-    else
-      echo "WARNING: Email notification failed via sendmail to ${NOTIFY_EMAIL}: ${subject}" >&2
-    fi
-    return 0
-  fi
-  echo "WARNING: Email notification skipped because neither mail nor sendmail is available." >&2
+  local status="pending"
+  case "$1" in *FAILED*|*FAILURE*) status="failed" ;; esac
+  # One durable event delivers both channels; do not claim remote email receipt.
+  printf '%s\n' "$2" | STACK_NOTIFY_EMAIL="${NOTIFY_EMAIL}" \
+    STACK_SLACK_WEBHOOK_URL="${SLACK_WEBHOOK_URL}" \
+    STACK_SLACK_WEBHOOK_URL_FILE="${SLACK_WEBHOOK_URL_FILE}" \
+    python3 "${STACK_ROOT}/scripts/bootstrap_readiness.py" --site-path "${SITE_PATH:-/notification-test}" \
+      --stage wordpress-installation --status "${status}" --notify
 }
 
-json_escape() {
-  local value="${1:-}"
-  value="${value//\\/\\\\}"
-  value="${value//\"/\\\"}"
-  value="${value//$'\n'/\\n}"
-  value="${value//$'\r'/\\r}"
-  value="${value//$'\t'/\\t}"
-  printf '%s' "${value}"
-}
-
-send_slack_notification() {
-  local title="$1"
-  local body="$2"
-  local color="${3:-#1f6feb}"
-  local domain channel_field payload
-
-  if [[ -z "${SLACK_WEBHOOK_URL}" ]]; then
-    echo "Slack notification skipped: webhook URL is not configured."
-    return 0
-  fi
-  if ! command -v curl >/dev/null 2>&1; then
-    echo "WARNING: Slack notification skipped because curl is not available." >&2
-    return 0
-  fi
-
-  domain="$(basename "${SITE_PATH:-unknown}")"
-  if [[ -n "${SLACK_CHANNEL}" ]]; then
-    channel_field="\"channel\":\"$(json_escape "${SLACK_CHANNEL}")\","
-  else
-    channel_field=""
-  fi
-
-  payload='{
-    '"${channel_field}"'
-    "username":"'"$(json_escape "${SLACK_USERNAME}")"'",
-    "icon_emoji":"'"$(json_escape "${SLACK_ICON_EMOJI}")"'",
-    "attachments":[
-      {
-        "color":"'"$(json_escape "${color}")"'",
-        "title":"'"$(json_escape "${title}")"'",
-        "text":"'"$(json_escape "${body}")"'",
-        "footer":"MRN Stack Bootstrap",
-        "ts":'"$(date +%s)"'
-      }
-    ]
-  }'
-
-  if curl -sS -X POST -H 'Content-type: application/json' --data "${payload}" "${SLACK_WEBHOOK_URL}" >/dev/null; then
-    echo "Slack notification sent: ${title}"
-  else
-    echo "WARNING: Slack notification failed: ${title}" >&2
-  fi
-}
+# Retained call sites do not send a second copy: send_notification owns delivery.
+send_slack_notification() { return 0; }
 
 notify_failure() {
   local code line cmd domain body
@@ -259,7 +187,6 @@ Domain: ${domain}
 Site user: ${SITE_USER}
 Exit code: ${code}
 Line: ${line}
-Command: ${cmd}
 EOF
   )
   send_notification "MRN Bootstrap FAILED: ${domain}" "${body}"
@@ -2267,7 +2194,7 @@ main() {
   domain="$(basename "${SITE_PATH}")"
   body=$(
     cat <<EOF
-MRN bootstrap completed successfully.
+WordPress installation completed. SSL and Dev deployment qualification are pending.
 
 Site path: ${SITE_PATH}
 WordPress path: ${WP_PATH}
@@ -2304,14 +2231,8 @@ EOF
     fi
   fi
 
-  # WordPress is complete. Enrollment has independent state and retries; a
-  # GitHub failure must never rerun destructive plugin/theme bootstrap steps.
-  if ! bash "${STACK_ROOT}/scripts/bootstrap-dev-enrollment.sh" --enqueue --site-path "${WP_PATH}"; then
-    add_warning "Dev deployment enrollment is pending; inspect the separate enrollment state."
-  fi
-
-  send_notification "MRN Bootstrap Success: ${domain}" "${body}"
-  send_slack_notification "MRN Bootstrap Success: ${domain}" "${body}" "#1f883d"
+  send_notification "MRN WordPress installed; Dev pending: ${domain}" "${body}"
+  send_slack_notification "MRN WordPress installed; Dev pending: ${domain}" "${body}" "#1f883d"
 
   if [[ "${#BOOTSTRAP_WARNINGS[@]}" -gt 0 ]]; then
     local warning_lines warning_body
@@ -2332,6 +2253,13 @@ EOF
     send_notification "MRN Bootstrap WARNINGS: ${domain}" "${warning_body}"
     send_slack_notification "MRN Bootstrap WARNINGS: ${domain}" "${warning_body}" "#d29922"
   fi
+  # WordPress is complete. Enrollment has independent state and retries; a
+  # GitHub failure must never rerun destructive plugin/theme bootstrap steps.
+  if ! bash "${STACK_ROOT}/scripts/bootstrap-dev-enrollment.sh" --enqueue --site-path "${WP_PATH}"; then
+    add_warning "Dev deployment enrollment is pending; inspect the separate enrollment state."
+  fi
+
+
 }
 
 main "$@"
