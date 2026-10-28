@@ -4,7 +4,7 @@
 .mrn-rotate__size { visibility: hidden; pointer-events: none; }
 .mrn-rotation-toggle { display: block; margin-block: .75rem; padding: .4rem .7rem; font: inherit; font-size: .875rem; color: inherit; background: transparent; border: 1px solid currentColor; border-radius: .25rem; cursor: pointer; }
 .mrn-rotation-toggle:focus-visible, .mrn-timeline summary:focus-visible, .mrn-record article:focus-visible, .mrn-scroll-strip__viewport:focus-visible { outline: 3px solid currentColor; outline-offset: 4px; }
-[data-mrn-image-stage] { position: relative; overflow: hidden; height: var(--mrn-media-height, 52.9375rem); margin: 0; isolation: isolate; }
+[data-mrn-image-stage] { position: relative; overflow: hidden; height: var(--mrn-media-height-current, var(--mrn-media-height, 52.9375rem)); margin: 0; isolation: isolate; }
 [data-mrn-image-stage] > img { width: 100%; height: 100%; object-fit: cover; transform-origin: center; }
 .mrn-column-gallery { position: absolute; inset: 0; display: grid; grid-auto-flow: column; grid-auto-columns: clamp(13rem, 24vw, 23.125rem); justify-content: center; gap: 1.875rem; transform: rotate(8deg) scale(1.08); padding-block-start: 6rem; }
 .mrn-column-gallery__column { display: flex; flex-direction: column; gap: 1.25rem; }
@@ -45,7 +45,8 @@
 .mrn-record--comparisons figcaption { font-weight: 600; margin-block-end: .5rem; }
 .mrn-record__tag { display: inline-block; padding: .25rem .5rem; margin: .25rem; border: 1px solid currentColor; border-radius: 1rem; }
 @media (max-width: 999px) {
-	[data-mrn-image-stage] { height: var(--mrn-media-height-mobile, 21.25rem); }
+	[data-mrn-image-stage] { --mrn-media-height-current: var(--mrn-media-height-mobile, 21.25rem); }
+	[data-mrn-image-stage][data-mrn-media-breakpoint="767"] { --mrn-media-height-current: var(--mrn-media-height, 52.9375rem); }
 	.mrn-timeline__stage { grid-template-columns: minmax(0, 1fr); }
 	.mrn-record-list--people .mrn-content-list-row__items { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 	.mrn-record--comparisons { position: static; }
@@ -61,3 +62,5 @@
 }
 /* Word wrappers preserve the original text nodes' whitespace and inline markup. */
 .mrn-scroll-word { display: inline-block; }
+
+@media (max-width: 767px) { [data-mrn-image-stage][data-mrn-media-breakpoint="767"] { --mrn-media-height-current: var(--mrn-media-height-mobile, 21.25rem); } }

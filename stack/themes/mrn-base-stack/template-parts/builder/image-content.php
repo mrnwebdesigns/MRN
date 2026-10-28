@@ -124,10 +124,11 @@ $section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' 
 $section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
 $frame_contract = mrn_base_stack_get_content_frame_contract( $row, 'image_content' );
 $section_classes = mrn_base_stack_merge_builder_section_classes( $section_classes, $frame_contract );
-if ( in_array( 'has-image-frame', $section_classes, true ) && '' === $label && '' === $heading && '' === $subheading && '' === trim( wp_strip_all_tags( $content ) ) && empty( $content_links ) ) { $section_classes[] = 'has-image-only-frame'; }
-$image_source_size = in_array( 'has-image-natural-media', $section_classes, true ) ? 'full' : 'mrn-content-media';
+if ( 'framed-zoom' === ( $row['image_presentation'] ?? '' ) && '' !== $image_stage_attributes ) { $section_classes[] = 'has-framed-image-stage'; }
+if ( ( in_array( 'has-image-frame', $section_classes, true ) || in_array( 'has-framed-image-stage', $section_classes, true ) ) && '' === $label && '' === $heading && '' === $subheading && '' === trim( wp_strip_all_tags( $content ) ) && empty( $content_links ) ) { $section_classes[] = 'has-image-only-frame'; }
+$image_source_size = ( in_array( 'has-image-natural-media', $section_classes, true ) || in_array( 'has-framed-image-stage', $section_classes, true ) ) ? 'full' : 'mrn-content-media';
 $image_attributes = array();
-if ( in_array( 'has-image-only-frame', $section_classes, true ) && in_array( $row['image_presentation'] ?? 'standard', array( 'standard', 'scroll-drift' ), true ) ) {
+if ( in_array( 'has-image-only-frame', $section_classes, true ) && in_array( $row['image_presentation'] ?? 'standard', array( 'standard', 'scroll-drift', 'framed-zoom' ), true ) ) {
 	// Keep WordPress auto-sizes containment proportional to the requested media.
 	$dimensions = mrn_base_stack_get_attachment_image_src( $image, $image_source_size );
 	if ( is_array( $dimensions ) && (int) $dimensions[1] > 0 && (int) $dimensions[2] > 0 ) { $image_attributes['style'] = sprintf( 'aspect-ratio:auto %d / %d', (int) $dimensions[1], (int) $dimensions[2] ); }

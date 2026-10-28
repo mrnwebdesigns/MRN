@@ -8487,3 +8487,10 @@ a.mrn-social-links__link:focus-visible svg {
 @media (max-width: 767px) { .has-body-frame.has-body-heading-space-before-mobile .mrn-ui__heading { margin-top: var(--mrn-body-frame-heading-space-before-mobile); } }
 
 .has-image-frame.has-image-natural-media .mrn-layout-section--image-content .mrn-image-content-row__media .mrn-image-content-row__figure img { width: 100%; height: auto; max-height: none; object-fit: contain; }
+
+/* Framed image stages clip at the section edge; row presets retain all spacing. */
+.mrn-content-builder__row.has-framed-image-stage { overflow: hidden; padding-top: var(--mrn-row-padding-top, 0px); padding-right: var(--mrn-row-padding-right, 0px); padding-bottom: var(--mrn-row-padding-bottom, 0px); padding-left: var(--mrn-row-padding-left, 0px); }
+.has-framed-image-stage > .mrn-layout-section.mrn-layout-surface { padding: 0; }
+.has-framed-image-stage .mrn-layout-section--image-content .mrn-image-content-row__figure[data-mrn-image-stage] { height: max(0px, calc(var(--mrn-media-height-current, var(--mrn-media-height, 52.9375rem)) - var(--mrn-row-padding-top, 0px) - var(--mrn-row-padding-bottom, 0px))); overflow: visible; isolation: auto; }
+.mrn-content-builder__row.has-framed-image-stage .mrn-layout-section--image-content .mrn-image-content-row__media .mrn-image-content-row__figure > img { width: 100%; height: auto; max-height: none; object-fit: contain; }
+.has-framed-image-stage > .mrn-layout-section > .mrn-layout-container.mrn-layout-surface { padding-block: 0; padding-inline: var(--mrn-image-frame-gutter-current, var(--mrn-image-frame-inner-gutter, 0px)); }

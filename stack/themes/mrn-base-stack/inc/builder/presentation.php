@@ -124,6 +124,7 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 					'choices'       => array(
 						'standard'       => 'Standard',
 						'scroll-zoom'    => 'Scroll Zoom',
+						'framed-zoom'    => 'Framed Viewport Zoom',
 						'scroll-drift'   => 'Scroll Drift',
 						'tilted-gallery' => 'Rotated Column Gallery',
 					),
@@ -132,7 +133,9 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 			),
 			$make( 'image_drift_speed', 'Scroll Drift Speed', 'number', array( 'min' => 0.01, 'max' => 0.15, 'step' => 0.01, 'default_value' => 0.08, 'instructions' => 'Fraction of the distance between the section center and viewport center. Runs only with a fine hover pointer at 768px and above; reduced motion stays still.', 'conditional_logic' => array( array( array( 'field' => $seed . '_image_presentation', 'operator' => '==', 'value' => 'scroll-drift' ) ) ) ) ),
 			$make( 'image_drift_maximum', 'Maximum Scroll Drift (px)', 'number', array( 'min' => 1, 'max' => 100, 'step' => 1, 'default_value' => 36, 'instructions' => 'Maximum travel in either direction. A nested image follows its nearest Split section. Image size and section spacing stay unchanged.', 'conditional_logic' => array( array( array( 'field' => $seed . '_image_presentation', 'operator' => '==', 'value' => 'scroll-drift' ) ) ) ) ),
-			$make( 'media_height', 'Media Height', 'text', array( 'instructions' => 'Optional CSS length, such as 52rem or 80vh. Applies to the media, not row spacing.' ) ),
+			$make( 'image_zoom_viewport_inset', 'Zoom Viewport Inset (px)', 'number', array( 'min' => 0, 'max' => 240, 'step' => 1, 'default_value' => 0, 'instructions' => 'Framed zoom peaks at viewport width minus this total inset, then returns to original proportions. Reduced motion stays still.', 'conditional_logic' => array( array( array( 'field' => $seed . '_image_presentation', 'operator' => '==', 'value' => 'framed-zoom' ) ) ) ) ),
+			$make( 'media_mobile_breakpoint', 'Small-Screen Media Breakpoint', 'select', array( 'choices' => array( '' => 'Use Existing (999px)', '767' => '767px' ), 'default_value' => '', 'instructions' => 'Optional height breakpoint for image stages; row spacing retains its separate native breakpoint.' ) ),
+			$make( 'media_height', 'Media Height', 'text', array( 'instructions' => 'Optional CSS length, such as 52rem or 80vh. Applies to the media stage, not row spacing. Framed Viewport Zoom includes the row padding in this total height.' ) ),
 			$make( 'media_height_mobile', 'Mobile Media Height', 'text', array( 'instructions' => 'Optional CSS length for narrow screens.' ) ),
 			$make(
 				'image_overlay',
@@ -563,9 +566,12 @@ function mrn_base_stack_get_image_stage_attributes( array $row ) {
 		mrn_base_stack_enqueue_presentation();
 		return mrn_base_stack_get_html_attributes( array( 'data-mrn-image-drift' => wp_json_encode( $values ) ) );
 	}
-	if ( ! in_array( $mode, array( 'scroll-zoom', 'tilted-gallery' ), true ) ) {
+	if ( ! in_array( $mode, array( 'scroll-zoom', 'tilted-gallery', 'framed-zoom' ), true ) ) {
 		return '';
 	}
+	$inset = $row['image_zoom_viewport_inset'] ?? 0;
+	if ( '' === $inset ) { $inset = 0; }
+	if ( 'framed-zoom' === $mode && ( ! is_scalar( $inset ) || is_bool( $inset ) || ! is_numeric( $inset ) || ! is_finite( (float) $inset ) || $inset < 0 || $inset > 240 || (float) $inset !== (float) (int) $inset ) ) { return ''; }
 	mrn_base_stack_enqueue_presentation();
 	$styles = array();
 	foreach ( array(
@@ -581,6 +587,8 @@ function mrn_base_stack_get_image_stage_attributes( array $row ) {
 	return mrn_base_stack_get_html_attributes(
 		array(
 			'data-mrn-image-stage' => $mode,
+			'data-mrn-media-breakpoint' => '767' === ( $row['media_mobile_breakpoint'] ?? '' ) ? '767' : null,
+			'data-mrn-image-zoom-inset' => 'framed-zoom' === $mode ? (string) (int) $inset : null,
 			'style'                => implode( ';', $styles ),
 		)
 	);

@@ -92,9 +92,20 @@
 	function initImage( stage ) {
 		const image = stage.querySelector( ':scope > img' );
 		const columns = Array.from( stage.querySelectorAll( '.mrn-column-gallery__column' ) );
+		const framed = stage.dataset.mrnImageStage === 'framed-zoom';
+		const inset = Number( stage.dataset.mrnImageZoomInset );
+		if ( framed && ( ! Number.isInteger( inset ) || inset < 0 || inset > 240 ) ) { return; }
 		watch( stage, () => {
 			const p = progress( stage );
-			if ( image ) { image.style.transform = reduced.matches ? '' : 'scale(' + ( 1 + .08 * Math.sin( p * Math.PI ) ) + ')'; }
+			if ( image ) {
+				let scale = 1 + .08 * Math.sin( p * Math.PI );
+				if ( framed ) {
+					const peak = image.offsetWidth > 0 ? Math.max( 1, Math.max( 0, window.innerWidth - inset ) / image.offsetWidth ) : 1;
+					const t = p <= .5 ? 2 * p : 2 * ( 1 - p );
+					scale = 1 + ( peak - 1 ) * ( 1 - Math.pow( 1 - t, 3 ) );
+				}
+				image.style.transform = reduced.matches ? '' : 'scale(' + scale + ')';
+			}
 			columns.forEach( ( column, index ) => {
 				column.style.transform = reduced.matches ? '' : 'translateY(' + ( ( p - .5 ) * ( index % 2 ? -120 : 120 ) ) + 'px)';
 			} );
