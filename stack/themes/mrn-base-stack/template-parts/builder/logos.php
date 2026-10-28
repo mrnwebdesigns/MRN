@@ -16,6 +16,7 @@ $subheading       = isset( $row['subheading'] ) ? trim( (string) $row['subheadin
 $subheading_tag   = isset( $row['subheading_tag'] ) ? strtolower( (string) $row['subheading_tag'] ) : 'p';
 $items            = isset( $row['logo_items'] ) && is_array( $row['logo_items'] ) ? $row['logo_items'] : array();
 $labeled          = 'labeled' === ( $row['logos_presentation'] ?? '' );
+$auto_grid        = 'auto-grid' === ( $row['logos_presentation'] ?? '' );
 $icon_strip       = 'icons' === ( $row['logos_presentation'] ?? '' );
 $logos_description = $labeled && is_string( $row['logos_description'] ?? '' ) ? $row['logos_description'] : '';
 $display_mode     = isset( $row['display_mode'] ) ? sanitize_key( (string) $row['display_mode'] ) : 'grid';
@@ -49,7 +50,7 @@ if ( ! in_array( $subheading_tag, $allowed_tags, true ) ) {
 	$subheading_tag = 'p';
 }
 
-$display_mode = $labeled || $icon_strip ? 'grid' : mrn_base_stack_normalize_builder_layout_display_mode( $display_mode, 'logos' );
+$display_mode = $labeled || $icon_strip || $auto_grid ? 'grid' : mrn_base_stack_normalize_builder_layout_display_mode( $display_mode, 'logos' );
 
 $valid_items = array();
 foreach ( $items as $item ) {
@@ -216,7 +217,7 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 								<?php endif; ?>
 							>
 						<?php endif; ?>
-						<?php echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image( $image, $labeled ? 'full' : 'mrn-logo' ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						<?php echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image( $image, $labeled || $auto_grid ? 'full' : 'mrn-logo' ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 						<?php if ( '' !== $url ) : ?>
 							</a>
 						<?php endif; ?>

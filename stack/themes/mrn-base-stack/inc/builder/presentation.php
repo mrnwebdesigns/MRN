@@ -55,7 +55,7 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 			}
 		}
 		unset( $field );
-		return array_merge( $fields, mrn_base_stack_get_text_tag_fields( $seed ), mrn_base_stack_get_content_frame_fields( $layout, $seed ) );
+		return array_merge( $fields, mrn_base_stack_get_scroll_word_fields( $seed ), mrn_base_stack_get_text_tag_fields( $seed ), mrn_base_stack_get_content_frame_fields( $layout, $seed ) );
 	}
 	if ( 'logos' === $layout ) {
 		return array_merge( mrn_base_stack_get_labeled_logos_fields( $seed ), array(
@@ -273,6 +273,27 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 		);
 	}
 	return array();
+}
+
+/** Optional scroll-bound word color, independent of timed entrance effects. */
+function mrn_base_stack_get_scroll_word_fields( $seed ) {
+	$fields = array(
+		array( 'key' => $seed . '_text_presentation', 'name' => 'text_presentation', 'label' => 'Text Presentation', 'type' => 'select', 'choices' => array( '' => 'Use Existing Text', 'scroll-words' => 'Scroll Word Color' ), 'default_value' => '', 'instructions' => 'Progressively changes each word color as its section scrolls into view. Rich text and links remain in place. Reduced motion displays the final color.' ),
+		array( 'key' => $seed . '_word_reveal_target', 'name' => 'word_reveal_target', 'label' => 'Word Color Target', 'type' => 'select', 'choices' => array( 'heading' => 'Heading', 'text' => 'Body Text' ), 'default_value' => 'heading' ),
+		array( 'key' => $seed . '_word_reveal_scope', 'name' => 'word_reveal_scope', 'label' => 'Word Color Scroll Section', 'type' => 'select', 'choices' => array( 'row' => 'This Text Row', 'split' => 'Enclosing Split' ), 'default_value' => 'row' ),
+	);
+	foreach ( array( 'from' => 'Word Starting Color', 'to' => 'Word Final Color' ) as $name => $label ) { $field = mrn_base_stack_get_background_color_field( $seed . '_word_reveal_' . $name ); $field['name'] = 'word_reveal_' . $name; $field['label'] = $label; $fields[] = $field; }
+	foreach ( $fields as &$field ) { if ( 'text_presentation' !== $field['name'] ) { $field['conditional_logic'] = array( array( array( 'field' => $seed . '_text_presentation', 'operator' => '==', 'value' => 'scroll-words' ) ) ); } } unset( $field );
+	return $fields;
+}
+
+/** Emit only a selected target, finite scope and registered Site Colors. */
+function mrn_base_stack_get_scroll_word_attributes( array $row, $target ) {
+	if ( 'scroll-words' !== ( $row['text_presentation'] ?? '' ) || $target !== ( $row['word_reveal_target'] ?? 'heading' ) || ! in_array( $target, array( 'heading', 'text' ), true ) || ! empty( $row['motion_settings']['enabled'] ) ) { return array(); }
+	$scope = $row['word_reveal_scope'] ?? 'row';
+	$from = mrn_base_stack_get_frame_palette_color( $row['word_reveal_from'] ?? '' ); $to = mrn_base_stack_get_frame_palette_color( $row['word_reveal_to'] ?? '' );
+	if ( ! in_array( $scope, array( 'row', 'split' ), true ) || '' === $from || '' === $to ) { return array(); }
+	return array( 'data-mrn-scroll-words' => wp_json_encode( array( 'from' => $from, 'to' => $to, 'scope' => $scope ) ) );
 }
 
 /**

@@ -442,7 +442,7 @@ function mrn_base_stack_collect_front_end_component_needs_from_content( $content
 		'faq'            => array( 'mrn-faq__item' ),
 		'gallery'        => array( 'data-gallery-root' ),
 		'image_action'   => array( 'data-mrn-image-action-follow' ),
-		'presentation'   => array( 'data-mrn-image-drift' ),
+		'presentation'   => array( 'data-mrn-image-drift', 'data-mrn-scroll-words' ),
 		'motion'         => array( 'data-mrn-motion-effect', 'data-mrn-surface' ),
 		'slider'         => array( 'mrn-splide' ),
 		'tabs'           => array( 'data-mrn-tabbed-layout' ),
@@ -555,7 +555,7 @@ function mrn_base_stack_collect_front_end_component_needs_for_post( $post_id, ar
 
 		if ( preg_match( '/_image_action_follow_pointer$/', $meta_key ) ) { foreach ( $meta_values as $value ) { if ( mrn_base_stack_front_end_meta_value_is_enabled( $value ) ) { $needs['image_action'] = true; } } }
 
-		if ( preg_match( '/(?:^|_)(?:image_presentation|showcase_presentation|card_presentation|record_presentation|video_presentation|rotating_phrases_one|rotating_phrases_two)$/', $meta_key ) ) {
+		if ( preg_match( '/(?:^|_)(?:image_presentation|text_presentation|showcase_presentation|card_presentation|record_presentation|video_presentation|rotating_phrases_one|rotating_phrases_two)$/', $meta_key ) ) {
 			foreach ( $meta_values as $presentation_value ) {
 				if ( 'bento' === $presentation_value && preg_match( '/(?:^|_)showcase_presentation$/', $meta_key ) ) { continue; }
 				if ( ! in_array( (string) $presentation_value, array( '', '0', 'standard' ), true ) ) {
@@ -596,7 +596,7 @@ function mrn_base_stack_collect_front_end_component_needs_for_post( $post_id, ar
 				} elseif (
 					'logos' === $layout_name
 					&& 'slider' === sanitize_key( mrn_base_stack_get_front_end_meta_scalar( $post_meta, $row_prefix . 'display_mode' ) )
-					&& ! in_array( mrn_base_stack_get_front_end_meta_scalar( $post_meta, $row_prefix . 'logos_presentation' ), array( 'labeled', 'icons' ), true )
+					&& ! in_array( mrn_base_stack_get_front_end_meta_scalar( $post_meta, $row_prefix . 'logos_presentation' ), array( 'labeled', 'icons', 'auto-grid' ), true )
 					&& mrn_base_stack_front_end_meta_value_is_enabled( mrn_base_stack_get_front_end_meta_scalar( $post_meta, $row_prefix . 'logo_items' ) )
 				) {
 					$needs['slider'] = true;
@@ -644,7 +644,7 @@ function mrn_base_stack_collect_front_end_component_needs_for_post( $post_id, ar
 	} elseif (
 		'mrn_reusable_partner' === $post_type
 		&& 'slider' === sanitize_key( mrn_base_stack_get_front_end_meta_scalar( $post_meta, 'display_mode' ) )
-		&& ! in_array( mrn_base_stack_get_front_end_meta_scalar( $post_meta, 'logos_presentation' ), array( 'labeled', 'icons' ), true )
+		&& ! in_array( mrn_base_stack_get_front_end_meta_scalar( $post_meta, 'logos_presentation' ), array( 'labeled', 'icons', 'auto-grid' ), true )
 		&& mrn_base_stack_front_end_meta_value_is_enabled( mrn_base_stack_get_front_end_meta_scalar( $post_meta, 'logo_items' ) )
 	) {
 		$needs['slider'] = true;
