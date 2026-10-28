@@ -22,6 +22,7 @@ require_once __DIR__ . '/faq-aside.php';
 require_once __DIR__ . '/text-tags.php';
 require_once __DIR__ . '/image-action.php';
 require_once __DIR__ . '/card-frame.php';
+require_once __DIR__ . '/pricing-cards.php';
 require_once __DIR__ . '/content-frame.php';
 require_once __DIR__ . '/logos-labeled.php';
 require_once __DIR__ . '/tabs-frame.php';

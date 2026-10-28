@@ -196,6 +196,7 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 						'standard' => 'Standard',
 						'timeline' => 'Step Timeline',
 						'image-overlay' => 'Image with Overlay or Caption',
+						'pricing' => 'Pricing Plans',
 					),
 					'default_value' => 'standard',
 				)
@@ -226,7 +227,7 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 			}
 		}
 		unset( $field );
-		return array_merge( $fields, mrn_base_stack_get_card_frame_fields( $seed ) );
+		return array_merge( $fields, mrn_base_stack_get_card_frame_fields( $seed ), mrn_base_stack_get_pricing_fields( $seed ) );
 	}
 	if ( 'content_lists' === $layout ) {
 		return array(
@@ -338,8 +339,17 @@ function mrn_base_stack_ensure_presentation_fields( array $fields, $layout, $see
 	}
 	if ( 'card' === $layout ) {
 		foreach ( $fields as &$field ) {
+			if ( 'card_items' === ( $field['name'] ?? '' ) && 'repeater' === ( $field['type'] ?? '' ) ) {
+				$existing_names = array_column( $field['sub_fields'] ?? array(), 'name' );
+				foreach ( mrn_base_stack_get_pricing_item_fields( $field['key'], $seed . '_card_presentation' ) as $pricing_field ) { if ( ! in_array( $pricing_field['name'], $existing_names, true ) ) { $field['sub_fields'][] = $pricing_field; } }
+			}
 			if ( 'card_items' === ( $field['name'] ?? '' ) && 'repeater' === ( $field['type'] ?? '' ) && ! in_array( 'image', array_column( $field['sub_fields'] ?? array(), 'name' ), true ) ) {
 				array_splice( $field['sub_fields'], 1, 0, array( array( 'key' => $field['key'] . '_image', 'name' => 'image', 'label' => 'Card Image', 'type' => 'image', 'return_format' => 'id', 'preview_size' => 'medium', 'instructions' => 'Optional media for the Image with Overlay or Caption presentation.' ) ) );
+			}
+			if ( 'card_items' === ( $field['name'] ?? '' ) && 'repeater' === ( $field['type'] ?? '' ) ) {
+				$field['instructions'] = 'Standard cards hold one builder row. Pricing Plans use the structured plan fields instead. The saved card order is preserved.';
+				foreach ( $field['sub_fields'] as &$item_field ) { if ( in_array( $item_field['name'] ?? '', array( 'card_rows', 'image', 'link', 'background_color', 'link_icon', 'link_icon_position' ), true ) ) { $item_field['conditional_logic'] = array( array( array( 'field' => $seed . '_card_presentation', 'operator' => '!=', 'value' => 'pricing' ) ) ); } }
+				unset( $item_field );
 			}
 		}
 		unset( $field );
