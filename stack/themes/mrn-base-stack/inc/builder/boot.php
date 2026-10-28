@@ -29,6 +29,7 @@ require_once __DIR__ . '/tabs-frame.php';
 require_once __DIR__ . '/jump-nav-frame.php';
 require_once __DIR__ . '/showcase-bento.php';
 require_once __DIR__ . '/showcase-records.php';
+require_once __DIR__ . '/strip-frame.php';
 
 require_once __DIR__ . '/lazy-layouts.php';
 

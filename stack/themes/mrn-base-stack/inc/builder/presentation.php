@@ -173,7 +173,7 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 		) );
 	}
 	if ( 'showcase' === $layout ) {
-		return array_merge( mrn_base_stack_get_showcase_bento_fields( $seed ), mrn_base_stack_get_showcase_record_fields( $seed ), array(
+		return array_merge( mrn_base_stack_get_showcase_bento_fields( $seed ), mrn_base_stack_get_showcase_record_fields( $seed ), mrn_base_stack_get_strip_frame_fields( $seed ), array(
 			$make(
 				'showcase_presentation',
 				'Gallery Presentation',

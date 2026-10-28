@@ -125,6 +125,9 @@ $section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' 
 $bento_contract = function_exists( 'mrn_base_stack_get_showcase_bento_contract' ) ? mrn_base_stack_get_showcase_bento_contract( $row ) : array( 'classes' => array(), 'attributes' => array() );
 $section_classes = mrn_base_stack_merge_builder_section_classes( $section_classes, $bento_contract );
 $section_attrs = mrn_base_stack_merge_builder_attributes( $section_attrs, $bento_contract['attributes'] );
+$strip_contract = mrn_base_stack_get_strip_frame_contract( $row );
+$section_classes = mrn_base_stack_merge_builder_section_classes( $section_classes, $strip_contract );
+$section_attrs = mrn_base_stack_merge_builder_attributes( $section_attrs, $strip_contract['attributes'] );
 $section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';
 $surface_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $section_styles ) : implode( '; ', $section_styles );
 $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
@@ -151,7 +154,7 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 		<?php if ( ! empty( $valid_items ) ) : ?>
 			<?php if ( 'scroll-strip' === ( $row['showcase_presentation'] ?? '' ) ) : ?>
 				<?php mrn_base_stack_enqueue_presentation(); ?>
-				<div class="mrn-scroll-strip" data-mrn-scroll-strip data-skip-label="<?php echo esc_attr__( 'Skip gallery', 'mrn-base-stack' ); ?>"><div class="mrn-scroll-strip__viewport" role="region" aria-label="<?php echo esc_attr__( 'Image gallery', 'mrn-base-stack' ); ?>" tabindex="0">
+				<div class="mrn-scroll-strip" <?php echo mrn_base_stack_get_html_attributes( mrn_base_stack_get_strip_behavior_attributes( $row ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Shared escaped attributes. ?> data-mrn-scroll-strip data-skip-label="<?php echo esc_attr__( 'Skip gallery', 'mrn-base-stack' ); ?>"><div class="mrn-scroll-strip__viewport" role="region" aria-label="<?php echo esc_attr__( 'Image gallery', 'mrn-base-stack' ); ?>" tabindex="0">
 			<?php endif; ?>
 				<div class="mrn-showcase-row__grid mrn-showcase-row__grid--gallery-shell mrn-ui__items">
 				<?php foreach ( $valid_items as $index => $item ) : ?>
@@ -190,7 +193,7 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 								<?php endif; ?>
 							>
 						<?php endif; ?>
-						<?php echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image( $image, 'mrn-gallery', '' !== $item['image_alt_override'] ? array( 'alt' => $item['image_alt_override'] ) : array() ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						<?php echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image( $image, ! empty( $strip_contract['classes'] ) ? 'full' : 'mrn-gallery', array_merge( ! empty( $strip_contract['classes'] ) ? array( 'sizes' => '(max-width: 768px) 100vw, 50vw' ) : array(), '' !== $item['image_alt_override'] ? array( 'alt' => $item['image_alt_override'] ) : array() ) ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 						<?php if ( '' !== $url && ! $use_overlay_link ) : ?>
 							</a>
 						<?php endif; ?>

@@ -187,12 +187,18 @@
 		const viewport = range.querySelector( '.mrn-scroll-strip__viewport' );
 		const track = viewport?.querySelector( '.mrn-showcase-row__grid' );
 		if ( ! track ) { return; }
+		const flow = range.dataset.mrnStripBehavior === 'flow';
+		const flowWide = flow ? window.matchMedia( '(min-width: 769px)' ) : wide;
+		const rawPace = Number( range.dataset.mrnStripPace ?? 1.6 );
+		const pace = Number.isFinite( rawPace ) && rawPace >= .1 && rawPace <= 10 ? rawPace : 1.6;
+		const trigger = flow ? range.closest( '.mrn-content-builder__row' ) || range : range;
+		let keyboard = false;
 		const end = document.createElement( 'span' );
 		end.id = 'mrn-strip-end-' + ( ++sequence );
 		end.tabIndex = -1;
 		range.insertAdjacentElement( 'afterend', end );
 		const skip = document.createElement( 'a' );
-		skip.className = 'mrn-presentation-skip';
+		skip.className = flow ? 'screen-reader-text mrn-strip-flow-skip' : 'mrn-presentation-skip';
 		skip.href = '#' + end.id;
 		skip.textContent = range.dataset.skipLabel || 'Skip gallery';
 		range.insertAdjacentElement( 'beforebegin', skip );
@@ -200,10 +206,16 @@
 		let distance = 0;
 		const prepare = () => {
 			range.removeAttribute( 'data-enhanced' );
+			range.removeAttribute( 'data-flow-enhanced' );
 			range.style.height = '';
 			track.style.transform = '';
 			overflow = Math.max( 0, track.scrollWidth - viewport.clientWidth );
-			if ( reduced.matches || ! wide.matches || overflow < 1 ) { return; }
+			if ( reduced.matches || ! flowWide.matches || overflow < 1 || keyboard ) { return; }
+			if ( flow ) {
+				distance = Math.max( 1, Math.round( overflow * pace ) );
+				range.dataset.flowEnhanced = 'true';
+				viewport.scrollLeft = 0; schedule(); return;
+			}
 			distance = Math.max( 300, overflow * .75 );
 			range.dataset.enhanced = 'true';
 			range.style.height = ( viewport.offsetHeight + distance ) + 'px';
@@ -218,8 +230,12 @@
 			track.style.transform = 'translateX(' + ( -p * overflow ) + 'px)';
 		};
 		viewport.addEventListener( 'focusin', ( event ) => {
+			if ( flow ) { keyboard = true; prepare(); return; }
 			const item = event.target.closest( '.mrn-showcase-row__item' );
 			if ( item ) { reveal( item.offsetLeft ); }
+		} );
+		viewport.addEventListener( 'focusout', ( event ) => {
+			if ( flow && ! viewport.contains( event.relatedTarget ) ) { keyboard = false; prepare(); }
 		} );
 		viewport.addEventListener( 'keydown', ( event ) => {
 			if ( event.target === viewport && range.hasAttribute( 'data-enhanced' ) && [ 'ArrowLeft', 'ArrowRight' ].includes( event.key ) ) {
@@ -232,7 +248,12 @@
 		new ResizeObserver( prepare ).observe( viewport );
 		window.addEventListener( 'resize', prepare, { passive: true } );
 		reduced.addEventListener( 'change', prepare );
-		watch( range, () => {
+		if ( flow ) { flowWide.addEventListener( 'change', prepare ); }
+		watch( trigger, () => {
+			if ( flow ) {
+				if ( range.hasAttribute( 'data-flow-enhanced' ) ) { const p = clamp( ( window.innerHeight - trigger.getBoundingClientRect().top ) / distance ); track.style.transform = 'translateX(' + ( -p * overflow ) + 'px)'; }
+				return;
+			}
 			if ( ! range.hasAttribute( 'data-enhanced' ) ) { return; }
 			const p = clamp( ( topOffset() - range.getBoundingClientRect().top ) / distance );
 			track.style.transform = 'translateX(' + ( -p * overflow ) + 'px)';
