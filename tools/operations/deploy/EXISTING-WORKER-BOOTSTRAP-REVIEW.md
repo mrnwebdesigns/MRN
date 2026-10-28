@@ -1,7 +1,8 @@
 # Existing-worker original delivery: review proposal
 
-Status: disabled source candidate with a pure verifier and atomic gateway
-journal; no metadata delivery, supervisor retention or enabled route. This does not qualify a
+Status: disabled source candidate with a pure verifier, atomic gateway journal
+and one-use delivery composition. Production startup does not enable its route;
+supervisor retention remains unimplemented. This does not qualify a
 worker, create credentials, change access or authorize deployment.
 It leaves all six existing-v2 contracts and the worker readback wire unchanged.
 
@@ -27,16 +28,50 @@ state through a restart or configuration addition.
 Six focused SQLite/crypto groups cover reopen, failed seed/prepare/observation
 writes, missing or rewound history, valid signatures for another original,
 coherent policy changes, key substitution, original expiry and revocation.
-The private getter performs retained-state inspection only. Repeated inspection
-does not prove or perform one-use network delivery. Hosted OIDC, fresh staff at
-delivery, consumption before release and supervisor durability remain required.
+The private getter performs retained-state inspection only. The separate delivery
+handler implements consumption before release with controlled signed OIDC and
+fresh staff checks. Actual hosted OIDC, live Google access and supervisor
+durability remain required.
+
+## One-use delivery source, 2026-10-28
+
+`ExistingWorkerBootstrapDelivery` uses the existing worker authentication logic
+with a distinct fixed bootstrap audience. Only the opaque dispatch/context pointer
+is accepted. It repeats current original staff verification and checks the
+original queue, revocation, source/policy/key fingerprints, exact hosted-run
+claims and deadlines inside the final SQLite transaction. The bootstrap's
+independently pinned owner/environment policy must also match the handler trust.
+
+A delivery record and separate digest/state anchors on the original attempt are
+seeded atomically with each new eligible original. Constructors never backfill
+old or missing records. Consumption, response digest and per-person audit commit
+together before release. Concurrent readers have one winner; a lost response or
+restart cannot refill delivery. Missing, partial, changed or rewound sidecars
+fail closed. This does not claim resistance to rewinding the entire authoritative
+database and every anchor together. No provider request or provider counter is
+used by metadata delivery.
+
+The fixed HTTP composition remains absent by default and unselected by service
+startup. It accepts canonical JSON up to 512 bytes, returns at most 64 KiB with
+`no-store`, rejects browser origins and shares the existing worker capacity
+limits. Its five-second budget includes body receipt and final consumption;
+original and worker lifetimes are unchanged. Source tests exercise actual local
+HTTP, RSA/Ed25519 signatures, two SQLite connections, lost responses, failed
+writes/audits, timeout, revocation, trust drift, and distinct-audience denial.
+These controlled identities are not actual hosted OIDC or Google acceptance.
+
+The next required step is protected supervisor retention and independently
+configured trust, followed by actual hosted bootstrap and source admission.
+No deployment, access change, content/code write, backup or team-acceptance gate
+is satisfied by this source checkpoint.
 
 ## Integration blocker
 
 The independent runner verifier needs the original binding, evidence context,
 dispatch provenance and observation before it verifies an identity-signed worker
-readback. The gateway durably retains these records. No reviewed existing-v2
-bootstrap currently delivers them to the protected remote supervisor.
+readback. The gateway durably retains these records. Its disabled delivery handler now
+serves them once to an exact authenticated run in local HTTP tests. No protected
+remote supervisor yet receives and durably retains them in an actual hosted run.
 
 An opaque workflow pointer is a lookup key, not the original. Copying records
 out of the identity readback and passing them back as the independent expected

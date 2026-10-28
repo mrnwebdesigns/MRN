@@ -32,6 +32,11 @@ export class ExistingWorkerBootstrapJournal {
       PRIMARY KEY(original,ordinal));`);
     if (!store.db.prepare('PRAGMA table_info(original_management_attempts)').all().some(c => c.name === 'bootstrap_history_digest'))
       store.db.exec("ALTER TABLE original_management_attempts ADD COLUMN bootstrap_history_digest TEXT NOT NULL DEFAULT ''");
+    store.db.exec(`CREATE TABLE IF NOT EXISTS original_management_bootstrap_delivery(
+      original TEXT PRIMARY KEY, body TEXT NOT NULL, digest TEXT NOT NULL);`);
+    for (const column of ['bootstrap_delivery_digest', 'bootstrap_delivery_state'])
+      if (!store.db.prepare('PRAGMA table_info(original_management_attempts)').all().some(c => c.name === column))
+        store.db.exec(`ALTER TABLE original_management_attempts ADD COLUMN ${column} TEXT NOT NULL DEFAULT ''`);
   }
   configuration(worker) {
     need(worker);
@@ -93,6 +98,12 @@ export class ExistingWorkerBootstrapJournal {
     need(mapping.bootstrapConfigurationSha256 === hash(configuration));
     this.#append(mapping, { schema: 2, state: 'unused', original: mapping.requestId,
       original_sha256: originalDigest, configuration }, 0, '');
+    // New originals only, in the same transaction. Constructor migrations never
+    // enroll old originals or repair absent delivery state.
+    const body = canonical({ schema: 1, state: 'unused', original: mapping.requestId, original_sha256: originalDigest });
+    this.store.db.prepare('INSERT INTO original_management_bootstrap_delivery VALUES(?,?,?)').run(mapping.requestId, body, digest(body));
+    need(this.store.db.prepare(`UPDATE original_management_attempts SET bootstrap_delivery_digest=?,bootstrap_delivery_state='unused'
+      WHERE attempt=? AND bootstrap_delivery_digest='' AND bootstrap_delivery_state=''`).run(digest(body), mapping.attempt).changes === 1);
   }
   // Worker and bootstrap journals advance together. The ledger calls this
   // after appending its worker event, before checking/committing either journal.
@@ -140,6 +151,44 @@ export class ExistingWorkerBootstrapJournal {
       need(same(this.#open(observation, 'observation'), this.#observation(worker, configuration, commitment)));
       const output = parse('output', { commitment, observation }); need(Buffer.byteLength(canonical(output)) <= 65536);
     }
-    return { state: worker.state, historyDigest: marker.bootstrap_history_digest, configuration, commitment, observation };
+    const saved = { state: worker.state, historyDigest: marker.bootstrap_history_digest, configuration, commitment, observation };
+    this.#delivery(original, worker, saved); return saved;
+  }
+  #delivery(original, worker, saved) {
+    const m = original.mapping;
+    const row = this.store.db.prepare(`SELECT CASE WHEN length(CAST(body AS BLOB))<=2048 THEN body ELSE NULL END AS body,digest
+      FROM original_management_bootstrap_delivery WHERE original=?`).get(m.requestId);
+    const marker = this.store.db.prepare('SELECT bootstrap_delivery_digest,bootstrap_delivery_state FROM original_management_attempts WHERE attempt=?').get(m.attempt);
+    need(row && typeof row.body === 'string' && digest(row.body) === row.digest && marker?.bootstrap_delivery_digest === row.digest);
+    const value = JSON.parse(row.body);
+    need(canonical(value) === row.body && ['unused', 'consumed'].includes(value.state) && marker.bootstrap_delivery_state === value.state);
+    const seed = { schema: 1, state: value.state, original: m.requestId, original_sha256: original.digest };
+    if (value.state === 'unused') need(same(value, seed));
+    else {
+      const retained = worker.value.retained, at = value.consumed_at;
+      need(worker.state === 'observed' && Number.isSafeInteger(at) && at >= retained.observation.observed_at
+        && at < Math.min(retained.observation.original_expires_at, retained.observation.requested_at + 300000)
+        && same(value, { ...seed, dispatch_id: retained.provenance.dispatch_id, context_sha256: hash(retained.context),
+          worker_history_sha256: worker.historyDigest, bootstrap_history_sha256: saved.historyDigest,
+          response_sha256: hash({ commitment: saved.commitment, observation: saved.observation }), consumed_at: at }));
+    }
+    return { value, digest: row.digest };
+  }
+  consume(original, worker, workerRows, at) {
+    const saved = this.read(original, worker, workerRows), prior = this.#delivery(original, worker, saved), m = original.mapping;
+    need(worker.state === 'observed' && prior.value.state === 'unused');
+    const retained = worker.value.retained;
+    need(Number.isSafeInteger(at) && at >= retained.observation.observed_at
+      && at < Math.min(retained.observation.original_expires_at, retained.observation.requested_at + 300000));
+    const value = { ...prior.value, state: 'consumed', dispatch_id: retained.provenance.dispatch_id,
+      context_sha256: hash(retained.context), worker_history_sha256: worker.historyDigest, bootstrap_history_sha256: saved.historyDigest,
+      response_sha256: hash({ commitment: saved.commitment, observation: saved.observation }), consumed_at: at };
+    const body = canonical(value), next = digest(body); need(Buffer.byteLength(body) <= 2048);
+    need(this.store.db.prepare('UPDATE original_management_bootstrap_delivery SET body=?,digest=? WHERE original=? AND digest=?')
+      .run(body, next, m.requestId, prior.digest).changes === 1);
+    need(this.store.db.prepare(`UPDATE original_management_attempts SET bootstrap_delivery_digest=?,bootstrap_delivery_state='consumed'
+      WHERE attempt=? AND bootstrap_delivery_digest=? AND bootstrap_delivery_state='unused'`).run(next, m.attempt, prior.digest).changes === 1);
+    need(this.#delivery(original, worker, saved).value.state === 'consumed');
+    return { commitment: saved.commitment, observation: saved.observation };
   }
 }

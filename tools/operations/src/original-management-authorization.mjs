@@ -972,8 +972,8 @@ export class OriginalManagementAuthorizationLedger {
     return { ...history, current };
   }
   originalWorkerDispatch(dispatchId) { return this.store.transaction(() => this.#workerDispatch(dispatchId)); }
-  // Private retained metadata only. OIDC/current-staff delivery, consume-before-
-  // release and supervisor durability remain separate, disabled integration.
+  // Private retained metadata inspection only; it never consumes delivery.
+  // The separate delivery handler is also absent from production startup.
   originalWorkerBootstrap(dispatchId) {
     return this.store.transaction(() => {
       const worker = this.#workerDispatch(dispatchId), original = worker.current.original;
@@ -984,6 +984,25 @@ export class OriginalManagementAuthorizationLedger {
         'The original worker bootstrap lifetime ended; it cannot be renewed.');
       const saved = this.#bootstrap.read(original, worker, this.#workerRows(original.mapping.requestId));
       return { commitment: saved.commitment, observation: saved.observation };
+    });
+  }
+  // The private OIDC delivery handler supplies a synchronous final validator.
+  // Commit consumption and its audit before any caller can release metadata.
+  consumeOriginalWorkerBootstrap(dispatchId, validate) {
+    check(typeof validate === 'function', 'Bootstrap delivery requires current protected identity checks.');
+    return this.store.transaction(() => {
+      const worker = this.#workerDispatch(dispatchId), original = worker.current.original;
+      check(original.mapping.bootstrapConfigurationSha256 && this.#bootstrap,
+        'This original has no eligible bootstrap delivery; never backfill.');
+      const rows = this.#workerRows(original.mapping.requestId), saved = this.#bootstrap.read(original, worker, rows);
+      check(!validate(worker, saved.configuration)?.then, 'Bootstrap delivery checks must be synchronous.');
+      const output = this.#bootstrap.consume(original, worker, rows, this.now()), m = original.mapping;
+      this.store.audit(m.actor, m.site, m.requestId, 'original-worker-bootstrap-delivery', 'consumed');
+      const final = this.#workerDispatch(dispatchId), finalSaved = this.#bootstrap.read(final.current.original, final, rows);
+      check(final.historyDigest === worker.historyDigest && final.current.original.digest === original.digest
+        && delegationDigest(finalSaved) === delegationDigest(saved), 'Bootstrap history changed before release.');
+      check(!validate(final, finalSaved.configuration)?.then, 'Bootstrap delivery checks must be synchronous.');
+      return output;
     });
   }
   // The private reader signs and checks final state inside one audit transaction.

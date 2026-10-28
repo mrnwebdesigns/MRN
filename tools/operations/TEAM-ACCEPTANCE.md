@@ -2,6 +2,28 @@
 
 Status: **not accepted**. This is a repeatable test record, not a staff onboarding form. Every active MRN Google Workspace member receives portfolio access automatically. No tester nomination, individual approval or personal backend credential is required.
 
+## Current source checkpoint, 2026-10-28
+
+The disabled one-use worker bootstrap delivery now has an actual local HTTP
+composition. Exact run OIDC and fresh original staff checks precede an atomic
+SQLite consume/audit transaction, with independent digest/state anchors and no
+backfill. Replay, concurrent readers, loss/restart, partial rewind, expiry,
+revocation, policy/key changes and wrong audience remain denied. The existing
+worker-context reader shares the same authorization helper without broadening
+its audience. Production startup leaves this route absent. Protected supervisor
+retention and actual hosted/bootstrap/source admission remain open.
+
+Native run `40717621324` at `9369470e` passed capture interruption/recovery,
+measurement readback, both source-context reads and root catalog. It then reached
+the unchanged 290-second cleanup deadline during the final source transfer.
+Source capture returned HTTP200 in 96.456 seconds and status returned HTTP200 in
+11.855 seconds; final frame read did not complete. Artifact `12829847032` has
+verified SHA-256 `aa514859d7a63aa1772781f4b92e6d9a4e6fa0d4cfcb9ee3661014ec473d2d62`.
+The callback route was disabled. The later no-bytecode acquisition setup was not reached, so it
+remains locally verified only. This result does not establish the cause of
+previous capture failures or close complete native qualification. No limits,
+production configuration, source pins or access grants were changed.
+
 ## Release boundary
 
 Use only the existing MRN Website Operations workspace plugin and `https://operations.mrnwebdesigns.com/mcp`. Record the reviewed Operations commit, provider version/artifact checksum, QA runner workflow commit, configuration digest and workspace tool-list digest before testing. All remain unverified for the unified release. Existing four-tool read-only acceptance does not cover this candidate.

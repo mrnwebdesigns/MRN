@@ -39,7 +39,9 @@ import { existingWorkerContractSha256, existingWorkerPurpose, existingWorkerUrl,
 import { ExistingManagementWorkerContext, existingManagementWorkerPath } from '../src/existing-management-worker-context.mjs';
 import { ExistingManagementSourceCatalogRegistry } from '../src/existing-management-source-catalog.mjs';
 import { existingWorkerHttpFixture } from './runtime/existing-worker-http-fixture.mjs';
-import { existingBootstrapContractSha256, existingBootstrapPurposes, verifyExistingWorkerBootstrap } from '../src/existing-worker-bootstrap-contract.mjs';
+import { existingBootstrapContractSha256, existingBootstrapPurposes, existingBootstrapUrl, verifyExistingWorkerBootstrap } from '../src/existing-worker-bootstrap-contract.mjs';
+
+import { ExistingWorkerBootstrapDelivery, existingBootstrapPath } from '../src/existing-worker-bootstrap-delivery.mjs';
 
 const audience = 'https://operations.mrnwebdesigns.com/mcp', issuer = 'https://identity.example.test/';
 async function fixture(t, durable = false, workerConfiguration) {
@@ -2809,4 +2811,195 @@ test('original revocation, expiry and bootstrap changes during fresh staff check
     else f.ledger.now = () => f.context.binding.expires_at * 1000;
     assert.throws(() => f.ledger.originalWorkerBootstrap(prepared.request.dispatch_id));
   }
+});
+
+
+async function bootstrapDeliveryFixture(t) {
+  const f = await bootstrapJournalFixture(t), prepared = await f.prepareWorker();
+  const retained = await f.ledger.recordWorkerDispatch(prepared.handle, '30'), p = retained.provenance, o = retained.observation;
+  const workerState = { now: Date.now(), mono: 0 }, second = Math.floor(workerState.now / 1000);
+  const trust = { repositoryOwnerId: '99', environment: 'MRN QA', runnerEnvironment: 'github-hosted',
+    subject: 'repo:mrnwebdesigns/mrn-code-qa-runner:environment:MRN QA' };
+  const claims = { iss: 'https://token.actions.githubusercontent.com', aud: existingBootstrapUrl, sub: trust.subject,
+    iat: second, nbf: second, exp: second + 60, jti: 'private-bootstrap-token',
+    repository: p.repository, repository_id: p.repository_id, repository_owner: 'mrnwebdesigns', repository_owner_id: '99',
+    repository_visibility: 'private', run_id: p.run_id, run_attempt: '1', actor_id: o.app_actor_id,
+    workflow_ref: `${p.repository}/${p.workflow_path}@${p.ref}`, workflow_sha: p.runner_source_sha, sha: p.runner_source_sha,
+    ref: p.ref, ref_type: 'branch', event_name: 'workflow_dispatch', environment: trust.environment,
+    runner_environment: trust.runnerEnvironment, head_ref: '', base_ref: '' };
+  const pointer = { dispatch_id: p.dispatch_id, context_sha256: delegationDigest(retained.context) };
+  const readerOptions = { ledger: f.ledger, trust: () => trust, keys: existingWorkerKeys,
+    now: () => workerState.now, monotonic: () => workerState.mono };
+  const reader = new ExistingWorkerBootstrapDelivery(readerOptions);
+  const token = () => new SignJWT(claims).setProtectedHeader({ alg: 'RS256', kid: 'existing-worker-fixture' }).sign(existingWorkerOidc.privateKey);
+  const call = async (input = pointer, target = reader, options) => target.read(`Bearer ${await token()}`, input, options);
+  const delivery = () => f.store.db.prepare('SELECT * FROM original_management_bootstrap_delivery').get();
+  const audits = () => f.store.db.prepare("SELECT * FROM audit WHERE event='original-worker-bootstrap-delivery'").all();
+  const check = output => verifyExistingWorkerBootstrap({ raw: Buffer.from(delegationCanonical(output)), pointer,
+    bootstrapPolicy: f.protectedConfiguration.policy, bootstrapPolicySha256: f.protectedConfiguration.policySha256,
+    workerPolicy: f.configuration.policy, runPolicy: f.protectedConfiguration.runPolicy,
+    registrarPublicKey: f.registrar.publicKey, identityPublicKey: f.keys.publicKey,
+    run: f.run('30'), startedAt: workerState.now, completedAt: workerState.now });
+  f.state.checks = 0;
+  return { ...f, prepared, retained, workerState, trust, claims, pointer, readerOptions, reader, token, call, delivery, audits, check };
+}
+
+test('bootstrap delivery consumes once before release with exact signatures and no provider budget changes', async t => {
+  const f = await bootstrapDeliveryFixture(t);
+  const before = f.store.db.prepare('SELECT access_count,access_digest,worker_history_digest,bootstrap_history_digest FROM original_management_attempts').get();
+  const output = await f.call(), result = f.check(output);
+  assert.deepEqual(result.retained, f.retained); assert.equal(f.state.checks, 1); assert.equal(f.audits().length, 1);
+  const body = JSON.parse(f.delivery().body);
+  assert.equal(body.state, 'consumed'); assert.equal(body.response_sha256, delegationDigest(output));
+  assert.deepEqual(f.store.db.prepare('SELECT access_count,access_digest,worker_history_digest,bootstrap_history_digest FROM original_management_attempts').get(), before);
+  for (const secret of [f.raw, f.actor.verifiedEmail, 'private-bootstrap-token', JSON.stringify(f.request.changes)])
+    assert.equal(f.delivery().body.includes(secret), false);
+  await assert.rejects(f.call);
+  const reopened = new ExistingWorkerBootstrapDelivery({ ...f.readerOptions, ledger: f.open().ledger });
+  await assert.rejects(() => f.call(f.pointer, reopened)); assert.equal(f.audits().length, 1);
+  // The supervisor verifier still cannot claim retained state or hosted proof.
+  for (const name of ['original_retained', 'delivery_consumed', 'hosted_oidc_proven', 'live_google_proven', 'source_verified', 'admitted'])
+    assert.equal(result[name], false);
+  // Fresh identity readback remains a distinct audience and operation.
+  f.claims.aud = existingWorkerUrl;
+  const context = new ExistingManagementWorkerContext(f.readerOptions);
+  assert.ok((await f.call(f.pointer, context)).signed_context);
+});
+
+test('bootstrap delivery accepts only its exact hosted identity audience and closed original pointer', async t => {
+  const f = await bootstrapDeliveryFixture(t), original = structuredClone(f.claims);
+  for (const change of [{ aud: existingWorkerUrl }, { aud: [existingBootstrapUrl, existingWorkerUrl] }, { sub: 'outsider' },
+    { repository_owner_id: '98' }, { repository_visibility: 'public' }, { run_id: '31' }, { run_attempt: '2' },
+    { actor_id: '41' }, { sha: 'f'.repeat(40) }, { workflow_sha: 'f'.repeat(40) }, { ref: 'refs/heads/feature' },
+    { environment: 'unprotected' }, { runner_environment: 'self-hosted' }]) {
+    Object.assign(f.claims, original, change); await assert.rejects(f.call);
+  }
+  Object.assign(f.claims, original);
+  for (const patch of [{ email: f.actor.verifiedEmail }, { run_id: '30' }, { url: existingBootstrapUrl }, { context_sha256: 'f'.repeat(64) },
+    { dispatch_id: randomUUID() }]) await assert.rejects(() => f.call({ ...f.pointer, ...patch }));
+  assert.equal(f.state.checks, 0); assert.equal(f.audits().length, 0); assert.equal(JSON.parse(f.delivery().body).state, 'unused');
+});
+
+test('bootstrap delivery denies revoked staff, source and trust changes during the fresh check', async t => {
+  for (const change of [() => { throw new Error('suspended'); }, f => f.ledger.recordQueuePendingRevocation(f.job),
+    f => { f.configuration.policy.policy_epoch++; }, f => { f.pins.provider_source_sha = 'e'.repeat(40); },
+    f => { f.trust.environment = 'changed'; }, f => { f.protectedConfiguration.runPolicy.environment = 'changed'; },
+    f => { f.protectedConfiguration.policy.policy_epoch++; f.protectedConfiguration.policySha256 = delegationDigest(f.protectedConfiguration.policy); },
+    f => { f.ledger.signer.privateKey = generateKeyPairSync('ed25519').privateKey; },
+    f => { f.store.db.exec('DELETE FROM original_management_bootstrap_history WHERE ordinal=1'); },
+    f => { f.workerState.mono = 5000; }, f => { f.workerState.mono = -1; },
+    f => { f.workerState.now += 5000; }, f => { f.workerState.now--; }]) {
+    const f = await bootstrapDeliveryFixture(t); f.state.duringCheck = () => change(f);
+    await assert.rejects(f.call); assert.equal(f.audits().length, 0); assert.equal(JSON.parse(f.delivery().body).state, 'unused');
+  }
+  // Even a valid token matching a separately changed handler trust must match
+  // the original's independently pinned bootstrap owner/environment policy.
+  const f = await bootstrapDeliveryFixture(t); f.trust.repositoryOwnerId = f.claims.repository_owner_id = '98';
+  await assert.rejects(f.call); assert.equal(JSON.parse(f.delivery().body).state, 'unused');
+});
+
+test('bootstrap delivery has exactly one winner across two independently reopened SQLite connections', async t => {
+  const f = await bootstrapDeliveryFixture(t), other = new ExistingWorkerBootstrapDelivery({ ...f.readerOptions, ledger: f.open().ledger });
+  const result = await Promise.allSettled([f.call(), f.call(f.pointer, other)]);
+  assert.equal(result.filter(r => r.status === 'fulfilled').length, 1);
+  assert.equal(result.filter(r => r.status === 'rejected').length, 1);
+  assert.equal(f.audits().length, 1); assert.equal(JSON.parse(f.delivery().body).state, 'consumed');
+});
+
+test('missing or rewound bootstrap delivery state cannot be repaired by restart or another token', async t => {
+  for (const kind of ['missing', 'body', 'digest', 'marker', 'state', 'rewound-row', 'rewound-row-digest', 'oversize']) {
+    const f = await bootstrapDeliveryFixture(t), seed = f.delivery();
+    await f.call();
+    if (kind === 'missing') f.store.db.exec('DELETE FROM original_management_bootstrap_delivery');
+    if (kind === 'body') f.store.db.exec("UPDATE original_management_bootstrap_delivery SET body='{}'");
+    if (kind === 'digest') f.store.db.exec("UPDATE original_management_bootstrap_delivery SET digest=''");
+    if (kind === 'marker') f.store.db.exec("UPDATE original_management_attempts SET bootstrap_delivery_digest=''");
+    if (kind === 'state') f.store.db.exec("UPDATE original_management_attempts SET bootstrap_delivery_state='unused'");
+    if (kind.startsWith('rewound')) {
+      f.store.db.prepare('UPDATE original_management_bootstrap_delivery SET body=?,digest=?').run(seed.body, seed.digest);
+      if (kind === 'rewound-row-digest') f.store.db.prepare('UPDATE original_management_attempts SET bootstrap_delivery_digest=?').run(seed.digest);
+    }
+    if (kind === 'oversize') f.store.db.prepare('UPDATE original_management_bootstrap_delivery SET body=?').run('x'.repeat(2049));
+    const reopened = new ExistingWorkerBootstrapDelivery({ ...f.readerOptions, ledger: f.open().ledger });
+    await assert.rejects(() => f.call(f.pointer, reopened), kind); assert.equal(f.audits().length, 1);
+  }
+});
+
+test('bootstrap delivery audit, marker and record commit together; failure before release leaves no partial consume', async t => {
+  for (const kind of ['record', 'marker', 'audit', 'late-final-check']) {
+    const f = await bootstrapDeliveryFixture(t), before = f.delivery();
+    if (kind === 'record') f.store.db.exec("CREATE TRIGGER fail_delivery BEFORE UPDATE ON original_management_bootstrap_delivery BEGIN SELECT RAISE(ABORT,'fixture'); END");
+    if (kind === 'marker') f.store.db.exec("CREATE TRIGGER fail_delivery BEFORE UPDATE OF bootstrap_delivery_digest ON original_management_attempts BEGIN SELECT RAISE(ABORT,'fixture'); END");
+    if (kind === 'audit') f.store.db.exec("CREATE TRIGGER fail_delivery BEFORE INSERT ON audit WHEN NEW.event='original-worker-bootstrap-delivery' BEGIN SELECT RAISE(ABORT,'fixture'); END");
+    if (kind === 'late-final-check') {
+      const audit = f.store.audit.bind(f.store); t.mock.method(f.store, 'audit', (...args) => { audit(...args); f.workerState.mono = 5000; });
+    }
+    await assert.rejects(f.call); assert.deepEqual(f.delivery(), before); assert.equal(f.audits().length, 0);
+    assert.equal(f.store.db.prepare('SELECT bootstrap_delivery_state s FROM original_management_attempts').get().s, 'unused');
+  }
+});
+
+test('bootstrap delivery includes body time and rejects late staff results, fresh expired tokens and lost responses', async t => {
+  const late = await bootstrapDeliveryFixture(t); let release;
+  late.state.duringCheck = () => new Promise(resolve => { release = resolve; });
+  await assert.rejects(() => late.call(late.pointer, late.reader, { deadlineAt: late.workerState.now + 10 }));
+  release(); await new Promise(resolve => globalThis.setImmediate(resolve));
+  assert.equal(JSON.parse(late.delivery().body).state, 'unused'); assert.equal(late.audits().length, 0);
+  const expired = await bootstrapDeliveryFixture(t);
+  expired.workerState.now = expired.retained.observation.requested_at + 300000;
+  expired.claims.iat = expired.claims.nbf = Math.floor(expired.workerState.now / 1000); expired.claims.exp = expired.claims.iat + 60;
+  await assert.rejects(expired.call); assert.equal(expired.state.checks, 0);
+  const lost = await bootstrapDeliveryFixture(t);
+  await assert.rejects(async () => { await lost.call(); throw new Error('lost response'); });
+  await assert.rejects(lost.call); assert.equal(lost.audits().length, 1);
+});
+
+test('bootstrap delivery fixed HTTP route is canonical, consumes before response, and stays absent by default', async t => {
+  const f = await bootstrapDeliveryFixture(t);
+  assert.throws(() => createHttpServer({ publicUrl: 'https://other.invalid/mcp', existingWorkerBootstrap: f.reader }));
+  const server = createHttpServer({ publicUrl: audience, existingWorkerBootstrap: f.reader }), disabled = createHttpServer({ publicUrl: audience });
+  for (const s of [server, disabled]) { await new Promise(resolve => s.listen(0, '127.0.0.1', resolve)); t.after(() => s.close()); }
+  const post = (s, header, body = delegationCanonical(f.pointer), extra = {}) => new Promise((resolve, reject) => {
+    const req = httpRequest({ host: '127.0.0.1', port: s.address().port, path: existingBootstrapPath, method: 'POST', agent: false,
+      headers: { host: 'operations.mrnwebdesigns.com', 'content-type': 'application/json', ...(header ? { authorization: header } : {}), ...extra } }, res => {
+      const chunks = []; res.on('data', c => chunks.push(c)); res.on('end', () => resolve({ status: res.statusCode, headers: res.headers, raw: Buffer.concat(chunks) }));
+    }); req.on('error', reject); req.end(body);
+  });
+  const denied = await post(server); assert.equal(denied.status, 401); assert.equal(denied.headers['www-authenticate'], 'Bearer realm="MRN protected QA"');
+  const token = `Bearer ${await f.token()}`;
+  for (const body of [` ${delegationCanonical(f.pointer)}`, 'x'.repeat(513), '{"dispatch_id":null,' + delegationCanonical(f.pointer).slice(1)])
+    assert.equal((await post(server, token, body)).status, 400);
+  assert.equal((await post(server, token, undefined, { origin: 'https://operations.mrnwebdesigns.com' })).status, 403);
+  const accepted = await post(server, token); assert.equal(accepted.status, 200); assert.equal(accepted.headers['cache-control'], 'no-store');
+  assert.equal(accepted.raw.toString(), delegationCanonical(JSON.parse(accepted.raw))); f.check(JSON.parse(accepted.raw));
+  assert.equal(JSON.parse(f.delivery().body).state, 'consumed'); assert.equal((await post(server, token)).status, 400);
+  assert.equal((await post(disabled, token)).status, 404);
+});
+
+
+test('bootstrap delivery eligibility is seeded atomically and absent original markers are never backfilled', async t => {
+  const f = await bootstrapJournalFixture(t), before = f.store.db.prepare('SELECT count(*) n FROM original_management_authorizations').get().n;
+  f.store.db.exec("CREATE TRIGGER fail_delivery_seed BEFORE INSERT ON original_management_bootstrap_delivery BEGIN SELECT RAISE(ABORT,'fixture'); END");
+  await assert.rejects(() => f.prepare(f.actor, f.request, randomUUID()));
+  assert.equal(f.store.db.prepare('SELECT count(*) n FROM original_management_authorizations').get().n, before);
+  assert.equal(f.store.db.prepare('SELECT count(*) n FROM original_management_bootstrap_history').get().n, 1);
+  f.store.db.exec('DROP TRIGGER fail_delivery_seed');
+  const prepared = await f.prepareWorker(); await f.ledger.recordWorkerDispatch(prepared.handle, '30');
+  f.store.db.exec("DELETE FROM original_management_bootstrap_delivery; UPDATE original_management_attempts SET bootstrap_delivery_digest='',bootstrap_delivery_state=''");
+  const reopened = f.open().ledger;
+  assert.throws(() => reopened.originalWorkerBootstrap(prepared.request.dispatch_id));
+  assert.equal(f.store.db.prepare('SELECT count(*) n FROM original_management_bootstrap_delivery').get().n, 0);
+});
+
+
+test('bootstrap delivery never releases after a slow durable commit and does not refill its consumed marker', async t => {
+  const f = await bootstrapDeliveryFixture(t), transaction = f.store.transaction.bind(f.store);
+  t.mock.method(f.store, 'transaction', fn => {
+    const result = transaction(fn);
+    if (JSON.parse(f.delivery().body).state === 'consumed') f.workerState.mono = 5000;
+    return result;
+  });
+  await assert.rejects(f.call);
+  assert.equal(JSON.parse(f.delivery().body).state, 'consumed'); assert.equal(f.audits().length, 1);
+  f.workerState.mono = 0; await assert.rejects(f.call); assert.equal(f.audits().length, 1);
 });
