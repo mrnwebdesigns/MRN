@@ -127,6 +127,11 @@ export class EmailAuditStorage {
   }
 }
 
+// Only these native read failures describe incomplete coverage. Access,
+// identity, schema and unknown errors retain the gateway's fatal behavior.
+const coverageFailures = new Set(['EMAIL_AUDIT_READER_UNAVAILABLE', 'EMAIL_AUDIT_TRANSPORT',
+  'EMAIL_AUDIT_STALE_INVENTORY', 'EMAIL_AUDIT_INSPECTION_FAILED']);
+
 export class EmailAuditWorkflow {
   constructor({ registry, store, connect, engine }) { Object.assign(this, { registry, store, connect, engine }); }
   check(actor) {
@@ -152,7 +157,14 @@ export class EmailAuditWorkflow {
           const nativeArgs = ability === 'mainwp/sync-sites-v1' ? { site_ids: input.site_ids_or_domains } : input;
           const name = ability.startsWith(nativePrefix) ? prefix + ability.slice(nativePrefix.length).replaceAll('-', '_')
             : ability.slice('mainwp/'.length).replaceAll('-', '_');
-          const result = payload(await client.callTool({ name, arguments: nativeArgs }, undefined, { timeout }));
+          let result;
+          try { result = payload(await client.callTool({ name, arguments: nativeArgs }, undefined, { timeout })); }
+          catch (error) {
+            this.check(actor);
+            if (ability === `${nativePrefix}audit-email-address-v1` && error instanceof OpsError && coverageFailures.has(error.code))
+              throw new Error(error.code); // The engine records only this closed site-coverage reason.
+            throw error;
+          }
           this.check(actor);
           if ([`${nativePrefix}authorize-email-address-audit-v1`, `${nativePrefix}audit-email-address-v1`].includes(ability))
             requireThat(result?.contract === contract, 'EMAIL_AUDIT_CONTRACT', 'The native audit contract does not match this gateway.');

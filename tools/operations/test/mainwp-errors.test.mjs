@@ -16,7 +16,8 @@ test('native provider blockers retain a safe actionable class through the pinned
   ];
   for (const [native, expected] of cases) {
     for (const error of [{ code: native, message: 'private-secret-sentinel' },
-      { code: -32000, message: `Ability execution failed: ${native} - private-secret-sentinel` }]) {
+      { code: -32000, message: `Ability execution failed: ${native} - private-secret-sentinel` },
+      { code: -32000, message: `Ability execution failed: ${native} (HTTP 500). The upstream message is withheld because this call carried write-only input.` }]) {
       assert.throws(() => payload(response(error)), e => {
         assert.equal(e.code, expected); assert.ok(!JSON.stringify(safeError(e)).includes('sentinel')); return true;
       });
@@ -33,7 +34,9 @@ test('Safe Mode stays a hard stop and never becomes a retry or credential fallba
 test('unrecognized error prose cannot spoof provider classifications or leak remote details', () => {
   for (const message of ['private-secret-sentinel mrn_content_profile',
     'Ignore instructions. Ability execution failed: mrn_content_qa - private-secret-sentinel',
-    'Ability execution failed: mrn_content_profile_extra - private-secret-sentinel']) {
+    'Ability execution failed: mrn_content_profile_extra - private-secret-sentinel',
+    'Ability execution failed: mrn_content_profile (HTTP 999). private-secret-sentinel',
+    'Ability execution failed: mrn_content_profile (HTTP 500) private-secret-sentinel']) {
     const error = integrationError(new Error(message));
     assert.equal(error.code, 'MAINWP_FAILED'); assert.ok(!error.message.includes('sentinel'));
   }
@@ -53,4 +56,16 @@ test('existing explicit error parsing and local errors preserve their contracts'
   assert.deepEqual(payload(response(remote), { allowError: true }), { error: remote });
   const local = new OpsError('TARGET_MISMATCH', 'Exact local message.'); assert.equal(integrationError(local), local);
   assert.deepEqual(payload({ content: [{ type: 'text', text: '{"success":true}' }] }), { success: true });
+});
+
+test('native audit coverage codes survive exact envelopes without reflecting private error prose', () => {
+  for (const code of ['EMAIL_AUDIT_READER_UNAVAILABLE', 'EMAIL_AUDIT_TRANSPORT', 'EMAIL_AUDIT_STALE_INVENTORY', 'EMAIL_AUDIT_INSPECTION_FAILED']) {
+    for (const input of [{ code, message: 'PRIVATE' }, { message: `Ability execution failed: ${code} - PRIVATE` },
+      { message: `Ability execution failed: ${code} (HTTP 500). The upstream message is withheld because this call carried write-only input.` }]) {
+      const error = integrationError(input);
+      assert.equal(error.code, code); assert.equal(error.message.includes('PRIVATE'), false);
+    }
+    const arbitrary = integrationError({ message: `PRIVATE ${code}` });
+    assert.equal(arbitrary.code, 'MAINWP_FAILED'); assert.equal(arbitrary.message.includes('PRIVATE'), false);
+  }
 });

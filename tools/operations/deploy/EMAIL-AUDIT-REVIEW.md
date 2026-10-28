@@ -120,3 +120,21 @@ API smoke and ChatGPT presentation remain unverified.
 The wider unified plugin is still incomplete: protected content-source/runtime
 qualification, qualified content/code edits and rollback, service activation,
 workspace availability and ordinary-team acceptance retain their own gates.
+
+### Native error-envelope qualification, 2026-10-28
+
+The shared-engine composition now reproduces reader absence through the actual
+delegated error-envelope shape. Previously it became a generic fatal
+`MAINWP_FAILED` and prevented the audit from returning explicit incomplete-site
+coverage. The gateway recognizes exactly four provider inspection reasons:
+reader unavailable, child transport failure, stale inventory and inspection
+failure. Only the native audit inspection can turn those reasons into a failed
+site row; authorization, inventory and other operations still stop on them.
+The canonical MCP write-only-input error format is recognized alongside its
+older message format, without copying remote prose into results.
+
+Tests require incomplete coverage, no implicit scan retry, fresh authorization
+before result release and successful explicit retry after the fixture reader
+recovers. Permission, identity, contract, unknown-error and mid-read revocation
+refusals remain blocking. These are source/transport fixtures, not native Child
+or live team acceptance; the remaining deployment gates above are unchanged.

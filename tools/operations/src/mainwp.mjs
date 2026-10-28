@@ -36,6 +36,10 @@ export function withoutSecrets(value) {
 }
 
 const providerBlockers = Object.freeze({
+  EMAIL_AUDIT_READER_UNAVAILABLE: ['EMAIL_AUDIT_READER_UNAVAILABLE', 'The site audit reader is missing or incompatible; coverage is incomplete.'],
+  EMAIL_AUDIT_TRANSPORT: ['EMAIL_AUDIT_TRANSPORT', 'The authenticated child inspection did not complete; coverage is incomplete.'],
+  EMAIL_AUDIT_STALE_INVENTORY: ['EMAIL_AUDIT_STALE_INVENTORY', 'The child inventory changed during inspection; coverage is incomplete.'],
+  EMAIL_AUDIT_INSPECTION_FAILED: ['EMAIL_AUDIT_INSPECTION_FAILED', 'The child could not complete this inspection; coverage is incomplete.'],
   SAFE_MODE_BLOCKED: ['SAFE_MODE_BLOCKED', 'MainWP Safe Mode blocked this action. MRN services must review the restriction; do not retry through another route.'],
   mrn_delegation_target: ['TARGET_MISMATCH', 'MainWP could not bind this request to one exact permitted website. Resolve its exact URL again; do not substitute a different target or access route.'],
   mrn_content_disabled: ['CONTENT_DISABLED', 'Content editing is not enabled in MRN services. Staff do not need another account or enrollment.'],
@@ -67,7 +71,7 @@ export function integrationError(error) {
   // Only recognize exact codes or that prefix, never instructions/substrings in
   // arbitrary error prose. Caller-visible text comes solely from this table.
   const code = typeof error?.code === 'string' && Object.hasOwn(providerBlockers, error.code) ? error.code
-    : /^(?:MainWP failed: )?Ability execution failed: ([a-zA-Z0-9_]+) - /.exec(message)?.[1];
+    : /^(?:MainWP failed: )?Ability execution failed: ([a-zA-Z0-9_]+)(?: - | \(HTTP [45][0-9]{2}\)\.)/.exec(message)?.[1];
   if (code && Object.hasOwn(providerBlockers, code)) return new OpsError(...providerBlockers[code]);
   if (/timeout|timed out/i.test(message)) return new OpsError('DOWNSTREAM_TIMEOUT', 'MainWP timed out. Read back exact state before retrying any mutation.');
   if (/401|403|authentication|permission|unauthoriz/i.test(message)) return new OpsError('MAINWP_ACCESS', 'MainWP rejected authentication or permission. Repair the approved connection; no fallback was attempted.');

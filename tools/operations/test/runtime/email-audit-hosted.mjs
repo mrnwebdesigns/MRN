@@ -28,7 +28,7 @@ function fixture(t) {
   const registry = new Registry(() => ({ version: 1, websites: [] }), () => policy);
   const { privateKey, publicKey } = generateKeyPairSync('ed25519');
   const signer = new IdentitySigner({ keyId: 'fixture', privateKey, connectionId: 'con_MRNGoogle' });
-  const state = { calls: [], denied: false, page: 0, drift: false, failSync: false, expireOnInspect: false, afterCall: null };
+  const state = { calls: [], denied: false, page: 0, drift: false, failSync: false, expireOnInspect: false, scanFailure: null, failureAbility: 'mrn-mainwp/audit-email-address-v1', afterCall: null };
   const raw = {
     async readResource() { return { contents: [{ text: JSON.stringify({ connected: true, dashboardHost: 'wpcontrol.mrndev.io', abilitiesCount: 121 }) }] }; },
     async listTools() { return { tools: Object.values(delegationTools).map(name => ({ name, annotations: { readOnlyHint: false, destructiveHint: name === delegationTools.run } })) }; },
@@ -46,6 +46,11 @@ function fixture(t) {
       const input = JSON.parse(args.arguments_json);
       assert.equal(delegationDigest(input), claims.arguments_sha256); assert.equal(args.ability, claims.ability);
       state.calls.push({ ability: args.ability, input, actor });
+      if (state.scanFailure && args.ability === state.failureAbility) {
+        if (state.expireOnInspect) state.denied = true;
+        return { isError: true, ...response({ error: { code: -32603,
+          message: `Ability execution failed: ${state.scanFailure} (HTTP 500). The upstream message is withheld because this call carried write-only input.` } }) };
+      }
       let result;
       switch (args.ability) {
         case 'mainwp/list-sites-v1': result = { items: [{ id: 7, url: state.drift ? 'https://changed.example' : url }], total: 1 }; break;
@@ -172,4 +177,47 @@ test('MCP advertises OAuth read scopes and returns protected resource links; eac
   const link = exported.result.content.find(v => v.type === 'resource_link'); assert.ok(link);
   const read = await call('resources/read', { uri: link.uri }); assert.ok(read.result.contents[0].text);
   actor = person('456'); const denied = await call('resources/read', { uri: link.uri }); assert.ok(denied.error);
+});
+
+test('native reader and inspection failures retain explicit incomplete coverage through the delegated MCP error envelope', async t => {
+  for (const code of ['EMAIL_AUDIT_READER_UNAVAILABLE', 'EMAIL_AUDIT_TRANSPORT', 'EMAIL_AUDIT_STALE_INVENTORY', 'EMAIL_AUDIT_INSPECTION_FAILED']) {
+    const f = fixture(t), job = await start(f); f.state.scanFailure = code;
+    const result = await complete(f, job.audit_id);
+    assert.equal(result.failed, 1); assert.equal(result.incomplete, 1); assert.equal(result.matched, 0);
+    const retained = await f.workflow.run(person(), 'get', { audit_id: job.audit_id });
+    assert.equal(retained.sites[0].error_code, code);
+    assert.equal(retained.sites[0].status, 'failed');
+    assert.ok(retained.sites[0].limitations.includes('settings_inspection_incomplete'));
+    assert.equal(JSON.stringify(retained).includes('PRIVATE_PROVIDER_MESSAGE'), false);
+    const reads = f.state.calls.filter(row => row.ability === 'mrn-mainwp/audit-email-address-v1');
+    assert.equal(reads.length, 1, 'A refused inspection is not silently retried');
+    assert.ok(f.state.calls.slice(f.state.calls.indexOf(reads[0]) + 1).some(row => row.ability === 'mrn-mainwp/authorize-email-address-audit-v1'));
+    f.state.scanFailure = null;
+    const resumed = await f.workflow.run(person(), 'continue', { audit_id: job.audit_id, retry_site_ids: [7], max_pages_per_site: 2 });
+    assert.equal(resumed.failed, 0); assert.equal(resumed.matched, 1);
+    assert.equal(f.state.calls.filter(row => row.ability === 'mainwp/sync-sites-v1').length, 1);
+  }
+});
+
+test('audit access, identity, malformed-contract and unknown refusals remain fatal; revocation hides coverage', async t => {
+  for (const code of ['EMAIL_AUDIT_PERMISSION', 'EMAIL_AUDIT_SITE_IDENTITY', 'EMAIL_AUDIT_CONTRACT',
+    'mrn_delegation_revoked', 'mrn_code_directory_inactive', 'UNRECOGNIZED']) {
+    const f = fixture(t), job = await start(f); f.state.scanFailure = code;
+    await assert.rejects(() => complete(f, job.audit_id), error => error instanceof OpsError);
+    assert.equal(f.state.calls.at(-1).ability, 'mrn-mainwp/audit-email-address-v1');
+  }
+  const f = fixture(t), job = await start(f);
+  f.state.scanFailure = 'EMAIL_AUDIT_READER_UNAVAILABLE'; f.state.expireOnInspect = true;
+  await assert.rejects(() => complete(f, job.audit_id), { code: 'AUTH_REQUIRED' });
+});
+
+test('coverage errors on authorization or inventory never become partial scan results', async t => {
+  for (const ability of ['mainwp/get-site-knowledge-v1', 'mainwp/sync-sites-v1', 'mainwp/get-site-v1',
+    'mrn-mainwp/authorize-email-address-audit-v1']) {
+    const f = fixture(t), job = await start(f);
+    f.state.scanFailure = 'EMAIL_AUDIT_READER_UNAVAILABLE'; f.state.failureAbility = ability;
+    await assert.rejects(() => complete(f, job.audit_id), { code: 'EMAIL_AUDIT_READER_UNAVAILABLE' });
+    assert.equal(f.state.calls.at(-1).ability, ability);
+    assert.equal(f.state.page, 0);
+  }
 });
