@@ -27,6 +27,7 @@ require_once __DIR__ . '/content-frame.php';
 require_once __DIR__ . '/logos-labeled.php';
 require_once __DIR__ . '/tabs-frame.php';
 require_once __DIR__ . '/showcase-bento.php';
+require_once __DIR__ . '/showcase-records.php';
 
 require_once __DIR__ . '/lazy-layouts.php';
 

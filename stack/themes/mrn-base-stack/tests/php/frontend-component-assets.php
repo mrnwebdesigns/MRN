@@ -101,6 +101,8 @@ $GLOBALS['mrn_component_test_meta'] = array(
 		'page_content_rows_0_block' => array( '33' ),
 	),
 	33 => array( 'rotating_phrases_one' => array( '2' ) ),
+	34 => array( 'page_content_rows' => array( array( 'card' ) ), 'page_content_rows_0_card_presentation' => array( 'pricing' ) ),
+	35 => array( 'page_content_rows' => array( array( 'showcase' ) ), 'page_content_rows_0_showcase_presentation' => array( 'split-records' ) ),
 );
 $GLOBALS['mrn_component_test_content'] = array(
 	20 => '<div data-gallery-root></div>',
@@ -258,6 +260,9 @@ mrn_component_test_assert( empty( array_filter( mrn_base_stack_get_front_end_com
 mrn_component_test_assert_only_need( 28, 'faq' );
 mrn_component_test_assert( empty( array_filter( mrn_base_stack_get_front_end_component_needs_for_post( 29 ) ) ), 'Standard presentations do not request additional assets.' );
 mrn_component_test_assert( empty( $legacy_needs['presentation'] ), 'Legacy fallback does not add presentation assets.' );
+foreach ( array( 34, 35 ) as $static_post_id ) {
+	mrn_component_test_assert( empty( array_filter( mrn_base_stack_get_front_end_component_needs_for_post( $static_post_id ) ) ), 'Static pricing/record selections do not request unused assets.' );
+}
 foreach ( array( 30, 31, 32 ) as $presentation_post_id ) {
 	mrn_component_test_assert_only_need( $presentation_post_id, 'presentation' );
 }

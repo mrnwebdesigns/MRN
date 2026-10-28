@@ -7,6 +7,10 @@
 
 $context               = is_array( $args ?? null ) ? $args : array();
 $row                   = isset( $context['row'] ) && is_array( $context['row'] ) ? $context['row'] : array();
+if ( 'split-records' === ( $row['showcase_presentation'] ?? '' ) ) {
+	get_template_part( 'template-parts/builder/showcase-records', null, $context );
+	return;
+}
 $label                 = isset( $row['label'] ) ? trim( (string) $row['label'] ) : '';
 $label_tag             = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['label_tag'] ?? '', 'p' ) : 'p';
 $heading               = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) : '';

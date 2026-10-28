@@ -2296,6 +2296,7 @@ function mrn_base_stack_showcase_item_row_has_content( $row ) {
 		'link',
 		'background_color',
 		'enable_row_effects',
+		'record_heading_tag',
 	);
 
 	foreach ( $row as $key => $value ) {

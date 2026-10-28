@@ -169,7 +169,7 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 		) );
 	}
 	if ( 'showcase' === $layout ) {
-		return array_merge( mrn_base_stack_get_showcase_bento_fields( $seed ), array(
+		return array_merge( mrn_base_stack_get_showcase_bento_fields( $seed ), mrn_base_stack_get_showcase_record_fields( $seed ), array(
 			$make(
 				'showcase_presentation',
 				'Gallery Presentation',
@@ -179,6 +179,7 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 						'standard'     => 'Standard',
 						'scroll-strip' => 'Scroll-driven Horizontal Strip',
 						'bento' => 'Bento Image Gallery',
+						'split-records' => 'Split Records with Image and Copy',
 					),
 					'default_value' => 'standard',
 				)
@@ -336,6 +337,16 @@ function mrn_base_stack_ensure_presentation_fields( array $fields, $layout, $see
 	// Nested compatibility layouts share names, but never their ACF field keys.
 	if ( ! empty( $fields[0]['key'] ) ) {
 		$seed = sanitize_key( $fields[0]['key'] ) . '_presentation';
+	}
+	if ( 'showcase' === $layout ) {
+		foreach ( $fields as &$field ) {
+			if ( 'showcase_items' !== ( $field['name'] ?? '' ) || 'repeater' !== ( $field['type'] ?? '' ) ) { continue; }
+			$names = array_column( $field['sub_fields'] ?? array(), 'name' );
+			$extra = array_values( array_filter( mrn_base_stack_get_showcase_record_item_fields( $field['key'] . '_record', $seed . '_showcase_presentation' ), static function ( $item ) use ( $names ) { return ! in_array( $item['name'], $names, true ); } ) );
+			$at = count( $field['sub_fields'] ); foreach ( $field['sub_fields'] as $index => $item ) { if ( 'tab' === ( $item['type'] ?? '' ) && 'configs' === strtolower( $item['label'] ?? '' ) ) { $at = $index; break; } }
+			array_splice( $field['sub_fields'], $at, 0, $extra );
+		}
+		unset( $field );
 	}
 	if ( 'card' === $layout ) {
 		foreach ( $fields as &$field ) {

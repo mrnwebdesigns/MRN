@@ -24,6 +24,7 @@ function mrn_base_stack_repeater_limit( $field ) {
 		'_rotating_phrases_one'        => 30,
 		'_rotating_phrases_two'        => 30,
 		'_pricing_features'           => 30,
+		'_record_text_tags'           => 30,
 		'field_mrn_faq_items'          => 30,
 		'field_mrn_logos_items'        => 30,
 		'field_mrn_showcase_items'     => 12,

@@ -557,7 +557,8 @@ function mrn_base_stack_collect_front_end_component_needs_for_post( $post_id, ar
 
 		if ( preg_match( '/(?:^|_)(?:image_presentation|text_presentation|showcase_presentation|card_presentation|record_presentation|video_presentation|rotating_phrases_one|rotating_phrases_two)$/', $meta_key ) ) {
 			foreach ( $meta_values as $presentation_value ) {
-				if ( 'bento' === $presentation_value && preg_match( '/(?:^|_)showcase_presentation$/', $meta_key ) ) { continue; }
+				if ( in_array( $presentation_value, array( 'bento', 'split-records' ), true ) && preg_match( '/(?:^|_)showcase_presentation$/', $meta_key ) ) { continue; }
+				if ( 'pricing' === $presentation_value && preg_match( '/(?:^|_)card_presentation$/', $meta_key ) ) { continue; }
 				if ( ! in_array( (string) $presentation_value, array( '', '0', 'standard' ), true ) ) {
 					$needs['presentation'] = true;
 				}
