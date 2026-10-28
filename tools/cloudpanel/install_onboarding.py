@@ -81,6 +81,8 @@ def main():
                                'slack_webhook_file':'/home/mrndev-stack-manager/stack/secrets/slack-webhook-url.txt'})
             save(config_path, config)
             key.chmod(0o600)
+            subprocess.run(['nginx', '-t'], capture_output=True, check=True, timeout=30)
+            result['origin_key_mode'] = '0600'
             # Preserve the existing five-minute systemd timer. Its default call
             # verifies only; target imports are explicit through onboarding.
             temporary = cert_script.with_suffix('.new')

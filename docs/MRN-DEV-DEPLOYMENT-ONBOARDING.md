@@ -77,6 +77,9 @@ privately on the host. Import failures are durable failures, never suppressed.
 The five-minute certificate timer calls `--maintenance`: it verifies and reports
 only. Imports require the exact onboarding target; there is no global cooldown
 and no all-sites rewrite. Cloudflare remains Full (strict).
+The timer lists nonstandard application layouts as excluded with an explicit
+reason; those applications require their own adapter and are never imported by
+the WordPress onboarding helper.
 
 The root-private enrollment configuration may set `certificate_command` to the
 installed certificate helper, `onboarding_state_root` to the private per-site

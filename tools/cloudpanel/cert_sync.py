@@ -47,6 +47,20 @@ def sites():
                 for d, u, r in db.execute('select domain_name, user, root_directory from site')]
 
 
+def maintenance_targets(rows):
+    eligible, excluded = [], []
+    for site in rows:
+        try:
+            zone_for(site['domain'])
+        except ValueError:
+            continue
+        if Path(site['root']) != Path('/home') / site['user'] / 'htdocs' / site['domain']:
+            excluded.append({'domain':site['domain'], 'reason':'nonstandard-layout-requires-separate-adapter'})
+        else:
+            eligible.append(site)
+    return eligible, excluded
+
+
 def identity(site):
     domain, owner, root = site['domain'], site['user'], Path(site['root'])
     zone_for(domain)
@@ -163,15 +177,13 @@ def main():
         raise SystemExit('Invalid certificate state ownership')
     with (STATE / 'lock').open('a') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
-        selected = []
-        for site in sites():
+        selected, excluded = [], []
+        for site in sites() if args.site_path else []:
             if args.site_path:
                 if site['root'] == args.site_path:
                     selected.append(site)
-            else:
-                try: zone_for(site['domain'])
-                except ValueError: continue
-                selected.append(site)
+        if args.maintenance:
+            selected, excluded = maintenance_targets(sites())
         if args.site_path and len(selected) != 1:
             raise SystemExit('Exact CloudPanel site is missing or ambiguous')
         # No global cooldown: unchanged certificates are read-only checks;
@@ -179,7 +191,8 @@ def main():
         # A timer may inspect every site, but only exact-target onboarding may
         # import a certificate. It must never force an all-sites rewrite.
         results = [ensure(site, args.check or args.maintenance) for site in selected]
-        print(json.dumps({'status': 'pass' if all(r['status'] == 'verified' for r in results) else 'failed', 'sites': results}))
+        print(json.dumps({'status': 'pass' if all(r['status'] == 'verified' for r in results) else 'failed',
+                          'sites': results, 'excluded': excluded}))
         return 0 if all(r['status'] == 'verified' for r in results) else 1
 
 
