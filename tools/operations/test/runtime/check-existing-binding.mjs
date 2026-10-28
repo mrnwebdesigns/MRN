@@ -152,7 +152,8 @@ try {
   // The hard deadline still exits even if a subprocess or close becomes stuck.
   deadline = setTimeout(async () => {
     report.aggregateDeadlineExceeded = true;
-    report.result = 'FAIL'; report.failure = { phase, recentCalls, network: networkDiagnostic(), deadlineExceeded: true }; save();
+    report.result = 'FAIL'; report.failure = { phase, recentCalls, network: networkDiagnostic(), sourceContextProvider: sourceDiagnostic(),
+      captureProvider: captureDiagnostic(), sourceStorageProvider: storageDiagnostic(), deadlineExceeded: true }; save();
     process.stderr.write('FAIL disposable v2 binding deadline; private output withheld\n');
     try { await closeAccess(); }
     finally { report.elapsedMs = Math.ceil(performance.now() - started); save(); process.exit(1); }

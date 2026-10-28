@@ -55,9 +55,9 @@ test('bounded profile parser, redaction and cleanup failure tests', () => {
 
 test('ordinary integration workflow matches its reviewed checksum and profile stop precedes capture', () => {
   const normal = readFileSync(new URL('../../../.github/workflows/operations-ci.yml', import.meta.url));
-  // Review 3fd5f2ab adds only the source-cleanliness regression and disables
-  // disposable Python bytecode; diagnostic profiling still cannot alter this job.
-  assert.equal(createHash('sha256').update(normal).digest('hex'), '88f4e23f2ff4232554282419380777581593583ad1a4a4f4cb80d380f69d4382');
+  // Reviewed fixture-only addition retains a bounded capture-progress report.
+  // Request/authority deadlines and diagnostic-profile isolation are unchanged.
+  assert.equal(createHash('sha256').update(normal).digest('hex'), '737228611aed6da43e1003d1458e499640fa5afd0fe5ab30bea4e7ce610f6042');
   const source = readFileSync(new URL('./runtime/check-existing-binding.mjs', import.meta.url), 'utf8');
   assert.ok(source.indexOf('throw profileStop;') < source.indexOf("phase = 'private-capture-interruption'"));
   assert.ok(source.includes('(context.limits.hook_seconds - 10) * 1000'));

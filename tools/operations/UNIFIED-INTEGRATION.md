@@ -32,7 +32,7 @@ not reached. Full native qualification remains failed.
 
 ## Isolated requester proof experiment, 2026-10-28
 
-The next native test selects provider `df9ef24f800423db66f2f86d9f75e138d8c0fa6e`
+The requester experiment initially selected provider `df9ef24f800423db66f2f86d9f75e138d8c0fa6e`
 from `codex/unified-requester-proof-20261028`, based directly on `9c58c709`.
 It removes one consecutive complete requester scan while preserving the fresh
 complete state, independent reservation/ledger/source/policy proof, and an
@@ -53,7 +53,7 @@ composition into the email-audit provider candidate. No production activation,
 new staff grants, Dashboard package or configured MCP change is authorized here.
 
 
-Latest candidate run `40775089143` at gateway `e8c4ec39` failed after 214.026
+Earlier candidate run `40775089143` at gateway `e8c4ec39` failed after 214.026
 seconds, without hitting the 290-second aggregate deadline. The first ten
 existing-record groups passed; source capture then returned HTTP 500 with
 `mrn_existing_source_storage` after 75.981 seconds (119.235 seconds granted).
@@ -72,12 +72,23 @@ full pipeline or security-equivalence proof. Artifact `12854881711` SHA-256 is
 `d8617be1148105cc38a74d289431f3ada1ecf3978733dcd0c2ccc26deff2e364`; raw profiler
 data was deleted, source was unchanged, and cleanup passed.
 
-The next fixture adds a closed projection of the provider's existing source
-storage error metadata: named phase, claim/retention commit flag and explicit
-no-retry flag. Unknown fields, raw messages, identities and source bytes are
-discarded. This fills a diagnostic gap before MCP error normalization; it does
-not change provider predicates, deadlines or retry behavior. Full qualification
-and all live team acceptance remain open.
+Native run `40776834434` at gateway `ece34fcf` again reached the unchanged
+290-second aggregate cleanup deadline (290.177 seconds) with source capture
+pending. No provider error body arrived, so the closed HTTP error projection
+could not establish its phase. Callback routing was disabled; controlled tests,
+MRN QA and hosted audit composition passed. Artifact `12856330838` SHA-256 is
+`cdc4ce97dcda083de86a13eafb3f1a28baade91be3c20b469d46cf084268bf25`.
+
+The next native pin is isolated provider
+`a85f3a4667503058dbd85de40fb44a2a6b7bf23f`. It adds fixed capture, claim and retention
+phase observations flushed before each boundary into a newly created private
+fixture journal. The closed reader can retain progress from a pending or killed
+request before container cleanup, including a partial trace. No SQL, inputs,
+identities, keys, source bytes or authorization outcomes are recorded. Local
+abrupt-exit and redaction tests pass along with all 67 provider regressions and
+MRN QA. This instrumentation does not remove checks, cache authority, raise
+deadlines or retry capture. Native diagnosis, content/code editing and ordinary
+team acceptance remain open; nothing is deployed.
 
 ## Required team experience
 

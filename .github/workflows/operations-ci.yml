@@ -443,6 +443,23 @@ jobs:
             writeFileSync(process.env.MRN_SOURCE_TIMING_OUTPUT, JSON.stringify(report) + '\n', { mode: 0o600, flag: 'wx' });
           }
           JS
+      - name: Retain bounded capture progress even after request cancellation
+        if: always()
+        env:
+          MRN_SOURCE_PROGRESS_OUTPUT: ${{ runner.temp }}/native-existing-source-progress.json
+        run: |
+          node --input-type=module <<'JS'
+          import { existsSync, lstatSync, readFileSync, writeFileSync } from 'node:fs';
+          import assert from 'node:assert/strict';
+          import { parseExistingSourceProgress } from './tools/operations/test/runtime/existing-source-progress.mjs';
+          const path = '.runtime/provider/reports/native-existing-source-progress.json';
+          if (existsSync(path)) {
+            const info = lstatSync(path);
+            assert.ok(info.isFile() && !info.isSymbolicLink() && info.size <= 16384 && (info.mode & 0o777) === 0o600);
+            const report = parseExistingSourceProgress(readFileSync(path));
+            writeFileSync(process.env.MRN_SOURCE_PROGRESS_OUTPUT, JSON.stringify(report) + '\n', { mode: 0o600, flag: 'wx' });
+          }
+          JS
       - name: Retain bounded integration evidence only
         if: always()
         uses: actions/upload-artifact@v4
@@ -462,5 +479,6 @@ jobs:
             ${{ runner.temp }}/native-existing-source-storage-audit.json
             ${{ runner.temp }}/native-existing-source-transfer-audit.json
             ${{ runner.temp }}/native-existing-source-context-timing.json
+            ${{ runner.temp }}/native-existing-source-progress.json
           if-no-files-found: error
           retention-days: 14
