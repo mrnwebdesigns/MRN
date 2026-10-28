@@ -104,6 +104,16 @@ Normal scanner retries cannot initiate recovery. A later fresh qualification
 still must pass before Dev is armed. Existing post-activation recovery remains
 `--recover-qualification`.
 
+If the generated workflow is rejected before any job starts, use
+`--recover-startup --failed-run <exact-run-id>` after accepting the source fix.
+This operator-only recovery requires the unchanged pre-qualification source,
+exact `workflow_run` startup failure, zero jobs and artifacts, disarmed Dev,
+unchanged child baseline, and no adoption or release pointer. It preserves the
+failed run and original source, runs source QA, and prepares a new pinned source
+commit for the normal qualification path. The generated caller must grant the
+same read-only `contents` and `actions` permissions required by its reusable
+workflow; nested workflows cannot elevate omitted caller permissions.
+
 Public verification clients share the deployment user agent and retain only safe
 status, URL (without credentials/query), Cloudflare Ray and numeric error data.
 A preflight failure records `activation_attempted: false`; it does not imply an

@@ -55,6 +55,29 @@ class Notifications(unittest.TestCase):
 
 
 class Certificates(unittest.TestCase):
+    def test_approved_origin_accepts_historical_cloudflare_capitalization(self):
+        for issuer, accepted in (('issuer=O = "CloudFlare, Inc.", OU = CloudFlare Origin SSL Certificate Authority', True),
+                                 ('issuer=O = Cloudflare, OU = Origin SSL Certificate Authority', True),
+                                 ('issuer=O = Cloudflare, OU = Public SSL Certificate Authority', False),
+                                 ('issuer=O = Unrelated, OU = Origin SSL Certificate Authority', False)):
+            with self.subTest(issuer=issuer), tempfile.TemporaryDirectory() as temp:
+                root = Path(temp)
+                for name in ('mrndev.io.crt', 'mrndev.io.key'):
+                    (root / name).touch(); (root / name).chmod(0o600)
+                def run(args, **kwargs):
+                    if '-checkhost' in args: return 'Hostname lifebeyond.mrndev.io does match certificate'
+                    if '-issuer' in args: return issuer
+                    if '-pubkey' in args or '-pubout' in args: return b'public key'
+                    return b''
+                with patch.object(self.cert, 'CERTS', root), patch.object(Path, 'stat', return_value=Mock(st_uid=0, st_mode=0o600)), \
+                     patch.object(Path, 'is_file', return_value=True), patch.object(Path, 'is_symlink', return_value=False), \
+                     patch.object(self.cert, 'run', side_effect=run), patch.object(self.cert, 'fingerprint', return_value='a'*64):
+                    if accepted:
+                        self.assertEqual('a'*64, self.cert.approved('lifebeyond.mrndev.io')[2])
+                    else:
+                        with self.assertRaisesRegex(ValueError, 'Expected approved Cloudflare Origin CA'):
+                            self.cert.approved('lifebeyond.mrndev.io')
+
     def test_maintenance_reports_custom_application_layouts_without_attempting_import(self):
         ordinary = {'domain':'site.mrndev.io','user':'owner','root':'/home/owner/htdocs/site.mrndev.io'}
         custom = {'domain':'manager.mrndev.io','user':'manager','root':'/home/manager/stack'}

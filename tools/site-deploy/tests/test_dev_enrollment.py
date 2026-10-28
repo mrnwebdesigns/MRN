@@ -108,6 +108,10 @@ class EnrollmentFlow(unittest.TestCase):
         files=json.loads((self.root/'source.json').read_text())
         wrapper=base64.b64decode(files['.github/workflows/site-deploy.yml']).decode()
         self.assertIn('live_enabled: false',wrapper)
+        import yaml
+        permissions = yaml.load(wrapper, Loader=yaml.BaseLoader)['permissions']
+        workflow = yaml.load((enrollment.TOOLS.parents[1]/'.github/workflows/site-deploy.yml').read_text(), Loader=yaml.BaseLoader)
+        self.assertEqual(workflow['permissions'], permissions)
         self.assertNotIn('live',json.dumps([v for v in self.gh.calls if isinstance(v,tuple) and v[0]=='variable']))
     def test_source_qa_failure_never_creates_or_publishes_repository(self):
         self.mocks[1].side_effect=ValueError('QA failed')
