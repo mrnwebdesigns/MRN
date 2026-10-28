@@ -20,7 +20,7 @@ import { Store } from '../../src/store.mjs';
 import { accessRegistry } from '../fixtures/access-registry.mjs';
 import { existingBindingFixtureLimits, existingBindingProfile, existingBindingProfileFiles,
   parseExistingBindingContext, parseExistingSourceContextOwner } from './existing-binding-context.mjs';
-import { bindingFixtureDiagnostic, bindingFixtureNetworkDiagnostic, bindingSourceContextHistory, bindingCaptureHistory,
+import { bindingFixtureDiagnostic, bindingFixtureNetworkDiagnostic, bindingSourceContextHistory, bindingCaptureHistory, bindingSourceStorageHistory,
   createBindingSourceTimings } from './existing-binding-diagnostics.mjs';
 import { parseExistingBindingAccess } from './existing-binding-access.mjs';
 import { createExistingManagementAccessRuntime } from '../../src/content-access-runtime.mjs';
@@ -62,7 +62,7 @@ const networkDiagnostic = () => {
     return bindingFixtureNetworkDiagnostic(privateFile(networkPath, 1048576).toString('utf8'));
   } catch { return bindingFixtureNetworkDiagnostic(); }
 };
-let sourceDiagnosticPath, captureDiagnosticPath;
+let sourceDiagnosticPath, captureDiagnosticPath, storageDiagnosticPath;
 const sourceDiagnostic = () => {
   try { return bindingSourceContextHistory(sourceDiagnosticPath ? privateFile(sourceDiagnosticPath, 16384).toString('utf8') : undefined); }
   catch { return bindingSourceContextHistory(); }
@@ -70,6 +70,10 @@ const sourceDiagnostic = () => {
 const captureDiagnostic = () => {
   try { return bindingCaptureHistory(captureDiagnosticPath ? privateFile(captureDiagnosticPath, 4096).toString('utf8') : undefined); }
   catch { return bindingCaptureHistory(); }
+};
+const storageDiagnostic = () => {
+  try { return bindingSourceStorageHistory(storageDiagnosticPath ? privateFile(storageDiagnosticPath, 4096).toString('utf8') : undefined); }
+  catch { return bindingSourceStorageHistory(); }
 };
 const pass = label => { report.passed.push(label); save(); process.stdout.write(`PASS ${label}\n`); };
 const switchCallback = async mode => {
@@ -190,6 +194,7 @@ try {
   networkPath = join(work, 'gateway-network.jsonl');
   sourceDiagnosticPath = join(work, 'gateway-existing-source-diagnostics.jsonl');
   captureDiagnosticPath = join(work, 'gateway-existing-capture-diagnostics.jsonl');
+  storageDiagnosticPath = join(work, 'gateway-existing-storage-diagnostics.jsonl');
   const home = join(work, 'home'); mkdirSync(home, { mode: 0o700 });
   for (const file of ['fixture-network.mjs', 'existing-binding-network.mjs', 'existing-binding-diagnostics.mjs'])
     copyFileSync(new URL(file, import.meta.url), join(work, file));
@@ -735,7 +740,7 @@ try {
   checksComplete = true;
 } catch (error) {
   report.result = profileOnly && error === profileStop ? 'PROFILE_ONLY' : 'FAIL';
-  report.failure = { phase, recentCalls, network: networkDiagnostic(), sourceContextProvider: sourceDiagnostic(), captureProvider: captureDiagnostic(),
+  report.failure = { phase, recentCalls, network: networkDiagnostic(), sourceContextProvider: sourceDiagnostic(), captureProvider: captureDiagnostic(), sourceStorageProvider: storageDiagnostic(),
     code: typeof error?.code === 'string' && /^[A-Z0-9_]{1,80}$/.test(error.code) ? error.code : 'DISPOSABLE_BINDING_CHECK_FAILED' };
   save(); process.stderr.write(`${report.result} disposable v2 binding at ${phase}; private output withheld\n`); process.exitCode = 1;
 } finally {
@@ -753,6 +758,7 @@ try {
     report.failure.network = networkDiagnostic();
     report.failure.sourceContextProvider = sourceDiagnostic();
     report.failure.captureProvider = captureDiagnostic();
+    report.failure.sourceStorageProvider = storageDiagnostic();
   }
   captureStore?.close(); store?.close();
   if (checksComplete && report.result !== 'FAIL') report.result = 'PASS';

@@ -202,3 +202,41 @@ export function bindingCaptureHistory(bytes) {
     return requests.some(row => row === null) ? { state: 'malformed', requests: [] } : { state: 'available', requests };
   } catch { return { state: 'malformed', requests: [] }; }
 }
+
+const storageClaimPhases = new Set(['authenticate', 'preflight', 'exclusion', 'original-guard',
+  'locked-history', 'counter', 'prepare', 'write-veto', 'claim-write', 'commit',
+  'first-readback', 'release-veto', 'final-readback']);
+const storageRetentionPhases = new Set(['preflight', 'commit-veto', 'frame-write', 'commit',
+  'first-readback', 'release-veto', 'final-readback']);
+function storageDiagnostic(value, allowStatus = false) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const committed = Object.hasOwn(value, 'claim_committed') ? 'claim_committed' : 'commit_acknowledged';
+  const fields = ['phase', committed, 'automatic_capture_retry'];
+  if (fields.some(key => !Object.hasOwn(value, key))
+    || Object.keys(value).some(key => !fields.includes(key) && !(allowStatus && key === 'status'))
+    || (Object.hasOwn(value, 'status') && value.status !== 500)
+    || !(committed === 'claim_committed' ? storageClaimPhases : storageRetentionPhases).has(value.phase)
+    || typeof value[committed] !== 'boolean' || value.automatic_capture_retry !== false) return null;
+  return Object.fromEntries(fields.map(key => [key, value[key]]));
+}
+
+// Existing provider error metadata only. No messages, keys, requests, source
+// bytes or permissions are retained or inferred from this disposable projection.
+export function bindingSourceStorageFailure(bytes) {
+  if (typeof bytes !== 'string' || Buffer.byteLength(bytes) > 16384) return null;
+  try {
+    const body = JSON.parse(bytes);
+    return body?.code === 'mrn_existing_source_storage' ? storageDiagnostic(body.data, true) : null;
+  } catch { return null; }
+}
+
+export function bindingSourceStorageHistory(bytes) {
+  if (bytes === undefined) return { state: 'unavailable', requests: [] };
+  if (typeof bytes !== 'string' || Buffer.byteLength(bytes) > 4096) return { state: 'not-inspected', requests: [] };
+  const lines = bytes.trim() ? bytes.trim().split('\n') : [];
+  if (lines.length > 4) return { state: 'not-inspected', requests: [] };
+  try {
+    const requests = lines.map(line => storageDiagnostic(JSON.parse(line)));
+    return requests.some(row => row === null) ? { state: 'malformed', requests: [] } : { state: 'available', requests };
+  } catch { return { state: 'malformed', requests: [] }; }
+}

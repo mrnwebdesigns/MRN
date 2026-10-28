@@ -222,3 +222,32 @@ test('capture history bounds observations and refuses unexpected or private fiel
   for (const bytes of [{}, 'x'.repeat(4097), Array(5).fill(JSON.stringify(rows[0])).join('\n')])
     assert.deepEqual(bindingCaptureHistory(bytes), { state: 'not-inspected', requests: [] });
 });
+
+
+test('source storage refusal preserves only closed existing phase and commit metadata', async () => {
+  const { bindingSourceStorageFailure, bindingSourceStorageHistory } = await import('./runtime/existing-binding-diagnostics.mjs');
+  const project = data => bindingSourceStorageFailure(JSON.stringify({ code: 'mrn_existing_source_storage',
+    message: 'PRIVATE source content and identity', data }));
+  const claim = { phase: 'final-readback', claim_committed: true, automatic_capture_retry: false };
+  const retention = { phase: 'commit-veto', commit_acknowledged: false, automatic_capture_retry: false };
+  for (const value of [claim, retention]) {
+    assert.deepEqual(project(value), value);
+    assert.deepEqual(project({ ...value, status: 500 }), value);
+    for (const key of Object.keys(value)) { const missing = { ...value }; delete missing[key]; assert.equal(project(missing), null); }
+  }
+  for (const bad of [{ ...claim, phase: 'PRIVATE' }, { ...claim, claim_committed: 1 },
+    { ...claim, automatic_capture_retry: true }, { ...claim, status: 403 },
+    { ...claim, commit_acknowledged: false }, { ...claim, private_key: 'PRIVATE' },
+    { ...retention, phase: 'authenticate' }, null, [], 'PRIVATE']) assert.equal(project(bad), null);
+  for (const bytes of [undefined, 'bad', 'x'.repeat(16385), JSON.stringify({ code: 'other', data: claim })])
+    assert.equal(bindingSourceStorageFailure(bytes), null);
+  const lines = [claim, retention].map(row => JSON.stringify(row)).join('\n');
+  assert.deepEqual(bindingSourceStorageHistory(lines), { state: 'available', requests: [claim, retention] });
+  assert.equal(JSON.stringify(project({ ...claim, status: 500 })).includes('PRIVATE'), false);
+  assert.deepEqual(bindingSourceStorageHistory(), { state: 'unavailable', requests: [] });
+  assert.deepEqual(bindingSourceStorageHistory(''), { state: 'available', requests: [] });
+  for (const bytes of ['bad', JSON.stringify({ ...claim, message: 'PRIVATE' }), JSON.stringify({ ...claim, status: 500 })])
+    assert.deepEqual(bindingSourceStorageHistory(bytes), { state: 'malformed', requests: [] });
+  for (const bytes of [null, 'x'.repeat(4097), Array(5).fill(JSON.stringify(claim)).join('\n')])
+    assert.deepEqual(bindingSourceStorageHistory(bytes), { state: 'not-inspected', requests: [] });
+});

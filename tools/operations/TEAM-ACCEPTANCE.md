@@ -13,16 +13,32 @@ worker-context reader shares the same authorization helper without broadening
 its audience. Production startup leaves this route absent. Protected supervisor
 retention and actual hosted/bootstrap/source admission remain open.
 
-Native run `40717621324` at `9369470e` passed capture interruption/recovery,
-measurement readback, both source-context reads and root catalog. It then reached
-the unchanged 290-second cleanup deadline during the final source transfer.
-Source capture returned HTTP200 in 96.456 seconds and status returned HTTP200 in
-11.855 seconds; final frame read did not complete. Artifact `12829847032` has
-verified SHA-256 `aa514859d7a63aa1772781f4b92e6d9a4e6fa0d4cfcb9ee3661014ec473d2d62`.
-The callback route was disabled. The later no-bytecode acquisition setup was not reached, so it
-remains locally verified only. This result does not establish the cause of
-previous capture failures or close complete native qualification. No limits,
-production configuration, source pins or access grants were changed.
+
+Latest candidate run `40775089143` at gateway `e8c4ec39` failed after 214.026
+seconds, without hitting the 290-second aggregate deadline. The first ten
+existing-record groups passed; source capture then returned HTTP 500 with
+`mrn_existing_source_storage` after 75.981 seconds (119.235 seconds granted).
+Access readbacks remained HTTP 200 around 386-421 ms. Callback routing was
+disabled. Artifact `12854677143`, SHA-256
+`06d6a1edd0e38972ff0983624831bd87145f8b727e97ffe50fc79d6156c9c799`, is retained
+privately. The 29 native requester SQL checks, including two competing processes
+with one remaining slot, passed. The later requester-state marker-loss test and
+remaining parent flow were not reached. No storage root cause is yet established.
+
+The existing bounded profile run `40775386470` passed `PROFILE_ONLY` using the
+same PHP/image/Xdebug toolchain as baseline `40321795966`. The genuine access
+readback measured 703.768 ms versus 850.627 ms; requester current calls fell
+4 to 3 and SQL queries 1,145 to 984. This is one instrumented sample, not a
+full pipeline or security-equivalence proof. Artifact `12854881711` SHA-256 is
+`d8617be1148105cc38a74d289431f3ada1ecf3978733dcd0c2ccc26deff2e364`; raw profiler
+data was deleted, source was unchanged, and cleanup passed.
+
+The next fixture adds a closed projection of the provider's existing source
+storage error metadata: named phase, claim/retention commit flag and explicit
+no-retry flag. Unknown fields, raw messages, identities and source bytes are
+discarded. This fills a diagnostic gap before MCP error normalization; it does
+not change provider predicates, deadlines or retry behavior. Full qualification
+and all live team acceptance remain open.
 
 ## Release boundary
 

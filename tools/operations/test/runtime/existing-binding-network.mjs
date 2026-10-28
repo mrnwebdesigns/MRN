@@ -3,13 +3,17 @@
 import './fixture-network.mjs';
 import assert from 'node:assert/strict';
 import { appendFileSync } from 'node:fs';
-import { bindingSourceContextFailure, bindingCaptureFailure } from './existing-binding-diagnostics.mjs';
+import { bindingSourceContextFailure, bindingCaptureFailure, bindingSourceStorageFailure } from './existing-binding-diagnostics.mjs';
 const failureProjections = new Map([
   ['/wp-json/wp-abilities/v1/abilities/mrn-mainwp/read-content-edit-qualification-source-context-existing-v2/run',
     { project: bindingSourceContextFailure, file: 'gateway-existing-source-diagnostics.jsonl' }],
   ['/wp-json/wp-abilities/v1/abilities/mrn-mainwp/capture-content-edit-qualification-existing-v2/run',
     { project: bindingCaptureFailure, file: 'gateway-existing-capture-diagnostics.jsonl' }],
 ]);
+for (const verb of ['capture', 'get', 'read']) {
+  failureProjections.set(`/wp-json/wp-abilities/v1/abilities/mrn-mainwp/${verb}-content-edit-qualification-source-existing-v2/run`,
+    { project: bindingSourceStorageFailure, file: 'gateway-existing-storage-diagnostics.jsonl' });
+}
 const restrictedFetch = globalThis.fetch;
 globalThis.fetch = async (input, options = {}) => {
   const url = new URL(typeof input === 'string' || input instanceof URL ? input : input.url);

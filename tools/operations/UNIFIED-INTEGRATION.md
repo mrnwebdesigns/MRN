@@ -52,6 +52,33 @@ are inapplicable. This experiment is intentionally pushed separately before
 composition into the email-audit provider candidate. No production activation,
 new staff grants, Dashboard package or configured MCP change is authorized here.
 
+
+Latest candidate run `40775089143` at gateway `e8c4ec39` failed after 214.026
+seconds, without hitting the 290-second aggregate deadline. The first ten
+existing-record groups passed; source capture then returned HTTP 500 with
+`mrn_existing_source_storage` after 75.981 seconds (119.235 seconds granted).
+Access readbacks remained HTTP 200 around 386-421 ms. Callback routing was
+disabled. Artifact `12854677143`, SHA-256
+`06d6a1edd0e38972ff0983624831bd87145f8b727e97ffe50fc79d6156c9c799`, is retained
+privately. The 29 native requester SQL checks, including two competing processes
+with one remaining slot, passed. The later requester-state marker-loss test and
+remaining parent flow were not reached. No storage root cause is yet established.
+
+The existing bounded profile run `40775386470` passed `PROFILE_ONLY` using the
+same PHP/image/Xdebug toolchain as baseline `40321795966`. The genuine access
+readback measured 703.768 ms versus 850.627 ms; requester current calls fell
+4 to 3 and SQL queries 1,145 to 984. This is one instrumented sample, not a
+full pipeline or security-equivalence proof. Artifact `12854881711` SHA-256 is
+`d8617be1148105cc38a74d289431f3ada1ecf3978733dcd0c2ccc26deff2e364`; raw profiler
+data was deleted, source was unchanged, and cleanup passed.
+
+The next fixture adds a closed projection of the provider's existing source
+storage error metadata: named phase, claim/retention commit flag and explicit
+no-retry flag. Unknown fields, raw messages, identities and source bytes are
+discarded. This fills a diagnostic gap before MCP error normalization; it does
+not change provider predicates, deadlines or retry behavior. Full qualification
+and all live team acceptance remain open.
+
 ## Required team experience
 
 One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebdesigns.com/mcp. Active MRN Google Workspace members get automatic portfolio access; there is no individual approval or enrollment step. Necessary approvals apply to concrete site changes. No teammate WordPress account, Application Password, API key, terminal, Codex, SSH or site token.
