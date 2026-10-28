@@ -73,13 +73,13 @@ class BootstrapEnrollment(unittest.TestCase):
             env={**os.environ,'MRN_DEV_ENROLLMENT_CONFIG':str(config),'MRN_DEV_ENROLLMENT_QUEUE':str(root/'queue'),
                  'MRN_DEV_ENROLLMENT_RUNNER':str(runner),'MRN_DEV_ENROLLMENT_PYTHON':sys.executable,'CALL_LOG':str(log)}
             script=['bash',str(ROOT/'scripts/bootstrap-dev-enrollment.sh')]
-            first=subprocess.run(script+['--enqueue','--site-path','/home/new/htdocs/new.mrndev.io'],env=env,capture_output=True,text=True)
+            first=subprocess.run(script+['--enqueue','--site-path','/home/new/htdocs/new.mrndev.io'],env=env,capture_output=True,text=True,timeout=30)
             self.assertNotEqual(first.returncode,0)
             self.assertEqual(1,len(list((root/'queue').glob('*.json'))))
             runner.write_text('import os,sys\nwith open(os.environ["CALL_LOG"],"a") as f:f.write(" ".join(sys.argv[1:])+"\\n")\n')
-            resumed=subprocess.run(script+['--resume','--site-path','/home/new/htdocs/new.mrndev.io'],env=env,capture_output=True,text=True)
+            resumed=subprocess.run(script+['--resume','--site-path','/home/new/htdocs/new.mrndev.io'],env=env,capture_output=True,text=True,timeout=30)
             self.assertEqual(resumed.returncode,0,resumed.stderr)
             self.assertEqual(2,len(log.read_text().splitlines()))
             prior=log.read_text()
-            old=subprocess.run(script+['--resume','--site-path','/home/old/htdocs/old.mrndev.io'],env=env,capture_output=True,text=True)
+            old=subprocess.run(script+['--resume','--site-path','/home/old/htdocs/old.mrndev.io'],env=env,capture_output=True,text=True,timeout=30)
             self.assertEqual(old.returncode,0,old.stderr);self.assertEqual(prior,log.read_text())
