@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { isAbsolute } from 'node:path';
-import { absoluteUrl, readJson, Registry, requireThat } from './contracts.mjs';
+import { absoluteUrl, readJson, Registry, requireThat, sha } from './contracts.mjs';
 import { codePolicySchema } from './code-qa.mjs';
 import { contentQaPolicySchema } from './content-qa.mjs';
 import { delegationIssuer } from './delegation.mjs';
@@ -26,6 +26,7 @@ export const configSchema = z.object({
   code: z.object({ policyPath: absolute }).strict().optional(),
   contentEdits: z.object({ policyPath: absolute }).strict().optional(),
   contentAccess: z.boolean().default(false),
+  emailAudit: z.object({ enginePath: absolute, engineSha256: sha }).strict().optional(),
   mainwp: z.object({ command: absolute, args: z.array(z.string()).min(1), cwd: absolute,
     envRefs: z.record(z.string(), z.object({ env: z.string() }).strict()) }).strict(),
   qa: z.object({ executable: absolute }).strict().optional(),
@@ -34,6 +35,8 @@ export const configSchema = z.object({
     { path: ['delegation'], message: 'Google-only membership and request delegation must be enabled together with verified resource-bound claims.' })
   .refine(config => !config.content || Boolean(config.auth.googleWorkspace),
     { path: ['content'], message: 'Native content access requires Google-only live staff authorization.' })
+  .refine(config => !config.emailAudit || Boolean(config.delegation && config.auth.googleWorkspace),
+    { path: ['emailAudit'], message: 'Hosted audits require Google-only live staff authorization and signed delegation.' })
   .refine(config => Boolean(config.code || config.contentEdits) === Boolean(config.github) && (!(config.code || config.contentEdits) || Boolean(config.auth.googleWorkspace)),
     { path: ['code'], message: 'Code/content workflows require Google delegation and the central GitHub App configuration together.' })
   .refine(config => !config.contentAccess || (Boolean(config.contentEdits && config.delegation && config.auth.googleWorkspace)

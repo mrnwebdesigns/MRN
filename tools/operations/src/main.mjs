@@ -21,6 +21,7 @@ import { CodeWorkflow } from './code-workflow.mjs';
 import { ContentWorkflow } from './content-workflow.mjs';
 import { ProtectedContentQa } from './content-qa.mjs';
 import { createContentAccessRuntime } from './content-access-runtime.mjs';
+import { EmailAuditWorkflow, loadEmailAuditEngine } from './email-audit.mjs';
 
 process.umask(0o077);
 let store, contentAccess;
@@ -45,6 +46,7 @@ try {
   const discovery = config.discovery ? new Discovery({ registry, store, connect, ...config.discovery }) : null;
   const content = config.content ? new NativeContentReader({ token: () => process.env[config.content.restKeyEnv] }) : null;
   const service = new Operations({ registry, store, fleet, qa, recoveryEvidence, discovery, content, verifyStaff: signer ? verifyStaff : null, publicProbe: probe, writesEnabled: config.writesEnabled, connect });
+  if (config.emailAudit) service.emailAudit = new EmailAuditWorkflow({ registry, store, connect, engine: await loadEmailAuditEngine(config.emailAudit) });
   if (config.github) {
     const github = new GithubApp({ ...config.github, privateKey: readGithubKey(config.github.privateKeyPath) });
     if (workflowPolicies.code) service.codeWorkflow = new CodeWorkflow(service, { source: new CodeSource(github), qa: new ProtectedCodeQa(github, workflowPolicies.code) });

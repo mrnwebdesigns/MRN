@@ -23,7 +23,9 @@ const readAbilities = new Set([
   'inspect-backup-retention-policy', 'inspect-code-file', 'get-code-operation',
   'get-content-policy', 'inspect-content', 'get-content-operation', 'get-content-migration',
   'list-content-records', 'read-content-record',
+  'authorize-email-address-audit', 'audit-email-address',
 ].map(name => `mrn-mainwp/${name}-v1`)));
+readAbilities.add('mainwp/get-site-knowledge-v1');
 readAbilities.add('mrn-mainwp/get-content-policy-v2');
 const writeAbilities = new Set(['start-database-backup', 'get-database-backup-status', 'qualify-code-storage',
   'prepare-code-change', 'approve-code-change', 'execute-code-change', 'preflight-stack-plugin-update',

@@ -3,6 +3,24 @@ import assert from 'node:assert/strict';
 import { actor, setup } from './helpers.mjs';
 import { toolNames } from '../src/mainwp.mjs';
 
+test('email audit discovery distinguishes configured workflow from filtered native ability discovery', async t => {
+  const f = setup(); t.after(f.close);
+  const names = ['mrn_mainwp__authorize_email_address_audit_v1', 'mrn_mainwp__audit_email_address_v1'];
+  const original = f.client.listTools.bind(f.client);
+  f.client.listTools = async () => ({ tools: [...(await original()).tools, ...names.map(name => ({ name, inputSchema: { type: 'object' } }))] });
+  let report = await f.service.capabilities(actor);
+  assert.equal(report.emailAudit.workflow, 'unavailable');
+  assert.equal(report.capabilities.find(v => v.capability === names[0]).integration, 'integration_required');
+  f.service.emailAudit = {};
+  report = await f.service.capabilities(actor);
+  assert.equal(report.emailAudit.workflow, 'configured'); assert.equal(report.emailAudit.nativeAbilities, 'discovered');
+  assert.equal(report.capabilities.find(v => v.capability === names[0]).workflow, 'email_address_audit');
+  f.client.listTools = original;
+  report = await f.service.capabilities(actor);
+  assert.equal(report.emailAudit.workflow, 'configured'); assert.equal(report.emailAudit.nativeAbilities, 'not_in_filtered_directory');
+  assert.equal(f.state.calls.length, 0);
+});
+
 test('capability inventory distinguishes backend counts, connected workflows and unknown tools', async t => {
   const f = setup(); t.after(f.close); f.state.contentManagement = true;
   const original = f.client.listTools.bind(f.client);

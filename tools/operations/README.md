@@ -2,6 +2,10 @@
 
 The shared MRN HTTP MCP backend is hosted at `https://operations.mrnwebdesigns.com/mcp` and published as one ChatGPT workspace plugin. The deployed version supports read-only inspection. This source contains the unshipped unified integration; content/code/team acceptance is not complete, and writes remain disabled live. See [current integration and open gates](UNIFIED-INTEGRATION.md).
 
+The hosted email-address audit candidate reuses the native MCP engine with
+individual Google authorization and private report resources. See its
+[source composition, workflow and deployment gates](deploy/EMAIL-AUDIT-REVIEW.md).
+
 ## Team experience and acceptance
 
 The team-facing product must be: **add the MRN plugin in ChatGPT,

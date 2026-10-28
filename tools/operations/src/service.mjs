@@ -85,7 +85,7 @@ export class Operations {
       await this.verifyStaff?.(actor);
     };
     await authorize(); const client = await this.connect(actor);
-    try { return await capabilityInventory(client, authorize, { nativeContentConfigured: Boolean(this.content) }); } finally { await client.close(); }
+    try { return await capabilityInventory(client, authorize, { nativeContentConfigured: Boolean(this.content), emailAuditConfigured: Boolean(this.emailAudit) }); } finally { await client.close(); }
   }
   async portfolioDetails(actor, input) {
     const authorize = () => {

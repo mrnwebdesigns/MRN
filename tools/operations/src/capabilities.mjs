@@ -29,7 +29,7 @@ const mapped = new Map([
   ...Object.values(portfolioSections).map(name => [name, 'read_portfolio_details']),
 ]);
 
-export async function capabilityInventory(client, authorize, { nativeContentConfigured = false } = {}) {
+export async function capabilityInventory(client, authorize, { nativeContentConfigured = false, emailAuditConfigured = false } = {}) {
   await authorize();
   const status = validateStatus(await client.readResource({ uri: 'mainwp://status' }));
   const all = []; const names = new Set(); const cursors = new Set(); let cursor;
@@ -51,13 +51,19 @@ export async function capabilityInventory(client, authorize, { nativeContentConf
   };
   const contentAvailability = contentRoutes.record === contentRoutes.search ? contentRoutes.record
     : Object.values(contentRoutes).includes('unavailable') ? 'partially_available' : 'mixed_mainwp_routes';
+  const workflowMap = new Map(mapped);
+  const auditAbilities = ['mrn_mainwp__authorize_email_address_audit_v1', 'mrn_mainwp__audit_email_address_v1'];
+  if (emailAuditConfigured) for (const name of auditAbilities) workflowMap.set(name, 'email_address_audit');
   return { observedAt: new Date().toISOString(), dashboardHost: status.dashboardHost,
     providerDiscoveredAbilities: status.abilitiesCount, backendExposedTools: all.length,
     coverage: 'The backend permission policy filters its tool directory. Hidden abilities are not callable or inferred from the provider count. A listed workflow still requires its operation-specific qualification.',
     capabilities: all.map(t => ({ capability: t.name, schemaSha256: digest(t.inputSchema),
-      workflow: mapped.get(t.name) || null, integration: mapped.has(t.name) ? 'connected_workflow' : 'integration_required',
+      workflow: workflowMap.get(t.name) || null, integration: workflowMap.has(t.name) ? 'connected_workflow' : 'integration_required',
       backendReadOnly: t.annotations?.readOnlyHint === true,
-      ...(!mapped.has(t.name) ? { reason: 'No qualified hosted workflow exposes this backend capability yet.' } : {}) })),
+      ...(!workflowMap.has(t.name) ? { reason: 'No qualified hosted workflow exposes this backend capability yet.' } : {}) })),
+    emailAudit: { workflow: emailAuditConfigured ? 'configured' : 'unavailable',
+      nativeAbilities: auditAbilities.every(name => names.has(name)) ? 'discovered' : 'not_in_filtered_directory',
+      scope: 'Configuration and directory discovery do not prove current Google membership, native authorization, child-reader coverage or ChatGPT report delivery. Every request checks current access.' },
     content: { posts: contentAvailability, pages: contentAvailability, readRoutes: contentRoutes,
       scope: 'Routes reflect backend discovery and central reader configuration. They do not prove current site authorization, endpoint health or write qualification. A structured-reader denial never falls back to REST.',
       acf: names.has(toolNames.contentRecord) ? 'structured_read_available_editing_requires_qualification' : 'qualification_required',
