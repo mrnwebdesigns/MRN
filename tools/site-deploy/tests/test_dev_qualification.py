@@ -80,7 +80,8 @@ class DevQualification(unittest.TestCase):
             engine.write_text('#!/bin/sh\nprintf "%s\\n" "$@"\n');engine.chmod(0o755)
             result=subprocess.check_output(['bash','-c',script],env={**os.environ,'RUNNER_TEMP':temp,'GITHUB_WORKSPACE':temp,'TARGET':'dev','QUALIFY_DEV':'true','DEPLOY_URL':'https://example.mrndev.io'},text=True)
             self.assertIn('--mode\nrelease\n--smoke-strict\n1',result)
-            self.assertIn('--run-performance\nalways',result)
+            self.assertIn('--run-performance\nnever',result)
+            self.assertIn('--run-cwv\nnever',result)
 
     def test_first_deploy_uses_existing_atomic_adoption_and_rollback(self):
         from types import SimpleNamespace

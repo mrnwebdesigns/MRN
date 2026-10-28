@@ -19,7 +19,7 @@ from common import (ReleaseError, assembly, canonical, digest, distribution,
 
 BOOTSTRAP_FILES = (
     'scripts/site-bootstrap.sh', 'scripts/bootstrap-new-sites.sh',
-    'scripts/bootstrap-dev-enrollment.sh',
+    'scripts/bootstrap-dev-enrollment.sh', 'scripts/bootstrap_readiness.py',
     'scripts/source-distribution-lease.sh',
     'configs/importers/stack-export-importer.sh', 'configs/site-owner-authorized-key.pub',
     'BOOTSTRAP_RELEASE.md', 'STACK_VERSION.md', 'RESTORING-RETIRED-CAPABILITIES.md',
@@ -218,7 +218,7 @@ def snapshot(repo, standalone, policy):
     # Read tracked files only; caches and another task's work never participate.
     for name in git(repo, 'ls-files').splitlines():
         if (promotion.is_deployment_contract(name)
-                or name.startswith(('stack/tests/', 'tools/fleet-release/'))):
+                or name.startswith(('stack/tests/', 'tools/fleet-release/', 'tools/cloudpanel/'))):
             contracts[name] = file_hash(repo / name)
     vendor = read(repo / 'stack/manifests/bootstrap-packages.lock.json')
     packages = [{key: item.get(key) for key in ('slug', 'version', 'sha256', 'package', 'source')}

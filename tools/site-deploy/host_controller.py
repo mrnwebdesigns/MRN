@@ -20,6 +20,8 @@ from atomic_store import Store, durable_replace, inventory
 from host_paths import qualify_provider, activation_environment
 from cache_policy import canonical_pages, head, verify_cloudpanel_origin, verify_uncached_html
 from deploy import check, digest, http_check
+from public_http import diagnostics, PublicHTTPError
+import urllib.error
 from deployment_request import check_order
 from verify_public_assets import Assets, fetch, verify as verify_public
 
@@ -292,9 +294,16 @@ def execute(plan, native_backup=None):
         before = store.pointer()
         if before != plan.get('expected_current'):
             raise ValueError('Active release differs from the reviewed plan')
-        if plan.get('host_provider', 'cloudpanel') == 'cloudpanel':
-            verify_uncached_html(plan['url'], plan['pages'])
-        old_assets = legacy_assets(plan) if promotion is None and (before is None or before['public_path'] is None) else {}
+        try:
+            if plan.get('host_provider', 'cloudpanel') == 'cloudpanel':
+                verify_uncached_html(plan['url'], plan['pages'])
+            old_assets = legacy_assets(plan) if promotion is None and (before is None or before['public_path'] is None) else {}
+        except Exception as error:
+            receipt.update(status='preflight-failed', phase='public-preflight', current=before,
+                           diagnostics=failure_receipt(error)['diagnostics'], activation_attempted=False)
+            receipt_path = store.state / ('receipt-' + str(time.time_ns()) + '.json')
+            durable_replace(receipt_path, (json.dumps(receipt, indent=2) + '\n').encode())
+            return receipt
         adopted = False
         try:
             if promotion is not None:
@@ -399,6 +408,8 @@ def failure_receipt(error):
         row = {'type': type(error).__name__, 'frames': [
             {'file': Path(frame.filename).name, 'line': frame.lineno, 'function': frame.name}
             for frame in traceback.extract_tb(error.__traceback__)]}
+        if isinstance(error, (PublicHTTPError, urllib.error.HTTPError)):
+            row['http'] = diagnostics(error)
         if isinstance(error, OSError):
             row['errno'] = error.errno
             filename = getattr(error, 'filename', None)

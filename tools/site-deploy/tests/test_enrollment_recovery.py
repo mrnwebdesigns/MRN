@@ -100,3 +100,40 @@ class QualificationRecovery(unittest.TestCase):
         self.assertEqual('qualification-dispatched',self.state['stage'])
         self.assertEqual(self.original,(self.root/'source.json').read_bytes())
         self.assertEqual([],self.gh.calls)
+
+    def preflight_receipt(self):
+        self.receipt.clear()
+        self.receipt.update(status='requires-inspection', transfer_backup={'valid':True},
+                            private_job=self.site['state_dir']+'/jobs/123',
+                            diagnostics=[{'type':'HTTPError','frames':[{'file':'cache_policy.py','function':'verify_uncached_html'}]}])
+        self.mocks[2].return_value = json.dumps({'job_present':True,'adoption_evidence':[],'releases':[]})
+
+    def test_preflight_recovery_requires_exact_failed_run_and_preserves_original_source(self):
+        self.preflight_receipt()
+        with patch.object(enrollment, 'snapshot', return_value=({},'b'*64)), patch.object(enrollment, 'http_check'), \
+             patch.object(enrollment, 'verify_uncached_html', return_value={'status':'uncached-html-verified'}):
+            self.e.recover_preflight(99)
+        self.assertEqual('recover-source', self.state['stage'])
+        self.assertEqual('', self.state['recovery_prior_release'])
+        self.assertEqual(self.original, (self.root/'source.json').read_bytes())
+        self.assertEqual(0, self.gh.dispatch_count)
+
+    def test_preflight_recovery_rejects_changed_runtime_unknown_run_or_foreign_job(self):
+        self.preflight_receipt()
+        with patch.object(enrollment, 'snapshot', return_value=({},'b'*64)), patch.object(enrollment, 'http_check') as http:
+            with self.assertRaises(ValueError): self.e.recover_preflight(98)
+            self.receipt['private_job']='/home/foreign/jobs/123'
+            with self.assertRaises(ValueError): self.e.recover_preflight(99)
+            self.receipt['private_job']=self.site['state_dir']+'/jobs/123'
+            self.mocks[2].return_value=json.dumps({'job_present':True,'adoption_evidence':['adoption.json'],'releases':[]})
+            with self.assertRaises(ValueError): self.e.recover_preflight(99)
+            http.assert_not_called()
+        self.assertEqual('qualification-dispatched', self.state['stage'])
+
+    def test_preflight_recovery_keeps_disarmed_state_when_public_preconditions_fail(self):
+        self.preflight_receipt()
+        with patch.object(enrollment, 'snapshot', return_value=({},'b'*64)), patch.object(enrollment, 'http_check', side_effect=ValueError('TLS not ready')):
+            with self.assertRaises(ValueError): self.e.recover_preflight(99)
+        self.assertEqual('qualification-dispatched', self.state['stage'])
+        self.assertEqual([], self.gh.calls)
+        self.mocks[3].assert_not_called()

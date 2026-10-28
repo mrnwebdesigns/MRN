@@ -26,6 +26,7 @@ class BootstrapEnrollment(unittest.TestCase):
             args=['bash',str(ROOT/'scripts/bootstrap-new-sites.sh'),'--stack-root',str(stack),'--sites-root',str(root/'home')]
             if dry: args.append('--dry-run')
             result=subprocess.run(args,env={**os.environ,'CALL_LOG':str(log)},text=True,capture_output=True)
+            result.scanner_status=(stack/'runtime/bootstrap-status.env').read_text()
             return result,log.read_text() if log.exists() else ''
 
     def test_marked_site_resumes_only_enrollment_even_without_new_sites(self):
@@ -38,6 +39,8 @@ class BootstrapEnrollment(unittest.TestCase):
         result,calls=self.scan(marked=True,enrollment_failure=True)
         self.assertNotEqual(result.returncode,0)
         self.assertNotIn('bootstrap\n',calls)
+        self.assertIn('STATE=failed', result.scanner_status)
+        self.assertIn('RUNNING=0', result.scanner_status)
 
     def test_dry_run_does_not_bootstrap_or_enroll(self):
         for marked in (True,False):
@@ -65,7 +68,7 @@ class BootstrapEnrollment(unittest.TestCase):
 
     def test_controller_outage_keeps_queue_and_retry_does_not_register_old_sites(self):
         with tempfile.TemporaryDirectory() as temporary:
-            root=Path(temporary);config=root/'config.json';config.write_text('{}')
+            root=Path(temporary);config=root/'config.json';config.write_text(__import__('json').dumps({'onboarding_state_root':str(root/'status')}))
             log=root/'calls';runner=root/'runner.py'
             env={**os.environ,'MRN_DEV_ENROLLMENT_CONFIG':str(config),'MRN_DEV_ENROLLMENT_QUEUE':str(root/'queue'),
                  'MRN_DEV_ENROLLMENT_RUNNER':str(runner),'MRN_DEV_ENROLLMENT_PYTHON':sys.executable,'CALL_LOG':str(log)}
