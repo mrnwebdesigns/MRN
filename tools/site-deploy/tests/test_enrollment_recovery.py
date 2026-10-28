@@ -108,6 +108,52 @@ class QualificationRecovery(unittest.TestCase):
                             diagnostics=[{'type':'HTTPError','frames':[{'file':'cache_policy.py','function':'verify_uncached_html'}]}])
         self.mocks[2].return_value = json.dumps({'job_present':True,'adoption_evidence':[],'releases':[]})
 
+    def startup_failure(self):
+        self.state['stage'] = 'wait-install-signal'
+        self.run.update(event='workflow_run', conclusion='startup_failure', head_sha=SHA)
+        original = self.mocks[0].side_effect
+        self.resources = {'jobs':{'total_count':0,'jobs':[]}, 'artifacts':{'total_count':0,'artifacts':[]}}
+        def request(method, path, **kwargs):
+            for name, result in self.resources.items():
+                if path.endswith('/'+name+'?per_page=1'): return result
+            return original(method, path, **kwargs)
+        self.mocks[0].side_effect = request
+        self.mocks[2].return_value = json.dumps({'adoption_evidence':[], 'releases':[]})
+
+    def test_startup_recovery_preserves_failed_run_without_dispatch_or_runtime_write(self):
+        self.startup_failure()
+        with patch.object(enrollment, 'snapshot', return_value=({},'b'*64)):
+            self.e.recover_startup(99)
+        self.assertEqual('recover-source', self.state['stage'])
+        self.assertEqual(self.original, (self.root/'source.json').read_bytes())
+        self.assertEqual([], self.gh.calls)
+        self.mocks[1].assert_not_called()
+        retained = json.loads((self.root/('recovery-'+self.state['recovery_id']+'.json')).read_text())
+        self.assertEqual('startup_failure', retained['failed_run']['conclusion'])
+
+    def test_startup_recovery_rejects_jobs_artifacts_and_foreign_or_started_runs(self):
+        self.startup_failure()
+        for resource in self.resources:
+            self.resources[resource] = {'total_count':1,resource:[{'id':123}]}
+            with self.assertRaisesRegex(ValueError, 'jobs or artifacts'): self.e.recover_startup(99)
+            self.resources[resource] = {'total_count':0,resource:[]}
+        for change in ({'head_sha':PILOT}, {'event':'workflow_dispatch'}, {'conclusion':'failure'}, {'status':'in_progress'}):
+            previous = dict(self.run); self.run.update(change)
+            with self.subTest(change=change), self.assertRaises(ValueError): self.e.recover_startup(99)
+            self.run.clear();self.run.update(previous)
+        with self.assertRaises(ValueError): self.e.recover_startup(98)
+        self.mocks[3].assert_not_called()
+
+    def test_startup_recovery_rejects_changed_runtime_or_source_qa_failure(self):
+        self.startup_failure()
+        with patch.object(enrollment, 'snapshot', return_value=({},'f'*64)):
+            with self.assertRaisesRegex(ValueError, 'Runtime'): self.e.recover_startup(99)
+        self.mocks[3].side_effect = ValueError('source QA failed')
+        with patch.object(enrollment, 'snapshot', return_value=({},'b'*64)):
+            with self.assertRaisesRegex(ValueError, 'source QA'): self.e.recover_startup(99)
+        self.assertEqual('wait-install-signal', self.state['stage'])
+        self.assertFalse(list(self.root.glob('recovery-*.json')))
+
     def test_preflight_recovery_requires_exact_failed_run_and_preserves_original_source(self):
         self.preflight_receipt()
         with patch.object(enrollment, 'snapshot', return_value=({},'b'*64)), patch.object(enrollment, 'http_check'), \

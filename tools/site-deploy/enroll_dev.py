@@ -386,6 +386,48 @@ class Enrollment:
         self.persist(stage='recover-source', recovery_id=recovery_id, recovery_prior_release=prior,
                      tooling_ref=self.config['tooling_ref'])
 
+    def recover_startup(self, failed_run):
+        """Repair a rejected workflow before any qualification job could start."""
+        s, gh, site = self.state, self.github, self.site
+        if s['stage'] != 'wait-install-signal' or gh.head() != s['source_sha']:
+            raise ValueError('Startup recovery requires unchanged pre-qualification source')
+        runs = gh.runs('site-deploy.yml', s['source_sha'])
+        if len(runs) != 1:
+            raise ValueError('Exactly one rejected startup is required')
+        run = runs[0]
+        if (str(run.get('id')) != str(failed_run) or run.get('head_sha') != s['source_sha']
+                or run.get('event') != 'workflow_run' or run.get('status') != 'completed'
+                or run.get('conclusion') != 'startup_failure'):
+            raise ValueError('Known workflow startup failure is required')
+        for resource in ('jobs', 'artifacts'):
+            result = gh.request('GET', gh.prefix + '/actions/runs/' + str(failed_run) + '/' + resource + '?per_page=1')
+            if result.get('total_count') != 0 or result.get(resource) != []:
+                raise ValueError('Startup recovery cannot replace a run with jobs or artifacts')
+        for name, expected in (('DEPLOY_READY', '0'), ('DEPLOY_ENROLLMENT_SOURCE_SHA', s['source_sha'])):
+            if gh.request('GET', gh.prefix + '/environments/dev/variables/' + name).get('value') != expected:
+                raise ValueError('Startup recovery requires Dev to remain disarmed')
+        for name in ('MRN_AUTO_DEV_AFTER', 'MRN_RELEASE_REQUESTS_AFTER'):
+            value = gh.request('GET', gh.prefix + '/actions/variables/' + name, missing=True)
+            if value and value.get('value'):
+                raise ValueError('Startup recovery cannot change an armed consumer')
+        code = """import pathlib,json,sys
+p=pathlib.Path(sys.argv[1])
+print(json.dumps({'adoption_evidence':sorted(x.name for x in p.iterdir() if x.name.startswith(('current.json','adoption.json','site.json','deployment-order.json'))),
+ 'releases':sorted(x.name for x in (p/'releases').iterdir()) if (p/'releases').exists() else []}))"""
+        observed = json.loads(command(['sudo', '-u', site['user'], '--', 'python3', '-c', code,
+                                      site['state_dir']], text=True, env=site_process_env()))
+        if observed != {'adoption_evidence':[], 'releases':[]} or snapshot(site)[1] != s['baseline']:
+            raise ValueError('Runtime has adoption evidence or differs from its accepted baseline')
+        files = {k:base64.b64decode(v) for k,v in json.loads((self.directory/'source.json').read_text()).items()}
+        files = source_files(site, self.config, files)
+        source_qa(self.config, files, self.directory / ('startup-recovery-source-' + str(time.time_ns())))
+        recovery_id = str(time.time_ns())
+        save(self.directory / ('recovery-' + recovery_id + '.json'), {
+            'state':dict(s), 'failed_run':run, 'observed':observed, 'recovery_type':'before-workflow-start'})
+        save(self.directory / ('recovery-' + recovery_id + '-source.json'), {k:base64.b64encode(v).decode() for k,v in files.items()})
+        self.persist(stage='recover-source', recovery_id=recovery_id, recovery_prior_release='',
+                     tooling_ref=self.config['tooling_ref'])
+
     def recover_preflight(self, failed_run):
         """Explicit recovery before adoption, including the legacy HTTP receipt."""
         s, gh, site = self.state, self.github, self.site
@@ -582,12 +624,13 @@ def main():
     parser.add_argument('--resume', action='store_true', help='Advance an existing enrollment; never adopt old sites')
     parser.add_argument('--recover-qualification', action='store_true', help='Operator-only repair after inspecting a failed qualification; preserve all evidence')
     parser.add_argument('--recover-preflight', action='store_true', help='Operator-only recovery before first adoption')
+    parser.add_argument('--recover-startup', action='store_true', help='Operator-only recovery of a rejected workflow with no jobs')
     parser.add_argument('--failed-run', help='Exact failed GitHub run required for preflight recovery')
     args = parser.parse_args()
-    if sum((args.enqueue, args.resume, args.recover_qualification, args.recover_preflight)) != 1:
-        parser.error('Choose enqueue, resume or recover-qualification')
-    if args.recover_preflight and not re.fullmatch(r'[0-9]+', args.failed_run or ''):
-        parser.error('Preflight recovery requires --failed-run with the inspected run ID')
+    if sum((args.enqueue, args.resume, args.recover_qualification, args.recover_preflight, args.recover_startup)) != 1:
+        parser.error('Choose one enrollment or explicit recovery operation')
+    if (args.recover_preflight or args.recover_startup) and not re.fullmatch(r'[0-9]+', args.failed_run or ''):
+        parser.error('Recovery requires --failed-run with the inspected run ID')
     config = load_config(args.config)
     binding = hashlib.sha256(args.site_path.encode()).hexdigest()[:24]
     directory = Path(config['state_root']) / binding
@@ -607,18 +650,20 @@ def main():
         site = identify(args.site_path, config)
         if state_path.exists():
             state = json.loads(private_path(state_path).read_text())
-            if state['site'] != site or (state['tooling_ref'] != config['tooling_ref'] and state['stage'] != 'ready' and not (args.recover_qualification or args.recover_preflight)):
+            if state['site'] != site or (state['tooling_ref'] != config['tooling_ref'] and state['stage'] != 'ready' and not (args.recover_qualification or args.recover_preflight or args.recover_startup)):
                 raise ValueError('Enrollment identity or tooling changed; operator review required')
         else:
             state = {'schema': 1, 'binding': binding, 'site': site, 'tooling_ref': config['tooling_ref'],
                      'stage': 'queued', 'created_at': timestamp()}
             save(state_path, state)
-        if (args.resume or args.recover_qualification or args.recover_preflight) and state['stage'] != 'ready':
+        if (args.resume or args.recover_qualification or args.recover_preflight or args.recover_startup) and state['stage'] != 'ready':
             secrets = credentials(config, site)
             enrollment = Enrollment(config, directory, state,
                 GitHub(secrets['github_token'], site['repository'], config['github_owner_type']), secrets)
             try:
-                if args.recover_preflight:
+                if args.recover_startup:
+                    enrollment.recover_startup(args.failed_run)
+                elif args.recover_preflight:
                     enrollment.recover_preflight(args.failed_run)
                 elif args.recover_qualification:
                     enrollment.recover_qualification()

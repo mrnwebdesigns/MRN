@@ -102,7 +102,7 @@ def approved(domain):
     if 'does match certificate' not in result:
         raise ValueError('Approved certificate does not cover this hostname')
     issuer = run(['openssl', 'x509', '-in', str(cert), '-noout', '-issuer'], text=True)
-    if 'Cloudflare' not in issuer:
+    if 'cloudflare' not in issuer.casefold() or 'origin' not in issuer.casefold():
         raise ValueError('Expected approved Cloudflare Origin CA material')
     cert_public = run(['openssl', 'x509', '-in', str(cert), '-pubkey', '-noout'])
     key_public = run(['openssl', 'pkey', '-in', str(key), '-pubout'])
