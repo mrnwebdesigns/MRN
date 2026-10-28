@@ -618,3 +618,13 @@ ordinary-member login, real-site content/code changes or live denial behavior.
 For each actual run retain timestamp, immutable release/config references, operation IDs, exact site/record/path, approved preview digest, QA report/receipt IDs, backup verification, resulting checksums/readback and rollback result. Keep the individual Google identity in restricted audit storage; user-visible reports can reference the operation ID. Never record tokens, cookies, private keys or backend passwords.
 
 A failed or unrun row remains open. Record source acceptance, CI/static qualification, deployment, installed readback, workspace publication and ordinary-member acceptance separately. The product is not complete while content editing, guarded code editing or real team acceptance remains unverified.
+
+## Requester proof experiment, 2026-10-28
+
+The immutable native integration now selects source-only provider `df9ef24`.
+Local regressions and scoped/staged QA pass, but its native marker-loss test,
+full transfer deadline, rendered content/code editing, Google account denial
+and ordinary-member ChatGPT acceptance remain open. Prior run `40735805867`
+failed at 290.155 seconds during source capture. No deadline was increased and
+no production setting was changed. See `UNIFIED-INTEGRATION.md` for exact pins
+and retained evidence. This is not individual staff enrollment or approval.

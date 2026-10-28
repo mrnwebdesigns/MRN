@@ -20,16 +20,37 @@ with original staff checks and atomic SQLite consume/audit before release.
 Production startup leaves that route absent. Protected supervisor retention and
 actual hosted/bootstrap/source admission remain open.
 
-Full native run `40721091106` at `d5eb7ca4` passed capture/recovery, measurement,
-both source-context reads and the root catalog, then failed at the unchanged
-290-second aggregate cleanup deadline during source capture. Cleanup disables
-the callback route; the later provider refusal does not establish a provider
-root cause. Artifact `12831318324` has verified SHA-256
-`1964515c013e5fa5e88cf57aa49b763b48ccc97ffded9e2a135b4d5141b60b46`.
-The previous `40717621324` reached the final frame at that same deadline.
-The no-bytecode acquisition fix remains locally verified because these runs did
-not reach it. Content/code pins, request/authority limits, production config and
-access grants remain unchanged. Complete native qualification is still blocked.
+Full native run `40735805867` at `4bb94894` passed controlled contracts and
+the first ten existing-record groups, then failed at the unchanged 290-second
+aggregate deadline (290.155 seconds elapsed). Source capture was still pending
+when cleanup disabled the callback route; access readbacks remained HTTP 200.
+This does not establish a provider-refusal root cause. Artifact `12837726932`
+has verified SHA-256
+`ce201c86c9171c19b11e93164102c8e5d86e723ea0af58176fb33f6358404264` and is retained
+privately with its checkpoint. The later no-bytecode acquisition correction was
+not reached. Full native qualification remains failed.
+
+## Isolated requester proof experiment, 2026-10-28
+
+The next native test selects provider `df9ef24f800423db66f2f86d9f75e138d8c0fa6e`
+from `codex/unified-requester-proof-20261028`, based directly on `9c58c709`.
+It removes one consecutive complete requester scan while preserving the fresh
+complete state, independent reservation/ledger/source/policy proof, and an
+independent final marker/epoch/owner/review/time check. The legacy absence path
+and all writer paths remain unchanged. No cross-request cache, deadline change,
+or dropped external authorization boundary. All eleven copied contract/fixture
+files independently match the new provider source and their existing hashes.
+
+All 67 PHP regression entrypoints pass locally, including 73 requester interlock
+checks for drift, identity, expiry and reader isolation. Removing the final
+marker guard makes the marker-loss regression fail. Scoped and exact staged
+MRN QA pass. The new native WordPress marker-loss test, native race/authority
+coverage, wall-clock benefit and complete gateway flow remain unverified.
+Four facade readers instead of five is not native performance or security
+equivalence proof. No frontend changes; accessibility/page-performance checks
+are inapplicable. This experiment is intentionally pushed separately before
+composition into the email-audit provider candidate. No production activation,
+new staff grants, Dashboard package or configured MCP change is authorized here.
 
 ## Required team experience
 
