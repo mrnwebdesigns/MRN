@@ -71,6 +71,10 @@ if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' 
 	$section_styles[] = '--mrn-wpforms-row-bg: var(' . mrn_site_colors_get_css_var( $background_color ) . ')';
 }
 
+$frame_contract = mrn_base_stack_get_content_frame_contract( $row, 'wpforms' );
+$section_classes = mrn_base_stack_merge_builder_section_classes( $section_classes, $frame_contract );
+$section_attrs = mrn_base_stack_merge_builder_attributes( $section_attrs, $frame_contract['attributes'] );
+
 $section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';
 $surface_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $section_styles ) : implode( '; ', $section_styles );
 $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );

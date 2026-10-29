@@ -27,6 +27,7 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 	if ( in_array( $layout, array( 'faq', 'faq_block' ), true ) ) { return mrn_base_stack_get_faq_frame_fields( $seed ); }
 	if ( 'faq_jump_nav' === $layout ) { return mrn_base_stack_get_jump_nav_frame_fields( $seed ); }
 	if ( 'tabbed_layout' === $layout ) { return mrn_base_stack_get_tabs_frame_fields( $seed ); }
+	if ( 'wpforms' === $layout ) { return mrn_base_stack_get_content_frame_fields( $layout, $seed ); }
 	if ( 'stats' === $layout ) { return mrn_base_stack_get_content_frame_fields( $layout, $seed ); }
 	if ( 'two_column_split' === $layout ) {
 		return array_merge( mrn_base_stack_get_split_aside_fields( $seed ), array(

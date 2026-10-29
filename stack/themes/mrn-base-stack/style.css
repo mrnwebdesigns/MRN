@@ -8541,3 +8541,18 @@ a.mrn-social-links__link:focus-visible svg {
   --mrn-cta-frame-action-padding-inline-current: var(--mrn-cta-frame-action-padding-inline-mobile, var(--mrn-cta-frame-action-padding-inline, 1.125rem));
  }
 }
+
+/* Optional native WPForms canvas. Section spacing remains in row presets. */
+.has-form-frame > .mrn-layout-section--wpforms > .mrn-layout-container { box-sizing: border-box; width: 100%; max-width: var(--mrn-form-frame-canvas-width, none); padding-block: 0; padding-inline: var(--mrn-form-frame-inner-gutter, 0px); margin-inline: auto; }
+.has-form-frame .mrn-layout-grid--form-shell { width: 100%; max-width: var(--mrn-form-frame-content-width, none); gap: 0; }
+.has-form-frame.has-form-content-align-center .mrn-layout-grid--form-shell { margin-inline: auto; }
+.has-form-frame.has-form-content-align-end .mrn-layout-grid--form-shell { margin-inline-start: auto; }
+.has-form-frame .mrn-ui__body, .has-form-frame .mrn-ui__head { gap: 0; }
+.has-form-frame .mrn-ui__head, .has-form-frame .mrn-ui__heading { margin: 0; }
+.has-form-frame.has-form-heading-size .mrn-ui__heading { font-size: var(--mrn-form-frame-heading-size); }
+.has-form-frame.has-form-heading-line-height .mrn-ui__heading { line-height: var(--mrn-form-frame-heading-line-height); }
+.has-form-frame.has-form-heading-weight .mrn-ui__heading { font-weight: var(--mrn-form-frame-heading-weight); }
+.has-form-frame.has-form-heading-color .mrn-ui__heading { color: var(--mrn-form-frame-heading-color); }
+.has-form-frame.has-form-heading-space-after .mrn-ui__heading { margin-block-end: var(--mrn-form-frame-heading-space-after); }
+@media (max-width: 1199px) { .has-form-frame.has-form-inner-gutter-compact > .mrn-layout-section--wpforms > .mrn-layout-container { padding-inline: var(--mrn-form-frame-inner-gutter-compact); } }
+@media (max-width: 767px) { .has-form-frame.has-form-heading-mobile-sr .mrn-ui__heading { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; } }
