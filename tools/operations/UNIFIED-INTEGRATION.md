@@ -1,6 +1,35 @@
 # Unified MRN MainWP integration
 
-## Current source checkpoint, 2026-10-28
+## Directory cache lock qualification, 2026-10-29
+
+Native baseline `40867224818` at gateway `556c087c`, provider `b8411fb`,
+reproduces token-expiry contention in the disposable clone. The probe expires
+only the synthetic API-token cache before the original work transaction, then
+observes a token refresh and cache write inside that transaction. A second SQL
+connection sees the committed expired row and its bounded no-op update fails
+with a lock timeout after 1,001 ms. The actual signed permission readback then
+times out at 2,002/2,000 ms; source capture fails at `write-veto`, with no claim
+commit or native source read. The hook stops after 222.078 seconds without its
+aggregate deadline firing; callback cleanup passes. Artifact `12894841999`
+SHA-256: `73ec5aa60f3a6cd33b67bed384b6a420d8755dcc326ca8ef091a778b241ef296`.
+
+The next isolated provider pin is `7fdc429ec4886fc876cbded8e073dfc0d16e59ac`.
+It avoids transient reads/deletes/writes inside work transactions and retains
+only an expiring API token in PHP request memory, keyed by credential/delegate.
+Every account check still calls Google Directory. All 68 PHP entrypoints,
+27 focused token-cache/offboarding checks and scoped/exact-index MRN QA pass.
+Native repair qualification is pending; no deadline, authority proof, callback
+budget, deployment, credential or access setting changed. API runtime remains
+the native gate; frontend accessibility/performance do not apply to this change.
+
+Earlier runs `40866582493` and `40866582210` stopped at the same real-timer test
+before native execution: an abort need not imply the integer wall-clock deadline
+has passed. Commit `556c087c` makes the positive test establish expired wall time
+and preserves early/frozen-clock hard-timeout cases. Runtime code is unchanged.
+Forty repetitions, all 762 gateway tests, MRN QA and hosted composition pass.
+Content/code editing and ordinary ChatGPT team acceptance remain unverified.
+
+## Earlier source checkpoint, 2026-10-28
 
 The audit source lock now selects MCP `aef2f2ae4feaf61c512287f05f106b4227e9c904`,
 including accepted native timeout fix `d486395` / `cece5a5`. The hosted adapter

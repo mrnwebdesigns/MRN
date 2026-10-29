@@ -475,6 +475,8 @@ jobs:
             assert.ok(info.isFile() && !info.isSymbolicLink() && info.size <= 2048 && (info.mode & 0o777) === 0o600);
             const report = parseExistingDirectoryLock(readFileSync(path));
             writeFileSync(process.env.MRN_DIRECTORY_LOCK_OUTPUT, JSON.stringify(report) + '\n', { mode: 0o600, flag: 'wx' });
+            assert.equal(report.cache_write_in_work, false, 'API-token cache must not write in the work transaction');
+            assert.equal(report.independent_lock_refused, false, 'Independent expired-cache handling must not block');
           }
           JS
       - name: Retain bounded integration evidence only
