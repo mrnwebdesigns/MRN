@@ -8556,3 +8556,4 @@ a.mrn-social-links__link:focus-visible svg {
 .has-form-frame.has-form-heading-space-after .mrn-ui__heading { margin-block-end: var(--mrn-form-frame-heading-space-after); }
 @media (max-width: 1199px) { .has-form-frame.has-form-inner-gutter-compact > .mrn-layout-section--wpforms > .mrn-layout-container { padding-inline: var(--mrn-form-frame-inner-gutter-compact); } }
 @media (max-width: 767px) { .has-form-frame.has-form-heading-mobile-sr .mrn-ui__heading { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; } }
+@media (max-width: 767px) { .has-form-frame.has-form-inner-gutter-mobile > .mrn-layout-section--wpforms > .mrn-layout-container { padding-inline: var(--mrn-form-frame-inner-gutter-mobile); } }
