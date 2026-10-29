@@ -8494,6 +8494,7 @@ a.mrn-social-links__link:focus-visible svg {
 .has-framed-image-stage .mrn-layout-section--image-content .mrn-image-content-row__figure[data-mrn-image-stage] { height: max(0px, calc(var(--mrn-media-height-current, var(--mrn-media-height, 52.9375rem)) - var(--mrn-row-padding-top, 0px) - var(--mrn-row-padding-bottom, 0px))); overflow: visible; isolation: auto; }
 .mrn-content-builder__row.has-framed-image-stage .mrn-layout-section--image-content .mrn-image-content-row__media .mrn-image-content-row__figure > img { width: 100%; height: auto; max-height: none; object-fit: contain; }
 .has-framed-image-stage > .mrn-layout-section > .mrn-layout-container.mrn-layout-surface { padding-block: 0; padding-inline: var(--mrn-image-frame-gutter-current, var(--mrn-image-frame-inner-gutter, 0px)); }
+.mrn-content-builder__row.has-framed-image-stage.has-image-stage-cover .mrn-layout-section--image-content .mrn-image-content-row__media .mrn-image-content-row__figure > img { height: 100%; object-fit: cover; }
 
 /* Optional responsive CTA typography/actions; section space stays in row presets. */
 .mrn-content-builder__row.has-cta-frame.has-cta-actions-gap > .mrn-layout-section--reusable-cta > .mrn-layout-container > .mrn-layout-grid--reusable > .mrn-layout-content--reusable > .mrn-reusable-block--cta > .mrn-reusable-block__inner--callout > .mrn-reusable-block__content--cta > .mrn-reusable-block__actions--callout {

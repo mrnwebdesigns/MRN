@@ -125,6 +125,7 @@ $section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' 
 $frame_contract = mrn_base_stack_get_content_frame_contract( $row, 'image_content' );
 $section_classes = mrn_base_stack_merge_builder_section_classes( $section_classes, $frame_contract );
 if ( 'framed-zoom' === ( $row['image_presentation'] ?? '' ) && '' !== $image_stage_attributes ) { $section_classes[] = 'has-framed-image-stage'; }
+if ( in_array( 'has-framed-image-stage', $section_classes, true ) && 'cover' === ( $row['image_stage_sizing'] ?? '' ) ) { $section_classes[] = 'has-image-stage-cover'; }
 if ( ( in_array( 'has-image-frame', $section_classes, true ) || in_array( 'has-framed-image-stage', $section_classes, true ) ) && '' === $label && '' === $heading && '' === $subheading && '' === trim( wp_strip_all_tags( $content ) ) && empty( $content_links ) ) { $section_classes[] = 'has-image-only-frame'; }
 $image_source_size = ( in_array( 'has-image-natural-media', $section_classes, true ) || in_array( 'has-framed-image-stage', $section_classes, true ) ) ? 'full' : 'mrn-content-media';
 $image_attributes = array();
