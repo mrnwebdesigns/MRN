@@ -1,6 +1,6 @@
 {
   "authority": "Checksum-locked independently released plugins available to explicit one-site upgrade plans. A release may remain a standard bootstrap default; registration never authorizes installation or a site write.",
-  "catalog_updated": "2026-10-28",
+  "catalog_updated": "2026-10-29",
   "releases": [
     {
       "current_distribution": "catalog-only",
@@ -590,16 +590,16 @@
     {
       "current_distribution": "catalog-only",
       "package": {
-        "filename": "mrn-mainwp-operations-api-0.13.13-94d20ab605ca.zip",
+        "filename": "mrn-mainwp-operations-api-0.13.14-98028be5e7cd.zip",
         "main_file": "mrn-mainwp-operations-api/mrn-mainwp-operations-api.php",
-        "path": "releases/stack-plugins/mrn-mainwp-operations-api-0.13.13-94d20ab605ca.zip",
-        "sha256": "90114680bfca92b3c44c2ac128e3208bad511f505e0e0e54bcf65ea67e3bb5b6",
-        "size_bytes": 148311
+        "path": "releases/stack-plugins/mrn-mainwp-operations-api-0.13.14-98028be5e7cd.zip",
+        "sha256": "c2d0cc7b26e76b82218fc1f556a21a518309d9737b57b2147445f8094a8b73d9",
+        "size_bytes": 149106
       },
       "runtime_type": "standard-plugin",
       "slug": "mrn-mainwp-operations-api",
       "source": {
-        "git_commit": "94d20ab605ca38a7c117e3f5aff847e7fceb3d6e",
+        "git_commit": "98028be5e7cd4fb7fe86479bae54618ac06c2262",
         "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-mainwp-operations-api",
         "repository": "mrnwebdesigns/mrn-mainwp-operations-api"
       },
@@ -607,14 +607,14 @@
       "tree": {
         "file_count": 33,
         "hash_algorithm": "sha256-tree-v1",
-        "sha256": "554b6bba6f347cee7c7a1bc97f807da8cd775b3d05d3393f94a0d927d6f85498"
+        "sha256": "48c0bddd1c98dccd3c8e07f8d75d23d6312752616fbe02d12d4f26397ec70ce9"
       },
       "update_policy": {
         "mode": "upgrade-only",
         "new_install": "requires-separate-owner-authorization-and-plan",
         "preserve_active_state": true
       },
-      "version": "0.13.13"
+      "version": "0.13.14"
     },
     {
       "current_distribution": "catalog-only",
