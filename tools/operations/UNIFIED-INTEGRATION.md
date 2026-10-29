@@ -13,14 +13,33 @@ commit or native source read. The hook stops after 222.078 seconds without its
 aggregate deadline firing; callback cleanup passes. Artifact `12894841999`
 SHA-256: `73ec5aa60f3a6cd33b67bed384b6a420d8755dcc326ca8ef091a778b241ef296`.
 
-The next isolated provider pin is `7fdc429ec4886fc876cbded8e073dfc0d16e59ac`.
+The runtime repair is provider `7fdc429ec4886fc876cbded8e073dfc0d16e59ac`.
 It avoids transient reads/deletes/writes inside work transactions and retains
 only an expiring API token in PHP request memory, keyed by credential/delegate.
 Every account check still calls Google Directory. All 68 PHP entrypoints,
 27 focused token-cache/offboarding checks and scoped/exact-index MRN QA pass.
-Native repair qualification is pending; no deadline, authority proof, callback
+No deadline, authority proof, callback
 budget, deployment, credential or access setting changed. API runtime remains
 the native gate; frontend accessibility/performance do not apply to this change.
+
+Run `40868919922` at gateway `5456ba1f` verifies the repair under the same
+forced-expiry probe: no cache write in the work transaction, no independent
+lock refusal, and a 1 ms probe. All 13 existing-source groups pass in 284.779
+seconds under the unchanged 290-second aggregate deadline. Native capture,
+11 source frames, independent original inventory, unchanged Child content,
+revocation denial and callback cleanup pass. The capture reaches all 27 phases.
+Artifact `12895502976` SHA-256:
+`0b872ba281b03aaca8f2626133c214170ad70920b57a11e0b86d0a270ddd7a6b`.
+
+The full run still fails later at `evidence-authority.php:68`: its old
+`pre_transient` fixture filter no longer forces a token miss because guarded
+code correctly skips shared transients. Candidate
+`1c64321b6917b6451f3769cec6ea1e55d8fb2051` changes only tests to expire the actual
+request-local API token before each owner call. Fresh OAuth/Directory lookup,
+successful owner transition, policy epoch and SQL wait assertions stay intact.
+The independent worker starts with an empty request-local cache. All 31 focused
+cache/identity checks and fixture MRN QA pass; the next native pin selects this
+fixture correction. Full native qualification and team acceptance remain open.
 
 Earlier runs `40866582493` and `40866582210` stopped at the same real-timer test
 before native execution: an abort need not imply the integer wall-clock deadline
