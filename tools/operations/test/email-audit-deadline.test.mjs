@@ -15,6 +15,20 @@ const budget = (overrides = {}) => ({ action: 'continue', ability: worker, timeo
 const waitAbort = signal => new Promise(resolve => {
   if (signal.aborted) resolve(); else signal.addEventListener('abort', resolve, { once: true });
 });
+// A real timer may fire just before Date.now reaches its integer deadline.
+// Positive deferral cases explicitly establish expired wall time at abort;
+// the separate early/frozen-clock cases must still preserve a hard timeout.
+async function expiredAtAbort(t, policy, perform) {
+  const clock = t.mock.method(Date, 'now', Date.now);
+  try {
+    return await emailAuditDeadline(policy, options => {
+      options.signal.addEventListener('abort', () => {
+        clock.mock.mockImplementation(() => policy.deadlineAt);
+      }, { once: true });
+      return perform(options);
+    });
+  } finally { clock.mock.restore(); }
+}
 async function sdk(t, handle) {
   const client = new Client({ name: 'audit-budget-test', version: '1' });
   const server = new Server({ name: 'audit-budget-fixture', version: '1' }, { capabilities: { tools: {} } });
@@ -31,7 +45,7 @@ test('the actual SDK preserves this request abort reason and cancels exactly onc
     calls++; await waitAbort(extra.signal); cancelled++;
     return { content: [{ type: 'text', text: 'late evidence' }] };
   });
-  await assert.rejects(() => emailAuditDeadline(budget(), async options => {
+  await assert.rejects(() => expiredAtAbort(t, budget(), async options => {
     try { return await call(options); } catch (error) {
       receivedReason = options.signal.reason;
       assert.equal(error, receivedReason); throw error;
@@ -48,9 +62,9 @@ test('a remote SDK timeout with identical fields is never proof of the local tim
     error => error instanceof McpError && error.code === ErrorCode.RequestTimeout);
 });
 
-test('only clipped continuation worker calls can defer after owned cancellation', async () => {
+test('only clipped continuation worker calls can defer after owned cancellation', async t => {
   for (const ability of [worker, 'mainwp/get-site-knowledge-v1', 'mainwp/get-site-v1', 'mainwp/sync-sites-v1'])
-    await assert.rejects(() => emailAuditDeadline(budget({ ability }), async options => {
+    await assert.rejects(() => expiredAtAbort(t, budget({ ability }), async options => {
       await waitAbort(options.signal); throw options.signal.reason;
     }), { message: 'EMAIL_AUDIT_BATCH_BUDGET' });
   for (const overrides of [{ timeout: 25, perCallLimit: 25 }, { action: 'get' },
@@ -70,13 +84,16 @@ test('expiry never masks access, backend or foreign timeout errors even after th
 });
 
 test('late success is withheld and clock rollback cannot manufacture a deferral', async t => {
-  await assert.rejects(() => emailAuditDeadline(budget(), async options => {
+  await assert.rejects(() => expiredAtAbort(t, budget(), async options => {
     await waitAbort(options.signal); return 'late evidence';
   }), { message: 'EMAIL_AUDIT_BATCH_BUDGET' });
   const now = Date.now();
   const clock = t.mock.method(Date, 'now', () => now);
   await assert.rejects(() => emailAuditDeadline(budget(), async options => {
     await waitAbort(options.signal); return 'late evidence';
+  }), error => error instanceof McpError && error.code === ErrorCode.RequestTimeout);
+  await assert.rejects(() => emailAuditDeadline(budget(), async options => {
+    await waitAbort(options.signal); throw options.signal.reason;
   }), error => error instanceof McpError && error.code === ErrorCode.RequestTimeout);
   clock.mock.restore();
   // A blocked event loop can settle before its overdue timer callback runs.
@@ -104,8 +121,10 @@ test('a fresh process remains alive until its sole audit cancellation settles', 
   const source = `
     import { emailAuditDeadline } from ${JSON.stringify(module)};
     import assert from 'node:assert/strict';
+    const deadlineAt = Date.now() + 25;
     await assert.rejects(() => emailAuditDeadline({ action: 'continue', ability: 'mrn-mainwp/audit-email-address-v1',
-      timeout: 25, perCallLimit: 30000, deadlineAt: Date.now() + 25 }, async ({ signal }) => {
+      timeout: 25, perCallLimit: 30000, deadlineAt }, async ({ signal }) => {
+        signal.addEventListener('abort', () => { Date.now = () => deadlineAt; }, { once: true });
         await new Promise(resolve => signal.addEventListener('abort', resolve, { once: true }));
         throw signal.reason;
       }), { message: 'EMAIL_AUDIT_BATCH_BUDGET' });
