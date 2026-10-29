@@ -1,0 +1,7 @@
+{
+  "status": "passed",
+  "checks": [
+    "Native ACF motion-enabled conditional hides, reveals and hides its effect control",
+    "No save was performed; reload retains the 19-section source copy"
+  ]
+}

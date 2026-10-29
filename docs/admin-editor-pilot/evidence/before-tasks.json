@@ -1,0 +1,38 @@
+{
+  "mode": "before",
+  "method": "Scripted task; known last section; 800px wheel increments and animation-frame settling. No human reading time or user study.",
+  "pages": {
+    "real": {
+      "collapsed": {
+        "targetY": 1900.734375,
+        "documentHeight": 3802,
+        "title": "Custom Block More From Trilliant",
+        "scriptedTaskMs": 167.79279099999985,
+        "manualWheelActions": 2
+      },
+      "expanded": {
+        "targetY": 57455.984375,
+        "documentHeight": 59710,
+        "title": "Custom Block More From Trilliant",
+        "scriptedTaskMs": 4144.82525,
+        "manualWheelActions": 75
+      }
+    },
+    "stress": {
+      "collapsed": {
+        "targetY": 2810.734375,
+        "documentHeight": 4081,
+        "title": "Custom Block Blue Text",
+        "scriptedTaskMs": 269.56175000000076,
+        "manualWheelActions": 3
+      },
+      "expanded": {
+        "targetY": 88188.796875,
+        "documentHeight": 91179,
+        "title": "Custom Block Blue Text",
+        "scriptedTaskMs": 6308.881916000002,
+        "manualWheelActions": 115
+      }
+    }
+  }
+}

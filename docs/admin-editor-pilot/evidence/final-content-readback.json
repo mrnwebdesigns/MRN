@@ -1,0 +1,64 @@
+{
+    "source": {
+        "id": 1189,
+        "title": "Design Layouts Page",
+        "local_snapshot": "trilliant"
+    },
+    "ids": {
+        "real": 2523,
+        "stress": 2524
+    },
+    "pages": {
+        "real": {
+            "id": 2523,
+            "rows": 19,
+            "content_hash": "125c3120813340710c01d3d6602341cb3381d319d0080c23f09ea04bf3c36708",
+            "title": "Local pilot \u2014 Design Layouts Page",
+            "status": "draft",
+            "native_acf_hash": "185d28d432189696a1001536693a41e9b34fcfde21415438223ad3cf66d05d29",
+            "post_content_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "revisions": 22
+        },
+        "stress": {
+            "id": 2524,
+            "rows": 32,
+            "content_hash": "cf6090e3fcd269e5d9cff6576a3490e9bad5df858c1a23e7cdb31ee2a457a1ad",
+            "title": "Derived stress fixture \u2014 30+ sections",
+            "status": "draft",
+            "native_acf_hash": "b95006648facac964426ec5a354374580a354df78fb93210c5fb794008bcbbcf",
+            "post_content_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "revisions": 2
+        }
+    },
+    "versions": {
+        "wp": "7.0.4",
+        "acf": "6.8.9"
+    },
+    "differences": [
+        {
+            "path": "/8/field_mrn_page_faq_fields_field_mrn_faq_items/0/field_mrn_faq_item_answer",
+            "before_hash": "b39c311f0f1ce28b8bee2a96be9de3917e766814c34993603fd652fd117cade8",
+            "after_hash": "a022fd3cd283670af969a28df86ccd175074d0e68cffd0d83c08571f55617813"
+        },
+        {
+            "path": "/8/field_mrn_page_faq_fields_field_mrn_faq_items/1/field_mrn_faq_item_answer",
+            "before_hash": "f79db03cd40abe4bbf4b7ec3a00452bf9febdf6aad6f10404ea909970f472111",
+            "after_hash": "ba8d7320bea1b12d7d5f47a5c812f4c1e7b390e90f4b04d436a8d38839686afe"
+        },
+        {
+            "path": "/8/field_mrn_page_faq_fields_field_mrn_faq_items/2/field_mrn_faq_item_answer",
+            "before_hash": "41c30607c1dbd66213b939057a8be813ce67191a92910df20ca58c74c318ddf5",
+            "after_hash": "e0190295c5cce7d855ff456ea1009e8898348fbe602d7346f9d5252e2a246032"
+        },
+        {
+            "path": "/8/field_mrn_page_faq_fields_field_mrn_faq_items/3/field_mrn_faq_item_answer",
+            "before_hash": "e046b6fc6a4ae83aef8c7bd4163bf18eb02df9cfafb2b2770d165f911850cd3e",
+            "after_hash": "e8c3e67c7d41ccbea330261372f1d4dc46a3943c1081d39ab6e4aca411abff53"
+        },
+        {
+            "path": "/11/field_mrn_content_lists_filter_taxonomy",
+            "before_hash": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+            "after_hash": "de46a45ced4697015845d3f118403fe727f9bb926139ef920a5832f8e96b7274"
+        }
+    ]
+}

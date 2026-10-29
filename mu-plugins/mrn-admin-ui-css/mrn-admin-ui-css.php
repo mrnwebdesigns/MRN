@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MRN Admin UI CSS
  * Description: Unified admin UI CSS loader for wp-admin.
- * Version: 3.2.4
+ * Version: 3.2.5
  */
 
 defined('ABSPATH') || exit;
@@ -62,6 +62,14 @@ if (!function_exists('mrn_admin_ui_contract_get')) {
 add_action('admin_enqueue_scripts', function ($hook) {
 
   if (!defined('WPMU_PLUGIN_DIR')) {
+    return;
+  }
+
+  // The bounded Local Hub editor pilot has its own scoped presentation. Keep
+  // global clipping, tab offsets and promotional suppression out of its form.
+  if (function_exists('mrn_editor_experience_screen') && mrn_editor_experience_screen()) {
+    $pilot_file = __DIR__ . '/mrn-editor-workspace.css';
+    wp_enqueue_style('mrn-editor-workspace', content_url('mu-plugins/mrn-admin-ui-css/mrn-editor-workspace.css'), array('common'), (string) filemtime($pilot_file));
     return;
   }
 

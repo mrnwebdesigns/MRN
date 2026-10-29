@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MRN Editor Lockdown
  * Description: Enforces MRN classic editor metabox ordering for posts, pages, and reusable block library screens across the stack.
- * Version: 1.0.34
+ * Version: 1.0.35
  *
  * @package MRNEditorLockdown
  */
@@ -71,6 +71,7 @@ function mrn_editor_lockdown_is_loading_indicator_enabled() {
 }
 
 require_once __DIR__ . '/includes/editor-assets.php';
+require_once __DIR__ . '/includes/section-navigator.php';
 
 /**
  * SEO Helper ACF metabox ID.

@@ -3,7 +3,7 @@
  * Plugin Name: MRN Dashboard Support
  * Description: Adds a fixed, non-collapsible, non-movable MRN Web Designs support widget pinned to the top-left of the WP dashboard and an admin-only Notifications Center for stack and WordPress updates.
  * Author: MRN Web Designs
- * Version: 1.3.0
+ * Version: 1.3.1
  *
  * INSTALL (MU-Plugin):
  * 1) Save as: /wp-content/mu-plugins/mrn-dashboard-support.php
@@ -169,6 +169,10 @@ function mrn_dashboard_support_capture_admin_notice( $html ) {
  * toolbar output before WordPress can render it.
  */
 function mrn_dashboard_support_begin_admin_notice_capture() {
+	// Pilot errors and contextual controls stay in their originating editor.
+	if ( function_exists( 'mrn_editor_experience_screen' ) && mrn_editor_experience_screen() ) {
+		return;
+	}
 	if ( mrn_dashboard_support_can_view_notifications() ) {
 		$GLOBALS['mrn_dashboard_support_notice_buffer_level'] = ob_get_level();
 		ob_start();

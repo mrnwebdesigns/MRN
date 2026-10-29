@@ -1,0 +1,16 @@
+{
+  "real": {
+    "rows": true,
+    "content_hash": true,
+    "native_acf_hash": true,
+    "post_content_hash": true,
+    "status": true
+  },
+  "stress": {
+    "rows": true,
+    "content_hash": true,
+    "native_acf_hash": true,
+    "post_content_hash": true,
+    "status": true
+  }
+}

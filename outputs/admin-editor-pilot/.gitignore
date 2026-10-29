@@ -1,0 +1,4 @@
+# Working browser scripts and generated diagnostics stay local. Reviewed sprint
+# evidence is copied to docs/admin-editor-pilot/evidence/.
+*
+!.gitignore

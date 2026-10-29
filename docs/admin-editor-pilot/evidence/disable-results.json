@@ -1,0 +1,7 @@
+{
+  "status": "passed",
+  "checks": [
+    "One false flag removes pilot JS, CSS, toolbar entry and navigation on reload",
+    "All 19 native rows and the existing save guard remain available"
+  ]
+}

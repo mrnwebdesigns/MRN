@@ -1,0 +1,19 @@
+{
+  "status": "passed",
+  "checks": [
+    "Native no-change Save Draft and explicit reload retain 19 sections",
+    "Native server validation blocks publishing, opens collapsed section, indexes error, filters errors and clears badge after correction",
+    "Existing image field opens and cancels its native media control",
+    "Section name, nested FAQ repeater question and native TinyMCE content survive Save Draft and reload",
+    "Tested values restored through the native form and reloaded",
+    "Truncated submission returns HTTP 400 from the existing save-integrity guard",
+    "32-section stress page saves and reloads with all rows retained"
+  ],
+  "timings": {
+    "no_change_save_ms": 12872.242624999999,
+    "edited_save_ms": 13360.133041000001,
+    "restored_save_ms": 13064.016125000002,
+    "stress_save_ms": 20994.660208999994
+  },
+  "errors": []
+}

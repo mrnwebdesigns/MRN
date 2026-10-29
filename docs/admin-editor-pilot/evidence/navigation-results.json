@@ -1,0 +1,18 @@
+{
+  "status": "passed",
+  "checks": [
+    "19 real sections indexed; actionable notice retains link and button",
+    "Search, jump, native expansion, return, Escape and restored focus",
+    "Navigator WCAG A/AA axe scan: zero violations",
+    "Native ACF duplicate, remove, add, sort and rename lifecycle update index; no duplicate return controls",
+    "Unsaved native row operations leave database unchanged after reload",
+    "390px navigation entry, jump closes panel, return, mobile axe zero violations",
+    "200% equivalent 720px CSS viewport reflow: navigator remains within viewport"
+  ],
+  "timings": {
+    "jump_ms": 38.66437500000029
+  },
+  "errors": [],
+  "axeViolations": 0,
+  "mobileAxeViolations": 0
+}

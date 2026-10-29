@@ -1,0 +1,1375 @@
+{
+  "mode": "before",
+  "conditions": "Chromium headless, 1440x1000, new page each sample, shared warm context, local VM, external requests blocked",
+  "pages": {
+    "real": {
+      "inventory": [
+        {
+          "index": 1,
+          "type": "card",
+          "title": "Stacked Content Section - Card - card name|icon|card row|link",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "type": "basic_block",
+          "title": "Custom Block Image - Page Specific Basic",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 3,
+          "type": "basic_block",
+          "title": "Custom Block Image - Page Specific Basic",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 4,
+          "type": "two_column_split",
+          "title": "Custom Block Video - Two Column Split - label|heading|subheading|left|right",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 5,
+          "type": "two_column_split",
+          "title": "Custom Block Video - Two Column Split - label|heading|subheading|left|right",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 6,
+          "type": "body_text",
+          "title": "Fancy Text Block – Text Right Aligned - Text - label|heading|subheading|rich text",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 7,
+          "type": "body_text",
+          "title": "Fancy Text Block – Text Centered - Text - label|heading|subheading|rich text",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 8,
+          "type": "reusable_block",
+          "title": "Custom Block Features - Reusable Block",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 9,
+          "type": "faq",
+          "title": "Custom Block Accordion - Page Specific FAQ/Accordion",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 10,
+          "type": "basic_block",
+          "title": "Custom Block Simple Text - Page Specific Basic",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 11,
+          "type": "basic_block",
+          "title": "Custom Block Simple Text - Page Specific Basic",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 12,
+          "type": "content_lists",
+          "title": "Custom Block Sectioned Cards - Reference Content - query|pagination|count",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 13,
+          "type": "cta",
+          "title": "Custom Block Blue Text - Page Specific CTA",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 14,
+          "type": "cta",
+          "title": "Custom Block Blue Text - Page Specific CTA",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 15,
+          "type": "grid",
+          "title": "Custom Block Content Cards - Page Specific Grid",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 16,
+          "type": "grid",
+          "title": "Custom Block Content Cards - Page Specific Grid",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 17,
+          "type": "grid",
+          "title": "Custom Block Content Cards - Page Specific Grid",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 18,
+          "type": "faq",
+          "title": "Custom Block Accordion Text - Page Specific FAQ/Accordion",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 19,
+          "type": "reusable_block",
+          "title": "Custom Block More From Trilliant - Reusable Block",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            }
+          ]
+        }
+      ],
+      "samples": [
+        {
+          "dcl_ms": 1661.0999999940395,
+          "load_ms": 2615,
+          "ready_ms": 2693,
+          "heap_bytes": 33100000,
+          "rows": 19,
+          "scroll_height": 3802,
+          "target_document_y": 1900.734375,
+          "viewport": 1000,
+          "long_tasks": 2,
+          "long_task_ms": 166,
+          "resources": 203,
+          "errors": []
+        },
+        {
+          "dcl_ms": 1545.2999999821186,
+          "load_ms": 2487.399999976158,
+          "ready_ms": 2550.5999999940395,
+          "heap_bytes": 33100000,
+          "rows": 19,
+          "scroll_height": 3802,
+          "target_document_y": 1900.734375,
+          "viewport": 1000,
+          "long_tasks": 2,
+          "long_task_ms": 172,
+          "resources": 203,
+          "errors": []
+        },
+        {
+          "dcl_ms": 1576.300000011921,
+          "load_ms": 2493.2000000178814,
+          "ready_ms": 2565.5,
+          "heap_bytes": 35100000,
+          "rows": 19,
+          "scroll_height": 3802,
+          "target_document_y": 1900.734375,
+          "viewport": 1000,
+          "long_tasks": 2,
+          "long_task_ms": 168,
+          "resources": 203,
+          "errors": []
+        },
+        {
+          "dcl_ms": 1619.7000000178814,
+          "load_ms": 3281.5999999940395,
+          "ready_ms": 3386.0999999940395,
+          "heap_bytes": 33100000,
+          "rows": 19,
+          "scroll_height": 3802,
+          "target_document_y": 1900.734375,
+          "viewport": 1000,
+          "long_tasks": 2,
+          "long_task_ms": 172,
+          "resources": 203,
+          "errors": []
+        },
+        {
+          "dcl_ms": 2095.4000000059605,
+          "load_ms": 3174.4000000059605,
+          "ready_ms": 3235.5999999940395,
+          "heap_bytes": 33100000,
+          "rows": 19,
+          "scroll_height": 3802,
+          "target_document_y": 1900.734375,
+          "viewport": 1000,
+          "long_tasks": 2,
+          "long_task_ms": 180,
+          "resources": 203,
+          "errors": []
+        }
+      ]
+    },
+    "stress": {
+      "inventory": [
+        {
+          "index": 1,
+          "type": "card",
+          "title": "Stacked Content Section - Card - card name|icon|card row|link",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "type": "basic_block",
+          "title": "Custom Block Image - Page Specific Basic",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 3,
+          "type": "basic_block",
+          "title": "Custom Block Image - Page Specific Basic",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 4,
+          "type": "two_column_split",
+          "title": "Custom Block Video - Two Column Split - label|heading|subheading|left|right",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 5,
+          "type": "two_column_split",
+          "title": "Custom Block Video - Two Column Split - label|heading|subheading|left|right",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 6,
+          "type": "body_text",
+          "title": "Fancy Text Block – Text Right Aligned - Text - label|heading|subheading|rich text",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 7,
+          "type": "body_text",
+          "title": "Fancy Text Block – Text Centered - Text - label|heading|subheading|rich text",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 8,
+          "type": "reusable_block",
+          "title": "Custom Block Features - Reusable Block",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 9,
+          "type": "faq",
+          "title": "Custom Block Accordion - Page Specific FAQ/Accordion",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 10,
+          "type": "basic_block",
+          "title": "Custom Block Simple Text - Page Specific Basic",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 11,
+          "type": "basic_block",
+          "title": "Custom Block Simple Text - Page Specific Basic",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 12,
+          "type": "content_lists",
+          "title": "Custom Block Sectioned Cards - Reference Content - query|pagination|count",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 13,
+          "type": "cta",
+          "title": "Custom Block Blue Text - Page Specific CTA",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 14,
+          "type": "cta",
+          "title": "Custom Block Blue Text - Page Specific CTA",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 15,
+          "type": "grid",
+          "title": "Custom Block Content Cards - Page Specific Grid",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 16,
+          "type": "grid",
+          "title": "Custom Block Content Cards - Page Specific Grid",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 17,
+          "type": "grid",
+          "title": "Custom Block Content Cards - Page Specific Grid",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 18,
+          "type": "faq",
+          "title": "Custom Block Accordion Text - Page Specific FAQ/Accordion",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 19,
+          "type": "reusable_block",
+          "title": "Custom Block More From Trilliant - Reusable Block",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 20,
+          "type": "card",
+          "title": "Stacked Content Section - Card - card name|icon|card row|link",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 21,
+          "type": "basic_block",
+          "title": "Custom Block Image - Page Specific Basic",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 22,
+          "type": "basic_block",
+          "title": "Custom Block Image - Page Specific Basic",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 23,
+          "type": "two_column_split",
+          "title": "Custom Block Video - Two Column Split - label|heading|subheading|left|right",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 24,
+          "type": "two_column_split",
+          "title": "Custom Block Video - Two Column Split - label|heading|subheading|left|right",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 25,
+          "type": "body_text",
+          "title": "Fancy Text Block – Text Right Aligned - Text - label|heading|subheading|rich text",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 26,
+          "type": "body_text",
+          "title": "Fancy Text Block – Text Centered - Text - label|heading|subheading|rich text",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 27,
+          "type": "reusable_block",
+          "title": "Custom Block Features - Reusable Block",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 28,
+          "type": "faq",
+          "title": "Custom Block Accordion - Page Specific FAQ/Accordion",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 29,
+          "type": "basic_block",
+          "title": "Custom Block Simple Text - Page Specific Basic",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 30,
+          "type": "basic_block",
+          "title": "Custom Block Simple Text - Page Specific Basic",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 31,
+          "type": "content_lists",
+          "title": "Custom Block Sectioned Cards - Reference Content - query|pagination|count",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "index": 32,
+          "type": "cta",
+          "title": "Custom Block Blue Text - Page Specific CTA",
+          "fields": [
+            {
+              "name": "internal_name",
+              "type": "text"
+            },
+            {
+              "name": "label",
+              "type": "text"
+            },
+            {
+              "name": "heading",
+              "type": "text"
+            }
+          ]
+        }
+      ],
+      "samples": [
+        {
+          "dcl_ms": 1950,
+          "load_ms": 3332.0999999940395,
+          "ready_ms": 3422.4000000059605,
+          "heap_bytes": 47400000,
+          "rows": 32,
+          "scroll_height": 4081,
+          "target_document_y": 2810.734375,
+          "viewport": 1000,
+          "long_tasks": 3,
+          "long_task_ms": 437,
+          "resources": 202,
+          "errors": []
+        },
+        {
+          "dcl_ms": 2042.0999999940395,
+          "load_ms": 3137.5999999940395,
+          "ready_ms": 3223.4000000059605,
+          "heap_bytes": 42100000,
+          "rows": 32,
+          "scroll_height": 4081,
+          "target_document_y": 2810.734375,
+          "viewport": 1000,
+          "long_tasks": 3,
+          "long_task_ms": 380,
+          "resources": 202,
+          "errors": []
+        },
+        {
+          "dcl_ms": 1865.8999999761581,
+          "load_ms": 3509.2999999821186,
+          "ready_ms": 3618.699999988079,
+          "heap_bytes": 39600000,
+          "rows": 32,
+          "scroll_height": 4081,
+          "target_document_y": 2810.734375,
+          "viewport": 1000,
+          "long_tasks": 4,
+          "long_task_ms": 460,
+          "resources": 202,
+          "errors": []
+        },
+        {
+          "dcl_ms": 1877.2999999821186,
+          "load_ms": 2935.199999988079,
+          "ready_ms": 3031.0999999940395,
+          "heap_bytes": 47400000,
+          "rows": 32,
+          "scroll_height": 4081,
+          "target_document_y": 2810.734375,
+          "viewport": 1000,
+          "long_tasks": 3,
+          "long_task_ms": 382,
+          "resources": 202,
+          "errors": []
+        },
+        {
+          "dcl_ms": 1697.8999999761581,
+          "load_ms": 2900,
+          "ready_ms": 2988.5999999940395,
+          "heap_bytes": 39600000,
+          "rows": 32,
+          "scroll_height": 4081,
+          "target_document_y": 2810.734375,
+          "viewport": 1000,
+          "long_tasks": 3,
+          "long_task_ms": 394,
+          "resources": 202,
+          "errors": []
+        }
+      ]
+    }
+  }
+}

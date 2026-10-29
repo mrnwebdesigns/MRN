@@ -1,0 +1,7 @@
+{
+  "status": "passed",
+  "checks": [
+    "Native server validation blocks publishing, opens collapsed section, indexes error, filters errors and clears badge after correction"
+  ],
+  "errors": []
+}

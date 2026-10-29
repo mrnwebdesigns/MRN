@@ -1,0 +1,12 @@
+{
+  "status": "passed",
+  "checks": [
+    "Editor role can use the navigator on an authorized page",
+    "Subscriber role cannot open the edit form or load pilot controls",
+    "Media administration excluded from pilot assets",
+    "Blocked pilot JavaScript leaves the native ACF form and all 32 rows available",
+    "New native Classic page with two ACF layouts publishes and reloads using the existing sticky publishing control"
+  ],
+  "newPageId": 2540,
+  "errors": []
+}
