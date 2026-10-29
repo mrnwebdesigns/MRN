@@ -57,7 +57,7 @@ test('ordinary integration workflow matches its reviewed checksum and profile st
   const normal = readFileSync(new URL('../../../.github/workflows/operations-ci.yml', import.meta.url));
   // Reviewed fixture-only addition retains a bounded capture-progress report.
   // Request/authority deadlines and diagnostic-profile isolation are unchanged.
-  assert.equal(createHash('sha256').update(normal).digest('hex'), '737228611aed6da43e1003d1458e499640fa5afd0fe5ab30bea4e7ce610f6042');
+  assert.equal(createHash('sha256').update(normal).digest('hex'), '923fea0bf6ab3b58941598f9a8a110d747d975350fa97de548c26e3f0d90360e');
   const source = readFileSync(new URL('./runtime/check-existing-binding.mjs', import.meta.url), 'utf8');
   assert.ok(source.indexOf('throw profileStop;') < source.indexOf("phase = 'private-capture-interruption'"));
   assert.ok(source.includes('(context.limits.hook_seconds - 10) * 1000'));

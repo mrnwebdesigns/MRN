@@ -460,6 +460,23 @@ jobs:
             writeFileSync(process.env.MRN_SOURCE_PROGRESS_OUTPUT, JSON.stringify(report) + '\n', { mode: 0o600, flag: 'wx' });
           }
           JS
+      - name: Retain closed disposable Directory lock probe
+        if: always()
+        env:
+          MRN_DIRECTORY_LOCK_OUTPUT: ${{ runner.temp }}/native-existing-directory-lock.json
+        run: |
+          node --input-type=module <<'JS'
+          import { existsSync, lstatSync, readFileSync, writeFileSync } from 'node:fs';
+          import assert from 'node:assert/strict';
+          import { parseExistingDirectoryLock } from './tools/operations/test/runtime/existing-directory-lock.mjs';
+          const path = '.runtime/provider/reports/native-existing-directory-lock.json';
+          if (existsSync(path)) {
+            const info = lstatSync(path);
+            assert.ok(info.isFile() && !info.isSymbolicLink() && info.size <= 2048 && (info.mode & 0o777) === 0o600);
+            const report = parseExistingDirectoryLock(readFileSync(path));
+            writeFileSync(process.env.MRN_DIRECTORY_LOCK_OUTPUT, JSON.stringify(report) + '\n', { mode: 0o600, flag: 'wx' });
+          }
+          JS
       - name: Retain bounded integration evidence only
         if: always()
         uses: actions/upload-artifact@v4
@@ -480,5 +497,6 @@ jobs:
             ${{ runner.temp }}/native-existing-source-transfer-audit.json
             ${{ runner.temp }}/native-existing-source-context-timing.json
             ${{ runner.temp }}/native-existing-source-progress.json
+            ${{ runner.temp }}/native-existing-directory-lock.json
           if-no-files-found: error
           retention-days: 14
