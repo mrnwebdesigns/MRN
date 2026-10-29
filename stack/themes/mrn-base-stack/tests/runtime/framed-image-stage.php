@@ -14,6 +14,7 @@ foreach ( array( 'scroll-zoom', 'tilted-gallery' ) as $mode ) { $attrs = mrn_bas
 $attrs = mrn_base_stack_get_image_stage_attributes( array( 'image_presentation' => 'framed-zoom', 'media_mobile_breakpoint' => '767" onclick="alert(1)', 'media_height' => '10px;color:red', 'media_height_mobile' => array( '340px' ) ) );
 $expect( ! str_contains( $attrs, 'onclick' ) && ! str_contains( $attrs, 'color:red' ) && ! str_contains( $attrs, '--mrn-media-height' ), 'Malformed dimensions and breakpoint cannot inject CSS or attributes' );
 $expect( '' === mrn_base_stack_get_image_stage_attributes( array( 'image_presentation' => 'standard' ) ), 'Standard image adds no stage attributes' );
+$expect( '' === $fields['image_row_spacing_mobile_breakpoint']['default_value'] && isset( $fields['image_row_spacing_mobile_breakpoint']['choices']['767'] ), 'Image row spacing keeps the 782px default and offers an independent 767px selection' );
 $image = get_posts( array( 'post_type' => 'attachment', 'post_mime_type' => 'image', 'post_status' => 'inherit', 'numberposts' => 1, 'fields' => 'ids' ) )[0] ?? 0;
 $expect( $image > 0, 'Local image fixture exists' );
 foreach ( array( '', 'cover', 'unsafe" onclick="bad', array( 'cover' ) ) as $sizing ) {
@@ -22,5 +23,9 @@ foreach ( array( '', 'cover', 'unsafe" onclick="bad', array( 'cover' ) ) as $siz
  $expect( ( 'cover' === $sizing ) === str_contains( $html, 'has-image-stage-cover' ) && ! str_contains( $html, 'onclick=' ), 'Only the exact cover selection activates cropping' );
  $row['image_presentation'] = 'scroll-zoom'; ob_start(); mrn_base_stack_render_builder_row( $row, 0, 0 ); $html = ob_get_clean();
  $expect( ! str_contains( $html, 'has-image-stage-cover' ), 'Other image modes ignore dormant crop selections' );
+}
+foreach ( array( '', '767', array( '767' ), '767" onclick="bad' ) as $breakpoint ) {
+ ob_start(); mrn_base_stack_render_builder_row( array( 'acf_fc_layout' => 'image_content', 'image' => $image, 'image_row_spacing_mobile_breakpoint' => $breakpoint ), 0, 0 ); $html = ob_get_clean();
+ $expect( ( '767' === $breakpoint ) === str_contains( $html, 'has-image-row-spacing-at-767' ) && ! str_contains( $html, 'onclick=' ), 'Only the exact optional Image row-spacing breakpoint activates' );
 }
 WP_CLI::line( wp_json_encode( array( 'result' => 'passed', 'count' => count( $checks ), 'checks' => $checks, 'candidate_only' => true ), JSON_PRETTY_PRINT ) );

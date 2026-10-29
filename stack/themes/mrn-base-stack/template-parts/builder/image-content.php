@@ -99,6 +99,8 @@ $section_classes = array(
 	'mrn-content-builder__row--image-content-align-' . sanitize_html_class( $image_alignment ),
 );
 
+if ( '767' === ( $row['image_row_spacing_mobile_breakpoint'] ?? '' ) ) { $section_classes[] = 'has-image-row-spacing-at-767'; }
+
 $section_styles = array();
 if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' ) ) {
 	$section_styles[] = '--mrn-image-content-row-bg: var(' . mrn_site_colors_get_css_var( $background_color ) . ')';

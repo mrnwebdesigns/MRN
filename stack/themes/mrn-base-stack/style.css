@@ -8558,3 +8558,17 @@ a.mrn-social-links__link:focus-visible svg {
 @media (max-width: 1199px) { .has-form-frame.has-form-inner-gutter-compact > .mrn-layout-section--wpforms > .mrn-layout-container { padding-inline: var(--mrn-form-frame-inner-gutter-compact); } }
 @media (max-width: 767px) { .has-form-frame.has-form-heading-mobile-sr .mrn-ui__heading { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; } }
 @media (max-width: 767px) { .has-form-frame.has-form-inner-gutter-mobile > .mrn-layout-section--wpforms > .mrn-layout-container { padding-inline: var(--mrn-form-frame-inner-gutter-mobile); } }
+
+/* Optional Image row-preset breakpoint; preset values remain the spacing source. */
+@media (min-width: 768px) and (max-width: 782px) {
+ .mrn-content-builder__row.has-image-row-spacing-at-767[data-mrn-row-spacing] {
+  --mrn-row-padding-top: var(--mrn-row-padding-top-desktop);
+  --mrn-row-padding-right: var(--mrn-row-padding-right-desktop);
+  --mrn-row-padding-bottom: var(--mrn-row-padding-bottom-desktop);
+  --mrn-row-padding-left: var(--mrn-row-padding-left-desktop);
+  margin-top: var(--mrn-row-margin-top-desktop);
+  margin-right: var(--mrn-row-margin-right-desktop);
+  margin-bottom: var(--mrn-row-margin-bottom-desktop);
+  margin-left: var(--mrn-row-margin-left-desktop);
+ }
+}
