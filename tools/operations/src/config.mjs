@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { isAbsolute } from 'node:path';
-import { absoluteUrl, readJson, Registry, requireThat, sha } from './contracts.mjs';
+import { absoluteUrl, readJson, Registry, requireThat, sha, policySchema } from './contracts.mjs';
 import { codePolicySchema } from './code-qa.mjs';
 import { contentQaPolicySchema } from './content-qa.mjs';
 import { delegationIssuer } from './delegation.mjs';
@@ -44,9 +44,14 @@ export const configSchema = z.object({
   { path: ['contentAccess'], message: 'Private content access requires the existing MRN origin, Google delegation and content workflow configuration.' });
 export function loadConfig(file) {
   const config = configSchema.parse(readJson(file));
+  requireThat(config.auth.googleWorkspace && config.delegation, 'AUTH_CONFIG',
+    'Hosted Operations requires current Google Workspace verification and signed individual delegation, including read-only access.');
   requireThat(new URL(config.auth.jwksUrl).origin === new URL(config.auth.issuer).origin, 'AUTH_CONFIG', 'Pin JWKS to the configured issuer origin.');
-  const registry = new Registry(() => config.registryPath ? readJson(config.registryPath) : { version: 1, websites: [] }, () => readJson(config.policyPath));
+  const registry = new Registry(() => config.registryPath ? readJson(config.registryPath) : { version: 1, websites: [] }, () => readJson(config.policyPath), { approvedTeam: Boolean(config.auth.googleWorkspace) });
   registry.data();
+  const policy = policySchema.parse(readJson(config.policyPath));
+  if (config.auth.googleWorkspace) requireThat(policy.members.every(member => /^google-oauth2\|[0-9]{1,64}$/.test(member.subject)),
+    'AUTH_CONFIG', 'The approved team roster must use immutable MRN Google subjects.');
   // Preflight and startup must validate the same files before any state is opened.
   const workflowPolicies = {
     code: config.code ? codePolicySchema.parse(readJson(config.code.policyPath)) : null,

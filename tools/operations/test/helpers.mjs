@@ -11,14 +11,14 @@ import { RecoveryEvidence } from '../src/recovery.mjs';
 import { responseEvidence } from '../src/probe.mjs';
 
 export const actor = { subject: 'team-member', expiresAt: Date.now() + 3600000, scopes: ['mrn:operations', 'mrn:operations:write'] };
-export function setup() {
+export function setup({ approvedTeam = false } = {}) {
   const root = mkdtempSync(join(tmpdir(), 'mrn-ops-'));
   const registryData = { version: 1, websites: [{ id: 'example', name: 'Example', aliases: ['Client'], facts: [], environments: [{ name: 'development',
     url: 'https://example.test', management: 'mainwp', backup: 'updraft',
     coordination: { exclusiveWriter: 'mrn-operations', evidenceRef: 'fixture-controlled-writers', validUntil: new Date(Date.now() + 3600000).toISOString() } }] }] };
   const policy = { version: 1, members: [{ subject: actor.subject, enabled: true, grants: [{ website: 'example', environments: ['development', 'production'], actions: ['read', 'test', 'repair', 'deploy_development', 'release_production'] }] },
     { subject: 'reader', enabled: true, grants: [{ website: 'example', environments: ['development'], actions: ['read'] }] }] };
-  const registry = new Registry(() => registryData, () => policy);
+  const registry = new Registry(() => registryData, () => policy, { approvedTeam });
   const store = new Store(join(root, 'state/operations.sqlite'));
   const makeArtifact = (v, char) => {
     const file = join(root, `mrn-test-${v}.zip`); writeFileSync(file, `controlled fixture artifact ${v}`);

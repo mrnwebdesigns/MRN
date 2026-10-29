@@ -1,5 +1,29 @@
 # Unified MRN MainWP integration
 
+## Phase 3 approved-team access decision, 2026-10-29
+
+This decision supersedes historical automatic-domain enrollment statements below.
+For the existing Google/delegated service, both a current verified MRN Google
+identity and an explicit enabled immutable subject in the existing members policy
+are required. The roster has no per-user roles, actions or site assignments. Every
+approved member receives the same portfolio-wide operations; exact targets,
+OAuth write consent, global feature readiness, confirmations, source ownership,
+locks, backups, QA and recovery still govern each change. Old grant fields remain
+parseable solely for legacy policy compatibility and do not control team access.
+Hosted startup rejects configurations without existing Google verification and
+signed delegation, including read-only mode; removing those fields cannot select
+legacy admission. The older hosted service template is consequently not a valid
+release configuration until its existing identity/delegation settings are verified
+by the separately authorized runtime operator. No unknown connection ID or key
+reference is invented in this PR.
+
+The checked-in membership lists are empty and domain grants are removed: no real
+person is enrolled by this source change. Existing Auth0/Google, signed individual
+delegation and current Directory/revocation checks remain. Configure the approved
+subject roster only through the separately authorized trusted operator process;
+no new permission UI, auth service, identity provider or database is introduced.
+Production activation and client-site writes remain disabled and unauthorized.
+
 ## Directory cache lock qualification, 2026-10-29
 
 Native baseline `40867224818` at gateway `556c087c`, provider `b8411fb`,
@@ -208,7 +232,7 @@ MCP clients. The native capture failure and team acceptance remain open.
 
 ## Required team experience
 
-One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebdesigns.com/mcp. Active MRN Google Workspace members get automatic portfolio access; there is no individual approval or enrollment step. Necessary approvals apply to concrete site changes. No teammate WordPress account, Application Password, API key, terminal, Codex, SSH or site token.
+One existing MRN Website Operations ChatGPT plugin at https://operations.mrnwebdesigns.com/mcp. Explicitly approved active MRN Google Workspace members receive equal portfolio-wide access; domain membership alone is insufficient. Necessary approvals apply to concrete site changes. No teammate WordPress account, Application Password, API key, terminal, Codex, SSH or site token.
 
 ## Company-only test target, 2026-10-23
 

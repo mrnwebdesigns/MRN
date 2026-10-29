@@ -18,10 +18,10 @@ function fixture(t, modes = []) {
   const content = contentQaFixture().policy;
   const code = { ...content, profiles: [{ siteUrl: 'https://example.test/', paths: ['wp-content/themes/fixture/style.css'],
     runtimeUrl: 'https://runtime.invalid', source: { mode: 'unversioned' } }] };
+  config.auth.verifiedEmailClaims = true;
+  config.auth.googleWorkspace = { connectionId: 'con_fixture' };
+  config.delegation = { keyId: 'fixture', privateKeyPath: join(root, 'unread-identity-key') };
   if (modes.length) {
-    config.auth.verifiedEmailClaims = true;
-    config.auth.googleWorkspace = { connectionId: 'con_fixture' };
-    config.delegation = { keyId: 'fixture', privateKeyPath: join(root, 'unread-identity-key') };
     config.github = { appId: '1', installationId: 1, privateKeyPath: join(root, 'unread-app-key'), repositories: { [code.repository]: 1 } };
   }
   for (const mode of modes) {
@@ -42,7 +42,7 @@ function fixture(t, modes = []) {
 }
 
 for (const modes of [[], ['code'], ['content'], ['code', 'content']]) {
-  test(`configuration preflight validates ${modes.join(' and ') || 'legacy read-only'} policies without credentials or runtime writes`, t => {
+  test(`configuration preflight validates ${modes.join(' and ') || 'read-only team'} policies without credentials or runtime writes`, t => {
     const f = fixture(t, modes), result = f.run();
     assert.equal(result.status, 0, result.stderr);
     const report = JSON.parse(result.stdout), loaded = loadConfig(f.file);
@@ -119,4 +119,33 @@ test('Git profiles require a central source repository pin; snapshot profiles ne
   assert.throws(() => loadConfig(f.file), { code: 'GITHUB_CONFIG' });
   f.config.github.repositories['mrnwebdesigns/company-fixture'] = 2;
   assert.equal(f.run().status, 0);
+});
+
+
+test('Google delegated configuration selects approved-team policy; legacy grants cannot authorize a person', t => {
+  const f = fixture(t, ['code']);
+  const person = { subject: 'google-oauth2|123456789', googleSubject: '123456789', identityProvider: 'google-oauth2',
+    googleConnection: 'con_fixture', hostedDomain: 'mrnwebdesigns.com', verifiedEmail: 'member@mrnwebdesigns.com', expiresAt: Date.now() + 60000 };
+  writeFileSync(f.config.policyPath, JSON.stringify({ version: 1, members: [], emailDomains: [{ domain: 'mrnwebdesigns.com', enabled: true,
+    portfolio: { sources: ['mainwp'], actions: ['read', 'content', 'code'] } }] }));
+  const loaded = loadConfig(f.file);
+  assert.equal(loaded.registry.approvedTeam, true);
+  assert.throws(() => loaded.registry.member(person), { code: 'FORBIDDEN' });
+  writeFileSync(f.config.policyPath, JSON.stringify({ version: 1, members: [{ subject: person.subject, enabled: true }] }));
+  assert.equal(loaded.registry.member(person).enabled, true);
+  writeFileSync(f.config.policyPath, JSON.stringify({ version: 1, members: [{ subject: 'auth0|email-identity', enabled: true }] }));
+  assert.throws(() => loadConfig(f.file), { code: 'AUTH_CONFIG' });
+});
+
+
+test('hosted read-only configuration cannot opt out of approved active Google admission', t => {
+  const f = fixture(t);
+  delete f.config.auth.googleWorkspace; delete f.config.delegation;
+  f.config.writesEnabled = false; f.save();
+  assert.throws(() => loadConfig(f.file), { code: 'AUTH_CONFIG' });
+  for (const entry of ['check-config.mjs', 'main.mjs']) {
+    const result = f.run(entry);
+    assert.equal(result.status, 1); assert.equal(result.stdout, '');
+    assert.equal(existsSync(f.config.stateDir), false);
+  }
 });

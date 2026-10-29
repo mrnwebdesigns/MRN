@@ -15,7 +15,7 @@ const target = { website: z.string().min(1).max(200).describe('Website name, ali
   environment: z.enum(environmentNames).optional().describe('Copy the environment returned by list_websites. If unknown, omit this argument or use unknown. Never infer production from a public URL.') };
 const requestKey = z.string().min(1).max(120).describe('Stable unique key for this logical request. Reuse only when retrying the same request.');
 const id = z.string().uuid();
-export const guide = `MRN Website Operations lets the MRN team manage its WordPress websites through ChatGPT. Team members add this one plugin, sign in with their active MRN Google Workspace account, and chat. Staff membership grants access automatically; never request individual approval, manual enrollment, WordPress accounts or Application Passwords. Resolve permitted websites automatically; do not ask for terminal commands, Codex, API keys, MCP configuration, SSH or duplicate website enrollment. Approvals concern concrete changes, not staff onboarding. Report evidence, limits and verified outcomes in ordinary language. MRN services enforce permissions and change safeguards; this plugin cannot bypass them.
+export const guide = `MRN Website Operations lets the MRN team manage its WordPress websites through ChatGPT. Approved team members add this one plugin, sign in with their active MRN Google Workspace account, and chat. The server requires explicit approved membership as well as current Google verification; a Google account or email domain alone grants no access. Every approved member has the same operational access to all connected client sites. Team approval uses existing trusted operator policy; never request backend credentials, WordPress accounts or Application Passwords. Resolve connected websites automatically; do not ask for terminal commands, Codex, API keys, MCP configuration, SSH or duplicate website enrollment. Change confirmations concern the exact reviewed operation; they do not establish team membership. Report evidence, limits and verified outcomes in ordinary language. MRN services enforce permissions and change safeguards; this plugin cannot bypass them.
 Use list_websites to discover the accessible MainWP directory and existing MRN environment records. Websites do not need to be added again. Discovery returns websites plus source coverage and unresolved issues.
 Resolve accessible exact environments; ask only if ambiguous or a requested action actually requires missing knowledge. Unknown environment or backup information does not prevent inspection, but cannot authorize a change. Directory discovery does not prove current site health; inspection performs exact-site synchronization.
 Copy the discovered URL and environment exactly. When the directory reports unknown environment, omit the optional environment argument or pass unknown; never substitute production merely because a URL is public. A mismatched guessed environment is not evidence that a website needs enrollment.
@@ -36,9 +36,13 @@ No arbitrary downstream tools, commands, credentials or caller identity are acce
 Content is authored in WordPress/ACF and repaired with tracked idempotent migrations. Site-owned child themes, Fleet shared components, content and providers keep separate workflows.
 Installed standard-plugin Fleet repairs and guarded code/content workflows require their separate configured qualifications. The code profile remains company-pilot-only until services qualify additional sites. Content edits require the new provider and protected content runner; report absent or unqualified profiles precisely. Typed ACF/menu/media operations remain unqualified.
 Form submission/delivery is not implemented: do not submit real forms or imply delivery. test_website runs the configured read-only MRN QA runtime only.
-Role permissions, fresh state, backups, immutable source/artifact bindings and shared locks are enforced by services, independent of these instructions.`;
+Approved membership, fresh state, confirmations, backups, immutable source/artifact bindings and shared locks are enforced by services, independent of these instructions. No granular roles or per-user site assignments are required.`;
 
 export function createMcp(service, actor, { publicUrl } = {}) {
+  // Admission verifies the current Workspace account. Re-read local approval
+  // after asynchronous admission and before every public tool/resource response.
+  const authorizeMember = () => { if (service.registry?.approvedTeam) service.registry.member(actor); };
+  authorizeMember();
   // Bound structural work before Zod validation, including unknown properties.
   // The largest supported request is 25 flat Fleet targets; HTTP also caps bytes.
   const server = new McpServer({ name: 'mrn-website-operations', title: 'MRN Website Operations', version: '0.1.0' },
@@ -55,6 +59,7 @@ export function createMcp(service, actor, { publicUrl } = {}) {
     descriptors.push({ name, title, description, inputSchema: toJsonSchemaCompat(z.object(schema), { strictUnions: true, pipeStrategy: 'input' }), annotations, securitySchemes, _meta });
     server.registerTool(name, { title, description, inputSchema: schema, annotations, _meta }, async args => {
       try {
+        authorizeMember();
         if (toolNeedsWriteScope(name)) requireWriteScope(actor);
         const result = await fn(args);
         const links = name === 'export_email_address_audit' ? (result.reports || []).map((r, i) => ({ type: 'resource_link',
@@ -99,8 +104,8 @@ export function createMcp(service, actor, { publicUrl } = {}) {
   // SDK registerTool drops top-level securitySchemes. Use its public
   // request-handler and schema-conversion APIs to retain ChatGPT's declaration;
   // SDK validation and handlers still execute every tool. No private SDK state.
-  server.server.setRequestHandler(ListToolsRequestSchema, () => ({ tools: descriptors }));
-  server.registerResource('workflow-guide', 'mrn-operations://guide', { mimeType: 'text/plain' }, async uri => ({ contents: [{ uri: uri.href, text: guide }] }));
+  server.server.setRequestHandler(ListToolsRequestSchema, () => { authorizeMember(); return { tools: descriptors }; });
+  server.registerResource('workflow-guide', 'mrn-operations://guide', { mimeType: 'text/plain' }, async uri => { authorizeMember(); return { contents: [{ uri: uri.href, text: guide }] }; });
   if (service.emailAudit) {
     for (const [action, schema] of Object.entries(auditSchemas)) register(`${action}_email_address_audit`,
       `${action[0].toUpperCase() + action.slice(1)} a read-only email configuration audit. Use explicit exact sites or explicit fleet scope. Results are stored configuration evidence, not delivery tests. Incomplete coverage never proves no use. Reports are private to your verified Google identity.`,

@@ -87,7 +87,9 @@ const targetConfiguration = target => {
 };
 
 export class Registry {
-  constructor(loadRegistry, loadPolicy) { this.loadRegistry = loadRegistry; this.loadPolicy = loadPolicy; this.discovered = new Map(); }
+  constructor(loadRegistry, loadPolicy, { approvedTeam = false } = {}) {
+    Object.assign(this, { loadRegistry, loadPolicy, approvedTeam }); this.discovered = new Map();
+  }
   data(actor) {
     const r = registrySchema.parse(this.loadRegistry());
     if (actor && this.discovered.has(actor.subject)) {
@@ -131,7 +133,22 @@ export class Registry {
     requireThat(actor?.subject && Number.isFinite(actor.expiresAt) && actor.expiresAt > Date.now(), 'AUTH_REQUIRED', 'Individual authentication is missing or expired.');
     const policy = policySchema.parse(this.loadPolicy());
     const explicit = policy.members.find(m => m.subject === actor.subject);
-    // Explicit restrictions and revocations override a broader domain grant.
+    if (this.approvedTeam) {
+      // Identity was authenticated and checked against the current Workspace by
+      // the existing admission/dispatch path. Local approval is a separate veto;
+      // neither an active Directory account nor an email-domain claim grants it.
+      requireThat(actor.identityProvider === 'google-oauth2' && typeof actor.googleSubject === 'string' && /^[0-9]{1,64}$/.test(actor.googleSubject)
+        && actor.subject === `google-oauth2|${actor.googleSubject}` && actor.hostedDomain === 'mrnwebdesigns.com'
+        && typeof actor.googleConnection === 'string' && /^con_[A-Za-z0-9]+$/.test(actor.googleConnection)
+        && typeof actor.verifiedEmail === 'string' && /^[^@\s]+@mrnwebdesigns\.com$/.test(actor.verifiedEmail),
+      'AUTH_REQUIRED', 'A verified individual MRN Google identity is required.');
+      requireThat(explicit?.enabled === true, 'FORBIDDEN', 'Your account is not an approved MRN Operations member.');
+      // All approved people share the same portfolio and operations. Existing
+      // per-person grants remain parseable for legacy integrations only.
+      return { subject: actor.subject, enabled: true,
+        portfolio: { sources: ['mainwp', 'local-hub'], actions: [...actions] }, grants: [] };
+    }
+    // Legacy read integrations retain their existing scoped policy semantics.
     if (explicit) {
       requireThat(explicit.enabled, 'FORBIDDEN', 'Your account does not have access to MRN Operations.');
       return explicit;
@@ -145,7 +162,8 @@ export class Registry {
     const member = this.member(actor);
     const direct = member.grants.some(g => [target.websiteId, target.url].includes(g.website) && g.environments.includes(target.environment) && g.actions.includes(action));
     const portfolio = member.portfolio?.actions.includes(action) && target.sources?.some(s => member.portfolio.sources.includes(s));
-    requireThat(direct || portfolio, 'FORBIDDEN', 'Your account does not have this operation permission for this website and environment.');
+    const team = this.approvedTeam && actions.includes(action);
+    requireThat(team || direct || portfolio, 'FORBIDDEN', 'Your account does not have this operation permission for this website and environment.');
     if (!['read', 'test'].includes(action)) requireWriteScope(actor);
     if (['code', 'content'].includes(action)) requireThat(actor.identityProvider === 'google-oauth2'
       && actor.subject === `google-oauth2|${actor.googleSubject}` && actor.verifiedEmail?.endsWith('@mrnwebdesigns.com'),

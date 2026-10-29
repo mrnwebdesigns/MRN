@@ -42,8 +42,8 @@ export function createAuthenticator(config, keySet = createRemoteJWKSet(new URL(
       const scopes = Object.freeze(operationsScopes.filter(scope => payload.scope.split(' ').includes(scope)));
       requireThat(typeof payload.sub === 'string' && payload.sub.length <= 200 && scopes.includes(operationsScope), 'AUTH_REQUIRED', 'The access token lacks the MRN Operations scope.');
       requireThat(payload.gty !== 'client-credentials' && !payload.sub.endsWith('@clients'), 'AUTH_REQUIRED', 'Use an individual member login.');
-      // Only this resource's signed, explicitly verified claim can grant domain
-      // access. Plain email claims and client/tool metadata are never identity.
+      // Only resource-bound signed claims establish this email identity.
+      // Approved membership is checked separately; email never grants access.
       const email = payload[`${config.audience}/email`];
       const verifiedEmail = config.verifiedEmailClaims === true && payload[`${config.audience}/email_verified`] === true
         && typeof email === 'string' && email.length <= 254 && /^[\x21-\x7e]+$/.test(email) && z.string().email().safeParse(email).success
