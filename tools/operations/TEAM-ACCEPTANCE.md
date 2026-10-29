@@ -65,6 +65,31 @@ pass. Native timing and the complete runtime flow remain to be qualified.
 Accessibility/frontend-performance rows are inapplicable; the API/runtime gate
 is the disposable native suite. No deployment, credential or access change.
 
+Run `40875647722` at gateway `5972931f` / provider `4676baa` passes the
+contracts, MRN QA and hosted composition, but the native hook stops at 290.204
+seconds with source capture pending. The first source-context lookup starts at
+167.127 seconds versus 135.897 seconds in the previous run, before the changed
+native guard is reached. Its first lookup takes 15.479 seconds versus 12.509.
+Only 89.781 seconds remain for capture. The journal reaches `capture.native`
+after 13.638 seconds and does not complete; no runtime speed benefit is proven.
+The lock probe still reports no transaction-cache write or lock refusal (1 ms),
+all recent access callbacks return HTTP 200, and callback cleanup succeeds.
+Artifact `12898033387` SHA-256:
+`188f0752e6528c356d30c2ea71de4af896ad08394c2a54111205be3ffe3fc5d8`.
+Independent review of `4676baa` finds no actionable authorization regression and
+reruns all 55 mocked native facade assertions; real runtime remains unqualified.
+
+The next diagnostic pin is provider
+`d40af170d43043b63d019711f4db5e39532afcdf`. Seven fixed native phase markers
+separate preflight, assignment, sync, parity before, files, parity after and
+finish within the existing private bounded journal. They preserve all proof and
+deadline logic and cannot confer authority or replace an operation's error.
+Ten real-PHP observer/projection tests, 55 native facade assertions and exact-index
+MRN QA pass. The gateway's closed parser rejects skipped phases, private fields
+and a native finish misrepresented as handler completion. Full native, content,
+code, hosted bootstrap and actual ChatGPT acceptance remain open. Production,
+credentials, access settings, managed sites and field releases are unchanged.
+
 Earlier runs `40866582493` and `40866582210` stopped at the same real-timer test
 before native execution: an abort need not imply the integer wall-clock deadline
 has passed. Commit `556c087c` makes the positive test establish expired wall time

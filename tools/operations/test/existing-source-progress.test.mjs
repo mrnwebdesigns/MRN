@@ -25,3 +25,21 @@ test('unknown fields, reordered phases, misleading completion and private data a
   for (const v of [null, 'PRIVATE', Buffer.alloc(0), Buffer.alloc(16385), Buffer.from('PRIVATE')])
     assert.throws(() => parseExistingSourceProgress(v), /^Error: Invalid disposable source-capture progress$/);
 });
+
+test('native sync, parity and file timing prefixes cannot claim handler completion or skip a phase', () => {
+  const steps = [['capture', 'controller'], ['capture', 'reservation'],
+    ...'authenticate preflight exclusion original-guard locked-history counter prepare write-veto claim-write commit first-readback release-veto final-readback'.split(' ').map(p => ['claim', p]),
+    ['capture', 'native'], ...'preflight assignment sync parity-before files parity-after finished'.split(' ').map(p => ['native', p])];
+  const v = value();
+  v.phases = steps.map(([scope, phase], i) => ({ ordinal: i + 1, scope, phase, elapsed_us: i * 100 }));
+  assert.deepEqual(parse(v), v);
+  assert.equal(parse(v).handler_finished, false);
+  assert.throws(() => parse({ ...v, handler_finished: true }));
+  const skipped = structuredClone(v); skipped.phases.splice(18, 1); skipped.phases.forEach((p, i) => { p.ordinal = i + 1; });
+  assert.throws(() => parse(skipped));
+  const secret = structuredClone(v); secret.phases[18].phase = 'private-file-path';
+  assert.throws(() => parse(secret));
+  v.phases.push({ ordinal: v.phases.length + 1, scope: 'capture', phase: 'finished', elapsed_us: 3000 }); v.handler_finished = true;
+  assert.deepEqual(parse(v), v);
+  assert.equal(parse(v).current_access_proven, false);
+});
