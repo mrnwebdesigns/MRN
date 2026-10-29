@@ -40,8 +40,30 @@ code correctly skips shared transients. Candidate
 request-local API token before each owner call. Fresh OAuth/Directory lookup,
 successful owner transition, policy epoch and SQL wait assertions stay intact.
 The independent worker starts with an empty request-local cache. All 31 focused
-cache/identity checks and fixture MRN QA pass; the next native pin selects this
-fixture correction. Full native qualification and team acceptance remain open.
+cache/identity checks and fixture MRN QA pass. Full native qualification and
+team acceptance remain open.
+
+Run `40871582984` at gateway `c81a5922` / provider `1c64321` again proves
+no token-cache lock: no shared-cache write, no independent lock refusal, 1 ms
+probe and HTTP 200 access callbacks. Capture completes all 27 phases and 11
+frames. The hook reaches its unchanged 290-second aggregate deadline at
+`unchanged-child` (290.151 seconds), before the corrected owner tests. Capture
+uses 93.729 seconds, including 72.269 seconds in the native-read segment.
+Callback cleanup passes. Artifact `12896966442` SHA-256:
+`f6aee73e51fb33521208296fb1076313af479f7b223603743f9ee893fc797444`.
+Gateway MRN QA and hosted composition pass; the full native run does not.
+
+The next source-only candidate is provider
+`4676baa8cfd4117f4096e11a2c188d4480824609`. Native signing now strictly binds its
+private prepared value to the reservation's identical prepared value, then uses
+the store's existing full authority checks before and after its durable read.
+Only the extra consecutive full control scan is removed. Both store proofs,
+fresh callback checks, all signing/response boundaries, exact-site targeting,
+reservation/exclusion checks and original deadlines remain. All 69 PHP CI
+entrypoints, including 55 focused native tests, and scoped/exact-index MRN QA
+pass. Native timing and the complete runtime flow remain to be qualified.
+Accessibility/frontend-performance rows are inapplicable; the API/runtime gate
+is the disposable native suite. No deployment, credential or access change.
 
 Earlier runs `40866582493` and `40866582210` stopped at the same real-timer test
 before native execution: an abort need not imply the integer wall-clock deadline
