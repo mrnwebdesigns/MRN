@@ -9,6 +9,7 @@
 function mrn_base_stack_get_hero_frame_fields() {
 	$labels = array(
 		'inner_gutter' => 'Inner Horizontal Gutter',
+		'inner_max_width' => 'Wide Inner Maximum Width',
 		'inner_gutter_mobile' => 'Small-Screen Inner Horizontal Gutter',
 		'content_width' => 'Content Maximum Width',
 		'content_width_mobile' => 'Small-Screen Content Maximum Width',
@@ -38,7 +39,7 @@ function mrn_base_stack_get_hero_frame_fields() {
 			'key' => 'field_mrn_hero_basic_block_frame_' . $suffix,
 			'name' => 'hero_' . $suffix, 'label' => $label, 'type' => 'text',
 			'default_value' => '', 'wrapper' => array( 'width' => '50' ),
-			'instructions' => 'Optional; blank retains existing formatting. Use a non-negative CSS length or clamp(minimum, preferred, maximum). Widths accept none; line heights accept unitless numbers. Small-screen widths apply at 960px, heading spacing at 767px. The gutter has its own breakpoint selector.',
+			'instructions' => 'inner_max_width' === $suffix ? 'Optional cap for the inner canvas of Wide/Full Heroes. Use a non-negative CSS length or clamp; blank retains 78rem. Content-width Heroes keep their existing separate cap.' : 'Optional; blank retains existing formatting. Use a non-negative CSS length or clamp(minimum, preferred, maximum). Widths accept none; line heights accept unitless numbers. Small-screen widths apply at 960px, heading spacing at 767px. The gutter has its own breakpoint selector.',
 		);
 	}
 	$fields[] = array(
@@ -47,6 +48,13 @@ function mrn_base_stack_get_hero_frame_fields() {
 		'choices' => array( '' => 'Use Existing Breakpoint (767px)', '767' => '767px', '960' => '960px', '1199' => '1199px' ),
 		'default_value' => '', 'wrapper' => array( 'width' => '50' ),
 		'instructions' => 'The smaller gutter applies at and below this viewport width. Content-width and typography breakpoints remain independent.',
+	);
+	$fields[] = array(
+		'key' => 'field_mrn_hero_basic_block_frame_row_spacing_mobile_breakpoint',
+		'name' => 'hero_row_spacing_mobile_breakpoint', 'label' => 'Row Spacing Mobile Breakpoint', 'type' => 'select',
+		'choices' => array( '' => 'Use Existing Breakpoint (782px)', '767' => '767px' ),
+		'default_value' => '', 'wrapper' => array( 'width' => '50' ),
+		'instructions' => 'Select when this Hero should keep desktop row margins and padding through 768px. All dimensions still come from the selected native spacing presets.',
 	);
 	$fields[] = array(
 		'key' => 'field_mrn_hero_basic_block_frame_body_h2_style',
@@ -93,7 +101,7 @@ function mrn_base_stack_validate_hero_frame_dimension( $raw, $allow_none = false
 function mrn_base_stack_get_hero_frame_contract( array $row ) {
 	$result = array( 'styles' => array(), 'heading_styles' => array(), 'classes' => array() );
 	$widths = array( 'content_width', 'content_width_mobile', 'heading_width', 'heading_width_mobile', 'text_width' );
-	foreach ( array_merge( $widths, array( 'inner_gutter', 'inner_gutter_mobile', 'content_gap', 'heading_space_after', 'heading_space_after_mobile', 'actions_space_before', 'actions_row_gap', 'actions_column_gap', 'action_icon_height', 'body_h2_space_before', 'body_h2_space_after' ) ) as $name ) {
+	foreach ( array_merge( $widths, array( 'inner_gutter', 'inner_gutter_mobile', 'inner_max_width', 'content_gap', 'heading_space_after', 'heading_space_after_mobile', 'actions_space_before', 'actions_row_gap', 'actions_column_gap', 'action_icon_height', 'body_h2_space_before', 'body_h2_space_after' ) ) as $name ) {
 		$value = mrn_base_stack_validate_hero_frame_dimension( $row[ 'hero_' . $name ] ?? '', in_array( $name, $widths, true ) );
 		if ( '' !== $value ) {
 			$result['styles'][] = '--mrn-hero-' . str_replace( '_', '-', $name ) . ':' . $value;
@@ -101,6 +109,7 @@ function mrn_base_stack_get_hero_frame_contract( array $row ) {
 			if ( str_starts_with( $name, 'body_h2_space_' ) ) { $result['classes'][] = 'has-hero-' . str_replace( '_', '-', $name ); }
 		}
 	}
+	if ( '767' === ( $row['hero_row_spacing_mobile_breakpoint'] ?? '' ) ) { $result['classes'][] = 'has-hero-row-spacing-at-767'; }
 	$breakpoint = $row['hero_inner_gutter_mobile_breakpoint'] ?? '';
 	if ( is_scalar( $breakpoint ) && in_array( (string) $breakpoint, array( '960', '1199' ), true ) ) {
 		$result['classes'][] = 'has-hero-gutter-at-' . (string) $breakpoint;

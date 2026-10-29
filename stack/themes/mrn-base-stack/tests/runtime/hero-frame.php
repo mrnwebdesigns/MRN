@@ -35,7 +35,7 @@ try {
 	$row = array(
 		'acf_fc_layout' => 'basic_block', 'hero_heading_mode' => 'custom_title', 'heading' => 'An editable native Hero',
 		'content' => '<p>Keep the first paragraph.</p><h2>Semantic second-level heading</h2><p>Keep the second paragraph.</p>',
-		'hero_inner_gutter' => '30px', 'hero_content_width' => '750px', 'hero_content_width_mobile' => '750px',
+		'hero_inner_gutter' => '30px', 'hero_inner_max_width' => '1170px', 'hero_row_spacing_mobile_breakpoint' => '767', 'hero_content_width' => '750px', 'hero_content_width_mobile' => '750px',
 		'hero_heading_width' => 'none', 'hero_heading_width_mobile' => 'none', 'hero_text_width' => 'none',
 		'hero_content_gap' => '0px', 'hero_heading_space_after' => '36px', 'hero_heading_space_after_mobile' => '16px',
 		'hero_actions_space_before' => '56px', 'hero_actions_row_gap' => '15px', 'hero_actions_column_gap' => '18px',
@@ -59,11 +59,13 @@ try {
 	};
 	$html = $render( $readback );
 	$expect( str_contains( $html, '--mrn-hero-content-width:750px' ) && str_contains( $html, '--mrn-hero-content-gap:0px' ) && str_contains( $html, 'font-size:clamp(32px, 5vw, 64px)' ), 'Native renderer uses actual saved frame and fluid typography values' );
+	$expect( str_contains( $html, '--mrn-hero-inner-max-width:1170px' ) && str_contains( $html, 'has-hero-row-spacing-at-767' ), 'Saved inner canvas cap and independent row-spacing breakpoint render natively' );
 	$expect( 1 === substr_count( $html, '<h1 ' ) && str_contains( $html, 'second=2' ) && str_contains( $html, 'Keep the second paragraph.' ), 'Heading semantics, complete action and rich content survive rendering' );
 	$expect( str_contains( $html, 'has-hero-gutter-at-1199' ) && str_contains( $html, 'has-hero-body-h2-style-h3' ) && str_contains( $html, '--mrn-hero-body-h2-space-before:1em' ) && str_contains( $html, '<h2>Semantic second-level heading</h2>' ), 'Saved native breakpoint, H2 typography and heading spacing retain semantic heading markup' );
-	$bad = mrn_base_stack_get_hero_frame_contract( array( 'hero_heading_size' => '1px;position:fixed', 'hero_text_size' => array(), 'hero_heading_weight' => '999', 'hero_heading_color' => 'unconfigured-color', 'hero_inner_gutter_mobile_breakpoint' => '1199;bad', 'hero_body_h2_style' => array( 'h3' ), 'hero_body_h2_space_before' => '-1em' ) );
+	$bad = mrn_base_stack_get_hero_frame_contract( array( 'hero_inner_max_width' => 'none', 'hero_row_spacing_mobile_breakpoint' => array( '767' ), 'hero_heading_size' => '1px;position:fixed', 'hero_text_size' => array(), 'hero_heading_weight' => '999', 'hero_heading_color' => 'unconfigured-color', 'hero_inner_gutter_mobile_breakpoint' => '1199;bad', 'hero_body_h2_style' => array( 'h3' ), 'hero_body_h2_space_before' => '-1em' ) );
 	$expect( $empty === $bad, 'Malformed optional data cannot inject CSS or invent Site Colors' );
 	$expect( $empty === mrn_base_stack_get_hero_frame_contract( array( 'hero_inner_gutter_mobile_breakpoint' => '767' ) ), 'Explicit existing 767px breakpoint keeps prior output' );
+	$expect( $empty === mrn_base_stack_get_hero_frame_contract( array( 'hero_row_spacing_mobile_breakpoint' => '782', 'hero_inner_max_width' => '-1px' ) ), 'Existing row-spacing breakpoint and invalid width retain defaults' );
 	$default = array( 'acf_fc_layout' => 'basic_block', 'heading' => 'Existing native defaults', 'hero_heading_mode' => 'custom_title', 'content' => '<p>Original formatting.</p>' );
 	$expect( ! str_contains( $render( $default ), '--mrn-hero-content-width' ) && ! str_contains( $render( $default ), 'has-hero-text-' ), 'Existing basic Hero rendering stays opt-in' );
 	$proof = getenv( 'MRN_HERO_FRAME_PROOF_PATH' );
