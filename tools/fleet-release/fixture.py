@@ -172,6 +172,8 @@ class WordPressFixture:
             "define('DB_PASSWORD', '');", "define('DB_CHARSET', 'utf8mb4');",
             "define('DB_HOST', " + repr('localhost:' + str(self.database_socket)) + ');',
             "define('WP_HTTP_BLOCK_EXTERNAL', true);", "define('DISABLE_WP_CRON', true);",
+            # Remote clock qualification is outside this disposable offline runtime.
+            "define('WORDFENCE_LS_DISABLE_NTP', true);",
             "define('WP_AUTO_UPDATE_CORE', false);", "define('AUTOMATIC_UPDATER_DISABLED', true);",
             "define('WP_ENVIRONMENT_TYPE', 'local');", "define('MRN_SITE_PROFILE', 'stack');",
             "define('WP_DEBUG', true);", "define('WP_DEBUG_DISPLAY', false);",
@@ -243,6 +245,11 @@ add_action('doing_it_wrong_run', static function ($function) {
                               + "$result=activate_plugin($plugin,'',false,false);"
                               + 'if(is_wp_error($result))$errors[$plugin]=$result->get_error_code();}'
                               + "switch_theme('mrn-base-stack-child');"
+                              # Wordfence 9.0.2 sends home_url's port to dns_get_record.
+                              # Cache this fixture's actual IP before another request;
+                              # no external DNS response or production address is invented.
+                              + "if(class_exists('wfConfig'))wfConfig::set('serverDNS',"
+                              + "time().';86400;'.wp_parse_url(home_url(),PHP_URL_HOST));"
                               + "echo json_encode(['errors'=>$errors,'active'=>count(get_option('active_plugins',[])),"
                               + "'woocommerce'=>class_exists('WooCommerce')]);")
         if activation['errors'] or activation['active'] != len(packages) or activation['woocommerce']:
