@@ -48,7 +48,7 @@ function mrn_editor_experience_enqueue() {
 		'mrn-section-navigator',
 		'mrnSectionNavigator',
 		array(
-			'title'    => __( 'Page sections', 'mrn-editor-lockdown' ),
+			'title'    => __( 'Page structure', 'mrn-editor-lockdown' ),
 			'search'   => __( 'Find a section', 'mrn-editor-lockdown' ),
 			'close'    => __( 'Close sections', 'mrn-editor-lockdown' ),
 			'return'   => __( 'Return to sections', 'mrn-editor-lockdown' ),
@@ -56,6 +56,22 @@ function mrn_editor_experience_enqueue() {
 			'errors'   => __( 'Needs attention', 'mrn-editor-lockdown' ),
 			'all'      => __( 'Show all sections', 'mrn-editor-lockdown' ),
 			'untitled' => __( 'Untitled section', 'mrn-editor-lockdown' ),
+			'content'  => __( 'Content', 'mrn-editor-lockdown' ),
+			'settings' => __( 'Page settings', 'mrn-editor-lockdown' ),
+			'focus'    => __( 'Edit one section', 'mrn-editor-lockdown' ),
+			'overview' => __( 'Arrange sections', 'mrn-editor-lockdown' ),
+			'previous' => __( 'Previous section', 'mrn-editor-lockdown' ),
+			'next'     => __( 'Next section', 'mrn-editor-lockdown' ),
+			'add'      => __( 'Add section', 'mrn-editor-lockdown' ),
+			'menu'     => __( 'Site menu', 'mrn-editor-lockdown' ),
+			'back'     => __( 'Back to list', 'mrn-editor-lockdown' ),
+			'backUrl'  => admin_url( 'edit.php?post_type=' . get_current_screen()->post_type ),
+			'alerts'   => __( 'Page alerts', 'mrn-editor-lockdown' ),
+			'pageName' => __( 'Page title', 'mrn-editor-lockdown' ),
+			'editSelected' => __( 'Edit selected section', 'mrn-editor-lockdown' ),
+			'hint'     => __( 'Choose a section to edit. Arrange sections to see the full page order.', 'mrn-editor-lockdown' ),
+			'arrangeHint' => __( 'Drag the native section handles to reorder. Select a section in the outline to return to focused editing.', 'mrn-editor-lockdown' ),
+			'settingsHint' => __( 'Publishing, featured image, page attributes and other page options.', 'mrn-editor-lockdown' ),
 		)
 	);
 }

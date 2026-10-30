@@ -28,6 +28,26 @@ if ( 'stress' === $mode ) {
 	if ( ! is_array( $value ) || 19 !== count( $value ) ) { throw new RuntimeException( 'Unexpected source structure.' ); }
 	update_field( 'page_content_rows', array_merge( $value, array_slice( $value, 0, 13 ) ), $ids['stress'] );
 }
+// Recovery for an interrupted browser test: prove the exact restored snapshot before writing.
+if ( 'restore-workspace-test' === $mode ) {
+	$value  = get_field( 'page_content_rows', $ids['real'], false );
+	$source = get_field( 'page_content_rows', 1189, false );
+	$name   = 'field_mrn_body_text_content_tab_internal_name';
+	$body   = 'field_mrn_body_text_content';
+	$faq    = 'field_mrn_page_faq_fields_field_mrn_faq_items';
+	$question = 'field_mrn_faq_item_question';
+	if ( 2523 !== (int) $ids['real'] || 'Workspace verified section' !== ( $value[5][$name] ?? '' )
+		|| 'Workspace verified nested question' !== ( $value[8][$faq][0][$question] ?? '' ) ) {
+		throw new RuntimeException( 'Expected local test markers are missing; refusing recovery write.' );
+	}
+	$value[5][$name] = $source[5][$name];
+	$value[5][$body] = $source[5][$body];
+	$value[8][$faq][0][$question] = $source[8][$faq][0][$question];
+	if ( '125c3120813340710c01d3d6602341cb3381d319d0080c23f09ea04bf3c36708' !== hash( 'sha256', wp_json_encode( $value ) ) ) {
+		throw new RuntimeException( 'Restored snapshot differs from the recorded baseline; refusing recovery write.' );
+	}
+	update_field( 'page_content_rows', $value, $ids['real'] );
+}
 $report = array( 'source' => array( 'id' => 1189, 'title' => 'Design Layouts Page', 'local_snapshot' => 'trilliant' ), 'ids' => $ids, 'pages' => array(), 'versions' => array( 'wp' => get_bloginfo( 'version' ), 'acf' => ACF_VERSION ) );
 if ( 'compare' === $mode ) {
 	$differences = array();

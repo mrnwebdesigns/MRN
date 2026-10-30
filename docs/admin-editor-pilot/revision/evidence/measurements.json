@@ -1,0 +1,313 @@
+{
+  "conditions": "1600x1100 Chromium, local VM, external requests blocked; three alternating V1/revision pairs per page; same fields and existing components",
+  "assets": {
+    "beforeJs": "5439955839c3bebbfad3a8c421a9745710a4b06791c3c8fca59f9d1bcc09c898",
+    "beforeCss": "2746b8670e2507a5698c93327a7253fab390a6b67393c377dbabc516e0f2085b",
+    "afterJs": "5c33ff25382ce38b6d95eb9cb2e2c4b783c6acba1df57601cc8a8f74dac10c12",
+    "afterCss": "937035bce9f6d280ca9e27ad97245c1d5cc5b9ad748b85d77124415ad0a30566"
+  },
+  "pages": {
+    "real": {
+      "before": [
+        {
+          "load_ms": 16850.70000001788,
+          "client_dcl_ms": 1223.5999999940395,
+          "ready_ms": 17104.5,
+          "heap_mb": 29.754638671875,
+          "long_task_ms": 834,
+          "rows": 19,
+          "visible_rows": 19,
+          "outline_visible": false,
+          "document_height": 4778,
+          "editable": {
+            "heap_mb": 29.754638671875,
+            "long_task_ms": 1007,
+            "native_editors": 3
+          }
+        },
+        {
+          "load_ms": 6381.5,
+          "client_dcl_ms": 385.2000000178814,
+          "ready_ms": 6506.299999982119,
+          "heap_mb": 33.473968505859375,
+          "long_task_ms": 418,
+          "rows": 19,
+          "visible_rows": 19,
+          "outline_visible": false,
+          "document_height": 4778,
+          "editable": {
+            "heap_mb": 33.473968505859375,
+            "long_task_ms": 529,
+            "native_editors": 3
+          }
+        },
+        {
+          "load_ms": 4859,
+          "client_dcl_ms": 443.69999998807907,
+          "ready_ms": 4984,
+          "heap_mb": 33.473968505859375,
+          "long_task_ms": 400,
+          "rows": 19,
+          "visible_rows": 19,
+          "outline_visible": false,
+          "document_height": 4778,
+          "editable": {
+            "heap_mb": 33.473968505859375,
+            "long_task_ms": 531,
+            "native_editors": 3
+          }
+        }
+      ],
+      "after": [
+        {
+          "load_ms": 8180,
+          "client_dcl_ms": 413.7999999821186,
+          "ready_ms": 8638.799999982119,
+          "heap_mb": 37.7655029296875,
+          "long_task_ms": 784,
+          "rows": 19,
+          "visible_rows": 1,
+          "outline_visible": true,
+          "document_height": 10394,
+          "editable": {
+            "heap_mb": 37.7655029296875,
+            "long_task_ms": 784,
+            "native_editors": 3
+          }
+        },
+        {
+          "load_ms": 5230.299999982119,
+          "client_dcl_ms": 558.3000000119209,
+          "ready_ms": 5612.4000000059605,
+          "heap_mb": 45.20416259765625,
+          "long_task_ms": 831,
+          "rows": 19,
+          "visible_rows": 1,
+          "outline_visible": true,
+          "document_height": 10394,
+          "editable": {
+            "heap_mb": 45.20416259765625,
+            "long_task_ms": 831,
+            "native_editors": 3
+          }
+        },
+        {
+          "load_ms": 4806.700000017881,
+          "client_dcl_ms": 399.30000001192093,
+          "ready_ms": 5084.100000023842,
+          "heap_mb": 40.149688720703125,
+          "long_task_ms": 483,
+          "rows": 19,
+          "visible_rows": 1,
+          "outline_visible": true,
+          "document_height": 10394,
+          "editable": {
+            "heap_mb": 40.149688720703125,
+            "long_task_ms": 483,
+            "native_editors": 3
+          }
+        }
+      ]
+    },
+    "stress": {
+      "before": [
+        {
+          "load_ms": 21873.80000001192,
+          "client_dcl_ms": 831.2999999821186,
+          "ready_ms": 22041.40000000596,
+          "heap_mb": 48.065185546875,
+          "long_task_ms": 713,
+          "rows": 32,
+          "visible_rows": 32,
+          "outline_visible": false,
+          "document_height": 5220,
+          "editable": {
+            "heap_mb": 48.065185546875,
+            "long_task_ms": 848,
+            "native_editors": 3
+          }
+        },
+        {
+          "load_ms": 4736.699999988079,
+          "client_dcl_ms": 1122.5999999940395,
+          "ready_ms": 4930.5999999940395,
+          "heap_mb": 35.572052001953125,
+          "long_task_ms": 955,
+          "rows": 32,
+          "visible_rows": 32,
+          "outline_visible": false,
+          "document_height": 5220,
+          "editable": {
+            "heap_mb": 35.572052001953125,
+            "long_task_ms": 1143,
+            "native_editors": 3
+          }
+        },
+        {
+          "load_ms": 3804.800000011921,
+          "client_dcl_ms": 511.7000000178814,
+          "ready_ms": 3937.100000023842,
+          "heap_mb": 35.572052001953125,
+          "long_task_ms": 561,
+          "rows": 32,
+          "visible_rows": 32,
+          "outline_visible": false,
+          "document_height": 5220,
+          "editable": {
+            "heap_mb": 35.572052001953125,
+            "long_task_ms": 647,
+            "native_editors": 3
+          }
+        }
+      ],
+      "after": [
+        {
+          "load_ms": 4262.4000000059605,
+          "client_dcl_ms": 612.1999999880791,
+          "ready_ms": 4557.5999999940395,
+          "heap_mb": 45.20416259765625,
+          "long_task_ms": 825,
+          "rows": 32,
+          "visible_rows": 1,
+          "outline_visible": true,
+          "document_height": 10394,
+          "editable": {
+            "heap_mb": 45.20416259765625,
+            "long_task_ms": 825,
+            "native_editors": 3
+          }
+        },
+        {
+          "load_ms": 3559.4000000059605,
+          "client_dcl_ms": 497,
+          "ready_ms": 3905.9000000059605,
+          "heap_mb": 42.629241943359375,
+          "long_task_ms": 817,
+          "rows": 32,
+          "visible_rows": 1,
+          "outline_visible": true,
+          "document_height": 10394,
+          "editable": {
+            "heap_mb": 42.629241943359375,
+            "long_task_ms": 817,
+            "native_editors": 3
+          }
+        },
+        {
+          "load_ms": 3450.0999999940395,
+          "client_dcl_ms": 496.90000000596046,
+          "ready_ms": 3752.0999999940395,
+          "heap_mb": 45.20416259765625,
+          "long_task_ms": 703,
+          "rows": 32,
+          "visible_rows": 1,
+          "outline_visible": true,
+          "document_height": 10394,
+          "editable": {
+            "heap_mb": 45.20416259765625,
+            "long_task_ms": 703,
+            "native_editors": 3
+          }
+        }
+      ]
+    }
+  },
+  "nativeAccessibility": {
+    "before": [
+      {
+        "id": "button-name",
+        "count": 72
+      },
+      {
+        "id": "color-contrast",
+        "count": 16
+      },
+      {
+        "id": "nested-interactive",
+        "count": 75
+      }
+    ],
+    "after": [
+      {
+        "id": "button-name",
+        "count": 72
+      },
+      {
+        "id": "color-contrast",
+        "count": 16
+      },
+      {
+        "id": "nested-interactive",
+        "count": 75
+      }
+    ]
+  },
+  "editableSummary": {
+    "real": {
+      "before": {
+        "heap_mb": 33.473968505859375,
+        "long_task_ms": 531,
+        "native_editors": 3
+      },
+      "after": {
+        "heap_mb": 40.149688720703125,
+        "long_task_ms": 784,
+        "native_editors": 3
+      }
+    },
+    "stress": {
+      "before": {
+        "heap_mb": 35.572052001953125,
+        "long_task_ms": 848,
+        "native_editors": 3
+      },
+      "after": {
+        "heap_mb": 45.20416259765625,
+        "long_task_ms": 817,
+        "native_editors": 3
+      }
+    }
+  },
+  "summary": {
+    "real": {
+      "before": {
+        "load_ms": 6381.5,
+        "client_dcl_ms": 443.69999998807907,
+        "ready_ms": 6506.299999982119,
+        "heap_mb": 33.473968505859375,
+        "long_task_ms": 418,
+        "visible_rows": 19,
+        "document_height": 4778
+      },
+      "after": {
+        "load_ms": 5230.299999982119,
+        "client_dcl_ms": 413.7999999821186,
+        "ready_ms": 5612.4000000059605,
+        "heap_mb": 40.149688720703125,
+        "long_task_ms": 784,
+        "visible_rows": 1,
+        "document_height": 10394
+      }
+    },
+    "stress": {
+      "before": {
+        "load_ms": 4736.699999988079,
+        "client_dcl_ms": 831.2999999821186,
+        "ready_ms": 4930.5999999940395,
+        "heap_mb": 35.572052001953125,
+        "long_task_ms": 713,
+        "visible_rows": 32,
+        "document_height": 5220
+      },
+      "after": {
+        "load_ms": 3559.4000000059605,
+        "client_dcl_ms": 497,
+        "ready_ms": 3905.9000000059605,
+        "heap_mb": 45.20416259765625,
+        "long_task_ms": 817,
+        "visible_rows": 1,
+        "document_height": 10394
+      }
+    }
+  }
+}

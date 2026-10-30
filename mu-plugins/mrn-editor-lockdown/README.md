@@ -36,31 +36,40 @@ reload the editor. The native editor and existing save guard remain available.
 
 Behavior belongs here; pilot presentation belongs to `mrn-admin-ui-css`.
 Dashboard Support preserves contextual notices on eligible pilot editors.
-Other admin screens retain their existing behavior. Summary priority is the
-native renamed title, existing internal name, heading, label, then native title.
-The index observes only native row containers and title text, and follows ACF
-ready/append/remove/sort/validation hooks. It stores no content or order.
+The revised pilot opens a persistent page structure outline and a focused native
+section. Content and Page settings are separate workspace views; Arrange sections
+exposes the original full-page ACF ordering controls. A section selection is kept
+only in same-tab session storage, by post ID, field key and index. No content,
+order, metabox preferences or feature configuration is stored there.
 
-The review report, screenshots and measurements are in
-[`docs/admin-editor-pilot/README.md`](../../docs/admin-editor-pilot/README.md).
-Runtime scripts in `tests/runtime/section-navigator-*.cjs` target only the named
-fixture and reuse the installed MRN QA Engine Playwright/axe dependencies. Run
-them from the Stack worktree root after preparing that fixture; they write to
-`outputs/admin-editor-pilot/`. The regression script intentionally edits and
-restores copied draft content, and the publishing script creates a local test
-page. Never point these scripts at a shared or remote environment.
+Root fields and controls stay in their original form and DOM order. Inactive
+sections are hidden with scoped presentation classes, never disabled or removed.
+ACF owns expansion, picker, append, duplication, removal, ordering, validation,
+TinyMCE and serialization. Errors reveal the native failing section, including
+when Page settings was selected. The legacy sidebar restore/toggles are skipped
+only on the enabled pilot screen because they conflict with the new layout.
+Page alerts contains original notices and their controls; errors auto-open it.
 
-Fixture prerequisites: retain the isolated Trilliant snapshot and the fixture
-IDs recorded in the report; run `section-navigator-fixture.php` through its
-Local Hub WP CLI for setup/auth, and stress preparation before test edits. Copy
-`section-navigator-hooks.php` to the fixture's local-only MU test hook path and
-the existing `stack/themes/mrn-base-stack/inc/builder/editor-save-integrity.php`
-to the fixture root as `editor-save-integrity-baseline.php`. The hook refuses
-other hostnames and is test scaffolding, not a new distributed component.
-Keep auth session files private in the fixture's `logs/` directory. The paired
-benchmark temporarily toggles the one flag in this fixture's `wp-config.php`
-and restores the original file in `finally`; do not run other fixture tests
-concurrently with that measurement.
+The current review is in [`docs/admin-editor-pilot/revision/README.md`](../../docs/admin-editor-pilot/revision/README.md).
+The first sprint report remains historical evidence of the earlier experience.
+`tests/runtime/editor-workspace-browser.cjs` exercises the revised workflow and
+native save/reload on the named fixture only. `editor-workspace-measure.cjs`
+reads the prior pilot assets directly from commit `0fe8847c` for comparison. These reuse MRN QA Engine Playwright/axe dependencies;
+run from the worktree root. Results go to `outputs/admin-editor-pilot/revision/`.
+The tests intentionally edit and restore copied drafts. The fixture helper has a
+`restore-workspace-test` recovery mode that refuses writes unless the reconstructed
+content matches the recorded baseline hash. Never point these at a
+shared or remote environment. The older `section-navigator-browser.cjs` and
+`section-navigator-save.cjs` describe the original floating-panel workflow and
+are historical harnesses, not acceptance checks for the revised layout.
+
+Fixture prerequisites: retain the isolated Trilliant snapshot and fixture IDs
+recorded in the report; run `section-navigator-fixture.php` through Local Hub WP
+CLI for setup/auth. Copy `section-navigator-hooks.php` to the fixture's local-only
+MU test hook and the existing source save-integrity guard to the fixture root as
+`editor-save-integrity-baseline.php`. This is local test scaffolding. Keep auth
+session files private in the fixture's logs. Do not run flag-toggling benchmarks
+concurrently with fixture tests.
 
 ## QA Engine
 

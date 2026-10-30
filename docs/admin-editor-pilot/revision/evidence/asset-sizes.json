@@ -1,0 +1,14 @@
+{
+  "mu-plugins/mrn-editor-lockdown/assets/section-navigator.js": {
+    "before_bytes": 12404,
+    "after_bytes": 22071,
+    "before_gzip_bytes": 3702,
+    "after_gzip_bytes": 5934
+  },
+  "mu-plugins/mrn-admin-ui-css/mrn-editor-workspace.css": {
+    "before_bytes": 5761,
+    "after_bytes": 16680,
+    "before_gzip_bytes": 1553,
+    "after_gzip_bytes": 3483
+  }
+}

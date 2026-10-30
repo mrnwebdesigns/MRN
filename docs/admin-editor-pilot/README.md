@@ -1,6 +1,8 @@
 # MRN Local Admin Editor Pilot
 
-The approved W0–W4 sprint implements the editor pilot with existing MRN components. The demonstration runs only in the isolated Local Hub fixture. It is ready for owner review; W5–W9, Fleet publication and remote deployment remain outside this authorization.
+**Historical W0–W4 report. Actual MRN editor review found the experience insufficiently differentiated. The current implementation and review evidence are in [the workspace revision](revision/README.md).**
+
+The approved W0–W4 sprint implements the editor pilot with existing MRN components. The demonstration runs only in the isolated Local Hub fixture. This version passed technical checks but did not meet the editor experience objective; W5–W9, Fleet publication and remote deployment remain outside this authorization.
 
 ## Demonstration
 

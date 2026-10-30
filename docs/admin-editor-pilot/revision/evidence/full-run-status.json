@@ -1,0 +1,10 @@
+{
+  "status": "strict_console_check_failed",
+  "functional_assertions": "Completed through mobile reflow before the final zero-page-error assertion",
+  "console_events": [
+    "Transition was skipped"
+  ],
+  "evidence": "workflow-console-event.log",
+  "readback": "save-integrity-comparison.json",
+  "note": "No clean overall browser pass is claimed for this full run. All content hashes match baseline after test restoration; 19 and 32 rows and draft status retained."
+}

@@ -19,15 +19,16 @@ The semantic component and action rules live in [`ADMIN_UI_CONTRACT.md`](ADMIN_U
 ## Local editor pilot
 
 On an eligible, explicitly enabled Editor Lockdown pilot screen, load
-`mrn-editor-workspace.css` instead of the global foundations/cleanup rules.
-The pilot scopes neutral light surfaces, row summaries, section navigation,
-visible focus and wrapping publishing controls to its editor. Native notices,
-fields, tabs, conditional logic, pickers and media controls keep their markup.
-Only the two identified GTranslate review/upgrade promotions are hidden there;
-its conflict and debug warnings remain visible.
+`mrn-editor-workspace.css` instead of global foundations/cleanup. The revision
+provides a full editing canvas with persistent page outline, a focused native
+section, distinct Content/Page settings views, native Arrange sections, a compact
+publishing bar and a temporary Site menu drawer. It does not modify global menu
+preferences. Native fields, tabs, conditional logic and picker ownership remain.
 
-The small surface/ink/muted/accent token set is local to
-`body.mrn-editor-experience`. The measured `--mrn-editor-offset` keeps navigation
-and jump targets below the existing sticky toolbar as its controls wrap.
-Disabling the single `MRN_EDITOR_EXPERIENCE_ENABLED` flag restores the ordinary
-loader path on reload. Broad admin styling remains outside this pilot.
+The workspace rules apply only after its JS successfully mounts. Notice controls
+remain intact in Page alerts; actionable errors auto-open. Only the two identified
+GTranslate review/upgrade promotions are suppressed. The measured toolbar offset
+keeps navigation below publishing actions. The single
+`MRN_EDITOR_EXPERIENCE_ENABLED` flag is still the emergency disable: set false and
+reload to restore the ordinary loader/editor. Broad admin styling remains outside
+this local pilot. See the [revision report](../../docs/admin-editor-pilot/revision/README.md).

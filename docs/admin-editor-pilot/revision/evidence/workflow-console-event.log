@@ -1,0 +1,18 @@
+AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+
++ [
++   'Transition was skipped'
++ ]
+- []
+
+    at /Users/khofmeyer/Development/MRN/.worktrees/admin-editor-pilot-20261029/mu-plugins/mrn-editor-lockdown/tests/runtime/editor-workspace-browser.cjs:44:215
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at process.processImmediate (node:internal/timers:472:9) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: [Array],
+  expected: [],
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}

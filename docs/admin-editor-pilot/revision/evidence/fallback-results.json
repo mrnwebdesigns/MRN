@@ -1,0 +1,7 @@
+{
+  "status": "passed",
+  "checks": [
+    "Blocked workspace JS leaves native form, all 19 rows and both existing save-integrity markers available"
+  ],
+  "nativeWordPressTransitionStylesheet": 0
+}
