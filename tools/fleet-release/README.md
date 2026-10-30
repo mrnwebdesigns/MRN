@@ -103,6 +103,13 @@ checks rejection of an incomplete submission and complete public readback after
 a valid save, including six legacy Text Swipe panels. This fixture setting does
 not configure client hosts; installed site QA must use their actual capacity.
 
+Wordfence's optional remote NTP is disabled only in the disposable offline
+fixtures. Their known loopback address is seeded into Wordfence's DNS cache;
+Wordfence 9.0.2 otherwise sends the loopback URL's port to DNS and exceeds PHP's
+normal execution limit. This does not qualify provider time synchronization,
+production DNS or visitor-IP detection. Runtime diagnostics, PHP execution limits
+and every browser/API/accessibility/performance gate remain unchanged.
+
 Each native fixture retains `php-diagnostics.json` with counts and plugin-relative
 early-translation origins. `php-diagnostics.log` and `translation-trace.log` stay
 in the private evidence directory after the disposable runtime is removed.

@@ -43,3 +43,37 @@ MainWP instructions are available alongside the shipped presets and helper.
 This follow-up changes package membership only; runtime behavior is unchanged.
 Validation: Python compilation, package-member file/readability check and
 `git diff --check` passed. The staged task snapshot also passes the MRN QA commit gate.
+
+## MainWP license activation
+
+After owner approval to continue, the existing saved MainWP entitlement activated
+Wordfence Integration 5.2.1 successfully. The add-on now reports Licensed; the
+Dashboard count changed from 15 to 16 activated add-ons. No new key or purchase
+was needed. Wordfence global/child-site options were not saved or broadcast.
+
+The mandatory pre-write Updraft database-only backup completed at
+2026-10-30T13:20:18Z (job `25d1de6e4d81`, normal retention, no Always Keep).
+S3 HeadObject verified the configured object
+`mainwp/wpcontrol/backup_2026-10-30-1305_MRN_Website_Manger_25d1de6e4d81-db.gz`
+in `mrn-webdesigns-backups`: 14,559,517 bytes, last modified 13:20:17Z,
+AES256 server-side encryption. This control-plane backup did not change
+backup configuration or any child site.
+
+## Automatic qualification fixture follow-up
+
+The accepted source worker reached native qualification after using the exact
+checksum-bound vendor cache. Its first fixture failed with PHP's normal 30-second
+execution limit in Wordfence `wfUtils.php:1491`: Wordfence used the whole loopback
+URL authority, including its port, in a DNS A lookup. Keep the fixture offline by
+seeding its actual loopback host into Wordfence's vendor DNS cache during plugin
+activation and disabling optional remote NTP with the vendor constant. No vendor
+source, production preset, diagnostic rule or execution limit is changed.
+
+Validation: all 54 source distribution/diagnostic regression tests passed. The
+corrected native fixture started all 36 exact default packages, reached healthy
+loopback REST, read back Wordfence 9.0.2's actual loopback cache and disabled
+optional NTP, and retained clean PHP/early-translation diagnostics in 43.58
+seconds. Its disposable WordPress tree and private database were removed. Receipt:
+`/private/tmp/mrn-stack-mail-media-security/native-wordfence-cache-check/wordfence-qualification-check.json`.
+Full cumulative browser, API, accessibility, performance and publication checks
+remain the automatic source worker's separate qualification gate.
