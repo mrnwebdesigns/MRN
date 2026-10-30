@@ -123,3 +123,19 @@ final transaction, both result and lock release are durable. Unknown/mixed code,
 changed baselines, unavailable original artifacts, target changes beyond renewed
 coordination, or broader Stack drift need a separately reviewed recovery plan.
 There is no SQL-edit, expiry-based unlock or force-unlock fallback.
+# Shared content and file backup boundary
+
+Content and code workflows use `Operations.changeBackup`: one exact resolved site,
+one nonce, bounded polling, and the earlier of approval expiry or ten minutes.
+Opaque backup receipts remain ephemeral. A completed database-backup response alone
+does not prove that an ACF inverse or CSS file preimage is restorable. The provider
+must enforce its operation-specific recovery evidence before child dispatch.
+
+`mrn_write_recovery` is an explicit recovery qualification blocker. The pinned
+provider's `mrn_content_not_dispatched` and `mrn_code_not_dispatched` errors identify
+consumed plans refused before child dispatch. They never authorize a replay.
+The gateway conservatively retains its uncertain lock after backup activity when
+the transport does not supply independently bound reconciliation evidence; a
+message or error code alone cannot clear a gateway lock. Existing qualified
+operator reconciliation remains required for uncertain work.
+

@@ -134,16 +134,7 @@ export class ContentWorkflow {
     const s = this.service, authorize = this.authorize(actor, op.target); await authorize();
     requireThat(op.requestedBy === actor.subject, 'CONTENT_OPERATOR', 'The original active operator must execute the content change.');
     this.proof(op); const before = await this.fresh(session, op), p = op.plan.provider; this.bind(session, p);
-    const started = await session.call(toolNames.backup, { site_id: before.site.id });
-    requireThat(started.site_id === before.site.id && /^[a-f0-9]+$/i.test(started.nonce), 'BACKUP_INVALID', 'The remote backup did not identify this exact site.');
-    const deadline = Math.min(op.expiresAt, Date.now() + 10 * 60000); let receipt;
-    while (Date.now() < deadline) {
-      const result = await session.call(toolNames.backupStatus, { site_id: before.site.id, nonce: started.nonce });
-      requireThat(result.status !== 'failed', 'BACKUP_FAILED', 'The required remote database backup failed.');
-      if (result.status === 'complete' && typeof result.receipt === 'string' && result.receipt) { receipt = { site_id: before.site.id, nonce: started.nonce, receipt: result.receipt }; break; }
-      await this.delay(5000);
-    }
-    requireThat(receipt, 'BACKUP_UNVERIFIED', 'The remote database backup was not verified before expiry.');
+    const receipt = await s.changeBackup(session, before.site, op.expiresAt, this.delay);
     await authorize(); this.proof(op); await this.fresh(session, op);
     const result = await contentCall(session, 'execute-content-change-v1', { operation_id: p.operation_id, reviewed_digest: p.digest, confirm: true, backup_receipt: receipt });
     requireThat(result.operation_id === p.operation_id && result.state === 'completed' && [null, ''].includes(result.error_code) && typeof result.changed === 'boolean'

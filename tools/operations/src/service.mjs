@@ -247,6 +247,23 @@ export class Operations {
       catch (finishError) { if (!['EXECUTION_FENCED', 'LOCK_CHANGED'].includes(finishError.code)) throw finishError; }
     } finally { await session?.close().catch(() => {}); }
   }
+  // One exact-site backup boundary for both content and file changes. The
+  // opaque receipt is ephemeral; the provider independently enforces the
+  // operation-specific remote recovery proof before dispatching a child write.
+  async changeBackup(session, site, expiresAt, delay) {
+    const started = await session.call(toolNames.backup, { site_id: site.id });
+    requireThat(started.site_id === site.id && typeof started.nonce === 'string' && /^[a-f0-9]+$/i.test(started.nonce),
+      'BACKUP_INVALID', 'The remote database backup did not identify this exact site.');
+    const deadline = Math.min(expiresAt, Date.now() + 10 * 60000);
+    while (Date.now() < deadline) {
+      const result = await session.call(toolNames.backupStatus, { site_id: site.id, nonce: started.nonce });
+      requireThat(result.status !== 'failed', 'BACKUP_FAILED', 'The required remote database backup failed.');
+      if (result.status === 'complete' && typeof result.receipt === 'string' && result.receipt)
+        return { site_id: site.id, nonce: started.nonce, receipt: result.receipt };
+      await delay(5000);
+    }
+    requireThat(false, 'BACKUP_UNVERIFIED', 'The remote database backup was not verified before approval expiry.');
+  }
   async reconcile(actor, { operationId }) {
     await this.discovery?.refresh(actor);
     const op = this.store.get(operationId);

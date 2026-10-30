@@ -177,16 +177,7 @@ export class CodeWorkflow {
     if (op.plan.proposal) requireThat(digest(await this.source.merged(op.plan.proposal, authorize)) === digest(op.plan.source), 'SOURCE_CHANGED', 'Merged source changed after approval.');
     const before = await codeInspection(session, op.plan.path); requireThat(before.sha256 === op.plan.beforeSha256, 'CODE_PRECONDITION', 'The file changed after approval.');
     this.bind(session, op);
-    const started = await session.call(toolNames.backup, { site_id: before.site.id });
-    requireThat(started.site_id === before.site.id && /^[a-f0-9]+$/i.test(started.nonce), 'BACKUP_INVALID', 'The remote database backup did not return an exact-site nonce.');
-    const deadline = Date.now() + 10 * 60000; let receipt;
-    while (Date.now() < deadline) {
-      const result = await session.call(toolNames.backupStatus, { site_id: before.site.id, nonce: started.nonce });
-      requireThat(result.status !== 'failed', 'BACKUP_FAILED', 'The required remote database backup failed.');
-      if (result.status === 'complete' && typeof result.receipt === 'string' && result.receipt) { receipt = { site_id: before.site.id, nonce: started.nonce, receipt: result.receipt }; break; }
-      await this.delay(5000);
-    }
-    requireThat(receipt, 'BACKUP_UNVERIFIED', 'The required remote database backup was not verified.');
+    const receipt = await this.service.changeBackup(session, before.site, op.expiresAt, this.delay);
     await authorize();
     const result = await session.call(toolNames.codeExecute, { operation_id: op.plan.provider.operation_id, reviewed_digest: op.plan.provider.digest, confirm: true, backup_receipt: receipt });
     requireThat(result.operation_id === op.plan.provider.operation_id && result.state === 'completed' && result.data?.success === true

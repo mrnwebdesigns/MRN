@@ -36,6 +36,9 @@ export function withoutSecrets(value) {
 }
 
 const providerBlockers = Object.freeze({
+  mrn_write_recovery: ['RECOVERY_UNQUALIFIED', 'Operation-specific remote backup and restoration evidence is missing or no longer valid. No alternate write route is permitted.'],
+  mrn_content_not_dispatched: ['CHANGE_NOT_DISPATCHED', 'The provider refused before child dispatch and consumed this plan. Prepare a new plan after recovery evidence is qualified.'],
+  mrn_code_not_dispatched: ['CHANGE_NOT_DISPATCHED', 'The provider refused before child dispatch and consumed this plan. Prepare a new plan after recovery evidence is qualified.'],
   EMAIL_AUDIT_READER_UNAVAILABLE: ['EMAIL_AUDIT_READER_UNAVAILABLE', 'The site audit reader is missing or incompatible; coverage is incomplete.'],
   EMAIL_AUDIT_TRANSPORT: ['EMAIL_AUDIT_TRANSPORT', 'The authenticated child inspection did not complete; coverage is incomplete.'],
   EMAIL_AUDIT_STALE_INVENTORY: ['EMAIL_AUDIT_STALE_INVENTORY', 'The child inventory changed during inspection; coverage is incomplete.'],

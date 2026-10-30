@@ -4,8 +4,32 @@ import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { setup, actor, prepared, execute } from './helpers.mjs';
 import { Store } from '../src/store.mjs';
-import { MainwpSession, toolNames } from '../src/mainwp.mjs';
+import { MainwpSession, toolNames, integrationError } from '../src/mainwp.mjs';
 import { publicAddress } from '../src/probe.mjs';
+
+test('shared change backup binds one site, refuses failures and never polls beyond approval expiry', async t => {
+  const f = setup(); t.after(f.close); const calls = [];
+  const session = { call: async (name, args) => { calls.push({ name, args }); return name === toolNames.backup
+    ? { site_id: 1, nonce: 'abc123' } : { status: 'complete', receipt: 'private-test-receipt' }; } };
+  assert.deepEqual(await f.service.changeBackup(session, { id: 1 }, Date.now() + 1000, async () => {}),
+    { site_id: 1, nonce: 'abc123', receipt: 'private-test-receipt' });
+  assert.deepEqual(calls.map(c => c.args), [{ site_id: 1 }, { site_id: 1, nonce: 'abc123' }]);
+  calls.length = 0;
+  await assert.rejects(() => f.service.changeBackup(session, { id: 1 }, Date.now() - 1, async () => {}), { code: 'BACKUP_UNVERIFIED' });
+  assert.equal(calls.length, 1);
+  await assert.rejects(() => f.service.changeBackup({ call: async () => ({ site_id: 2, nonce: 'abc123' }) }, { id: 1 }, Date.now() + 1000, async () => {}), { code: 'BACKUP_INVALID' });
+  await assert.rejects(() => f.service.changeBackup({ call: async name => name === toolNames.backup ? { site_id: 1, nonce: 'abc123' } : { status: 'failed' } },
+    { id: 1 }, Date.now() + 1000, async () => {}), { code: 'BACKUP_FAILED' });
+});
+
+test('fixed recovery refusals do not reflect private data or accept codes embedded in prose', () => {
+  for (const code of ['mrn_content_not_dispatched', 'mrn_code_not_dispatched', 'mrn_write_recovery']) {
+    const result = integrationError({ code, message: 'private-test-sentinel' });
+    assert.equal(result.code, code === 'mrn_write_recovery' ? 'RECOVERY_UNQUALIFIED' : 'CHANGE_NOT_DISPATCHED');
+    assert.equal(result.message.includes('sentinel'), false);
+    assert.equal(integrationError({ message: `untrusted prose ${code}` }).code, 'MAINWP_FAILED');
+  }
+});
 
 test('registry permissions never upgrade legacy OAuth consent into write authority', async t => {
   const f = setup(); t.after(() => f.close());
