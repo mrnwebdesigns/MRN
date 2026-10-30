@@ -110,6 +110,12 @@ normal execution limit. This does not qualify provider time synchronization,
 production DNS or visitor-IP detection. Runtime diagnostics, PHP execution limits
 and every browser/API/accessibility/performance gate remain unchanged.
 
+The additional-plugin fixture initializes FluentSMTP's seven-day mail-log
+retention through its native settings API before activating Database Retention.
+This is the existing Stack policy. Database Retention's change audit logging and
+reconciliation remain enabled, and a subsequent no-change reconciliation is
+verified against the native fixture. No diagnostic output is filtered or cleared.
+
 Each native fixture retains `php-diagnostics.json` with counts and plugin-relative
 early-translation origins. `php-diagnostics.log` and `translation-trace.log` stay
 in the private evidence directory after the disposable runtime is removed.

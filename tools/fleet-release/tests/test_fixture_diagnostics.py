@@ -50,6 +50,14 @@ class FixtureDiagnostics(unittest.TestCase):
         self.assertEqual((self.root / 'php-diagnostics.log').read_text(),
                          'PHP Fatal error: synthetic regression\n')
 
+    def test_structured_application_log_still_blocks(self):
+        self.debug.write_text(json.dumps({'source': 'mrn-db-retention',
+                                          'event': 'policy_reconcile'}) + '\n')
+        with self.assertRaises(ReleaseError):
+            self.fixture.assert_clean_diagnostics()
+        self.assertEqual(self.summary()['php_log_rows'], 1)
+        self.assertEqual(self.summary()['status'], 'blocked')
+
     def test_clean_empty_diagnostics_pass(self):
         self.debug.write_text('\n')
         self.trace.write_text('\n')
