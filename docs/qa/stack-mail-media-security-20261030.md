@@ -77,3 +77,24 @@ seconds. Its disposable WordPress tree and private database were removed. Receip
 `/private/tmp/mrn-stack-mail-media-security/native-wordfence-cache-check/wordfence-qualification-check.json`.
 Full cumulative browser, API, accessibility, performance and publication checks
 remain the automatic source worker's separate qualification gate.
+
+## Cumulative FluentSMTP retention fixture baseline
+
+The next automatic attempt passed cumulative native/browser/presentation and MRN
+release QA. Its additional-plugin fixture stopped on Database Retention's
+intentional `policy_reconcile` audit record: FluentSMTP was changed to the
+existing seven-day mail-log policy during activation. The plugin's regression
+contract requires that change log. Preserve that behavior and the strict PHP
+diagnostic gate. Initialize the additional fixture with the existing seven-day
+policy through FluentSMTP's settings API before activating Database Retention,
+then verify native no-change reconciliation. No production plugin or policy is
+modified and no diagnostic output is suppressed or erased.
+
+Validation: 55 distribution/diagnostic tests and all 48 Database Retention
+regression assertions passed. The added diagnostic regression proves structured
+application records still block the gate. The native additional-plugin fixture
+loaded 47 packages, passed REST health, retained seven-day FluentSMTP logs, and
+reported native reconciliation as available/unchanged with byte-identical
+settings and clean diagnostics in 43.86 seconds. No log filtering or clearing was
+used. Disposable runtime/database cleanup completed; the receipt remains at
+`/private/tmp/mrn-stack-mail-media-security/optional-fluent-policy-check/fluent-policy-check.json`.

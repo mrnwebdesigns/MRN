@@ -242,6 +242,16 @@ add_action('doing_it_wrong_run', static function ($function) {
         entries = json.dumps([item['main_file'] for item in packages])
         activation = self.php("require_once ABSPATH.'wp-admin/includes/plugin.php';$errors=[];"
                               + 'foreach(json_decode(' + repr(entries) + ') as $plugin){'
+                              # The cumulative fixture starts with Stack's existing
+                              # seven-day mail-log policy. Retention reconciliation
+                              # remains enabled; its intentional change audit logs
+                              # and every PHP diagnostic are left intact.
+                              + "if($plugin==='mrn-database-retention/mrn-database-retention.php'"
+                              + "&&function_exists('fluentMailGetSettings')&&function_exists('fluentMailSetSettings')){"
+                              + "$mail=fluentMailGetSettings();"
+                              + "if(!is_array($mail))throw new RuntimeException('Invalid FluentSMTP fixture settings');"
+                              + "if(!isset($mail['misc'])||!is_array($mail['misc']))$mail['misc']=[];"
+                              + "$mail['misc']['log_saved_interval_days']='7';fluentMailSetSettings($mail);}"
                               + "$result=activate_plugin($plugin,'',false,false);"
                               + 'if(is_wp_error($result))$errors[$plugin]=$result->get_error_code();}'
                               + "switch_theme('mrn-base-stack-child');"
