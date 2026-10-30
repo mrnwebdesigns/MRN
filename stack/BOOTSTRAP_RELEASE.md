@@ -1,8 +1,8 @@
 # New-site Stack bootstrap release
 
-Platform candidate: `2026.10.29-fleet-auto-830e63125027`; plugin input bundle: `2026.10.29-fleet-auto-830e63125027`. Scope: qualified source installation inputs; site deployment remains separate.
+Plugin-input candidate: `2026.10.30-mail-media-security-candidate`. Source preparation only: full release qualification, immutable platform lock and publication remain pending. Site deployment remains separate.
 
-The Stack profile selects **34 standard plugins**. The plain profile selects **33**, excluding only Reusable Block Library. Community versions are pinned in `plugins.txt`; every plugin archive is checksum-bound in `manifests/bootstrap-packages.lock.json`. The MRN platform lock separately covers the parent/child pair, MU components and shared runtime.
+The Stack profile selects **36 standard plugins**. The plain profile selects **35**, excluding only Reusable Block Library. Community versions are pinned in `plugins.txt`; every plugin archive is checksum-bound in `manifests/bootstrap-packages.lock.json`. The MRN platform lock separately covers the parent/child pair, MU components and shared runtime.
 
 ## Standard plugins
 
@@ -13,7 +13,9 @@ The Stack profile selects **34 standard plugins**. The plain profile selects **3
 | AME Branding Add-on (`ame-branding-add-on`) | 1.3.13 | all |
 | Classic Editor (`classic-editor`) | 1.7.0 | all |
 | Enable Media Replace (`enable-media-replace`) | 4.2.2 | all |
-| Post SMTP (`post-smtp`) | 4.0.2 | all |
+| FluentSMTP (`fluent-smtp`) | 2.4.1 | all |
+| Converter for Media (`webp-converter-for-media`) | 6.7.0 | all |
+| Wordfence Security (`wordfence`) | 9.0.2 | all |
 | HappyFiles Pro (`happyfiles-pro`) | 1.9.1 | all |
 | MRN ACF Focal Point (`mrn-acf-focal-point`) | 1.1.2 | all |
 | MRN Announcements (`mrn-announcements`) | 1.8.2 | all |
@@ -47,7 +49,9 @@ The Stack profile selects **34 standard plugins**. The plain profile selects **3
 
 - Activate the MRN Base Stack Child 1.1.0 over parent 1.6.12. Child content remains site-owned.
 - Keep SEOPress Free/PRO 10.3 active for native editing. Development disables indexing, tracking and external jobs.
-- Post SMTP 4.0.2 is installed and inactive in development. Provider configuration and verified delivery belong to launch.
+- FluentSMTP 2.4.1 is installed and remains inactive throughout development bootstrap. Provider configuration and verified delivery belong to launch. Post SMTP is excluded from new defaults; existing mail settings and logs are retained for a separately approved cutover.
+- Converter for Media uses its native WebP/new-upload defaults and preserves originals. Host rewrite/codec support and real HTTP image delivery require verification before bulk conversion. AVIF is a separately licensed option.
+- Wordfence Free is the baseline, with Premium supported per site. New CloudPanel bootstraps use the Cloudflare preset; set `STACK_WORDFENCE_PROFILE=standalone` for a confirmed non-Cloudflare site. Both presets use vendor automatic IP detection until host verification; licensing/terms, firewall learning/optimization, 2FA enrollment, alert delivery and MainWP readback remain launch gates. See [configuration and migration](MAIL-MEDIA-SECURITY.md).
 - reCAPTCHA Manager uses the qualified source package pinned in the bootstrap lock. Provider credentials, assessment and any site cutover remain separately verified operations.
 - The MRN MU loader supplies the 12 documented platform components plus wrapper/shared support.
 - Premium licenses, reCAPTCHA/UptimeRobot credentials and backup destination settings stay in the existing secure manager configuration; no credentials are shipped in the release archive.
@@ -56,7 +60,7 @@ The Stack profile selects **34 standard plugins**. The plain profile selects **3
 
 ## Excluded defaults
 
-SmartCrawl, SEO Helper, ACF Character Count, AI Assist, Editor Enhancements, MRN Cookie Consent, MRN GTM Injector, FluentSMTP, SendGrid Provisioning and Background Video Pop-Out Disabler are excluded. Prior source and settings remain recoverable; this release does not uninstall anything on existing sites. See [recovery procedure](RESTORING-RETIRED-CAPABILITIES.md).
+SmartCrawl, SEO Helper, ACF Character Count, AI Assist, Editor Enhancements, MRN Cookie Consent, MRN GTM Injector, Post SMTP, SendGrid Provisioning and Background Video Pop-Out Disabler are excluded. Prior source and settings remain recoverable; this release does not uninstall anything on existing sites. See [recovery procedure](RESTORING-RETIRED-CAPABILITIES.md).
 
 ## Acceptance and handoff
 

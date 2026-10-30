@@ -1,5 +1,5 @@
 {
-  "plain_plugin_count": 33,
+  "plain_plugin_count": 35,
   "plugins": [
     {
       "main_file": "admin-menu-editor-pro/menu-editor.php",
@@ -77,19 +77,49 @@
       "version": "4.2.2"
     },
     {
-      "main_file": "post-smtp/postman-smtp.php",
-      "manifest_source": "post-smtp",
-      "name": "Post SMTP",
-      "package": "post-smtp.4.0.2.zip",
+      "main_file": "fluent-smtp/fluent-smtp.php",
+      "manifest_source": "fluent-smtp",
+      "name": "FluentSMTP",
+      "package": "fluent-smtp.2.4.1.zip",
       "profile": "all",
-      "sha256": "7aec4c927e063416ee580558882cd3b6b712d09794f817c196b7d24ce87a685e",
-      "size_bytes": 21177304,
-      "slug": "post-smtp",
+      "sha256": "4932248e0fae299842ca0bd6b8dc71de7efef9b0302ffd7f29df39028673553f",
+      "size_bytes": 2523922,
+      "slug": "fluent-smtp",
       "source": {
         "type": "wordpress.org",
-        "url": "https://downloads.wordpress.org/plugin/post-smtp.4.0.2.zip"
+        "url": "https://downloads.wordpress.org/plugin/fluent-smtp.2.4.1.zip"
       },
-      "version": "4.0.2"
+      "version": "2.4.1"
+    },
+    {
+      "main_file": "webp-converter-for-media/webp-converter-for-media.php",
+      "manifest_source": "webp-converter-for-media",
+      "name": "Converter for Media",
+      "package": "webp-converter-for-media.6.7.0.zip",
+      "profile": "all",
+      "sha256": "3cb15f61afd391ec632bd06fdfe0f57a9315ca31a337932a7e7fd101293217dd",
+      "size_bytes": 377283,
+      "slug": "webp-converter-for-media",
+      "source": {
+        "type": "wordpress.org",
+        "url": "https://downloads.wordpress.org/plugin/webp-converter-for-media.6.7.0.zip"
+      },
+      "version": "6.7.0"
+    },
+    {
+      "main_file": "wordfence/wordfence.php",
+      "manifest_source": "wordfence",
+      "name": "Wordfence Security",
+      "package": "wordfence.9.0.2.zip",
+      "profile": "all",
+      "sha256": "4124ae2a5d7cff8faadf04c222583fa06f78e8e9c791e50447383e5e12ab5fb6",
+      "size_bytes": 8370918,
+      "slug": "wordfence",
+      "source": {
+        "type": "wordpress.org",
+        "url": "https://downloads.wordpress.org/plugin/wordfence.9.0.2.zip"
+      },
+      "version": "9.0.2"
     },
     {
       "main_file": "happyfiles-pro/happyfiles-pro.php",
@@ -529,8 +559,8 @@
       "version": "0.1.2"
     }
   ],
-  "release_id": "2026.10.29-fleet-auto-830e63125027",
+  "release_id": "2026.10.30-mail-media-security-candidate",
   "schema_version": 1,
   "scope": "new-site-bootstrap-inputs",
-  "stack_plugin_count": 34
+  "stack_plugin_count": 36
 }
