@@ -1,0 +1,8 @@
+{
+  "checks": [
+    "Typing preserves outline button identity",
+    "Actual pointer drag uses the existing native sortable handle",
+    "Keyboard arrangement survives native Save Draft/reload, then restores original order through native Save Draft"
+  ],
+  "errors": []
+}

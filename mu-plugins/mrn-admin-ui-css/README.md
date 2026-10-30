@@ -32,3 +32,5 @@ keeps navigation below publishing actions. The single
 `MRN_EDITOR_EXPERIENCE_ENABLED` flag is still the emergency disable: set false and
 reload to restore the ordinary loader/editor. Broad admin styling remains outside
 this local pilot. See the [revision report](../../docs/admin-editor-pilot/revision/README.md).
+
+Local editor W5 (3.2.7) adds scoped keyboard arrangement controls to the approved workspace. The existing strict Local Hub flag remains the emergency disable mechanism.

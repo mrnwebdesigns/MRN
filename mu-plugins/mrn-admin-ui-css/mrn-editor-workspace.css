@@ -159,3 +159,9 @@ body.mrn-workspace .mrn-editor-tools, body.mrn-workspace .mrn-editor-section { s
 }
 body.mrn-workspace .wrap > h1 { display: block; position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 body.mrn-workspace .mrn-outline-skip:focus { position: static !important; width: 100%; height: auto; clip: auto; clip-path: none; margin: 8px 0; padding: 8px; border: 1px solid #244bd7; border-radius: 5px; background: #fff; color: #244bd7; }
+
+/* Keyboard arrangement uses the same native ACF row order as pointer sorting. */
+.mrn-workspace .mrn-section-arrangement { display: none; gap: 8px; flex-wrap: wrap; }
+.mrn-workspace-overview .mrn-section-arrangement { display: flex; }
+.mrn-section-move { background: #fff; color: #244bd7; border: 1px solid #a8b8ca; border-radius: 6px; min-height: 36px; padding: 6px 10px; cursor: pointer; }
+.mrn-section-move:disabled { color: #536779; cursor: default; opacity: .6; }

@@ -1,0 +1,27 @@
+{
+  "status": "passed",
+  "checks": [
+    "Opening shows persistent outline, one expanded section and editable content above the fold",
+    "Content/settings/arrange switches preserve every successful ACF form entry and the original form ancestry",
+    "Search/keyboard selection, previous/next, return and same-tab reload preserve editing context",
+    "New workspace surfaces WCAG A/AA axe scan has zero violations; native controls scanned separately against baseline",
+    "Keyboard move up/down uses ACF sort lifecycle; original field values and row order restored",
+    "Existing add picker, native duplicate/remove/append/sort update the outline and select new content; unsaved changes disappear on reload",
+    "Focused native media control opens and cancels without attachment changes",
+    "Native server validation blocks Publish, leaves settings, reveals the parked failing section and clears the outline error after correction",
+    "Actionable error auto-opens Page alerts with original link and button intact",
+    "390px workspace reflows without horizontal page overflow; mobile search/jump and WCAG A/AA scan pass"
+  ],
+  "metrics": {
+    "opening": {
+      "visibleRootSections": 1,
+      "firstEditableFieldTop": 680.28125,
+      "viewportHeight": 1100,
+      "outlineVisible": true
+    }
+  },
+  "timings": {
+    "search_selection_ms": 27.563874999999825
+  },
+  "errors": []
+}

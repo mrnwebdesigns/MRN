@@ -4,11 +4,11 @@
 	if ( ! window.acf || ! window.mrnSectionNavigator ) { return; }
 	var labels = mrnSectionNavigator, rows = [], fields = [], activeRow, mode = 'content', overview = false;
 	var panel, list, search, status, empty, errorFilter, mobileToggle, modeButtons, viewButton, position, previous, next, hint;
-	var observer, noticeObserver, frame = 0, errorsOnly = false, mounted = false, lastInvoker, pendingInvalid = false;
-	var observed = new WeakSet(), captions = new WeakMap();
+	var observer, titleObserver, noticeObserver, frame = 0, refreshFrame = 0, dirtyRows = new Set(), moving = false, sorting = false, errorsOnly = false, mounted = false, lastInvoker, pendingInvalid = false;
+	var observed = new WeakSet(), captions = new WeakMap(), remembered = '';
 	function rememberSection() {
 		var item = rows.find( function( entry ) { return entry.row === activeRow; } ), id = document.getElementById( 'post_ID' );
-		if ( item && id ) { try { window.sessionStorage.setItem( 'mrn-editor-section:' + id.value, JSON.stringify( { field: item.field, index: item.index } ) ); } catch ( error ) { /* Storage is optional. */ } }
+		if ( item && id ) { try { var value = JSON.stringify( { field: item.field, index: item.index } ); if ( remembered === value ) { return; } window.sessionStorage.setItem( 'mrn-editor-section:' + id.value, value ); remembered = value; } catch ( error ) { /* Storage is optional. */ } }
 	}
 	function restoreSection() {
 		var id = document.getElementById( 'post_ID' );
@@ -100,6 +100,8 @@
 		var positionText = active < 0 ? '0 / ' + rows.length : ( active + 1 ) + ' / ' + rows.length;
 		if ( position.textContent !== positionText ) { position.textContent = positionText; }
 		previous.disabled = active <= 0; next.disabled = active < 0 || active >= rows.length - 1;
+		var moves = document.querySelectorAll( '.mrn-section-move' ), selected = rows[ active ];
+		if ( moves.length ) { moves[ 0 ].disabled = moving || ! selected || ! rows[ active - 1 ] || rows[ active - 1 ].field !== selected.field; moves[ 1 ].disabled = moving || ! selected || ! rows[ active + 1 ] || rows[ active + 1 ].field !== selected.field; }
 		viewButton.textContent = overview ? labels.focus : labels.overview;
 		viewButton.setAttribute( 'aria-pressed', String( overview ) );
 		hint.textContent = mode === 'settings' ? labels.settingsHint : ( overview ? labels.arrangeHint : labels.hint );
@@ -112,7 +114,7 @@
 			item.item.hidden = ! match; if ( match ) { count++; }
 		} );
 		list.querySelectorAll( '.mrn-section-group' ).forEach( function( group ) {
-			group.hidden = !! query && ! group.querySelector( 'ol > li:not([hidden])' );
+			group.hidden = ! group.querySelector( 'ol > li:not([hidden])' );
 		} );
 		var statusText = count + ' / ' + rows.length + ' sections';
 		if ( status.textContent !== statusText ) { status.textContent = statusText; } empty.hidden = count !== 0;
@@ -123,7 +125,7 @@
 	function decorate( row, title, type ) {
 		var handle = row.querySelector( '.acf-fc-layout-handle' ); if ( ! handle ) { return; }
 		var nativeTitle = handle.querySelector( '.acf-fc-layout-title' );
-		if ( nativeTitle && ! observed.has( nativeTitle ) ) { observer.observe( nativeTitle, { childList: true, subtree: true, characterData: true } ); observed.add( nativeTitle ); }
+		if ( nativeTitle ) { titleObserver.observe( nativeTitle, { childList: true, subtree: true, characterData: true } ); }
 		var summary = handle.querySelector( '.mrn-section-summary' );
 		if ( ! summary ) { summary = element( 'span', 'mrn-section-summary' ); handle.appendChild( summary ); }
 		summary.setAttribute( 'role', 'heading' ); summary.setAttribute( 'aria-level', '2' );
@@ -131,7 +133,7 @@
 		if ( ! caption || ! caption.isConnected ) { caption = handle.querySelector( '.mrn-section-caption' ) || element( 'span', 'mrn-section-caption' ); summary.appendChild( caption ); captions.set( row, caption ); }
 		if ( caption.textContent !== title ) { caption.textContent = title; }
 		var kind = handle.querySelector( '.mrn-section-kind' ) || element( 'span', 'mrn-section-kind' );
-		kind.textContent = type; summary.insertBefore( kind, caption );
+		if ( kind.textContent !== type ) { kind.textContent = type; } if ( ! kind.isConnected ) { summary.insertBefore( kind, caption ); }
 		if ( ! row.querySelector( ':scope > .mrn-section-return' ) ) { row.appendChild( button( labels.return, 'button-link mrn-section-return' ) ); }
 		row.classList.add( 'mrn-editor-section' );
 	}
@@ -142,15 +144,49 @@
 		if ( add ) { add.scrollIntoView( { block: 'center', behavior: 'instant' } ); add.click(); }
 		closePanel( false );
 	}
+	function refreshItem( item ) {
+		var title = meaningfulTitle( item.row ), errors = item.row.querySelectorAll( '.acf-error' ).length;
+		decorate( item.row, title, item.type );
+		var name = item.link.querySelector( '.mrn-section-name' ); if ( name.textContent !== title ) { name.textContent = title; }
+		var badge = item.link.querySelector( '.mrn-section-error' );
+		if ( errors && ! badge ) { item.link.appendChild( element( 'span', 'mrn-section-error', labels.errors ) ); }
+		else if ( ! errors && badge ) { badge.remove(); }
+		item.text = item.type + ' ' + title; item.errors = errors;
+	}
+	function refresh( node ) {
+		var item = node && rootRow( node ); if ( item ) { dirtyRows.add( item ); }
+		if ( ! refreshFrame ) { refreshFrame = requestAnimationFrame( function() {
+			refreshFrame = 0; dirtyRows.forEach( function( entry ) { if ( entry.row.isConnected ) { refreshItem( entry ); } } ); dirtyRows.clear(); filter();
+		} ); }
+	}
+	function moveSection( direction ) {
+		if ( moving ) { return; }
+		var item = rows.find( function( entry ) { return entry.row === activeRow; } ); if ( ! item ) { return; }
+		var siblings = rows.filter( function( entry ) { return entry.field === item.field; } ), index = siblings.indexOf( item ), target = siblings[ index + direction ];
+		if ( ! target ) { return; }
+		// ACF 6.8 has pointer sorting but no keyboard move action. Use its same
+		// sortstart/sortstop lifecycle to detach/reattach TinyMCE, then its render/change path.
+		var $row = window.jQuery( item.row ), field = owner( item.row );
+		moving = true; acf.doAction( 'sortstart', $row );
+		if ( direction < 0 ) { target.row.before( item.row ); } else { target.row.after( item.row ); }
+		field.render(); field.$input().trigger( 'change' ); acf.doAction( 'sortstop', $row );
+		schedule();
+		var attempts = 0; window.setTimeout( function settled() {
+			var waiting = window.tinymce && Array.from( item.row.querySelectorAll( '.tmce-active:not(.delay) textarea.wp-editor-area' ) ).some( function( input ) { var editor = window.tinymce.get( input.id ); return ! editor || ! editor.initialized; } );
+			if ( waiting && attempts++ < 100 ) { window.setTimeout( settled, 50 ); return; }
+			moving = false; applyView(); status.textContent = labels.moved + ' ' + ( index + direction + 1 ) + ' / ' + siblings.length;
+			var current = document.activeElement; if ( current && current.matches( '.mrn-section-move:disabled' ) ) { document.querySelector( '.mrn-section-move:not(:disabled)' ).focus(); }
+		}, 50 );
+	}
 	function reconcile() {
-		frame = 0; fields = eligibleFields(); if ( ! fields.length ) { return; }
+		frame = 0; if ( sorting ) { return; } fields = eligibleFields(); if ( ! fields.length ) { return; }
 		if ( ! mounted ) { mount(); }
-		var focused = document.activeElement, focusedRow = rows.find( function( item ) { return item.link === focused; } );
-		var previousRows = rows.map( function( item ) { return item.row; } ), outlineScroll = panel.scrollTop;
-		rows = []; list.replaceChildren();
+		var focused = document.activeElement, oldRows = rows, outlineScroll = panel.scrollTop, oldIndex = oldRows.findIndex( function( item ) { return item.row === activeRow; } );
+		// Disconnect before re-indexing: removed layouts must not be retained by observers.
+		observer.disconnect(); titleObserver.disconnect(); rows = []; list.replaceChildren();
 		fields.forEach( function( field ) {
 			var container = field.$layoutsWrap && field.$layoutsWrap()[ 0 ]; if ( ! container ) { return; }
-			if ( ! observed.has( container ) ) { observer.observe( container, { childList: true } ); observed.add( container ); }
+			observer.observe( container, { childList: true } );
 			field.$el[ 0 ].classList.add( 'mrn-workspace-field' );
 			var box = field.$el[ 0 ].closest( '.postbox' ); if ( box ) { box.classList.add( 'mrn-workspace-region' ); box.classList.remove( 'closed' ); }
 			var label = field.$el.children( '.acf-label' ).text().trim() || field.get( 'name' );
@@ -158,28 +194,29 @@
 			var add = button( '+ ' + labels.add, 'mrn-region-add' ); add.setAttribute( 'aria-label', labels.add + ': ' + label ); add.title = labels.add + ': ' + label;
 			add.addEventListener( 'click', function() { addTo( field ); } );
 			header.append( element( 'h3', '', label ), add ); group.append( header, groupList ); list.appendChild( group );
-			Array.from( container.children ).filter( function( row ) { return row.matches( '.layout:not(.acf-clone)' ); } ).forEach( function( row, index ) {
-				var type = row.getAttribute( 'data-label' ) || row.getAttribute( 'data-layout' );
+			Array.from( container.children ).filter( function( row ) { return row.matches( '.layout[data-layout]:not(.acf-clone):not(.ui-sortable-placeholder)' ); } ).forEach( function( row, index ) {
+				var type = row.getAttribute( 'data-label' ) || row.getAttribute( 'data-layout' ) || labels.untitled;
 				if ( type.indexOf( '|' ) !== -1 ) { type = type.split( ' - ' )[ 0 ]; }
-				var title = meaningfulTitle( row ), errors = row.querySelectorAll( '.acf-error' ).length;
-				decorate( row, title, type );
-				var item = element( 'li' ), link = button( '', 'mrn-section-link' );
-				link.append( element( 'span', 'mrn-section-type', ( index + 1 ) + ' · ' + type ), element( 'span', 'mrn-section-name', title ) );
-				if ( errors ) { link.appendChild( element( 'span', 'mrn-section-error', labels.errors ) ); }
-				link.addEventListener( 'click', function() { select( row, true ); } ); item.appendChild( link ); groupList.appendChild( item );
-				rows.push( { row: row, link: link, item: item, text: type + ' ' + title, errors: errors, field: field.get( 'key' ), index: index } );
+				var entry = oldRows.find( function( item ) { return item.row === row; } );
+				if ( ! entry ) {
+					var item = element( 'li' ), link = button( '', 'mrn-section-link' );
+					link.append( element( 'span', 'mrn-section-type' ), element( 'span', 'mrn-section-name' ) );
+					link.addEventListener( 'click', function() { select( row, true ); } ); item.appendChild( link );
+					entry = { row: row, link: link, item: item };
+				}
+				entry.type = type; entry.field = field.get( 'key' ); entry.index = index;
+				entry.link.querySelector( '.mrn-section-type' ).textContent = ( index + 1 ) + ' · ' + type;
+				refreshItem( entry ); groupList.appendChild( entry.item ); rows.push( entry );
 			} );
 		} );
-		// Native append/duplicate chooses the new section; initial load chooses the first existing one.
-		var added = previousRows.length && rows.find( function( item ) { return previousRows.indexOf( item.row ) === -1; } );
+		var added = oldRows.length && rows.find( function( item ) { return ! oldRows.some( function( old ) { return old.row === item.row; } ); } );
 		if ( added ) { select( added.row, false ); }
-		else if ( ! activeRow || ! activeRow.isConnected ) { var restoredSection = ! previousRows.length && restoreSection(); activeRow = restoredSection ? restoredSection.row : ( rows.length ? rows[ 0 ].row : null ); }
+		else if ( ! activeRow || ! activeRow.isConnected ) { var restoredSection = ! oldRows.length && restoreSection(); activeRow = restoredSection ? restoredSection.row : ( rows.length ? rows[ Math.max( 0, Math.min( oldIndex, rows.length - 1 ) ) ].row : null ); }
 		filter(); applyView(); if ( activeRow && ! overview && mode === 'content' ) { reveal( activeRow ); }
-		if ( ! added ) { panel.scrollTop = outlineScroll; }
-		rememberSection();
-		if ( focusedRow ) { var restored = rows.find( function( item ) { return item.row === focusedRow.row; } ); if ( restored ) { restored.link.focus( { preventScroll: true } ); } }
+		if ( ! added ) { panel.scrollTop = outlineScroll; } rememberSection();
+		if ( focused && focused.isConnected && focused.matches( '.mrn-section-link' ) ) { focused.focus( { preventScroll: true } ); }
 	}
-	function schedule() { if ( ! frame ) { frame = window.requestAnimationFrame( reconcile ); } }
+	function schedule() { if ( sorting ) { return; } if ( ! frame ) { frame = window.requestAnimationFrame( reconcile ); } }
 	function updateChromeOffset() {
 		var bar = document.getElementById( 'mrn-universal-sticky-toolbar' ), adminBar = document.getElementById( 'wpadminbar' );
 		var header = document.getElementById( 'mrn-workspace-header' );
@@ -215,7 +252,7 @@
 		if ( ! count ) { alerts.remove(); }
 	}
 	function mount() {
-		mounted = true; observer = new MutationObserver( schedule ); document.body.classList.add( 'mrn-editor-experience', 'mrn-workspace' );
+		mounted = true; observer = new MutationObserver( schedule ); titleObserver = new MutationObserver( function( changes ) { changes.forEach( function( change ) { refresh( change.target.parentElement ); } ); } ); document.body.classList.add( 'mrn-editor-experience', 'mrn-workspace' );
 		var header = element( 'div', 'mrn-workspace-header' ); header.id = 'mrn-workspace-header';
 		var menu = button( labels.menu, 'mrn-workspace-button mrn-site-menu' ), back = element( 'a', 'mrn-workspace-back', '← ' + labels.back ); back.href = labels.backUrl;
 		menu.setAttribute( 'aria-controls', 'adminmenumain' ); menu.setAttribute( 'aria-expanded', 'false' );
@@ -249,7 +286,9 @@
 		var steps = element( 'div', 'mrn-section-steps' ); position = element( 'span', 'mrn-section-position' ); position.setAttribute( 'aria-live', 'polite' );
 		previous = button( '←', 'mrn-section-previous' ); previous.setAttribute( 'aria-label', labels.previous ); next = button( '→', 'mrn-section-next' ); next.setAttribute( 'aria-label', labels.next );
 		[ previous, next ].forEach( function( node, index ) { node.addEventListener( 'click', function() { var current = rows.findIndex( function( item ) { return item.row === activeRow; } ); if ( rows[ current + ( index ? 1 : -1 ) ] ) { select( rows[ current + ( index ? 1 : -1 ) ].row, true ); } } ); } );
-		steps.append( previous, position, next ); tools.append( mobileToggle, viewButton, steps );
+		var arrangement = element( 'div', 'mrn-section-arrangement' );
+		[ { text: labels.moveUp, direction: -1 }, { text: labels.moveDown, direction: 1 } ].forEach( function( action ) { var move = button( action.text, 'mrn-section-move' ); move.addEventListener( 'click', function() { moveSection( action.direction ); } ); arrangement.appendChild( move ); } );
+		steps.append( previous, position, next ); tools.append( mobileToggle, viewButton, arrangement, steps );
 		hint = element( 'p', 'mrn-workspace-hint' ); var title = document.getElementById( 'titlediv' );
 		var titleLabel = element( 'label', 'mrn-page-title-label', labels.pageName ); titleLabel.htmlFor = 'title'; title.prepend( titleLabel ); title.after( tools, hint );
 		noticeObserver = new MutationObserver( collectNotices );
@@ -261,7 +300,7 @@
 		document.addEventListener( 'keydown', function( event ) { if ( event.key === 'Escape' && document.body.classList.contains( 'mrn-site-menu-open' ) ) { document.body.classList.remove( 'mrn-site-menu-open' ); menu.setAttribute( 'aria-expanded', 'false' ); menu.focus(); } } );
 		window.addEventListener( 'resize', updateChromeOffset ); updateChromeOffset(); window.setTimeout( updateChromeOffset, 500 );
 	}
-	acf.addAction( 'ready', schedule ); acf.addAction( 'append', schedule ); acf.addAction( 'remove', schedule ); acf.addAction( 'sortstop', schedule );
+	acf.addAction( 'ready', schedule ); acf.addAction( 'append', schedule ); acf.addAction( 'remove', schedule ); acf.addAction( 'sortstart', function() { sorting = true; } ); acf.addAction( 'sortstop', function() { sorting = false; schedule(); } );
 	document.addEventListener( 'click', function( event ) { if ( event.target.closest( '.mrn-section-return' ) ) { openPanel( event.target ); } } );
 	acf.addAction( 'invalid_field', function( field ) {
 		if ( ! mounted ) { return; }
@@ -271,11 +310,11 @@
 			else { mode = 'settings'; applyView(); }
 			window.setTimeout( function() { pendingInvalid = false; }, 0 );
 		}
-		search.value = ''; schedule();
+		search.value = ''; refresh( field.$el[ 0 ] );
 	} );
-	acf.addAction( 'valid_field', schedule );
-	document.addEventListener( 'input', function( event ) { if ( event.target.closest( '.mrn-workspace-field' ) ) { schedule(); } } );
-	document.addEventListener( 'change', function( event ) { if ( event.target.closest( '.mrn-workspace-field' ) ) { schedule(); } } );
+	acf.addAction( 'valid_field', function( field ) { if ( mounted ) { refresh( field.$el[ 0 ] ); } } );
+	document.addEventListener( 'input', function( event ) { if ( event.target.closest( '.mrn-workspace-field' ) ) { refresh( event.target ); } } );
+	document.addEventListener( 'change', function( event ) { if ( event.target.closest( '.mrn-workspace-field' ) ) { refresh( event.target ); } } );
 	// If ACF opens a nested field tab during validation, keep that field's section visible.
 	document.addEventListener( 'focusin', function( event ) { var item = rootRow( event.target ); if ( item && item.row !== activeRow ) { activeRow = item.row; applyView(); } } );
 } )();

@@ -70,7 +70,10 @@ function mrn_editor_experience_enqueue() {
 			'pageName' => __( 'Page title', 'mrn-editor-lockdown' ),
 			'editSelected' => __( 'Edit selected section', 'mrn-editor-lockdown' ),
 			'hint'     => __( 'Choose a section to edit. Arrange sections to see the full page order.', 'mrn-editor-lockdown' ),
-			'arrangeHint' => __( 'Drag the native section handles to reorder. Select a section in the outline to return to focused editing.', 'mrn-editor-lockdown' ),
+			'moveUp' => __( 'Move section up', 'mrn-editor-lockdown' ),
+			'moveDown' => __( 'Move section down', 'mrn-editor-lockdown' ),
+			'moved' => __( 'Section moved to position', 'mrn-editor-lockdown' ),
+			'arrangeHint' => __( 'Drag the native section handles, or use Move section up / down for the selected section. Select a section in the outline to return to focused editing.', 'mrn-editor-lockdown' ),
 			'settingsHint' => __( 'Publishing, featured image, page attributes and other page options.', 'mrn-editor-lockdown' ),
 		)
 	);
