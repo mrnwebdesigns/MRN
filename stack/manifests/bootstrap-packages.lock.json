@@ -559,7 +559,7 @@
       "version": "0.1.2"
     }
   ],
-  "release_id": "2026.10.30-mail-media-security-candidate",
+  "release_id": "2026.10.30-fleet-auto-9a9b4219e141",
   "schema_version": 1,
   "scope": "new-site-bootstrap-inputs",
   "stack_plugin_count": 36

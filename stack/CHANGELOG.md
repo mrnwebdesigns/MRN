@@ -1,5 +1,10 @@
 # Stack Changelog
 
+## 2026.10.30-fleet-auto-9a9b4219e141
+
+- Automatic cumulative release from accepted source vector `5ea819c94729f74eabb27ce0b1161580cb281d6371a8b5be7eb045d9d34e6131`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
 ## Unreleased — mail, media and security defaults
 
 - Replace new-site Post SMTP with pinned FluentSMTP 2.4.1; keep transport inactive throughout development bootstrap. Existing-site cutovers preserve mail settings and require delivery verification.
