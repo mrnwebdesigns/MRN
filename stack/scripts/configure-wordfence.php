@@ -28,7 +28,7 @@ if ( ! is_array( $preset ) || 1 !== ( $preset['schema_version'] ?? null ) || $pr
 $settings = $preset['settings'];
 $changes  = array();
 foreach ( $settings as $key => $value ) {
-	// These files never carry credentials, alert recipients or site allowlists.
+	// These files never carry credentials or site allowlists.
 	if ( ! isset( wfConfig::$defaultConfig['checkboxes'][ $key ] ) && ! isset( wfConfig::$defaultConfig['otherParams'][ $key ] ) ) {
 		WP_CLI::error( 'Unsupported Wordfence option: ' . $key );
 	}

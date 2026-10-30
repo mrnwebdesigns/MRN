@@ -17,7 +17,7 @@ The new-site manifest pins FluentSMTP 2.4.1, Converter for Media 6.7.0 and Wordf
 | Broad traffic rate limits | Owned by Cloudflare | No blanket human/global throttle; crawler limit 240/minute and 404 limits 60/minute |
 | Login failures / password reset attempts | 20 within 60 minutes; 60-minute lockout | 10 within 60 minutes; 60-minute lockout |
 | Live Traffic | Security events only; cap 1,000 rows / seven days | Same |
-| Alerts | Scan issues and disabled security controls; suppress routine block/login noise | Same |
+| Alerts | Send scan issues and disabled-control alerts to `security@mrnwebdesigns.com`; suppress routine block/login noise | Same |
 | API access | Preserve approved WordPress Application Passwords | Same |
 | Deactivation | Retain security configuration and data | Same |
 
@@ -45,7 +45,7 @@ Before launch, verify:
 2. Complete that site's free license/terms or its existing Premium enrollment. Do not copy keys into source.
 3. Review learning results and legitimate traffic before enabling full blocking. Optimize the WAF using the host-supported method, with file backup/recovery for `.user.ini`, `.htaccess` or equivalent changes; a database backup does not cover these files.
 4. Enroll administrators in 2FA with a recovery path before enforcing it. Preserve approved machine-to-machine authentication; test MainWP sync and REST API access.
-5. Set the authorized alert recipient and verify delivery separately. Confirm scan completion, admin login, forms, REST, cron and any store/integration paths.
+5. Use the owner-approved `security@mrnwebdesigns.com` recipient from both presets and verify delivery separately. Confirm scan completion, admin login, forms, REST, cron and any store/integration paths.
 6. Verify the MainWP extension reads the correct per-site settings and does not overwrite the selected preset on later saves/syncs.
 
 ## FluentSMTP cutover

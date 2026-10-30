@@ -34,6 +34,7 @@
     "loginSec_maxForgotPasswd": 10,
     "loginSec_countFailMins": 60,
     "loginSec_lockoutMins": 60,
-    "deleteTablesOnDeact": false
+    "deleteTablesOnDeact": false,
+    "alertEmails": "security@mrnwebdesigns.com"
   }
 }

@@ -5,7 +5,7 @@
 - Branch: `codex/stack-mail-media-security-20261030`.
 - Worktree: `/Users/khofmeyer/.codex/worktrees/stack-mail-media-security/MRN`.
 - Source preparation with owner authorization to commit, push and open a draft PR; no existing-site, MainWP setting, Cloudflare, provider or deployment write.
-- Wordfence Free is the owner-selected baseline, with Premium supported per site.
+- Wordfence Free is the owner-selected baseline, with Premium supported per site. The owner selected `security@mrnwebdesigns.com` for alerts; both versioned presets now include it. No remote setting or test-send authorization is implied.
 - Full merged-source qualification, final immutable platform release lock and publication are pending. This is not a Fleet-ready or installed release.
 
 ## Passing checks
@@ -30,3 +30,7 @@ The fixture blocks WordPress outbound HTTP and mail, disables optional Wordfence
 ## Evidence
 
 The engine report and isolated runtime result are retained at `/private/tmp/mrn-stack-mail-media-security/mrn-qa.md` and `/private/tmp/mrn-stack-mail-media-security/runtime4/result.json`. These temporary diagnostic files are not release artifacts. The versioned presets, helper, plugin input hashes and migration runbook are the durable source handoff.
+
+## Alert-recipient follow-up
+
+The owner-approved `security@mrnwebdesigns.com` address passes actual Wordfence vendor validation and saved-value readback for both profiles in the isolated runtime. Idempotency and preview-without-save checks still pass. Outbound mail was blocked, so this proves configuration only; no delivery is claimed. Follow-up result: `/private/tmp/mrn-stack-mail-media-security/runtime5/result.json`.
