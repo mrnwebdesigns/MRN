@@ -34,3 +34,12 @@ The engine report and isolated runtime result are retained at `/private/tmp/mrn-
 ## Alert-recipient follow-up
 
 The owner-approved `security@mrnwebdesigns.com` address passes actual Wordfence vendor validation and saved-value readback for both profiles in the isolated runtime. Idempotency and preview-without-save checks still pass. Outbound mail was blocked, so this proves configuration only; no delivery is claimed. Follow-up result: `/private/tmp/mrn-stack-mail-media-security/runtime5/result.json`.
+
+## Bootstrap guide packaging follow-up
+
+The merged bootstrap notes link to `MAIL-MEDIA-SECURITY.md`. Include that tracked
+guide in the deterministic bootstrap bundle so its mail, media, licensing and
+MainWP instructions are available alongside the shipped presets and helper.
+This follow-up changes package membership only; runtime behavior is unchanged.
+Validation: Python compilation, package-member file/readability check and
+`git diff --check` passed. The staged task snapshot also passes the MRN QA commit gate.
