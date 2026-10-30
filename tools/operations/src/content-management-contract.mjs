@@ -5,8 +5,7 @@ import { contentPaths } from './content-contract.mjs';
 import { compileManagementSchema } from './content-management-schema.mjs';
 
 // A separate adapter, not a replacement for content-v1 or its QA authority.
-// Structured read workflows enforce it. Management writes and their distinct
-// protected signer remain unregistered until their runtime qualifies.
+// Admission still requires an owner-qualified exact target/runtime profile.
 export const managementContract = JSON.parse(readFileSync(new URL('../contracts/content-management-v1.json', import.meta.url)));
 requireThat(managementContract.adapter === 'content-management-v1' && managementContract.qa_purpose === 'mrn-content-management-qa-v1:',
   'CONTENT_MANAGEMENT_CONTRACT', 'Unsupported management adapter or QA purpose.');
@@ -16,6 +15,14 @@ export const managementTypes = Object.fromEntries(Object.keys(managementContract
   .map(name => [name, compileManagementSchema({ $ref: `#/$defs/${name}`, $defs: managementContract.$defs })]));
 const same = (a, b) => delegationDigest(a) === delegationDigest(b);
 const insist = condition => requireThat(condition, 'CONTENT_MANAGEMENT_MISMATCH', 'Content evidence does not match the exact requested record, change or qualified profile.');
+
+export async function managementCall(session, ability, input) {
+  const contract = managementSchemas[ability];
+  requireThat(contract, 'CONTENT_MANAGEMENT_CONTRACT', 'Unknown management operation.');
+  const args = contract.input.parse(input);
+  requireThat(Buffer.byteLength(delegationCanonical(args)) <= 98304, 'CONTENT_SIZE', 'The complete management request exceeds its delegated bound.');
+  return contract.output.parse(await session.call(`mrn_mainwp__${ability.replaceAll('-', '_')}`, args));
+}
 
 export function managementSnapshot(value) {
   const parsed = managementTypes.snapshot.parse(value);

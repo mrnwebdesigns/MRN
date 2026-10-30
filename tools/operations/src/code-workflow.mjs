@@ -179,7 +179,14 @@ export class CodeWorkflow {
     this.bind(session, op);
     const receipt = await this.service.changeBackup(session, before.site, op.expiresAt, this.delay);
     await authorize();
-    const result = await session.call(toolNames.codeExecute, { operation_id: op.plan.provider.operation_id, reviewed_digest: op.plan.provider.digest, confirm: true, backup_receipt: receipt });
+    let result;
+    try { result = await session.call(toolNames.codeExecute, { operation_id: op.plan.provider.operation_id, reviewed_digest: op.plan.provider.digest, confirm: true, backup_receipt: receipt }); }
+    catch (error) {
+      await this.service.confirmChangeRefusal(actor, op, session, error, async () => {
+        const current = await codeInspection(session, op.plan.path);
+        requireThat(current.sha256 === op.plan.beforeSha256, 'CODE_PRECONDITION', 'The file no longer matches its original snapshot.');
+      }); throw error;
+    }
     requireThat(result.operation_id === op.plan.provider.operation_id && result.state === 'completed' && result.data?.success === true
       && result.data.sha256 === op.plan.newSha256, 'CODE_OUTCOME_UNVERIFIED', 'The provider did not verify the exact code outcome. Keep the lock and inspect before retrying.');
     const after = await codeInspection(session, op.plan.path); requireThat(after.sha256 === op.plan.newSha256, 'CODE_READBACK', 'Fresh readback did not match the approved code.');

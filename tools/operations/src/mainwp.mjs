@@ -23,8 +23,11 @@ export const toolNames = {
   contentPrepare: 'mrn_mainwp__prepare_content_change_v1', contentApprove: 'mrn_mainwp__approve_content_change_v1',
   contentExecute: 'mrn_mainwp__execute_content_change_v1', contentStatus: 'mrn_mainwp__get_content_operation_v1',
   contentRollback: 'mrn_mainwp__prepare_content_rollback_v1', contentMigration: 'mrn_mainwp__get_content_migration_v1',
+  editPreview: 'mrn_mainwp__preview_content_edit_v1', editApprove: 'mrn_mainwp__approve_content_edit_v1',
+  editExecute: 'mrn_mainwp__execute_content_edit_v1', editStatus: 'mrn_mainwp__get_content_edit_v1',
+  editRollback: 'mrn_mainwp__preview_content_edit_rollback_v1', editMigration: 'mrn_mainwp__get_content_edit_migration_v1',
 };
-const readTools = new Set(Object.entries(toolNames).filter(([k]) => !['preflight', 'backup', 'backupStatus', 'update', 'rollback', 'codePrepare', 'codeApprove', 'codeExecute', 'contentPrepare', 'contentApprove', 'contentExecute', 'contentRollback'].includes(k)).map(([,v]) => v));
+const readTools = new Set(Object.entries(toolNames).filter(([k]) => !['preflight', 'backup', 'backupStatus', 'update', 'rollback', 'codePrepare', 'codeApprove', 'codeExecute', 'contentPrepare', 'contentApprove', 'contentExecute', 'contentRollback', 'editPreview', 'editApprove', 'editExecute', 'editRollback'].includes(k)).map(([,v]) => v));
 export function withoutSecrets(value) {
   if (Array.isArray(value)) return value.map(withoutSecrets);
   if (typeof value === 'string' && /^https?:\/\//i.test(value)) {
@@ -37,8 +40,8 @@ export function withoutSecrets(value) {
 
 const providerBlockers = Object.freeze({
   mrn_write_recovery: ['RECOVERY_UNQUALIFIED', 'Operation-specific remote backup and restoration evidence is missing or no longer valid. No alternate write route is permitted.'],
-  mrn_content_not_dispatched: ['CHANGE_NOT_DISPATCHED', 'The provider refused before child dispatch and consumed this plan. Prepare a new plan after recovery evidence is qualified.'],
-  mrn_code_not_dispatched: ['CHANGE_NOT_DISPATCHED', 'The provider refused before child dispatch and consumed this plan. Prepare a new plan after recovery evidence is qualified.'],
+  mrn_content_not_dispatched: ['CHANGE_NOT_DISPATCHED', 'The provider reports a consumed plan refused before child dispatch. Inspect its retained outcome; a new change requires verified non-dispatch and recovery evidence.'],
+  mrn_code_not_dispatched: ['CHANGE_NOT_DISPATCHED', 'The provider reports a consumed plan refused before child dispatch. Inspect its retained outcome; a new change requires verified non-dispatch and recovery evidence.'],
   EMAIL_AUDIT_READER_UNAVAILABLE: ['EMAIL_AUDIT_READER_UNAVAILABLE', 'The site audit reader is missing or incompatible; coverage is incomplete.'],
   EMAIL_AUDIT_TRANSPORT: ['EMAIL_AUDIT_TRANSPORT', 'The authenticated child inspection did not complete; coverage is incomplete.'],
   EMAIL_AUDIT_STALE_INVENTORY: ['EMAIL_AUDIT_STALE_INVENTORY', 'The child inventory changed during inspection; coverage is incomplete.'],
@@ -86,8 +89,16 @@ export function payload(result, { allowError = false } = {}) {
     const parsed = parseToolResult(result, 'MainWP', { allowError: true });
     if (parsed.isError && !allowError) {
       const remote = parsed.payload?.error;
-      throw integrationError({ code: typeof remote === 'string' ? remote : remote?.code,
+      const error = integrationError({ code: typeof remote === 'string' ? remote : remote?.code,
         message: typeof remote?.message === 'string' ? remote.message : parsed.payload?.message ?? (typeof remote === 'string' ? remote : '') });
+      const data = remote?.data;
+      // Keep only the pinned provider's bounded terminal evidence internally.
+      // Message-only transport errors carry no authority to release a lock.
+      if (['mrn_content_not_dispatched', 'mrn_code_not_dispatched'].includes(remote?.code) && data
+        && /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(data.operation_id)
+        && data.state === 'not_dispatched' && data.changed === false && data.new_plan_required === true && data.audit_persisted === true)
+        error.providerRefusal = { operationId: data.operation_id, code: remote.code };
+      throw error;
     }
     return parsed.payload;
   } catch (error) { throw integrationError(error); }
@@ -171,7 +182,7 @@ export class MainwpSession {
     if ([toolNames.backup, toolNames.backupStatus].includes(name)) requireThat(canWrite || ['code', 'content'].includes(this.action), 'CAPABILITY_DENIED', 'Change permission is required before a backup.');
     if ([toolNames.update, toolNames.rollback].includes(name)) requireThat(canWrite, 'CAPABILITY_DENIED', 'Release permission is required before a Fleet mutation.');
     if ([toolNames.codePrepare, toolNames.codeApprove, toolNames.codeExecute].includes(name)) requireThat(this.action === 'code', 'CAPABILITY_DENIED', 'Verified code-change permission is required.');
-    if ([toolNames.contentPrepare, toolNames.contentApprove, toolNames.contentExecute, toolNames.contentRollback].includes(name)) requireThat(this.action === 'content', 'CAPABILITY_DENIED', 'Verified content-change permission is required.');
+    if ([toolNames.contentPrepare, toolNames.contentApprove, toolNames.contentExecute, toolNames.contentRollback, toolNames.editPreview, toolNames.editApprove, toolNames.editExecute, toolNames.editRollback].includes(name)) requireThat(this.action === 'content', 'CAPABILITY_DENIED', 'Verified content-change permission is required.');
     if (name === toolNames.site) {
       requireThat(args.site_id_or_domain === this.target.url, 'TARGET_MISMATCH', 'Resolve the exact registered URL before using a site ID.');
     } else {
@@ -183,12 +194,16 @@ export class MainwpSession {
       'TARGET_MISMATCH', 'Ignored-update inspection requires exactly one resolved site.');
       else if ([toolNames.codeApprove, toolNames.codeExecute, toolNames.codeStatus].includes(name)) requireThat(this.codeOperation && args.operation_id === this.codeOperation.id
         && (name === toolNames.codeStatus || args.reviewed_digest === this.codeOperation.digest), 'TARGET_MISMATCH', 'The provider operation must belong to the exact stored website plan.');
+      else if ([toolNames.editApprove, toolNames.editExecute, toolNames.editStatus, toolNames.editMigration, toolNames.editRollback].includes(name)) requireThat(this.contentOperation
+        && args.operation_id === this.contentOperation.id && args.site_id === this.siteId && args.site_url === this.target.url
+        && (![toolNames.editApprove, toolNames.editExecute].includes(name) || args.reviewed_digest === this.contentOperation.digest),
+      'TARGET_MISMATCH', 'The management operation must belong to this exact stored website plan.');
       else if ([toolNames.contentApprove, toolNames.contentExecute, toolNames.contentStatus, toolNames.contentMigration, toolNames.contentRollback].includes(name)) requireThat(this.contentOperation && args.operation_id === this.contentOperation.id
         && (![toolNames.contentApprove, toolNames.contentExecute].includes(name) || args.reviewed_digest === this.contentOperation.digest), 'TARGET_MISMATCH', 'The content operation must belong to the exact stored website plan.');
       else requireThat((args.site_id ?? args.site_id_or_domain) === this.siteId && (!args.site_url || normalizeSiteUrl(args.site_url) === this.target.url), 'TARGET_MISMATCH', 'The downstream target differs from the authorized website.');
     }
     if ([toolNames.backup, toolNames.update, toolNames.rollback].includes(name) && (name === toolNames.backup || args.user_confirmed === true)) this.onMutation();
-    if ([toolNames.codeExecute, toolNames.contentExecute].includes(name)) this.onMutation();
+    if ([toolNames.codeExecute, toolNames.contentExecute, toolNames.editExecute].includes(name)) this.onMutation();
     const result = await this.guarded(`mainwp:${name}`, () => this.client.callTool(request, schema, { timeout: 120000, ...options }));
     // Native MainWP can return HTTP 200 with per-site sync errors. A transport
     // response alone must never count as a successful synchronization.

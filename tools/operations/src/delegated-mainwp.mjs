@@ -27,9 +27,11 @@ const readAbilities = new Set([
 ].map(name => `mrn-mainwp/${name}-v1`)));
 readAbilities.add('mainwp/get-site-knowledge-v1');
 readAbilities.add('mrn-mainwp/get-content-policy-v2');
+for (const name of ['get-content-edit', 'get-content-edit-migration']) readAbilities.add(`mrn-mainwp/${name}-v1`);
 const writeAbilities = new Set(['start-database-backup', 'get-database-backup-status', 'qualify-code-storage',
   'prepare-code-change', 'approve-code-change', 'execute-code-change', 'preflight-stack-plugin-update',
   'update-stack-plugin', 'rollback-stack-plugin', 'prepare-content-change', 'approve-content-change', 'execute-content-change', 'prepare-content-rollback'].map(name => `mrn-mainwp/${name}-v1`));
+for (const name of ['preview-content-edit', 'approve-content-edit', 'execute-content-edit', 'preview-content-edit-rollback']) writeAbilities.add(`mrn-mainwp/${name}-v1`);
 const actorSchema = z.object({ oauth_subject: z.string(), google_sub: z.string(), email: z.string() }).strict();
 const resultSchema = z.object({ schema: z.literal(1), request_id: z.string().uuid(), ability: z.string(),
   actor: actorSchema, result: z.unknown(), policy_sha256: sha }).strict();
@@ -91,6 +93,11 @@ export class DelegatedMainwpClient {
     requireThat(readAbilities.has(ability) || writeAbilities.has(ability) || ability === 'mainwp/sync-sites-v1',
       'CAPABILITY_DENIED', 'No qualified delegated adapter exists for this operation.');
     if (writeAbilities.has(ability)) requireWriteScope(this.actor);
+    const management = managementSchemas[ability.replace('mrn-mainwp/', '')];
+    if (['preview-content-edit-v1', 'approve-content-edit-v1', 'execute-content-edit-v1', 'get-content-edit-v1', 'get-content-edit-migration-v1', 'preview-content-edit-rollback-v1'].some(name => ability === `mrn-mainwp/${name}`) && management) {
+      args = management.input.parse(args);
+      if (ability === 'mrn-mainwp/preview-content-edit-v1') requireThat(args.post_id > 0, 'CAPABILITY_UNAVAILABLE', 'New-record creation is not admitted by this release.');
+    }
     if (ability === 'mainwp/sync-sites-v1') requireThat(Object.keys(args).length === 1
       && Array.isArray(args.site_ids) && args.site_ids.length === 1 && Number.isSafeInteger(args.site_ids[0]) && args.site_ids[0] > 0,
     'TARGET_MISMATCH', 'Delegated sync requires one exact resolved site.');

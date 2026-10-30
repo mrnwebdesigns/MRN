@@ -7,6 +7,8 @@ import { codeInspection } from './code.mjs';
 import { inspectContentTarget } from './content-workflow.mjs';
 import { providerOperationStatus } from './operation-status.mjs';
 import { readManagedContent } from './content-management-read.mjs';
+import { acfScalar } from './content.mjs';
+import { managementCall } from './content-management-contract.mjs';
 
 export class Operations {
   constructor({ registry, store, connect, fleet, publicProbe, writesEnabled = false, qa = null, recoveryEvidence = null, discovery = null, content = null, verifyStaff = null }) {
@@ -26,7 +28,9 @@ export class Operations {
       return { id: record.id, type: record.type, workflow: 'content', target: this.targetView(record.target), status: record.status,
         requestedBy: record.requestedBy, approvedBy: record.approvedBy, executedBy: record.executedBy, planDigest: record.planDigest, expiresAt: record.expiresAt,
         error: record.error, result: record.result, qa: record.qaTicket && { url: record.qaTicket.url, runId: record.qaTicket.runId },
-        preview: p && { target: p.target, before: p.before_snapshot[p.target.field], after: p.candidate_snapshot[p.target.field],
+        preview: p && { target: p.target, ...(record.plan.adapter === 'content-management-v1' ? { acfPath: record.plan.acfPath,
+          before: acfScalar(p.before_snapshot, record.plan.acfPath), after: acfScalar(p.candidate_snapshot, record.plan.acfPath) }
+          : { before: p.before_snapshot[p.target.field], after: p.candidate_snapshot[p.target.field] }),
           beforeSha256: p.before_sha256, afterSha256: p.candidate_sha256, reason: record.plan.description, affectedPaths: p.affected_paths,
           migration: p.migration_artifact, requestedValueNormalized: record.plan.requestedValueNormalized, rollbackOf: p.rollback_operation_id || undefined },
         next: record.status === 'prepared' ? 'Review the exact QA-qualified content preview, then approve_operation and execute_operation.'
@@ -66,7 +70,14 @@ export class Operations {
     requireThat(['code', 'content'].includes(record.workflow) && record.plan?.provider, 'OPERATION_STATUS_UNAVAILABLE', 'This operation has no retained MainWP code/content plan to inspect.');
     const session = await this.session(actor, record.target, 'read', record.id);
     try {
-      const providerStatus = await providerOperationStatus(session, record);
+      let providerStatus;
+      if (record.plan.adapter === 'content-management-v1') {
+        const p = record.plan.provider, site = await session.fresh();
+        session.contentOperation = { id: p.operation_id, digest: p.digest };
+        providerStatus = await managementCall(session, 'get-content-edit-v1', { site_id: site.id, site_url: site.url, operation_id: p.operation_id });
+        requireThat(providerStatus.site_id === p.site_id && providerStatus.site_url === p.site_url
+          && (!providerStatus.operation_id || providerStatus.operation_id === p.operation_id), 'CONTENT_TARGET_MISMATCH', 'Provider status belongs to a different management plan.');
+      } else providerStatus = await providerOperationStatus(session, record);
       await authorize();
       return { ...this.get(actor, id), providerStatus };
     } finally { await session.close(); }
@@ -148,7 +159,9 @@ export class Operations {
     const target = this.registry.resolve(actor, website, environment);
     const session = await this.session(actor, target, 'read');
     try {
-      const { site, policy, inspected } = await inspectContentTarget(session, contentTarget);
+      const evidence = await inspectContentTarget(session, contentTarget), { site, policy, inspected } = evidence;
+      if (evidence.management) return { site, ...evidence.read,
+        qualification: 'Existing ACF field keys, values and full record snapshot are read evidence. One scalar edit still requires a qualified rendering profile, protected QA, exact approval and recovery evidence.' };
       return { site, ...inspected, policy: { enabled: policy.enabled, profile: policy.profile, policySha256: policy.policy_sha256 },
         qualification: 'Ownership and a readable snapshot alone do not approve a change. Use prepare_content_edit for protected QA and the exact preview.' };
     } finally { await session.close(); }
@@ -243,7 +256,11 @@ export class Operations {
     } catch (error) {
       // A reconciled record belongs to the recovery path. Never overwrite it
       // with a late success/failure from the fenced original worker.
-      try { this.store.finish(op.id, mutationAttempted ? 'uncertain' : 'failed', { error: safeError(error) }, actor); }
+      const noDispatch = ['code', 'content'].includes(op.workflow) && typeof op.plan?.provider?.operation_id === 'string'
+        && session?.confirmedNonDispatch === op.plan.provider.operation_id;
+      try { this.store.finish(op.id, mutationAttempted && !noDispatch ? 'uncertain' : 'failed',
+        { error: safeError(error), ...(noDispatch ? { result: { providerOperationId: session.confirmedNonDispatch, changed: false,
+          childDispatched: false, consumed: true, requiresNewPlan: true, evidence: 'retained-provider-refusal-and-independent-baseline' } } : {}) }, actor); }
       catch (finishError) { if (!['EXECUTION_FENCED', 'LOCK_CHANGED'].includes(finishError.code)) throw finishError; }
     } finally { await session?.close().catch(() => {}); }
   }
@@ -263,6 +280,33 @@ export class Operations {
       await delay(5000);
     }
     requireThat(false, 'BACKUP_UNVERIFIED', 'The remote database backup was not verified before approval expiry.');
+  }
+  // Only an active worker can establish this narrow terminal condition. A
+  // generic error, timeout, caller flag or baseline hash alone cannot unlock.
+  async confirmChangeRefusal(actor, op, session, error, verifyBaseline) {
+    if (error.code !== 'CHANGE_NOT_DISPATCHED') return;
+    const p = op.plan.provider;
+    try {
+      this.registry.current(actor, op.target, op.workflow); await this.verifyStaff(actor);
+      if (op.workflow === 'code') {
+        const status = await session.call(toolNames.codeStatus, { operation_id: p.operation_id });
+        requireThat(status.state === 'not_dispatched' && status.changed === false && status.error_code === 'mrn_code_not_dispatched'
+          && ['operation_id', 'digest', 'site_id', 'site_url', 'kind', 'path', 'before_sha256', 'new_sha256', 'rollback_operation_id']
+            .every(key => status[key] === p[key]), 'NON_DISPATCH_UNVERIFIED', 'The retained file refusal does not bind the exact consumed plan.');
+      } else {
+        requireThat(op.plan.adapter === 'content-management-v1' && error.providerRefusal?.operationId === p.operation_id
+          && error.providerRefusal.code === 'mrn_content_not_dispatched', 'NON_DISPATCH_UNVERIFIED', 'A bounded operation-bound content refusal is required.');
+        let statusRefusal;
+        try { await managementCall(session, 'get-content-edit-v1', { site_id: p.site_id, site_url: p.site_url, operation_id: p.operation_id }); }
+        catch (statusError) { statusRefusal = statusError.providerRefusal; }
+        requireThat(statusRefusal?.operationId === p.operation_id && statusRefusal.code === 'mrn_content_not_dispatched',
+          'NON_DISPATCH_UNVERIFIED', 'The provider did not independently retain the exact content refusal.');
+      }
+      await verifyBaseline(); this.registry.current(actor, op.target, op.workflow); await this.verifyStaff(actor);
+      this.store.assertRunning(op.id);
+      this.store.audit(actor, op.target, op.id, 'change:non-dispatch', 'verified');
+      session.confirmedNonDispatch = p.operation_id;
+    } catch { /* Missing status, changed baseline or revoked access retains the uncertain lock. */ }
   }
   async reconcile(actor, { operationId }) {
     await this.discovery?.refresh(actor);

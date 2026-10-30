@@ -134,8 +134,19 @@ must enforce its operation-specific recovery evidence before child dispatch.
 `mrn_write_recovery` is an explicit recovery qualification blocker. The pinned
 provider's `mrn_content_not_dispatched` and `mrn_code_not_dispatched` errors identify
 consumed plans refused before child dispatch. They never authorize a replay.
-The gateway conservatively retains its uncertain lock after backup activity when
-the transport does not supply independently bound reconciliation evidence; a
-message or error code alone cannot clear a gateway lock. Existing qualified
-operator reconciliation remains required for uncertain work.
+The active gateway worker releases its owned lock for this refusal only after
+independent retained provider status binds the exact consumed plan, a fresh
+baseline read is unchanged, current staff remains verified and audit persists.
+Typed ACF also requires bounded structured refusal data with the same operation
+ID and persisted-audit flag on both execute and status. A message-only transport
+error cannot clear that lock. Missing evidence, status, permission or baseline
+retains uncertainty; no replay is permitted. This narrow pre-dispatch check does
+not reconcile any dispatched or interrupted change.
+
+Protected ACF QA uses its distinct management purpose and independently hashes
+the exact run's three-file qualification artifact. Both qualification and receipt
+archives retain the existing GitHub transport's 64 KiB compressed ceiling; larger
+complete archives fail closed. Nothing is truncated. The decompressed report is
+bounded to 1 MiB and the exact request to 48,000 bytes. This bounded workflow is
+not a claim that arbitrary large ACF records or QA reports are qualified.
 

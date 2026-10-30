@@ -61,7 +61,22 @@ test('structured content reads use signed per-person read wrappers without grant
   assert.ok(f.state.dispatched.every(row => row.person.oauth_subject === person.subject));
   assert.deepEqual(f.state.dispatched.map(row => row.ability), ['mrn-mainwp/list-content-records-v1', 'mrn-mainwp/read-content-record-v1']);
   assert.ok(!f.state.calls.includes(delegationTools.run));
-  await assert.rejects(() => client.callTool({ name: 'mrn_mainwp__execute_content_edit_v1', arguments: {} }), { code: 'CAPABILITY_DENIED' });
+  await assert.rejects(() => client.callTool({ name: 'mrn_mainwp__execute_content_edit_v1', arguments: {} }), { code: 'INSUFFICIENT_SCOPE' });
+});
+
+test('typed ACF writes retain per-person signed confirmation and closed management arguments', async () => {
+  const f = fixture(), client = f.delegated('123');
+  const input = { site_id: 73, site_url: 'https://fixture.example.invalid', post_type: 'page', post_id: 7,
+    expected_snapshot_sha256: 'a'.repeat(64), idempotency_key: randomUUID(), reason: 'Unit fixture scalar',
+    acf_patches: [{ path: ['field_copy'], value: 'Exact replacement' }] };
+  await client.callTool({ name: 'mrn_mainwp__preview_content_edit_v1', arguments: input });
+  assert.equal(f.state.dispatched[0].ability, 'mrn-mainwp/preview-content-edit-v1');
+  assert.deepEqual(f.state.dispatched[0].args, input); assert.equal(f.state.dispatched[0].person.google_sub, '123');
+  assert.equal(f.state.calls.filter(n => n === delegationTools.run).length, 2);
+  await assert.rejects(() => client.callTool({ name: 'mrn_mainwp__preview_content_edit_v1', arguments: { ...input, post_id: 0 } }), { code: 'CAPABILITY_UNAVAILABLE' });
+  await assert.rejects(() => client.callTool({ name: 'mrn_mainwp__preview_content_edit_v1', arguments: { ...input, actor: 'someone-else' } }));
+  await assert.rejects(() => client.callTool({ name: 'mrn_mainwp__execute_content_edit_v2', arguments: {} }), { code: 'CAPABILITY_DENIED' });
+  assert.equal(f.state.dispatched.length, 1);
 });
 
 function queueFixture(t) {
@@ -92,7 +107,7 @@ function managementQueueFixture(t) {
   return { ...f, ...values, store, registry, registryData, policy, ledger, queue: new DelegatedMainwpClient(f.client, actor, f.signer) };
 }
 
-test('private management preview and migration use the same human delegation without enabling execution', async t => {
+test('private management preview and migration retain human delegation and malformed writes never dispatch', async t => {
   const f = managementQueueFixture(t);
   f.state.corrupt = result => { result.result = result.ability === 'mrn-mainwp/preview-content-edit-v1'
     ? f.expected.evidence.review : f.expected.evidence.migration; };
@@ -102,7 +117,8 @@ test('private management preview and migration use the same human delegation wit
   assert.deepEqual(f.state.dispatched.map(row => row.ability), ['mrn-mainwp/preview-content-edit-v1', 'mrn-mainwp/get-content-edit-migration-v1']);
   assert.ok(f.state.dispatched.every(row => row.person.google_sub === '123'));
   for (const name of ['preview_content_edit', 'approve_content_edit', 'execute_content_edit'])
-    await assert.rejects(() => f.queue.callTool({ name: `mrn_mainwp__${name}_v1`, arguments: {} }), { code: 'CAPABILITY_DENIED' });
+    await assert.rejects(() => f.queue.callTool({ name: `mrn_mainwp__${name}_v1`, arguments: {} }), { name: 'ZodError' });
+  assert.equal(f.state.dispatched.length, 2);
   const readOnly = new DelegatedMainwpClient(f.client, { ...f.queue.actor, scopes: ['mrn:operations'] }, f.signer);
   await assert.rejects(() => readOnly.previewManagementEdit(f.expected.request), { code: 'INSUFFICIENT_SCOPE' });
   await assert.rejects(() => f.queue.previewManagementEdit({ ...f.expected.request, post_id: 0 }), { code: 'CAPABILITY_UNAVAILABLE' });

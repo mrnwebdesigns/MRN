@@ -1,6 +1,36 @@
 import { z } from 'zod';
 import { digest, OpsError, requireThat } from './contracts.mjs';
 import { normalizeSiteUrl } from '../../../stack/scripts/mrn-fleet-update.mjs';
+import { contentTargetSchema } from './content-contract.mjs';
+
+// The release adds one existing ACF scalar leaf. Structural ACF mutations,
+// record creation and arbitrary metadata are deliberately absent from chat.
+export const managedTargetSchema = z.object({ kind: z.literal('wordpress-content'), post_type: z.enum(['post', 'page']), post_id: z.number().int().positive().safe() }).strict();
+export const editContentTargetSchema = z.union([contentTargetSchema, managedTargetSchema]);
+export const acfPatchSchema = z.object({ path: z.array(z.union([z.string().regex(/^field_[A-Za-z0-9_-]+$/).max(191), z.number().int().min(0).max(10000)])).min(1).max(25),
+  value: z.string().max(8192) }).strict();
+export function acfScalar(snapshot, path) {
+  let fields = snapshot.acf_definitions, values = snapshot.acf_values;
+  for (let at = 0; at < path.length;) {
+    const key = path[at++], matches = fields.filter(f => f.key === key);
+    requireThat(matches.length === 1 && values && Object.hasOwn(values, key), 'CONTENT_ACF_PATH', 'Choose one existing field-key scalar leaf from the current ACF read.');
+    const field = matches[0], value = values[key];
+    if (at === path.length) {
+      requireThat(['text', 'textarea', 'wysiwyg'].includes(field.type) && typeof value === 'string', 'CONTENT_ACF_SCALAR', 'This release supports an existing text, textarea or wysiwyg scalar leaf.');
+      return value;
+    }
+    if (field.type === 'group') { fields = field.sub_fields ?? []; values = value; continue; }
+    requireThat(['repeater', 'flexible_content'].includes(field.type), 'CONTENT_ACF_PATH', 'The ACF path must preserve existing groups, layouts and row order.');
+    const row = path[at++];
+    requireThat(Number.isSafeInteger(row) && row >= 0 && Array.isArray(value) && row < value.length, 'CONTENT_ACF_PATH', 'The selected ACF row does not exist.');
+    values = value[row]; fields = field.sub_fields ?? [];
+    if (field.type === 'flexible_content') {
+      const layouts = (field.layouts ?? []).filter(l => l.name === values?.acf_fc_layout);
+      requireThat(layouts.length === 1, 'CONTENT_ACF_PATH', 'The existing ACF layout is not uniquely registered.'); fields = layouts[0].sub_fields ?? [];
+    }
+  }
+  requireThat(false, 'CONTENT_ACF_PATH', 'Choose one existing ACF scalar leaf.');
+}
 
 export const contentKinds = ['posts', 'pages'];
 const kindSchema = z.enum(contentKinds);

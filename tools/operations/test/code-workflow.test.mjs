@@ -26,9 +26,18 @@ function configured(t) {
       state.prepared.set(id, { plan, args, beforeContent: state.content, beforeHash: digest(state.content) }); return response(plan);
     }
     if (name === toolNames.codeApprove) return response({ operation_id: args.operation_id, digest: args.reviewed_digest, approved_by: person.verifiedEmail });
+    if (name === toolNames.codeStatus && state.refuse) {
+      if (state.statusUnavailable) throw new Error('Status unavailable');
+      return response({ ...state.prepared.get(args.operation_id).plan, state: 'not_dispatched', changed: false,
+        error_code: 'mrn_code_not_dispatched', ...(state.wrongRefusalId ? { operation_id: randomUUID() } : {}) });
+    }
     if (name === toolNames.codeExecute) {
       assert.equal(f.state.backups > 0, true); assert.equal(args.backup_receipt.receipt, 'fixture-private-backup-receipt');
       const saved = state.prepared.get(args.operation_id); assert.equal(saved.plan.digest, args.reviewed_digest);
+      if (state.refuse) {
+        if (state.driftOnRefusal) state.content += '// concurrent drift';
+        return { isError: true, ...response({ error: { code: 'mrn_code_not_dispatched' } }) };
+      }
       state.content = saved.args.kind === 'rollback' ? state.prepared.get(saved.args.rollback_operation_id).beforeContent : Buffer.from(saved.args.content_base64, 'base64').toString();
       state.applications++;
       if (state.lostResponse) throw new Error('timed out after apply');
@@ -82,6 +91,16 @@ test('lost code response keeps the durable lock and rejects Fleet reconciliation
   await f.service.execute(person, { operationId: op.id }); assert.equal(f.codeState.applications, 1);
   await assert.rejects(() => f.service.reconcile(person, { operationId: op.id }), { code: 'RECOVERY_UNAVAILABLE' });
   assert.equal(f.store.db.prepare('SELECT count(*) AS n FROM locks').get().n, 1);
+});
+
+test('file non-dispatch needs exact persisted provider status and independent unchanged bytes before gateway lock release', async t => {
+  const f = configured(t), op = await prepared(f); f.codeState.refuse = true;
+  const result = await apply(f, op); assert.equal(result.status, 'failed'); assert.equal(result.result.childDispatched, false);
+  assert.equal(f.codeState.applications, 0); assert.equal(f.store.db.prepare('SELECT count(*) AS n FROM locks').get().n, 0);
+  for (const flag of ['statusUnavailable', 'wrongRefusalId', 'driftOnRefusal']) await t.test(flag, async t => {
+    const f = configured(t), op = await prepared(f); f.codeState.refuse = true; f.codeState[flag] = true;
+    assert.equal((await apply(f, op)).status, 'uncertain'); f.store.assertLocked(f.store.get(op.id)); assert.equal(f.codeState.applications, 0);
+  });
 });
 
 test('revocation and unqualified sites stop code before QA or source work', async t => {
