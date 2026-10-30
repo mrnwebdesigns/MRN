@@ -21,7 +21,9 @@ test('measurement candidate has separate source provenance and preserves the qua
   assert.match(source.commit, /^[a-f0-9]{40}$/);
   assert.equal(source.source_only, true);
   assert.notEqual(source.commit, source.runtime_provider_commit);
-  assert.equal(JSON.parse(read('./runtime/sources.json')).provider.commit, source.runtime_provider_commit);
+  const qualified = JSON.parse(read('../contracts/content-qualification-sources.json'));
+  assert.equal(qualified.compatible_runtime.files_sha256, delegationDigest(qualified.files));
+  assert.equal(JSON.parse(read('./runtime/sources.json')).provider.commit, qualified.compatible_runtime.commit);
   assert.equal(JSON.parse(read('../contracts/content-qualification-sources.json')).commit, source.runtime_provider_commit);
   assert.deepEqual(source.files.map(row => row.local), ['schema.json', 'vectors.json', 'design.md']);
   for (const row of source.files) assert.equal(hash(candidate(row.local)), row.sha256);

@@ -58,5 +58,10 @@
       "local": "contracts/content-current-access-v1.json",
       "sha256": "02fa1caca043f61a92a0e7cfe369db4f271dcebcaf2599b6a4422a3a4885d172"
     }
-  ]
+  ],
+  "compatible_runtime": {
+    "repository": "mrnwebdesigns/mrn-mainwp-operations-api",
+    "commit": "ea8ddb5f7982226c1c1c77cb36c497397c17ef77",
+    "files_sha256": "97b7df2be8800c011d2522eb1645113be2323cbbe96ab4d74fe489e856b6cbc8"
+  }
 }

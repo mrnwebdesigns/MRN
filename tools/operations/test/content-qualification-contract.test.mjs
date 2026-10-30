@@ -17,8 +17,9 @@ test('qualification contracts and independent vectors are pinned to one provider
   assert.equal(source.schema, 1); assert.equal(source.repository, 'mrnwebdesigns/mrn-mainwp-operations-api');
   assert.equal(source.commit, 'd40af170d43043b63d019711f4db5e39532afcdf');
   const runtime = JSON.parse(read('test/runtime/sources.json'));
-  assert.deepEqual(runtime.provider, { repository: source.repository, commit: source.commit },
-    'The actual HTTPS integration runtime must exercise the same provider checkpoint as the frozen contracts');
+  assert.equal(source.compatible_runtime.files_sha256, delegationDigest(source.files));
+  assert.deepEqual(runtime.provider, { repository: source.compatible_runtime.repository, commit: source.compatible_runtime.commit },
+    'The actual HTTPS runtime must match the independently checked compatible provider; frozen contract origin remains unchanged');
   assert.deepEqual(source.files.map(f => f.local), [...names.map(n => `contracts/${n}`),
     'test/fixtures/content-qualification-contract.json', 'test/fixtures/content-policy-v2-provider.json',
     'contracts/content-capture-read-v1.json', 'contracts/content-qualification-report-v1.json',

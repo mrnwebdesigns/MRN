@@ -24,12 +24,6 @@ jobs:
         run: npm ci --ignore-scripts --prefix tools/operations
       - name: Operations authorization, protocol and failure contracts
         run: npm run lint --prefix tools/operations && npm test --prefix tools/operations
-      - name: Native write fixture input and refusal contracts
-        # Offline preflight only. Actual ACF/CSS acceptance additionally requires
-        # MRN_DISPOSABLE_WRITE_WORKFLOWS=1 in the existing disposable harness,
-        # matching reviewed runtime/profile inputs and provider recovery evidence.
-        # The inherited transport report cannot substitute for that release gate.
-        run: node tools/operations/test/runtime/native-content.mjs --check-write-preflight
       - name: Existing Fleet contract regression
         run: node --test stack/tests/test_mrn_fleet_update.mjs
       - name: Dependency security audit

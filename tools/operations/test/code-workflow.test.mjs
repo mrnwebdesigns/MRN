@@ -9,10 +9,10 @@ import { digest } from '../src/contracts.mjs';
 
 const person = { subject: 'google-oauth2|123456', googleSubject: '123456', identityProvider: 'google-oauth2', verifiedEmail: 'staff@mrnwebdesigns.com', expiresAt: Date.now() + 3600000, scopes: ['mrn:operations', 'mrn:operations:write'] };
 const path = 'wp-content/themes/fixture/file.php';
-function configured(t) {
+function configured(t, fixturePath = path, original = '<?php // original\n') {
   const f = setup(); t.after(f.close);
   f.policy.members.push({ subject: person.subject, enabled: true, grants: [{ website: 'example', environments: ['development'], actions: ['read', 'code'] }] });
-  const state = { content: '<?php // original\n', prepared: new Map(), applications: 0, qa: 0, qaKinds: [], revoked: false };
+  const state = { content: original, prepared: new Map(), applications: 0, qa: 0, qaKinds: [], revoked: false };
   f.service.verifyStaff = async () => { if (state.revoked) throw new Error('revoked'); };
   const call = f.client.callTool.bind(f.client);
   f.client.callTool = async request => {
@@ -20,7 +20,7 @@ function configured(t) {
     if (name === toolNames.codeInspect) return response({ success: true, exists: true, sha256: digest(state.content), bytes: Buffer.byteLength(state.content), content_base64: Buffer.from(state.content).toString('base64'), code_storage: { backup_ready: true, atomic_ready: true } });
     if (name === toolNames.codePrepare) {
       const id = randomUUID(); const newHash = args.kind === 'rollback' ? state.prepared.get(args.rollback_operation_id).beforeHash : args.new_sha256;
-      const plan = { operation_id: id, digest: digest(args), site_id: 1, site_url: f.state.url + '/', path, before_sha256: args.expected_sha256,
+      const plan = { operation_id: id, digest: digest(args), site_id: 1, site_url: f.state.url + '/', path: args.path, before_sha256: args.expected_sha256,
         new_sha256: args.new_sha256 || null, kind: args.kind, qa_evidence_sha256: args.qa_evidence_sha256, prepared_by: person.verifiedEmail,
         expires_at: Math.floor(Date.now() / 1000) + 600, qa: { new_sha256: newHash } };
       state.prepared.set(id, { plan, args, beforeContent: state.content, beforeHash: digest(state.content) }); return response(plan);
@@ -45,7 +45,7 @@ function configured(t) {
     }
     return call(request);
   };
-  const qa = { policy: { profiles: [{ siteUrl: f.state.url + '/', paths: [path], runtimeUrl: 'https://runtime.invalid', source: { mode: 'unversioned' } }] },
+  const qa = { policy: { profiles: [{ siteUrl: f.state.url + '/', paths: [fixturePath], runtimeUrl: 'https://runtime.invalid', source: { mode: 'unversioned' } }] },
     dispatch: async request => { state.qa++; state.qaKinds.push(request.kind); return { runId: state.qa, url: 'https://github.com/mrnwebdesigns/qa/actions/runs/1' }; },
     receipt: async (_ticket, request) => {
       if (state.failQa) throw new Error('QA failed');
@@ -73,6 +73,24 @@ test('snapshot code path qualifies, previews, approves, backs up, verifies and s
   await f.service.jobs.get(rollback.id);
   const rolled = await apply(f, f.service.get(person, rollback.id)); assert.equal(rolled.status, 'verified');
   assert.equal(f.codeState.content, original); assert.equal(f.state.backups, 2); assert.equal(f.codeState.qa, 2);
+});
+
+test('legacy CSS unit lifecycle retains exact CRLF and Unicode bytes through a separately approved inverse', async t => {
+  // Transport/receipt unit fixture only; real QA Engine and inode metadata are
+  // separate required native gates, not simulated by this assertion.
+  const file = 'wp-content/themes/fixture/legacy.css', before = '/* Retain café and CRLF. */\r\n.copy { color: #123456; }\r\n';
+  const after = '/* Retain café and CRLF. */\r\n.copy { color: #654321; }\r\n';
+  const f = configured(t, file, before);
+  const op = await f.service.prepareCode(person, { website: 'example', path: file, expectedSha256: digest(before), content: after,
+    reason: 'Unit legacy CSS replacement', requestKey: 'css-unit-forward' });
+  await f.service.jobs.get(op.id); const ready = f.service.get(person, op.id);
+  assert.equal(ready.status, 'prepared'); assert.equal(ready.preview.before, before); assert.equal(ready.preview.after, after);
+  assert.equal(f.codeState.content, before); await assert.rejects(() => f.service.execute(person, { operationId: op.id }), { code: 'APPROVAL_REQUIRED' });
+  const result = await apply(f, ready); assert.equal(result.status, 'verified'); assert.equal(result.result.sha256, digest(after));
+  assert.equal(f.codeState.content, after); assert.equal(f.state.backups, 1);
+  const inverse = await f.service.prepareRollback(person, { operationId: op.id, requestKey: 'css-unit-inverse' }); await f.service.jobs.get(inverse.id);
+  const restored = await apply(f, f.service.get(person, inverse.id)); assert.equal(restored.status, 'verified');
+  assert.equal(f.codeState.content, before); assert.equal(restored.result.sha256, digest(before)); assert.equal(f.state.backups, 2); assert.equal(f.codeState.qa, 2);
 });
 
 test('failed QA, stale live state and missing approval never dispatch code', async t => {
