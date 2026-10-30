@@ -10,7 +10,9 @@
 /home/mrndev-stack-manager/stack/packages/ame-branding-add-on.zip
 classic-editor|1.7.0
 enable-media-replace|4.2.2
-post-smtp|4.0.2
+fluent-smtp|2.4.1
+webp-converter-for-media|6.7.0
+wordfence|9.0.2
 /home/mrndev-stack-manager/stack/packages/happyfiles-pro.zip
 /home/mrndev-stack-manager/stack/packages/mrn-acf-focal-point.zip
 /home/mrndev-stack-manager/stack/packages/mrn-announcements.zip

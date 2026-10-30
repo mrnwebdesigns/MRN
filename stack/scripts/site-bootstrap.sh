@@ -786,7 +786,7 @@ install_plugins() {
         add_warning "Failed to install plugin package/source: ${source}"
         continue
       fi
-      if ! run_wp plugin is-active "${installed_slug}" >/dev/null 2>&1; then
+      if [[ "${installed_slug}" != "fluent-smtp" ]] && ! run_wp plugin is-active "${installed_slug}" >/dev/null 2>&1; then
         if ! run_wp plugin activate "${installed_slug}"; then
           add_warning "Installed but failed to activate plugin slug '${installed_slug}' from source: ${source}"
         fi
@@ -821,13 +821,23 @@ install_plugins() {
       fi
     fi
 
-    if ! run_wp plugin is-active "${slug}" >/dev/null 2>&1; then
+    if [[ "${slug}" != "fluent-smtp" ]] && ! run_wp plugin is-active "${slug}" >/dev/null 2>&1; then
       if ! run_wp plugin activate "${slug}"; then
         add_warning "Installed but failed to activate plugin: ${slug}"
       fi
     fi
     clear_post_smtp_activation_redirect "${slug}"
   done < "${PLUGINS_FILE}"
+}
+
+configure_wordfence_defaults() {
+  local profile="${STACK_WORDFENCE_PROFILE:-cloudflare}" site_host
+  case "${profile}" in
+    cloudflare|standalone) ;;
+    *) echo "Invalid STACK_WORDFENCE_PROFILE: ${profile}" >&2; return 1 ;;
+  esac
+  site_host="$(run_wp eval 'echo wp_parse_url(home_url(), PHP_URL_HOST);')"
+  run_wp eval-file "${STACK_ROOT}/scripts/configure-wordfence.php" "${profile}" "${site_host}" apply
 }
 
 reset_standard_plugins() {
@@ -910,6 +920,8 @@ ensure_all_plugins_active() {
   for plugin_slug in "${inactive_plugins[@]}"; do
     plugin_slug="$(printf '%s' "${plugin_slug}" | xargs)"
     [[ -z "${plugin_slug}" ]] && continue
+    # Fresh bootstraps are development; never briefly enable mail transport.
+    [[ "${plugin_slug}" == "fluent-smtp" ]] && continue
     if ! run_wp plugin activate "${plugin_slug}" >/dev/null 2>&1; then
       add_warning "Failed to activate plugin before licenses/imports: ${plugin_slug}"
       continue
@@ -2168,12 +2180,18 @@ main() {
   # one complete bundle throughout bootstrap, including its package/lock files.
   source "${STACK_ROOT}/scripts/source-distribution-lease.sh"
   mrn_source_distribution_lease "${STACK_ROOT}"
+  # Reject a bad security profile before the destructive fresh-install reset.
+  case "${STACK_WORDFENCE_PROFILE:-cloudflare}" in
+    cloudflare|standalone) ;;
+    *) echo "Invalid STACK_WORDFENCE_PROFILE" >&2; return 1 ;;
+  esac
   echo "Bootstrapping site: ${SITE_PATH} (owner: ${SITE_USER}, profile: ${SITE_PROFILE})"
   ensure_site_owner_direct_ssh
   reset_standard_plugins
   remove_retired_stack_plugins
   install_plugins
   ensure_all_plugins_active
+  configure_wordfence_defaults
   configure_post_types_order
   apply_licenses
   sync_mu_plugins

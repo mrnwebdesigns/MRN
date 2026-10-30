@@ -1,5 +1,12 @@
 # Stack Changelog
 
+## Unreleased — mail, media and security defaults
+
+- Replace new-site Post SMTP with pinned FluentSMTP 2.4.1; keep transport inactive throughout development bootstrap. Existing-site cutovers preserve mail settings and require delivery verification.
+- Add Converter for Media 6.7.0 and Wordfence 9.0.2. Wordfence Free is the baseline with two non-secret presets; Premium is supported per site. Preserve Application Password integrations and verify IP detection, firewall optimization, 2FA, MainWP management and host image delivery separately.
+- Include the exact-host Wordfence configuration helper and both presets in bootstrap distributions. Package hashes are input evidence, not runtime qualification or Fleet publication.
+
+
 ## 2026.10.29-fleet-auto-830e63125027
 
 - Automatic cumulative release from accepted source vector `7a17dedcdc606630093b416eb92b58259910d4858be6df861ac80b7b736718b9`.

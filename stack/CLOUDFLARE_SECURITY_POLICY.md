@@ -4,7 +4,7 @@
 
 Cloudflare is MRN's default security control plane for sites where MRN can manage the authoritative DNS zone. Cloudflare provides the edge WAF, TLS termination, bot and abuse controls, DNS protection, security events, and launch-time verification boundary.
 
-Wordfence is the approved fallback when a site cannot be placed in the MRN Cloudflare account or when the site's host, registrar, contract, or application requirements prevent safe Cloudflare proxying. Do not install and activate Wordfence as a default companion to Cloudflare. Running two independent firewalls creates duplicated controls, noisy alerts, and harder incident response.
+Effective 2026-10-30, Wordfence Free is the standard WordPress security layer on both Cloudflare-proxied and non-Cloudflare sites, with Premium supported per site. Cloudflare owns edge WAF, bot and broad rate controls; Wordfence retains WordPress application protection, malware scanning and login protection. Use the two presets and MainWP override procedure in [mail, media and security configuration](MAIL-MEDIA-SECURITY.md). This supersedes the earlier fallback-only decision.
 
 This policy complements the [DNS migration policy](https://docs.google.com/document/d/1wDrYsLlt-LVf1hnJgBtYk2qeshony-wtOVfIkTOlN1o/edit) and does not replace the MRN backup, deployment, or QA gates.
 
@@ -70,13 +70,15 @@ Development sites receive the development profile, remain clearly marked as non-
 
 Production sites receive the production profile. Before launch, MRN must verify DNS, TLS, WAF behavior, forms, mail, admin access, uptime monitoring, sitemap/robots behavior, and rollback information. A production launch is not complete merely because the nameservers show Cloudflare.
 
-## Wordfence fallback
+## Wordfence profiles
 
-Use Wordfence only when Cloudflare cannot be safely used for that site. Record the reason in the site's deployment notes. The fallback configuration is:
+Use `configs/wordfence/cloudflare.json` for a verified Cloudflare-proxied site and `configs/wordfence/standalone.json` otherwise. A Cloudflare DNS zone alone does not prove that the website is proxied. A non-Cloudflare site may still use a host proxy; verify visitor-IP handling in either case.
 
-- Development: firewall enabled in learning mode, scans enabled, administrator 2FA encouraged, low-noise notifications, and no destructive blocking until legitimate traffic is observed.
-- Production: firewall optimized after a learning period, administrator 2FA required, brute-force protection enabled, daily malware/vulnerability scans, update/security notifications enabled, and XML-RPC disabled only when the site does not require it.
-- If Cloudflare is later adopted, disable or remove Wordfence after verifying that the Cloudflare profile is active. Do not leave both systems making overlapping block decisions without a documented exception.
+Both profiles retain scanning and login protection. The Cloudflare profile delegates broad rate controls to the edge; standalone adds conservative crawler/404 throttles. Both start with Wordfence's recommended automatic visitor-IP detection. Select `CF-Connecting-IP` only after verifying the proxy/header trust path and that direct-origin requests cannot spoof it. Use `REMOTE_ADDR` only when it contains the real visitor address. Never allowlist all Cloudflare IPs as bypass-all-rules entries.
+
+New development sites retain Wordfence's initial learning state. Production requires a reviewed learning period, verified firewall optimization where the host supports it, administrator 2FA enrollment, alert delivery, and a successful scan. Free automatically runs daily quick scans and full scans every 72 hours; custom scheduling and real-time signature/rule updates require Premium. Do not force a paid schedule into a Free configuration.
+
+Cloudflare adoption or removal changes the selected preset and requires renewed IP and integration verification; it does not automatically remove Wordfence.
 
 Wordfence does not replace the MRN backup gate, QA, patching, least-privilege administration, or server hardening.
 
@@ -84,7 +86,7 @@ Wordfence does not replace the MRN backup gate, QA, patching, least-privilege ad
 
 A site passes the security portion of launch when:
 
-- the selected security path is recorded as `cloudflare` or `wordfence`;
+- the Wordfence preset is recorded as `cloudflare` or `standalone`, with Cloudflare account/zone details when applicable;
 - the correct account, zone, profile, and environment are recorded;
 - no unresolved DNS, mail, TLS, WAF, or origin-health exception remains;
 - the security controls were verified from outside the origin network;
