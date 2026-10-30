@@ -49,6 +49,11 @@ Qualified plugin ZIPs are retained in the private immutable local cache before
 their promotion records merge, so a superseding release can recover those exact
 inputs. Caching inputs does not advance the Fleet-ready index.
 
+The static publisher names individual bootstrap helpers, configuration files
+and guides explicitly. A contract test checks every `BOOTSTRAP_FILES` input
+against that allowlist; nearby unlisted paths, credentials, traversal and unsafe
+ownership remain blocked.
+
 The host publisher accepts only the canonical source-owner/root/depot. It
 requires one-time source-lease enrollment before replacing the bootstrap bundle.
 Pause legacy source consumers and verify no installer is running before that

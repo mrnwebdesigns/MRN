@@ -98,3 +98,24 @@ reported native reconciliation as available/unchanged with byte-identical
 settings and clean diagnostics in 43.86 seconds. No log filtering or clearing was
 used. Disposable runtime/database cleanup completed; the receipt remains at
 `/private/tmp/mrn-stack-mail-media-security/optional-fluent-policy-check/fluent-policy-check.json`.
+
+## Static publication scope reconciliation
+
+Promotion PR #398 merged release `2026.10.30-fleet-auto-9a9b4219e141` after
+candidate qualification. The worker also passed every required qualification on
+clean merged source, then stopped before publication because the static publisher
+allowlist rejected bundle paths. Local verification found the same omission for
+`scripts/bootstrap_readiness.py` in the retained 501-file published bundle, plus
+the four new guide/helper/profile paths in the 507-file candidate.
+
+Add only those five exact paths. Preserve source-owner/root/depot restrictions,
+secret/traversal/symlink/ownership guards, immutable artifact and recovery checks.
+The new contract regression requires every declared bootstrap input to have an
+explicit publisher scope and verifies that nearby unlisted paths stay rejected.
+The previously verified release remains selected until publication succeeds.
+
+Validation: all 57 distribution/recovery/diagnostic tests passed. The corrected
+publisher's complete `verify` function checked all 501 files in the retained
+published bundle and all 507 in the qualified clean-merged candidate, including
+file hashes, sizes, manifest lock identity and path/owner guards. Both passed.
+Receipt: `/private/tmp/mrn-stack-mail-media-security/static-publication-readback.json`.
