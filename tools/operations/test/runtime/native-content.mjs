@@ -2,7 +2,7 @@
 // Google, protected QA execution and remote backup creation are NOT exercised.
 import assert from 'node:assert/strict';
 import { createPrivateKey, createPublicKey, sign } from 'node:crypto';
-import { lstatSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { lstatSync, mkdirSync, readFileSync, writeFileSync, unlinkSync, readdirSync } from 'node:fs';
 import { isAbsolute, join, resolve } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { Worker } from 'node:worker_threads';
@@ -18,6 +18,18 @@ import { responseEvidence } from '../../src/probe.mjs';
 import { payload, toolNames } from '../../src/mainwp.mjs';
 
 const origin = 'https://child.fixture.example.invalid';
+function nativeBackupStart(value, siteId, seen) {
+  assert.ok(value?.site_id === siteId && [origin, origin + '/'].includes(value.site_url)
+    && /^[a-f0-9]{12}$/.test(value.nonce) && value.status === 'started' && !seen.has(value.nonce),
+  'NATIVE_REAL_BACKUP_REQUIRED');
+  return value;
+}
+function nativeRecoveryProjection(value) {
+  assert.deepEqual(Object.keys(value ?? {}).sort(), ['evidence_sha256', 'object_reference', 'provider', 'restore_reference']);
+  assert.ok(value.provider === 'updraftplus'
+    && ['evidence_sha256', 'object_reference', 'restore_reference'].every(key => /^[a-f0-9]{64}$/.test(value[key])),
+  'NATIVE_AUTHENTICATED_RECOVERY_CLAIM_REQUIRED');
+}
 export function nativeFixture({ privateDirectory, certificate, runtimeCli }) {
   assert.equal(process.env.GITHUB_ACTIONS, 'true');
   const site = JSON.parse(readFileSync(join(privateDirectory, 'native-site.json'), 'utf8'));
@@ -234,6 +246,52 @@ export function validateNativeWriteInputs(site, input, runnerLock) {
     'NATIVE_QA_RUNTIME_MISMATCH: independently qualify matching WordPress/PHP fixture images; never relabel parity');
   return runtime;
 }
+
+// Fixed owned-Child read, never caller PHP or a generic source export. Licensed
+// dependency bytes remain in private supervisor memory/profile files only.
+export function nativeProfileCapturePhp(siteId, providerSource) {
+  assert.ok(Number.isSafeInteger(siteId) && siteId > 0);
+  const adapters = Object.fromEntries(['content-acf.php', 'content-fields.php', 'content-records.php'].map(name => {
+    const hash = providerSource?.[`child/${name}`]; assert.match(hash || '', /^[a-f0-9]{64}$/); return [name, hash];
+  }));
+  return String.raw`
+if(getenv('MRN_DISPOSABLE_API_FIXTURE')!=='1'||!defined('WP_CLI')||!WP_CLI||wp_get_environment_type()!=='local'||untrailingslashit(home_url())!=='https://child.fixture.example.invalid')throw new RuntimeException('Owned Child only');
+wp_set_current_user(1);$i=json_decode(file_get_contents('/fixture-private/child-info.json'),true);
+if(($i['url']??null)!==untrailingslashit(home_url())||!is_int($i['post_id']??null)||get_post_field('post_name',$i['post_id'])!=='native-child-fixture'||get_option('blogname')!=='MRN QA')throw new RuntimeException('Owned profile dataset required');
+foreach(json_decode(base64_decode('__MRN_ADAPTER_PINS__',true),true)as$name=>$sha){$path='/tmp/mrn-'.$name;if(!is_file($path)||is_link($path)||hash_file('sha256',$path)!==$sha)throw new RuntimeException('Exact provider adapter source required');}
+$mrn_content_acf=require '/tmp/mrn-content-acf.php';$mrn_content_fields=require '/tmp/mrn-content-fields.php';$adapter=require '/tmp/mrn-content-records.php';
+$read=$adapter(array('mode'=>'read','site_id'=>__MRN_SITE_ID__,'site_url'=>untrailingslashit(home_url()),'post_type'=>'page','post_id'=>$i['post_id']));
+if(($read['success']??false)!==true)throw new RuntimeException('Independent profile read failed');
+$pages=array();foreach(array('sample-page','native-child-fixture')as$slug){$p=get_page_by_path($slug,OBJECT,'page');if(!$p||$p->post_status!=='publish'||$p->post_password!==''||$p->post_excerpt!==''||strlen($p->post_title)>256||strlen($p->post_content)>32768)throw new RuntimeException('Unrepresentable fixture record');$meta=array();foreach(get_post_meta($p->ID)as$key=>$values){if(!preg_match('/^_?[A-Za-z0-9_]{1,128}$/D',$key)||preg_match('/password|secret|credential|token|license/i',$key)||count($values)!==1||count($meta)>=100)throw new RuntimeException('Unrepresentable fixture metadata');$meta[$key]=$values[0];}$pages[]=array('slug'=>$slug,'title'=>$p->post_title,'content'=>$p->post_content,'meta'=>(object)$meta);}
+$stylesheet=get_stylesheet();$template=get_template();$plugins=get_option('active_plugins',array());if(!preg_match('/^[a-z0-9_-]{1,64}$/D',$stylesheet)||!preg_match('/^[a-z0-9_-]{1,64}$/D',$template)||!is_array($plugins)||count($plugins)>25||count($plugins)!==count(array_unique($plugins)))throw new RuntimeException('Unrepresentable activation');
+$roots=array('wp-content/themes/'.$stylesheet.'/','wp-content/themes/'.$template.'/','wp-content/mu-plugins/');foreach($plugins as$plugin){if(!is_string($plugin)||!preg_match('/^[A-Za-z0-9_-]+\/[A-Za-z0-9_.-]+\.php$/D',$plugin))throw new RuntimeException('Unrepresentable plugin');$roots[]='wp-content/plugins/'.explode('/',$plugin)[0].'/';}$roots=array_values(array_unique($roots));sort($roots,SORT_STRING);
+$files=array();$total=0;foreach($roots as$root){$directory=ABSPATH.$root;if(is_link($directory)||!is_dir($directory)||realpath($directory)!==rtrim($directory,'/'))throw new RuntimeException('Unsafe dependency root');foreach(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory,FilesystemIterator::SKIP_DOTS),RecursiveIteratorIterator::SELF_FIRST)as$entry){if($entry->isLink())throw new RuntimeException('Symlink dependency');if($entry->isDir())continue;if(!$entry->isFile()||$entry->getSize()>8388608||count($files)>=5000)throw new RuntimeException('Dependency bounds');$path=substr($entry->getPathname(),strlen(ABSPATH));if(!preg_match('/^[A-Za-z0-9_][A-Za-z0-9_.\/@-]{0,511}$/D',$path)||strpos($path,'..')!==false||strpos($path,'//')!==false||preg_match('/\/(?:\.env(?:\.|$)|\.git(?:\/|$)|\.npmrc$)|\.(?:pem|key)$/i',$path))throw new RuntimeException('Unsafe dependency file');$s=lstat($entry->getPathname());if($s['nlink']!==1)throw new RuntimeException('Hardlinked dependency');$bytes=file_get_contents($entry->getPathname());clearstatcache(true,$entry->getPathname());$after=lstat($entry->getPathname());if($bytes===false||$s!==$after||strlen($bytes)>8388608||strlen($bytes)!==$s['size']||($total+=strlen($bytes))>33554432)throw new RuntimeException('Dependency changed or exceeded bounds');$files[$path]=array('path'=>$path,'content_base64'=>base64_encode($bytes));}}
+ksort($files,SORT_STRING);$edit='wp-content/themes/'.$stylesheet.'/';$dependencies=array_values(array_filter($roots,static function($r)use($edit){return$r!==$edit;}));
+$profile=array('schema'=>2,'active_theme'=>$stylesheet,'parent_theme'=>$template,'active_plugins'=>$plugins,'dependency_roots'=>$dependencies,'fixtures'=>array('options'=>array('blogdescription'=>get_option('blogdescription')),'pages'=>$pages),'covered_paths'=>array($i['qa_path'],$i['css_path']),'checks'=>array(array('path'=>'/','required_text'=>array('Skip to content')),array('path'=>'/sample-page/','required_text'=>array('Sample Page')),array('path'=>'/native-child-fixture/','required_text'=>array($read['snapshot']['core']['post_title']))),'files'=>array_values($files));
+echo wp_json_encode(array('schema'=>1,'site_url'=>untrailingslashit(home_url()),'post_id'=>$i['post_id'],'qa_path'=>$i['qa_path'],'css_path'=>$i['css_path'],'read'=>$read,'profile'=>$profile));
+`.replace('__MRN_SITE_ID__', String(siteId)).replace('__MRN_ADAPTER_PINS__', Buffer.from(JSON.stringify(adapters)).toString('base64'));
+}
+
+export function validateNativeProfileCapture(capture, input, request, kind) {
+  assert.ok(['content', 'code'].includes(kind), 'NATIVE_PROFILE_CAPTURE_KIND');
+  assert.deepEqual(Object.keys(capture).sort(), ['css_path', 'post_id', 'profile', 'qa_path', 'read', 'schema', 'site_url']);
+  assert.ok(capture.schema === 1 && capture.site_url === origin && capture.post_id === input.post_id && capture.css_path === input.css_path,
+    'NATIVE_PROFILE_CAPTURE_TARGET');
+  assert.ok(capture.read.success === true && capture.read.snapshot_sha256 === digest(capture.read.snapshot), 'NATIVE_PROFILE_CAPTURE_READ');
+  assert.equal(digest(capture.read.snapshot.runtime), digest(input.management_profile_context.runtime), 'NATIVE_PROFILE_CAPTURE_RUNTIME');
+  assert.equal(digest(capture.read.snapshot.acf_definitions), digest(input.management_profile_context.acf_definitions), 'NATIVE_PROFILE_CAPTURE_FIELDS');
+  assert.equal(capture.read.snapshot.core.post_excerpt, '', 'NATIVE_PROFILE_EXCERPT_UNREPRESENTABLE');
+  assert.equal(capture.qa_path, `wp-content/themes/${capture.profile.active_theme}/index.php`, 'NATIVE_PROFILE_RENDERER');
+  if (kind === 'content') {
+    assert.equal(digest(capture.read), digest(request.read), 'NATIVE_PROFILE_CAPTURE_STALE');
+    assert.equal(digest(request.preview.acf_patches[0].path), digest(input.acf_path), 'NATIVE_PROFILE_CAPTURE_PATH');
+  } else {
+    assert.equal(request.path, input.css_path, 'NATIVE_PROFILE_CAPTURE_PATH');
+    const file = capture.profile.files.find(entry => entry.path === input.css_path);
+    assert.ok(file && digest(Buffer.from(file.content_base64, 'base64')) === request.expected_sha256, 'NATIVE_PROFILE_CAPTURE_STALE');
+  }
+  return capture;
+}
 export async function nativeWriteFixture({ privateDirectory, certificate, runtimeCli }) {
   assert.equal(process.env.GITHUB_ACTIONS, 'true', 'Native write fixtures require the existing disposable CI harness');
   assert.ok(typeof process.env.MRN_GATEWAY_RUNNER_SOURCE === 'string' && isAbsolute(process.env.MRN_GATEWAY_RUNNER_SOURCE),
@@ -248,13 +306,16 @@ export async function nativeWriteFixture({ privateDirectory, certificate, runtim
   const input = JSON.parse(readFileSync(join(privateDirectory, 'native-write-fixture.json')));
   const runnerLock = JSON.parse(readFileSync(join(runnerRoot, 'runtime/lock.json')));
   const runtime = validateNativeWriteInputs(site, input, runnerLock);
+  assert.ok(['0', '1'].includes(process.env.MRN_NATIVE_PREPARE_FIXTURE ?? '0'), 'NATIVE_FIXTURE_PREPARATION_FLAG');
+  const prepareFixture = process.env.MRN_NATIVE_PREPARE_FIXTURE === '1';
   assert.equal(process.platform, 'linux', 'NATIVE_QA_LINUX_REQUIRED: use the existing keyless Linux isolator');
   try { execFileSync('docker', ['info'], { stdio: 'ignore', timeout: 10000 }); }
   catch { throw new Error('NATIVE_QA_DOCKER_REQUIRED: no local or production runtime fallback'); }
   // Optional FILE inputs refer only to explicit existing operator-owned fixture
   // policies. A random fixture directory cannot be pre-populated by guessing.
   // IDs, native parity and forward/candidate baselines still need independent
-  // qualification after the fixture exists; this driver generates no policy.
+  // qualification after the fixture exists. The separate explicit preparation
+  // mode below measures owned test inputs; this default path remains strict.
   const privatePolicy = (name, expected, explicitFile) => {
     assert.match(expected || '', /^[a-f0-9]{64}$/, 'NATIVE_QA_POLICY_HASH_REQUIRED: reviewed private fixture policies need explicit checksums');
     assert.ok(explicitFile === undefined || isAbsolute(explicitFile), 'NATIVE_QA_POLICY_PATH: use an explicit absolute existing private file');
@@ -264,9 +325,9 @@ export async function nativeWriteFixture({ privateDirectory, certificate, runtim
     const bytes = readFileSync(file); assert.ok(digest(bytes) === expected, 'NATIVE_QA_POLICY_CHANGED');
     return { file, bytes, value: JSON.parse(bytes) };
   };
-  const forward = privatePolicy('native-content-forward-policy.json', process.env.MRN_NATIVE_CONTENT_FORWARD_POLICY_SHA256, process.env.MRN_NATIVE_CONTENT_FORWARD_POLICY_FILE);
-  const inverse = privatePolicy('native-content-inverse-policy.json', process.env.MRN_NATIVE_CONTENT_INVERSE_POLICY_SHA256, process.env.MRN_NATIVE_CONTENT_INVERSE_POLICY_FILE);
-  const codeOwner = privatePolicy('native-code-policy.json', process.env.MRN_NATIVE_CODE_POLICY_SHA256, process.env.MRN_NATIVE_CODE_POLICY_FILE);
+  const forward = prepareFixture ? null : privatePolicy('native-content-forward-policy.json', process.env.MRN_NATIVE_CONTENT_FORWARD_POLICY_SHA256, process.env.MRN_NATIVE_CONTENT_FORWARD_POLICY_FILE);
+  const inverse = prepareFixture ? null : privatePolicy('native-content-inverse-policy.json', process.env.MRN_NATIVE_CONTENT_INVERSE_POLICY_SHA256, process.env.MRN_NATIVE_CONTENT_INVERSE_POLICY_FILE);
+  const codeOwner = prepareFixture ? null : privatePolicy('native-code-policy.json', process.env.MRN_NATIVE_CODE_POLICY_SHA256, process.env.MRN_NATIVE_CODE_POLICY_FILE);
   const target = { kind: 'wordpress-content', post_type: 'page', post_id: input.post_id };
   const actor = 'native-fixture[bot]';
   const enrolled = owner => {
@@ -283,26 +344,30 @@ export async function nativeWriteFixture({ privateDirectory, certificate, runtim
       && p.descriptor.runtime_context_sha256 === p.descriptor.sha256, 'NATIVE_ACF_DESCRIPTOR_MISMATCH');
     return p;
   };
-  const profile = enrolled(forward.value), inverseProfile = enrolled(inverse.value);
-  assert.ok(digest(profile.descriptor) === digest(inverseProfile.descriptor)
-    && profile.runtime_profile_sha256 !== inverseProfile.runtime_profile_sha256 && profile.parity_sha256 !== inverseProfile.parity_sha256,
-  'NATIVE_ACF_INVERSE_PROFILE_REQUIRED: inverse QA needs an independently qualified current-value baseline');
-  assert.ok(codeOwner.value.schema === 1 && codeOwner.value.enabled === true && codeOwner.value.actors?.includes(actor), 'NATIVE_CSS_POLICY_UNQUALIFIED');
-  const codeSites = codeOwner.value.sites.filter(p => p.site_id === site.site_id && p.site_url === origin + '/');
-  assert.equal(codeSites.length, 1, 'NATIVE_CSS_PROFILE_REQUIRED');
-  const codeSite = codeSites[0];
-  assert.ok(codeSite.source.mode === 'unversioned' && codeSite.runtime_url === 'https://mrn-qa.internal:9443'
-    && codeSite.wordpress_version === runtime.wordpress && codeSite.php_minor === runtime.php_minor
-    && codeSite.roots.some(root => input.css_path.startsWith(root)) && typeof codeSite.rollback_profile === 'string'
-    && codeSite.rollback_profile_sha256 !== codeSite.profile_sha256, 'NATIVE_CSS_INVERSE_PROFILE_REQUIRED');
+  const contextHash = digest(input.management_profile_context);
+  const profile = prepareFixture ? { descriptor: { sha256: contextHash, runtime_context_sha256: contextHash, runtime_url: 'https://mrn-qa.internal:9443' } } : enrolled(forward.value);
+  let codeSite = { runtime_url: 'https://mrn-qa.internal:9443' };
+  if (!prepareFixture) {
+    const inverseProfile = enrolled(inverse.value);
+    assert.ok(digest(profile.descriptor) === digest(inverseProfile.descriptor)
+      && profile.runtime_profile_sha256 !== inverseProfile.runtime_profile_sha256 && profile.parity_sha256 !== inverseProfile.parity_sha256,
+    'NATIVE_ACF_INVERSE_PROFILE_REQUIRED: inverse QA needs an independently qualified current-value baseline');
+    assert.ok(codeOwner.value.schema === 1 && codeOwner.value.enabled === true && codeOwner.value.actors?.includes(actor), 'NATIVE_CSS_POLICY_UNQUALIFIED');
+    const codeSites = codeOwner.value.sites.filter(p => p.site_id === site.site_id && p.site_url === origin + '/');
+    assert.equal(codeSites.length, 1, 'NATIVE_CSS_PROFILE_REQUIRED'); codeSite = codeSites[0];
+    assert.ok(codeSite.source.mode === 'unversioned' && codeSite.runtime_url === 'https://mrn-qa.internal:9443'
+      && codeSite.wordpress_version === runtime.wordpress && codeSite.php_minor === runtime.php_minor
+      && codeSite.roots.some(root => input.css_path.startsWith(root)) && typeof codeSite.rollback_profile === 'string'
+      && codeSite.rollback_profile_sha256 !== codeSite.profile_sha256, 'NATIVE_CSS_INVERSE_PROFILE_REQUIRED');
+  }
   const providerPolicy = JSON.parse(readFileSync(join(privateDirectory, 'native-content-policy.json')));
   assert.equal(providerPolicy.qa_keys.length, 1, 'NATIVE_FIXTURE_SIGNER_REQUIRED');
   const keyId = providerPolicy.qa_keys[0].id, publicKeyBase64 = providerPolicy.qa_keys[0].public_key_base64;
-  const contentPolicy = contentQaPolicySchema.parse({ version: 1, repository: forward.value.repository, workflowCommit: source.runner.commit,
+  const contentPolicy = contentQaPolicySchema.parse({ version: 1, repository: 'mrnwebdesigns/mrn-code-qa-runner', workflowCommit: source.runner.commit,
     actor, keyId, publicKeyBase64, engineCommit: runnerLock.engine_commit,
     profiles: [{ siteUrl: origin, profile: profile.descriptor, targets: [{ target, selector: input.acf_selector,
       acfPath: input.acf_path, providerSource: input.management_profile_context.source }] }] });
-  const codePolicy = codePolicySchema.parse({ version: 1, repository: codeOwner.value.repository, workflowCommit: source.runner.commit,
+  const codePolicy = codePolicySchema.parse({ version: 1, repository: 'mrnwebdesigns/mrn-code-qa-runner', workflowCommit: source.runner.commit,
     actor, keyId, publicKeyBase64, engineCommit: runnerLock.engine_commit,
     profiles: [{ siteUrl: origin + '/', paths: [input.css_path], runtimeUrl: codeSite.runtime_url, source: { mode: 'unversioned' } }] });
   const stats = { qa: 0, contentQa: 0, codeQa: 0, backups: 0, publicReads: 0 };
@@ -312,23 +377,106 @@ export async function nativeWriteFixture({ privateDirectory, certificate, runtim
     catch { throw new Error('NATIVE_FIXTURE_STATE_UNAVAILABLE: private CLI output withheld'); }
   };
   const guard = `if(getenv('MRN_DISPOSABLE_API_FIXTURE')!=='1'||!defined('WP_CLI')||!WP_CLI||home_url()!=='https://wpcontrol.mrndev.io')throw new RuntimeException('Disposable Dashboard only');`;
-  const qaWorker = async (kind, request, policy) => {
+  const qaWorker = async (kind, request, policy, { captureParity = false, outputId = request.request_id } = {}) => {
+    assert.match(outputId, /^[a-f0-9]{32}$/); assert.ok(!captureParity || kind === 'content');
     const requestB64 = Buffer.from(JSON.stringify(request)).toString('base64');
-    const output = join(privateDirectory, `native-engine-${request.request_id}`);
+    const output = join(privateDirectory, `${captureParity ? 'native-parity' : 'native-engine'}-${outputId}`);
     const env = Object.fromEntries(['PATH', 'HOME', 'LANG', 'TMPDIR'].filter(key => process.env[key]).map(key => [key, process.env[key]]));
     // Worker memory/environment never receives backend credentials or signer
     // keys. Its result comes only from the existing actual isolation function.
     await new Promise((done, reject) => {
       let passed = false;
-      const worker = new Worker(`const {parentPort,workerData:d}=require('node:worker_threads');(async()=>{const fs=require('node:fs'),url=require('node:url'),crypto=require('node:crypto');const bytes=fs.readFileSync(d.policy);if(crypto.createHash('sha256').update(bytes).digest('hex')!==d.policySha)throw Error('NATIVE_QA_POLICY_CHANGED');const policy=JSON.parse(bytes);const m=await import(url.pathToFileURL(d.root+'/src/'+(d.kind==='content'?'content-isolate.mjs':'isolate.mjs')).href);const options={root:d.root,requestB64:d.request,policy,output:d.output,fixture:true,api:{async source(){return {mode:'unversioned'};}}};const result=await (d.kind==='content'?m.contentQA(options):m.isolatedQA(options));if(result.result!=='Pass')throw Error('QA_ENGINE_FAILED');parentPort.postMessage({result:'Pass'});})().catch(e=>{parentPort.postMessage({result:'Blocked',code:/^[A-Z0-9_]+$/.test(e.message)?e.message:'NATIVE_QA_FAILED'});process.exitCode=1;});`,
-        { eval: true, workerData: { root: runnerRoot, kind, request: requestB64, policy: policy.file, policySha: digest(policy.bytes), output }, env, stdout: true, stderr: true });
+      const worker = new Worker(`const {parentPort,workerData:d}=require('node:worker_threads');(async()=>{const fs=require('node:fs'),url=require('node:url'),crypto=require('node:crypto');const bytes=fs.readFileSync(d.policy);if(crypto.createHash('sha256').update(bytes).digest('hex')!==d.policySha)throw Error('NATIVE_QA_POLICY_CHANGED');const policy=JSON.parse(bytes);const m=await import(url.pathToFileURL(d.root+'/src/'+(d.kind==='content'?'content-isolate.mjs':'isolate.mjs')).href);const options={root:d.root,requestB64:d.request,policy,output:d.output,fixture:true,captureParity:d.captureParity,api:{async source(){return {mode:'unversioned'};}}};const result=await (d.kind==='content'?m.contentQA(options):m.isolatedQA(options));const expected=d.captureParity?'Measured':'Pass';if(result.result!==expected)throw Error('QA_ENGINE_FAILED');parentPort.postMessage({result:expected});})().catch(e=>{parentPort.postMessage({result:'Blocked',code:/^[A-Z0-9_]+$/.test(e.message)?e.message:'NATIVE_QA_FAILED'});process.exitCode=1;});`,
+        { eval: true, workerData: { root: runnerRoot, kind, request: requestB64, policy: policy.file, policySha: digest(policy.bytes), output, captureParity }, env, stdout: true, stderr: true });
       worker.stdout.resume(); worker.stderr.resume();
-      worker.on('message', value => { passed = value?.result === 'Pass'; });
+      worker.on('message', value => { passed = value?.result === (captureParity ? 'Measured' : 'Pass'); });
       worker.on('error', () => reject(new Error('NATIVE_QA_WORKER_FAILED: no fixture receipt was issued')));
       worker.on('exit', code => code === 0 && passed ? done() : reject(new OpsError('NATIVE_QA_ENGINE_FAILED', 'Actual isolated QA did not pass; no fixture receipt was issued.')));
     });
     assert.ok(readFileSync(policy.file).equals(policy.bytes), 'NATIVE_QA_POLICY_CHANGED');
     return { requestB64, output };
+  };
+  const preparedFiles = [], baselineProfiles = {};
+  let measurementEnvelope;
+  const preparePolicy = async (kind, request) => {
+    assert.ok(prepareFixture && process.env.GITHUB_ACTIONS === 'true' && process.platform === 'linux', 'NATIVE_FIXTURE_PREPARATION_CONTEXT');
+    assert.match(request.request_id, /^[a-f0-9]{32}$/);
+    const childCli = join(privateDirectory, 'wp-child-fixture-cli'), custody = lstatSync(childCli);
+    assert.ok(custody.isFile() && !custody.isSymbolicLink() && custody.nlink === 1 && custody.uid === process.getuid()
+      && (custody.mode & 0o077) === 0, 'NATIVE_PROFILE_CAPTURE_CUSTODY');
+    let capture;
+    try { capture = JSON.parse(execFileSync(childCli, ['eval', nativeProfileCapturePhp(site.site_id, input.management_profile_context.source)],
+      { encoding: 'utf8', timeout: 60000, maxBuffer: 48 * 1024 * 1024, stdio: ['ignore', 'pipe', 'ignore'] })); }
+    catch { throw new Error('NATIVE_PROFILE_CAPTURE_FAILED: fixed owned source read failed; private output withheld'); }
+    validateNativeProfileCapture(capture, input, request, kind);
+    const profileModule = await import(pathToFileURL(join(runnerRoot, 'src/profiles.mjs')));
+    profileModule.profileFiles(capture.profile, [`wp-content/themes/${runtime.stylesheet}/`]);
+    const profileBytes = Buffer.from(delegationCanonical(capture.profile)), profileSha = digest(profileBytes);
+    assert.ok(profileBytes.length <= 48 * 1024 * 1024, 'NATIVE_PROFILE_CAPTURE_SIZE');
+    const profilePath = `profiles/native-write-${request.request_id}.json`, absolute = join(runnerRoot, profilePath);
+    writeFileSync(absolute, profileBytes, { flag: 'wx', mode: 0o600 }); preparedFiles.push({ file: absolute, sha: profileSha });
+    const renderOptions = ['WPLANG', 'blog_charset', 'blogdescription', 'blogname', 'html_type', 'permalink_structure', 'show_on_front'];
+    const measuredProfile = { site_id: site.site_id, site_url: origin, target, descriptor: profile.descriptor,
+      stable_selector: { post_type: 'page', post_path: 'native-child-fixture' }, affected_paths: ['/native-child-fixture/'],
+      runtime_profile: profilePath, runtime_profile_sha256: profileSha, qa_path: capture.qa_path, selector: input.acf_selector,
+      wordpress_version: runtime.wordpress, php_minor: runtime.php_minor, parity_sha256: '0'.repeat(64), render_options: renderOptions,
+      adapter: 'content-management-v1', acf_path: input.acf_path, provider_source: input.management_profile_context.source };
+    const repositoryId = JSON.parse(readFileSync(join(runnerRoot, 'test/fixture-policy.json'))).repository_id;
+    const owner = { schema: 1, enabled: true, repository: 'mrnwebdesigns/mrn-code-qa-runner', repository_id: repositoryId,
+      actors: [actor], key_id: keyId, profiles: [measuredProfile] };
+    const privateOwner = (name, value) => {
+      const file = join(privateDirectory, `${name}-${request.request_id}.json`), bytes = Buffer.from(delegationCanonical(value));
+      assert.ok(bytes.length <= 262144, 'NATIVE_QA_POLICY_SIZE'); writeFileSync(file, bytes, { flag: 'wx', mode: 0o600 });
+      return { file, bytes, value };
+    };
+    if (kind === 'content' && !request.review.rollback_operation_id) measurementEnvelope = structuredClone(request);
+    const captureRequest = kind === 'content' ? request : measurementEnvelope;
+    assert.ok(captureRequest, 'NATIVE_CSS_PROFILE_CAPTURE_REQUIRES_ORIGINAL_CONTENT_OBSERVATION');
+    // CSS uses the earlier authentic content envelope solely to address the
+    // fixed unsigned HTTP measurer. Current fields must independently match;
+    // no mutation request is forged and this capture cannot issue a receipt.
+    if (kind !== 'content') for (const key of ['core', 'acf_definitions', 'acf_values', 'runtime'])
+      assert.equal(digest(capture.read.snapshot[key]), digest(captureRequest.read.snapshot[key]), 'NATIVE_PROFILE_CAPTURE_STALE');
+    const nativeParity = () => {
+      const command = guard + `$n=json_decode(file_get_contents('/fixture-private/native-site.json'),true);$i=json_decode(file_get_contents('/fixture-private/child-info.json'),true);`
+        + `if(($n['site_id']??null)!==${site.site_id}||($i['post_id']??null)!==${input.post_id})throw new RuntimeException('Owned target');`
+        + `$s=MRN_MainWP_Operations_API::get_website(${site.site_id});if(is_wp_error($s)||untrailingslashit($s->url)!=='${origin}')throw new RuntimeException('Owned site');`
+        + `$template=php_strip_whitespace(WP_PLUGIN_DIR.'/mrn-mainwp-operations-api/child/content-parity.php');`
+        + `$options=json_decode(base64_decode('${Buffer.from(JSON.stringify(renderOptions)).toString('base64')}',true),true);`
+        + `$code='$measure=(static function(){'.substr($template,5).'})();$v=$measure('.(int)$i['post_id'].','.var_export($options,true).');echo wp_json_encode(array("success"=>$v["success"],"sha256"=>$v["sha256"]??null));';`
+        + `$ref=wp_generate_uuid4();$r=MRN_MainWP_Code_Transport::fetch($s,array('action'=>'run_snippet_v2','request'=>wp_json_encode(array('protocol_version'=>2,'request_ref'=>$ref,'slug'=>'mrn_native_parity_capture','type'=>'R','code'=>$code))));`
+        + `$v=!is_wp_error($r)?json_decode($r['output']??'',true):null;if(is_wp_error($r)||($r['request_ref']??null)!==$ref||($r['status']??null)!=='succeeded'||!empty($r['output_truncated'])||($v['success']??false)!==true||!preg_match('/^[a-f0-9]{64}$/D',$v['sha256']??''))throw new RuntimeException('Independent native HTTP parity');echo $v['sha256'];`;
+      const hash = cli(command).trim(); assert.match(hash, /^[a-f0-9]{64}$/, 'NATIVE_PROFILE_HTTP_CAPTURE'); return hash;
+    };
+    const nativeBefore = nativeParity(), measured = await qaWorker('content', captureRequest, privateOwner('native-measure', owner), { captureParity: true, outputId: request.request_id });
+    assert.deepEqual(readdirSync(measured.output), ['parity.json'], 'NATIVE_UNSIGNED_MEASUREMENT_ONLY');
+    const parityModule = await import(pathToFileURL(join(runnerRoot, 'src/content-parity.mjs')));
+    const parityFile = join(measured.output, 'parity.json'), parityStat = lstatSync(parityFile);
+    assert.ok(parityStat.isFile() && !parityStat.isSymbolicLink() && parityStat.nlink === 1 && parityStat.uid === process.getuid()
+      && (parityStat.mode & 0o077) === 0 && parityStat.size <= parityModule.parityContract.caps.canonical_manifest_bytes + 1024, 'NATIVE_PROFILE_PARITY_CUSTODY');
+    const parity = JSON.parse(readFileSync(parityFile));
+    assert.ok(parity.schema === 1 && parity.context === 'http' && parity.php_sapi === 'cli-server'
+      && parityModule.parityHash(parity.manifest) === parity.sha256, 'NATIVE_PROFILE_PARITY_MEASUREMENT');
+    assert.equal(parity.sha256, nativeBefore, 'NATIVE_PROFILE_DEPENDENCY_MISMATCH');
+    assert.equal(nativeParity(), nativeBefore, 'NATIVE_PROFILE_NATIVE_STATE_CHANGED');
+    measuredProfile.parity_sha256 = parity.sha256;
+    if (kind === 'content') {
+      if (request.review.rollback_operation_id) {
+        assert.ok(baselineProfiles.content && baselineProfiles.content.operation === request.review.rollback_operation_id
+          && baselineProfiles.content.sha !== profileSha && baselineProfiles.content.parity !== parity.sha256, 'NATIVE_ACF_INVERSE_PROFILE_REQUIRED');
+      } else baselineProfiles.content = { operation: request.review.operation_id, sha: profileSha, parity: parity.sha256 };
+      return privateOwner('native-content-owner', owner);
+    }
+    const code = { site_id: site.site_id, site_url: origin + '/', runtime_url: 'https://mrn-qa.internal:9443',
+      roots: [`wp-content/themes/${runtime.stylesheet}/`], source: { mode: 'unversioned' }, wordpress_version: runtime.wordpress,
+      php_minor: runtime.php_minor, profile: profilePath, profile_sha256: profileSha };
+    if (request.rollback_operation_id) {
+      const prior = baselineProfiles.code;
+      assert.ok(prior && prior.sha !== profileSha && prior.candidate === request.expected_sha256, 'NATIVE_CSS_INVERSE_PROFILE_REQUIRED');
+      Object.assign(code, { profile: prior.path, profile_sha256: prior.sha, rollback_profile: profilePath, rollback_profile_sha256: profileSha });
+    } else baselineProfiles.code = { path: profilePath, sha: profileSha, candidate: request.new_sha256 };
+    return privateOwner('native-code-owner', { schema: 1, enabled: true, repository: owner.repository, repository_id: repositoryId,
+      actors: [actor], key_id: keyId, sites: [code] });
   };
   const contexts = new Map();
   const fixtureApi = (context, owner, kind) => ({ async source() { return { mode: 'unversioned' }; }, async get(path) {
@@ -345,7 +493,7 @@ export async function nativeWriteFixture({ privateDirectory, certificate, runtim
   const actualQa = (instance, kind) => {
     instance.dispatch = async (request, authorize) => {
       await authorize(); instance.qualifyRequest(request);
-      const selected = kind === 'content' ? (request.review.rollback_operation_id ? inverse : forward) : codeOwner;
+      const selected = prepareFixture ? await preparePolicy(kind, request) : kind === 'content' ? (request.review.rollback_operation_id ? inverse : forward) : codeOwner;
       assert.ok(readFileSync(selected.file).equals(selected.bytes), 'NATIVE_QA_POLICY_CHANGED');
       const result = await qaWorker(kind, request, selected); await authorize();
       const runId = ++stats.qa; stats[kind === 'content' ? 'contentQa' : 'codeQa']++;
@@ -371,6 +519,28 @@ export async function nativeWriteFixture({ privateDirectory, certificate, runtim
           writeFileSync(staged, bytes, { flag: 'wx', mode: 0o600 });
           assert.ok(readFileSync(staged).equals(bytes) && readFileSync(original).equals(bytes), 'NATIVE_QA_ARTIFACT_CHANGED');
         }
+        const retainedRoot = process.env.MRN_GATEWAY_NATIVE_QA_EVIDENCE;
+        assert.ok(typeof retainedRoot === 'string' && isAbsolute(retainedRoot)
+          && resolve(retainedRoot) !== resolve(privateDirectory)
+          && !resolve(retainedRoot).startsWith(resolve(privateDirectory) + '/'), 'NATIVE_QA_RETAINED_PATH_REQUIRED');
+        // Only these two bounded, non-secret engine outputs leave private
+        // fixture custody. Licensed profiles, requests and signer files stay.
+        for (let parent = resolve(retainedRoot, '..'); ; parent = resolve(parent, '..')) {
+          const info = lstatSync(parent); assert.ok(info.isDirectory() && !info.isSymbolicLink(), 'NATIVE_QA_RETAINED_PARENT');
+          if (resolve(parent, '..') === parent) break;
+        }
+        try { mkdirSync(retainedRoot, { mode: 0o700 }); } catch (error) { if (error.code !== 'EEXIST') throw error; }
+        const info = lstatSync(retainedRoot);
+        assert.ok(info.isDirectory() && !info.isSymbolicLink() && info.uid === process.getuid() && (info.mode & 0o077) === 0,
+          'NATIVE_QA_RETAINED_CUSTODY');
+        const inverse = kind === 'content' ? Boolean(request.review.rollback_operation_id) : ['rollback', 'rollback_source_review'].includes(request.kind);
+        const label = `${kind === 'content' ? 'acf' : 'css'}-${inverse ? 'inverse' : 'forward'}`;
+        const retained = join(retainedRoot, label); mkdirSync(retained, { mode: 0o700 });
+        for (const name of ['qa.md', 'qualification.json']) {
+          const bytes = readFileSync(join(run.receiptDirectory, name));
+          writeFileSync(join(retained, name), bytes, { flag: 'wx', mode: 0o600 });
+          assert.ok(readFileSync(join(retained, name)).equals(bytes), 'NATIVE_QA_RETAINED_CHANGED');
+        }
       }
       const module = await import(pathToFileURL(join(runnerRoot, 'src', kind === 'content' ? 'content-sign.mjs' : 'sign.mjs')));
       const context = { run_id: String(ticket.runId), run_attempt: '1', repository: instance.policy.repository, ref: 'refs/heads/main', sha: source.runner.commit };
@@ -393,37 +563,44 @@ export async function nativeWriteFixture({ privateDirectory, certificate, runtim
   const contentQa = actualQa(new ProtectedContentQa(null, contentPolicy), 'content');
   const codeQa = actualQa(new ProtectedCodeQa(null, codePolicy), 'code');
   const backups = new Map();
+  let recoveryClaims = 0;
   const wrapClient = client => {
     const original = client.callTool.bind(client);
     client.callTool = async (request, schema, options) => {
+      if ([toolNames.editExecute, toolNames.codeExecute].includes(request.name)) {
+        const result = await original(request, schema, options);
+        payload(result); // A transport/provider refusal cannot count as recovery.
+        const matches = [...backups.values()].filter(value => value.operationId === request.arguments.operation_id);
+        assert.equal(matches.length, 1, 'NATIVE_RECOVERY_BACKUP_BINDING');
+        const retained = matches[0];
+        const projection = JSON.parse(cli(guard
+          + `$key='mrn_write_recovery_used_'.hash('sha256','${site.site_id}:${retained.nonce}');$v=get_option($key);`
+          + `if(!is_array($v)||($v['operation_id']??null)!=='${retained.operationId}')throw new RuntimeException('Recovery claim required');`
+          + `echo wp_json_encode($v['recovery']??null);`));
+        nativeRecoveryProjection(projection);
+        assert.equal(retained.subject, client.actor.subject);
+        recoveryClaims++;
+        return result;
+      }
       if (![toolNames.backup, toolNames.backupStatus].includes(request.name)) return original(request, schema, options);
       await client.verifyStaff(); requireWriteScope(client.actor); assert.equal(request.arguments.site_id, site.site_id);
-      let value;
       if (request.name === toolNames.backup) {
         const running = configuredService.store.history({ url: origin }, 'operation').filter(op => op.status === 'running' && op.requestedBy === client.actor.subject);
         assert.equal(running.length, 1, 'NATIVE_RECOVERY_OPERATION_UNAVAILABLE');
         const p = running[0].plan.provider;
         assert.ok([origin, origin + '/'].includes(p.site_url), 'NATIVE_RECOVERY_EXACT_SITE_REQUIRED');
-        // Existing provider-owned fixture custody only. This driver does not
-        // manufacture remote/readability/restoration assertions or an issuer.
-        const php = guard + `$id='${p.operation_id}';$path='/fixture-private/native-write-recovery-'.$id.'.json';`
-          + `$stat=lstat($path);if(!is_file($path)||is_link($path)||!is_array($stat)||$stat['nlink']!==1||$stat['size']>4096||(fileperms($path)&0077)!==0)throw new RuntimeException('Qualified recovery fixture required');`
-          + `$v=json_decode(file_get_contents($path),true);if(($v['operation_id']??null)!==$id||($v['digest']??null)!=='${p.digest}'||($v['site_id']??null)!==${site.site_id})throw new RuntimeException('Recovery binding');`
-          + `$s=get_transient(MRN_MainWP_Operations_API::receipt_key(${site.site_id},$v['nonce']));$r=$s['write_recovery']??array();`
-          + `if(($r['operation_id']??null)!==$id||($r['operation_sha256']??null)!=='${p.digest}'||($r['site_url']??null)!=='${p.site_url}'||($r['expires_at']??0)<=time()||!hash_equals($s['receipt_hash']??'',hash('sha256',$v['receipt']??'')))throw new RuntimeException('Recovery unavailable');`
-          + `echo wp_json_encode(array_intersect_key($v,array_flip(array('site_id','nonce','receipt'))));`;
-        let receipt;
-        try { receipt = JSON.parse(cli(php)); }
-        catch { throw new OpsError('NATIVE_QUALIFIED_RECOVERY_REQUIRED', 'An operation-bound existing provider recovery receipt is absent or unqualified. No replacement proof was manufactured.'); }
-        assert.ok(receipt.site_id === site.site_id && /^[a-f0-9]{1,64}$/.test(receipt.nonce) && typeof receipt.receipt === 'string' && receipt.receipt.length >= 32,
-          'NATIVE_RECOVERY_RECEIPT_INVALID');
-        backups.set(receipt.nonce, { ...receipt, subject: client.actor.subject }); stats.backups++;
-        value = { site_id: site.site_id, nonce: receipt.nonce, status: 'started' };
-      } else {
-        const receipt = backups.get(request.arguments.nonce); assert.equal(receipt?.subject, client.actor.subject);
-        value = { site_id: site.site_id, nonce: receipt.nonce, receipt: receipt.receipt, status: 'complete' };
+        // Exercise the actual authenticated MainWP/Updraft start and status.
+        // The provider obtains operation-bound proof through the real Web
+        // producer before execution; no handwritten receipt file is consumed.
+        const result = await original(request, schema, options), started = nativeBackupStart(payload(result), site.site_id, backups);
+        backups.set(started.nonce, { nonce: started.nonce, operationId: p.operation_id, subject: client.actor.subject });
+        stats.backups++;
+        return result;
       }
-      return { content: [{ type: 'text', text: JSON.stringify(value) }] };
+      const retained = backups.get(request.arguments.nonce); assert.equal(retained?.subject, client.actor.subject);
+      const result = await original(request, schema, options), status = payload(result);
+      assert.equal(status.site_id, site.site_id); assert.equal(status.nonce, retained.nonce);
+      return result;
     };
     return client;
   };
@@ -442,7 +619,7 @@ export async function nativeWriteFixture({ privateDirectory, certificate, runtim
     });
     await authorize(); stats.publicReads++; return result;
   };
-  return { site, input, target, profile, stats, publicProbe, wrapClient,
+  return { site, input, target, profile, stats, publicProbe, wrapClient, recoveryClaims: () => recoveryClaims,
     registry: { version: 1, websites: [{ id: 'native-write-fixture', name: 'Owned native write fixture', environments: [{ name: 'development', url: origin,
       management: 'mainwp', backup: 'updraft', sources: ['mainwp'], coordination: { exclusiveWriter: 'mrn-operations', evidenceRef: 'owned-disposable-network', validUntil: new Date(Date.now() + 3600000).toISOString() } }] }] },
     configure(service) {
@@ -454,10 +631,13 @@ export async function nativeWriteFixture({ privateDirectory, certificate, runtim
         + `$p['qa_keys']=array(array('id'=>'${keyId}','public_key_base64'=>'${publicKeyBase64}'));if(MRN_MainWP_Code_Evidence::policy($p)!==true)throw new RuntimeException('Fixture code policy');`
         + `$p['signature']=hash_hmac('sha256','mrn-code-policy:'.wp_json_encode($p),MRN_MainWP_Code_Identity::key('authentication'));update_option('mrn_mainwp_code_policy',$p,false);`;
       previousCodePolicy = cli(setup).trim(); assert.match(previousCodePolicy, /^[A-Za-z0-9+/]+={0,2}$/, 'NATIVE_POLICY_CUSTODY');
-      service.contentWorkflow = new ContentWorkflow(service, { qa: contentQa, delay: async () => {} });
-      service.codeWorkflow = new CodeWorkflow(service, { source: null, qa: codeQa, delay: async () => {} });
+      service.contentWorkflow = new ContentWorkflow(service, { qa: contentQa });
+      service.codeWorkflow = new CodeWorkflow(service, { source: null, qa: codeQa });
     },
-    async close() { if (previousCodePolicy) cli(guard + `$p=json_decode(base64_decode('${previousCodePolicy}',true),true);update_option('mrn_mainwp_code_policy',$p,false);`); },
+    async close() {
+      try { if (previousCodePolicy) cli(guard + `$p=json_decode(base64_decode('${previousCodePolicy}',true),true);update_option('mrn_mainwp_code_policy',$p,false);`); }
+      finally { for (const item of preparedFiles) { assert.equal(digest(readFileSync(item.file)), item.sha, 'NATIVE_PROFILE_CHANGED'); unlinkSync(item.file); } }
+    },
   };
 }
 
@@ -552,14 +732,26 @@ export async function checkNativeWriteWorkflows({ fixture, token, call, toolResu
   assert.equal(writes.length, 4); assert.ok(writes.every(row => row.subject === 'google-oauth2|111111' && row.status === 200));
   const audit = store.db.prepare('SELECT subject,identity FROM audit WHERE event=? AND outcome=?').all('execute', 'verified');
   assert.equal(audit.length, 4); assert.ok(audit.every(row => row.subject === 'google-oauth2|111111' && JSON.parse(row.identity).googleSubject === '111111'));
+  assert.equal(fixture.recoveryClaims(), 4, 'NATIVE_FOUR_AUTHENTICATED_RECOVERY_CLAIMS_REQUIRED');
   Object.assign(report, { scope: 'owned-disposable-native-write-workflows', contentWriteVerified: true, managementWritesVerified: true, codeWriteVerified: true,
     contentRollbackVerified: true, codeRollbackVerified: true, cssMetadataVerified: true, qaEngineVerified: true, actualQaRuns: 4,
-    operationRecoveryGateVerified: true, protectedQaVerified: false, remoteBackupVerified: false, liveGoogleVerified: false,
+    operationRecoveryGateVerified: true, recoveryClaimsVerified: 4, protectedQaVerified: false, remoteBackupVerified: true, liveGoogleVerified: false,
     syntheticInputs: ['OAuth and Google Directory', 'GitHub provenance and ephemeral QA signer'], productionCredentials: false });
 }
 
 // Reproducible offline input checks; never asserts CI or opens a runtime.
 if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url && process.argv[2] === '--check-write-preflight') {
+  const start = { site_id: 1, site_url: origin, nonce: '012345abcdef', status: 'started' };
+  nativeBackupStart(start, 1, new Map());
+  for (const change of [{ site_id: 2 }, { site_url: 'https://client.example' }, { nonce: 'not-updraft' }, { status: 'complete' }]) {
+    assert.throws(() => nativeBackupStart({ ...start, ...change }, 1, new Map()));
+  }
+  assert.throws(() => nativeBackupStart(start, 1, new Map([[start.nonce, true]])));
+  const proof = { provider: 'updraftplus', evidence_sha256: 'a'.repeat(64), object_reference: 'b'.repeat(64), restore_reference: 'c'.repeat(64) };
+  nativeRecoveryProjection(proof);
+  for (const change of [{ provider: 'fixture' }, { object_reference: 'not-a-hash' }, { restore_reference: null }, { secret: 'never-projected' }]) {
+    assert.throws(() => nativeRecoveryProjection({ ...proof, ...change }));
+  }
   const site = { site_id: 1, site_url: origin }, lock = { wordpress_version: '6.9.4', php_minor: '8.3' };
   const input = { schema: 1, site_id: 1, site_url: origin, post_id: 7, acf_path: ['field_owned', 'field_copy'],
     acf_selector: '.mrn-native-acf-copy', css_path: 'wp-content/themes/owned/mrn-native-code-fixture.css',
@@ -570,6 +762,23 @@ if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.m
     assert.throws(() => validateNativeWriteInputs(site, { ...input, ...change }, lock));
   }
   assert.throws(() => validateNativeWriteInputs(site, input, { wordpress_version: '7.1.3', php_minor: '8.2' }), /NATIVE_QA_RUNTIME_MISMATCH/);
+  const capturedInput = structuredClone(input); capturedInput.management_profile_context.acf_definitions = [];
+  const snapshot = { core: { post_excerpt: '' }, runtime: input.management_profile_context.runtime, acf_definitions: [], acf_values: {} };
+  const read = { success: true, snapshot, snapshot_sha256: digest(snapshot) };
+  const capture = { schema: 1, site_url: origin, post_id: 7, css_path: input.css_path, qa_path: 'wp-content/themes/owned/index.php',
+    read, profile: { active_theme: 'owned', files: [{ path: input.css_path, content_base64: Buffer.from('owned baseline').toString('base64') }] } };
+  const contentRequest = { read, preview: { acf_patches: [{ path: input.acf_path }] } };
+  validateNativeProfileCapture(capture, capturedInput, contentRequest, 'content');
+  validateNativeProfileCapture(capture, capturedInput, { path: input.css_path, expected_sha256: digest('owned baseline') }, 'code');
+  for (const mutate of [value => { value.site_url = 'https://client.example.org'; }, value => { value.post_id = 8; },
+    value => { value.read.snapshot_sha256 = '0'.repeat(64); }, value => { value.qa_path = 'wp-content/themes/other/index.php'; },
+    value => { value.read.snapshot.core.post_excerpt = 'Not representable'; value.read.snapshot_sha256 = digest(value.read.snapshot); },
+    value => { value.extra = true; }]) {
+    const changed = structuredClone(capture); mutate(changed);
+    assert.throws(() => validateNativeProfileCapture(changed, capturedInput, contentRequest, 'content'));
+  }
+  assert.throws(() => validateNativeProfileCapture(capture, capturedInput, { path: input.css_path, expected_sha256: '0'.repeat(64) }, 'code'), /NATIVE_PROFILE_CAPTURE_STALE/);
+  assert.throws(() => nativeProfileCapturePhp(1, {})); assert.throws(() => nativeProfileCapturePhp(0, {}));
   if (process.env.GITHUB_ACTIONS !== 'true') await assert.rejects(() => nativeWriteFixture({ privateDirectory: '/not-opened',
     certificate: '/not-opened', runtimeCli: '/not-opened' }), /existing disposable CI harness/);
   process.stdout.write('PASS native write preflight: owned inputs, target/path denials and actual runtime mismatch; no runtime, signer or credentials opened.\n');

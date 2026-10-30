@@ -7,6 +7,19 @@ on:
       - stack/scripts/build-mainwp-stack-plugin-plan.py
       - .github/workflows/operations-ci.yml
   workflow_dispatch:
+    inputs:
+      native_write_acceptance:
+        description: Run the owned disposable ACF/CSS acceptance with existing private fixture delivery
+        type: boolean
+        default: false
+      code_snippets_archive:
+        description: Absolute path already staged by approved private fixture delivery; never a URL or credential
+        type: string
+        default: ''
+      code_snippets_sha256:
+        description: Independently reviewed MainWP Code Snippets Extension 5.1.1 archive SHA-256
+        type: string
+        default: ''
 permissions:
   contents: read
 jobs:
@@ -30,9 +43,16 @@ jobs:
         run: npm audit --omit=dev --audit-level=high --prefix tools/operations
 
   provider-transport:
-    name: Disposable gateway MainWP transport
+    name: Disposable gateway MainWP transport (${{ matrix.acceptance }})
     needs: controlled-contracts
     runs-on: ubuntu-24.04
+    # The complete inherited suite remains required. An explicit write run adds
+    # an independent composition under the same bounded job allocation, so a
+    # failure in either composition stays visible and does not cancel the other.
+    strategy:
+      fail-fast: false
+      matrix:
+        acceptance: ${{ fromJSON(github.event_name == 'workflow_dispatch' && inputs.native_write_acceptance && '["existing","write"]' || '["existing"]') }}
     # Source-context composition b2b6698 passed in 29m14s, leaving only 46s at
     # the old whole-job cap. Include room for the added catalog composition and
     # original artifact retention. This is only the overall CI job allocation:
@@ -108,6 +128,41 @@ jobs:
           npm ci --ignore-scripts --prefix .runtime/transport
           npm audit --omit=dev --prefix .runtime/transport
           npm run build --prefix .runtime/transport
+      - name: Validate explicitly supplied private write fixture custody
+        if: matrix.acceptance == 'write'
+        env:
+          MRN_DISPOSABLE_CODE_SNIPPETS_ARCHIVE: ${{ inputs.code_snippets_archive }}
+          MRN_DISPOSABLE_CODE_SNIPPETS_SHA256: ${{ inputs.code_snippets_sha256 }}
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, re, stat
+          source = pathlib.Path(os.environ.get('MRN_DISPOSABLE_CODE_SNIPPETS_ARCHIVE', ''))
+          expected = os.environ.get('MRN_DISPOSABLE_CODE_SNIPPETS_SHA256', '')
+          try:
+              assert source.is_absolute() and re.fullmatch('[a-f0-9]{64}', expected)
+              info = source.lstat()
+              assert stat.S_ISREG(info.st_mode) and info.st_nlink == 1 and info.st_uid == os.getuid()
+              assert info.st_mode & 0o077 == 0 and 0 < info.st_size <= 16 * 1024 * 1024
+              assert all(not parent.is_symlink() for parent in source.parents)
+              assert hashlib.sha256(source.read_bytes()).hexdigest() == expected
+          except (AssertionError, OSError):
+              report = pathlib.Path(os.environ['RUNNER_TEMP']) / 'gateway-native-write-report.json'
+              proof = {'schema': 1, 'result': 'BLOCKED', 'scope': 'owned-disposable-native-write-workflows',
+                       'blocker': 'APPROVED_PRIVATE_FIXTURE_DELIVERY_REQUIRED', 'productionCredentials': False,
+                       'source': json.loads(pathlib.Path('tools/operations/test/runtime/sources.json').read_text())}
+              with report.open('x') as output:
+                  output.write(json.dumps(proof) + '\n')
+              report.chmod(0o600)
+              raise SystemExit('BLOCKED: approved private Code Snippets fixture delivery/path/checksum is required; no source or credential was fetched')
+          PY
+      - name: Install existing locked runner QA dependencies for actual write acceptance
+        if: matrix.acceptance == 'write'
+        working-directory: .runtime/runner
+        run: |
+          composer install --working-dir=tooling --no-interaction --no-scripts --no-plugins --prefer-dist
+          php tooling/vendor/bin/phpcs --config-set installed_paths "$PWD/tooling/vendor/wp-coding-standards/wpcs,$PWD/tooling/vendor/phpcompatibility/php-compatibility,$PWD/tooling/vendor/phpcompatibility/phpcompatibility-paragonie,$PWD/tooling/vendor/phpcompatibility/phpcompatibility-wp,$PWD/tooling/vendor/phpcsstandards/phpcsextra,$PWD/tooling/vendor/phpcsstandards/phpcsutils"
+          ln -s "$PWD/tooling/vendor" vendor/qa-tools/vendor
+          npm ci --ignore-scripts --prefix vendor/qa-engine
       - name: Verify pinned PHP and JavaScript source closure vectors
         run: node --test .runtime/management-worker/test/management-source-closure.test.mjs
       - name: Verify private capture transport size and deadlines
@@ -134,18 +189,22 @@ jobs:
           PYTHONDONTWRITEBYTECODE: '1'
           MRN_DISPOSABLE_API_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/provider-hook.sh
           MRN_DISPOSABLE_NATIVE_CHILD: '1'
+          MRN_DISPOSABLE_WRITE_WORKFLOWS: ${{ matrix.acceptance == 'write' && '1' || '0' }}
+          MRN_NATIVE_PREPARE_FIXTURE: ${{ matrix.acceptance == 'write' && '1' || '0' }}
+          MRN_DISPOSABLE_CODE_SNIPPETS_ARCHIVE: ${{ matrix.acceptance == 'write' && inputs.code_snippets_archive || '' }}
+          MRN_DISPOSABLE_CODE_SNIPPETS_SHA256: ${{ matrix.acceptance == 'write' && inputs.code_snippets_sha256 || '' }}
           MRN_DISPOSABLE_SYNC_AUTH_DIAGNOSTICS: '1'
-          MRN_DISPOSABLE_MANAGEMENT_TEST: '1'
-          MRN_DISPOSABLE_SOURCE_TEST: '1'
+          MRN_DISPOSABLE_MANAGEMENT_TEST: ${{ matrix.acceptance == 'existing' && '1' || '0' }}
+          MRN_DISPOSABLE_SOURCE_TEST: ${{ matrix.acceptance == 'existing' && '1' || '0' }}
           # Separate cloned Dashboard; never initializes the legacy fixture.
-          MRN_DISPOSABLE_EXISTING_BINDING_TEST: '1'
-          MRN_DISPOSABLE_EXISTING_SOURCE_CONTEXT_TEST: '1'
-          MRN_DISPOSABLE_EXISTING_SOURCE_CATALOG_TEST: '1'
-          MRN_DISPOSABLE_EXISTING_SOURCE_STORAGE_TEST: '1'
-          MRN_DISPOSABLE_EXISTING_SOURCE_TRANSPORT_TEST: '1'
+          MRN_DISPOSABLE_EXISTING_BINDING_TEST: ${{ matrix.acceptance == 'existing' && '1' || '0' }}
+          MRN_DISPOSABLE_EXISTING_SOURCE_CONTEXT_TEST: ${{ matrix.acceptance == 'existing' && '1' || '0' }}
+          MRN_DISPOSABLE_EXISTING_SOURCE_CATALOG_TEST: ${{ matrix.acceptance == 'existing' && '1' || '0' }}
+          MRN_DISPOSABLE_EXISTING_SOURCE_STORAGE_TEST: ${{ matrix.acceptance == 'existing' && '1' || '0' }}
+          MRN_DISPOSABLE_EXISTING_SOURCE_TRANSPORT_TEST: ${{ matrix.acceptance == 'existing' && '1' || '0' }}
           MRN_DISPOSABLE_EXISTING_BINDING_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/existing-binding-hook.sh
           # Qualified provider; actual gateway custody remains a required CI gate.
-          MRN_DISPOSABLE_REPORT_CUSTODY_TEST: '1'
+          MRN_DISPOSABLE_REPORT_CUSTODY_TEST: ${{ matrix.acceptance == 'existing' && '1' || '0' }}
           MRN_DISPOSABLE_NATIVE_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/native-hook.sh
           MRN_DISPOSABLE_ACCESS_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/access-hook.sh
           MRN_DISPOSABLE_SOURCE_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/source-hook.sh
@@ -155,6 +214,8 @@ jobs:
           MRN_GATEWAY_RUNNER_SOURCE: ${{ github.workspace }}/.runtime/runner
           MRN_GATEWAY_MANAGEMENT_RUNNER_SOURCE: ${{ github.workspace }}/.runtime/management-worker
           MRN_GATEWAY_NATIVE_REPORT: ${{ runner.temp }}/gateway-native-content-report.json
+          MRN_GATEWAY_NATIVE_WRITE_REPORT: ${{ runner.temp }}/gateway-native-write-report.json
+          MRN_GATEWAY_NATIVE_QA_EVIDENCE: ${{ runner.temp }}/gateway-native-qa-evidence
           MRN_GATEWAY_ACCESS_REPORT: ${{ runner.temp }}/gateway-access-report.json
           MRN_GATEWAY_MANAGEMENT_REPORT: ${{ runner.temp }}/gateway-management-report.json
           MRN_GATEWAY_SOURCE_REPORT: ${{ runner.temp }}/gateway-native-source-report.json
@@ -181,6 +242,31 @@ jobs:
           assert.equal(native.managementReadOnlyScopeVerified, true);
           assert.equal(native.managementWritesVerified, false);
           for (const field of ['productionCredentials', 'liveGoogleVerified', 'protectedQaVerified', 'productionQaVerified', 'remoteBackupVerified', 'chatgptAcceptanceVerified', 'codeWriteVerified']) assert.equal(native[field], false);
+          if (process.env.MRN_DISPOSABLE_WRITE_WORKFLOWS === '1') {
+            const writes = JSON.parse(readFileSync(process.env.MRN_GATEWAY_NATIVE_WRITE_REPORT, 'utf8'));
+            assert.equal(writes.result, 'PASS');
+            assert.equal(writes.scope, 'owned-disposable-native-write-workflows');
+            assert.deepEqual(writes.source, JSON.parse(readFileSync('tools/operations/test/runtime/sources.json', 'utf8')));
+            assert.equal(writes.actualQaRuns, 4);
+            assert.equal(writes.recoveryClaimsVerified, 4);
+            for (const field of ['contentWriteVerified', 'managementWritesVerified', 'codeWriteVerified', 'contentRollbackVerified', 'codeRollbackVerified', 'cssMetadataVerified', 'qaEngineVerified', 'operationRecoveryGateVerified', 'remoteBackupVerified']) assert.equal(writes[field], true);
+            for (const field of ['productionCredentials', 'liveGoogleVerified', 'protectedQaVerified', 'chatgptAcceptanceVerified']) assert.equal(writes[field], false);
+            const { readdirSync, lstatSync } = await import('node:fs');
+            const labels = ['acf-forward', 'acf-inverse', 'css-forward', 'css-inverse'];
+            assert.deepEqual(readdirSync(process.env.MRN_GATEWAY_NATIVE_QA_EVIDENCE).sort(), labels.sort());
+            for (const label of labels) {
+              const directory = `${process.env.MRN_GATEWAY_NATIVE_QA_EVIDENCE}/${label}`;
+              assert.deepEqual(readdirSync(directory).sort(), ['qa.md', 'qualification.json']);
+              const summary = JSON.parse(readFileSync(`${directory}/qualification.json`));
+              const report = readFileSync(`${directory}/qa.md`);
+              assert.ok(lstatSync(`${directory}/qa.md`).size <= 1048576);
+              assert.equal(summary.qa_report_sha256, (await import('node:crypto')).createHash('sha256').update(report).digest('hex'));
+              assert.equal(summary.isolation_verified, true);
+            }
+            // The other required matrix job retains every inherited group and
+            // assertion below; this composition asserts only its own reports.
+            process.exit(0);
+          }
           const access = JSON.parse(readFileSync(process.env.MRN_GATEWAY_ACCESS_REPORT, 'utf8'));
           assert.equal(access.result, 'PASS');
           assert.equal(access.passed.length, 11);
@@ -370,7 +456,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: gateway-provider-worker-failure
+          name: gateway-provider-worker-failure-${{ matrix.acceptance }}
           path: .runtime/provider/reports/native-job-worker-failure.json
           if-no-files-found: ignore
           retention-days: 7
@@ -483,10 +569,13 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: gateway-provider-transport
+          name: ${{ matrix.acceptance == 'existing' && 'gateway-provider-transport' || 'gateway-provider-write-workflows' }}
           path: |
             ${{ runner.temp }}/gateway-provider-report.json
             ${{ runner.temp }}/gateway-native-content-report.json
+            ${{ runner.temp }}/gateway-native-write-report.json
+            ${{ runner.temp }}/gateway-native-qa-evidence/*/qa.md
+            ${{ runner.temp }}/gateway-native-qa-evidence/*/qualification.json
             ${{ runner.temp }}/capture-transport-report.json
             ${{ runner.temp }}/gateway-worker-report.json
             ${{ runner.temp }}/gateway-access-report.json

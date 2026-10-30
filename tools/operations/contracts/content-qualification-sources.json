@@ -61,7 +61,7 @@
   ],
   "compatible_runtime": {
     "repository": "mrnwebdesigns/mrn-mainwp-operations-api",
-    "commit": "ea8ddb5f7982226c1c1c77cb36c497397c17ef77",
+    "commit": "b6f6750904b734877953a57c521825424394a5cb",
     "files_sha256": "97b7df2be8800c011d2522eb1645113be2323cbbe96ab4d74fe489e856b6cbc8"
   }
 }
