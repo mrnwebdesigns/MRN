@@ -71,6 +71,18 @@ class SourcePublication(unittest.TestCase):
     def publish(self, fault=None):
         return self.store.publish(self.release, self.archive, self.manifest, self.previous, fault=fault)
 
+    def test_every_bootstrap_input_has_an_explicit_publication_scope(self):
+        for name in build.BOOTSTRAP_FILES:
+            with self.subTest(path=name):
+                self.assertEqual(host.allowed(name).as_posix(), name)
+
+    def test_new_bootstrap_scopes_do_not_admit_unrelated_paths(self):
+        for name in ('configs/wordfence/unknown.json', 'configs/wordfence/private.php',
+                     'scripts/unknown.php', 'scripts/configure-wordfence.php/extra',
+                     'MAIL-MEDIA-SECURITY.php', 'configs/wordfence/../private.json'):
+            with self.subTest(path=name), self.assertRaises(host.PublicationError):
+                host.allowed(name)
+
     def test_publication_readback_idempotence_and_retained_recovery(self):
         receipt = self.publish()
         self.assertEqual(receipt['status'], 'published_verified')

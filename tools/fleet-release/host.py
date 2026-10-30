@@ -27,16 +27,18 @@ HASH = re.compile(r'^[a-f0-9]{64}$')
 COVERAGE = {'source', 'contracts', 'installed-default-packages', 'installed-optional-packages', 'no-woocommerce',
             'native-editor', 'native-wpforms', 'api', 'browser', 'accessibility',
             'performance', 'core-web-vitals', 'distribution'}
-ALLOWED_FILES = {'BOOTSTRAP_RELEASE.md', 'STACK_VERSION.md',
+ALLOWED_FILES = {'BOOTSTRAP_RELEASE.md', 'MAIL-MEDIA-SECURITY.md', 'STACK_VERSION.md',
                  'RESTORING-RETIRED-CAPABILITIES.md', 'bootstrap-bundle.json'}
-ALLOWED_CONFIGS = {'configs/importers/stack-export-importer.sh',
+ALLOWED_CONFIGS = {'configs/wordfence/cloudflare.json', 'configs/wordfence/standalone.json',
+                   'configs/importers/stack-export-importer.sh',
                    'configs/site-owner-authorized-key.pub',
                    'configs/exports/ame-config-container.json',
                    'configs/exports/ame-toolbar-editor.settings.json',
                    'configs/exports/platform-Advanced-Editor-Tools-settings.json',
                    'configs/exports/MRN-Login.png', 'configs/exports/mrn-logo-png.png',
                    'configs/exports/mrn-logo.svg'}
-SCRIPTS = {'scripts/site-bootstrap.sh', 'scripts/bootstrap-new-sites.sh',
+SCRIPTS = {'scripts/site-bootstrap.sh', 'scripts/configure-wordfence.php',
+           'scripts/bootstrap_readiness.py', 'scripts/bootstrap-new-sites.sh',
            'scripts/bootstrap-dev-enrollment.sh', 'scripts/source-distribution-lease.sh', 'scripts/bootstrap_readiness.py'}
 MANIFESTS = {'plugins.txt', 'themes.txt', 'licenses.txt', 'importers.txt',
              'credential-files.txt', 'license-exemptions.txt', 'stack-release.lock.json',
