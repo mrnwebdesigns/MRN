@@ -1,0 +1,308 @@
+{
+  "method": "Alternating original/approved/final references, identical first section expanded, four native TinyMCE instances, CDP CPU sampled before test-only full GC, retained heap after GC. No other browser workloads during this run.",
+  "assets": {
+    "original": {
+      "js": {
+        "sha256": "5439955839c3bebbfad3a8c421a9745710a4b06791c3c8fca59f9d1bcc09c898",
+        "bytes": 12404
+      },
+      "css": {
+        "sha256": "2746b8670e2507a5698c93327a7253fab390a6b67393c377dbabc516e0f2085b",
+        "bytes": 5761
+      }
+    },
+    "approved": {
+      "js": {
+        "sha256": "5c33ff25382ce38b6d95eb9cb2e2c4b783c6acba1df57601cc8a8f74dac10c12",
+        "bytes": 22071
+      },
+      "css": {
+        "sha256": "937035bce9f6d280ca9e27ad97245c1d5cc5b9ad748b85d77124415ad0a30566",
+        "bytes": 16680
+      }
+    },
+    "final": {
+      "js": {
+        "sha256": "4a7bcc1ff9366f8646a82a34be9f94bdff0c963c975c335d9d6f50051f8c5d90",
+        "bytes": 26106
+      },
+      "css": {
+        "sha256": "ec0f7208888fc14b5e331dd3550a1aec89698ce6393a65a15a10854b19180d1a",
+        "bytes": 17839
+      }
+    }
+  },
+  "samples": [
+    {
+      "id": 2523,
+      "pair": 0,
+      "variant": "original",
+      "heapMB": 27.107765197753906,
+      "startupCPU": 1.299541,
+      "startupScript": 0.668715,
+      "startupLayout": 0.084474,
+      "interactionCPU": 0.28570000000000007,
+      "interactionScript": 0.13376900000000003,
+      "outlineReplacements": 96,
+      "editors": 4,
+      "nodes": 34176,
+      "clientDCL": 472.5
+    },
+    {
+      "id": 2523,
+      "pair": 0,
+      "variant": "approved",
+      "heapMB": 29.207515716552734,
+      "startupCPU": 1.090891,
+      "startupScript": 0.670274,
+      "startupLayout": 0.055134,
+      "interactionCPU": 0.26428700000000016,
+      "interactionScript": 0.135641,
+      "outlineReplacements": 96,
+      "editors": 4,
+      "nodes": 35011,
+      "clientDCL": 376.30000001192093
+    },
+    {
+      "id": 2523,
+      "pair": 0,
+      "variant": "final",
+      "heapMB": 27.085708618164062,
+      "startupCPU": 0.908169,
+      "startupScript": 0.54531,
+      "startupLayout": 0.048451,
+      "interactionCPU": 0.16254100000000005,
+      "interactionScript": 0.038926000000000016,
+      "outlineReplacements": 0,
+      "editors": 4,
+      "nodes": 34204,
+      "clientDCL": 322.10000002384186
+    },
+    {
+      "id": 2523,
+      "pair": 1,
+      "variant": "final",
+      "heapMB": 27.11426544189453,
+      "startupCPU": 0.934151,
+      "startupScript": 0.566982,
+      "startupLayout": 0.051876,
+      "interactionCPU": 0.18144399999999994,
+      "interactionScript": 0.04243600000000003,
+      "outlineReplacements": 0,
+      "editors": 4,
+      "nodes": 34204,
+      "clientDCL": 324.69999998807907
+    },
+    {
+      "id": 2523,
+      "pair": 1,
+      "variant": "approved",
+      "heapMB": 29.205055236816406,
+      "startupCPU": 1.158699,
+      "startupScript": 0.722538,
+      "startupLayout": 0.057134,
+      "interactionCPU": 0.259482,
+      "interactionScript": 0.13574799999999998,
+      "outlineReplacements": 96,
+      "editors": 4,
+      "nodes": 35011,
+      "clientDCL": 381.89999997615814
+    },
+    {
+      "id": 2523,
+      "pair": 1,
+      "variant": "original",
+      "heapMB": 27.11437225341797,
+      "startupCPU": 0.948985,
+      "startupScript": 0.504121,
+      "startupLayout": 0.058358,
+      "interactionCPU": 0.29894200000000004,
+      "interactionScript": 0.148474,
+      "outlineReplacements": 96,
+      "editors": 4,
+      "nodes": 34177,
+      "clientDCL": 341.2000000178814
+    },
+    {
+      "id": 2523,
+      "pair": 2,
+      "variant": "original",
+      "heapMB": 26.625732421875,
+      "startupCPU": 0.929494,
+      "startupScript": 0.496285,
+      "startupLayout": 0.053002,
+      "interactionCPU": 0.2820579999999999,
+      "interactionScript": 0.13347799999999999,
+      "outlineReplacements": 96,
+      "editors": 4,
+      "nodes": 34176,
+      "clientDCL": 328.2000000178814
+    },
+    {
+      "id": 2523,
+      "pair": 2,
+      "variant": "approved",
+      "heapMB": 29.359386444091797,
+      "startupCPU": 1.064668,
+      "startupScript": 0.647623,
+      "startupLayout": 0.060313,
+      "interactionCPU": 0.304389,
+      "interactionScript": 0.1481490000000001,
+      "outlineReplacements": 96,
+      "editors": 4,
+      "nodes": 35012,
+      "clientDCL": 311.90000000596046
+    },
+    {
+      "id": 2523,
+      "pair": 2,
+      "variant": "final",
+      "heapMB": 27.112682342529297,
+      "startupCPU": 0.973783,
+      "startupScript": 0.614425,
+      "startupLayout": 0.049197,
+      "interactionCPU": 0.17821600000000015,
+      "interactionScript": 0.0432570000000001,
+      "outlineReplacements": 0,
+      "editors": 4,
+      "nodes": 34204,
+      "clientDCL": 314.7000000178814
+    },
+    {
+      "id": 2524,
+      "pair": 0,
+      "variant": "original",
+      "heapMB": 29.628826141357422,
+      "startupCPU": 1.306128,
+      "startupScript": 0.763861,
+      "startupLayout": 0.063836,
+      "interactionCPU": 0.3804719999999999,
+      "interactionScript": 0.19360500000000003,
+      "outlineReplacements": 96,
+      "editors": 4,
+      "nodes": 54002,
+      "clientDCL": 555.3000000119209
+    },
+    {
+      "id": 2524,
+      "pair": 0,
+      "variant": "approved",
+      "heapMB": 33.16905975341797,
+      "startupCPU": 1.428255,
+      "startupScript": 0.953572,
+      "startupLayout": 0.052546,
+      "interactionCPU": 0.36916400000000005,
+      "interactionScript": 0.20854499999999998,
+      "outlineReplacements": 96,
+      "editors": 4,
+      "nodes": 54838,
+      "clientDCL": 478.90000000596046
+    },
+    {
+      "id": 2524,
+      "pair": 0,
+      "variant": "final",
+      "heapMB": 30.07266616821289,
+      "startupCPU": 1.327661,
+      "startupScript": 0.882956,
+      "startupLayout": 0.050601,
+      "interactionCPU": 0.19133699999999987,
+      "interactionScript": 0.04795300000000002,
+      "outlineReplacements": 0,
+      "editors": 4,
+      "nodes": 54029,
+      "clientDCL": 456.2999999821186
+    },
+    {
+      "id": 2524,
+      "pair": 1,
+      "variant": "final",
+      "heapMB": 29.93231201171875,
+      "startupCPU": 1.286458,
+      "startupScript": 0.857091,
+      "startupLayout": 0.051019,
+      "interactionCPU": 0.21106099999999994,
+      "interactionScript": 0.05665100000000001,
+      "outlineReplacements": 0,
+      "editors": 4,
+      "nodes": 54029,
+      "clientDCL": 457.30000001192093
+    },
+    {
+      "id": 2524,
+      "pair": 1,
+      "variant": "approved",
+      "heapMB": 31.747066497802734,
+      "startupCPU": 1.450485,
+      "startupScript": 0.995992,
+      "startupLayout": 0.057151,
+      "interactionCPU": 0.3803240000000001,
+      "interactionScript": 0.20927699999999994,
+      "outlineReplacements": 96,
+      "editors": 4,
+      "nodes": 54837,
+      "clientDCL": 505.7000000178814
+    },
+    {
+      "id": 2524,
+      "pair": 1,
+      "variant": "original",
+      "heapMB": 29.605716705322266,
+      "startupCPU": 1.294494,
+      "startupScript": 0.756941,
+      "startupLayout": 0.05555,
+      "interactionCPU": 0.41936799999999996,
+      "interactionScript": 0.22514900000000004,
+      "outlineReplacements": 96,
+      "editors": 4,
+      "nodes": 54002,
+      "clientDCL": 460.09999999403954
+    },
+    {
+      "id": 2524,
+      "pair": 2,
+      "variant": "original",
+      "heapMB": 29.602394104003906,
+      "startupCPU": 1.310241,
+      "startupScript": 0.777727,
+      "startupLayout": 0.058916,
+      "interactionCPU": 0.36105699999999996,
+      "interactionScript": 0.186932,
+      "outlineReplacements": 96,
+      "editors": 4,
+      "nodes": 54002,
+      "clientDCL": 484.09999999403954
+    },
+    {
+      "id": 2524,
+      "pair": 2,
+      "variant": "approved",
+      "heapMB": 31.87354278564453,
+      "startupCPU": 1.681354,
+      "startupScript": 1.175602,
+      "startupLayout": 0.061612,
+      "interactionCPU": 0.3854329999999999,
+      "interactionScript": 0.2026349999999999,
+      "outlineReplacements": 96,
+      "editors": 4,
+      "nodes": 54838,
+      "clientDCL": 550.4000000059605
+    },
+    {
+      "id": 2524,
+      "pair": 2,
+      "variant": "final",
+      "heapMB": 30.480010986328125,
+      "startupCPU": 1.513736,
+      "startupScript": 1.002551,
+      "startupLayout": 0.068538,
+      "interactionCPU": 0.25515299999999996,
+      "interactionScript": 0.053757000000000055,
+      "outlineReplacements": 0,
+      "editors": 4,
+      "nodes": 54030,
+      "clientDCL": 528.0999999940395
+    }
+  ],
+  "errors": []
+}

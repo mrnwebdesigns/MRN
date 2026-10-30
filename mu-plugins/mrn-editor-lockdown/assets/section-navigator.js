@@ -2,6 +2,7 @@
 ( function() {
 	'use strict';
 	if ( ! window.acf || ! window.mrnSectionNavigator ) { return; }
+	var nativeReady = document.readyState === 'complete';
 	var labels = mrnSectionNavigator, rows = [], fields = [], activeRow, mode = 'content', overview = false;
 	var panel, list, search, status, empty, errorFilter, mobileToggle, modeButtons, viewButton, position, previous, next, hint;
 	var observer, titleObserver, noticeObserver, frame = 0, refreshFrame = 0, dirtyRows = new Set(), moving = false, sorting = false, errorsOnly = false, mounted = false, lastInvoker, pendingInvalid = false;
@@ -45,6 +46,7 @@
 		return fallback.indexOf( '|' ) === -1 ? fallback : fallback.split( ' - ' )[ 0 ];
 	}
 	function reveal( row ) {
+		if ( ! nativeReady ) { return; }
 		var ancestors = [], current = row;
 		while ( current ) {
 			if ( current.matches( '.layout' ) ) { ancestors.unshift( current ); }
@@ -300,6 +302,9 @@
 		document.addEventListener( 'keydown', function( event ) { if ( event.key === 'Escape' && document.body.classList.contains( 'mrn-site-menu-open' ) ) { document.body.classList.remove( 'mrn-site-menu-open' ); menu.setAttribute( 'aria-expanded', 'false' ); menu.focus(); } } );
 		window.addEventListener( 'resize', updateChromeOffset ); updateChromeOffset(); window.setTimeout( updateChromeOffset, 500 );
 	}
+	// Reveal after ACF initializes its fields. Early show eagerly enhances Select2
+	// controls in otherwise hidden panels and sections.
+	acf.addAction( 'load', function() { nativeReady = true; schedule(); }, 100 );
 	acf.addAction( 'ready', schedule ); acf.addAction( 'append', schedule ); acf.addAction( 'remove', schedule ); acf.addAction( 'sortstart', function() { sorting = true; } ); acf.addAction( 'sortstop', function() { sorting = false; schedule(); } );
 	document.addEventListener( 'click', function( event ) { if ( event.target.closest( '.mrn-section-return' ) ) { openPanel( event.target ); } } );
 	acf.addAction( 'invalid_field', function( field ) {

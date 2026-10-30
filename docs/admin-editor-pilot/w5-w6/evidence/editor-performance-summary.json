@@ -1,0 +1,60 @@
+{
+  "2523": {
+    "original": {
+      "heapMB": 27.107765197753906,
+      "startupCPU": 0.948985,
+      "startupScript": 0.504121,
+      "interactionCPU": 0.28570000000000007,
+      "interactionScript": 0.13376900000000003,
+      "nodes": 34176,
+      "outlineReplacements": 96
+    },
+    "approved": {
+      "heapMB": 29.207515716552734,
+      "startupCPU": 1.090891,
+      "startupScript": 0.670274,
+      "interactionCPU": 0.26428700000000016,
+      "interactionScript": 0.13574799999999998,
+      "nodes": 35011,
+      "outlineReplacements": 96
+    },
+    "final": {
+      "heapMB": 27.112682342529297,
+      "startupCPU": 0.934151,
+      "startupScript": 0.566982,
+      "interactionCPU": 0.17821600000000015,
+      "interactionScript": 0.04243600000000003,
+      "nodes": 34204,
+      "outlineReplacements": 0
+    }
+  },
+  "2524": {
+    "original": {
+      "heapMB": 29.605716705322266,
+      "startupCPU": 1.306128,
+      "startupScript": 0.763861,
+      "interactionCPU": 0.3804719999999999,
+      "interactionScript": 0.19360500000000003,
+      "nodes": 54002,
+      "outlineReplacements": 96
+    },
+    "approved": {
+      "heapMB": 31.87354278564453,
+      "startupCPU": 1.450485,
+      "startupScript": 0.995992,
+      "interactionCPU": 0.3803240000000001,
+      "interactionScript": 0.20854499999999998,
+      "nodes": 54838,
+      "outlineReplacements": 96
+    },
+    "final": {
+      "heapMB": 30.07266616821289,
+      "startupCPU": 1.327661,
+      "startupScript": 0.882956,
+      "interactionCPU": 0.21106099999999994,
+      "interactionScript": 0.053757000000000055,
+      "nodes": 54029,
+      "outlineReplacements": 0
+    }
+  }
+}

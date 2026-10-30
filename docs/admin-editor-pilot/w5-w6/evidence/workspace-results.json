@@ -25,10 +25,10 @@
     }
   },
   "timings": {
-    "search_selection_ms": 24.817707999999584,
-    "edited_save_reload_ms": 32550.8615,
-    "restored_save_reload_ms": 14572.506125,
-    "stress_save_reload_ms": 21973.151625
+    "search_selection_ms": 36.61025000000154,
+    "edited_save_reload_ms": 92361.65195800002,
+    "restored_save_reload_ms": 124489.75979200003,
+    "stress_save_reload_ms": 29761.166666999983
   },
   "errors": []
 }

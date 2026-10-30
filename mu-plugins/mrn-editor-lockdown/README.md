@@ -82,3 +82,5 @@ MRN_QA_CODE_ANALYSIS_SCOPE=all mrn-qa run --project-root /Users/khofmeyer/Develo
 Runtime browser, accessibility, API, and performance checks should be run separately against an explicit target site when this plugin change affects rendered output or live WordPress behavior.
 
 W5 Local Hub follow-up (1.0.37): section summaries update incrementally, detached title observers are released, and keyboard move controls follow the native ACF sort/unmount/remount lifecycle. Native data and publishing ownership are unchanged. See `docs/admin-editor-pilot/w5-w6/` for bounded runtime evidence.
+
+W5 startup correction (1.0.38): reveal the selected section after ACF's native load phase. This avoids prematurely enhancing hidden native controls without changing native field initialization or the approved workspace structure. Controlled measurements and full save regressions are recorded alongside the W5/W6 evidence.
