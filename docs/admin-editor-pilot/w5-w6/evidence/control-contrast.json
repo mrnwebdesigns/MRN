@@ -1,0 +1,9 @@
+{
+  "controlBorder": "#71869a",
+  "contrast": {
+    "#ffffff": 3.764,
+    "#f8fafc": 3.598,
+    "#f1f4f8": 3.412
+  },
+  "scope": "Owned input and control boundaries; decorative card dividers are separate."
+}

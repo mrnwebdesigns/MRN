@@ -1,0 +1,9 @@
+{
+  "checks": [
+    "WebKit dashboard loads and reflows",
+    "WebKit pages loads and reflows",
+    "WebKit config loads and reflows",
+    "WebKit editor loads and reflows"
+  ],
+  "errors": []
+}

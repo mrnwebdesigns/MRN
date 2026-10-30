@@ -1,0 +1,38 @@
+{
+  "dashboard": {
+    "violations": []
+  },
+  "notifications": {
+    "violations": []
+  },
+  "pages": {
+    "violations": []
+  },
+  "posts": {
+    "violations": []
+  },
+  "cpt": {
+    "violations": []
+  },
+  "settings": {
+    "violations": []
+  },
+  "config": {
+    "violations": []
+  },
+  "dashboard-mobile": {
+    "violations": []
+  },
+  "pages-mobile": {
+    "violations": []
+  },
+  "settings-mobile": {
+    "violations": []
+  },
+  "config-mobile": {
+    "violations": []
+  },
+  "notifications-mobile": {
+    "violations": []
+  }
+}

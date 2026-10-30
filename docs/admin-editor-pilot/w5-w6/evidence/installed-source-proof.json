@@ -1,0 +1,42 @@
+{
+  "mrn-editor-lockdown/assets/section-navigator.js": {
+    "source": "70ee7dd6cbe2a2e8b0452cc3ac629663ba45aedbcc1c86836e88955ad9347de1",
+    "installed": "70ee7dd6cbe2a2e8b0452cc3ac629663ba45aedbcc1c86836e88955ad9347de1"
+  },
+  "mrn-editor-lockdown/includes/section-navigator.php": {
+    "source": "e60615de59af94dae321b5cc6e9f1cbba19cd2328b885cab103e55d449781832",
+    "installed": "e60615de59af94dae321b5cc6e9f1cbba19cd2328b885cab103e55d449781832"
+  },
+  "mrn-editor-lockdown/mrn-editor-lockdown.php": {
+    "source": "abd6eb24a64c8d651a25aee8f7892b14811a30ab2824994e7ab63a38d7688014",
+    "installed": "abd6eb24a64c8d651a25aee8f7892b14811a30ab2824994e7ab63a38d7688014"
+  },
+  "mrn-admin-ui-css/mrn-admin-ui-css.php": {
+    "source": "c23feb0b67eed413eb8e0d11fdde9e66ea9b9857d9c9553aa42e76bf88526848",
+    "installed": "c23feb0b67eed413eb8e0d11fdde9e66ea9b9857d9c9553aa42e76bf88526848"
+  },
+  "mrn-admin-ui-css/modern-admin.php": {
+    "source": "f6d58238af63a180815ebcbe41829221f9f0c2b618544d5b57628c829e1f41d7",
+    "installed": "f6d58238af63a180815ebcbe41829221f9f0c2b618544d5b57628c829e1f41d7"
+  },
+  "mrn-admin-ui-css/modern-admin.js": {
+    "source": "90defaa6aabd1dfa1a6ea37dd6b0bb705b7acb8b4080d49138d65d2846a9f62a",
+    "installed": "90defaa6aabd1dfa1a6ea37dd6b0bb705b7acb8b4080d49138d65d2846a9f62a"
+  },
+  "mrn-admin-ui-css/mrn-admin-tokens.css": {
+    "source": "c4d94db99fcdd88b519346fab660d21e393ed5f0cf85e58fecacadad5ece8392",
+    "installed": "c4d94db99fcdd88b519346fab660d21e393ed5f0cf85e58fecacadad5ece8392"
+  },
+  "mrn-admin-ui-css/mrn-modern-admin.css": {
+    "source": "10b7fa696ace764a0c1fa06a3fdf571e16cc85da8c7bc8437b4b2fc6b30ae067",
+    "installed": "10b7fa696ace764a0c1fa06a3fdf571e16cc85da8c7bc8437b4b2fc6b30ae067"
+  },
+  "mrn-admin-ui-css/mrn-editor-workspace.css": {
+    "source": "0e327acb755fe9bb3fb8a2e6fbebbb35496b26a94158307979e397efde40b1b6",
+    "installed": "0e327acb755fe9bb3fb8a2e6fbebbb35496b26a94158307979e397efde40b1b6"
+  },
+  "mrn-dashboard-support/mrn-dashboard-support.php": {
+    "source": "7b806f82b3e792327b0e7187ab42e9ac396062884295a868a7c08887a8a48200",
+    "installed": "7b806f82b3e792327b0e7187ab42e9ac396062884295a868a7c08887a8a48200"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "checks": [
+    "Native empty search results display without helper errors",
+    "Selection guidance still reflects two native checkboxes"
+  ],
+  "errors": []
+}

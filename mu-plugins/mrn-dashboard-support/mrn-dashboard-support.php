@@ -3,7 +3,7 @@
  * Plugin Name: MRN Dashboard Support
  * Description: Adds a fixed, non-collapsible, non-movable MRN Web Designs support widget pinned to the top-left of the WP dashboard and an admin-only Notifications Center for stack and WordPress updates.
  * Author: MRN Web Designs
- * Version: 1.3.1
+ * Version: 1.3.2
  *
  * INSTALL (MU-Plugin):
  * 1) Save as: /wp-content/mu-plugins/mrn-dashboard-support.php
@@ -1392,6 +1392,37 @@ function mrn_render_support_widget() {
 
 	$mailto_link = "mailto:{$support_email}?subject={$email_subject}&body={$email_body}";
 
+	$modern_dashboard = function_exists( 'mrn_admin_ui_modern_screen' ) && 'dashboard' === mrn_admin_ui_modern_screen();
+	if ( $modern_dashboard ) {
+		echo '<section class="mrn-start" aria-labelledby="mrn-start-title"><div class="mrn-start-header"><div>';
+		echo '<p class="mrn-start-eyebrow">' . esc_html( get_bloginfo( 'name' ) ) . '</p>';
+		echo '<h2 id="mrn-start-title">' . esc_html__( 'Your website workspace', 'mrn-dashboard-support' ) . '</h2>';
+		echo '<p>' . esc_html__( 'Create, update and organize your content. Start with your next task.', 'mrn-dashboard-support' ) . '</p></div>';
+		if ( mrn_dashboard_support_can_view_notifications() ) {
+			$dashboard_notifications = mrn_dashboard_support_collect_notifications();
+			$unread = mrn_dashboard_support_count_unread_notifications( $dashboard_notifications );
+			$needs_attention = mrn_dashboard_support_has_unread_alerts( $dashboard_notifications );
+			echo '<a class="mrn-start-alerts' . ( $needs_attention ? ' mrn-start-alerts--attention' : '' ) . '" href="' . esc_url( admin_url( 'admin.php?page=mrn-notifications-center' ) ) . '"><strong>' . esc_html( sprintf( _n( '%d unread notification', '%d unread notifications', $unread, 'mrn-dashboard-support' ), $unread ) ) . '</strong>';
+			if ( $needs_attention ) {
+				echo '<span>' . esc_html__( 'Alerts need your attention', 'mrn-dashboard-support' ) . '</span><br>';
+			}
+			echo esc_html__( 'Open Notifications Center', 'mrn-dashboard-support' ) . ' &rarr;</a>';
+		}
+		echo '</div><nav class="mrn-start-tasks" aria-label="' . esc_attr__( 'Content tasks', 'mrn-dashboard-support' ) . '">';
+		$tasks = array(
+			array( 'cap' => 'edit_pages', 'url' => 'edit.php?post_type=page', 'title' => __( 'Manage pages', 'mrn-dashboard-support' ), 'detail' => __( 'Find and update a page', 'mrn-dashboard-support' ) ),
+			array( 'cap' => 'edit_pages', 'url' => 'post-new.php?post_type=page', 'title' => __( 'Create a page', 'mrn-dashboard-support' ), 'detail' => __( 'Start with the native editor', 'mrn-dashboard-support' ) ),
+			array( 'cap' => 'edit_posts', 'url' => 'edit.php', 'title' => __( 'Manage posts', 'mrn-dashboard-support' ), 'detail' => __( 'Review drafts and published posts', 'mrn-dashboard-support' ) ),
+			array( 'cap' => 'upload_files', 'url' => 'upload.php', 'title' => __( 'Media library', 'mrn-dashboard-support' ), 'detail' => __( 'Browse your images and files', 'mrn-dashboard-support' ) ),
+		);
+		foreach ( $tasks as $task ) {
+			if ( current_user_can( $task['cap'] ) ) {
+				echo '<a href="' . esc_url( admin_url( $task['url'] ) ) . '"><strong>' . esc_html( $task['title'] ) . '</strong><span>' . esc_html( $task['detail'] ) . '</span></a>';
+			}
+		}
+		echo '</nav><details class="mrn-start-support"><summary>' . esc_html__( 'Site details & MRN support', 'mrn-dashboard-support' ) . '</summary>';
+	}
+
 	echo '<div style="text-align:left;">';
 
 	if ( file_exists( $logo_file ) ) {
@@ -1434,4 +1465,7 @@ function mrn_render_support_widget() {
 	echo '</p>';
 
 	echo '</div>';
+	if ( $modern_dashboard ) {
+		echo '</details></section>';
+	}
 }

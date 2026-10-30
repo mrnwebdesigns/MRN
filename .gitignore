@@ -74,3 +74,6 @@ plugins/mrn-sendgrid-provisioning
 plugins/mrn-seo-helper
 plugins/mrn-universal-sticky-bar
 plugins/mrn-mega-menu
+
+# Local authenticated admin pilot diagnostics; reviewed evidence lives in docs.
+outputs/admin-w5-w6/

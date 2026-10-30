@@ -1,0 +1,147 @@
+{
+  "checks": [
+    {
+      "label": "Content",
+      "selects": [
+        {
+          "key": "field_mrn_card_item_icon_position",
+          "enhanced": true
+        },
+        {
+          "key": "field_mrn_card_item_icon_position",
+          "enhanced": true
+        },
+        {
+          "key": "field_mrn_card_item_icon_position",
+          "enhanced": true
+        }
+      ]
+    },
+    {
+      "label": "Configs",
+      "selects": []
+    },
+    {
+      "label": "Display Styles",
+      "selects": [
+        {
+          "key": "field_mrn_card_display_display_style",
+          "enhanced": true
+        }
+      ]
+    },
+    {
+      "label": "Spacing",
+      "selects": [
+        {
+          "key": "field_mrn_card_content_tab_row_spacing_margin_top_preset",
+          "enhanced": true
+        },
+        {
+          "key": "field_mrn_card_content_tab_row_spacing_margin_right_preset",
+          "enhanced": true
+        },
+        {
+          "key": "field_mrn_card_content_tab_row_spacing_margin_bottom_preset",
+          "enhanced": true
+        },
+        {
+          "key": "field_mrn_card_content_tab_row_spacing_margin_left_preset",
+          "enhanced": true
+        },
+        {
+          "key": "field_mrn_card_content_tab_row_spacing_padding_top_preset",
+          "enhanced": true
+        },
+        {
+          "key": "field_mrn_card_content_tab_row_spacing_padding_right_preset",
+          "enhanced": true
+        },
+        {
+          "key": "field_mrn_card_content_tab_row_spacing_padding_bottom_preset",
+          "enhanced": true
+        },
+        {
+          "key": "field_mrn_card_content_tab_row_spacing_padding_left_preset",
+          "enhanced": true
+        }
+      ]
+    },
+    {
+      "label": "Layout",
+      "selects": [
+        {
+          "key": "field_mrn_card_section_width",
+          "enhanced": true
+        },
+        {
+          "key": "field_mrn_card_section_width_sub_content_width",
+          "enhanced": true
+        },
+        {
+          "key": "field_mrn_card_layout_mode",
+          "enhanced": true
+        },
+        {
+          "key": "field_mrn_card_cards_per_row",
+          "enhanced": true
+        },
+        {
+          "key": "field_mrn_card_card_stack_alignment",
+          "enhanced": true
+        }
+      ]
+    },
+    {
+      "label": "Effects",
+      "selects": []
+    },
+    {
+      "label": "Export",
+      "selects": []
+    },
+    {
+      "label": "Content before leaving",
+      "selects": [
+        {
+          "key": "field_mrn_card_item_icon_position",
+          "enhanced": true
+        },
+        {
+          "key": "field_mrn_card_item_icon_position",
+          "enhanced": true
+        },
+        {
+          "key": "field_mrn_card_item_icon_position",
+          "enhanced": true
+        }
+      ]
+    },
+    {
+      "label": "Reusable block",
+      "selects": [
+        {
+          "key": "field_mrn_reusable_block_post",
+          "enhanced": true
+        }
+      ]
+    },
+    {
+      "label": "Return to previously expanded section after reload",
+      "selects": [
+        {
+          "key": "field_mrn_card_item_icon_position",
+          "enhanced": true
+        },
+        {
+          "key": "field_mrn_card_item_icon_position",
+          "enhanced": true
+        },
+        {
+          "key": "field_mrn_card_item_icon_position",
+          "enhanced": true
+        }
+      ]
+    }
+  ]
+}

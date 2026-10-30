@@ -1,0 +1,12 @@
+{
+  "observed": "Local friendly proxy returned HTTP 502 / ECONNRESET during a read-only final list test.",
+  "kernel_evidence": "Oct 30 10:02:45 VM kernel: php invoked oom-killer; Out of memory killed lima-guestagent PID 663 with anon-rss 2959648 kB, and a user systemd process.",
+  "supported_action": "Local Hub start-site was dispatched; its MCP call timed out after 300 seconds. Completion was not inferred from that timeout.",
+  "verified_afterward": [
+    "Local wp-admin responds HTTP 302",
+    "Authenticated dashboard keyboard move, actual pointer drag and collapse/expand pass with zero page errors",
+    "Local feature flag, external HTTP block, disabled cron and local environment constants remain set",
+    "Local Hub admin-login subsequently completed with code 0; native browser login opened"
+  ],
+  "limitation": "The exact allocation cause is unconfirmed. No manual VM/PHP memory-limit changes or broad infrastructure changes were applied. Local runtime stability needs qualification before release consideration."
+}

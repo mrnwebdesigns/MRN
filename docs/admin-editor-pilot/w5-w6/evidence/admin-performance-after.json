@@ -1,0 +1,101 @@
+[
+  {
+    "variant": "after",
+    "pair": 0,
+    "name": "dashboard",
+    "cpu": 0.3772,
+    "script": 0.214009,
+    "layout": 0.030199,
+    "heapMB": 20.988414764404297,
+    "nodes": 1349,
+    "clientDCL": 1432.300000011921
+  },
+  {
+    "variant": "after",
+    "pair": 0,
+    "name": "pages",
+    "cpu": 0.216697,
+    "script": 0.128358,
+    "layout": 0.015773,
+    "heapMB": 18.9599609375,
+    "nodes": 2706,
+    "clientDCL": 755.4000000059605
+  },
+  {
+    "variant": "after",
+    "pair": 0,
+    "name": "settings",
+    "cpu": 0.344589,
+    "script": 0.202758,
+    "layout": 0.027166,
+    "heapMB": 19.56087875366211,
+    "nodes": 1727,
+    "clientDCL": 2040.800000011921
+  },
+  {
+    "variant": "after",
+    "pair": 1,
+    "name": "dashboard",
+    "cpu": 0.405079,
+    "script": 0.268362,
+    "layout": 0.024294,
+    "heapMB": 20.987266540527344,
+    "nodes": 1349,
+    "clientDCL": 1897.4000000059605
+  },
+  {
+    "variant": "after",
+    "pair": 1,
+    "name": "pages",
+    "cpu": 0.304003,
+    "script": 0.171089,
+    "layout": 0.02108,
+    "heapMB": 18.946762084960938,
+    "nodes": 2706,
+    "clientDCL": 2612.300000011921
+  },
+  {
+    "variant": "after",
+    "pair": 1,
+    "name": "settings",
+    "cpu": 0.468193,
+    "script": 0.318189,
+    "layout": 0.031216,
+    "heapMB": 19.56869125366211,
+    "nodes": 1727,
+    "clientDCL": 4392.299999982119
+  },
+  {
+    "variant": "after",
+    "pair": 2,
+    "name": "dashboard",
+    "cpu": 0.272726,
+    "script": 0.164744,
+    "layout": 0.019902,
+    "heapMB": 20.98839569091797,
+    "nodes": 1349,
+    "clientDCL": 2135
+  },
+  {
+    "variant": "after",
+    "pair": 2,
+    "name": "pages",
+    "cpu": 0.294009,
+    "script": 0.182067,
+    "layout": 0.023487,
+    "heapMB": 18.956844329833984,
+    "nodes": 2706,
+    "clientDCL": 1158.9000000059605
+  },
+  {
+    "variant": "after",
+    "pair": 2,
+    "name": "settings",
+    "cpu": 0.270402,
+    "script": 0.170307,
+    "layout": 0.021726,
+    "heapMB": 19.561935424804688,
+    "nodes": 1727,
+    "clientDCL": 1040.5
+  }
+]

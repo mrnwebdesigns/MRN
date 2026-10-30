@@ -1,0 +1,62 @@
+{
+  "dashboard": {
+    "before": {
+      "cpu": 0.340157,
+      "script": 0.208964,
+      "layout": 0.021653,
+      "heapMB": 20.993816375732422,
+      "nodes": 1325
+    },
+    "after": {
+      "cpu": 0.3772,
+      "script": 0.214009,
+      "layout": 0.024294,
+      "heapMB": 20.98839569091797,
+      "nodes": 1349
+    }
+  },
+  "pages": {
+    "before": {
+      "cpu": 0.280633,
+      "script": 0.174916,
+      "layout": 0.022658,
+      "heapMB": 18.959674835205078,
+      "nodes": 2706
+    },
+    "after": {
+      "cpu": 0.294009,
+      "script": 0.171089,
+      "layout": 0.02108,
+      "heapMB": 18.956844329833984,
+      "nodes": 2706
+    }
+  },
+  "settings": {
+    "before": {
+      "cpu": 0.37912,
+      "script": 0.229626,
+      "layout": 0.026155,
+      "heapMB": 19.56329345703125,
+      "nodes": 1728
+    },
+    "after": {
+      "cpu": 0.344589,
+      "script": 0.202758,
+      "layout": 0.027166,
+      "heapMB": 19.561935424804688,
+      "nodes": 1727
+    }
+  },
+  "dashboardPaired": {
+    "before": {
+      "cpu": 0.2279935,
+      "script": 0.1518705,
+      "layout": 0.013759
+    },
+    "after": {
+      "cpu": 0.2339595,
+      "script": 0.148509,
+      "layout": 0.018436
+    }
+  }
+}

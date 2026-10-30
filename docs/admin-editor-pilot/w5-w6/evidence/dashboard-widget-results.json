@@ -1,0 +1,16 @@
+{
+  "checks": [
+    "Native keyboard move down/up preserves visible drop areas and restores original widget container",
+    "Actual native pointer drag renders a measurable placeholder and moves the widget",
+    "Native collapse/expand remains functional; order/state requests were intercepted to leave fixture preferences unchanged"
+  ],
+  "errors": [],
+  "nativeOrderRequests": [
+    "meta-box-order",
+    "meta-box-order",
+    "meta-box-order",
+    "closed-postboxes",
+    "closed-postboxes"
+  ],
+  "axeViolations": 0
+}

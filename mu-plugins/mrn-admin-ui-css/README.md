@@ -34,3 +34,5 @@ reload to restore the ordinary loader/editor. Broad admin styling remains outsid
 this local pilot. See the [revision report](../../docs/admin-editor-pilot/revision/README.md).
 
 Local editor W5 (3.2.7) adds scoped keyboard arrangement controls to the approved workspace. The existing strict Local Hub flag remains the emergency disable mechanism.
+
+W6 Local Hub candidate (3.2.8) adds shared visual tokens and an explicit native/MRN screen allowlist. Dashboard, native content lists, core settings and named MRN pages share the approved workspace palette. AME retains menu configuration and branding; app-owned screens receive none of the new assets. No settings, content, endpoints or publishing handlers are replaced. The existing strict Local Hub switch disables both workstreams. See `docs/admin-editor-pilot/w5-w6/README.md` for evidence and limitations.

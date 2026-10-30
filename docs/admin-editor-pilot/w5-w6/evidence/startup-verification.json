@@ -1,0 +1,122 @@
+{
+  "variants": {
+    "approved": {
+      "managerEditors": 4,
+      "editorContainers": 4,
+      "nodes": 35018
+    },
+    "final": {
+      "managerEditors": 4,
+      "editorContainers": 4,
+      "nodes": 34102
+    }
+  },
+  "errors": [],
+  "transitionRules": [
+    "auto",
+    "none"
+  ],
+  "listNavigationSnapshot": false,
+  "domDifferences": [
+    {
+      "key": "B.",
+      "difference": 95
+    },
+    {
+      "key": "SELECT.",
+      "difference": -94
+    },
+    {
+      "key": "SELECT.select2-hidden-accessible",
+      "difference": 94
+    },
+    {
+      "key": "SPAN.selection",
+      "difference": 94
+    },
+    {
+      "key": "SPAN.select2-selection select2-selection--single",
+      "difference": 94
+    },
+    {
+      "key": "SPAN.select2-selection__rendered",
+      "difference": 94
+    },
+    {
+      "key": "SPAN.acf-selection",
+      "difference": 94
+    },
+    {
+      "key": "SPAN.select2-selection__arrow",
+      "difference": 94
+    },
+    {
+      "key": "SPAN.dropdown-wrapper",
+      "difference": 94
+    },
+    {
+      "key": "SPAN.select2 select2-container select2-container--default -acf",
+      "difference": 74
+    },
+    {
+      "key": "SPAN.select2-selection__placeholder",
+      "difference": 59
+    },
+    {
+      "key": "SPAN.select2 select2-container select2-container--default select2-container--disabled -acf",
+      "difference": 20
+    },
+    {
+      "key": "DIV.",
+      "difference": 17
+    },
+    {
+      "key": "path.",
+      "difference": 16
+    },
+    {
+      "key": "BUTTON.components-button is-compact is-tertiary has-text has-icon",
+      "difference": 8
+    },
+    {
+      "key": "SPAN.",
+      "difference": 7
+    },
+    {
+      "key": "STRONG.",
+      "difference": 6
+    },
+    {
+      "key": "SPAN.dashicon dashicons dashicons-plus-alt2",
+      "difference": 6
+    },
+    {
+      "key": "INPUT.",
+      "difference": 3
+    },
+    {
+      "key": "svg.",
+      "difference": 2
+    },
+    {
+      "key": "DIV.w-6/12",
+      "difference": 2
+    },
+    {
+      "key": "LABEL.sp-label",
+      "difference": 2
+    },
+    {
+      "key": "BUTTON.components-button is-compact is-tertiary has-icon",
+      "difference": 2
+    },
+    {
+      "key": "DIV.components-base-control__field css-1chyuqs ej5x27r3",
+      "difference": 2
+    },
+    {
+      "key": "DIV.seopress-progress-bar css-1jccuxj e15u147w2",
+      "difference": 2
+    }
+  ]
+}

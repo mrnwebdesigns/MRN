@@ -2,10 +2,12 @@
 /**
  * Plugin Name: MRN Admin UI CSS
  * Description: Unified admin UI CSS loader for wp-admin.
- * Version: 3.2.7
+ * Version: 3.2.8
  */
 
 defined('ABSPATH') || exit;
+
+require_once __DIR__ . '/modern-admin.php';
 
 if (!function_exists('mrn_admin_ui_contract_version')) {
   /**
@@ -69,7 +71,19 @@ add_action('admin_enqueue_scripts', function ($hook) {
   // global clipping, tab offsets and promotional suppression out of its form.
   if (function_exists('mrn_editor_experience_screen') && mrn_editor_experience_screen()) {
     $pilot_file = __DIR__ . '/mrn-editor-workspace.css';
-    wp_enqueue_style('mrn-editor-workspace', content_url('mu-plugins/mrn-admin-ui-css/mrn-editor-workspace.css'), array('common'), (string) filemtime($pilot_file));
+    wp_enqueue_style('mrn-admin-tokens', content_url('mu-plugins/mrn-admin-ui-css/mrn-admin-tokens.css'), array('common'), (string) filemtime(__DIR__ . '/mrn-admin-tokens.css'));
+    wp_enqueue_style('mrn-editor-workspace', content_url('mu-plugins/mrn-admin-ui-css/mrn-editor-workspace.css'), array('mrn-admin-tokens'), (string) filemtime($pilot_file));
+    return;
+  }
+
+  if (mrn_admin_ui_modern_screen()) {
+    wp_enqueue_style('mrn-admin-tokens', content_url('mu-plugins/mrn-admin-ui-css/mrn-admin-tokens.css'), array('common'), (string) filemtime(__DIR__ . '/mrn-admin-tokens.css'));
+    wp_enqueue_style('mrn-modern-admin', content_url('mu-plugins/mrn-admin-ui-css/mrn-modern-admin.css'), array('mrn-admin-tokens'), (string) filemtime(__DIR__ . '/mrn-modern-admin.css'));
+    wp_enqueue_script('mrn-modern-admin', content_url('mu-plugins/mrn-admin-ui-css/modern-admin.js'), array(), (string) filemtime(__DIR__ . '/modern-admin.js'), true);
+    wp_localize_script('mrn-modern-admin', 'mrnModernAdminLabels', array(
+      'selection' => __('%d selected · Choose a bulk action, then Apply.', 'mrn-admin-ui-css'),
+      'hint' => __('Select items to use bulk actions. Row actions are available beneath each title.', 'mrn-admin-ui-css'),
+    ));
     return;
   }
 

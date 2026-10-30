@@ -1,0 +1,17 @@
+{
+  "status": "passed",
+  "screens": [
+    "dashboard",
+    "pages",
+    "posts",
+    "settings",
+    "notifications",
+    "cpt",
+    "config"
+  ],
+  "checks": [
+    "Same false flag removes W5 and W6 presentation assets on reload",
+    "Original dashboard widget and native admin screens return",
+    "Native rows and save guard verified separately"
+  ]
+}

@@ -1,0 +1,115 @@
+[
+  {
+    "role": "administrator",
+    "tasks": 4,
+    "notifications": 1,
+    "screens": [
+      {
+        "slug": "mrn-reusable-block-library",
+        "title": "Reusable Block Library",
+        "scope": true,
+        "forms": [],
+        "mobileOverflow": false
+      },
+      {
+        "slug": "mrn-tokens",
+        "title": "Tokens",
+        "scope": true,
+        "forms": [
+          {
+            "inputs": 55
+          }
+        ],
+        "mobileOverflow": false
+      },
+      {
+        "slug": "mrn-theme-header-footer",
+        "title": "Theme Header/Footer",
+        "scope": true,
+        "forms": [
+          {
+            "inputs": 3
+          },
+          {
+            "inputs": 13
+          }
+        ],
+        "mobileOverflow": false
+      },
+      {
+        "slug": "mrn-header-utility-message",
+        "title": "Header Utility Message",
+        "scope": true,
+        "forms": [
+          {
+            "inputs": 3
+          },
+          {
+            "inputs": 34
+          },
+          {
+            "inputs": 6
+          }
+        ],
+        "mobileOverflow": false
+      },
+      {
+        "slug": "mrn-business-information",
+        "title": "Business Information",
+        "scope": true,
+        "forms": [
+          {
+            "inputs": 3
+          },
+          {
+            "inputs": 88
+          },
+          {
+            "inputs": 6
+          }
+        ],
+        "mobileOverflow": false
+      },
+      {
+        "slug": "mrn-404-page",
+        "title": "404 Page",
+        "scope": true,
+        "forms": [
+          {
+            "inputs": 3
+          },
+          {
+            "inputs": 255
+          },
+          {
+            "inputs": 6
+          }
+        ],
+        "mobileOverflow": false
+      },
+      {
+        "slug": "mrn-public-security-hardening",
+        "title": "Public Security Hardening",
+        "scope": true,
+        "forms": [
+          {
+            "inputs": 6
+          }
+        ],
+        "mobileOverflow": false
+      }
+    ]
+  },
+  {
+    "role": "editor",
+    "tasks": 4,
+    "notifications": 1,
+    "screens": []
+  },
+  {
+    "role": "subscriber",
+    "tasks": 0,
+    "notifications": 0,
+    "screens": []
+  }
+]
