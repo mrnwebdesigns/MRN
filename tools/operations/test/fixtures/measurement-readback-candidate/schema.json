@@ -1,0 +1,1272 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "contract_version": 1,
+  "status": "candidate source-only schema and synthetic vectors; no endpoint registered or runtime measurement proof",
+  "namespace": "mrn-mainwp/",
+  "production_enabled": false,
+  "binding_issuance": false,
+  "consumer_binding_enabled": false,
+  "purpose_prefix": "mrn-content-qualification-measurements-read-v1:",
+  "wrong_purpose_probe_prefix": "mrn-content-qualification-capture-read-v1:",
+  "http_method": "POST",
+  "frozen_dependencies": {
+    "content-capture-chunks-v1-proposal.json": "baf5d618ec56e545bb8fbce1e9d491061abd2aea8fb89cca1755c04088816546",
+    "content-capture-chunks-v1.json": "baf5d618ec56e545bb8fbce1e9d491061abd2aea8fb89cca1755c04088816546",
+    "content-capture-read-v1.json": "218d8fb98fb99322e2dbfb18ceef150be1d642d5acd6b57939ec21559000e5eb",
+    "content-current-access-v1.json": "02fa1caca043f61a92a0e7cfe369db4f271dcebcaf2599b6a4422a3a4885d172",
+    "content-parity-v1.json": "d7d8f9c85832822335daeba2c6d50a729bdb65b20247fb81646d501c5c370397",
+    "content-policy-v2-proposal.json": "82fb9cf0804228d4f9b97901391ea09c99bbe4b521475ef578ce5123f3d7c58f",
+    "content-qualification-evidence-v1.json": "3b7c55223c10975fc40dd71676c1a72aa9f1b08a859eb7aaba700b863d718cc2",
+    "content-qualification-evidence-v2.json": "2ceb4d2b7df12efd13db0a465a62541c82f09e306b632289e8e9bb5343bc98d3",
+    "content-qualification-handoff-v1.json": "400149d7164dc67b89d58a443f1eeabeba4b5241018ab544426566c1c5be826f",
+    "content-qualification-report-v1.json": "c502c8b20b1b673f627866bec8787e6e38f39cb4ef39040686e98dd6c4e66bfa",
+    "content-qualification-report-v2.json": "9bd89465bba73ddefbda1ba4039b5fbcabf9eee48338d19c013a421d7bcfc931",
+    "content-qualification-v1.json": "9c8d3fa9e27d7e4aa36109ccb33d76f7babf5bc6aea4f3661fcfd6e26ab62e03",
+    "content-recipe-catalog-v1.json": "f50689675056aafdebacf22cb4b3f0c09d4e9247c61e73f2bd03b8b1d2850057",
+    "content-recipe-install-v1.json": "9d1cd1afaf58b748d9981a88df85735d22d9ef6b8b08b5e0f8bcc05eb8408216",
+    "content-target-binding-v1.json": "5433dcd0da6558088d785f0055b4602c8fc9563ede46a83fb87980c5519f31a4",
+    "content-v1.json": "d3a48f26df4a603af8cb6362674e773e98fe0284ddbcf9a3a4820a7701f8db1d",
+    "delegation-v1.json": "f88a42a21ad20e2c66b12fe573a88b7e475f68f5cc0d83cc30e61605fbfa526b"
+  },
+  "limits": {
+    "assertion_ttl_seconds": 300,
+    "assertion_payload_utf8_bytes": 98304,
+    "envelope_utf8_bytes": 131072,
+    "request_body_utf8_bytes": 131072,
+    "measurement_record_utf8_bytes": 65536,
+    "read_response_utf8_bytes": 98304,
+    "denial_response_utf8_bytes": 4096,
+    "acquisition_transcript_utf8_bytes": 16384,
+    "measurement_read_reservations_per_job": 8,
+    "native_chunk_count": 135,
+    "native_output_utf8_bytes": 65535,
+    "canonical_capture_artifact_utf8_bytes": 4400000,
+    "native_dataset_utf8_bytes": 4400000,
+    "http_timeout_ms": 20000
+  },
+  "ability": {
+    "name": "read-content-qualification-measurements-v1",
+    "role": "protected-registrar",
+    "workspace_exposed": false,
+    "delegated_staff_allowed": false,
+    "registered": false,
+    "input": {
+      "$ref": "#/definitions/input"
+    },
+    "output": {
+      "$ref": "#/definitions/output"
+    }
+  },
+  "definitions": {
+    "hash": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64,
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "uuid": {
+      "type": "string",
+      "minLength": 36,
+      "maxLength": 36,
+      "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+    },
+    "target": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "post"
+          ]
+        },
+        "post_type": {
+          "type": "string",
+          "enum": [
+            "post",
+            "page"
+          ]
+        },
+        "post_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "field": {
+          "type": "string",
+          "enum": [
+            "post_title",
+            "post_excerpt",
+            "post_content"
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "post_type",
+        "post_id",
+        "field"
+      ],
+      "additionalProperties": false
+    },
+    "site_id": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "site_url": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "^https://[a-z0-9.-]+\\.example\\.invalid(?:/[A-Za-z0-9._~%/@:+-]+)*$"
+    },
+    "signed_envelope": {
+      "type": "object",
+      "properties": {
+        "key_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "payload_base64": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 131072,
+          "pattern": "^[A-Za-z0-9+/]+={0,2}$"
+        },
+        "signature_base64": {
+          "type": "string",
+          "minLength": 88,
+          "maxLength": 88,
+          "pattern": "^[A-Za-z0-9+/]{86}==$"
+        }
+      },
+      "required": [
+        "key_id",
+        "payload_base64",
+        "signature_base64"
+      ],
+      "additionalProperties": false
+    },
+    "capture_integrity": {
+      "type": "object",
+      "properties": {
+        "capture_artifact_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "snapshot_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "chunks_received": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 135
+        },
+        "artifact_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4400000
+        },
+        "native_output_truncations": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 0
+        }
+      },
+      "required": [
+        "capture_artifact_sha256",
+        "snapshot_sha256",
+        "chunks_received",
+        "artifact_bytes",
+        "native_output_truncations"
+      ],
+      "additionalProperties": false
+    },
+    "scope_ownership": {
+      "type": "object",
+      "properties": {
+        "ownership": {
+          "type": "string",
+          "enum": [
+            "wordpress-post"
+          ]
+        },
+        "post_status": {
+          "type": "string",
+          "enum": [
+            "publish"
+          ]
+        },
+        "site_id": {
+          "$ref": "#/definitions/site_id"
+        },
+        "site_url": {
+          "$ref": "#/definitions/site_url"
+        },
+        "target": {
+          "$ref": "#/definitions/target"
+        }
+      },
+      "required": [
+        "ownership",
+        "post_status",
+        "site_id",
+        "site_url",
+        "target"
+      ],
+      "additionalProperties": false
+    },
+    "source_integrity": {
+      "type": "object",
+      "properties": {
+        "provider_source_sha": {
+          "type": "string",
+          "minLength": 40,
+          "maxLength": 40,
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "installed_manifest_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "capture_template_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "mutation_template_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "parity_helper_sha256": {
+          "$ref": "#/definitions/hash"
+        }
+      },
+      "required": [
+        "provider_source_sha",
+        "installed_manifest_sha256",
+        "capture_template_sha256",
+        "mutation_template_sha256",
+        "parity_helper_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "wordpress_api": {
+      "type": "object",
+      "properties": {
+        "inspected_http_status": {
+          "type": "integer",
+          "minimum": 200,
+          "maximum": 200
+        },
+        "response_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "anonymous_status": {
+          "type": "string",
+          "enum": [
+            "401",
+            "403"
+          ]
+        },
+        "wrong_purpose_code": {
+          "type": "string",
+          "enum": [
+            "mrn_job_signature",
+            "mrn_delegation_required"
+          ]
+        },
+        "denial_measurement_sha256": {
+          "$ref": "#/definitions/hash"
+        }
+      },
+      "required": [
+        "inspected_http_status",
+        "response_sha256",
+        "anonymous_status",
+        "wrong_purpose_code",
+        "denial_measurement_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "source_pin": {
+      "type": "object",
+      "properties": {
+        "provider_source_sha": {
+          "type": "string",
+          "minLength": 40,
+          "maxLength": 40,
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "capture_template_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "mutation_template_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "parity_helper_sha256": {
+          "$ref": "#/definitions/hash"
+        }
+      },
+      "required": [
+        "provider_source_sha",
+        "capture_template_sha256",
+        "mutation_template_sha256",
+        "parity_helper_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "binding": {
+      "type": "object",
+      "properties": {
+        "authorization_policy_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "catalog_epoch": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "qualification_job_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "expected_snapshot_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "requester_binding_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "site_id": {
+          "$ref": "#/definitions/site_id"
+        },
+        "site_url": {
+          "$ref": "#/definitions/site_url"
+        },
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "recipe_catalog_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "recipe_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "recipe_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "expected_target_revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "capture_artifact_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "job_expires_at": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "evidence_policy_epoch": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "evidence_policy_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "measurement_contract_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "expected_source": {
+          "$ref": "#/definitions/source_pin"
+        }
+      },
+      "required": [
+        "authorization_policy_sha256",
+        "catalog_epoch",
+        "qualification_job_id",
+        "expected_snapshot_sha256",
+        "requester_binding_sha256",
+        "site_id",
+        "site_url",
+        "target",
+        "recipe_catalog_sha256",
+        "recipe_id",
+        "recipe_sha256",
+        "expected_target_revision",
+        "capture_artifact_sha256",
+        "job_expires_at",
+        "evidence_policy_epoch",
+        "evidence_policy_sha256",
+        "measurement_contract_sha256",
+        "expected_source"
+      ],
+      "additionalProperties": false
+    },
+    "claims": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "integer",
+          "enum": [
+            1
+          ]
+        },
+        "issuer": {
+          "type": "string",
+          "enum": [
+            "mrn-content-qualification"
+          ]
+        },
+        "audience": {
+          "type": "string",
+          "enum": [
+            "https://wpcontrol.mrndev.io"
+          ]
+        },
+        "issued_at": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "expires_at": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "request_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "nonce": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "read-measurements"
+          ]
+        },
+        "correlation_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "binding": {
+          "$ref": "#/definitions/binding"
+        },
+        "binding_sha256": {
+          "$ref": "#/definitions/hash"
+        }
+      },
+      "required": [
+        "schema",
+        "issuer",
+        "audience",
+        "issued_at",
+        "expires_at",
+        "request_id",
+        "nonce",
+        "action",
+        "correlation_id",
+        "binding",
+        "binding_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "input": {
+      "type": "object",
+      "properties": {
+        "signed_request": {
+          "$ref": "#/definitions/signed_envelope"
+        }
+      },
+      "required": [
+        "signed_request"
+      ],
+      "additionalProperties": false
+    },
+    "chunk_observation": {
+      "type": "object",
+      "properties": {
+        "chunk_index": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 134
+        },
+        "decoded_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 32768
+        },
+        "native_output_utf8_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        },
+        "native_output_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "output_truncated": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "declared_total_chunks": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 135
+        },
+        "declared_total_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4400000
+        },
+        "dataset_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "source_binding_sha256": {
+          "$ref": "#/definitions/hash"
+        }
+      },
+      "required": [
+        "chunk_index",
+        "decoded_bytes",
+        "native_output_utf8_bytes",
+        "native_output_sha256",
+        "output_truncated",
+        "declared_total_chunks",
+        "declared_total_bytes",
+        "dataset_sha256",
+        "source_binding_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "decoder_observation": {
+      "type": "object",
+      "properties": {
+        "accepted_chunks": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 135
+        },
+        "total_chunks": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 135
+        },
+        "total_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4400000
+        },
+        "dataset_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "source_binding_sha256": {
+          "$ref": "#/definitions/hash"
+        }
+      },
+      "required": [
+        "accepted_chunks",
+        "total_chunks",
+        "total_bytes",
+        "dataset_sha256",
+        "source_binding_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "measurement_record": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "integer",
+          "enum": [
+            1
+          ]
+        },
+        "observation_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "observed_at": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "binding": {
+          "$ref": "#/definitions/binding"
+        },
+        "binding_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "chunks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/chunk_observation"
+          },
+          "minItems": 1,
+          "maxItems": 135
+        },
+        "decoder": {
+          "$ref": "#/definitions/decoder_observation"
+        },
+        "capture_integrity": {
+          "$ref": "#/definitions/capture_integrity"
+        },
+        "scope_ownership": {
+          "$ref": "#/definitions/scope_ownership"
+        },
+        "source_integrity": {
+          "$ref": "#/definitions/source_integrity"
+        }
+      },
+      "required": [
+        "schema",
+        "observation_id",
+        "observed_at",
+        "binding",
+        "binding_sha256",
+        "chunks",
+        "decoder",
+        "capture_integrity",
+        "scope_ownership",
+        "source_integrity"
+      ],
+      "additionalProperties": false
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "integer",
+          "enum": [
+            1
+          ]
+        },
+        "qualification_job_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "capture_artifact_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "binding_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "measurement_record_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "measurement_record_json": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 65536
+        }
+      },
+      "required": [
+        "schema",
+        "qualification_job_id",
+        "capture_artifact_sha256",
+        "binding_sha256",
+        "measurement_record_sha256",
+        "measurement_record_json"
+      ],
+      "additionalProperties": false
+    },
+    "anonymous_error_response": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": [
+            "rest_ability_cannot_execute"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "integer",
+              "enum": [
+                401
+              ]
+            }
+          },
+          "required": [
+            "status"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "code",
+        "message",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "wrong_purpose_error_response": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": [
+            "mrn_job_signature"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "integer",
+              "enum": [
+                403
+              ]
+            }
+          },
+          "required": [
+            "status"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "code",
+        "message",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "anonymous_probe": {
+      "type": "object",
+      "properties": {
+        "origin": {
+          "type": "string",
+          "enum": [
+            "https://wpcontrol.mrndev.io"
+          ]
+        },
+        "route": {
+          "type": "string",
+          "enum": [
+            "/wp-json/wp-abilities/v1/abilities/mrn-mainwp/read-content-qualification-measurements-v1/run"
+          ]
+        },
+        "method": {
+          "type": "string",
+          "enum": [
+            "POST"
+          ]
+        },
+        "correlation_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "payload_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "request_body_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "request_body_utf8_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 131072
+        },
+        "started_at_ms": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "completed_at_ms": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "tls_verified": {
+          "type": "boolean",
+          "enum": [
+            true
+          ]
+        },
+        "redirects_followed": {
+          "type": "integer",
+          "enum": [
+            0
+          ]
+        },
+        "response_content_type": {
+          "type": "string",
+          "enum": [
+            "application/json",
+            "application/json; charset=UTF-8"
+          ]
+        },
+        "response_content_encoding": {
+          "type": "string",
+          "enum": [
+            "identity",
+            "absent"
+          ]
+        },
+        "response_body_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "sequence": {
+          "type": "integer",
+          "enum": [
+            1
+          ]
+        },
+        "authentication": {
+          "type": "string",
+          "enum": [
+            "none"
+          ]
+        },
+        "assertion_purpose": {
+          "type": "string",
+          "enum": [
+            "mrn-content-qualification-measurements-read-v1:"
+          ]
+        },
+        "http_status": {
+          "type": "integer",
+          "enum": [
+            401
+          ]
+        },
+        "response_body_utf8_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4096
+        },
+        "response_json_kind": {
+          "type": "string",
+          "enum": [
+            "wordpress-rest-error"
+          ]
+        },
+        "application_error_code": {
+          "type": "string",
+          "enum": [
+            "rest_ability_cannot_execute"
+          ]
+        },
+        "application_error_status": {
+          "type": "integer",
+          "enum": [
+            401
+          ]
+        }
+      },
+      "required": [
+        "origin",
+        "route",
+        "method",
+        "correlation_id",
+        "payload_sha256",
+        "request_body_sha256",
+        "request_body_utf8_bytes",
+        "started_at_ms",
+        "completed_at_ms",
+        "tls_verified",
+        "redirects_followed",
+        "response_content_type",
+        "response_content_encoding",
+        "response_body_sha256",
+        "sequence",
+        "authentication",
+        "assertion_purpose",
+        "http_status",
+        "response_body_utf8_bytes",
+        "response_json_kind",
+        "application_error_code",
+        "application_error_status"
+      ],
+      "additionalProperties": false
+    },
+    "wrong_purpose_probe": {
+      "type": "object",
+      "properties": {
+        "origin": {
+          "type": "string",
+          "enum": [
+            "https://wpcontrol.mrndev.io"
+          ]
+        },
+        "route": {
+          "type": "string",
+          "enum": [
+            "/wp-json/wp-abilities/v1/abilities/mrn-mainwp/read-content-qualification-measurements-v1/run"
+          ]
+        },
+        "method": {
+          "type": "string",
+          "enum": [
+            "POST"
+          ]
+        },
+        "correlation_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "payload_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "request_body_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "request_body_utf8_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 131072
+        },
+        "started_at_ms": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "completed_at_ms": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "tls_verified": {
+          "type": "boolean",
+          "enum": [
+            true
+          ]
+        },
+        "redirects_followed": {
+          "type": "integer",
+          "enum": [
+            0
+          ]
+        },
+        "response_content_type": {
+          "type": "string",
+          "enum": [
+            "application/json",
+            "application/json; charset=UTF-8"
+          ]
+        },
+        "response_content_encoding": {
+          "type": "string",
+          "enum": [
+            "identity",
+            "absent"
+          ]
+        },
+        "response_body_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "sequence": {
+          "type": "integer",
+          "enum": [
+            2
+          ]
+        },
+        "authentication": {
+          "type": "string",
+          "enum": [
+            "backend"
+          ]
+        },
+        "assertion_purpose": {
+          "type": "string",
+          "enum": [
+            "mrn-content-qualification-capture-read-v1:"
+          ]
+        },
+        "http_status": {
+          "type": "integer",
+          "enum": [
+            403
+          ]
+        },
+        "response_body_utf8_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4096
+        },
+        "response_json_kind": {
+          "type": "string",
+          "enum": [
+            "wordpress-rest-error"
+          ]
+        },
+        "application_error_code": {
+          "type": "string",
+          "enum": [
+            "mrn_job_signature"
+          ]
+        },
+        "application_error_status": {
+          "type": "integer",
+          "enum": [
+            403
+          ]
+        }
+      },
+      "required": [
+        "origin",
+        "route",
+        "method",
+        "correlation_id",
+        "payload_sha256",
+        "request_body_sha256",
+        "request_body_utf8_bytes",
+        "started_at_ms",
+        "completed_at_ms",
+        "tls_verified",
+        "redirects_followed",
+        "response_content_type",
+        "response_content_encoding",
+        "response_body_sha256",
+        "sequence",
+        "authentication",
+        "assertion_purpose",
+        "http_status",
+        "response_body_utf8_bytes",
+        "response_json_kind",
+        "application_error_code",
+        "application_error_status"
+      ],
+      "additionalProperties": false
+    },
+    "authorized_read": {
+      "type": "object",
+      "properties": {
+        "origin": {
+          "type": "string",
+          "enum": [
+            "https://wpcontrol.mrndev.io"
+          ]
+        },
+        "route": {
+          "type": "string",
+          "enum": [
+            "/wp-json/wp-abilities/v1/abilities/mrn-mainwp/read-content-qualification-measurements-v1/run"
+          ]
+        },
+        "method": {
+          "type": "string",
+          "enum": [
+            "POST"
+          ]
+        },
+        "correlation_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "payload_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "request_body_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "request_body_utf8_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 131072
+        },
+        "started_at_ms": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "completed_at_ms": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "tls_verified": {
+          "type": "boolean",
+          "enum": [
+            true
+          ]
+        },
+        "redirects_followed": {
+          "type": "integer",
+          "enum": [
+            0
+          ]
+        },
+        "response_content_type": {
+          "type": "string",
+          "enum": [
+            "application/json",
+            "application/json; charset=UTF-8"
+          ]
+        },
+        "response_content_encoding": {
+          "type": "string",
+          "enum": [
+            "identity",
+            "absent"
+          ]
+        },
+        "response_body_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "sequence": {
+          "type": "integer",
+          "enum": [
+            3
+          ]
+        },
+        "authentication": {
+          "type": "string",
+          "enum": [
+            "backend"
+          ]
+        },
+        "assertion_purpose": {
+          "type": "string",
+          "enum": [
+            "mrn-content-qualification-measurements-read-v1:"
+          ]
+        },
+        "http_status": {
+          "type": "integer",
+          "enum": [
+            200
+          ]
+        },
+        "response_body_utf8_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 98304
+        },
+        "response_json_kind": {
+          "type": "string",
+          "enum": [
+            "measurement-readback"
+          ]
+        },
+        "application_error_code": {
+          "type": "null",
+          "enum": [
+            null
+          ]
+        },
+        "application_error_status": {
+          "type": "null",
+          "enum": [
+            null
+          ]
+        }
+      },
+      "required": [
+        "origin",
+        "route",
+        "method",
+        "correlation_id",
+        "payload_sha256",
+        "request_body_sha256",
+        "request_body_utf8_bytes",
+        "started_at_ms",
+        "completed_at_ms",
+        "tls_verified",
+        "redirects_followed",
+        "response_content_type",
+        "response_content_encoding",
+        "response_body_sha256",
+        "sequence",
+        "authentication",
+        "assertion_purpose",
+        "http_status",
+        "response_body_utf8_bytes",
+        "response_json_kind",
+        "application_error_code",
+        "application_error_status"
+      ],
+      "additionalProperties": false
+    },
+    "acquisition_transcript": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "integer",
+          "enum": [
+            1
+          ]
+        },
+        "binding": {
+          "$ref": "#/definitions/binding"
+        },
+        "binding_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "correlation_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "measurement_record_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "observations": {
+          "type": "object",
+          "properties": {
+            "anonymous_probe": {
+              "$ref": "#/definitions/anonymous_probe"
+            },
+            "wrong_purpose_probe": {
+              "$ref": "#/definitions/wrong_purpose_probe"
+            },
+            "authorized_read": {
+              "$ref": "#/definitions/authorized_read"
+            }
+          },
+          "required": [
+            "anonymous_probe",
+            "wrong_purpose_probe",
+            "authorized_read"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema",
+        "binding",
+        "binding_sha256",
+        "correlation_id",
+        "measurement_record_sha256",
+        "observations"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "boundary_order": [
+    "Authenticated pinned backend, exact POST, no staff scope, bounded closed envelope. Anonymous permission denial performs no assertion or budget mutation.",
+    "Verify exact-purpose registrar signature and canonical strict claims before any nonce/request claim. Wrong-purpose denial performs no assertion or budget mutation.",
+    "Bind the existing original job, complete capture, current original requester, original expiry, evidence epoch/digest and independently expected recipe/source. Missing historical measurements are unavailable; never rebind or backfill.",
+    "Within existing ordered work guard, revalidate current authority and atomically claim global one-use nonce/request plus one of eight separate measurement-read reservations. Commit reservation before callbacks; later refusal consumes it and cannot renew job or lease.",
+    "Obtain and consume fresh existing read-capture access veto before bounded authenticated capture/observation read. Do not hold work locks across callback HTTP.",
+    "Verify exact canonical retained observation bytes/hash, complete captured artifact/state/audit and all cross-relations; no child request, recapture or content mutation.",
+    "Obtain a separate fresh read-capture veto, then the final original-job/source/evidence/record/expiry guard. Consume once before returning only the closed record response; failure returns no partial record."
+  ],
+  "semantic_requirements": {
+    "original_binding": "Compare every binding field with retained original job/capture/recipe and captured evidence epoch/digest; authorization and evidence pins must still be current. Canonical binding_sha256 must match. Signing does not create or refresh a job. measurement_contract_sha256 must equal the independently reviewed contract digest originally retained with that job/capture, never an input-selected new schema.",
+    "lifetime": "issued_at <= now < expires_at <= min(issued_at+300, binding.job_expires_at); issued_at >= now-300. observed_at is the original capture observation time strictly before original expiry, never a read-time renewal.",
+    "atomic_capture": "Encrypt and retain immutable measurement record with complete artifact, job state and attributable audit in the same owned commit and exact committed readback. Partial/uncertain/missing state is unavailable. No post-capture synthesis or repair.",
+    "record_bytes": "measurement_record_json is exact canonical UTF-8 JSON with no BOM/newline, duplicate keys, invalid UTF-8 or non-finite values. Hash those exact bytes, then require parse/recanonicalization equality and closed schema; UTF-8 byte caps, not character-only limits.",
+    "capture_observations": "Each accepted native output is measured before decoding: exact UTF-8 output bytes/hash and explicit boolean output_truncated=false. chunks are consecutive zero-based observations. Their length, measured capture_integrity.chunks_received and independently measured decoder accepted/declared count agree. Sum decoded_bytes equals decoder.total_bytes; each size matches fixed32768 slicing and last remainder. All declared dataset/source hashes, byte totals and counts agree. No count inferred from final artifact size.",
+    "artifact_and_ownership": "capture_integrity artifact hash/bytes and snapshot hash recompute from exact retained canonical capture. Ownership/status/tuple comes from its actual native snapshot, is publish/wordpress-post, and equals binding. No requested descriptor substitutes for observed ownership.",
+    "source": "expected_source is independently fixed by original reviewed recipe/job. Compare each measured source_integrity source/helper hash with that expected source and fresh installed Source::verify(expected_commit); installed_manifest_sha256 hashes exact canonical installed release-source.json bytes including its existing final LF. A stamp cannot independently attest its own expected commit.",
+    "read_budget": "Eight durable measurement-read reservations per original job, separate from and without reducing/changing the existing eight capture-recovery reservations. Global nonce/request are one-use. Authenticated wrong-purpose and anonymous probes consume zero. A valid reserved read subsequently denied/expired/failed consumes its reservation, so successful responses are also bounded by eight. No counter reset or retries hidden in the implementation.",
+    "http_acquisition": "Only protected runner records actual three requests in order anonymous, wrong-purpose, authorized. Anonymous and authorized body bytes are identical; wrong-purpose has identical canonical payload but valid registrar signature under the other prefix. Bodies are canonical UTF-8 JSON {input:{signed_request:envelope}}. Authentication headers/cookies are absent from digests and transcript; anonymous sends neither. All three use exact fixed origin/route/POST, verified TLS and no redirects, cookies, decompression or proxy credential fallback. Send Accept-Encoding:identity; encoded response is unavailable.",
+    "http_bytes": "Request body digests count exact emitted UTF-8 entity bytes. Response body digests count exact uncompressed HTTP entity bytes after transfer framing removal, before decoding, JSON parsing or canonicalization; no BOM, newline or message normalization. Empty, oversized, invalid UTF-8, transport failure, timeout or redirects are unavailable. Each request has20s transport timeout and must finish before original job/assertion expiry.",
+    "application_denial": "Runner must actually parse a JSON response. Denials require reviewed WordPress error envelope code/message/data.status with allowlisted exact code/status pair and matching HTTP status; transcript retains only code/status and raw body digest/length, never message or body. HTML, WAF/provider JSON codes, status alone or server-emitted claimed pass are unavailable. Candidate new route pins wrong-purpose403/mrn_job_signature; existing endpoints are unchanged. TLS trusts the configured origin/edge; this is observed application-shaped behavior, not independent cryptographic proof of server internals.",
+    "transcript_binding": "All observations retain original correlation_id and same payload_sha256; anonymous request body hash/length equals authorized, wrong-purpose body hash differs. Sequence and observed times strictly order completed probe before next request, and all finish before original expiry. Transcript binding/hash and measurement_record_sha256 equal the returned record. Authorized raw response digest is not replaced by canonical record digest. No tokens, envelopes, signatures, content, actor emails or response messages may be stored in transcript/logs.",
+    "v2_projection": "Produce existing capture_integrity, scope_ownership and source_integrity groups only from verified server record. Produce wordpress_api only from runner authorized status/raw response hash, anonymous401, wrong-purpose code and sha256 of exact canonical acquisition transcript. Do not add a group or mutate the frozen v2 measurement/archive schemas. The transcript is a separately retained protected acquisition artifact whose retrieval/admission design remains a later gate; absent original preimage is unavailable.",
+    "activation": "Candidate source schemas/vectors alone do not register the new ability, add delegated/MCP allowlists, activate report admission, provision keys/credentials, sign a real manifest, publish consumer trust or qualify production. Supported native post fields only."
+  },
+  "design_path": "docs/qualification-measurement-readback.md",
+  "design_sha256": "216f2d3bca09d9326a02c88357da493dfd3ce289f6d82c3b562b2e89ad27d6b7"
+}

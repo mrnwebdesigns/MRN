@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "repository": "mrnwebdesigns/mrn-mainwp-operations-api",
+  "commit": "11956fda5d5029ef7416b3f2368996e708253387",
+  "source_only": true,
+  "runtime_provider_commit": "d40af170d43043b63d019711f4db5e39532afcdf",
+  "files": [
+    {
+      "source": "contracts/content-qualification-measurement-read-v1-proposal.json",
+      "local": "schema.json",
+      "sha256": "4542e68a594bbde398be74158473ba24d3a1fe1d148b739e5fc1562e281d3a1a"
+    },
+    {
+      "source": "tests/fixtures/content-qualification-measurement-read-v1.json",
+      "local": "vectors.json",
+      "sha256": "81af70d88420b1856b8d062c4c5ba4e62876db35b5a4fa3ba610c8d617c185c1"
+    },
+    {
+      "source": "docs/qualification-measurement-readback.md",
+      "local": "design.md",
+      "sha256": "216f2d3bca09d9326a02c88357da493dfd3ce289f6d82c3b562b2e89ad27d6b7"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "repository": "mrnwebdesigns/mrn-mainwp-operations-api",
+  "commit": "18922d4844d4785af53556685601effebc66f999",
+  "files": {
+    "contracts/content-management-source-context-v1.json": {
+      "local": "contracts/content-management-source-context-v1.json",
+      "sha256": "d114207fef098af71299e3c5b5a6b22f3ef36b55115b56efb03bb0d4bcab5418"
+    },
+    "tests/fixtures/content-management-source-context-v1.json": {
+      "local": "test/fixtures/content-management-source-context-v1.json",
+      "sha256": "f3242323767c17dd99929cacb0386661db8d2c5708393edfe6193b1311d48aaa"
+    }
+  }
+}

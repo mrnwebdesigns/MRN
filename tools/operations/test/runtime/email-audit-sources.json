@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "scope": "hosted-email-audit-source-composition",
+  "provider": {
+    "repository": "mrnwebdesigns/mrn-mainwp-operations-api",
+    "commit": "0a9316342ff0e14b191cbcb407973d331f5ddfca",
+    "nativeAuditSha256": "b35ec2fafd168093cedcb599c9e1684dcf2d426b137e23d14db9daad300cd464"
+  },
+  "transport": {
+    "repository": "mrnwebdesigns/mainwp-mcp",
+    "commit": "aef2f2ae4feaf61c512287f05f106b4227e9c904",
+    "packageLockSha256": "8a68d9672593c177b0c73008b7d25bcfcb0de27bd2db9c6a0f368e9484c33917",
+    "engineSha256": "9a17c4e24314926b0a9930be124a5aee450016a4ffbb8346d1bd2a6a10e7acaf"
+  },
+  "nativeWordPressCompositionVerified": false,
+  "liveGoogleVerified": false,
+  "chatgptAcceptanceVerified": false,
+  "deploymentAuthorized": false
+}

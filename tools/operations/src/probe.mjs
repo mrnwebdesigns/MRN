@@ -1,12 +1,14 @@
 import https from 'node:https';
 import { lookup } from 'node:dns/promises';
 import ipaddr from 'ipaddr.js';
+import { load } from 'cheerio';
 import { requireThat, digest } from './contracts.mjs';
 
 export function publicAddress(address) {
   try { const parsed = ipaddr.process(address); return parsed.range() === 'unicast'; } catch { return false; }
 }
-export function responseEvidence(url, status, body, timing, { references = [], checkRest = false } = {}) {
+export const htmlContentText = html => load(html, null, false).root().text().replace(/\s+/gu, ' ').trim();
+export function responseEvidence(url, status, body, timing, { references = [], checkRest = false, contentAssertions = [] } = {}) {
   const html = body.toString('utf8');
   const linked = [...html.matchAll(/<(?:script|link)\b[^>]*\b(?:src|href)\s*=\s*["']([^"']+)["']/gi)].map(m => { try { return new URL(m[1], url).href; } catch { return ''; } });
   const result = { status, ...timing, bytes: body.length, contentSha256: digest(body),
@@ -22,6 +24,15 @@ export function responseEvidence(url, status, body, timing, { references = [], c
       result.restHealthy = status === 200 && Boolean(json && !Array.isArray(json) && Array.isArray(json.namespaces)
         && json.routes && typeof json.routes === 'object' && !Array.isArray(json.routes));
     } catch { /* Invalid JSON or a non-REST response fails this bounded check. */ }
+  }
+  if (contentAssertions.length) {
+    requireThat(contentAssertions.length <= 3 && contentAssertions.every(a => typeof a.selector === 'string' && a.selector.length <= 256
+      && typeof a.expectedText === 'string' && Buffer.byteLength(a.expectedText) <= 8192), 'CONTENT_RENDER_ASSERTION', 'Use bounded qualified rendering assertions.');
+    const document = load(html);
+    result.contentAssertions = contentAssertions.map(a => {
+      const nodes = document(a.selector);
+      return { selector: a.selector, matches: nodes.length, passed: nodes.length === 1 && nodes.text().replace(/\s+/gu, ' ').trim() === a.expectedText };
+    });
   }
   return result;
 }
