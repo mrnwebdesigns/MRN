@@ -1,0 +1,557 @@
+{
+  "performance-paired-before-0.json": {
+    "mode": "before",
+    "records": [
+      {
+        "name": "editor",
+        "sample": 0,
+        "cpu_ms": 1424.125,
+        "script_ms": 842.343,
+        "layout_ms": 88.62,
+        "style_ms": 118.81400000000001,
+        "retained_heap_mb": 25.580032348632812,
+        "wall_ms": 5764.282333,
+        "appearance": "baseline",
+        "tinyMCE": 4,
+        "sections": 19
+      }
+    ]
+  },
+  "performance-paired-dark-5.json": {
+    "mode": "dark",
+    "records": [
+      {
+        "name": "editor",
+        "sample": 0,
+        "cpu_ms": 2380.712,
+        "script_ms": 1521.639,
+        "layout_ms": 125.51100000000001,
+        "style_ms": 181.886,
+        "retained_heap_mb": 25.500457763671875,
+        "wall_ms": 11462.489791,
+        "appearance": "dark",
+        "tinyMCE": 4,
+        "sections": 19
+      }
+    ]
+  },
+  "performance-paired-before-1.json": {
+    "mode": "before",
+    "records": [
+      {
+        "name": "editor",
+        "sample": 0,
+        "cpu_ms": 1733.467,
+        "script_ms": 1062.473,
+        "layout_ms": 102.30499999999999,
+        "style_ms": 131.57,
+        "retained_heap_mb": 25.486736297607422,
+        "wall_ms": 8216.300792,
+        "appearance": "baseline",
+        "tinyMCE": 4,
+        "sections": 19
+      }
+    ]
+  },
+  "performance-paired-dark-2.json": {
+    "mode": "dark",
+    "records": [
+      {
+        "name": "editor",
+        "sample": 0,
+        "cpu_ms": 1650.569,
+        "script_ms": 996.556,
+        "layout_ms": 110.54,
+        "style_ms": 139.08200000000002,
+        "retained_heap_mb": 25.490924835205078,
+        "wall_ms": 9690.405792000001,
+        "appearance": "dark",
+        "tinyMCE": 4,
+        "sections": 19
+      }
+    ]
+  },
+  "performance-paired-light-0.json": {
+    "mode": "light",
+    "records": [
+      {
+        "name": "editor",
+        "sample": 0,
+        "cpu_ms": 1124.1239999999998,
+        "script_ms": 692.9300000000001,
+        "layout_ms": 48.888,
+        "style_ms": 90.931,
+        "retained_heap_mb": 25.799640655517578,
+        "wall_ms": 5235.980666,
+        "appearance": "light",
+        "tinyMCE": 4,
+        "sections": 19
+      }
+    ]
+  },
+  "performance-paired-before-4.json": {
+    "mode": "before",
+    "records": [
+      {
+        "name": "editor",
+        "sample": 0,
+        "cpu_ms": 2642.14,
+        "script_ms": 1416.0649999999998,
+        "layout_ms": 162.502,
+        "style_ms": 233.131,
+        "retained_heap_mb": 25.431591033935547,
+        "wall_ms": 19723.373834,
+        "appearance": "baseline",
+        "tinyMCE": 4,
+        "sections": 19
+      }
+    ]
+  },
+  "performance-before.json": {
+    "mode": "before",
+    "records": [
+      {
+        "name": "dashboard",
+        "sample": 0,
+        "cpu_ms": 402.731,
+        "script_ms": 235.375,
+        "layout_ms": 28.854000000000003,
+        "retained_heap_mb": 20.336624145507812,
+        "wall_ms": 2279.3531669999998,
+        "appearance": "baseline",
+        "tinyMCE": 0,
+        "sections": 0
+      },
+      {
+        "name": "dashboard",
+        "sample": 1,
+        "cpu_ms": 221.725,
+        "script_ms": 144.694,
+        "layout_ms": 12.791,
+        "retained_heap_mb": 20.340068817138672,
+        "wall_ms": 1847.519209,
+        "appearance": "baseline",
+        "tinyMCE": 0,
+        "sections": 0
+      },
+      {
+        "name": "dashboard",
+        "sample": 2,
+        "cpu_ms": 207.794,
+        "script_ms": 131.043,
+        "layout_ms": 12.413,
+        "retained_heap_mb": 20.32563018798828,
+        "wall_ms": 1760.777833,
+        "appearance": "baseline",
+        "tinyMCE": 0,
+        "sections": 0
+      },
+      {
+        "name": "pages",
+        "sample": 0,
+        "cpu_ms": 183.113,
+        "script_ms": 114.142,
+        "layout_ms": 13.518,
+        "retained_heap_mb": 18.29367446899414,
+        "wall_ms": 1634.7516669999995,
+        "appearance": "baseline",
+        "tinyMCE": 0,
+        "sections": 0
+      },
+      {
+        "name": "pages",
+        "sample": 1,
+        "cpu_ms": 187.079,
+        "script_ms": 116.235,
+        "layout_ms": 14.194999999999999,
+        "retained_heap_mb": 18.294841766357422,
+        "wall_ms": 1646.8902080000007,
+        "appearance": "baseline",
+        "tinyMCE": 0,
+        "sections": 0
+      },
+      {
+        "name": "pages",
+        "sample": 2,
+        "cpu_ms": 258.12600000000003,
+        "script_ms": 162.679,
+        "layout_ms": 24.549999999999997,
+        "retained_heap_mb": 18.292137145996094,
+        "wall_ms": 2022.1754170000004,
+        "appearance": "baseline",
+        "tinyMCE": 0,
+        "sections": 0
+      },
+      {
+        "name": "editor",
+        "sample": 0,
+        "cpu_ms": 838.0849999999999,
+        "script_ms": 510.88999999999993,
+        "layout_ms": 49.675,
+        "retained_heap_mb": 25.495410919189453,
+        "wall_ms": 3631.1011249999992,
+        "appearance": "baseline",
+        "tinyMCE": 4,
+        "sections": 19
+      },
+      {
+        "name": "editor",
+        "sample": 1,
+        "cpu_ms": 819.182,
+        "script_ms": 505.31000000000006,
+        "layout_ms": 45.971,
+        "retained_heap_mb": 25.502838134765625,
+        "wall_ms": 4025.980209000001,
+        "appearance": "baseline",
+        "tinyMCE": 4,
+        "sections": 19
+      },
+      {
+        "name": "editor",
+        "sample": 2,
+        "cpu_ms": 821.689,
+        "script_ms": 499.20799999999997,
+        "layout_ms": 45.666,
+        "retained_heap_mb": 25.487812042236328,
+        "wall_ms": 3545.534792000002,
+        "appearance": "baseline",
+        "tinyMCE": 4,
+        "sections": 19
+      }
+    ]
+  },
+  "performance-paired-light-3.json": {
+    "mode": "light",
+    "records": [
+      {
+        "name": "editor",
+        "sample": 0,
+        "cpu_ms": 1301.6000000000001,
+        "script_ms": 723.412,
+        "layout_ms": 57.291000000000004,
+        "style_ms": 100.268,
+        "retained_heap_mb": 13.422416687011719,
+        "wall_ms": 7423.899792,
+        "appearance": "light",
+        "tinyMCE": 1,
+        "sections": 19
+      }
+    ]
+  },
+  "performance-paired-before-5.json": {
+    "mode": "before",
+    "records": [
+      {
+        "name": "editor",
+        "sample": 0,
+        "cpu_ms": 1503.6879999999999,
+        "script_ms": 910.8929999999999,
+        "layout_ms": 99.569,
+        "style_ms": 120.316,
+        "retained_heap_mb": 25.489662170410156,
+        "wall_ms": 8314.499833,
+        "appearance": "baseline",
+        "tinyMCE": 4,
+        "sections": 19
+      }
+    ]
+  },
+  "performance-paired-dark-1.json": {
+    "mode": "dark",
+    "records": [
+      {
+        "name": "editor",
+        "sample": 0,
+        "cpu_ms": 1576.038,
+        "script_ms": 947.067,
+        "layout_ms": 102.415,
+        "style_ms": 133.244,
+        "retained_heap_mb": 25.584400177001953,
+        "wall_ms": 8163.785625,
+        "appearance": "dark",
+        "tinyMCE": 4,
+        "sections": 19
+      }
+    ]
+  },
+  "performance-paired-before-2.json": {
+    "mode": "before",
+    "records": [
+      {
+        "name": "editor",
+        "sample": 0,
+        "cpu_ms": 1325.633,
+        "script_ms": 824.5949999999999,
+        "layout_ms": 60.125,
+        "style_ms": 98.35000000000001,
+        "retained_heap_mb": 25.74938201904297,
+        "wall_ms": 8300.746791,
+        "appearance": "baseline",
+        "tinyMCE": 4,
+        "sections": 19
+      }
+    ]
+  },
+  "performance-dark.json": {
+    "mode": "dark",
+    "records": [
+      {
+        "name": "dashboard",
+        "sample": 0,
+        "cpu_ms": 225.40699999999998,
+        "script_ms": 144.05499999999998,
+        "layout_ms": 14.721,
+        "retained_heap_mb": 20.3438720703125,
+        "wall_ms": 1952.954667,
+        "appearance": "dark",
+        "tinyMCE": 0,
+        "sections": 0
+      },
+      {
+        "name": "dashboard",
+        "sample": 1,
+        "cpu_ms": 237.04500000000002,
+        "script_ms": 147.816,
+        "layout_ms": 15.296000000000001,
+        "retained_heap_mb": 20.34261703491211,
+        "wall_ms": 1984.4257499999994,
+        "appearance": "dark",
+        "tinyMCE": 0,
+        "sections": 0
+      },
+      {
+        "name": "dashboard",
+        "sample": 2,
+        "cpu_ms": 236.913,
+        "script_ms": 149.91299999999998,
+        "layout_ms": 17.666,
+        "retained_heap_mb": 20.32953643798828,
+        "wall_ms": 1888.0137080000004,
+        "appearance": "dark",
+        "tinyMCE": 0,
+        "sections": 0
+      },
+      {
+        "name": "pages",
+        "sample": 0,
+        "cpu_ms": 202.48499999999999,
+        "script_ms": 123.047,
+        "layout_ms": 16.559,
+        "retained_heap_mb": 18.29688262939453,
+        "wall_ms": 1672.811917000001,
+        "appearance": "dark",
+        "tinyMCE": 0,
+        "sections": 0
+      },
+      {
+        "name": "pages",
+        "sample": 1,
+        "cpu_ms": 238.72099999999998,
+        "script_ms": 145.937,
+        "layout_ms": 19.374,
+        "retained_heap_mb": 18.296649932861328,
+        "wall_ms": 2583.1964590000007,
+        "appearance": "dark",
+        "tinyMCE": 0,
+        "sections": 0
+      },
+      {
+        "name": "pages",
+        "sample": 2,
+        "cpu_ms": 197.972,
+        "script_ms": 121.229,
+        "layout_ms": 15.883999999999999,
+        "retained_heap_mb": 18.296649932861328,
+        "wall_ms": 1664.8649999999998,
+        "appearance": "dark",
+        "tinyMCE": 0,
+        "sections": 0
+      },
+      {
+        "name": "editor",
+        "sample": 0,
+        "cpu_ms": 1186.993,
+        "script_ms": 782.98,
+        "layout_ms": 62.064,
+        "retained_heap_mb": 25.50591278076172,
+        "wall_ms": 5346.457041,
+        "appearance": "dark",
+        "tinyMCE": 4,
+        "sections": 19
+      },
+      {
+        "name": "editor",
+        "sample": 1,
+        "cpu_ms": 1212.1850000000002,
+        "script_ms": 737.26,
+        "layout_ms": 71.019,
+        "retained_heap_mb": 25.49557876586914,
+        "wall_ms": 6772.151875,
+        "appearance": "dark",
+        "tinyMCE": 4,
+        "sections": 19
+      },
+      {
+        "name": "editor",
+        "sample": 2,
+        "cpu_ms": 900.663,
+        "script_ms": 549.943,
+        "layout_ms": 51.575,
+        "retained_heap_mb": 25.467052459716797,
+        "wall_ms": 4251.911375,
+        "appearance": "dark",
+        "tinyMCE": 4,
+        "sections": 19
+      }
+    ]
+  },
+  "performance-paired-light-4.json": {
+    "mode": "light",
+    "records": [
+      {
+        "name": "editor",
+        "sample": 0,
+        "cpu_ms": 2181.318,
+        "script_ms": 1210.955,
+        "layout_ms": 122.28500000000001,
+        "style_ms": 178.906,
+        "retained_heap_mb": 25.80261993408203,
+        "wall_ms": 16219.087917000003,
+        "appearance": "light",
+        "tinyMCE": 4,
+        "sections": 19
+      }
+    ]
+  },
+  "performance-paired-before-3.json": {
+    "mode": "before",
+    "records": [
+      {
+        "name": "editor",
+        "sample": 0,
+        "cpu_ms": 2692.407,
+        "script_ms": 1563.352,
+        "layout_ms": 188.111,
+        "style_ms": 226.229,
+        "retained_heap_mb": 25.571109771728516,
+        "wall_ms": 15601.196084,
+        "appearance": "baseline",
+        "tinyMCE": 4,
+        "sections": 19
+      }
+    ]
+  },
+  "performance-light.json": {
+    "mode": "light",
+    "records": [
+      {
+        "name": "dashboard",
+        "sample": 0,
+        "cpu_ms": 230.27800000000002,
+        "script_ms": 145.147,
+        "layout_ms": 14.657,
+        "retained_heap_mb": 20.342742919921875,
+        "wall_ms": 2028.2029160000002,
+        "appearance": "light",
+        "tinyMCE": 0,
+        "sections": 0
+      },
+      {
+        "name": "dashboard",
+        "sample": 1,
+        "cpu_ms": 252.732,
+        "script_ms": 156.838,
+        "layout_ms": 16.712,
+        "retained_heap_mb": 20.329875946044922,
+        "wall_ms": 2080.830666,
+        "appearance": "light",
+        "tinyMCE": 0,
+        "sections": 0
+      },
+      {
+        "name": "dashboard",
+        "sample": 2,
+        "cpu_ms": 214.48999999999998,
+        "script_ms": 137.61599999999999,
+        "layout_ms": 15.688,
+        "retained_heap_mb": 20.32834243774414,
+        "wall_ms": 2327.8037910000003,
+        "appearance": "light",
+        "tinyMCE": 0,
+        "sections": 0
+      },
+      {
+        "name": "pages",
+        "sample": 0,
+        "cpu_ms": 201.766,
+        "script_ms": 120.225,
+        "layout_ms": 17.111,
+        "retained_heap_mb": 18.296424865722656,
+        "wall_ms": 2155.0516669999997,
+        "appearance": "light",
+        "tinyMCE": 0,
+        "sections": 0
+      },
+      {
+        "name": "pages",
+        "sample": 1,
+        "cpu_ms": 239.098,
+        "script_ms": 139.882,
+        "layout_ms": 20.095,
+        "retained_heap_mb": 18.29583740234375,
+        "wall_ms": 2250.9440830000003,
+        "appearance": "light",
+        "tinyMCE": 0,
+        "sections": 0
+      },
+      {
+        "name": "pages",
+        "sample": 2,
+        "cpu_ms": 256.23400000000004,
+        "script_ms": 144.307,
+        "layout_ms": 18.724999999999998,
+        "retained_heap_mb": 18.29824447631836,
+        "wall_ms": 2458.054082999999,
+        "appearance": "light",
+        "tinyMCE": 0,
+        "sections": 0
+      },
+      {
+        "name": "editor",
+        "sample": 0,
+        "cpu_ms": 928.936,
+        "script_ms": 551.609,
+        "layout_ms": 52.663000000000004,
+        "retained_heap_mb": 25.488391876220703,
+        "wall_ms": 4158.4535,
+        "appearance": "light",
+        "tinyMCE": 4,
+        "sections": 19
+      },
+      {
+        "name": "editor",
+        "sample": 1,
+        "cpu_ms": 944.509,
+        "script_ms": 568.419,
+        "layout_ms": 56.812000000000005,
+        "retained_heap_mb": 25.498764038085938,
+        "wall_ms": 4639.027833,
+        "appearance": "light",
+        "tinyMCE": 4,
+        "sections": 19
+      },
+      {
+        "name": "editor",
+        "sample": 2,
+        "cpu_ms": 870.746,
+        "script_ms": 535.157,
+        "layout_ms": 50.501,
+        "retained_heap_mb": 25.489200592041016,
+        "wall_ms": 3634.7504579999986,
+        "appearance": "light",
+        "tinyMCE": 4,
+        "sections": 19
+      }
+    ]
+  }
+}

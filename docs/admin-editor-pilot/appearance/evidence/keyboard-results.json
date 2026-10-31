@@ -1,0 +1,8 @@
+{
+  "checks": [
+    "Native select keyboard typeahead changes Light to Dark to System",
+    "AJAX completion preserves keyboard focus on the originating control",
+    "Tab/Enter activates native Save; Escape restores the trigger"
+  ],
+  "passed": true
+}

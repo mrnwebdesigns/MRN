@@ -1,0 +1,42 @@
+[
+  {
+    "file": "mu-plugins/mrn-admin-ui-css/mrn-admin-ui-css.php",
+    "sha256": "b45f95b599951310285864c6e96978e70de03c3440c9c64f3993967f809b5f92",
+    "installed_matches": true
+  },
+  {
+    "file": "mu-plugins/mrn-admin-ui-css/modern-admin.php",
+    "sha256": "736e9baba0ebe1be94301846183849a84d757533f0e629fb8b2fb40a76df51a0",
+    "installed_matches": true
+  },
+  {
+    "file": "mu-plugins/mrn-admin-ui-css/appearance.php",
+    "sha256": "8e1a35521632cff84bbe6371e3b6df9c70c5e24c0fbee75cde23904b497ced92",
+    "installed_matches": true
+  },
+  {
+    "file": "mu-plugins/mrn-admin-ui-css/appearance.js",
+    "sha256": "a2c111b754692d31ce877b53b163d367e4a0aa66eb6332a8da33a185fd293256",
+    "installed_matches": true
+  },
+  {
+    "file": "mu-plugins/mrn-admin-ui-css/mrn-admin-tokens.css",
+    "sha256": "9e683a0f25ebba7358a3f3c584d563baaaf9212a7a484b67894a3973c853cd87",
+    "installed_matches": true
+  },
+  {
+    "file": "mu-plugins/mrn-admin-ui-css/mrn-admin-shell.css",
+    "sha256": "ff22cac3a3079c6114016ef29675a5c2e0c9994ae20dc74e9a4bc41796274832",
+    "installed_matches": true
+  },
+  {
+    "file": "mu-plugins/mrn-admin-ui-css/mrn-modern-admin.css",
+    "sha256": "384f7e6ce22dcd7396227586fec9d1941f88baa3bf5df4a6eb5215e30f42c947",
+    "installed_matches": true
+  },
+  {
+    "file": "mu-plugins/mrn-admin-ui-css/mrn-editor-workspace.css",
+    "sha256": "51be6ac9ae137b1b90cac92737fd70fcbd62784bfc82df49b8caf7b84bf6df53",
+    "installed_matches": true
+  }
+]

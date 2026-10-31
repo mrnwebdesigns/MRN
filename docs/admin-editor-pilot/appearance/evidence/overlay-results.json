@@ -1,0 +1,15 @@
+{
+  "checks": [
+    "light: MRN layout/icon pickers, native publishing panel, close/cancel and toolbar hover work without content changes",
+    "dark: MRN layout/icon pickers, native publishing panel, close/cancel and toolbar hover work without content changes"
+  ],
+  "axe": {
+    "light-layout-picker": [],
+    "light-icon-picker": [],
+    "light-publishing-panel": [],
+    "dark-layout-picker": [],
+    "dark-icon-picker": [],
+    "dark-publishing-panel": []
+  },
+  "errors": []
+}

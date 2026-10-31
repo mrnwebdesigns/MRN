@@ -1,0 +1,128 @@
+{
+  "initial": {
+    "before": {
+      "dashboard": {
+        "cpu_ms": 221.725,
+        "script_ms": 144.694,
+        "layout_ms": 12.791,
+        "retained_heap_mb": 20.337
+      },
+      "pages": {
+        "cpu_ms": 187.079,
+        "script_ms": 116.235,
+        "layout_ms": 14.195,
+        "retained_heap_mb": 18.294
+      },
+      "editor": {
+        "cpu_ms": 821.689,
+        "script_ms": 505.31,
+        "layout_ms": 45.971,
+        "retained_heap_mb": 25.495
+      }
+    },
+    "light": {
+      "dashboard": {
+        "cpu_ms": 230.278,
+        "script_ms": 145.147,
+        "layout_ms": 15.688,
+        "retained_heap_mb": 20.33
+      },
+      "pages": {
+        "cpu_ms": 239.098,
+        "script_ms": 139.882,
+        "layout_ms": 18.725,
+        "retained_heap_mb": 18.296
+      },
+      "editor": {
+        "cpu_ms": 928.936,
+        "script_ms": 551.609,
+        "layout_ms": 52.663,
+        "retained_heap_mb": 25.489
+      }
+    },
+    "dark": {
+      "dashboard": {
+        "cpu_ms": 236.913,
+        "script_ms": 147.816,
+        "layout_ms": 15.296,
+        "retained_heap_mb": 20.343
+      },
+      "pages": {
+        "cpu_ms": 202.485,
+        "script_ms": 123.047,
+        "layout_ms": 16.559,
+        "retained_heap_mb": 18.297
+      },
+      "editor": {
+        "cpu_ms": 1186.993,
+        "script_ms": 737.26,
+        "layout_ms": 62.064,
+        "retained_heap_mb": 25.496
+      }
+    }
+  },
+  "paired": [
+    {
+      "mode": "light",
+      "pair": 0,
+      "valid": true,
+      "before_cpu_ms": 1424.12,
+      "after_cpu_ms": 1124.12,
+      "change_percent": -21.1,
+      "before_heap_mb": 25.58,
+      "after_heap_mb": 25.8
+    },
+    {
+      "mode": "dark",
+      "pair": 1,
+      "valid": true,
+      "before_cpu_ms": 1733.47,
+      "after_cpu_ms": 1576.04,
+      "change_percent": -9.1,
+      "before_heap_mb": 25.49,
+      "after_heap_mb": 25.58
+    },
+    {
+      "mode": "dark",
+      "pair": 2,
+      "valid": true,
+      "before_cpu_ms": 1325.63,
+      "after_cpu_ms": 1650.57,
+      "change_percent": 24.5,
+      "before_heap_mb": 25.75,
+      "after_heap_mb": 25.49
+    },
+    {
+      "mode": "light",
+      "pair": 3,
+      "valid": false,
+      "before_cpu_ms": 2692.41,
+      "after_cpu_ms": 1301.6,
+      "change_percent": null,
+      "before_heap_mb": 25.57,
+      "after_heap_mb": 13.42
+    },
+    {
+      "mode": "light",
+      "pair": 4,
+      "valid": true,
+      "before_cpu_ms": 2642.14,
+      "after_cpu_ms": 2181.32,
+      "change_percent": -17.4,
+      "before_heap_mb": 25.43,
+      "after_heap_mb": 25.8
+    },
+    {
+      "mode": "dark",
+      "pair": 5,
+      "valid": true,
+      "before_cpu_ms": 1503.69,
+      "after_cpu_ms": 2380.71,
+      "change_percent": 58.3,
+      "before_heap_mb": 25.49,
+      "after_heap_mb": 25.5
+    }
+  ],
+  "qualification": "blocked: editor CPU is variable and includes slower Dark samples; no performance non-regression claim",
+  "protocol": "Actual prior component b2ab931c and candidate installed on the same isolated fixture; external requests blocked; three fresh browser contexts per initial screen/mode; paired runs reverse before/after order. CPU sampled before GC; heap sampled after GC. One paired Light sample initialized only one TinyMCE editor and is excluded."
+}

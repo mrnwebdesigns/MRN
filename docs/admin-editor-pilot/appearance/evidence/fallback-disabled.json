@@ -1,0 +1,6 @@
+{
+  "checks": [
+    "Emergency switch rejects preference writes and removes appearance/control/workspace assets and retains all native ACF rows"
+  ],
+  "errors": []
+}

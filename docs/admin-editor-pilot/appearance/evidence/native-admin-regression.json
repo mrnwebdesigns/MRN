@@ -1,0 +1,27 @@
+{
+  "checks": [
+    "Dashboard tasks, support disclosure keyboard operation and existing Notifications Center filters work",
+    "Native search and Quick Edit save/reopen restore menu order on the authorized draft",
+    "Native draft filter, checkbox selection, bulk Edit/open/cancel and visible row actions work",
+    "Empty search results preserve native messaging without list-helper errors",
+    "Representative post/CPT lists and existing MRN Site Configurations load with native controls",
+    "Native settings nonce/form save and reload verified; original tagline restored",
+    "390px dashboard, lists, native/MRN settings and Notifications Center reflow without page overflow",
+    "WPForms, SEOPress, ACF field definitions and Media retain native content interfaces with the shared appearance shell"
+  ],
+  "errors": [],
+  "screens": {
+    "dashboard": [],
+    "notifications": [],
+    "pages": [],
+    "posts": [],
+    "cpt": [],
+    "settings": [],
+    "config": [],
+    "dashboard-mobile": [],
+    "pages-mobile": [],
+    "settings-mobile": [],
+    "config-mobile": [],
+    "notifications-mobile": []
+  }
+}

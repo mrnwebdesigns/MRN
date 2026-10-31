@@ -1,0 +1,12 @@
+{
+  "checks": [
+    "Authenticated self-only preference: missing/invalid nonce, invalid/array input and unauthenticated AJAX requests rejected",
+    "Submitted user_id is ignored; handler derives identity from the authenticated account",
+    "light: theme switch leaves native ACF FormData identical; native Save Draft and explicit reload retain all 19 sections",
+    "light: native media open/cancel works; real server validation blocks Publish and reveals parked errors without saving invalid content",
+    "dark: theme switch leaves native ACF FormData identical; native Save Draft and explicit reload retain all 19 sections",
+    "dark: native media open/cancel works; real server validation blocks Publish and reveals parked errors without saving invalid content",
+    "Existing truncated-save protection rejects the incomplete native form with HTTP 400"
+  ],
+  "errors": []
+}

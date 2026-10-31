@@ -1,0 +1,6 @@
+{
+  "checks": [
+    "Without JavaScript, native appearance form saves user meta and redirects; System follows both device modes before reload"
+  ],
+  "errors": []
+}

@@ -14,13 +14,19 @@ function mrn_admin_ui_modern_screen() {
 	if ( 'dashboard' === $screen->id ) {
 		return 'dashboard';
 	}
+	if ( in_array( $screen->id, array( 'users', 'plugins' ), true ) ) {
+		return 'list';
+	}
 	$types = function_exists( 'mrn_base_stack_get_singular_shell_post_types' ) ? mrn_base_stack_get_singular_shell_post_types() : array( 'post', 'page' );
 	// Application-owned tables remain excluded even if a site opts them into the MRN shell.
 	$types = array_diff( $types, array( 'product', 'product_variation', 'shop_order', 'shop_coupon', 'courses', 'lesson', 'tutor_quiz', 'tutor_assignments', 'wpforms', 'acf-field-group' ) );
 	if ( 'edit' === $screen->base && in_array( $screen->post_type, $types, true ) ) {
 		return 'list';
 	}
-	if ( in_array( $screen->id, array( 'options-general', 'options-writing', 'options-reading', 'options-discussion', 'options-media', 'options-permalink', 'profile' ), true ) ) {
+	if ( in_array( $screen->base, array( 'edit-tags', 'term' ), true ) && in_array( $screen->taxonomy, get_object_taxonomies( $types ), true ) ) {
+		return 'settings';
+	}
+	if ( in_array( $screen->id, array( 'options-general', 'options-writing', 'options-reading', 'options-discussion', 'options-media', 'options-permalink', 'options-privacy', 'profile', 'user', 'user-edit', 'user-new', 'tools', 'import', 'export', 'update-core' ), true ) ) {
 		return 'settings';
 	}
 	// Exact MRN pages only. Prefix matching would accidentally claim third-party apps.

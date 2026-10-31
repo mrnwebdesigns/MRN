@@ -1,2 +1,127 @@
-/* Shared Option B surfaces; AME continues to own navigation configuration/branding. */
-:root { --mrn-admin-ink: #172b3a; --mrn-admin-muted: #536779; --mrn-admin-accent: #244bd7; --mrn-admin-canvas: #f1f4f8; --mrn-admin-surface: #fff; --mrn-admin-line: #d5dfea; --mrn-admin-control-line: #71869a; --mrn-admin-radius-control: 6px; --mrn-admin-radius-component: 12px; --mrn-admin-space: 8px; }
+/* Appearance palette: all MRN-owned surfaces and interaction states derive here. */
+:root {
+ color-scheme: light;
+ --mrn-admin-scheme: light;
+ --mrn-native-surface: #ffffff;
+ --mrn-native-canvas: #f0f0f1;
+ --mrn-native-subtle: #f6f7f7;
+ --mrn-native-ink: #3c434a;
+ --mrn-native-line: #8c8f94;
+ --mrn-admin-select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23526477' d='M4 6l4 4 4-4z'/%3E%3C/svg%3E");
+ --mrn-admin-ink: #1c2e42;
+ --mrn-admin-muted: #526477;
+ --mrn-admin-accent: #244bd7;
+ --mrn-admin-canvas: #f3f5f8;
+ --mrn-admin-surface: #ffffff;
+ --mrn-admin-surface-subtle: #f6f8fb;
+ --mrn-admin-surface-hover: #eaf0f8;
+ --mrn-admin-line: #d4deea;
+ --mrn-admin-control-line: #718398;
+ --mrn-admin-primary: #244bd7;
+ --mrn-admin-primary-hover: #173ba9;
+ --mrn-admin-on-primary: #ffffff;
+ --mrn-admin-selected: #e4ecff;
+ --mrn-admin-selected-ink: #193ea8;
+ --mrn-admin-nav: #edf1f6;
+ --mrn-admin-nav-ink: #2a3d53;
+ --mrn-admin-nav-muted: #566b81;
+ --mrn-admin-nav-hover: #dce5f0;
+ --mrn-admin-nav-active: #dce7ff;
+ --mrn-admin-nav-active-ink: #193ea8;
+ --mrn-admin-focus: #244bd7;
+ --mrn-admin-disabled: #e4e9f0;
+ --mrn-admin-disabled-ink: #536477;
+ --mrn-admin-danger: #ad242a;
+ --mrn-admin-danger-surface: #fff1f1;
+ --mrn-admin-danger-line: #c44046;
+ --mrn-admin-warning: #71470e;
+ --mrn-admin-warning-surface: #fff6df;
+ --mrn-admin-warning-line: #ac751e;
+ --mrn-admin-success: #23623d;
+ --mrn-admin-success-surface: #eaf7ef;
+ --mrn-admin-success-line: #398652;
+ --mrn-admin-shadow: 0 4px 18px #1c2e420b;
+ --mrn-admin-overlay-shadow: 0 12px 36px #182a422b;
+}
+:root { --mrn-admin-radius-control: 6px; --mrn-admin-radius-component: 12px; --mrn-admin-space: 8px; }
+:root[data-mrn-appearance="dark"] {
+ color-scheme: dark;
+ --mrn-admin-scheme: dark;
+ --mrn-admin-select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23acbed2' d='M4 6l4 4 4-4z'/%3E%3C/svg%3E");
+ --mrn-admin-ink: #e5edf7;
+ --mrn-admin-muted: #acbed2;
+ --mrn-admin-accent: #abc6ff;
+ --mrn-admin-canvas: #111a27;
+ --mrn-admin-surface: #1b2839;
+ --mrn-admin-surface-subtle: #223247;
+ --mrn-admin-surface-hover: #2b3f57;
+ --mrn-admin-line: #3a4e67;
+ --mrn-admin-control-line: #7d94ae;
+ --mrn-admin-primary: #b5cdff;
+ --mrn-admin-primary-hover: #d3e1ff;
+ --mrn-admin-on-primary: #172b4d;
+ --mrn-admin-selected: #2a4268;
+ --mrn-admin-selected-ink: #d6e4ff;
+ --mrn-admin-nav: #172332;
+ --mrn-admin-nav-ink: #d6e2f0;
+ --mrn-admin-nav-muted: #a6bbd1;
+ --mrn-admin-nav-hover: #2b4059;
+ --mrn-admin-nav-active: #2d4771;
+ --mrn-admin-nav-active-ink: #e0eaff;
+ --mrn-admin-focus: #adc9ff;
+ --mrn-admin-disabled: #2c3c51;
+ --mrn-admin-disabled-ink: #aebfd2;
+ --mrn-admin-danger: #ffb6ba;
+ --mrn-admin-danger-surface: #442a35;
+ --mrn-admin-danger-line: #e88f97;
+ --mrn-admin-warning: #f3d28f;
+ --mrn-admin-warning-surface: #3e3424;
+ --mrn-admin-warning-line: #c9a459;
+ --mrn-admin-success: #a7e0bb;
+ --mrn-admin-success-surface: #213c34;
+ --mrn-admin-success-line: #79be95;
+ --mrn-admin-shadow: 0 4px 18px #00000026;
+ --mrn-admin-overlay-shadow: 0 12px 36px #00000066;
+}
+/* CSS resolves System before first paint; no storage or startup script race. */
+@media (prefers-color-scheme: dark) {
+:root[data-mrn-appearance="system"] {
+ color-scheme: dark;
+ --mrn-admin-scheme: dark;
+ --mrn-admin-select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23acbed2' d='M4 6l4 4 4-4z'/%3E%3C/svg%3E");
+ --mrn-admin-ink: #e5edf7;
+ --mrn-admin-muted: #acbed2;
+ --mrn-admin-accent: #abc6ff;
+ --mrn-admin-canvas: #111a27;
+ --mrn-admin-surface: #1b2839;
+ --mrn-admin-surface-subtle: #223247;
+ --mrn-admin-surface-hover: #2b3f57;
+ --mrn-admin-line: #3a4e67;
+ --mrn-admin-control-line: #7d94ae;
+ --mrn-admin-primary: #b5cdff;
+ --mrn-admin-primary-hover: #d3e1ff;
+ --mrn-admin-on-primary: #172b4d;
+ --mrn-admin-selected: #2a4268;
+ --mrn-admin-selected-ink: #d6e4ff;
+ --mrn-admin-nav: #172332;
+ --mrn-admin-nav-ink: #d6e2f0;
+ --mrn-admin-nav-muted: #a6bbd1;
+ --mrn-admin-nav-hover: #2b4059;
+ --mrn-admin-nav-active: #2d4771;
+ --mrn-admin-nav-active-ink: #e0eaff;
+ --mrn-admin-focus: #adc9ff;
+ --mrn-admin-disabled: #2c3c51;
+ --mrn-admin-disabled-ink: #aebfd2;
+ --mrn-admin-danger: #ffb6ba;
+ --mrn-admin-danger-surface: #442a35;
+ --mrn-admin-danger-line: #e88f97;
+ --mrn-admin-warning: #f3d28f;
+ --mrn-admin-warning-surface: #3e3424;
+ --mrn-admin-warning-line: #c9a459;
+ --mrn-admin-success: #a7e0bb;
+ --mrn-admin-success-surface: #213c34;
+ --mrn-admin-success-line: #79be95;
+ --mrn-admin-shadow: 0 4px 18px #00000026;
+ --mrn-admin-overlay-shadow: 0 12px 36px #00000066;
+}
+}

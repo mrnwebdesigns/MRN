@@ -1,0 +1,7 @@
+{
+  "checks": [
+    "WebKit light: dashboard/list/core and MRN settings/editor retain theme and reflow at 390px",
+    "WebKit dark: dashboard/list/core and MRN settings/editor retain theme and reflow at 390px"
+  ],
+  "errors": []
+}

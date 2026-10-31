@@ -1,0 +1,375 @@
+{
+  "checks": [
+    "light: sidebar hover/flyout, submenu keyboard entry, appearance keyboard/Escape",
+    "light: persisted across dashboard, posts/pages/CPT, core/MRN settings, Notifications Center and complex ACF workspace; mobile reflow",
+    "dark: sidebar hover/flyout, submenu keyboard entry, appearance keyboard/Escape",
+    "dark: persisted across dashboard, posts/pages/CPT, core/MRN settings, Notifications Center and complex ACF workspace; mobile reflow",
+    "System changes live with device media preference and persists across navigation",
+    "Failed preference save restores the previous theme and announces failure",
+    "WPForms, SEOPress, ACF administration and Media keep native content styles with a themed shell",
+    "Fresh browser retains the administrator preference; Editor account remains independent",
+    "Explicit Light/Dark overrides System"
+  ],
+  "axe": {
+    "light-dashboard": [],
+    "light-appearance": [],
+    "light-sidebar-hover": [],
+    "light-pages": [],
+    "light-quick-edit": [],
+    "light-posts": [],
+    "light-cpt": [],
+    "light-settings": [],
+    "light-config": [],
+    "light-notifications": [],
+    "light-business": [
+      {
+        "id": "nested-interactive",
+        "impact": "serious",
+        "nodes": [
+          {
+            "target": [
+              ".acf-field-mrn-business-logo > .acf-input > .acf-image-uploader.has-value[data-preview_size=\"medium\"] > .show-if-value.image-wrap[role=\"button\"]"
+            ],
+            "summary": "Fix any of the following:\n  Element has focusable descendants"
+          },
+          {
+            "target": [
+              ".acf-field-mrn-business-logo-inverted > .acf-input > .acf-image-uploader.has-value[data-preview_size=\"medium\"] > .show-if-value.image-wrap[role=\"button\"]"
+            ],
+            "summary": "Fix any of the following:\n  Element has focusable descendants"
+          },
+          {
+            "target": [
+              ".acf-field-mrn-business-logo-footer > .acf-input > .acf-image-uploader.has-value[data-preview_size=\"medium\"] > .show-if-value.image-wrap[role=\"button\"]"
+            ],
+            "summary": "Fix any of the following:\n  Element has focusable descendants"
+          },
+          {
+            "target": [
+              ".acf-field-mrn-business-logo-footer-inverted > .acf-input > .acf-image-uploader.has-value[data-preview_size=\"medium\"] > .show-if-value.image-wrap[role=\"button\"]"
+            ],
+            "summary": "Fix any of the following:\n  Element has focusable descendants"
+          }
+        ]
+      }
+    ],
+    "light-editor": [],
+    "light-arrange": [],
+    "light-acf-fields": [
+      {
+        "id": "nested-interactive",
+        "impact": "serious",
+        "nodes": [
+          {
+            "target": [
+              "tr[data-id=\"row-0\"] > td:nth-child(2) > .acf-field-mrn-card-item-rows[data-name=\"card_rows\"][data-key=\"field_mrn_card_item_rows\"] > .acf-input > div[data-button-label=\"Add Card Row\"][data-nonce=\"[redacted]\"][data-min=\"1\"] > .values > div[data-layout=\"cta\"][data-label=\"Page Specific CTA\"][data-id=\"row-0\"] > .acf-fields > .acf-field-mrn-cta-image.-c0[data-key=\"field_mrn_cta_image\"] > .acf-input > .has-value[data-preview_size=\"medium\"][data-mime_types=\"\"] > .image-wrap.show-if-value[role=\"button\"]"
+            ],
+            "summary": "Fix any of the following:\n  Element has focusable descendants"
+          },
+          {
+            "target": [
+              "tr[data-id=\"row-1\"] > td:nth-child(2) > .acf-field-mrn-card-item-rows[data-name=\"card_rows\"][data-key=\"field_mrn_card_item_rows\"] > .acf-input > div[data-button-label=\"Add Card Row\"][data-nonce=\"[redacted]\"][data-min=\"1\"] > .values > div[data-layout=\"cta\"][data-label=\"Page Specific CTA\"][data-id=\"row-0\"] > .acf-fields > .acf-field-mrn-cta-image.-c0[data-key=\"field_mrn_cta_image\"] > .acf-input > .has-value[data-preview_size=\"medium\"][data-mime_types=\"\"] > .image-wrap.show-if-value[role=\"button\"]"
+            ],
+            "summary": "Fix any of the following:\n  Element has focusable descendants"
+          },
+          {
+            "target": [
+              "tr[data-id=\"row-2\"] > td:nth-child(2) > .acf-field-mrn-card-item-rows[data-name=\"card_rows\"][data-key=\"field_mrn_card_item_rows\"] > .acf-input > div[data-button-label=\"Add Card Row\"][data-nonce=\"[redacted]\"][data-min=\"1\"] > .values > div[data-layout=\"cta\"][data-label=\"Page Specific CTA\"][data-id=\"row-0\"] > .acf-fields > .acf-field-mrn-cta-image.-c0[data-key=\"field_mrn_cta_image\"] > .acf-input > .has-value[data-preview_size=\"medium\"][data-mime_types=\"\"] > .image-wrap.show-if-value[role=\"button\"]"
+            ],
+            "summary": "Fix any of the following:\n  Element has focusable descendants"
+          }
+        ]
+      }
+    ],
+    "dark-dashboard": [],
+    "dark-appearance": [],
+    "dark-sidebar-hover": [],
+    "dark-pages": [],
+    "dark-quick-edit": [],
+    "dark-posts": [],
+    "dark-cpt": [],
+    "dark-settings": [],
+    "dark-config": [],
+    "dark-notifications": [],
+    "dark-business": [
+      {
+        "id": "nested-interactive",
+        "impact": "serious",
+        "nodes": [
+          {
+            "target": [
+              ".acf-field-mrn-business-logo > .acf-input > .acf-image-uploader.has-value[data-preview_size=\"medium\"] > .show-if-value.image-wrap[role=\"button\"]"
+            ],
+            "summary": "Fix any of the following:\n  Element has focusable descendants"
+          },
+          {
+            "target": [
+              ".acf-field-mrn-business-logo-inverted > .acf-input > .acf-image-uploader.has-value[data-preview_size=\"medium\"] > .show-if-value.image-wrap[role=\"button\"]"
+            ],
+            "summary": "Fix any of the following:\n  Element has focusable descendants"
+          },
+          {
+            "target": [
+              ".acf-field-mrn-business-logo-footer > .acf-input > .acf-image-uploader.has-value[data-preview_size=\"medium\"] > .show-if-value.image-wrap[role=\"button\"]"
+            ],
+            "summary": "Fix any of the following:\n  Element has focusable descendants"
+          },
+          {
+            "target": [
+              ".acf-field-mrn-business-logo-footer-inverted > .acf-input > .acf-image-uploader.has-value[data-preview_size=\"medium\"] > .show-if-value.image-wrap[role=\"button\"]"
+            ],
+            "summary": "Fix any of the following:\n  Element has focusable descendants"
+          }
+        ]
+      }
+    ],
+    "dark-editor": [],
+    "dark-arrange": [],
+    "dark-acf-fields": [
+      {
+        "id": "nested-interactive",
+        "impact": "serious",
+        "nodes": [
+          {
+            "target": [
+              "tr[data-id=\"row-0\"] > td:nth-child(2) > .acf-field-mrn-card-item-rows[data-name=\"card_rows\"][data-key=\"field_mrn_card_item_rows\"] > .acf-input > div[data-button-label=\"Add Card Row\"][data-nonce=\"[redacted]\"][data-min=\"1\"] > .values > div[data-layout=\"cta\"][data-label=\"Page Specific CTA\"][data-id=\"row-0\"] > .acf-fields > .acf-field-mrn-cta-image.-c0[data-key=\"field_mrn_cta_image\"] > .acf-input > .has-value[data-preview_size=\"medium\"][data-mime_types=\"\"] > .image-wrap.show-if-value[role=\"button\"]"
+            ],
+            "summary": "Fix any of the following:\n  Element has focusable descendants"
+          },
+          {
+            "target": [
+              "tr[data-id=\"row-1\"] > td:nth-child(2) > .acf-field-mrn-card-item-rows[data-name=\"card_rows\"][data-key=\"field_mrn_card_item_rows\"] > .acf-input > div[data-button-label=\"Add Card Row\"][data-nonce=\"[redacted]\"][data-min=\"1\"] > .values > div[data-layout=\"cta\"][data-label=\"Page Specific CTA\"][data-id=\"row-0\"] > .acf-fields > .acf-field-mrn-cta-image.-c0[data-key=\"field_mrn_cta_image\"] > .acf-input > .has-value[data-preview_size=\"medium\"][data-mime_types=\"\"] > .image-wrap.show-if-value[role=\"button\"]"
+            ],
+            "summary": "Fix any of the following:\n  Element has focusable descendants"
+          },
+          {
+            "target": [
+              "tr[data-id=\"row-2\"] > td:nth-child(2) > .acf-field-mrn-card-item-rows[data-name=\"card_rows\"][data-key=\"field_mrn_card_item_rows\"] > .acf-input > div[data-button-label=\"Add Card Row\"][data-nonce=\"[redacted]\"][data-min=\"1\"] > .values > div[data-layout=\"cta\"][data-label=\"Page Specific CTA\"][data-id=\"row-0\"] > .acf-fields > .acf-field-mrn-cta-image.-c0[data-key=\"field_mrn_cta_image\"] > .acf-input > .has-value[data-preview_size=\"medium\"][data-mime_types=\"\"] > .image-wrap.show-if-value[role=\"button\"]"
+            ],
+            "summary": "Fix any of the following:\n  Element has focusable descendants"
+          }
+        ]
+      }
+    ]
+  },
+  "errors": [],
+  "paint": [
+    {
+      "name": "dashboard",
+      "mode": "light",
+      "entries": [
+        {
+          "appearance": "light",
+          "canvas": "rgb(243, 245, 248)",
+          "nav": "rgb(237, 241, 246)",
+          "time": 3568
+        }
+      ]
+    },
+    {
+      "name": "pages",
+      "mode": "light",
+      "entries": [
+        {
+          "appearance": "light",
+          "canvas": "rgb(243, 245, 248)",
+          "nav": "rgb(237, 241, 246)",
+          "time": 3072
+        }
+      ]
+    },
+    {
+      "name": "posts",
+      "mode": "light",
+      "entries": [
+        {
+          "appearance": "light",
+          "canvas": "rgb(243, 245, 248)",
+          "nav": "rgb(237, 241, 246)",
+          "time": 2068
+        }
+      ]
+    },
+    {
+      "name": "cpt",
+      "mode": "light",
+      "entries": [
+        {
+          "appearance": "light",
+          "canvas": "rgb(243, 245, 248)",
+          "nav": "rgb(237, 241, 246)",
+          "time": 1700
+        }
+      ]
+    },
+    {
+      "name": "settings",
+      "mode": "light",
+      "entries": [
+        {
+          "appearance": "light",
+          "canvas": "rgb(243, 245, 248)",
+          "nav": "rgb(237, 241, 246)",
+          "time": 2800
+        }
+      ]
+    },
+    {
+      "name": "config",
+      "mode": "light",
+      "entries": [
+        {
+          "appearance": "light",
+          "canvas": "rgb(243, 245, 248)",
+          "nav": "rgb(237, 241, 246)",
+          "time": 3796
+        }
+      ]
+    },
+    {
+      "name": "notifications",
+      "mode": "light",
+      "entries": [
+        {
+          "appearance": "light",
+          "canvas": "rgb(243, 245, 248)",
+          "nav": "rgb(237, 241, 246)",
+          "time": 10288
+        }
+      ]
+    },
+    {
+      "name": "business",
+      "mode": "light",
+      "entries": [
+        {
+          "appearance": "light",
+          "canvas": "rgb(243, 245, 248)",
+          "nav": "rgb(237, 241, 246)",
+          "time": 3832
+        }
+      ]
+    },
+    {
+      "name": "editor",
+      "mode": "light",
+      "entries": [
+        {
+          "appearance": "light",
+          "canvas": "rgb(243, 245, 248)",
+          "nav": "rgb(237, 241, 246)",
+          "time": 4400
+        }
+      ]
+    },
+    {
+      "name": "dashboard",
+      "mode": "dark",
+      "entries": [
+        {
+          "appearance": "dark",
+          "canvas": "rgb(17, 26, 39)",
+          "nav": "rgb(23, 35, 50)",
+          "time": 5848
+        }
+      ]
+    },
+    {
+      "name": "pages",
+      "mode": "dark",
+      "entries": [
+        {
+          "appearance": "dark",
+          "canvas": "rgb(17, 26, 39)",
+          "nav": "rgb(23, 35, 50)",
+          "time": 11076
+        }
+      ]
+    },
+    {
+      "name": "posts",
+      "mode": "dark",
+      "entries": [
+        {
+          "appearance": "dark",
+          "canvas": "rgb(17, 26, 39)",
+          "nav": "rgb(23, 35, 50)",
+          "time": 5732
+        }
+      ]
+    },
+    {
+      "name": "cpt",
+      "mode": "dark",
+      "entries": [
+        {
+          "appearance": "dark",
+          "canvas": "rgb(17, 26, 39)",
+          "nav": "rgb(23, 35, 50)",
+          "time": 4276
+        }
+      ]
+    },
+    {
+      "name": "settings",
+      "mode": "dark",
+      "entries": [
+        {
+          "appearance": "dark",
+          "canvas": "rgb(17, 26, 39)",
+          "nav": "rgb(23, 35, 50)",
+          "time": 9136
+        }
+      ]
+    },
+    {
+      "name": "config",
+      "mode": "dark",
+      "entries": [
+        {
+          "appearance": "dark",
+          "canvas": "rgb(17, 26, 39)",
+          "nav": "rgb(23, 35, 50)",
+          "time": 4064
+        }
+      ]
+    },
+    {
+      "name": "notifications",
+      "mode": "dark",
+      "entries": [
+        {
+          "appearance": "dark",
+          "canvas": "rgb(17, 26, 39)",
+          "nav": "rgb(23, 35, 50)",
+          "time": 3324
+        }
+      ]
+    },
+    {
+      "name": "business",
+      "mode": "dark",
+      "entries": [
+        {
+          "appearance": "dark",
+          "canvas": "rgb(17, 26, 39)",
+          "nav": "rgb(23, 35, 50)",
+          "time": 3828
+        }
+      ]
+    },
+    {
+      "name": "editor",
+      "mode": "dark",
+      "entries": [
+        {
+          "appearance": "dark",
+          "canvas": "rgb(17, 26, 39)",
+          "nav": "rgb(23, 35, 50)",
+          "time": 4152
+        }
+      ]
+    }
+  ],
+  "performance": []
+}

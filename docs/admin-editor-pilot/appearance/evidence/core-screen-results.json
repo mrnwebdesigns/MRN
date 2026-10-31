@@ -1,0 +1,131 @@
+{
+  "screens": {
+    "light-users": {
+      "violations": [],
+      "mobile": {
+        "width": 390,
+        "scroll": 390
+      }
+    },
+    "light-plugins": {
+      "violations": [],
+      "mobile": {
+        "width": 390,
+        "scroll": 390
+      }
+    },
+    "light-categories": {
+      "violations": [],
+      "mobile": {
+        "width": 390,
+        "scroll": 390
+      }
+    },
+    "light-tools": {
+      "violations": [],
+      "mobile": {
+        "width": 390,
+        "scroll": 390
+      }
+    },
+    "light-import": {
+      "violations": [],
+      "mobile": {
+        "width": 390,
+        "scroll": 390
+      }
+    },
+    "light-export": {
+      "violations": [],
+      "mobile": {
+        "width": 390,
+        "scroll": 390
+      }
+    },
+    "light-privacy": {
+      "violations": [],
+      "mobile": {
+        "width": 390,
+        "scroll": 390
+      }
+    },
+    "light-updates": {
+      "violations": [],
+      "mobile": {
+        "width": 390,
+        "scroll": 390
+      }
+    },
+    "light-new-user": {
+      "violations": [],
+      "mobile": {
+        "width": 390,
+        "scroll": 390
+      }
+    },
+    "dark-users": {
+      "violations": [],
+      "mobile": {
+        "width": 390,
+        "scroll": 390
+      }
+    },
+    "dark-plugins": {
+      "violations": [],
+      "mobile": {
+        "width": 390,
+        "scroll": 390
+      }
+    },
+    "dark-categories": {
+      "violations": [],
+      "mobile": {
+        "width": 390,
+        "scroll": 390
+      }
+    },
+    "dark-tools": {
+      "violations": [],
+      "mobile": {
+        "width": 390,
+        "scroll": 390
+      }
+    },
+    "dark-import": {
+      "violations": [],
+      "mobile": {
+        "width": 390,
+        "scroll": 390
+      }
+    },
+    "dark-export": {
+      "violations": [],
+      "mobile": {
+        "width": 390,
+        "scroll": 390
+      }
+    },
+    "dark-privacy": {
+      "violations": [],
+      "mobile": {
+        "width": 390,
+        "scroll": 390
+      }
+    },
+    "dark-updates": {
+      "violations": [],
+      "mobile": {
+        "width": 390,
+        "scroll": 390
+      }
+    },
+    "dark-new-user": {
+      "violations": [],
+      "mobile": {
+        "width": 390,
+        "scroll": 390
+      }
+    }
+  },
+  "errors": []
+}
