@@ -1,0 +1,818 @@
+{
+  "fixture": "admin-editor-pilot",
+  "vm": "mrn-openlitespeed",
+  "protocol": "Serial static CSS requests, 8 per path, Connection: close; no PHP execution or application writes; 1.5 GB memory and 500 FD growth stop limits; idle and 20-second settle controls.",
+  "requests": [
+    {
+      "mode": "vm_loopback",
+      "count": 8,
+      "http_codes": [
+        "200",
+        "200",
+        "200",
+        "200",
+        "200",
+        "200",
+        "200",
+        "200"
+      ],
+      "php_execution": false
+    },
+    {
+      "mode": "host_forward",
+      "count": 8,
+      "http_codes": [
+        "200",
+        "200",
+        "200",
+        "200",
+        "200",
+        "200",
+        "200",
+        "200"
+      ],
+      "php_execution": false
+    },
+    {
+      "mode": "host_tls_proxy",
+      "count": 8,
+      "http_codes": [
+        "200",
+        "200",
+        "200",
+        "200",
+        "200",
+        "200",
+        "200",
+        "200"
+      ],
+      "php_execution": false
+    }
+  ],
+  "snapshots": [
+    {
+      "timestamp_utc": "2026-10-31T17:41:22.297228+00:00",
+      "guestagent_pid": 31927,
+      "fd_total": 48630,
+      "fd_types": {
+        "file_or_device": 1,
+        "socket": 48620,
+        "anon_inode": 9
+      },
+      "process_status": {
+        "Name": "lima-guestagent",
+        "VmPeak": "2038600 kB",
+        "VmHWM": "601800 kB",
+        "VmRSS": "557624 kB",
+        "RssAnon": "540604 kB",
+        "VmSwap": "0 kB",
+        "Threads": "10"
+      },
+      "memory_kib": {
+        "MemTotal": 6052552,
+        "MemAvailable": 4568228,
+        "SwapTotal": 2097148,
+        "SwapFree": 1837808,
+        "SUnreclaim": 211552,
+        "Slab": 378676
+      },
+      "memory_pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=235083010\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=185879608",
+      "service": [
+        "NRestarts=1",
+        "ExecMainStartTimestamp=Fri 2026-10-30 10:03:08 EDT",
+        "MemoryCurrent=769957888",
+        "MemoryPeak=809119744"
+      ],
+      "label": "baseline"
+    },
+    {
+      "timestamp_utc": "2026-10-31T17:41:29.265783+00:00",
+      "guestagent_pid": 31927,
+      "fd_total": 48630,
+      "fd_types": {
+        "file_or_device": 1,
+        "socket": 48620,
+        "anon_inode": 9
+      },
+      "process_status": {
+        "Name": "lima-guestagent",
+        "VmPeak": "2038600 kB",
+        "VmHWM": "601800 kB",
+        "VmRSS": "557624 kB",
+        "RssAnon": "540604 kB",
+        "VmSwap": "0 kB",
+        "Threads": "10"
+      },
+      "memory_kib": {
+        "MemTotal": 6052552,
+        "MemAvailable": 4566464,
+        "SwapTotal": 2097148,
+        "SwapFree": 1838064,
+        "SUnreclaim": 211548,
+        "Slab": 378672
+      },
+      "memory_pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=235083010\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=185879608",
+      "service": [
+        "NRestarts=1",
+        "ExecMainStartTimestamp=Fri 2026-10-30 10:03:08 EDT",
+        "MemoryCurrent=769957888",
+        "MemoryPeak=809119744"
+      ],
+      "label": "idle_control_4s"
+    },
+    {
+      "timestamp_utc": "2026-10-31T17:41:32.816880+00:00",
+      "guestagent_pid": 31927,
+      "fd_total": 48630,
+      "fd_types": {
+        "file_or_device": 1,
+        "socket": 48620,
+        "anon_inode": 9
+      },
+      "process_status": {
+        "Name": "lima-guestagent",
+        "VmPeak": "2038600 kB",
+        "VmHWM": "601800 kB",
+        "VmRSS": "557624 kB",
+        "RssAnon": "540604 kB",
+        "VmSwap": "0 kB",
+        "Threads": "10"
+      },
+      "memory_kib": {
+        "MemTotal": 6052552,
+        "MemAvailable": 4565296,
+        "SwapTotal": 2097148,
+        "SwapFree": 1838064,
+        "SUnreclaim": 211532,
+        "Slab": 378660
+      },
+      "memory_pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=235083010\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=185879608",
+      "service": [
+        "NRestarts=1",
+        "ExecMainStartTimestamp=Fri 2026-10-30 10:03:08 EDT",
+        "MemoryCurrent=769957888",
+        "MemoryPeak=809119744"
+      ],
+      "label": "vm_loopback_8_requests"
+    },
+    {
+      "timestamp_utc": "2026-10-31T17:41:36.099133+00:00",
+      "guestagent_pid": 31927,
+      "fd_total": 48638,
+      "fd_types": {
+        "file_or_device": 1,
+        "socket": 48628,
+        "anon_inode": 9
+      },
+      "process_status": {
+        "Name": "lima-guestagent",
+        "VmPeak": "2038600 kB",
+        "VmHWM": "601800 kB",
+        "VmRSS": "557628 kB",
+        "RssAnon": "540608 kB",
+        "VmSwap": "0 kB",
+        "Threads": "10"
+      },
+      "memory_kib": {
+        "MemTotal": 6052552,
+        "MemAvailable": 4557564,
+        "SwapTotal": 2097148,
+        "SwapFree": 1838064,
+        "SUnreclaim": 211536,
+        "Slab": 378664
+      },
+      "memory_pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=235083010\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=185879608",
+      "service": [
+        "NRestarts=1",
+        "ExecMainStartTimestamp=Fri 2026-10-30 10:03:08 EDT",
+        "MemoryCurrent=769990656",
+        "MemoryPeak=809119744"
+      ],
+      "label": "host_forward_8_requests"
+    },
+    {
+      "timestamp_utc": "2026-10-31T17:41:45.126062+00:00",
+      "guestagent_pid": 31927,
+      "fd_total": 48646,
+      "fd_types": {
+        "file_or_device": 1,
+        "socket": 48636,
+        "anon_inode": 9
+      },
+      "process_status": {
+        "Name": "lima-guestagent",
+        "VmPeak": "2038600 kB",
+        "VmHWM": "601800 kB",
+        "VmRSS": "557632 kB",
+        "RssAnon": "540612 kB",
+        "VmSwap": "0 kB",
+        "Threads": "10"
+      },
+      "memory_kib": {
+        "MemTotal": 6052552,
+        "MemAvailable": 4557736,
+        "SwapTotal": 2097148,
+        "SwapFree": 1838064,
+        "SUnreclaim": 211500,
+        "Slab": 378628
+      },
+      "memory_pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=235083010\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=185879608",
+      "service": [
+        "NRestarts=1",
+        "ExecMainStartTimestamp=Fri 2026-10-30 10:03:08 EDT",
+        "MemoryCurrent=770027520",
+        "MemoryPeak=809119744"
+      ],
+      "label": "host_tls_proxy_8_requests"
+    },
+    {
+      "timestamp_utc": "2026-10-31T17:42:21.762739+00:00",
+      "guestagent_pid": 31927,
+      "fd_total": 48647,
+      "fd_types": {
+        "file_or_device": 1,
+        "socket": 48637,
+        "anon_inode": 9
+      },
+      "process_status": {
+        "Name": "lima-guestagent",
+        "VmPeak": "2038600 kB",
+        "VmHWM": "601800 kB",
+        "VmRSS": "557632 kB",
+        "RssAnon": "540612 kB",
+        "VmSwap": "0 kB",
+        "Threads": "10"
+      },
+      "memory_kib": {
+        "MemTotal": 6052552,
+        "MemAvailable": 4564428,
+        "SwapTotal": 2097148,
+        "SwapFree": 1838064,
+        "SUnreclaim": 211540,
+        "Slab": 378668
+      },
+      "memory_pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=235083010\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=185879608",
+      "service": [
+        "NRestarts=1",
+        "ExecMainStartTimestamp=Fri 2026-10-30 10:03:08 EDT",
+        "MemoryCurrent=770031616",
+        "MemoryPeak=809119744"
+      ],
+      "label": "settled_20s"
+    }
+  ],
+  "kernel_page_size_bytes": 4096,
+  "kernel_first_event_tasks": [
+    {
+      "pid": 288,
+      "uid": 0,
+      "tgid": 288,
+      "total_vm_pages": 13037,
+      "rss_pages": 753,
+      "rss_anon_pages": 96,
+      "rss_file_pages": 657,
+      "rss_shmem_pages": 0,
+      "pgtables_bytes": 118784,
+      "swap_pages": 608,
+      "oom_score_adj": -250,
+      "name": "systemd-journal"
+    },
+    {
+      "pid": 339,
+      "uid": 0,
+      "tgid": 339,
+      "total_vm_pages": 72536,
+      "rss_pages": 6496,
+      "rss_anon_pages": 4672,
+      "rss_file_pages": 1824,
+      "rss_shmem_pages": 0,
+      "pgtables_bytes": 118784,
+      "swap_pages": 0,
+      "oom_score_adj": -1000,
+      "name": "multipathd"
+    },
+    {
+      "pid": 347,
+      "uid": 0,
+      "tgid": 347,
+      "total_vm_pages": 6467,
+      "rss_pages": 544,
+      "rss_anon_pages": 0,
+      "rss_file_pages": 544,
+      "rss_shmem_pages": 0,
+      "pgtables_bytes": 81920,
+      "swap_pages": 736,
+      "oom_score_adj": -1000,
+      "name": "systemd-udevd"
+    },
+    {
+      "pid": 535,
+      "uid": 991,
+      "tgid": 535,
+      "total_vm_pages": 5357,
+      "rss_pages": 576,
+      "rss_anon_pages": 32,
+      "rss_file_pages": 544,
+      "rss_shmem_pages": 0,
+      "pgtables_bytes": 86016,
+      "swap_pages": 512,
+      "oom_score_adj": 0,
+      "name": "systemd-resolve"
+    },
+    {
+      "pid": 540,
+      "uid": 996,
+      "tgid": 540,
+      "total_vm_pages": 22706,
+      "rss_pages": 608,
+      "rss_anon_pages": 32,
+      "rss_file_pages": 576,
+      "rss_shmem_pages": 0,
+      "pgtables_bytes": 86016,
+      "swap_pages": 224,
+      "oom_score_adj": 0,
+      "name": "systemd-timesyn"
+    },
+    {
+      "pid": 601,
+      "uid": 998,
+      "tgid": 601,
+      "total_vm_pages": 4693,
+      "rss_pages": 576,
+      "rss_anon_pages": 32,
+      "rss_file_pages": 544,
+      "rss_shmem_pages": 0,
+      "pgtables_bytes": 86016,
+      "swap_pages": 256,
+      "oom_score_adj": 0,
+      "name": "systemd-network"
+    },
+    {
+      "pid": 658,
+      "uid": 0,
+      "tgid": 658,
+      "total_vm_pages": 1787,
+      "rss_pages": 480,
+      "rss_anon_pages": 32,
+      "rss_file_pages": 448,
+      "rss_shmem_pages": 0,
+      "pgtables_bytes": 57344,
+      "swap_pages": 32,
+      "oom_score_adj": 0,
+      "name": "cron"
+    },
+    {
+      "pid": 659,
+      "uid": 101,
+      "tgid": 659,
+      "total_vm_pages": 2500,
+      "rss_pages": 832,
+      "rss_anon_pages": 96,
+      "rss_file_pages": 736,
+      "rss_shmem_pages": 0,
+      "pgtables_bytes": 61440,
+      "swap_pages": 160,
+      "oom_score_adj": -900,
+      "name": "dbus-daemon"
+    },
+    {
+      "pid": 663,
+      "uid": 0,
+      "tgid": 663,
+      "total_vm_pages": 1474551,
+      "rss_pages": 741288,
+      "rss_anon_pages": 740776,
+      "rss_file_pages": 512,
+      "rss_shmem_pages": 0,
+      "pgtables_bytes": 9396224,
+      "swap_pages": 375378,
+      "oom_score_adj": -500,
+      "name": "lima-guestagent"
+    },
+    {
+      "pid": 668,
+      "uid": 989,
+      "tgid": 668,
+      "total_vm_pages": 77267,
+      "rss_pages": 704,
+      "rss_anon_pages": 32,
+      "rss_file_pages": 672,
+      "rss_shmem_pages": 0,
+      "pgtables_bytes": 102400,
+      "swap_pages": 192,
+      "oom_score_adj": 0,
+      "name": "polkitd"
+    },
+    {
+      "pid": 697,
+      "uid": 0,
+      "tgid": 697,
+      "total_vm_pages": 4501,
+      "rss_pages": 640,
+      "rss_anon_pages": 32,
+      "rss_file_pages": 608,
+      "rss_shmem_pages": 0,
+      "pgtables_bytes": 77824,
+      "swap_pages": 256,
+      "oom_score_adj": 0,
+      "name": "systemd-logind"
+    },
+    {
+      "pid": 703,
+      "uid": 0,
+      "tgid": 703,
+      "total_vm_pages": 118143,
+      "rss_pages": 736,
+      "rss_anon_pages": 32,
+      "rss_file_pages": 704,
+      "rss_shmem_pages": 0,
+      "pgtables_bytes": 155648,
+      "swap_pages": 512,
+      "oom_score_adj": 0,
+      "name": "udisksd"
+    },
+    {
+      "pid": 714,
+      "uid": 102,
+      "tgid": 714,
+      "total_vm_pages": 55703,
+      "rss_pages": 704,
+      "rss_anon_pages": 64,
+      "rss_file_pages": 640,
+      "rss_shmem_pages": 0,
+      "pgtables_bytes": 81920,
+      "swap_pages": 352,
+      "oom_score_adj": 0,
+      "name": "rsyslogd"
+    },
+    {
+      "pid": 740,
+      "uid": 0,
+      "tgid": 740,
+      "total_vm_pages": 1430,
+      "rss_pages": 384,
+      "rss_anon_pages": 0,
+      "rss_file_pages": 384,
+      "rss_shmem_pages": 0,
+      "pgtables_bytes": 53248,
+      "swap_pages": 32,
+      "oom_score_adj": 0,
+      "name": "agetty"
+    },
+    {
+      "pid": 771,
+      "uid": 0,
+      "tgid": 771,
+      "total_vm_pages": 99722,
+      "rss_pages": 704,
+      "rss_anon_pages": 32,
+      "rss_file_pages": 672,
+      "rss_shmem_pages": 0,
+      "pgtables_bytes": 159744,
+      "swap_pages": 512,
+      "oom_score_adj": 0,
+      "name": "ModemManager"
+    },
+    {
+      "pid": 772,
+      "uid": 0,
+      "tgid": 772,
+      "total_vm_pages": 1419,
+      "rss_pages": 384,
+      "rss_anon_pages": 0,
+      "rss_file_pages": 384,
+      "rss_shmem_pages": 0,
+      "pgtables_bytes": 49152,
+      "swap_pages": 0,
+      "oom_score_adj": 0,
+      "name": "agetty"
+    },
+    {
+      "pid": 774,
+      "uid": 0,
+      "tgid": 774,
+      "total_vm_pages": 27719,
+      "rss_pages": 704,
+      "rss_anon_pages": 32,
+      "rss_file_pages": 672,
+      "rss_shmem_pages": 0,
+      "pgtables_bytes": 122880,
+      "swap_pages": 2304,
+      "oom_score_adj": 0,
+      "name": "unattended-upgr"
+    },
+    {
+      "pid": 781,
+      "uid": 501,
+      "tgid": 781,
+      "total_vm_pages": 5018,
+      "rss_pages": 640,
+      "rss_anon_pages": 96,
+      "rss_file_pages": 544,
+      "rss_shmem_pages": 0,
+      "pgtables_bytes": 86016,
+      "swap_pages": 352,
+      "oom_score_adj": 100,
+      "name": "systemd"
+    },
+    {
+      "pid": 783,
+      "uid": 501,
+      "tgid": 783,
+      "total_vm_pages": 5564,
+      "rss_pages": 334,
+      "rss_anon_pages": 46,
+      "rss_file_pages": 288,
+      "rss_shmem_pages": 0,
+      "pgtables_bytes": 81920,
+      "swap_pages": 320,
+      "oom_score_adj": 100,
+      "name": "(sd-pam)"
+    },
+    {
+      "pid": 866,
+      "uid": 0,
+      "tgid": 866,
+      "total_vm_pages": 3028,
+      "rss_pages": 512,
+      "rss_anon_pages": 32,
+      "rss_file_pages": 480,
+      "rss_shmem_pages": 0,
+      "pgtables_bytes": 61440,
+      "swap_pages": 224,
+      "oom_score_adj": -1000,
+      "name": "sshd"
+    },
+    {
+      "pid": 2162,
+      "uid": 0,
+      "tgid": 2162,
+      "total_vm_pages": 4089,
+      "rss_pages": 544,
+      "rss_anon_pages": 32,
+      "rss_file_pages": 512,
+      "rss_shmem_pages": 0,
+      "pgtables_bytes": 81920,
+      "swap_pages": 352,
+      "oom_score_adj": 0,
+      "name": "sshd"
+    },
+    {
+      "pid": 2209,
+      "uid": 501,
+      "tgid": 2209,
+      "total_vm_pages": 4740,
+      "rss_pages": 449,
+      "rss_anon_pages": 65,
+      "rss_file_pages": 384,
+      "rss_shmem_pages": 0,
+      "pgtables_bytes": 90112,
+      "swap_pages": 992,
+      "oom_score_adj": 0,
+      "name": "sshd"
+    },
+    {
+      "pid": 4098,
+      "uid": 110,
+      "tgid": 4098,
+      "total_vm_pages": 17028,
+      "rss_pages": 736,
+      "rss_anon_pages": 96,
+      "rss_file_pages": 640,
+      "rss_shmem_pages": 0,
+      "pgtables_bytes": 114688,
+      "swap_pages": 576,
+      "oom_score_adj": 0,
+      "name": "redis-server"
+    },
+    {
+      "pid": 4187,
+      "uid": 109,
+      "tgid": 4187,
+      "total_vm_pages": 392905,
+      "rss_pages": 21559,
+      "rss_anon_pages": 20759,
+      "rss_file_pages": 800,
+      "rss_shmem_pages": 0,
+      "pgtables_bytes": 1056768,
+      "swap_pages": 65184,
+      "oom_score_adj": 0,
+      "name": "mariadbd"
+    },
+    {
+      "pid": 14688,
+      "uid": 0,
+      "tgid": 14688,
+      "total_vm_pages": 168419,
+      "rss_pages": 798,
+      "rss_anon_pages": 71,
+      "rss_file_pages": 727,
+      "rss_shmem_pages": 0,
+      "pgtables_bytes": 634880,
+      "swap_pages": 1280,
+      "oom_score_adj": 0,
+      "name": "fwupd"
+    },
+    {
+      "pid": 29053,
+      "uid": 65534,
+      "tgid": 29053,
+      "total_vm_pages": 164422,
+      "rss_pages": 1318,
+      "rss_anon_pages": 166,
+      "rss_file_pages": 576,
+      "rss_shmem_pages": 576,
+      "pgtables_bytes": 282624,
+      "swap_pages": 1952,
+      "oom_score_adj": 0,
+      "name": "mrn-lsphp84"
+    },
+    {
+      "pid": 29250,
+      "uid": 0,
+      "tgid": 29250,
+      "total_vm_pages": 5925,
+      "rss_pages": 659,
+      "rss_anon_pages": 179,
+      "rss_file_pages": 480,
+      "rss_shmem_pages": 0,
+      "pgtables_bytes": 86016,
+      "swap_pages": 480,
+      "oom_score_adj": 0,
+      "name": "litespeed"
+    },
+    {
+      "pid": 29251,
+      "uid": 0,
+      "tgid": 29251,
+      "total_vm_pages": 3459,
+      "rss_pages": 318,
+      "rss_anon_pages": 62,
+      "rss_file_pages": 256,
+      "rss_shmem_pages": 0,
+      "pgtables_bytes": 61440,
+      "swap_pages": 256,
+      "oom_score_adj": 0,
+      "name": "litespeed"
+    },
+    {
+      "pid": 29260,
+      "uid": 65534,
+      "tgid": 29260,
+      "total_vm_pages": 10144,
+      "rss_pages": 1292,
+      "rss_anon_pages": 908,
+      "rss_file_pages": 384,
+      "rss_shmem_pages": 0,
+      "pgtables_bytes": 114688,
+      "swap_pages": 2720,
+      "oom_score_adj": 0,
+      "name": "litespeed"
+    },
+    {
+      "pid": 29261,
+      "uid": 65534,
+      "tgid": 29261,
+      "total_vm_pages": 9873,
+      "rss_pages": 1180,
+      "rss_anon_pages": 860,
+      "rss_file_pages": 320,
+      "rss_shmem_pages": 0,
+      "pgtables_bytes": 106496,
+      "swap_pages": 2016,
+      "oom_score_adj": 0,
+      "name": "litespeed"
+    },
+    {
+      "pid": 31682,
+      "uid": 65534,
+      "tgid": 31682,
+      "total_vm_pages": 196858,
+      "rss_pages": 32116,
+      "rss_anon_pages": 8500,
+      "rss_file_pages": 608,
+      "rss_shmem_pages": 23008,
+      "pgtables_bytes": 1044480,
+      "swap_pages": 2863,
+      "oom_score_adj": 0,
+      "name": "mrn-lsphp84"
+    },
+    {
+      "pid": 31721,
+      "uid": 65534,
+      "tgid": 31721,
+      "total_vm_pages": 189626,
+      "rss_pages": 41158,
+      "rss_anon_pages": 19910,
+      "rss_file_pages": 544,
+      "rss_shmem_pages": 20704,
+      "pgtables_bytes": 1130496,
+      "swap_pages": 2342,
+      "oom_score_adj": 0,
+      "name": "mrn-lsphp84"
+    },
+    {
+      "pid": 31863,
+      "uid": 65534,
+      "tgid": 31863,
+      "total_vm_pages": 196115,
+      "rss_pages": 45309,
+      "rss_anon_pages": 26685,
+      "rss_file_pages": 576,
+      "rss_shmem_pages": 18048,
+      "pgtables_bytes": 1175552,
+      "swap_pages": 2168,
+      "oom_score_adj": 0,
+      "name": "mrn-lsphp84"
+    },
+    {
+      "pid": 31884,
+      "uid": 65534,
+      "tgid": 31884,
+      "total_vm_pages": 178699,
+      "rss_pages": 26427,
+      "rss_anon_pages": 9083,
+      "rss_file_pages": 544,
+      "rss_shmem_pages": 16800,
+      "pgtables_bytes": 921600,
+      "swap_pages": 2303,
+      "oom_score_adj": 0,
+      "name": "mrn-lsphp84"
+    },
+    {
+      "pid": 31895,
+      "uid": 65534,
+      "tgid": 31895,
+      "total_vm_pages": 175452,
+      "rss_pages": 17060,
+      "rss_anon_pages": 1860,
+      "rss_file_pages": 544,
+      "rss_shmem_pages": 14656,
+      "pgtables_bytes": 856064,
+      "swap_pages": 6804,
+      "oom_score_adj": 0,
+      "name": "mrn-lsphp84"
+    },
+    {
+      "pid": 31906,
+      "uid": 65534,
+      "tgid": 31906,
+      "total_vm_pages": 175623,
+      "rss_pages": 19716,
+      "rss_anon_pages": 5828,
+      "rss_file_pages": 544,
+      "rss_shmem_pages": 13344,
+      "pgtables_bytes": 602112,
+      "swap_pages": 2756,
+      "oom_score_adj": 0,
+      "name": "mrn-lsphp84"
+    },
+    {
+      "pid": 31907,
+      "uid": 65534,
+      "tgid": 31907,
+      "total_vm_pages": 167621,
+      "rss_pages": 16653,
+      "rss_anon_pages": 3085,
+      "rss_file_pages": 352,
+      "rss_shmem_pages": 13216,
+      "pgtables_bytes": 491520,
+      "swap_pages": 2308,
+      "oom_score_adj": 0,
+      "name": "mrn-lsphp84"
+    },
+    {
+      "pid": 31916,
+      "uid": 501,
+      "tgid": 31916,
+      "total_vm_pages": 71257,
+      "rss_pages": 43737,
+      "rss_anon_pages": 43161,
+      "rss_file_pages": 576,
+      "rss_shmem_pages": 0,
+      "pgtables_bytes": 548864,
+      "swap_pages": 0,
+      "oom_score_adj": 0,
+      "name": "php"
+    }
+  ],
+  "kernel_raw_path": "ignored outputs/admin-appearance/oom-kernel-20261030.txt",
+  "kernel_first_event_memory": {
+    "ram_pages": 1572864,
+    "free_swap_kib": 244,
+    "total_swap_kib": 2097148,
+    "slab_unreclaimable_pages": 325088,
+    "cli_php_pid": 31916
+  },
+  "sources": [
+    {
+      "url": "https://github.com/lima-vm/lima/pull/5216",
+      "finding": "Guest forwarding socket FD/goroutine teardown leak; fixed upstream."
+    },
+    {
+      "url": "https://github.com/lima-vm/lima/releases/tag/v2.2.0",
+      "finding": "Upstream 2.2.0 contains PR 5216; installed host and guest are 2.1.2."
+    }
+  ],
+  "limitation": "No historical allocation profile exists. Static-forward reproduction strongly matches the upstream defect, but does not quantify every allocator at the historical OOM. One additional FD appeared during the final idle settle and is not attributed to the controlled requests. No runtime upgrade/restart/tuning applied."
+}

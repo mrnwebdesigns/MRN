@@ -61,6 +61,8 @@ Retained memory is effectively unchanged in this bounded sample. CPU is **not qu
 
 Do not release or promote this candidate until controlled performance measurements resolve the CPU concern. No claim is made that the prior Local Hub VM/guest-agent OOM issue was repaired by a browser appearance change. The fixture was healthy during the final checks, but the earlier infrastructure stability issue remains a separate blocker to release qualification.
 
+**31 October follow-up:** all eight installed appearance files still match source, and five representative authenticated screens load successfully. A bounded static-file comparison now reproduces guest-agent socket retention on forwarded requests, independently of WordPress. It strongly matches the installed Lima version's upstream forwarding defect. No runtime repair or upgrade was applied; see the [separate OOM investigation](LOCAL-HUB-OOM.md). Both runtime stability and editor CPU qualification remain open release blockers.
+
 ### Scope of MRN QA
 
 The staged commit gate uses the installed Bash 5 runtime after a stalled legacy-shell run. It passes with an advisory missing WP-CLI stub in its isolated temporary snapshot; full component PHPStan passes. Semgrep is skipped because this component has no configured Semgrep rules.

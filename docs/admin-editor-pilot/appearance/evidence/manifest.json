@@ -395,6 +395,11 @@
     "sha256": "c2f56b14fe220c3942de5d2f3b3c50d184196605666f338a4e6b472f16271e82"
   },
   {
+    "file": "oom-investigation-20261031.json",
+    "bytes": 20496,
+    "sha256": "fce0e96018b15923f009781f8da4b038aa54d6b0aab63f5516d631b3ecc83f74"
+  },
+  {
     "file": "overlay-results.json",
     "bytes": 483,
     "sha256": "1d3f78905c33946fedb3e0fe85f67cac425b8577394c711685a3427456c0d628"
@@ -413,6 +418,11 @@
     "file": "qa-admin-final.md",
     "bytes": 8175,
     "sha256": "3a1e36a8c6f366545e06239d19eb3446c11e96a5979318e72f542a15050555d4"
+  },
+  {
+    "file": "review-refresh-20261031.json",
+    "bytes": 3828,
+    "sha256": "ec5a50db603d655f40afa0d412a32c0876b4778a0ea4b21b49b99f71fcea89dc"
   },
   {
     "file": "save-reload-readback.json",
