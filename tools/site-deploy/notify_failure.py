@@ -40,12 +40,17 @@ def context(event, env):
     if not re.fullmatch(r'mrnwebdesigns/[A-Za-z0-9_.-]+', repository):
         raise ValueError('Expected an MRN repository')
     run = event.get('workflow_run', {})
+    # GitHub exposes run-name as name for first-time enrollment runs. The
+    # registered workflow is still Deploy site at the exact trusted path.
+    name = run.get('name', '')
+    qualification = (name == run.get('display_title')
+                     and re.fullmatch(r'MRN Dev qualification [0-9a-f]{24}', name))
     if (env.get('GITHUB_EVENT_NAME') != 'workflow_run'
             or event.get('action') != 'completed'
             or event.get('repository', {}).get('full_name') != repository
             or run.get('repository', {}).get('full_name') != repository
             or run.get('head_repository', {}).get('full_name') != repository
-            or run.get('name') != 'Deploy site'
+            or not (name == 'Deploy site' or qualification)
             or run.get('path', '').split('@', 1)[0] != '.github/workflows/site-deploy.yml'
             or run.get('status') != 'completed'):
         raise ValueError('Not a completed same-repository deployment workflow')
