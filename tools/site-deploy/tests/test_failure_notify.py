@@ -86,6 +86,25 @@ class FailureEmail(unittest.TestCase):
             self.assertEqual({'status': 'not-required'}, notify.run(data, self.env, self.receipt, api))
             self.assertEqual([], api.requests)
 
+    def test_first_dev_qualification_custom_title_sends_failure_email(self):
+        data = event()
+        data['workflow_run'].update(name='MRN Dev qualification ' + 'a' * 24,
+                                    display_title='MRN Dev qualification ' + 'a' * 24)
+        api = API()
+        self.assertEqual('provider-accepted', notify.run(data, self.env, self.receipt, api)['status'])
+        self.assertEqual(1, len(api.posts()))
+
+    def test_qualification_title_cannot_bypass_workflow_or_binding_checks(self):
+        for name, title, path in [
+                ('MRN Dev qualification bad', 'MRN Dev qualification bad', '.github/workflows/site-deploy.yml'),
+                ('MRN Dev qualification ' + 'a' * 24, 'different title', '.github/workflows/site-deploy.yml'),
+                ('MRN Dev qualification ' + 'a' * 24, 'MRN Dev qualification ' + 'a' * 24, '.github/workflows/other.yml')]:
+            data = event();data['workflow_run'].update(name=name, display_title=title, path=path)
+            api = API()
+            with self.subTest(name=name, title=title, path=path), self.assertRaises(ValueError):
+                notify.run(data, self.env, self.receipt, api)
+            self.assertEqual([], api.requests)
+
     def test_wrong_workflow_repository_fork_or_event_cannot_use_mail_credential(self):
         for path, value in [('name', 'other'), ('path', '.github/workflows/other.yml'),
                             ('repository', {'full_name': 'other/site'}),
