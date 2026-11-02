@@ -1,0 +1,89 @@
+{
+  "batch": "002-editor-sticky-overlap",
+  "receivedDate": "2026-11-02",
+  "candidate": "c1f249f1",
+  "annotationId": "UX-006",
+  "cluster": "UX-C04",
+  "pageUrl": "https://admin-editor-pilot.localhost/wp-admin/post.php?post=2523&action=edit",
+  "comment": "On scroll the universal sticky bar covers the menu under it.",
+  "reportedState": "On scroll",
+  "observedAppearance": "Light",
+  "darkEvidence": "not yet verified",
+  "priority": "P1 confirmed interaction blocker",
+  "status": "Collected; awaiting implementation approval",
+  "approved": false,
+  "implemented": false,
+  "sourceScreenshot": "002-editor-sticky-overlap.png",
+  "liveReadOnlyVerification": {
+    "clientViewport": {
+      "width": 1472,
+      "height": 1909
+    },
+    "scrollTop": 0,
+    "scrollPositionChangedByAgent": false,
+    "storedEditorOffset": "103px",
+    "workspaceHeader": {
+      "left": 0,
+      "right": 1472,
+      "top": 103,
+      "bottom": 157,
+      "height": 54,
+      "position": "sticky",
+      "cssTop": "103px",
+      "zIndex": "9900"
+    },
+    "universalStickyBar": {
+      "left": 0,
+      "right": 1472,
+      "top": 86,
+      "bottom": 156.9921875,
+      "height": 70.9921875,
+      "position": "sticky",
+      "cssTop": "32px",
+      "zIndex": "99990"
+    },
+    "verticalOverlapPixels": 53.9921875,
+    "controls": [
+      {
+        "label": "Site menu",
+        "top": 114.25,
+        "height": 30.5,
+        "coveredByToolbar": true,
+        "hitId": "mrn-usb-permalink"
+      },
+      {
+        "label": "← Back to list",
+        "top": 120.3984375,
+        "height": 18.203125,
+        "coveredByToolbar": true,
+        "hitId": "mrn-usb-permalink"
+      },
+      {
+        "label": "Content",
+        "top": 103,
+        "height": 53,
+        "coveredByToolbar": true,
+        "hitId": "mrn-usb-publish-view"
+      },
+      {
+        "label": "Page settings",
+        "top": 103,
+        "height": 53,
+        "coveredByToolbar": true,
+        "hitId": "mrn-usb-publish"
+      }
+    ],
+    "verificationLimit": "Current-state geometry and control-center hit tests only. No scroll movement, click, publishing, save, preference or source change was performed. The reported scroll transition and Dark/mobile variants remain to be tested."
+  },
+  "sourceLead": {
+    "file": "mu-plugins/mrn-editor-lockdown/assets/section-navigator.js",
+    "function": "updateChromeOffset",
+    "observation": "Offset derives from bar height plus computed CSS top (approximately 71+32=103), while the observed bar bottom is approximately 157. The existing workspace CSS applies that offset to the sticky header.",
+    "scope": "Editor Lockdown chrome offset plus Admin UI workspace CSS and existing Universal Sticky Bar positioning; preserve native ownership and form tree."
+  },
+  "sourceScreenshotSha256": "20facd77111e0d6885c917344097d86e28fba525e43bfcf78b8b12a2f940138a",
+  "sourceScreenshotPixels": {
+    "width": 1876,
+    "height": 268
+  }
+}

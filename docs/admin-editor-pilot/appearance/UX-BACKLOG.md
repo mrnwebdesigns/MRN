@@ -1,11 +1,12 @@
 # Prioritized follow-up
 
-**Annotation phase open — 2 November 2026.** The [paired review](http://127.0.0.1:8764/review/) and [collection procedure](review/REVIEW.md) preserve the current candidate. The [annotation log](review/ANNOTATIONS.md) now contains five submitted Light Dashboard annotations grouped into three clusters, with zero approved clusters and zero implemented refinements. Original wording and mode-specific evidence are retained. Implementation waits for approval of a bounded cluster batch.
+**Annotation phase open — 2 November 2026.** The [paired review](http://127.0.0.1:8764/review/) and [collection procedure](review/REVIEW.md) preserve the current candidate. The [annotation log](review/ANNOTATIONS.md) contains six submitted annotations across Dashboard and Editor Workspace, grouped into four clusters, with zero approved clusters and zero implemented refinements. Original wording and mode-specific evidence are retained. Implementation waits for approval of a bounded cluster batch.
 
 ## Human refinement queue — awaiting approval
 
 | Rank within UX queue | Cluster / references | Bounded direction | Status |
 | --- | --- | --- | --- |
+| 0 — P1 blocker | UX-C04 / UX-006 | Correct the Universal Sticky Bar/workspace-header offsets and positioning so the navigation row is visible and receives its own clicks. The current Light-state overlap intercepts navigation with permalink/publishing controls. | Confirmed by geometry and hit tests; pause covered-row interaction tests; no implementation approval. Verify scroll transitions, both themes and native save/publish behavior after correction. |
 | 1 — P2 | UX-C02 / UX-003, UX-004 | Denser navigation, clearer AME section headings and a consistent Dashboard/current-row treatment. | Light observed; Dark and other states pending; no implementation approval. |
 | 2 — P2 | UX-C01 / UX-001, UX-005 | Improve SEOPress toolbar and Relevanssi sidebar icon visibility through the existing semantic palette and narrow renderer-specific treatment. | Light observed; Dark and measured contrast pending; no implementation approval. |
 | 3 — P2 | UX-C03 / UX-002 | Integrate native Screen Options/Help visually into the page-header utility area. | Recommendation only; native behavior retained; no implementation approval. |
