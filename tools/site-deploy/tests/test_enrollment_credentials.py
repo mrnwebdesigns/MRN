@@ -110,7 +110,7 @@ assert broker.op_json(['item', 'create', '--category=SSH Key'], os.environ) == {
     def config(self, directory, **updates):
         value = {'account': broker.ACCOUNT, 'service_account_id': 'service', 'vault_id': VAULT,
                  'references': {name: 'op://' + VAULT + '/item/' + name for name in
-                                ('github_token', 'qa_engine_token', 'deploy_private_key')}}
+                                ('github_token', 'qa_engine_token', 'deployment_notification_token', 'deploy_private_key')}}
         value.update(updates)
         path = Path(directory) / 'config.json'; path.write_text(json.dumps(value)); path.chmod(0o600)
         return path
@@ -129,7 +129,7 @@ assert broker.op_json(['item', 'create', '--category=SSH Key'], os.environ) == {
             path = self.config(temp, service_token_credential=str(encrypted))
             responses = [SimpleNamespace(returncode=0, stdout='ops_fixture'),
                          SimpleNamespace(returncode=0, stdout=json.dumps({'url': 'https://' + broker.ACCOUNT, 'user_uuid': 'service'})),
-                         *[SimpleNamespace(returncode=0, stdout='secret') for _ in range(3)]]
+                         *[SimpleNamespace(returncode=0, stdout='secret') for _ in range(4)]]
             with patch.dict(os.environ, {'PATH': '/usr/bin'}, clear=True), patch.object(broker.subprocess, 'run', side_effect=responses) as call:
                 result = broker.resolve(path, REQUEST)
                 self.assertEqual('secret', result['github_token'])

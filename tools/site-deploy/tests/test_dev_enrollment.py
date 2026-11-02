@@ -65,7 +65,8 @@ class EnrollmentFlow(unittest.TestCase):
         self.config={'tooling_ref':SHA,'ssh_host':'ssh.example.invalid','ssh_port':22,
                      'github_owner_type':'User','team_slugs':[],'collaborators':['mrn-developer-collab']}
         self.e=enrollment.Enrollment(self.config,self.root,self.state,self.gh,
-            {'deploy_private_key':'private-fixture','known_hosts':'hostkey-fixture','qa_engine_token':'qa-fixture'})
+            {'deploy_private_key':'private-fixture','known_hosts':'hostkey-fixture','qa_engine_token':'qa-fixture',
+             'deployment_notification_token':'notification-fixture'})
         self.patches=[patch.object(enrollment,'snapshot',return_value=({'public/wp-content/themes/example-child/style.css':b'/*\nVersion: 1.1.0\n*/'},'d'*64)),
                       patch.object(enrollment,'source_qa'),patch.object(enrollment,'runtime_prepare',return_value={'valid':True}),
                       patch.object(enrollment,'timestamp',return_value='2026-10-06T10:00:05Z')]
@@ -108,6 +109,9 @@ class EnrollmentFlow(unittest.TestCase):
         files=json.loads((self.root/'source.json').read_text())
         wrapper=base64.b64decode(files['.github/workflows/site-deploy.yml']).decode()
         self.assertIn('live_enabled: false',wrapper)
+        observer=base64.b64decode(files['.github/workflows/site-deploy-failure.yml']).decode()
+        self.assertIn('site-deploy-notify.yml@'+SHA,observer)
+        self.assertIn('MRN_DEPLOY_NOTIFY_POSTMARK_TOKEN',observer)
         import yaml
         permissions = yaml.load(wrapper, Loader=yaml.BaseLoader)['permissions']
         workflow = yaml.load((enrollment.TOOLS.parents[1]/'.github/workflows/site-deploy.yml').read_text(), Loader=yaml.BaseLoader)
@@ -370,7 +374,7 @@ foreach (token_get_all(file_get_contents($argv[1])) as $token) {
         with tempfile.TemporaryDirectory() as temp:
             config=Path(temp)/'credentials.json'
             config.write_text(json.dumps({'account':enrollment.ACCOUNT,'service_account_id':'mrn-service',
-                'references':{k:'op://Production Hub/fixture/'+k for k in ('github_token','qa_engine_token','deploy_private_key')}}))
+                'references':{k:'op://Production Hub/fixture/'+k for k in ('github_token','qa_engine_token','deployment_notification_token','deploy_private_key')}}))
             request={'account':enrollment.ACCOUNT,'domain':'example.mrndev.io','site_user':'example'}
             with patch.dict(os.environ,{'OP_SERVICE_ACCOUNT_TOKEN':'fixture','OP_CONNECT_TOKEN':'wrong-route'}),patch.object(enrollment_credentials.subprocess,'run') as run:
                 run.return_value=SimpleNamespace(returncode=0,stdout=json.dumps({'url':'https://thehofmeyers.1password.com','user_uuid':'mrn-service'}))

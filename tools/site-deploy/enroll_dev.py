@@ -165,7 +165,7 @@ def credentials(config, site):
     result = command(config['credential_command'], input=json.dumps({'account': ACCOUNT, 'domain': site['domain'],
                       'site_user': site['user'], 'repository': site['repository']}), text=True)
     data = json.loads(result)
-    if data.get('account') != ACCOUNT or any(not data.get(k) for k in ('github_token', 'qa_engine_token', 'deploy_private_key')):
+    if data.get('account') != ACCOUNT or any(not data.get(k) for k in ('github_token', 'qa_engine_token', 'deploy_private_key', 'deployment_notification_token')):
         raise ValueError('MRN business credential lookup is incomplete')
     # Canonical operator-verified host keys, never ssh-keyscan trust-on-first-use.
     data['known_hosts'] = private_path(config['known_hosts_file']).read_text()
@@ -276,6 +276,7 @@ def source_files(site, config, files):
     wrapper = wrapper.replace('SOURCE_PATH', site['source_path']).replace('THEME_SLUG', site['slug']).replace('live_enabled: true', 'live_enabled: false')
     return {**files, '.github/workflows/site-deploy.yml': wrapper.encode(),
             '.github/workflows/site-push.yml': (TOOLS / 'site-push.yml.template').read_bytes(),
+            '.github/workflows/site-deploy-failure.yml': (TOOLS / 'site-deploy-failure.yml.template').read_text().replace('TOOLING_SHA', config['tooling_ref']).encode(),
             'DEPLOYMENT.md': handoff(site), '.mrn-qa.env': b'MRN_QA_SAMPLE_PATH=/\n', '.gitignore': b'.DS_Store\n.env*\nnode_modules/\nvendor/\n',
             'README.md': ('# ' + site['domain'] + '\n\nSite-owned child-theme source. See DEPLOYMENT.md.\n').encode()}
 
@@ -538,8 +539,10 @@ print(json.dumps({'job_present':job.is_dir() and not job.is_symlink(),
                 'DEPLOY_TRANSPORT': 'rsync', 'DEPLOY_HOST_PROVIDER': 'cloudpanel', 'DEPLOY_BACKUP_PROVIDER': 'updraft',
                 'DEPLOY_BASELINE_TREE': s['baseline'], 'DEPLOY_READY': '0', 'DEPLOY_ENROLLMENT_SOURCE_SHA': s['source_sha'],
                 'DEPLOY_ENROLLMENT_PRIOR_RELEASE': ''}
-            gh.configure(variables, {'DEPLOY_SSH_PRIVATE_KEY': self.secrets['deploy_private_key'],
-                'DEPLOY_SSH_KNOWN_HOSTS': self.secrets['known_hosts'], 'MRN_QA_ENGINE_TOKEN': self.secrets['qa_engine_token']})
+            secrets = {'DEPLOY_SSH_PRIVATE_KEY': self.secrets['deploy_private_key'],
+                'DEPLOY_SSH_KNOWN_HOSTS': self.secrets['known_hosts'], 'MRN_QA_ENGINE_TOKEN': self.secrets['qa_engine_token'],
+                'MRN_DEPLOY_NOTIFY_POSTMARK_TOKEN': self.secrets['deployment_notification_token']}
+            gh.configure(variables, secrets)
             self.persist(stage='wait-install-signal', setup_backup=backup)
         elif stage == 'wait-install-signal':
             signal = self.signal(s['source_sha'])

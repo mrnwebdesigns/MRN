@@ -1,0 +1,16 @@
+name: Notify deployment failure
+on:
+  workflow_run:
+    workflows: [Deploy site]
+    types: [completed]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  notify:
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    uses: mrnwebdesigns/MRN/.github/workflows/site-deploy-notify.yml@TOOLING_SHA
+    with:
+      tooling_ref: TOOLING_SHA
+    secrets:
+      POSTMARK_SERVER_TOKEN: ${{ secrets.MRN_DEPLOY_NOTIFY_POSTMARK_TOKEN }}
