@@ -6,6 +6,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+require_once __DIR__ . '/class-mrn-maintenance-package-cache.php';
+
 /**
  * No public endpoint, arbitrary paths, code execution, core, or install operation.
  */
@@ -214,6 +216,7 @@ final class MRN_Updraft_MainWP_Maintenance {
 	 */
 	public static function init() {
 		add_filter( 'mainwp_child_extra_execution', array( __CLASS__, 'dispatch' ), 25, 2 );
+		add_action( MRN_Maintenance_Package_Cache::CLEANUP_HOOK, array( 'MRN_Maintenance_Package_Cache', 'cleanup' ) );
 	}
 
 	/**
@@ -692,6 +695,30 @@ final class MRN_Updraft_MainWP_Maintenance {
 		return $file;
 	}
 
+	/** Reuse the exact inspected archive; fresh inventory/offers are still checked. */
+	private static function pinned_download( $url, $input, $state, $item ) {
+		return MRN_Maintenance_Package_Cache::obtain(
+			self::pin_identity( $input, $state, $item ),
+			static function () use ( $url ) { return self::download( $url ); },
+			static function ( $file ) use ( $input, $state, $item ) { return self::package( $file, $item, $input['kind'], $state ); }
+		);
+	}
+
+	/** Cache identity excludes transport metadata and rotating vendor URLs. */
+	private static function pin_identity( $input, $state, $item ) {
+		return array(
+			'contract' => self::CONTRACT,
+			'site_id' => $input['site_id'],
+			'site_url' => $input['site_url'],
+			'kind' => $input['kind'],
+			'items' => $input['items'],
+			'major_overrides' => $input['major_overrides'],
+			'backup_nonce' => $input['backup_nonce'],
+			'before' => $input['before'] ?? $state,
+			'item' => $item,
+		);
+	}
+
 	/**
 	 * Reject wrong versions and unsafe archive entries BEFORE native pre-install hooks.
 	 *
@@ -796,7 +823,7 @@ final class MRN_Updraft_MainWP_Maintenance {
 				$offers = self::offers( $single, $before );
 				self::$stage = 'child_download';
 				self::checkpoint( 'child_download', $item['slug'] );
-				$file = self::download( $offers[ $item['slug'] ]['package'] );
+				$file = self::pinned_download( $offers[ $item['slug'] ]['package'], $input, $before, $item );
 				self::$stage = 'child_package';
 				self::checkpoint( 'child_package', $item['slug'] );
 				$packages[] = self::package( $file, $item, $input['kind'], $before );
@@ -876,7 +903,7 @@ final class MRN_Updraft_MainWP_Maintenance {
 	private static function upgrade( $input, $item, $package, $offer, $expected ) {
 		self::$replacement_started = false;
 		self::$stage = 'child_download';
-		$file = self::download( $offer['package'] );
+		$file = self::pinned_download( $offer['package'], $input, $expected, $item );
 		try {
 			self::$stage = 'child_package';
 			if ( self::package( $file, $item, $input['kind'], $input['before'] ) !== $package ) {
@@ -991,6 +1018,7 @@ final class MRN_Updraft_MainWP_Maintenance {
 		if ( ! add_option( self::LOCK_KEY, $input['request_id'], '', false ) ) {
 			throw new RuntimeException( 'operation_locked' );
 		}
+		$reserved = false;
 		try {
 			$existing = self::saved( $key );
 			if ( null !== $existing ) {
@@ -1026,6 +1054,7 @@ final class MRN_Updraft_MainWP_Maintenance {
 			if ( ! add_option( $nonce_key, $input['request_id'], '', false ) ) {
 				throw new RuntimeException( 'backup_nonce_consumed' );
 			}
+			$reserved = true;
 			$offers   = self::offers( $input, $inspection['before'] );
 			$expected = $inspection['before'];
 			foreach ( $input['items'] as $index => $item ) {
@@ -1086,6 +1115,11 @@ final class MRN_Updraft_MainWP_Maintenance {
 			}
 			return $result;
 		} finally {
+			if ( $reserved ) {
+				foreach ( $input['items'] as $item ) {
+					MRN_Maintenance_Package_Cache::release( self::pin_identity( $input, $input['before'], $item ) );
+				}
+			}
 			if ( self::saved( self::LOCK_KEY ) === $input['request_id'] ) {
 				delete_option( self::LOCK_KEY );
 			}

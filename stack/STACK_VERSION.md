@@ -50,7 +50,7 @@
 | `mrn-tokens` | `0.1.4` |
 | `mrn-universal-sticky-bar` | `1.3.0` |
 | `mrn-updraft-backup-policy-loader` | `0.6.1` |
-| `mrn-updraft-local-retention` | `0.8.10` |
+| `mrn-updraft-local-retention` | `0.8.11` |
 
 ## Stack Manifests
 - Plugins manifest: [`manifests/plugins.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/plugins.txt)

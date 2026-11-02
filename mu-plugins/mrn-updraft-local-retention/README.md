@@ -63,7 +63,7 @@ MRN_QA_CODE_ANALYSIS_SCOPE=all mrn-qa run --project-root /Users/khofmeyer/Develo
 
 Runtime browser, accessibility, API, and performance checks should be run separately against an explicit target site when this plugin change affects rendered output or live WordPress behavior.
 
-## Guarded MainWP maintenance (0.8.9 candidate)
+## Guarded MainWP maintenance
 
 After each successful native update, the batch admits only the selected item's
 approved version and new code tree into its next expected state. Activation,
@@ -86,6 +86,19 @@ update and rollback hooks remain in use. Independent readback is bound to the
 same exact operation and selection. Unknown operations are not retried, locks
 are not stolen, and audit records are not silently expired. New operations stop
 at 2,000 durable operation/nonce entries pending separately authorized archival.
+
+Maintenance previews retain the exact inspected vendor ZIP for up to twenty minutes
+in an owner-only system temporary directory outside WordPress and the web root.
+Pins are bound to the exact site, backup nonce, requested versions and installed
+state; later verification and the native upgrader use copies of those same bytes.
+Every copy is revalidated against the raw ZIP checksum and size. Fresh native
+version offers, backup verification, stale-state checks and activation protection
+remain required. Missing or changed pins fail closed without another vendor
+download. Storage is limited to 24 packages and 200 MiB per site; expired files
+are removed during preparation and by WP-Cron housekeeping. No package URL,
+credential or archive bytes are exposed through MainWP responses.
+`php tests/maintenance-pinned-packages.php` exercises changing vendor bytes,
+tampering, missing pins, expiry, isolation, locking, capacity and unsafe storage.
 
 ZIP validation accepts the single trailing slash used by standard directory
 entries in official WordPress packages. Empty internal path segments, dot or
