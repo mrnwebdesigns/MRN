@@ -6,6 +6,7 @@
 	var labels = mrnSectionNavigator, rows = [], fields = [], activeRow, mode = 'content', overview = false;
 	var panel, list, search, status, empty, errorFilter, mobileToggle, modeButtons, viewButton, position, previous, next, hint;
 	var observer, titleObserver, noticeObserver, frame = 0, refreshFrame = 0, dirtyRows = new Set(), moving = false, sorting = false, errorsOnly = false, mounted = false, lastInvoker, pendingInvalid = false;
+	var richEditors = new WeakSet(), nestedRows = new WeakSet();
 	var observed = new WeakSet(), captions = new WeakMap(), remembered = '';
 	function rememberSection() {
 		var item = rows.find( function( entry ) { return entry.row === activeRow; } ), id = document.getElementById( 'post_ID' );
@@ -45,16 +46,103 @@
 		var fallback = nativeTitle ? nativeTitle.textContent.trim() : labels.untitled;
 		return fallback.indexOf( '|' ) === -1 ? fallback : fallback.split( ' - ' )[ 0 ];
 	}
-	function reveal( row ) {
+	function reveal( node ) {
 		if ( ! nativeReady ) { return; }
-		var ancestors = [], current = row;
-		while ( current ) {
-			if ( current.matches( '.layout' ) ) { ancestors.unshift( current ); }
-			current = current.parentElement && current.parentElement.closest( '.layout' );
+		var ancestors = [], current = node;
+		while ( current && current.closest( '.mrn-workspace-field' ) ) { ancestors.unshift( current ); current = current.parentElement; }
+		ancestors.forEach( function( parent ) {
+			var field;
+			if ( parent.matches( '.layout' ) ) {
+				field = owner( parent );
+				if ( field && parent.classList.contains( '-collapsed' ) ) { field.openLayout( window.jQuery( parent ) ); }
+			} else if ( parent.matches( '.acf-row' ) ) {
+				field = acf.getField( window.jQuery( parent.closest( '.acf-field-repeater' ) ) );
+				if ( field && typeof field.expand === 'function' && parent.classList.contains( '-collapsed' ) ) { field.expand( window.jQuery( parent ) ); }
+			}
+			if ( parent.matches( '.acf-field' ) ) {
+				field = acf.getField( window.jQuery( parent ) );
+				// Use ACF's own tab activation, including nested tabs. Conditional logic stays authoritative.
+				if ( field && field.hiddenByTab && typeof field.hiddenByTab.toggle === 'function' ) { field.hiddenByTab.toggle(); }
+			}
+		} );
+	}
+	function plainText( value ) {
+		var doc = new DOMParser().parseFromString( value, 'text/html' );
+		return doc.body.textContent.replace( /\s+/g, ' ' ).trim();
+	}
+	function contentEntries( row ) {
+		var entries = [];
+		row.querySelectorAll( '.acf-field' ).forEach( function( field ) {
+			if ( field.closest( '.acf-clone' ) || ! /^(text|textarea|wysiwyg|link|url|email)$/.test( field.dataset.type || '' )
+				|| /(^|_)(class|classes|anchor|css|export|style|color|internal_name|id)($|_)/.test( field.dataset.name || '' ) ) { return; }
+			var controls = Array.from( field.querySelectorAll( 'input[type="text"],input[type="url"],input[type="email"],textarea,input.input-title,input.input-url' ) ).filter( function( input ) {
+				return input.closest( '.acf-field' ) === field && input.name && ! input.disabled;
+			} );
+			controls.forEach( function( input ) {
+				var editor = window.tinymce && window.tinymce.get( input.id );
+				var text = field.dataset.type === 'wysiwyg' ? ( editor && editor.initialized && ! editor.isHidden() ? editor.getContent( { format: 'text' } ).replace( /\s+/g, ' ' ).trim() : plainText( input.value ) ) : input.value.trim();
+				if ( ! text ) { return; }
+				var label = field.querySelector( ':scope > .acf-label label' );
+				var context = '', nested = field.closest( '.acf-row' );
+				if ( nested ) {
+					var repeater = nested.closest( '.acf-field-repeater' ), parentLabel = repeater && repeater.querySelector( ':scope > .acf-label label' );
+					var siblings = Array.from( nested.parentElement.children ).filter( function( item ) { return item.matches( '.acf-row:not(.acf-clone)' ); } );
+					context = ( parentLabel ? parentLabel.textContent.trim() : labels.component ) + ' ' + ( siblings.indexOf( nested ) + 1 ) + ' · ';
+				}
+				entries.push( { input: input, field: field, text: text, lower: text.toLocaleLowerCase(), label: context + ( label ? label.textContent.trim() : field.dataset.name ) } );
+			} );
+		} );
+		return entries;
+	}
+	function selectResult( item ) {
+		select( item.row, ! item.match );
+		if ( ! item.match ) { return; }
+		var match = item.match; reveal( match.field );
+		var editor = window.tinymce && window.tinymce.get( match.input.id );
+		if ( editor && editor.initialized && ! editor.isHidden() ) { editor.focus(); }
+		else {
+			var target = match.input;
+			if ( target.type === 'hidden' ) { target = Array.from( match.field.querySelectorAll( '.acf-link [data-name="edit"],.acf-link [data-name="add"]' ) ).find( function( control ) { return control.getClientRects().length; } ); }
+			if ( target && ! target.disabled && target.getClientRects().length ) { target.focus( { preventScroll: true } ); }
 		}
-		ancestors.forEach( function( layout ) {
-			var field = owner( layout );
-			if ( field && layout.classList.contains( '-collapsed' ) ) { field.openLayout( window.jQuery( layout ) ); }
+		match.field.scrollIntoView( { block: 'start', behavior: 'instant' } );
+	}
+	function nestedComponents( row ) {
+		row.querySelectorAll( '.acf-field-repeater' ).forEach( function( container ) {
+			if ( container.closest( '.acf-clone' ) ) { return; }
+			var field = acf.getField( window.jQuery( container ) );
+			if ( ! field || typeof field.collapse !== 'function' || typeof field.expand !== 'function' ) { return; }
+			var nativeRows = field.$rows().toArray(), label = container.querySelector( ':scope > .acf-label' );
+			// Block/row repeaters have a native fields cell. Table repeaters retain their column layout.
+			var supported = nativeRows.filter( function( item ) { return item.querySelector( ':scope > td.acf-fields' ); } );
+			if ( ! supported.length || ! label ) { return; }
+			container.classList.add( 'mrn-nested-component' );
+			var toggle = label.querySelector( '.mrn-nested-all' );
+			if ( ! toggle ) {
+				toggle = button( labels.collapseRows, 'mrn-nested-all' ); label.appendChild( toggle );
+			}
+			function update() {
+				var currentRows = field.$rows().toArray(), collapsed = currentRows.every( function( item ) { return item.classList.contains( '-collapsed' ); } );
+				toggle.textContent = ( collapsed ? labels.expandRows : labels.collapseRows ) + ' (' + currentRows.length + ')';
+				var title = label.querySelector( 'label' ); toggle.setAttribute( 'aria-label', ( title ? title.textContent.trim() + ': ' : '' ) + toggle.textContent );
+			}
+			supported.forEach( function( item, index ) {
+				var cell = item.querySelector( ':scope > td.acf-fields' ), header = cell.querySelector( ':scope > .mrn-nested-header' );
+				if ( ! header ) {
+					header = button( '', 'mrn-nested-header' ); cell.prepend( header );
+				}
+				var title;
+				[ '.-collapsed-target', '[data-name="item_label"]', '[data-name="card_name"]', '[data-name="heading"]', '[data-name="question"]', '[data-name="title"]', '[data-name="label"]', '[data-name="internal_name"]' ].some( function( selector ) {
+					title = Array.from( item.querySelectorAll( selector + ' input[type="text"]' ) ).find( function( input ) { return input.closest( '.acf-row' ) === item && ! input.disabled && input.value.trim(); } );
+					return Boolean( title );
+				} );
+				var name = label.querySelector( 'label' ), text = ( index + 1 ) + ' · ' + ( title ? title.value.trim().slice( 0, 120 ) : ( name ? name.textContent.trim() : labels.component ) );
+				if ( header.textContent !== text ) { header.textContent = text; }
+				function state() { header.setAttribute( 'aria-expanded', String( ! item.classList.contains( '-collapsed' ) ) ); update(); }
+				state();
+				if ( ! nestedRows.has( item ) ) { nestedRows.add( item ); new MutationObserver( state ).observe( item, { attributes: true, attributeFilter: [ 'class' ] } ); }
+			} );
+			update();
 		} );
 	}
 	function rootRow( node ) { return rows.find( function( item ) { return item.row === node || item.row.contains( node ); } ); }
@@ -78,7 +166,7 @@
 	function select( row, focus ) {
 		if ( ! row || ! row.isConnected ) { schedule(); return; }
 		activeRow = row; mode = 'content'; overview = false;
-		applyView(); reveal( row ); scrollSelection(); closePanel( false ); rememberSection();
+		applyView(); reveal( row ); nestedComponents( row ); scrollSelection(); closePanel( false ); rememberSection();
 		if ( focus ) {
 			var heading = row.querySelector( '.acf-fc-layout-handle' );
 			heading.setAttribute( 'tabindex', '-1' ); heading.focus( { preventScroll: true } );
@@ -112,7 +200,19 @@
 		var query = search.value.trim().toLocaleLowerCase(), count = 0, errors = rows.filter( function( item ) { return item.errors; } ).length;
 		if ( ! errors ) { errorsOnly = false; }
 		rows.forEach( function( item ) {
-			var match = ( ! errorsOnly || item.errors ) && item.text.toLocaleLowerCase().indexOf( query ) !== -1;
+			item.match = null;
+			var titleMatch = item.text.toLocaleLowerCase().indexOf( query ) !== -1;
+			if ( query && ! titleMatch ) {
+				if ( ! item.searchEntries ) { item.searchEntries = contentEntries( item.row ); }
+				item.match = item.searchEntries.find( function( entry ) { return ! entry.input.disabled && entry.lower.indexOf( query ) !== -1; } );
+			}
+			var excerpt = item.link.querySelector( '.mrn-section-match' );
+			if ( item.match ) {
+				if ( ! excerpt ) { excerpt = element( 'span', 'mrn-section-match' ); item.link.appendChild( excerpt ); }
+				var start = Math.max( 0, item.match.lower.indexOf( query ) - 25 );
+				excerpt.textContent = item.match.label + ': ' + ( start ? '…' : '' ) + item.match.text.slice( start, start + 100 );
+			} else if ( excerpt ) { excerpt.remove(); }
+			var match = ( ! errorsOnly || item.errors ) && ( ! query || titleMatch || Boolean( item.match ) );
 			item.item.hidden = ! match; if ( match ) { count++; }
 		} );
 		list.querySelectorAll( '.mrn-section-group' ).forEach( function( group ) {
@@ -154,6 +254,8 @@
 		if ( errors && ! badge ) { item.link.appendChild( element( 'span', 'mrn-section-error', labels.errors ) ); }
 		else if ( ! errors && badge ) { badge.remove(); }
 		item.text = item.type + ' ' + title; item.errors = errors;
+		if ( item.searchEntries ) { item.searchEntries = contentEntries( item.row ); }
+		if ( item.row === activeRow ) { nestedComponents( item.row ); }
 	}
 	function refresh( node ) {
 		var item = node && rootRow( node ); if ( item ) { dirtyRows.add( item ); }
@@ -203,7 +305,7 @@
 				if ( ! entry ) {
 					var item = element( 'li' ), link = button( '', 'mrn-section-link' );
 					link.append( element( 'span', 'mrn-section-type' ), element( 'span', 'mrn-section-name' ) );
-					link.addEventListener( 'click', function() { select( row, true ); } ); item.appendChild( link );
+					link.addEventListener( 'click', function() { selectResult( entry ); } ); item.appendChild( link );
 					entry = { row: row, link: link, item: item };
 				}
 				entry.type = type; entry.field = field.get( 'key' ); entry.index = index;
@@ -214,7 +316,7 @@
 		var added = oldRows.length && rows.find( function( item ) { return ! oldRows.some( function( old ) { return old.row === item.row; } ); } );
 		if ( added ) { select( added.row, false ); }
 		else if ( ! activeRow || ! activeRow.isConnected ) { var restoredSection = ! oldRows.length && restoreSection(); activeRow = restoredSection ? restoredSection.row : ( rows.length ? rows[ Math.max( 0, Math.min( oldIndex, rows.length - 1 ) ) ].row : null ); }
-		filter(); applyView(); if ( activeRow && ! overview && mode === 'content' ) { reveal( activeRow ); }
+		filter(); applyView(); if ( activeRow && ! overview && mode === 'content' ) { reveal( activeRow ); nestedComponents( activeRow ); }
 		if ( ! added ) { panel.scrollTop = outlineScroll; } rememberSection();
 		if ( focused && focused.isConnected && focused.matches( '.mrn-section-link' ) ) { focused.focus( { preventScroll: true } ); }
 	}
@@ -227,8 +329,10 @@
 			if ( window.ResizeObserver && ! observed.has( header ) ) { observed.add( header ); new ResizeObserver( updateChromeOffset ).observe( header ); }
 		}
 		var offset = adminBar ? adminBar.offsetHeight : 0;
+		document.body.style.setProperty( '--mrn-adminbar-height', offset + 'px' );
+		if ( adminBar && window.ResizeObserver && ! observed.has( adminBar ) ) { observed.add( adminBar ); new ResizeObserver( updateChromeOffset ).observe( adminBar ); }
 		if ( bar ) {
-			offset = Math.max( offset, bar.offsetHeight + ( parseFloat( getComputedStyle( bar ).top ) || 0 ) );
+			offset += bar.offsetHeight;
 			if ( window.ResizeObserver && ! observed.has( bar ) ) { observed.add( bar ); new ResizeObserver( updateChromeOffset ).observe( bar ); }
 		}
 		document.body.style.setProperty( '--mrn-editor-offset', offset + 'px' );
@@ -268,7 +372,7 @@
 		close.addEventListener( 'click', function() { closePanel( true ); } ); outlineHeader.append( element( 'h2', '', labels.title ), close );
 		var searchLabel = element( 'label', 'screen-reader-text', labels.search ); search = element( 'input' ); search.type = 'search'; search.id = 'mrn-section-search'; search.placeholder = labels.search; searchLabel.htmlFor = search.id;
 		search.addEventListener( 'input', filter ); search.addEventListener( 'keydown', function( event ) {
-			if ( event.key === 'Enter' ) { event.preventDefault(); var match = rows.find( function( item ) { return ! item.item.hidden; } ); if ( match ) { select( match.row, true ); } }
+			if ( event.key === 'Enter' ) { event.preventDefault(); var match = rows.find( function( item ) { return ! item.item.hidden; } ); if ( match ) { selectResult( match ); } }
 		} );
 		status = element( 'p', 'mrn-outline-status' ); status.setAttribute( 'role', 'status' );
 		errorFilter = button( '', 'mrn-outline-errors' ); errorFilter.hidden = true;
@@ -306,7 +410,16 @@
 	// controls in otherwise hidden panels and sections.
 	acf.addAction( 'load', function() { nativeReady = true; schedule(); }, 100 );
 	acf.addAction( 'ready', schedule ); acf.addAction( 'append', schedule ); acf.addAction( 'remove', schedule ); acf.addAction( 'sortstart', function() { sorting = true; } ); acf.addAction( 'sortstop', function() { sorting = false; schedule(); } );
-	document.addEventListener( 'click', function( event ) { if ( event.target.closest( '.mrn-section-return' ) ) { openPanel( event.target ); } } );
+	document.addEventListener( 'click', function( event ) {
+		if ( event.target.closest( '.mrn-section-return' ) ) { openPanel( event.target ); }
+		var control = event.target.closest( '.mrn-nested-header,.mrn-nested-all' );
+		if ( ! control || ! control.closest( '.mrn-workspace-field' ) ) { return; }
+		var field = acf.getField( window.jQuery( control.closest( '.acf-field-repeater' ) ) );
+		if ( ! field || typeof field.collapse !== 'function' || typeof field.expand !== 'function' ) { return; }
+		var items = control.matches( '.mrn-nested-header' ) ? [ control.closest( '.acf-row' ) ] : field.$rows().toArray();
+		var collapse = items.some( function( item ) { return ! item.classList.contains( '-collapsed' ); } );
+		items.forEach( function( item ) { field[ collapse ? 'collapse' : 'expand' ]( window.jQuery( item ) ); } );
+	} );
 	acf.addAction( 'invalid_field', function( field ) {
 		if ( ! mounted ) { return; }
 		if ( ! pendingInvalid ) {
@@ -317,6 +430,12 @@
 		}
 		search.value = ''; refresh( field.$el[ 0 ] );
 	} );
+	function watchEditor( editor ) {
+		if ( richEditors.has( editor ) ) { return; } richEditors.add( editor );
+		editor.on( 'input change Undo Redo', function() { var input = document.getElementById( editor.id ); if ( input && mounted ) { refresh( input ); } } );
+	}
+	acf.addAction( 'wysiwyg_tinymce_init', watchEditor );
+	if ( window.tinymce ) { window.tinymce.editors.forEach( watchEditor ); }
 	acf.addAction( 'valid_field', function( field ) { if ( mounted ) { refresh( field.$el[ 0 ] ); } } );
 	document.addEventListener( 'input', function( event ) { if ( event.target.closest( '.mrn-workspace-field' ) ) { refresh( event.target ); } } );
 	document.addEventListener( 'change', function( event ) { if ( event.target.closest( '.mrn-workspace-field' ) ) { refresh( event.target ); } } );

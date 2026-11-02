@@ -49,7 +49,10 @@ function mrn_editor_experience_enqueue() {
 		'mrnSectionNavigator',
 		array(
 			'title'    => __( 'Page structure', 'mrn-editor-lockdown' ),
-			'search'   => __( 'Find a section', 'mrn-editor-lockdown' ),
+			'search'   => __( 'Search sections and content', 'mrn-editor-lockdown' ),
+			'collapseRows' => __( 'Collapse items', 'mrn-editor-lockdown' ),
+			'expandRows' => __( 'Expand items', 'mrn-editor-lockdown' ),
+			'component' => __( 'Item', 'mrn-editor-lockdown' ),
 			'close'    => __( 'Close sections', 'mrn-editor-lockdown' ),
 			'return'   => __( 'Return to sections', 'mrn-editor-lockdown' ),
 			'empty'    => __( 'No matching sections. Your content is unchanged.', 'mrn-editor-lockdown' ),

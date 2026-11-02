@@ -172,3 +172,40 @@ body.mrn-workspace #mrn-universal-sticky-toolbar :is(.mrn-usb-meta,.mrn-usb-acti
 body.mrn-workspace #mrn-universal-sticky-toolbar .mrn-usb-publishing-control:hover { background: var(--mrn-admin-surface-hover); border-color: var(--mrn-admin-accent); outline: none; }
 body.mrn-workspace #mrn-universal-sticky-toolbar #mrn-usb-publish.button.button-primary:hover { background: var(--mrn-admin-primary-hover); border-color: var(--mrn-admin-primary-hover); color: var(--mrn-admin-on-primary); }
 .mrn-workspace :is(.mrn-section-move,.mrn-section-steps button):disabled { background: var(--mrn-admin-disabled); color: var(--mrn-admin-disabled-ink); border-color: var(--mrn-admin-control-line); opacity: 1; }
+
+/* One measured stack for the admin bar, native publisher and workspace menu. */
+body.mrn-workspace #mrn-universal-sticky-toolbar { position: fixed; top: var(--mrn-adminbar-height, 32px); left: 0; right: 0; margin: 0 !important; }
+body.mrn-workspace .mrn-workspace-header { position: fixed; left: 0; right: 0; }
+body.mrn-workspace #wpbody-content { padding-top: calc(var(--mrn-editor-offset, 103px) + var(--mrn-workspace-header-height, 54px) - var(--mrn-adminbar-height, 32px)); }
+body.mrn-workspace .mrn-editor-section .acf-field { scroll-margin-top: calc(var(--mrn-editor-offset, 103px) + var(--mrn-workspace-header-height, 54px) + 16px); }
+/* Parent and nested tabs remain ACF's own controls. */
+body.mrn-workspace .mrn-editor-section .acf-fields > .acf-tab-wrap { padding: 8px 16px; border-bottom: 1px solid var(--mrn-admin-line); }
+body.mrn-workspace .mrn-editor-section .acf-fields > .acf-tab-wrap .acf-tab-group { gap: 4px; margin: 0; }
+body.mrn-workspace .mrn-editor-section .acf-fields > .acf-tab-wrap .acf-tab-group li a { border: 1px solid transparent; border-radius: 6px; margin: 0; padding: 9px 12px; line-height: 1.4; font-size: 12px; font-weight: 600; color: var(--mrn-admin-muted); }
+body.mrn-workspace .mrn-editor-section .acf-fields > .acf-tab-wrap .acf-tab-group li a:hover { background: var(--mrn-admin-surface-hover); color: var(--mrn-admin-ink); }
+body.mrn-workspace .mrn-editor-section .acf-fields > .acf-tab-wrap .acf-tab-group li.active a { background: var(--mrn-admin-surface); color: var(--mrn-admin-accent); border-color: var(--mrn-admin-line); box-shadow: inset 0 -2px var(--mrn-admin-accent); }
+body.mrn-workspace .mrn-editor-section .acf-row .acf-tab-wrap { padding: 6px 12px; }
+body.mrn-workspace .mrn-editor-section .acf-row .acf-tab-group li a { padding: 7px 10px; }
+/* A nested component has a named header and native collapse/expand lifecycle. */
+body.mrn-workspace .mrn-nested-component > .acf-label { position: relative; padding-right: 140px; min-height: 32px; }
+.mrn-nested-all { position: absolute; right: 0; top: 0; border: 1px solid var(--mrn-admin-control-line); border-radius: 6px; background: var(--mrn-admin-surface); color: var(--mrn-admin-accent); cursor: pointer; padding: 6px 10px; min-height: 32px; }
+body.mrn-workspace .mrn-nested-component > .acf-input > .acf-repeater > .acf-table { border: 0; border-spacing: 0 12px; background: transparent; margin-top: -12px; }
+body.mrn-workspace .mrn-nested-component > .acf-input > .acf-repeater > .acf-table > tbody > .acf-row > td { border: 1px solid var(--mrn-admin-line); background: var(--mrn-admin-surface-subtle); }
+body.mrn-workspace .mrn-nested-component > .acf-input > .acf-repeater > .acf-table > tbody > .acf-row > td.order { border-radius: 8px 0 0 8px; border-right: 0; color: var(--mrn-admin-muted); }
+body.mrn-workspace .mrn-nested-component > .acf-input > .acf-repeater > .acf-table > tbody > .acf-row > td.remove { border-radius: 0 8px 8px 0; border-left: 0; }
+body.mrn-workspace .mrn-nested-header { display: block !important; width: 100%; text-align: left; border: 0; border-bottom: 1px solid var(--mrn-admin-line); background: var(--mrn-admin-selected); color: var(--mrn-admin-selected-ink); font-size: 13px; font-weight: 650; line-height: 1.5; padding: 12px 40px 12px 16px; cursor: pointer; position: relative; }
+body.mrn-workspace .mrn-nested-header::after { content: '−'; position: absolute; right: 16px; }
+body.mrn-workspace .mrn-nested-header[aria-expanded=false]::after { content: '+'; }
+body.mrn-workspace .acf-repeater .acf-row.-collapsed > .acf-fields > .mrn-nested-header { display: block !important; border-bottom: 0; }
+body.mrn-workspace .mrn-nested-header:hover { background: var(--mrn-admin-surface-hover); color: var(--mrn-admin-ink); }
+.mrn-section-match { display: block; margin-top: 7px; border-top: 1px solid var(--mrn-admin-line); padding-top: 6px; font-size: 11px; line-height: 1.5; color: var(--mrn-admin-muted); overflow-wrap: anywhere; }
+@media (max-width: 782px) { body.mrn-workspace { --mrn-adminbar-height: 46px; } }
+@media (max-width: 600px) {
+ body.mrn-workspace .mrn-editor-section .acf-fields > .acf-tab-wrap { padding: 6px; }
+ body.mrn-workspace .mrn-editor-section .acf-fields > .acf-tab-wrap .acf-tab-group li a { min-height: 44px; box-sizing: border-box; display: flex; align-items: center; }
+ .mrn-nested-all, body.mrn-workspace .mrn-nested-header { min-height: 44px; }
+}
+/* Match the shared native-link rule without reaching outside the workspace. */
+body.mrn-workspace #wpbody-content .mrn-editor-section .acf-fields > .acf-tab-wrap .acf-tab-group li a { color: var(--mrn-admin-muted); text-decoration: none; }
+body.mrn-workspace #wpbody-content .mrn-editor-section .acf-fields > .acf-tab-wrap .acf-tab-group li.active a { color: var(--mrn-admin-accent); }
+body.mrn-workspace #wpbody-content .mrn-editor-section .acf-fields > .acf-tab-wrap .acf-tab-group li a:hover { color: var(--mrn-admin-ink); }
