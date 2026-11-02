@@ -1,0 +1,82 @@
+{
+  "batch": "003-editor-hierarchy-and-search",
+  "receivedDate": "2026-11-02",
+  "candidate": "c1f249f1",
+  "pageUrl": "https://admin-editor-pilot.localhost/wp-admin/post.php?post=2523&action=edit",
+  "frame": "top document",
+  "viewport": {
+    "width": 1487,
+    "height": 1909
+  },
+  "observedAppearance": "Light, based on supplied marked screenshot",
+  "darkEvidence": "No Dark-mode annotation supplied in this batch",
+  "status": "Collected; awaiting refinement approval",
+  "approvedClusters": [],
+  "implementedRefinements": 0,
+  "annotations": [
+    {
+      "id": "UX-007",
+      "sourceComment": 1,
+      "position": {
+        "x": 332,
+        "y": 78
+      },
+      "target": "Site menu ← Back to list Content Page settings Page structure Find a section Edi",
+      "selector": "div#wpbody-content",
+      "path": "div > div > div > div",
+      "comment": "Space at the top of the page is off",
+      "cluster": "UX-C04",
+      "triage": "Related editor-chrome spacing symptom; evaluate alongside sticky overlap, but retain separate acceptance coverage."
+    },
+    {
+      "id": "UX-008",
+      "sourceComment": 2,
+      "position": {
+        "x": 814,
+        "y": 526
+      },
+      "target": "Export",
+      "selector": "div.acf-tab-wrap.-top:nth-of-type(1) > ul.acf-hl.acf-tab-group > li:nth-of-type(7) > a.acf-tab-button",
+      "path": "div > ul > li > a",
+      "comment": "Tabs need some styling updates",
+      "cluster": "UX-C05"
+    },
+    {
+      "id": "UX-009",
+      "sourceComment": 3,
+      "position": {
+        "x": 697,
+        "y": 1301
+      },
+      "target": "Cards Each card holds one builder row. The card order matches the row order. 1 C",
+      "selector": "div.values.ui-sortable:nth-of-type(4) > div.layout.mrn-editor-section:nth-of-type(1) > div.acf-fields:nth-of-type(2) > div.acf-field.acf-field-repeater:nth-of-type(12)",
+      "path": "div > div > div > div",
+      "comment": "Style a way for sub components stand out. THis page gets really long, ideas?",
+      "cluster": "UX-C06",
+      "screenshot": "User Comment 3 — original labeled marker image attached to this submitted chat message; no local path or opaque native image ID supplied"
+    },
+    {
+      "id": "UX-010",
+      "sourceComment": 4,
+      "position": {
+        "x": 212,
+        "y": 238
+      },
+      "target": "input",
+      "selector": "input#mrn-section-search",
+      "path": "div > nav > div > input",
+      "nearbyText": "Page structure Find a section Edit selected section 19 / 19 sections CONTENT + A",
+      "comment": "Can this also serach the content in the layouts to help get to a layout faster?",
+      "cluster": "UX-C07"
+    }
+  ],
+  "readOnlySourceFinding": {
+    "file": "mu-plugins/mrn-editor-lockdown/assets/section-navigator.js",
+    "functions": [
+      "refreshItem",
+      "filter"
+    ],
+    "currentBehavior": "refreshItem builds item.text from layout type plus meaningful title; filter searches that string. Full nested layout content and rich-text bodies are not indexed.",
+    "implementationStatus": "No search, tab, repeater or sticky behavior changed."
+  }
+}

@@ -1,15 +1,18 @@
 # Prioritized follow-up
 
-**Annotation phase open — 2 November 2026.** The [paired review](http://127.0.0.1:8764/review/) and [collection procedure](review/REVIEW.md) preserve the current candidate. The [annotation log](review/ANNOTATIONS.md) contains six submitted annotations across Dashboard and Editor Workspace, grouped into four clusters, with zero approved clusters and zero implemented refinements. Original wording and mode-specific evidence are retained. Implementation waits for approval of a bounded cluster batch.
+**Annotation phase open — 2 November 2026.** The [paired review](http://127.0.0.1:8764/review/) and [collection procedure](review/REVIEW.md) preserve the current candidate. The [annotation log](review/ANNOTATIONS.md) contains ten submitted annotations across Dashboard and Editor Workspace, grouped into seven clusters, with zero approved clusters and zero implemented refinements. Original wording and mode-specific evidence are retained. Implementation waits for approval of a bounded cluster batch.
 
 ## Human refinement queue — awaiting approval
 
 | Rank within UX queue | Cluster / references | Bounded direction | Status |
 | --- | --- | --- | --- |
-| 0 — P1 blocker | UX-C04 / UX-006 | Correct the Universal Sticky Bar/workspace-header offsets and positioning so the navigation row is visible and receives its own clicks. The current Light-state overlap intercepts navigation with permalink/publishing controls. | Confirmed by geometry and hit tests; pause covered-row interaction tests; no implementation approval. Verify scroll transitions, both themes and native save/publish behavior after correction. |
-| 1 — P2 | UX-C02 / UX-003, UX-004 | Denser navigation, clearer AME section headings and a consistent Dashboard/current-row treatment. | Light observed; Dark and other states pending; no implementation approval. |
-| 2 — P2 | UX-C01 / UX-001, UX-005 | Improve SEOPress toolbar and Relevanssi sidebar icon visibility through the existing semantic palette and narrow renderer-specific treatment. | Light observed; Dark and measured contrast pending; no implementation approval. |
-| 3 — P2 | UX-C03 / UX-002 | Integrate native Screen Options/Help visually into the page-header utility area. | Recommendation only; native behavior retained; no implementation approval. |
+| 0 — P1 blocker | UX-C04 / UX-006, UX-007 | Correct sticky chrome overlap and top-of-editor spacing together. Keep the menu visible, clicks correctly targeted and outline/jump/focus offsets aligned. Top spacing remains a separately tracked symptom. | Overlap confirmed; top-spacing specifics pending; covered-row interaction testing remains paused; no approval. |
+| 1 — P2 | UX-C06 / UX-009 | Distinguish nested Cards/subcomponents with clear row headers, counts, summaries and native ACF collapse/open behavior to reduce long-section scanning. | Light observed; native lifecycle/conditional logic/save integrity must be preserved; no approval. |
+| 2 — P2 | UX-C07 / UX-010 | Extend existing section search to authored layout/nested content and unsaved rich text, with contextual excerpts and native row/tab reveal. | Current source only indexes type/title; incremental indexing and CPU/heap qualification required; no approval. |
+| 3 — P2 | UX-C02 / UX-003, UX-004 | Denser navigation, clearer AME section headings and a consistent Dashboard/current-row treatment. | Light observed; Dark and other states pending; no approval. |
+| 4 — P2 | UX-C01 / UX-001, UX-005 | Improve SEOPress toolbar and Relevanssi sidebar icon visibility through existing semantic colors and narrow renderer-specific treatment. | Light observed; Dark and measured contrast pending; no approval. |
+| 5 — P2 | UX-C05 / UX-008 | Refine native ACF parent/nested tabs: compact spacing and clear selected/hover/focus hierarchy. | Light observed; both themes, keyboard and narrow widths need checks; no approval. |
+| 6 — P2 | UX-C03 / UX-002 | Integrate native Screen Options/Help visually into the page-header utility area. | Recommendation only; native behavior retained; no approval. |
 
 Potential measured accessibility or functional regressions take P1 precedence if confirmed. Submitted comments and visual styling previews do not by themselves approve code changes. Review remains open for the Editor Workspace and other screens.
 
