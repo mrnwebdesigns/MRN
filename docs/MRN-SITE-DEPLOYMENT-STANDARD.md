@@ -142,6 +142,46 @@ source QA, backup, deployed SHA, asset checksums and runtime evidence from that
 new run before calling automatic Dev operational. No site theme, content or
 shared Stack plugin update is required for this dependency repair.
 
+## Deployment failure emails
+
+Each participating repository installs the separate
+`.github/workflows/site-deploy-failure.yml` observer from
+`tools/site-deploy/site-deploy-failure.yml.template`. Pin both its reusable
+`site-deploy-notify.yml` reference and `tooling_ref` to one reviewed MRN commit.
+Existing deployments may retain their qualified deployment pins; notification
+adoption does not require changing a provider adapter or releasing site code.
+
+Completed **Deploy site** failures, including source QA, build, startup, and
+runtime failures, email **mrn-developer@mrnwebdesigns.com** from
+**deployments@mrnwebdesigns.com**. Success, intentional cancellation, and skipped
+runs send nothing. The email contains repository/commit metadata, failed job and
+step names, and the original run link. It never includes source files, logs,
+credentials, or upstream artifact contents. A failure does not establish whether
+a runtime write occurred; inspect the deployment and rollback receipts.
+
+The repository-level Actions secret `MRN_DEPLOY_NOTIFY_POSTMARK_TOKEN` uses the
+dedicated **MRN Deployment Notifications** Postmark server. Keep its canonical
+token only in the MRN business 1Password enrollment vault. New-site enrollment
+requires the broker reference `deployment_notification_token`, provisions the
+secret at repository scope, and installs the observer. Never use an account API
+token or a client's transactional server token in a project workflow.
+
+For existing repositories, record their current main/phase policy and activation
+cutoffs, pause armed `MRN_AUTO_DEV_AFTER` and `MRN_RELEASE_REQUESTS_AFTER`, add only
+the observer and its scoped secret, and preserve existing wrappers, secrets and
+readiness. Wait for the setup source signal to register, then restore only the
+previously armed policies with a later current UTC cutoff. Setup must not release
+pending site work or enable an unarmed destination. Check installation runs and
+retain the before/after policy receipts.
+
+The notification run retains `deployment-failure-email.json` with the failed
+run/attempt and Postmark MessageID. `provider-accepted` is not recipient-server
+delivery or inbox placement. Verify delivery through that exact provider message.
+The sender performs one POST, refuses notification reruns, and does not retry an
+unknown outcome. Reconcile the provider's original message before any explicit
+resend. A missing credential or rejected notification fails visibly in the
+notification workflow while preserving the original deployment failure.
+
 ## Automatic Dev adoption
 
 Updating this repository or its template does **not** update consumers pinned to

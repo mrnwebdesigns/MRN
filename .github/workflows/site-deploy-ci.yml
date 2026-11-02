@@ -12,6 +12,7 @@ on:
       - .github/workflows/site-deploy-target.yml
       - .github/workflows/site-deploy.yml
       - .github/workflows/site-source-qa.yml
+      - .github/workflows/site-deploy-notify.yml
       - .github/workflows/site-deploy-ci.yml
       - .github/workflows/site-release-build.yml
   workflow_dispatch:
@@ -69,4 +70,8 @@ jobs:
             .github/workflows/site-deploy-target.yml .github/workflows/site-deploy-ci.yml \
             .github/workflows/site-release-build.yml .github/workflows/site-deploy.yml \
             .github/workflows/site-source-qa.yml \
+            .github/workflows/site-deploy-notify.yml \
             "$RUNNER_TEMP/site-deploy.yml" tools/site-deploy/site-push.yml.template
+          sed 's/TOOLING_SHA/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/g' \
+            tools/site-deploy/site-deploy-failure.yml.template > "$RUNNER_TEMP/site-deploy-failure.yml"
+          go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12 -shellcheck= "$RUNNER_TEMP/site-deploy-failure.yml"

@@ -148,7 +148,7 @@ class GitHub:
         for name, value in variables.items():
             self.variable(name, str(value), 'dev')
         for name, value in secrets.items():
-            self.secret(name, value, None if name == 'MRN_QA_ENGINE_TOKEN' else 'dev')
+            self.secret(name, value, None if name in ('MRN_QA_ENGINE_TOKEN', 'MRN_DEPLOY_NOTIFY_POSTMARK_TOKEN') else 'dev')
 
     def grant_teams(self, teams):
         org, _ = self.repository.split('/')
