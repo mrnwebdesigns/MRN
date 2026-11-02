@@ -78,3 +78,5 @@ plugins/mrn-mega-menu
 # Local authenticated admin pilot diagnostics; reviewed evidence lives in docs.
 outputs/admin-w5-w6/
 outputs/admin-appearance/
+
+outputs/admin-refinements/

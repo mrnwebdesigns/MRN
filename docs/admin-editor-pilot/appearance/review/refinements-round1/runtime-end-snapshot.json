@@ -1,0 +1,11 @@
+{
+  "checked_at_vm_utc": "2026-11-03T12:22:02.569994+00:00",
+  "agent_pid": 663,
+  "agent_descriptors": 9383,
+  "agent_rss_kib": 189892,
+  "available_kib": 4674768,
+  "swap_free_kib": 2097148,
+  "cpu_pressure": "some avg10=9.47 avg60=14.14 avg300=9.23 total=3415440841\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0",
+  "oom_matches_this_boot": 0,
+  "kernel_read_returncode": 1
+}

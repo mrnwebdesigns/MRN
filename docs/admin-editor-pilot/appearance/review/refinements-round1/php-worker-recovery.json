@@ -1,0 +1,61 @@
+[
+  {
+    "pid": 5882,
+    "fixture_roots": [],
+    "action": "left-running-unidentified-or-other-site"
+  },
+  {
+    "pid": 5883,
+    "fixture_roots": [
+      "other-local-site"
+    ],
+    "action": "left-running-unidentified-or-other-site"
+  },
+  {
+    "pid": 5885,
+    "fixture_roots": [
+      "admin-editor-pilot"
+    ],
+    "action": "recycled-stalled-worker"
+  },
+  {
+    "pid": 5890,
+    "fixture_roots": [],
+    "action": "left-running-unidentified-or-other-site"
+  },
+  {
+    "pid": 5891,
+    "fixture_roots": [
+      "admin-editor-pilot"
+    ],
+    "action": "recycled-stalled-worker"
+  },
+  {
+    "pid": 5898,
+    "fixture_roots": [
+      "admin-editor-pilot"
+    ],
+    "action": "recycled-stalled-worker"
+  },
+  {
+    "pid": 5948,
+    "fixture_roots": [
+      "admin-editor-pilot"
+    ],
+    "action": "recycled-stalled-worker"
+  },
+  {
+    "pid": 5949,
+    "fixture_roots": [
+      "admin-editor-pilot"
+    ],
+    "action": "recycled-stalled-worker"
+  },
+  {
+    "pid": 5957,
+    "fixture_roots": [
+      "admin-editor-pilot"
+    ],
+    "action": "recycled-stalled-worker"
+  }
+]

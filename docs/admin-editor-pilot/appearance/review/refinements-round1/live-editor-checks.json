@@ -1,0 +1,17 @@
+{
+  "source": "native Codex browser; revised tab 2",
+  "sections": 19,
+  "savedNestedRichTextSearch": "Cards 2 \u00b7 Text: ongoing technical support",
+  "unsavedNestedTextSearch": true,
+  "nativeRowRevealAndFocus": true,
+  "originalAppearance": "light",
+  "darkSaveAcknowledged": true,
+  "lightRestoreAcknowledged": true,
+  "before": "79700d1655b22d932ff5f28e68929d241c9fc843c7cce1ba0f6f5c0c7966b96e",
+  "after": "79700d1655b22d932ff5f28e68929d241c9fc843c7cce1ba0f6f5c0c7966b96e",
+  "inspectedControlSample": 2000,
+  "sampleValuesRestored": true,
+  "nativeTotalFormControls": 3834,
+  "inspectionNote": "Browser evaluation results cap arrays at 2000; full WordPress/ACF hashes are verified separately.",
+  "saveOrPublishAttemptedDuringClientProbes": false
+}

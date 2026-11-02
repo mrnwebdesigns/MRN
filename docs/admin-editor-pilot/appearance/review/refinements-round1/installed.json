@@ -1,0 +1,42 @@
+[
+  {
+    "file": "mrn-admin-ui-css/appearance.js",
+    "source": "6b3f5d0b1057e17ea2397997e82a887f5729857d69bfcb7ecb92492557b5cd67",
+    "installed": "6b3f5d0b1057e17ea2397997e82a887f5729857d69bfcb7ecb92492557b5cd67"
+  },
+  {
+    "file": "mrn-admin-ui-css/mrn-admin-shell.css",
+    "source": "3a03bf35e2d583ae4859de98b48102b4f35718b0dfb0140fcaac2292ee849b30",
+    "installed": "3a03bf35e2d583ae4859de98b48102b4f35718b0dfb0140fcaac2292ee849b30"
+  },
+  {
+    "file": "mrn-admin-ui-css/mrn-editor-workspace.css",
+    "source": "fd6d6680bb9b5bdb9aaf09c2b8ea8a3cc53fa5adea9cfa59e8a362216a686a4c",
+    "installed": "fd6d6680bb9b5bdb9aaf09c2b8ea8a3cc53fa5adea9cfa59e8a362216a686a4c"
+  },
+  {
+    "file": "mrn-admin-ui-css/mrn-modern-admin.css",
+    "source": "d6aad7024e78ad2588bff24f84a28bfefb94121de873c83116cf5217e8b87ec2",
+    "installed": "d6aad7024e78ad2588bff24f84a28bfefb94121de873c83116cf5217e8b87ec2"
+  },
+  {
+    "file": "mrn-admin-ui-css/mrn-admin-ui-css.php",
+    "source": "c5e9d2345dbec063a1dbda41062ee0eed934291ef4ddc7080ab63d86b4ca2fb5",
+    "installed": "c5e9d2345dbec063a1dbda41062ee0eed934291ef4ddc7080ab63d86b4ca2fb5"
+  },
+  {
+    "file": "mrn-editor-lockdown/assets/section-navigator.js",
+    "source": "719fd3a1b7f7b7484f7fd2ad83bc779a4cab3cc9e2ff6ee36c743833b7e94526",
+    "installed": "719fd3a1b7f7b7484f7fd2ad83bc779a4cab3cc9e2ff6ee36c743833b7e94526"
+  },
+  {
+    "file": "mrn-editor-lockdown/includes/section-navigator.php",
+    "source": "8ff338311c75a702d77d4cb9ef1ef9944439aaa083de05ddc1bdf43d4e13d9fb",
+    "installed": "8ff338311c75a702d77d4cb9ef1ef9944439aaa083de05ddc1bdf43d4e13d9fb"
+  },
+  {
+    "file": "mrn-editor-lockdown/mrn-editor-lockdown.php",
+    "source": "56f7c994cb2932078d47ba3bfdd924ef8d85f80143232e4be0908c0b32db48a2",
+    "installed": "56f7c994cb2932078d47ba3bfdd924ef8d85f80143232e4be0908c0b32db48a2"
+  }
+]

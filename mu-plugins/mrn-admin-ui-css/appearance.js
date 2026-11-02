@@ -51,4 +51,34 @@
  // This plugin-provided link participates in WordPress's existing toolbar menu.
  var indexing = document.querySelector('#wpadminbar .wrap-seopress-noindex');
  if (indexing) { indexing.setAttribute('role', 'menuitem'); }
+ // Recolor only these two known monochrome shell assets. AME's configured
+ // destinations, image shape and application interiors remain unchanged.
+ if (window.CSS && CSS.supports('mask-image', 'url("")')) {
+  var seoIcon = document.querySelector('#wp-admin-bar-seopress #seopress-ab-icon');
+  if (seoIcon) {
+   var image = getComputedStyle(seoIcon).backgroundImage;
+   if (image !== 'none') { seoIcon.style.setProperty('--mrn-shell-icon', image); seoIcon.classList.add('mrn-shell-mask'); seoIcon.style.setProperty('background-image', 'none', 'important'); seoIcon.style.setProperty('background-color', 'var(--mrn-admin-ink)', 'important'); }
+  }
+  var relevanssiIcon = document.querySelector('#toplevel_page_relevanssi-relevanssi .wp-menu-image img');
+  if (relevanssiIcon && /relevanssi-icon\.svg(?:[?#]|$)/.test(relevanssiIcon.src)) {
+   var holder = relevanssiIcon.parentElement;
+   holder.style.setProperty('--mrn-shell-icon', 'url("' + relevanssiIcon.src.replace(/["\\\n\r]/g, '') + '")');
+   holder.classList.add('mrn-shell-mask');
+  }
+ }
+ // A compact page utility row on the existing, explicitly audited native/MRN
+ // screens. The native panels, IDs, events and form controls remain intact.
+ if (document.body.classList.contains('mrn-modern-admin')) {
+  var heading = document.querySelector('#wpbody-content > .wrap > h1');
+  var utilities = document.getElementById('screen-meta-links');
+  if (heading && utilities) {
+   var header = document.createElement('div'), title = document.createElement('div');
+   header.className = 'mrn-page-header'; title.className = 'mrn-page-heading';
+   heading.before(header); header.appendChild(title);
+   var action = heading.nextElementSibling;
+   title.appendChild(heading);
+   if (action && action.classList.contains('page-title-action')) { title.appendChild(action); }
+   header.appendChild(utilities);
+  }
+ }
 })();

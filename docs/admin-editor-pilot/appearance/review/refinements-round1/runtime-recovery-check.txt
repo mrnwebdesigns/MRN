@@ -1,0 +1,6 @@
+native_login 000 30.027783
+               total        used        free      shared  buff/cache   available
+Mem:            5910        1038        3640         196        1601        4871
+Swap:           2047           0        2047
+some avg10=80.53 avg60=83.46 avg300=86.44 total=1555749618
+full avg10=0.00 avg60=0.00 avg300=0.00 total=0

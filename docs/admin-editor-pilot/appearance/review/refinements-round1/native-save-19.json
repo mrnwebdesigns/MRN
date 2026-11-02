@@ -1,0 +1,11 @@
+{
+  "sections": 19,
+  "status": "draft",
+  "appearance": "light",
+  "before": "79700d1655b22d932ff5f28e68929d241c9fc843c7cce1ba0f6f5c0c7966b96e",
+  "after": "79700d1655b22d932ff5f28e68929d241c9fc843c7cce1ba0f6f5c0c7966b96e",
+  "inspectedControlSample": 2000,
+  "sampleUnchanged": true,
+  "nativeTotalFormControls": 3834,
+  "inspectionNote": "Hash covers the inspector sample. The complete native database readback is separate."
+}

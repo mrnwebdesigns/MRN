@@ -1,0 +1,9 @@
+Loading index.php
+page.goto: Timeout 180000ms exceeded.
+Call log:
+[2m  - navigating to "https://admin-editor-pilot.localhost/wp-admin/index.php", waiting until "load"[22m
+
+    at go (/Users/khofmeyer/Development/MRN/.worktrees/admin-editor-pilot-20261029/mu-plugins/mrn-admin-ui-css/tests/runtime/annotation-refinements.cjs:15:61)
+    at /Users/khofmeyer/Development/MRN/.worktrees/admin-editor-pilot-20261029/mu-plugins/mrn-admin-ui-css/tests/runtime/annotation-refinements.cjs:21:9 {
+  name: 'TimeoutError'
+}

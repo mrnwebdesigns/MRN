@@ -1,20 +1,20 @@
 # Prioritized follow-up
 
-**Annotation phase open — 2 November 2026.** The [paired review](http://127.0.0.1:8764/review/) and [collection procedure](review/REVIEW.md) preserve the current candidate. The [annotation log](review/ANNOTATIONS.md) contains ten submitted annotations across Dashboard and Editor Workspace, grouped into seven clusters, with zero approved clusters and zero implemented refinements. Original wording and mode-specific evidence are retained. Implementation waits for approval of a bounded cluster batch.
+**Round 1 approved — 2 November 2026.** All ten annotations / seven clusters were approved by the owner's “Let's make these changes for now” instruction. Source changes are implemented in the existing task worktree; native Light/Dark visual and save/reload checks are complete for the selected fixtures; full automated/performance qualification remains open. See [the implementation and verification record](review/REFINEMENTS-ROUND1.md). No cluster is visually accepted or closed. [Round 2 paired annotations](review/round-2.html) are ready without WordPress login; this is not release sign-off.
 
-## Human refinement queue — awaiting approval
+## Human refinement queue — implemented, awaiting visual review
 
-| Rank within UX queue | Cluster / references | Bounded direction | Status |
+| Priority | Cluster / references | Material change | Remaining gate |
 | --- | --- | --- | --- |
-| 0 — P1 blocker | UX-C04 / UX-006, UX-007 | Correct sticky chrome overlap and top-of-editor spacing together. Keep the menu visible, clicks correctly targeted and outline/jump/focus offsets aligned. Top spacing remains a separately tracked symptom. | Overlap confirmed; top-spacing specifics pending; covered-row interaction testing remains paused; no approval. |
-| 1 — P2 | UX-C06 / UX-009 | Distinguish nested Cards/subcomponents with clear row headers, counts, summaries and native ACF collapse/open behavior to reduce long-section scanning. | Light observed; native lifecycle/conditional logic/save integrity must be preserved; no approval. |
-| 2 — P2 | UX-C07 / UX-010 | Extend existing section search to authored layout/nested content and unsaved rich text, with contextual excerpts and native row/tab reveal. | Current source only indexes type/title; incremental indexing and CPU/heap qualification required; no approval. |
-| 3 — P2 | UX-C02 / UX-003, UX-004 | Denser navigation, clearer AME section headings and a consistent Dashboard/current-row treatment. | Light observed; Dark and other states pending; no approval. |
-| 4 — P2 | UX-C01 / UX-001, UX-005 | Improve SEOPress toolbar and Relevanssi sidebar icon visibility through existing semantic colors and narrow renderer-specific treatment. | Light observed; Dark and measured contrast pending; no approval. |
-| 5 — P2 | UX-C05 / UX-008 | Refine native ACF parent/nested tabs: compact spacing and clear selected/hover/focus hierarchy. | Light observed; both themes, keyboard and narrow widths need checks; no approval. |
-| 6 — P2 | UX-C03 / UX-002 | Integrate native Screen Options/Help visually into the page-header utility area. | Recommendation only; native behavior retained; no approval. |
+| P1 | UX-C04 / UX-006, UX-007 | One fixed publishing/workspace stack, measured heights and a single content spacer; matching outline/jump/focus offsets. | Nine Light width/scroll hit cases and native saves pass. Dark narrow/overlay cases and human top-spacing review remain. |
+| P2, rank 1 | UX-C06 / UX-009 | Named nested block/repeater headers, item counts, native ACF row collapse/expand controls and component surfaces. | Native add/remove/sort/duplicate, TinyMCE, conditional logic, validation and serialization tests. Table repeaters retain native column layout. |
+| P2, rank 2 | UX-C07 / UX-010 | Lazy per-layout authored-content index; current text/rich text, contextual excerpts and native row/tab reveal. | Saved rich-text and unsaved nested-text search/focus pass. Unsaved Visual TinyMCE, full lifecycle matrix and matched CPU/heap comparison remain. |
+| P2, rank 3 | UX-C02 / UX-003, UX-004 | Denser rows, stronger AME group headings and rounded current-state treatment without pointer pseudo-elements. | Both-mode captures, Light hover/focus and Dark keyboard submenu checked. Dark hover/mobile and human density review remain. |
+| P2, rank 4 | UX-C01 / UX-001, UX-005 | Narrow alpha masks retain the SEOPress and Relevanssi glyphs using semantic shell colors. | Computed contrast, shape and visibility in both themes/states; vendor/AME configuration unchanged. |
+| P2, rank 5 | UX-C05 / UX-008 | Compact parent/nested ACF tab strips with clearer selected, hover and focus states. | Live native activation, wrapping and conditional/validation behavior. |
+| P2, rank 6 | UX-C03 / UX-002 | Native Screen Options/Help grouped in the page-title row on allowlisted screens. | Light native panels pass; paired Dashboard/list/settings alignment captured. Complete Dark panel/reflow and human utility placement review remain. |
 
-Potential measured accessibility or functional regressions take P1 precedence if confirmed. Submitted comments and visual styling previews do not by themselves approve code changes. Review remains open for the Editor Workspace and other screens.
+Round 2 starts at `UX-011`. Retain original references and group Light/Dark symptoms by shared component. No further refinements are authorized automatically by newly collected annotations.
 
 ## Technical blockers and existing follow-up
 

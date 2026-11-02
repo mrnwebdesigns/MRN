@@ -1,0 +1,40 @@
+{
+  "scope": "Light only; partial checkpoints, not a completed suite",
+  "source_editor_commit": "b3b99bba",
+  "fixed_stack": {
+    "widths": [
+      1487,
+      800,
+      390
+    ],
+    "scroll_targets": [
+      0,
+      600,
+      1500
+    ],
+    "cases_passed": 9,
+    "checks": [
+      "header below publisher",
+      "menu centers hit intended controls",
+      "no page horizontal overflow"
+    ]
+  },
+  "cards": {
+    "rows": 3,
+    "expanded_height_px": 9009,
+    "collapsed_height_px": 703.1875,
+    "native_acf_formdata_unchanged": true
+  },
+  "shell": [
+    "native Screen Options/Help open-close",
+    "SEOPress and Relevanssi semantic masks",
+    "hover and keyboard submenu captures",
+    "owned Light shell axe: zero violations"
+  ],
+  "pending": [
+    "Dark checks",
+    "final native nested/rich/link search coverage",
+    "save/reload",
+    "CPU qualification"
+  ]
+}

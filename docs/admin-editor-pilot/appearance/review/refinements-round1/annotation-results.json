@@ -1,0 +1,8 @@
+{
+  "checks": [],
+  "geometry": [],
+  "axe": {},
+  "errors": [],
+  "metrics": {},
+  "failure": "page.goto: Timeout 180000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"https://admin-editor-pilot.localhost/wp-admin/index.php\", waiting until \"load\"\u001b[22m\n"
+}

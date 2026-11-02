@@ -1,0 +1,75 @@
+{
+  "scope": "Five computed native-browser Dark editor pairs; not a full axe certification",
+  "pairs": [
+    {
+      "control": "search",
+      "foreground_rgb": [
+        229,
+        237,
+        247
+      ],
+      "background_rgb": [
+        27,
+        40,
+        57
+      ],
+      "ratio": 12.62
+    },
+    {
+      "control": "active-workspace-tab",
+      "foreground_rgb": [
+        171,
+        198,
+        255
+      ],
+      "background_rgb": [
+        27,
+        40,
+        57
+      ],
+      "ratio": 8.7
+    },
+    {
+      "control": "nested-header",
+      "foreground_rgb": [
+        214,
+        228,
+        255
+      ],
+      "background_rgb": [
+        42,
+        66,
+        104
+      ],
+      "ratio": 7.89
+    },
+    {
+      "control": "active-acf-tab",
+      "foreground_rgb": [
+        171,
+        198,
+        255
+      ],
+      "background_rgb": [
+        27,
+        40,
+        57
+      ],
+      "ratio": 8.7
+    },
+    {
+      "control": "disabled-previous",
+      "foreground_rgb": [
+        174,
+        191,
+        210
+      ],
+      "background_rgb": [
+        44,
+        60,
+        81
+      ],
+      "ratio": 5.97
+    }
+  ]
+}

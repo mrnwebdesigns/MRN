@@ -7,9 +7,9 @@ body.mrn-appearance #adminmenuwrap { box-shadow: inset -1px 0 var(--mrn-admin-li
 body.mrn-appearance #adminmenu { padding: 14px 0; }
 body.mrn-appearance #adminmenu li.menu-top { background: transparent !important; }
 body.mrn-appearance #adminmenu a { color: var(--mrn-admin-nav-ink) !important; }
-body.mrn-appearance #adminmenu a.menu-top { margin: 3px 10px; border-radius: 8px; background: transparent !important; font-weight: 500; }
-body.mrn-appearance #adminmenu .wp-menu-name { padding-top: 11px; padding-bottom: 11px; font-size: 13px; }
-body.mrn-appearance #adminmenu .wp-menu-image { padding-top: 4px; }
+body.mrn-appearance #adminmenu a.menu-top { margin: 1px 10px; border-radius: 8px; background: transparent !important; font-weight: 500; }
+body.mrn-appearance #adminmenu .wp-menu-name { padding-top: 7px; padding-bottom: 7px; font-size: 13px; }
+body.mrn-appearance #adminmenu .wp-menu-image { padding-top: 0; }
 body.mrn-appearance #adminmenu .wp-menu-image:before { color: var(--mrn-admin-nav-muted) !important; }
 body.mrn-appearance #adminmenu li.menu-top:is(:hover,.opensub) > a,
 body.mrn-appearance #adminmenu a:is(:hover,:focus) { background: var(--mrn-admin-nav-hover) !important; color: var(--mrn-admin-nav-ink) !important; box-shadow: none; }
@@ -23,9 +23,9 @@ body.mrn-appearance #adminmenu .wp-submenu a { padding: 9px 12px; border-radius:
 body.mrn-appearance #adminmenu .wp-submenu :is(li.current > a,a.current) { background: var(--mrn-admin-nav-active) !important; color: var(--mrn-admin-nav-active-ink) !important; font-weight: 650; text-decoration: underline; text-underline-offset: 4px; }
 body.mrn-appearance #adminmenu .wp-submenu a:is(:hover,:focus) { background: var(--mrn-admin-nav-hover) !important; }
 body.mrn-appearance #adminmenu .wp-submenu .wp-submenu-head { background: var(--mrn-admin-nav) !important; color: var(--mrn-admin-nav-muted) !important; }
-body.mrn-appearance #adminmenu .ame-menu-heading-item > a { margin-top: 20px; border-radius: 5px; color: var(--mrn-admin-nav-muted) !important; opacity: 1; }
+body.mrn-appearance #adminmenu .ame-menu-heading-item > a { margin-top: 12px; border-radius: 5px; color: var(--mrn-admin-nav-ink) !important; opacity: 1; }
 body.mrn-appearance #adminmenu .ame-menu-heading-item .wp-menu-name { font-size: 11px; font-weight: 650; text-transform: uppercase; letter-spacing: .1em; }
-body.mrn-appearance #adminmenu li.wp-menu-separator { margin: 12px 16px; }
+body.mrn-appearance #adminmenu li.wp-menu-separator { margin: 6px 16px; }
 body.mrn-appearance #adminmenu .ws-submenu-separator { border-color: var(--mrn-admin-line); }
 body.mrn-appearance #collapse-button { color: var(--mrn-admin-nav-muted) !important; }
 body.mrn-appearance #collapse-button:is(:hover,:focus) { color: var(--mrn-admin-nav-ink) !important; background: var(--mrn-admin-nav-hover); }
@@ -184,3 +184,22 @@ body.mrn-appearance #wpadminbar .wrap-seopress-noindex .ab-icon::before { color:
 /* Once activated, keyboard interaction is independent of hover-intent timing. */
 body.mrn-appearance #wpadminbar #wp-admin-bar-mrn-appearance.mrn-appearance-open > .ab-sub-wrapper { display: block; }
 body.mrn-appearance #wpadminbar #wp-admin-bar-mrn-appearance.mrn-appearance-open > .ab-item { background: var(--mrn-admin-surface-hover) !important; }
+
+/* AME's collapsible group controls stay native; reduce the decorative gaps. */
+body.mrn-appearance #adminmenu li.ame-menu-heading-item > a.menu-top { min-height: 32px; margin-bottom: 4px; background: var(--mrn-admin-surface-subtle) !important; }
+body.mrn-appearance #adminmenu li.ame-menu-heading-item .wp-menu-name { padding-top: 8px; padding-bottom: 8px; font-weight: 750; letter-spacing: .075em; }
+body.mrn-appearance #adminmenu .ame-mh-divider { display: none !important; }
+body.mrn-appearance #adminmenu :is(a.menu-top,li.menu-top)::after, body.mrn-appearance #adminmenu a.menu-top::before { display: none !important; }
+body.mrn-appearance #adminmenu :is(li.current,li.wp-has-current-submenu) > a.menu-top { border-radius: 6px !important; clip-path: none !important; }
+/* Alpha masks retain the vendor glyph instead of filtering entire interfaces. */
+body.mrn-appearance #wpadminbar #seopress-ab-icon.mrn-shell-mask { background-image: none !important; background-color: var(--mrn-admin-ink); mask-image: var(--mrn-shell-icon); mask-size: 24px; mask-position: left center; mask-repeat: no-repeat; }
+body.mrn-appearance #adminmenu .wp-menu-image.mrn-shell-mask { position: relative; color: var(--mrn-admin-nav-muted); }
+body.mrn-appearance #adminmenu .wp-menu-image.mrn-shell-mask img { opacity: 0; }
+body.mrn-appearance #adminmenu .wp-menu-image.mrn-shell-mask::after { content: ''; display: block; position: absolute; inset: 7px 8px; background: currentColor; mask-image: var(--mrn-shell-icon); mask-size: contain; mask-position: center; mask-repeat: no-repeat; }
+body.mrn-appearance #adminmenu :is(li.current,li.wp-has-current-submenu) > a .mrn-shell-mask { color: var(--mrn-admin-nav-active-ink); }
+@media (max-width: 782px) {
+ body.mrn-appearance #adminmenu .wp-menu-name { padding-top: 12px; padding-bottom: 12px; }
+ body.mrn-appearance #adminmenu a.menu-top { min-height: 44px; }
+ body.mrn-appearance #adminmenu .wp-menu-image { padding-top: 4px; }
+}
+body.mrn-appearance #adminmenu li.ame-menu-heading-item > a.menu-top:is(:hover,:focus) { background: var(--mrn-admin-nav-hover) !important; }
