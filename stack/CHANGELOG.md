@@ -1,5 +1,10 @@
 # Stack Changelog
 
+## 2026.11.02-fleet-auto-fa5a9a88410f
+
+- Automatic cumulative release from accepted source vector `c140967e721cb78a645f8e293be891452ea80796e3a514bcea18120fe544fc3c`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
 ## Unreleased — immutable maintenance packages
 
 - MRN Updraft Backup Policy 0.8.11 retains the exact inspected maintenance ZIP in bounded owner-only temporary storage outside the web root. Preview, confirmation and the native updater revalidate those same bytes, while current offers, site/state identity, remote backups and activation protections remain enforced.
