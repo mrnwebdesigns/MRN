@@ -1,0 +1,88 @@
+{
+  "batch": "001-dashboard-light",
+  "receivedDate": "2026-11-02",
+  "candidate": "c1f249f1",
+  "pageUrl": "https://admin-editor-pilot.localhost/wp-admin/",
+  "frame": "top document",
+  "viewport": {
+    "width": 1487,
+    "height": 1909
+  },
+  "renderedAppearance": "Light, observed from supplied screenshots",
+  "storedAppearancePreference": "not inspected",
+  "darkEvidence": "No Dark-mode annotation supplied in this batch",
+  "source": "User-submitted Browser comments and five attached labeled marker screenshots in this chat",
+  "imageRetention": "Original marked images remain attached to the submitted chat message; no local image paths or opaque native annotation IDs were supplied",
+  "status": "Collected; awaiting refinement approval",
+  "reviewComplete": false,
+  "approvedClusters": [],
+  "implementedRefinements": 0,
+  "annotations": [
+    {
+      "id": "UX-001",
+      "sourceComment": 1,
+      "position": {
+        "x": 488,
+        "y": 29
+      },
+      "target": "SEO10",
+      "role": "menuitem",
+      "selector": "li#wp-admin-bar-seopress > a.ab-item:nth-of-type(1)",
+      "path": "div > ul > li > a",
+      "comment": "The con is hard to see",
+      "cluster": "UX-C01"
+    },
+    {
+      "id": "UX-002",
+      "sourceComment": 2,
+      "position": {
+        "x": 1274,
+        "y": 56
+      },
+      "target": "Screen Options",
+      "selector": "button#show-settings-link",
+      "path": "div > div > div > button",
+      "comment": "Any ideas what could be better than this floating around?",
+      "cluster": "UX-C03"
+    },
+    {
+      "id": "UX-003",
+      "sourceComment": 3,
+      "position": {
+        "x": 133,
+        "y": 281
+      },
+      "target": "Dashboard Updates 1 Notifications 6 CONTENT Pages All Pages Add Page Blog All Po",
+      "selector": "ul#adminmenu",
+      "path": "div > div > div > ul",
+      "comment": "Spacing between items is a bit much. The main sections could stand out a little more.",
+      "cluster": "UX-C02"
+    },
+    {
+      "id": "UX-004",
+      "sourceComment": 4,
+      "position": {
+        "x": 162,
+        "y": 71
+      },
+      "target": "Dashboard",
+      "selector": "li#menu-dashboard > a.wp-first-item.wp-has-submenu > div.wp-menu-name:nth-of-type(2)",
+      "path": "ul > li > a > div",
+      "comment": "This styling seems off",
+      "cluster": "UX-C02"
+    },
+    {
+      "id": "UX-005",
+      "sourceComment": 5,
+      "position": {
+        "x": 33,
+        "y": 1834
+      },
+      "target": "img",
+      "selector": "li#toplevel_page_relevanssi-relevanssi > a.wp-has-submenu.wp-not-current-submenu > div.wp-menu-image.dashicons-before:nth-of-type(1) > img",
+      "path": "li > a > div > img",
+      "comment": "Icon not visible, match color of reset",
+      "cluster": "UX-C01"
+    }
+  ]
+}
