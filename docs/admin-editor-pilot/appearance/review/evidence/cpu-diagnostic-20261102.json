@@ -1,0 +1,911 @@
+{
+  "checkedAt": "2026-11-02T12:47:17.491Z",
+  "candidate": "c1f249f1",
+  "browser": "148.0.7778.96",
+  "protocol": "Serial Chromium fresh contexts; two warm-ups; balanced Light/Dark samples; four initialized TinyMCE instances and 19 sections. Modes are in-memory HTML response overrides; last four runs omit appearance.js only in the browser. No installed baseline, account preference, content or settings changes. Profiled samples are diagnostic and excluded from timing comparisons. This is attribution, not prior/candidate release qualification.",
+  "installed_before": [
+    {
+      "file": "mrn-admin-ui-css.php",
+      "source": "b45f95b599951310285864c6e96978e70de03c3440c9c64f3993967f809b5f92",
+      "installed": "b45f95b599951310285864c6e96978e70de03c3440c9c64f3993967f809b5f92"
+    },
+    {
+      "file": "modern-admin.php",
+      "source": "736e9baba0ebe1be94301846183849a84d757533f0e629fb8b2fb40a76df51a0",
+      "installed": "736e9baba0ebe1be94301846183849a84d757533f0e629fb8b2fb40a76df51a0"
+    },
+    {
+      "file": "appearance.php",
+      "source": "8e1a35521632cff84bbe6371e3b6df9c70c5e24c0fbee75cde23904b497ced92",
+      "installed": "8e1a35521632cff84bbe6371e3b6df9c70c5e24c0fbee75cde23904b497ced92"
+    },
+    {
+      "file": "appearance.js",
+      "source": "a2c111b754692d31ce877b53b163d367e4a0aa66eb6332a8da33a185fd293256",
+      "installed": "a2c111b754692d31ce877b53b163d367e4a0aa66eb6332a8da33a185fd293256"
+    },
+    {
+      "file": "mrn-admin-tokens.css",
+      "source": "9e683a0f25ebba7358a3f3c584d563baaaf9212a7a484b67894a3973c853cd87",
+      "installed": "9e683a0f25ebba7358a3f3c584d563baaaf9212a7a484b67894a3973c853cd87"
+    },
+    {
+      "file": "mrn-admin-shell.css",
+      "source": "ff22cac3a3079c6114016ef29675a5c2e0c9994ae20dc74e9a4bc41796274832",
+      "installed": "ff22cac3a3079c6114016ef29675a5c2e0c9994ae20dc74e9a4bc41796274832"
+    },
+    {
+      "file": "mrn-modern-admin.css",
+      "source": "384f7e6ce22dcd7396227586fec9d1941f88baa3bf5df4a6eb5215e30f42c947",
+      "installed": "384f7e6ce22dcd7396227586fec9d1941f88baa3bf5df4a6eb5215e30f42c947"
+    },
+    {
+      "file": "mrn-editor-workspace.css",
+      "source": "51be6ac9ae137b1b90cac92737fd70fcbd62784bfc82df49b8caf7b84bf6df53",
+      "installed": "51be6ac9ae137b1b90cac92737fd70fcbd62784bfc82df49b8caf7b84bf6df53"
+    }
+  ],
+  "installed_after": [
+    {
+      "file": "mrn-admin-ui-css.php",
+      "source": "b45f95b599951310285864c6e96978e70de03c3440c9c64f3993967f809b5f92",
+      "installed": "b45f95b599951310285864c6e96978e70de03c3440c9c64f3993967f809b5f92"
+    },
+    {
+      "file": "modern-admin.php",
+      "source": "736e9baba0ebe1be94301846183849a84d757533f0e629fb8b2fb40a76df51a0",
+      "installed": "736e9baba0ebe1be94301846183849a84d757533f0e629fb8b2fb40a76df51a0"
+    },
+    {
+      "file": "appearance.php",
+      "source": "8e1a35521632cff84bbe6371e3b6df9c70c5e24c0fbee75cde23904b497ced92",
+      "installed": "8e1a35521632cff84bbe6371e3b6df9c70c5e24c0fbee75cde23904b497ced92"
+    },
+    {
+      "file": "appearance.js",
+      "source": "a2c111b754692d31ce877b53b163d367e4a0aa66eb6332a8da33a185fd293256",
+      "installed": "a2c111b754692d31ce877b53b163d367e4a0aa66eb6332a8da33a185fd293256"
+    },
+    {
+      "file": "mrn-admin-tokens.css",
+      "source": "9e683a0f25ebba7358a3f3c584d563baaaf9212a7a484b67894a3973c853cd87",
+      "installed": "9e683a0f25ebba7358a3f3c584d563baaaf9212a7a484b67894a3973c853cd87"
+    },
+    {
+      "file": "mrn-admin-shell.css",
+      "source": "ff22cac3a3079c6114016ef29675a5c2e0c9994ae20dc74e9a4bc41796274832",
+      "installed": "ff22cac3a3079c6114016ef29675a5c2e0c9994ae20dc74e9a4bc41796274832"
+    },
+    {
+      "file": "mrn-modern-admin.css",
+      "source": "384f7e6ce22dcd7396227586fec9d1941f88baa3bf5df4a6eb5215e30f42c947",
+      "installed": "384f7e6ce22dcd7396227586fec9d1941f88baa3bf5df4a6eb5215e30f42c947"
+    },
+    {
+      "file": "mrn-editor-workspace.css",
+      "source": "51be6ac9ae137b1b90cac92737fd70fcbd62784bfc82df49b8caf7b84bf6df53",
+      "installed": "51be6ac9ae137b1b90cac92737fd70fcbd62784bfc82df49b8caf7b84bf6df53"
+    }
+  ],
+  "snapshots": [
+    {
+      "label": "before",
+      "checkedAt": "2026-11-02T12:45:56.321Z",
+      "agent_pid": 31927,
+      "agent_descriptors": 51209,
+      "agent_rss_kib": 592096,
+      "available_kib": 4510764,
+      "swap_free_kib": 1838832,
+      "load": [
+        "0.00",
+        "0.01",
+        "0.00"
+      ],
+      "pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=235088300\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=185879840"
+    },
+    {
+      "label": "after sequence 1",
+      "checkedAt": "2026-11-02T12:46:07.649Z",
+      "agent_pid": 31927,
+      "agent_descriptors": 51788,
+      "agent_rss_kib": 613696,
+      "available_kib": 4209220,
+      "swap_free_kib": 1839088,
+      "load": [
+        "0.53",
+        "0.13",
+        "0.04"
+      ],
+      "pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=235088300\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=185879840"
+    },
+    {
+      "label": "after sequence 5",
+      "checkedAt": "2026-11-02T12:46:27.548Z",
+      "agent_pid": 31927,
+      "agent_descriptors": 52939,
+      "agent_rss_kib": 656780,
+      "available_kib": 4180392,
+      "swap_free_kib": 1839088,
+      "load": [
+        "0.58",
+        "0.17",
+        "0.05"
+      ],
+      "pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=235088300\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=185879840"
+    },
+    {
+      "label": "after sequence 9",
+      "checkedAt": "2026-11-02T12:46:49.426Z",
+      "agent_pid": 31927,
+      "agent_descriptors": 54084,
+      "agent_rss_kib": 722912,
+      "available_kib": 4045964,
+      "swap_free_kib": 1839088,
+      "load": [
+        "0.83",
+        "0.27",
+        "0.09"
+      ],
+      "pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=235088300\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=185879840"
+    },
+    {
+      "label": "after sequence 13",
+      "checkedAt": "2026-11-02T12:47:17.472Z",
+      "agent_pid": 31927,
+      "agent_descriptors": 55246,
+      "agent_rss_kib": 787668,
+      "available_kib": 4042672,
+      "swap_free_kib": 1839088,
+      "load": [
+        "1.00",
+        "0.36",
+        "0.13"
+      ],
+      "pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=235088300\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=185879840"
+    }
+  ],
+  "records": [
+    {
+      "sequence": 0,
+      "mode": "light",
+      "omitAppearanceJS": false,
+      "warmup": true,
+      "profiled": false,
+      "wall_ms": 5190.944750000001,
+      "cpu_ms": 1035.366,
+      "script_ms": 599.292,
+      "layout_ms": 79.368,
+      "style_ms": 86.41799999999999,
+      "retained_heap_mb": 26.004985809326172,
+      "acf_form_sha256": "157dcc25456ab988a2e60806b38e6b0ff690365a72310a4daf6fc84ac8678602",
+      "sections": 19,
+      "tinyMCE": 4,
+      "appearance": "light"
+    },
+    {
+      "sequence": 1,
+      "mode": "dark",
+      "omitAppearanceJS": false,
+      "warmup": true,
+      "profiled": false,
+      "wall_ms": 5380.832625000001,
+      "cpu_ms": 961.414,
+      "script_ms": 601.091,
+      "layout_ms": 53.767,
+      "style_ms": 82.662,
+      "retained_heap_mb": 25.94186019897461,
+      "acf_form_sha256": "157dcc25456ab988a2e60806b38e6b0ff690365a72310a4daf6fc84ac8678602",
+      "sections": 19,
+      "tinyMCE": 4,
+      "appearance": "dark"
+    },
+    {
+      "sequence": 2,
+      "mode": "light",
+      "omitAppearanceJS": false,
+      "warmup": false,
+      "profiled": false,
+      "wall_ms": 4484.228250000002,
+      "cpu_ms": 932.824,
+      "script_ms": 572.9309999999999,
+      "layout_ms": 50.986,
+      "style_ms": 79.829,
+      "retained_heap_mb": 25.934444427490234,
+      "acf_form_sha256": "157dcc25456ab988a2e60806b38e6b0ff690365a72310a4daf6fc84ac8678602",
+      "sections": 19,
+      "tinyMCE": 4,
+      "appearance": "light"
+    },
+    {
+      "sequence": 3,
+      "mode": "dark",
+      "omitAppearanceJS": false,
+      "warmup": false,
+      "profiled": false,
+      "wall_ms": 5162.762707999998,
+      "cpu_ms": 926.899,
+      "script_ms": 576.0450000000001,
+      "layout_ms": 51.754000000000005,
+      "style_ms": 80.425,
+      "retained_heap_mb": 25.935962677001953,
+      "acf_form_sha256": "157dcc25456ab988a2e60806b38e6b0ff690365a72310a4daf6fc84ac8678602",
+      "sections": 19,
+      "tinyMCE": 4,
+      "appearance": "dark"
+    },
+    {
+      "sequence": 4,
+      "mode": "dark",
+      "omitAppearanceJS": false,
+      "warmup": false,
+      "profiled": false,
+      "wall_ms": 4460.794207999999,
+      "cpu_ms": 977.543,
+      "script_ms": 610.5279999999999,
+      "layout_ms": 54.866,
+      "style_ms": 84.256,
+      "retained_heap_mb": 25.93459701538086,
+      "acf_form_sha256": "157dcc25456ab988a2e60806b38e6b0ff690365a72310a4daf6fc84ac8678602",
+      "sections": 19,
+      "tinyMCE": 4,
+      "appearance": "dark"
+    },
+    {
+      "sequence": 5,
+      "mode": "light",
+      "omitAppearanceJS": false,
+      "warmup": false,
+      "profiled": false,
+      "wall_ms": 5018.1175,
+      "cpu_ms": 923.932,
+      "script_ms": 576.349,
+      "layout_ms": 52.474,
+      "style_ms": 84.758,
+      "retained_heap_mb": 26.041046142578125,
+      "acf_form_sha256": "157dcc25456ab988a2e60806b38e6b0ff690365a72310a4daf6fc84ac8678602",
+      "sections": 19,
+      "tinyMCE": 4,
+      "appearance": "light"
+    },
+    {
+      "sequence": 6,
+      "mode": "light",
+      "omitAppearanceJS": false,
+      "warmup": false,
+      "profiled": false,
+      "wall_ms": 4817.109208000002,
+      "cpu_ms": 974.81,
+      "script_ms": 625.8280000000001,
+      "layout_ms": 52.067,
+      "style_ms": 80.733,
+      "retained_heap_mb": 25.94327163696289,
+      "acf_form_sha256": "157dcc25456ab988a2e60806b38e6b0ff690365a72310a4daf6fc84ac8678602",
+      "sections": 19,
+      "tinyMCE": 4,
+      "appearance": "light"
+    },
+    {
+      "sequence": 7,
+      "mode": "dark",
+      "omitAppearanceJS": false,
+      "warmup": false,
+      "profiled": false,
+      "wall_ms": 4688.930500000002,
+      "cpu_ms": 949.264,
+      "script_ms": 601.7289999999999,
+      "layout_ms": 51.831,
+      "style_ms": 77.276,
+      "retained_heap_mb": 25.94245147705078,
+      "acf_form_sha256": "157dcc25456ab988a2e60806b38e6b0ff690365a72310a4daf6fc84ac8678602",
+      "sections": 19,
+      "tinyMCE": 4,
+      "appearance": "dark"
+    },
+    {
+      "sequence": 8,
+      "mode": "dark",
+      "omitAppearanceJS": false,
+      "warmup": false,
+      "profiled": true,
+      "wall_ms": 6099.605374999999,
+      "cpu_ms": 964.836,
+      "script_ms": 596.956,
+      "layout_ms": 54.444,
+      "style_ms": 81.635,
+      "retained_heap_mb": 26.325572967529297,
+      "acf_form_sha256": "157dcc25456ab988a2e60806b38e6b0ff690365a72310a4daf6fc84ac8678602",
+      "sections": 19,
+      "tinyMCE": 4,
+      "appearance": "dark",
+      "profile": [
+        {
+          "script": "((idle))",
+          "sampled_self_ms": 5142.413
+        },
+        {
+          "script": "/wp-includes/js/jquery/jquery.min.js",
+          "sampled_self_ms": 336.751
+        },
+        {
+          "script": "((program))",
+          "sampled_self_ms": 271.822
+        },
+        {
+          "script": "/wp-includes/js/tinymce/wp-tinymce.js",
+          "sampled_self_ms": 63.911
+        },
+        {
+          "script": "(querySelectorAll)",
+          "sampled_self_ms": 43.169
+        },
+        {
+          "script": "/wp-includes/js/dist/components.min.js",
+          "sampled_self_ms": 26.93
+        },
+        {
+          "script": "((garbage collector))",
+          "sampled_self_ms": 23.447
+        },
+        {
+          "script": "/wp-content/mu-plugins/mrn-editor-lockdown/assets/section-navigator.js",
+          "sampled_self_ms": 19.71
+        },
+        {
+          "script": "/wp-includes/js/wp-emoji-release.min.js",
+          "sampled_self_ms": 16.732
+        },
+        {
+          "script": "/wp-includes/js/dist/vendor/react-dom.min.js",
+          "sampled_self_ms": 15.366
+        },
+        {
+          "script": "/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/acf.min.js",
+          "sampled_self_ms": 14.637
+        },
+        {
+          "script": "/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/acf-input.min.js",
+          "sampled_self_ms": 10.947
+        },
+        {
+          "script": "/wp-includes/js/jquery/jquery-migrate.min.js",
+          "sampled_self_ms": 9.253
+        },
+        {
+          "script": "/wp-content/plugins/happyfiles-pro/assets/js/happyfiles.min.js",
+          "sampled_self_ms": 8.752
+        },
+        {
+          "script": "(appendChild)",
+          "sampled_self_ms": 8.74
+        },
+        {
+          "script": "/wp-content/plugins/wp-seopress/public/metaboxe.js",
+          "sampled_self_ms": 7.542
+        },
+        {
+          "script": "/wp-includes/js/plupload/moxie.min.js",
+          "sampled_self_ms": 3.765
+        },
+        {
+          "script": "/wp-includes/js/dist/vendor/react.min.js",
+          "sampled_self_ms": 3.763
+        },
+        {
+          "script": "(fetch)",
+          "sampled_self_ms": 3.758
+        },
+        {
+          "script": "/wp-content/plugins/advanced-custom-fields-pro/assets/inc/select2/4/select2.full.min.js",
+          "sampled_self_ms": 3.659
+        },
+        {
+          "script": "(removeChild)",
+          "sampled_self_ms": 2.537
+        },
+        {
+          "script": "/wp-admin/post.php",
+          "sampled_self_ms": 2.53
+        },
+        {
+          "script": "/wp-includes/js/quicktags.min.js",
+          "sampled_self_ms": 2.521
+        },
+        {
+          "script": "(RegExp: (^|[\\x20\\t\\r\\n\\f])acf-clone([\\x20\\t\\r\\n\\f]|$))",
+          "sampled_self_ms": 2.516
+        },
+        {
+          "script": "/wp-admin/js/common.min.js",
+          "sampled_self_ms": 2.506
+        },
+        {
+          "script": "/wp-includes/js/dist/data.min.js",
+          "sampled_self_ms": 2.505
+        },
+        {
+          "script": "/wp-content/plugins/wp-seopress/public/admin/settings/tab-title-description.3051416e1dd3a085d741.js",
+          "sampled_self_ms": 2.504
+        },
+        {
+          "script": "/wp-includes/js/dist/date.min.js",
+          "sampled_self_ms": 2.502
+        },
+        {
+          "script": "/wp-admin/js/editor.min.js",
+          "sampled_self_ms": 2.492
+        },
+        {
+          "script": "(insertBefore)",
+          "sampled_self_ms": 2.489
+        },
+        {
+          "script": "/wp-includes/js/jquery/ui/core.min.js",
+          "sampled_self_ms": 2.314
+        },
+        {
+          "script": "/wp-includes/js/dist/commands.min.js",
+          "sampled_self_ms": 1.954
+        },
+        {
+          "script": "(execCommand)",
+          "sampled_self_ms": 1.648
+        },
+        {
+          "script": "/wp-content/plugins/tinymce-advanced/mce/visualchars/plugin.min.js",
+          "sampled_self_ms": 1.269
+        },
+        {
+          "script": "/wp-content/plugins/wp-seopress/public/admin/settings/vendor-fuse.3e9c2f81420fd48280d4.js",
+          "sampled_self_ms": 1.264
+        },
+        {
+          "script": "/wp-includes/js/dist/i18n.min.js",
+          "sampled_self_ms": 1.26
+        },
+        {
+          "script": "(RegExp: ([a-zA-Z0-9]+))",
+          "sampled_self_ms": 1.26
+        },
+        {
+          "script": "/wp-content/plugins/tinymce-advanced/mce/insertdatetime/plugin.min.js",
+          "sampled_self_ms": 1.26
+        },
+        {
+          "script": "/wp-includes/js/dist/undo-manager.min.js",
+          "sampled_self_ms": 1.257
+        },
+        {
+          "script": "(RegExp: ^(\\S+)\\s*(.*)$)",
+          "sampled_self_ms": 1.257
+        },
+        {
+          "script": "/wp-content/plugins/wp-seopress-pro/assets/js/seopress-redirection-conflict.js",
+          "sampled_self_ms": 1.257
+        },
+        {
+          "script": "(RegExp: ^-ms-)",
+          "sampled_self_ms": 1.257
+        },
+        {
+          "script": "(RegExp: ^\\s*|\\s*$)",
+          "sampled_self_ms": 1.256
+        },
+        {
+          "script": "(RegExp: ^(none|table(?!-c[ea]).+))",
+          "sampled_self_ms": 1.256
+        },
+        {
+          "script": "/wp-content/plugins/mrn-universal-sticky-bar/assets/universal-sticky-bar.js",
+          "sampled_self_ms": 1.255
+        },
+        {
+          "script": "(UtilityScript)",
+          "sampled_self_ms": 1.254
+        },
+        {
+          "script": "(RegExp: ^(?:(?![^:@]+:[^:@\\/]*@)([^:\\/?#.]+):)?(?:\\/\\/)?((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\\/?#]*)(?::(\\d*))?)(((\\/(?:[^?#](?![^?#\\/]*\\.[^?#\\/.]+(?:[?#]|$)))*\\/?)?([^?#\\/]*))(?:\\?([^#]*))?(?:#(.*))?))",
+          "sampled_self_ms": 1.253
+        },
+        {
+          "script": "(RegExp: -([a-z]))",
+          "sampled_self_ms": 1.253
+        },
+        {
+          "script": "/wp-includes/js/media-views.min.js",
+          "sampled_self_ms": 1.252
+        },
+        {
+          "script": "/wp-includes/js/dist/vendor/moment.min.js",
+          "sampled_self_ms": 1.25
+        },
+        {
+          "script": "/wp-includes/js/mediaelement/mediaelement-and-player.min.js",
+          "sampled_self_ms": 1.248
+        },
+        {
+          "script": "(RegExp: ^[\\x20\\t\\r\\n\\f]+|((?:^|[^\\\\])(?:\\\\.)*)[\\x20\\t\\r\\n\\f]+$)",
+          "sampled_self_ms": 1.248
+        },
+        {
+          "script": "(RegExp: (^|[\\x20\\t\\r\\n\\f])acf-field([\\x20\\t\\r\\n\\f]|$))",
+          "sampled_self_ms": 1.248
+        },
+        {
+          "script": "/wp-includes/js/admin-bar.min.js",
+          "sampled_self_ms": 1.247
+        },
+        {
+          "script": "(querySelector)",
+          "sampled_self_ms": 1.247
+        },
+        {
+          "script": "(addEventListener)",
+          "sampled_self_ms": 1.247
+        },
+        {
+          "script": "/wp-includes/js/media-models.min.js",
+          "sampled_self_ms": 1.238
+        },
+        {
+          "script": "(createElement)",
+          "sampled_self_ms": 1.233
+        },
+        {
+          "script": "(RegExp: \\s)",
+          "sampled_self_ms": 1.194
+        },
+        {
+          "script": "/wp-includes/js/dist/api-fetch.min.js",
+          "sampled_self_ms": 1.099
+        },
+        {
+          "script": "/wp-content/themes/mrn-base-stack/js/admin-row-flex-layout.js",
+          "sampled_self_ms": 0.882
+        },
+        {
+          "script": "/wp-includes/js/dist/url.min.js",
+          "sampled_self_ms": 0.561
+        },
+        {
+          "script": "(setTimeout)",
+          "sampled_self_ms": 0.535
+        },
+        {
+          "script": "/wp-includes/js/jquery/ui/datepicker.min.js",
+          "sampled_self_ms": 0.534
+        }
+      ]
+    },
+    {
+      "sequence": 9,
+      "mode": "light",
+      "omitAppearanceJS": false,
+      "warmup": false,
+      "profiled": true,
+      "wall_ms": 5502.947833000006,
+      "cpu_ms": 959.4110000000001,
+      "script_ms": 598.342,
+      "layout_ms": 54.907,
+      "style_ms": 78.413,
+      "retained_heap_mb": 26.40206527709961,
+      "acf_form_sha256": "157dcc25456ab988a2e60806b38e6b0ff690365a72310a4daf6fc84ac8678602",
+      "sections": 19,
+      "tinyMCE": 4,
+      "appearance": "light",
+      "profile": [
+        {
+          "script": "((idle))",
+          "sampled_self_ms": 4541.375
+        },
+        {
+          "script": "/wp-includes/js/jquery/jquery.min.js",
+          "sampled_self_ms": 328.308
+        },
+        {
+          "script": "((program))",
+          "sampled_self_ms": 279.892
+        },
+        {
+          "script": "/wp-includes/js/tinymce/wp-tinymce.js",
+          "sampled_self_ms": 64.593
+        },
+        {
+          "script": "(querySelectorAll)",
+          "sampled_self_ms": 33.06
+        },
+        {
+          "script": "/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/acf.min.js",
+          "sampled_self_ms": 27.833
+        },
+        {
+          "script": "/wp-includes/js/dist/components.min.js",
+          "sampled_self_ms": 26.885
+        },
+        {
+          "script": "((garbage collector))",
+          "sampled_self_ms": 21.684
+        },
+        {
+          "script": "/wp-content/mu-plugins/mrn-editor-lockdown/assets/section-navigator.js",
+          "sampled_self_ms": 19.986
+        },
+        {
+          "script": "/wp-includes/js/dist/vendor/react-dom.min.js",
+          "sampled_self_ms": 16.069
+        },
+        {
+          "script": "/wp-includes/js/wp-emoji-release.min.js",
+          "sampled_self_ms": 15.598
+        },
+        {
+          "script": "/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/acf-input.min.js",
+          "sampled_self_ms": 12.172
+        },
+        {
+          "script": "/wp-content/plugins/wp-seopress/public/metaboxe.js",
+          "sampled_self_ms": 11.366
+        },
+        {
+          "script": "/wp-content/plugins/happyfiles-pro/assets/js/happyfiles.min.js",
+          "sampled_self_ms": 8.77
+        },
+        {
+          "script": "(appendChild)",
+          "sampled_self_ms": 7.526
+        },
+        {
+          "script": "(RegExp: (^|[\\x20\\t\\r\\n\\f])acf-clone([\\x20\\t\\r\\n\\f]|$))",
+          "sampled_self_ms": 7.189
+        },
+        {
+          "script": "/wp-includes/js/jquery/jquery-migrate.min.js",
+          "sampled_self_ms": 4.315
+        },
+        {
+          "script": "(RegExp: ^\\s*|\\s*$)",
+          "sampled_self_ms": 3.795
+        },
+        {
+          "script": "/wp-content/plugins/wp-seopress/public/admin/settings/tab-title-description.3051416e1dd3a085d741.js",
+          "sampled_self_ms": 3.767
+        },
+        {
+          "script": "/wp-content/plugins/advanced-custom-fields-pro/assets/inc/select2/4/select2.full.min.js",
+          "sampled_self_ms": 3.759
+        },
+        {
+          "script": "/wp-includes/js/quicktags.min.js",
+          "sampled_self_ms": 3.578
+        },
+        {
+          "script": "/wp-includes/js/mediaelement/mediaelement-and-player.min.js",
+          "sampled_self_ms": 3.437
+        },
+        {
+          "script": "/wp-includes/js/dist/vendor/react.min.js",
+          "sampled_self_ms": 3.092
+        },
+        {
+          "script": "(removeChild)",
+          "sampled_self_ms": 2.513
+        },
+        {
+          "script": "/wp-includes/js/dist/date.min.js",
+          "sampled_self_ms": 2.512
+        },
+        {
+          "script": "(querySelector)",
+          "sampled_self_ms": 2.509
+        },
+        {
+          "script": "/wp-includes/js/plupload/moxie.min.js",
+          "sampled_self_ms": 2.507
+        },
+        {
+          "script": "(fetch)",
+          "sampled_self_ms": 2.507
+        },
+        {
+          "script": "/wp-admin/js/common.min.js",
+          "sampled_self_ms": 2.504
+        },
+        {
+          "script": "(addEventListener)",
+          "sampled_self_ms": 2.462
+        },
+        {
+          "script": "/wp-admin/js/editor.min.js",
+          "sampled_self_ms": 2.364
+        },
+        {
+          "script": "/wp-includes/js/media-views.min.js",
+          "sampled_self_ms": 2.3
+        },
+        {
+          "script": "(createDocumentFragment)",
+          "sampled_self_ms": 1.82
+        },
+        {
+          "script": "/wp-includes/js/underscore.min.js",
+          "sampled_self_ms": 1.766
+        },
+        {
+          "script": "/wp-content/plugins/tinymce-advanced/mce/table/plugin.min.js",
+          "sampled_self_ms": 1.578
+        },
+        {
+          "script": "/wp-includes/js/dist/commands.min.js",
+          "sampled_self_ms": 1.428
+        },
+        {
+          "script": "/wp-admin/js/word-count.min.js",
+          "sampled_self_ms": 1.283
+        },
+        {
+          "script": "/wp-content/themes/mrn-base-stack/js/admin-row-flex-layout.js",
+          "sampled_self_ms": 1.259
+        },
+        {
+          "script": "(RegExp: ^(?:(?![^:@]+:[^:@\\/]*@)([^:\\/?#.]+):)?(?:\\/\\/)?((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\\/?#]*)(?::(\\d*))?)(((\\/(?:[^?#](?![^?#\\/]*\\.[^?#\\/.]+(?:[?#]|$)))*\\/?)?([^?#\\/]*))(?:\\?([^#]*))?(?:#(.*))?))",
+          "sampled_self_ms": 1.258
+        },
+        {
+          "script": "(execCommand)",
+          "sampled_self_ms": 1.258
+        },
+        {
+          "script": "(InjectedScript)",
+          "sampled_self_ms": 1.258
+        },
+        {
+          "script": "/wp-admin/post.php",
+          "sampled_self_ms": 1.256
+        },
+        {
+          "script": "/wp-includes/js/dist/api-fetch.min.js",
+          "sampled_self_ms": 1.256
+        },
+        {
+          "script": "/wp-includes/js/dist/keycodes.min.js",
+          "sampled_self_ms": 1.255
+        },
+        {
+          "script": "/wp-includes/js/heartbeat.min.js",
+          "sampled_self_ms": 1.254
+        },
+        {
+          "script": "/wp-includes/js/dist/dom.min.js",
+          "sampled_self_ms": 1.253
+        },
+        {
+          "script": "/wp-includes/js/dist/vendor/moment.min.js",
+          "sampled_self_ms": 1.252
+        },
+        {
+          "script": "/wp-content/plugins/mrn-config-helper/assets/js/acf-layout-picker.js",
+          "sampled_self_ms": 1.252
+        },
+        {
+          "script": "(evaluate)",
+          "sampled_self_ms": 1.25
+        },
+        {
+          "script": "(RegExp: \\[(\\s*[-\\w]+\\s*)([~|^$*]?=)\\s*([-\\w#]*?#[-\\w#]*)\\s*\\])",
+          "sampled_self_ms": 1.249
+        },
+        {
+          "script": "/wp-includes/js/dist/data.min.js",
+          "sampled_self_ms": 1.239
+        },
+        {
+          "script": "/wp-includes/js/dist/element.min.js",
+          "sampled_self_ms": 1.23
+        },
+        {
+          "script": "/wp-includes/js/jquery/ui/mouse.min.js",
+          "sampled_self_ms": 1.128
+        },
+        {
+          "script": "/wp-content/plugins/tinymce-advanced/mce/insertdatetime/plugin.min.js",
+          "sampled_self_ms": 1.072
+        },
+        {
+          "script": "(createElement)",
+          "sampled_self_ms": 1.055
+        },
+        {
+          "script": "(RegExp: (^|[\\x20\\t\\r\\n\\f])acf-field([\\x20\\t\\r\\n\\f]|$))",
+          "sampled_self_ms": 0.87
+        },
+        {
+          "script": "/wp-includes/js/jquery/ui/core.min.js",
+          "sampled_self_ms": 0.833
+        },
+        {
+          "script": "/wp-includes/js/jquery/ui/draggable.min.js",
+          "sampled_self_ms": 0.77
+        },
+        {
+          "script": "/wp-includes/js/wp-backbone.min.js",
+          "sampled_self_ms": 0.749
+        },
+        {
+          "script": "/wp-content/themes/mrn-base-stack/js/admin-editor-startup.js",
+          "sampled_self_ms": 0.48
+        },
+        {
+          "script": "(RegExp: (^|[\\x20\\t\\r\\n\\f])acf-field-settings-main([\\x20\\t\\r\\n\\f]|$))",
+          "sampled_self_ms": 0.258
+        }
+      ]
+    },
+    {
+      "sequence": 10,
+      "mode": "light",
+      "omitAppearanceJS": true,
+      "warmup": false,
+      "profiled": false,
+      "wall_ms": 5549.691207999997,
+      "cpu_ms": 1109.3200000000002,
+      "script_ms": 715.912,
+      "layout_ms": 59.983000000000004,
+      "style_ms": 84.88999999999999,
+      "retained_heap_mb": 25.931583404541016,
+      "acf_form_sha256": "157dcc25456ab988a2e60806b38e6b0ff690365a72310a4daf6fc84ac8678602",
+      "sections": 19,
+      "tinyMCE": 4,
+      "appearance": "light"
+    },
+    {
+      "sequence": 11,
+      "mode": "dark",
+      "omitAppearanceJS": true,
+      "warmup": false,
+      "profiled": false,
+      "wall_ms": 5558.359375,
+      "cpu_ms": 1292.458,
+      "script_ms": 780.769,
+      "layout_ms": 87.228,
+      "style_ms": 115.996,
+      "retained_heap_mb": 27.123001098632812,
+      "acf_form_sha256": "157dcc25456ab988a2e60806b38e6b0ff690365a72310a4daf6fc84ac8678602",
+      "sections": 19,
+      "tinyMCE": 4,
+      "appearance": "dark"
+    },
+    {
+      "sequence": 12,
+      "mode": "dark",
+      "omitAppearanceJS": true,
+      "warmup": false,
+      "profiled": false,
+      "wall_ms": 9317.570125000006,
+      "cpu_ms": 1523.797,
+      "script_ms": 966.834,
+      "layout_ms": 90.999,
+      "style_ms": 115.535,
+      "retained_heap_mb": 26.012649536132812,
+      "acf_form_sha256": "157dcc25456ab988a2e60806b38e6b0ff690365a72310a4daf6fc84ac8678602",
+      "sections": 19,
+      "tinyMCE": 4,
+      "appearance": "dark"
+    },
+    {
+      "sequence": 13,
+      "mode": "light",
+      "omitAppearanceJS": true,
+      "warmup": false,
+      "profiled": false,
+      "wall_ms": 6763.607499999998,
+      "cpu_ms": 1460.738,
+      "script_ms": 939.152,
+      "layout_ms": 82.355,
+      "style_ms": 113.021,
+      "retained_heap_mb": 25.933258056640625,
+      "acf_form_sha256": "157dcc25456ab988a2e60806b38e6b0ff690365a72310a4daf6fc84ac8678602",
+      "sections": 19,
+      "tinyMCE": 4,
+      "appearance": "light"
+    }
+  ]
+}

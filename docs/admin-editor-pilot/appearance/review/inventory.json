@@ -1,0 +1,277 @@
+{
+  "candidate": "c1f249f1",
+  "captured": "2026-10-30",
+  "reviewPrepared": "2026-11-02",
+  "screens": [
+    {
+      "id": "dashboard",
+      "title": "Dashboard",
+      "liveUrl": "https://admin-editor-pilot.localhost/wp-admin/index.php",
+      "component": "Dashboard Support + Admin UI CSS",
+      "state": "Dashboard hierarchy and widgets",
+      "viewport": "desktop",
+      "light": "../evidence/light-dashboard.png",
+      "dark": "../evidence/dark-dashboard.png"
+    },
+    {
+      "id": "sidebar-hover",
+      "title": "Sidebar hover and flyout",
+      "liveUrl": "https://admin-editor-pilot.localhost/wp-admin/index.php",
+      "component": "Admin UI CSS shell; AME configuration owner",
+      "state": "Navigation hover/flyout",
+      "viewport": "desktop",
+      "light": "../evidence/light-sidebar-hover.png",
+      "dark": "../evidence/dark-sidebar-hover.png"
+    },
+    {
+      "id": "sidebar-keyboard",
+      "title": "Sidebar keyboard focus",
+      "liveUrl": "https://admin-editor-pilot.localhost/wp-admin/index.php",
+      "component": "Admin UI CSS shell; AME configuration owner",
+      "state": "Focus and submenu entry",
+      "viewport": "desktop",
+      "light": "../evidence/light-sidebar-keyboard.png",
+      "dark": "../evidence/dark-sidebar-keyboard.png"
+    },
+    {
+      "id": "sidebar-mobile-expanded",
+      "title": "Mobile expanded navigation",
+      "liveUrl": "https://admin-editor-pilot.localhost/wp-admin/index.php",
+      "component": "Admin UI CSS shell; AME configuration owner",
+      "state": "Expanded mobile navigation",
+      "viewport": "390px",
+      "light": "../evidence/light-sidebar-mobile-expanded.png",
+      "dark": "../evidence/dark-sidebar-mobile-expanded.png"
+    },
+    {
+      "id": "pages",
+      "title": "Pages",
+      "liveUrl": "https://admin-editor-pilot.localhost/wp-admin/edit.php?post_type=page",
+      "component": "Admin UI CSS native list styles",
+      "state": "Filters, bulk and row actions",
+      "viewport": "desktop",
+      "light": "../evidence/light-pages.png",
+      "dark": "../evidence/dark-pages.png"
+    },
+    {
+      "id": "posts",
+      "title": "Posts",
+      "liveUrl": "https://admin-editor-pilot.localhost/wp-admin/edit.php",
+      "component": "Admin UI CSS native list styles",
+      "state": "Native post list",
+      "viewport": "desktop",
+      "light": "../evidence/light-posts.png",
+      "dark": "../evidence/dark-posts.png"
+    },
+    {
+      "id": "cpt",
+      "title": "Team members",
+      "liveUrl": "https://admin-editor-pilot.localhost/wp-admin/edit.php?post_type=team_member",
+      "component": "Admin UI CSS native list styles",
+      "state": "Custom post type list",
+      "viewport": "desktop",
+      "light": "../evidence/light-cpt.png",
+      "dark": "../evidence/dark-cpt.png"
+    },
+    {
+      "id": "settings",
+      "title": "General settings",
+      "liveUrl": "https://admin-editor-pilot.localhost/wp-admin/options-general.php",
+      "component": "Admin UI CSS native controls",
+      "state": "Inputs, labels and notices",
+      "viewport": "desktop",
+      "light": "../evidence/light-settings.png",
+      "dark": "../evidence/dark-settings.png"
+    },
+    {
+      "id": "config",
+      "title": "MRN Site Configurations",
+      "liveUrl": "https://admin-editor-pilot.localhost/wp-admin/options-general.php?page=mrn-config-helper",
+      "component": "Admin UI CSS; Config Helper owns behavior",
+      "state": "Settings tabs and controls",
+      "viewport": "desktop",
+      "light": "../evidence/light-config.png",
+      "dark": "../evidence/dark-config.png"
+    },
+    {
+      "id": "notifications",
+      "title": "MRN Notifications Center",
+      "liveUrl": "https://admin-editor-pilot.localhost/wp-admin/admin.php?page=mrn-notifications-center",
+      "component": "Admin UI CSS; Notifications Center owns behavior",
+      "state": "Notices, severity and filters",
+      "viewport": "desktop",
+      "light": "../evidence/light-notifications.png",
+      "dark": "../evidence/dark-notifications.png"
+    },
+    {
+      "id": "business",
+      "title": "Business Information",
+      "liveUrl": "https://admin-editor-pilot.localhost/wp-admin/admin.php?page=mrn-business-information",
+      "component": "Admin UI CSS; native ACF owns fields",
+      "state": "ACF options and image controls",
+      "viewport": "desktop",
+      "light": "../evidence/light-business.png",
+      "dark": "../evidence/dark-business.png"
+    },
+    {
+      "id": "editor",
+      "title": "Complex ACF Editor Workspace",
+      "liveUrl": "https://admin-editor-pilot.localhost/wp-admin/post.php?post=2523&action=edit",
+      "component": "Admin UI CSS workspace + Editor Lockdown",
+      "state": "Persistent outline and active section",
+      "viewport": "desktop",
+      "light": "../evidence/light-editor.png",
+      "dark": "../evidence/dark-editor.png"
+    },
+    {
+      "id": "editor-arrange",
+      "title": "Arrange sections",
+      "liveUrl": "https://admin-editor-pilot.localhost/wp-admin/post.php?post=2523&action=edit",
+      "component": "Admin UI CSS workspace + Editor Lockdown",
+      "state": "Section arrangement and keyboard controls",
+      "viewport": "desktop",
+      "light": "../evidence/light-editor-arrange.png",
+      "dark": "../evidence/dark-editor-arrange.png"
+    },
+    {
+      "id": "editor-settings",
+      "title": "Editor Page settings",
+      "liveUrl": "https://admin-editor-pilot.localhost/wp-admin/post.php?post=2523&action=edit",
+      "component": "Admin UI CSS workspace + Editor Lockdown",
+      "state": "Content/settings separation",
+      "viewport": "desktop",
+      "light": "../evidence/light-editor-settings.png",
+      "dark": "../evidence/dark-editor-settings.png"
+    },
+    {
+      "id": "validation",
+      "title": "Editor validation",
+      "liveUrl": "https://admin-editor-pilot.localhost/wp-admin/post.php?post=2523&action=edit",
+      "component": "Admin UI CSS semantic validation + Editor Lockdown discovery",
+      "state": "Error visibility and navigation",
+      "viewport": "desktop",
+      "light": "../evidence/light-validation.png",
+      "dark": "../evidence/dark-validation.png"
+    },
+    {
+      "id": "publishing-panel",
+      "title": "Native publishing panel",
+      "liveUrl": "https://admin-editor-pilot.localhost/wp-admin/post.php?post=2523&action=edit",
+      "component": "Admin UI CSS; Sticky Bar/native WordPress owns publishing",
+      "state": "Publishing controls",
+      "viewport": "desktop",
+      "light": "../evidence/light-publishing-panel.png",
+      "dark": "../evidence/dark-publishing-panel.png"
+    },
+    {
+      "id": "native-media-dialog",
+      "title": "Native media dialog",
+      "liveUrl": "https://admin-editor-pilot.localhost/wp-admin/post.php?post=2523&action=edit",
+      "component": "WordPress native light island",
+      "state": "Media picker/cancel",
+      "viewport": "desktop",
+      "light": "../evidence/light-native-media-dialog.png",
+      "dark": "../evidence/dark-native-media-dialog.png"
+    },
+    {
+      "id": "layout-picker",
+      "title": "MRN layout picker",
+      "liveUrl": "https://admin-editor-pilot.localhost/wp-admin/post.php?post=2523&action=edit",
+      "component": "Admin UI CSS; Shared Assets owns picker behavior",
+      "state": "Layout selection",
+      "viewport": "desktop",
+      "light": "../evidence/light-layout-picker.png",
+      "dark": "../evidence/dark-layout-picker.png"
+    },
+    {
+      "id": "icon-picker",
+      "title": "MRN icon picker",
+      "liveUrl": "https://admin-editor-pilot.localhost/wp-admin/post.php?post=2523&action=edit",
+      "component": "Admin UI CSS; Shared Assets owns picker behavior",
+      "state": "Search and selection",
+      "viewport": "desktop",
+      "light": "../evidence/light-icon-picker.png",
+      "dark": "../evidence/dark-icon-picker.png"
+    },
+    {
+      "id": "users",
+      "title": "Users",
+      "liveUrl": "https://admin-editor-pilot.localhost/wp-admin/users.php",
+      "component": "Admin UI CSS native list styles",
+      "state": "Native user list",
+      "viewport": "desktop",
+      "light": "../evidence/light-users.png",
+      "dark": "../evidence/dark-users.png"
+    },
+    {
+      "id": "plugins",
+      "title": "Plugins",
+      "liveUrl": "https://admin-editor-pilot.localhost/wp-admin/plugins.php",
+      "component": "Admin UI CSS native list styles",
+      "state": "Native plugin list",
+      "viewport": "desktop",
+      "light": "../evidence/light-plugins.png",
+      "dark": "../evidence/dark-plugins.png"
+    },
+    {
+      "id": "categories",
+      "title": "Categories",
+      "liveUrl": "https://admin-editor-pilot.localhost/wp-admin/edit-tags.php?taxonomy=category",
+      "component": "Admin UI CSS native taxonomy styles",
+      "state": "Taxonomy table and form",
+      "viewport": "desktop",
+      "light": "../evidence/light-categories.png",
+      "dark": "../evidence/dark-categories.png"
+    },
+    {
+      "id": "privacy",
+      "title": "Privacy",
+      "liveUrl": "https://admin-editor-pilot.localhost/wp-admin/options-privacy.php",
+      "component": "Admin UI CSS native controls",
+      "state": "Native privacy settings",
+      "viewport": "desktop",
+      "light": "../evidence/light-privacy.png",
+      "dark": "../evidence/dark-privacy.png"
+    },
+    {
+      "id": "tools",
+      "title": "Tools",
+      "liveUrl": "https://admin-editor-pilot.localhost/wp-admin/tools.php",
+      "component": "Admin UI CSS native controls",
+      "state": "Native tool cards",
+      "viewport": "desktop",
+      "light": "../evidence/light-tools.png",
+      "dark": "../evidence/dark-tools.png"
+    },
+    {
+      "id": "dashboard-mobile",
+      "title": "Dashboard at 390px",
+      "liveUrl": "https://admin-editor-pilot.localhost/wp-admin/index.php",
+      "component": "Admin UI CSS responsive layout",
+      "state": "Narrow dashboard",
+      "viewport": "390px",
+      "light": "../evidence/light-dashboard-mobile.png",
+      "dark": "../evidence/dark-dashboard-mobile.png"
+    },
+    {
+      "id": "editor-mobile",
+      "title": "Editor at 390px",
+      "liveUrl": "https://admin-editor-pilot.localhost/wp-admin/post.php?post=2523&action=edit",
+      "component": "Admin UI CSS workspace + Editor Lockdown",
+      "state": "Narrow outline and editor",
+      "viewport": "390px",
+      "light": "../evidence/light-editor-mobile.png",
+      "dark": "../evidence/dark-editor-mobile.png"
+    },
+    {
+      "id": "config-mobile",
+      "title": "MRN settings at 390px",
+      "liveUrl": "https://admin-editor-pilot.localhost/wp-admin/options-general.php?page=mrn-config-helper",
+      "component": "Admin UI CSS responsive controls",
+      "state": "Narrow settings",
+      "viewport": "390px",
+      "light": "../evidence/light-config-mobile.png",
+      "dark": "../evidence/dark-config-mobile.png"
+    }
+  ]
+}

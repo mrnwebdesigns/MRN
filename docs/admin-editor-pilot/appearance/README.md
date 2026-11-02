@@ -2,6 +2,8 @@
 
 **Status:** implemented locally for visual/workflow review. Functional checks pass; performance qualification remains blocked by variable editor CPU results. No release or Fleet action is authorized.
 
+**Annotation review is open.** Use the [paired Light/Dark review in the built-in browser](http://127.0.0.1:8764/review/) and [review guide](review/REVIEW.md). The [annotation log](review/ANNOTATIONS.md) records human comments and approvals separately; no refinement is applied automatically. Product source remains the existing appearance candidate.
+
 The administration now uses one semantic Light/Dark palette. Light Mode replaces WordPress's black navigation with a light neutral sidebar; Dark Mode uses slate navigation, a darker canvas and raised content surfaces. Navigation has distinct default, hover, current, expanded-submenu and keyboard-focus states. AME still owns order, labels, grouping, branding and destinations.
 
 The dashboard, core content/user/plugin lists, taxonomy forms, core tools/privacy/update screens, Quick Edit, native settings, MRN Site Configurations, Notifications Center, Business Information and the approved Classic/ACF workspace share the same appearance. The workspace structure, persistent outline, native ACF form tree and publishing workflow remain intact.

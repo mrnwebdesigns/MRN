@@ -1,0 +1,15 @@
+{
+  "agent_pid": 31927,
+  "agent_descriptors": 55250,
+  "agent_rss_kib": 656032,
+  "service": [
+    "NRestarts=1",
+    "MemoryCurrent=896909312",
+    "MemoryPeak=1053626368"
+  ],
+  "guest_version": "lima-guestagent version 2.1.2",
+  "kernel_oom_since_prior_investigation": "-- No entries --",
+  "checkedAt": "2026-11-02T12:51:49.858100+00:00",
+  "host_version": "limactl version 2.1.2",
+  "scope": "Read-only local VM health; no upgrade, restart, configuration or memory changes."
+}

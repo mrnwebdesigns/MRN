@@ -1,0 +1,37 @@
+[
+  {
+    "file": "cpu-diagnostic-20261102.json",
+    "bytes": 28670,
+    "sha256": "8f71a77079638f7ffeefdd34f9842b3c2552e21772f417316fdfbeb50fae1ac1"
+  },
+  {
+    "file": "oom-followup-20261102.json",
+    "bytes": 483,
+    "sha256": "4d73cc7f8379abc671256ae42e81fa0b52c9492bfd055f527bd5ba8234e633be"
+  },
+  {
+    "file": "qa-review-preparation-20261102.md",
+    "bytes": 7666,
+    "sha256": "6432129cb2bd2aa8e3bc8031fee4d669301995e9249b9061698f911deadb2b22"
+  },
+  {
+    "file": "review-dashboard-20261102.png",
+    "bytes": 225850,
+    "sha256": "b3dc7e56744451ee9cec181a761cd32132bf512509dabdd0403d135ccb771129"
+  },
+  {
+    "file": "review-editor-20261102.png",
+    "bytes": 249358,
+    "sha256": "4c3c6e310b32b14aa85d10d81f1917822e9205cd957bb701ab1cff0a560bb807"
+  },
+  {
+    "file": "review-gallery-qa-20261102.json",
+    "bytes": 664,
+    "sha256": "a29b92744976200cf90056936b2c8b030ec264fee4dc58cde0ed3ba29a26e846"
+  },
+  {
+    "file": "review-integrity-20261102.json",
+    "bytes": 984,
+    "sha256": "fb0c157313840cebb2fe58ccc37d7d076446ddc55242f7b45aee66d27f3f6fa8"
+  }
+]

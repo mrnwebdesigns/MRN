@@ -1,0 +1,17 @@
+{
+  "screens": 27,
+  "images": 54,
+  "all_screen_switches": true,
+  "mode_filter": true,
+  "metadata_valid": true,
+  "desktop_axe": [],
+  "mobile_axe": [],
+  "reflow": {
+    "viewport": 390,
+    "scroll": 390
+  },
+  "script_errors": [],
+  "native_annotation_entry": "Feature-detected control visible in built-in browser. Mode activation was not confirmed while agent-controlled; user can select Annotate after handoff. No human comment or submission fabricated.",
+  "fallback": "Gallery navigation works without browser-specific API",
+  "scope": "Checks the review artifact, not accessibility of pixels in screenshots or a new product regression qualification."
+}
