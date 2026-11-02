@@ -1,5 +1,10 @@
 # Stack Changelog
 
+## Unreleased — immutable maintenance packages
+
+- MRN Updraft Backup Policy 0.8.11 retains the exact inspected maintenance ZIP in bounded owner-only temporary storage outside the web root. Preview, confirmation and the native updater revalidate those same bytes, while current offers, site/state identity, remote backups and activation protections remain enforced.
+- Missing or changed pins fail closed; consumed and expired packages are removed. Existing closed diagnostic codes and the deployed MainWP contract remain compatible.
+
 ## 2026.10.30-fleet-auto-1d673da5c895
 
 - Automatic cumulative release from accepted source vector `ab2aea50a762193e47e0be3f9e9a7e7bef077b83b91ea28ef78ac0c576c2e94f`.

@@ -3,12 +3,12 @@
  * Plugin Name: MRN Updraft Backup Policy
  * Description: Enforces the MRN Updraft backup policy, limits local backup sets, and repairs missing scheduled events.
  * Author: MRN Web Designs
- * Version: 0.8.10
+ * Version: 0.8.11
  */
 
 defined('ABSPATH') || exit;
 
-const MRN_UPDRAFT_LOCAL_RETENTION_VERSION = '0.8.10';
+const MRN_UPDRAFT_LOCAL_RETENTION_VERSION = '0.8.11';
 
 require_once __DIR__ . '/includes/class-mrn-updraft-mainwp-policy.php';
 MRN_Updraft_MainWP_Policy::init();
