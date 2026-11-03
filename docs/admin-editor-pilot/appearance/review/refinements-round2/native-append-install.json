@@ -1,0 +1,24 @@
+{
+  "host": "admin-editor-pilot.mrndev.io",
+  "backup_nonce": "63f4d228cb37",
+  "files": {
+    "assets/section-navigator.js": "3347a78cd9f631c0ad972908b75452f94cac87da9b0ac3eb17f4b1ce4cdc87c1",
+    "mrn-editor-lockdown.php": "ec8a717355bcbff1c50cb324f458fb1c0ae878db07569fe34cc0a330da0b4a62",
+    "stack.lock": "d9c8520acc6e0579e020d9eb1549582ae1616e22219ec23aaa3eb48ac6402b28"
+  },
+  "commit": "bc91c90f",
+  "component": "mrn-editor-lockdown",
+  "version": "1.0.42",
+  "scope": "exact protected review host only",
+  "backup": {
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1793726381,
+    "label": "pre-admin-pilot-native-append-fix-20261103",
+    "nonce": "63f4d228cb37",
+    "key": "sites/admin-editor-pilot-mrndev-io/backup_2026-11-03-1719_Trilliant_63f4d228cb37-db.gz",
+    "size": 6228585,
+    "sha256": "0f717fbb155f1ba14fbf702d889c2ae4c43173120f82ef126a5622fe80de815a"
+  },
+  "rollback": "review-private/before-native-append-fix, outside web root"
+}

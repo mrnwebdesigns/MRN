@@ -1,0 +1,24 @@
+{
+  "at": "2026-11-03T16:57:56.819Z",
+  "checks": [
+    {
+      "path": "/wp-admin/",
+      "status": 401,
+      "result": "Basic Auth required"
+    },
+    {
+      "path": "/wp-includes/css/dashicons.min.css",
+      "status": 401,
+      "result": "Basic Auth required"
+    },
+    {
+      "path": "/wp-admin/post.php",
+      "status": 401,
+      "result": "Cookie presence alone does not bypass Basic Auth"
+    },
+    {
+      "path": "/wp-admin/",
+      "result": "Basic Auth alone still requires native WordPress sign-in"
+    }
+  ]
+}

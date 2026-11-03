@@ -53,7 +53,7 @@ The original imported Trilliant source and the local review copy are preserved.
 
 The isolated clone is installed, HTTPS validates, unauthenticated access returns
 HTTP 401, and native 19/32-section content hashes match the source after URL
-normalization. Admin UI 3.3.3 / Editor Lockdown 1.0.41 are installed. Labeled
+normalization. Admin UI 3.3.3 / Editor Lockdown 1.0.42 are installed. Labeled
 remote Updraft database backups precede clone activation, certificate work, QA
 and the account-node compatibility correction. Both-theme captures and scoped
 accessibility checks pass. See
@@ -66,9 +66,19 @@ unchanged other custom rules/order and managed rules. See
 [the readback receipt](../../../docs/admin-editor-pilot/appearance/review/refinements-round2/waf-applied-receipt.json).
 `proposed-save-challenge.json` remains the original approved before/after artifact;
 its preparation status is historical. The apply script deliberately refuses
-changed or already-applied live state. Native save qualification is being rerun;
-the first focused native save succeeded, but harness timeouts need attribution.
+changed or already-applied live state. Native 19/32-section saves, explicit reloads, full stored hashes and truncated-save
+HTTP 400 rejection pass. Save responses took 41.6s / 120.5s in one serial run and
+remain a performance blocker. The zero-row test exposed the outline choosing
+ACF top insert-before instead of bottom append. Commit `bc91c90f` corrects only
+that selector; `update-native-append.py` installed its three files after fresh
+backup `63f4d228cb37`, retained rollback and verified installed hashes.
+The complete installed-picker 0→1→0 workflow now passes, including both native
+saves and explicit reloads. The final empty fixture is restored to zero rows;
+complex fixture content/ACF hashes remain unchanged.
 
+The migration's Basic Auth directives are directly in this site's Nginx vhost,
+independent of CloudPanel's per-site Basic Auth switch. The realm is
+`MRN editor review`. The anonymous/fake-cookie boundary tests pass.
 Codex's embedded browser rejected Basic Auth; live authentication remains
 protected. Native Chrome navigation exposes the ordinary sign-in prompt. The
 static paired gallery is available for Codex annotations while live access is

@@ -120,6 +120,7 @@ assert(Object.values(fixture.counts).every(count => count === 0), 'Expected owne
   const name=page.locator(root+' .acf-field[data-name="internal_name"] input[type=text]').first();
   await name.fill('Round 2 native section'); await saveDraft(); await ready(1);
   await expect(page.locator('.mrn-section-link')).toContainText('Round 2 native section');
+  await shot('native-append-saved');
   const removedLayout=await page.locator(root).elementHandle();
   await page.evaluate(()=>{const field=acf.getField(jQuery('.acf-field[data-name="page_content_rows"]').first());field.removeLayout(field.$layouts().first());});
   // ACF temporarily wraps a removed row; leaving .values is not detachment.
@@ -127,6 +128,7 @@ assert(Object.values(fixture.counts).every(count => count === 0), 'Expected owne
   await removedLayout.dispose();
   await ready(0); await expect(page.locator('.mrn-region-add:visible')).toHaveCount(3);
   await saveDraft(); await ready(0);
+  await shot('native-last-removal-saved');
   result.checks.push('Owned empty draft: native picker reachable; 0→1 append selects row; Save Draft/reload retains row; removal/save/reload restores usable zero state');
   for(const [id,count] of [[2523,19],[2524,32]]) {
    await go('post.php?post='+id+'&action=edit'); await ready(count);

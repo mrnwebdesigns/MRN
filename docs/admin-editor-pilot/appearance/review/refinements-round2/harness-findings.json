@@ -1,0 +1,27 @@
+{
+  "date": "2026-11-03",
+  "scope": "QA harness corrections and confirmed outline-to-native-control routing defect",
+  "findings": [
+    {
+      "symptom": "Visible MRN Text picker card closes without creating the first section",
+      "cause": "The outline selector chose ACF top-actions. ACF passed an empty jQuery before target on a zero-row field. Its insert-before path had no destination, while the programmatic test passed before:false and concealed the defect.",
+      "correction": "Editor Lockdown 1.0.42 selects only the root field native bottom append action. No picker provider, ACF method, field storage, native validation or publishing override."
+    },
+    {
+      "symptom": "30-second Save Draft timeout on complex fixtures",
+      "cause": "Native POST response arrived after the harness limit. Successful serial follow-up measured 41.633 seconds for 19 sections and 120.466 seconds for 32 sections.",
+      "correction": "Bound response/navigation wait at 180 seconds and report actual timing separately. Performance gate remains closed."
+    },
+    {
+      "symptom": "Combined empty-page test never sent a native save POST",
+      "cause": "Opening the installed MRN picker, pressing Escape and appending programmatically left the backing ACF picker cancel listener. A click trace identifies acf.min.js onCancel preventing the synthetic native save click. No submit or invalid event occurred.",
+      "correction": "Select the visible Text card in the installed MRN picker; it delegates to ACF. Its backing native tooltip is deliberately outside the viewport and is not the visible user control. Record cancellation/next-click behavior for targeted follow-up."
+    },
+    {
+      "symptom": "Last-row removal appeared empty but reloaded with a row",
+      "cause": "ACF temporarily wraps a removing row before detachment; direct-child/outline count becomes zero while fields remain in FormData.",
+      "correction": "Wait for the original layout node to detach before Save Draft. Both focused and complete installed-picker/remove/save/reload runs now pass."
+    }
+  ],
+  "final_result": "Editor Lockdown 1.0.42: complete 0\u21921\u21920 native picker/save/reload passes; 19/32 form ancestry/no-match checks and both-theme account/Screen tests pass. Complex saves preserve complete FormData and stored hashes; latency remains a blocker."
+}

@@ -2,13 +2,13 @@
 
 **Round 1 approved — 2 November 2026.** All ten annotations / seven clusters were approved by the owner's “Let's make these changes for now” instruction. Source changes are implemented in the existing task worktree; native Light/Dark visual and save/reload checks are complete for the selected fixtures; full automated/performance qualification remains open. See [the implementation and verification record](review/REFINEMENTS-ROUND1.md). No cluster is visually accepted or closed. [Round 2 paired annotations](review/round-2.html) are ready without WordPress login; this is not release sign-off.
 
-## Round 2 — installed on protected mrndev.io; qualification blocked (3 November 2026)
+## Round 2 — installed on protected mrndev.io; functional checks passed; performance open (3 November 2026)
 
-Seven comments (`UX-011`–`UX-017`) are preserved in [batch 004](review/annotation-batches/004-round2-new-page-and-toolbar.json) and [triaged in the annotation log](review/ANNOTATIONS.md#round-2--new-page-workflow-and-toolbar). The owner approved all five clusters with “Make those udpates, then we can do another round from there.” Source changes are installed on the authorized mrndev.io review copy. Scoped both-theme visual/accessibility, account preference and native Screen panel checks pass. Cloudflare challenges native save POSTs; the exact exception is prepared and awaits explicit approval. Codex live Basic Auth sign-in remains unresolved; [32 paired captures](review/round-3.html) support static annotation review. [Current implementation/check status](review/REFINEMENTS-ROUND2.md). Performance and usability lead the work; the approved workspace structure is preserved.
+Seven comments (`UX-011`–`UX-017`) are preserved in [batch 004](review/annotation-batches/004-round2-new-page-and-toolbar.json) and [triaged in the annotation log](review/ANNOTATIONS.md#round-2--new-page-workflow-and-toolbar). The owner approved all five clusters with “Make those udpates, then we can do another round from there.” Source changes are installed on the authorized mrndev.io review copy. Scoped both-theme visual/accessibility, account preference and native Screen panel checks pass. The approved exact-site Cloudflare exception is applied; 19/32-section save/reload and incomplete-save rejection pass. Slow native saves remain a performance blocker. Codex live Basic Auth sign-in remains unresolved; [32 paired captures](review/round-3.html) support static annotation review. [Current implementation/check status](review/REFINEMENTS-ROUND2.md). Performance and usability lead the work; the approved workspace structure is preserved.
 
 | Priority | Cluster / comments | Approved change and verification |
 | --- | --- | --- |
-| P1 functional blocker | UX-C08 / UX-011, UX-013 | Restore reachable Add section paths on a zero-section page, use a useful empty state, remove unavailable controls and inspect avoidable new-page gaps. Implemented; native first append passes, save/reload blocked by Cloudflare. |
+| P1 functional blocker | UX-C08 / UX-011, UX-013 | Restore reachable Add section paths on a zero-section page, use a useful empty state, remove unavailable controls and inspect avoidable new-page gaps. Editor Lockdown 1.0.42 routes to native bottom append; the installed picker and complete 0→1→0 save/reload now pass. Human visual acceptance remains open. |
 | P2 | UX-C06 / UX-012 | Consistent empty/arrangement region insets; preserve native nested fields and controls. |
 | P2 | UX-C01 / UX-014, UX-015 | Diagnose and narrowly correct WPForms/SEOPress sidebar glyphs in both themes; preserve AME configuration. |
 | P2 | UX-C03 / UX-016 | Replace the unsatisfactory detached header utilities with one page-specific Screen utility in the existing toolbar, retaining native panels. Implemented and native open/focus/Escape checks pass in both modes. |
@@ -32,8 +32,9 @@ Round 2 now contains `UX-011`–`UX-017`; next is `UX-018`. Retain original refe
 
 ## Technical blockers and existing follow-up
 
-- **P1 — Review save gate:** Cloudflare custom rule `5778f8dc0ad64ea19abc7a6601cb89a8` challenges `/wp-admin/post.php` POSTs before WordPress. Finish 0/19/32 save/reload and incomplete-save tests only after the approved exact-site exception or another supported authorized resolution.
+- **P1 — Native save latency:** the approved exact-site exception is verified, and 19/32 native saves/reloads plus incomplete-save rejection pass. Save responses took 41.6s / 120.5s in one serial run. Attribute latency before release; preserve native storage, validation and ACF lifecycle. The complete empty-page 0→1→0 workflow passes after the native append-route correction.
 - **P1 — Live annotation access:** Codex rejected Basic Auth; retain protection. Current static captures are available for visual annotations.
+- **P2 — Picker cancellation lifecycle:** the Escape/synthetic-append diagnostic left a backing ACF cancel listener that consumed the next click. Target a real cancel→next action keyboard regression before changing the existing picker owner; successful visible-card selection and 0→1→0 saves are verified.
 - **P2 — Backup policy evidence:** successful isolated remote jobs do not independently prove Premium advanced-retention capability.
 
 

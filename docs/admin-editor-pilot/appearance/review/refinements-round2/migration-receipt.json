@@ -5,7 +5,7 @@
   "scope": "Owner-authorized isolated review migration only",
   "installed": {
     "mrn-admin-ui-css": "3.3.3",
-    "mrn-editor-lockdown": "1.0.41"
+    "mrn-editor-lockdown": "1.0.42"
   },
   "isolation": [
     "Dedicated CloudPanel owner and database",
@@ -20,19 +20,21 @@
     "e9f7f44c868f",
     "c9edc5b77fef",
     "82cc0ccabdf4",
-    "55857f199532"
+    "55857f199532",
+    "82abc85c33fe",
+    "63f4d228cb37"
   ],
   "last_backup": {
-    "label": "pre-admin-pilot-account-menu-fix-20261103",
-    "size": 6066953,
-    "sha256": "d95ed79855e2e0707fbb60cbd698619b6a1514820a3e44292fba8976a1fc1771"
+    "label": "pre-admin-pilot-native-append-fix-20261103",
+    "size": 6228585,
+    "sha256": "0f717fbb155f1ba14fbf702d889c2ae4c43173120f82ef126a5622fe80de815a"
   },
   "backup_prefix": "sites/admin-editor-pilot-mrndev-io",
   "backup_limit": "Successful remote jobs verified; Premium advanced-retention capability not independently qualified",
   "rollback": "Component copies outside web root and verified remote database backups",
-  "content_integrity": "19/32 fixture hashes match source after URL canonicalization; unchanged after challenged saves",
+  "content_integrity": "19/32 fixture native Save Draft and explicit reload preserve full ACF FormData; complete stored ACF/content hashes unchanged after saves and rejected incomplete form",
   "open_gates": [
-    "Cloudflare native save challenge; prepared exception not authorized or applied",
+    "Native save latency: 41.6s / 120.5s for 19/32 sections; functional integrity passes",
     "Protected live sign-in in Codex embedded browser",
     "Matched prior/candidate CPU/startup-memory qualification",
     "Separate Local Hub retained socket/OOM issue"
@@ -42,5 +44,14 @@
     "Release publication",
     "Production client deployment",
     "Fleet activation"
-  ]
+  ],
+  "approved_waf_exception": {
+    "receipt": "waf-applied-receipt.json",
+    "rule_version": 9,
+    "other_custom_rules_and_managed_rules": "unchanged"
+  },
+  "native_append_fix": {
+    "commit": "bc91c90f",
+    "receipt": "native-append-install.json"
+  }
 }

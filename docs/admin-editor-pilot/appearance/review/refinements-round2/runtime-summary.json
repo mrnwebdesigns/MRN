@@ -2,26 +2,28 @@
   "checks": [
     "Account Light/Dark/System buttons activate by keyboard and persist across navigation",
     "light: reported icons visible; native Screen Options/Help open, focus and close",
-    "dark: reported icons visible; native Screen Options/Help open, focus and close"
+    "dark: reported icons visible; native Screen Options/Help open, focus and close",
+    "Owned empty draft: native picker reachable; 0\u21921 append selects row; Save Draft/reload retains row; removal/save/reload restores usable zero state",
+    "19 sections: native form ancestry and nonempty/no-match distinction preserved",
+    "32 sections: native form ancestry and nonempty/no-match distinction preserved"
   ],
   "axe": {
     "light-toolbar": [],
     "dark-toolbar": []
   },
   "errors": [],
-  "new_page": "Native region picker, first appended row, selected row and 390px zero-state reflow exercised; save/reload blocked. No functional integrity pass claimed.",
-  "blocker": {
-    "action": "managed_challenge",
-    "source": "firewallCustom",
-    "rule_id": "5778f8dc0ad64ea19abc7a6601cb89a8",
-    "ray": "a54c68921942215d",
-    "path": "/wp-admin/post.php",
-    "at": "2026-11-03T15:28:23Z"
-  },
-  "content_readback": "19/32 source hashes unchanged after challenged submissions",
-  "fixture_ids": [
-    2523,
-    2524,
-    2580
-  ]
+  "save_timings": [
+    {
+      "response_status": 302,
+      "response_ms": 3781
+    },
+    {
+      "response_status": 302,
+      "response_ms": 2856
+    }
+  ],
+  "date": "2026-11-03",
+  "host": "admin-editor-pilot.mrndev.io",
+  "editor_version": "1.0.42",
+  "source_commit": "bc91c90f"
 }
