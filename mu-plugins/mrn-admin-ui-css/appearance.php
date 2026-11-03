@@ -43,9 +43,22 @@ add_action( 'admin_enqueue_scripts', function () {
 		'saved' => __( 'Appearance saved for your account.', 'mrn-admin-ui-css' ),
 		'failed' => __( 'Appearance could not be saved. Your previous preference has been restored. Try again.', 'mrn-admin-ui-css' ),
 		'visit' => __( 'Visit %s', 'mrn-admin-ui-css' ),
-		'closeScreen' => __( 'Close screen panel', 'mrn-admin-ui-css' ),
+		'closeScreen' => __( 'Close', 'mrn-admin-ui-css' ),
+		'closeScreenLabel' => __( 'Close view options or help', 'mrn-admin-ui-css' ),
+		'viewOptions' => __( 'View options', 'mrn-admin-ui-css' ),
+		'settingsPanels' => __( 'Page Settings panels', 'mrn-admin-ui-css' ),
+		'settingsPanelsHint' => __( 'Choose which optional panels appear in Page Settings. Content sections are always available.', 'mrn-admin-ui-css' ),
+		'openSettings' => __( 'Open Page Settings', 'mrn-admin-ui-css' ),
 	) );
 }, 30 );
+
+// Register the native Dashboard node before the site menu, so it precedes Visit
+// Site. Toolbar Editor runs afterwards and retains configuration/role ownership.
+add_action( 'admin_bar_menu', function ( $bar ) {
+	if ( mrn_admin_appearance_enabled() && current_user_can( 'read' ) && ! $bar->get_node( 'dashboard' ) ) {
+		$bar->add_node( array( 'id' => 'dashboard', 'parent' => 'site-name', 'title' => __( 'Dashboard', 'mrn-admin-ui-css' ), 'href' => admin_url() ) );
+	}
+}, 29 );
 
 add_action( 'admin_bar_menu', function ( $bar ) {
 	if ( ! mrn_admin_appearance_enabled() || ! current_user_can( 'read' ) ) {
@@ -79,9 +92,9 @@ add_action( 'admin_bar_menu', function ( $bar ) {
 		$bar->add_node( array(
 			'id' => 'mrn-screen',
 			'parent' => 'top-secondary',
-			'title' => '<span class="ab-icon dashicons dashicons-admin-generic" aria-hidden="true"></span><span class="ab-label">' . esc_html__( 'Screen', 'mrn-admin-ui-css' ) . '</span>',
+			'title' => '<span class="ab-icon dashicons dashicons-admin-generic" aria-hidden="true"></span><span class="ab-label">' . esc_html__( 'View', 'mrn-admin-ui-css' ) . '</span>',
 			'href' => '#screen-meta',
-			'meta' => array( 'class' => 'hide-if-no-js', 'title' => __( 'Screen options and help', 'mrn-admin-ui-css' ) ),
+			'meta' => array( 'class' => 'hide-if-no-js', 'title' => __( 'View options and help', 'mrn-admin-ui-css' ) ),
 		) );
 		$bar->add_node( array( 'id' => 'mrn-screen-controls', 'parent' => 'mrn-screen', 'title' => '' ) );
 	}

@@ -3,8 +3,10 @@
   "round": 3,
   "receivedDate": "2026-11-03",
   "sourceCommitAtCollection": "32c2a726",
-  "status": "Collected; awaiting separate refinement approval",
-  "approvedClusters": [],
+  "status": "Approved for implementation and exact review-site deployment",
+  "approvedClusters": [
+    "UX-C11"
+  ],
   "implementedRefinements": 0,
   "ambientPageUrl": "https://admin-editor-pilot.mrndev.io/wp-admin/post.php?post=2580&action=edit",
   "observedAppearance": "Light in supplied screenshot",
@@ -59,5 +61,11 @@
     "Unsaved editor navigation guard, native form and save/publish behavior unchanged"
   ],
   "performanceConstraint": "Use an existing server-rendered menu node/configuration; no request, observer or polling added for this shortcut.",
-  "implementation": false
+  "implementation": false,
+  "approval": {
+    "date": "2026-11-03",
+    "instruction": "Make these udpates and push to dev",
+    "target": "https://admin-editor-pilot.mrndev.io",
+    "scope": "UX-018 through UX-024; no production, release or Fleet activation"
+  }
 }

@@ -7,8 +7,12 @@
     "mrn-admin-ui-css": "3.3.3",
     "mrn-editor-lockdown": "1.0.42"
   },
-  "status": "Collected; awaiting separate refinement approval",
-  "approvedClusters": [],
+  "status": "Approved for implementation and exact review-site deployment",
+  "approvedClusters": [
+    "UX-C09",
+    "UX-C03",
+    "UX-C10"
+  ],
   "implementedRefinements": 0,
   "ownerPriority": "Performance and usability; retain existing components and native behavior",
   "originalMessage": [
@@ -149,5 +153,11 @@
     "Keep ACF fields in their native form; preserve conditional logic, validation, publishing and save integrity",
     "No new observers, polling, dependencies, preference store or architecture redesign",
     "No release/Fleet action; performance/OOM qualification remains open"
-  ]
+  ],
+  "approval": {
+    "date": "2026-11-03",
+    "instruction": "Make these udpates and push to dev",
+    "target": "https://admin-editor-pilot.mrndev.io",
+    "scope": "UX-018 through UX-024; no production, release or Fleet activation"
+  }
 }

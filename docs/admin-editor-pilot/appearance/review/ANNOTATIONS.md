@@ -1,6 +1,6 @@
 # Annotation log
 
-**Round 3 collecting — 3 November 2026:** six findings (`UX-018`–`UX-023`) from five supplied screenshots; four component clusters. Collected only; no product changes approved or applied. Next ID: `UX-024`. See [batch 005](annotation-batches/005-round3-screen-and-account.json) and [batch 006](annotation-batches/006-editor-dashboard-return.json).
+**Round 3 approved — 3 November 2026:** seven findings (`UX-018`–`UX-024`) from six supplied screenshots; five component clusters. Owner approved all five clusters with “Make these udpates and push to dev”; implementation and exact review-site deployment are authorized, with release/Fleet gates closed. Next ID: `UX-025`. See [batch 005](annotation-batches/005-round3-screen-and-account.json), [batch 006](annotation-batches/006-editor-dashboard-return.json) and [batch 007](annotation-batches/007-updraftplus-icon-light.json).
 
 **Round 2 approved — 3 November 2026:** UX-011–UX-017 / five clusters approved by “Make those udpates, then we can do another round from there.” Source implementation is installed on the authorized protected mrndev.io review copy; native save qualification and performance checks are tracked separately. [Round-2 status](REFINEMENTS-ROUND2.md).
 
@@ -164,3 +164,27 @@ Verify exact menu configuration and duplicate avoidance during approved work.
 After approval, check editor/list/Dashboard routes, both themes, keyboard/focus,
 narrow layouts, role visibility, AME configuration and unsaved-edit navigation.
 Next annotation: `UX-024`. Existing CPU/save-latency/OOM release blockers are unchanged.
+
+
+### Round 3 follow-up — UpdraftPlus icon
+
+**UX-024:** “White icon still.” The [original Light screenshot](annotation-batches/007-updraftplus-icon-light.png)
+shows a nearly white UpdraftPlus glyph on the light sidebar, alongside readable
+link text. [Batch 007](annotation-batches/007-updraftplus-icon-light.json) preserves
+original wording and image provenance/checksum. The ambient screen is the Pages
+list; exact viewport, hover state, renderer and Dark appearance remain unverified.
+
+Group with **UX-C01 — shell icon visibility**, alongside UX-001, UX-005, UX-014 and
+UX-015. This confirms the backup-plugin icon already noted in the implementation
+record. **P2:** match the existing semantic sidebar icon color, preserving the
+recognizable glyph, destination, accessible label and AME configuration. Inspect
+the asset/renderer before choosing a narrow treatment; no global image filters
+or third-party application restyling. Avoid extra requests, observers or scans.
+
+After approval, verify Light/Dark default/hover/focus/active/expanded/folded states.
+The visible text labels the control, so an essential non-text contrast failure
+is not presumed from the crop alone. Status: **awaiting approval**; no product or
+runtime change. Next annotation: `UX-025`.
+
+
+**Round 3 approval:** “Make these udpates and push to dev,” 3 November 2026. This supersedes the historical awaiting-approval status for UX-018–UX-024 / UX-C01, UX-C03, UX-C09, UX-C10 and UX-C11. Exact destination: admin-editor-pilot.mrndev.io. No production, release or Fleet authority is added.

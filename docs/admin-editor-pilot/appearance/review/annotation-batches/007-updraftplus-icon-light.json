@@ -1,0 +1,60 @@
+{
+  "batch": "007-updraftplus-icon-light",
+  "round": 3,
+  "receivedDate": "2026-11-03",
+  "sourceCommitAtCollection": "00103b41",
+  "status": "Approved for implementation and exact review-site deployment",
+  "approvedClusters": [
+    "UX-C01"
+  ],
+  "implementedRefinements": 0,
+  "ambientPageUrl": "https://admin-editor-pilot.mrndev.io/wp-admin/edit.php?post_type=page",
+  "observedAppearance": "Light in supplied screenshot",
+  "browserViewport": null,
+  "screenshot": {
+    "originalFilename": "Screenshot 2026-11-03 at 1.31.35 PM.png",
+    "path": "007-updraftplus-icon-light.png",
+    "sha256": "b0e722ac210543a97b0ea6bed5ece2af7a0fd9fc5d5afda7976f3f2bf1255741",
+    "imagePixels": {
+      "width": 322,
+      "height": 122
+    }
+  },
+  "annotations": [
+    {
+      "id": "UX-024",
+      "originalWording": "White icon still",
+      "target": "UpdraftPlus sidebar icon",
+      "cluster": "UX-C01",
+      "priority": "P2 visual consistency/legibility",
+      "state": "White glyph on light neutral sidebar; adjacent UpdraftPlus text is readable",
+      "nativeAnnotationId": null,
+      "selector": null
+    }
+  ],
+  "relatedFindings": [
+    "UX-001",
+    "UX-005",
+    "UX-014",
+    "UX-015"
+  ],
+  "priorEvidence": "REFINEMENTS-ROUND2.md already records native low-contrast backup-plugin branding; this screenshot adds explicit human confirmation.",
+  "recommendation": "Match the UpdraftPlus shell icon to the existing semantic sidebar icon color while preserving its recognizable glyph, destination and AME configuration. Inspect its actual renderer before choosing a narrow treatment; no broad filters or plugin-interior restyling.",
+  "verificationAfterApproval": [
+    "Light/Dark default, hover, focus, active, expanded and collapsed navigation",
+    "Original glyph, link and accessible label retained",
+    "No new requests, polling, observer or startup scans for icon styling"
+  ],
+  "evidenceLimits": [
+    "Dark behavior and exact contrast have not been measured",
+    "Actual icon renderer is not established by the crop",
+    "Visible text names the link; this is not automatically an essential non-text contrast failure"
+  ],
+  "implementation": false,
+  "approval": {
+    "date": "2026-11-03",
+    "instruction": "Make these udpates and push to dev",
+    "target": "https://admin-editor-pilot.mrndev.io",
+    "scope": "UX-018 through UX-024; no production, release or Fleet activation"
+  }
+}

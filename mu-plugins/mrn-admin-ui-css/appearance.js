@@ -46,13 +46,32 @@
  var meta = document.getElementById('screen-meta');
  if (screen && links && slot && meta && links.querySelector('.show-settings')) {
   var trigger = screen.querySelector(':scope > a');
+  var options = document.getElementById('show-settings-link'), settingsLink;
+  if (options) { options.textContent = labels.viewOptions; }
   slot.appendChild(links); document.body.classList.add('mrn-screen-tools-ready');
   trigger.setAttribute('aria-controls', 'screen-meta-links');
+  function contextualOptions() {
+   if (!document.body.classList.contains('mrn-workspace')) { return; }
+   var prefs = meta.querySelector('.metabox-prefs');
+   if (!prefs || settingsLink) { return; }
+   var heading = prefs.querySelector('legend'), hint = prefs.querySelector('p');
+   if (heading) { heading.textContent = labels.settingsPanels; }
+   if (!hint) { hint = document.createElement('p'); prefs.prepend(hint); }
+   hint.textContent = labels.settingsPanelsHint; hint.classList.add('mrn-view-hint');
+   settingsLink = document.createElement('button'); settingsLink.type = 'button';
+   settingsLink.className = 'button mrn-view-settings'; settingsLink.textContent = labels.openSettings;
+   hint.after(settingsLink);
+   settingsLink.addEventListener('click', function () {
+    var target = document.querySelector('.mrn-mode-settings');
+    if (target) { closePanel(); target.click(); target.focus(); }
+   });
+  }
   function closeScreenMenu(restore) {
    screen.classList.remove('hover', 'mrn-screen-open'); trigger.setAttribute('aria-expanded', 'false');
    if (restore) { trigger.focus(); screen.classList.remove('hover'); }
   }
   function openScreenMenu() {
+   contextualOptions();
    screen.classList.add('hover', 'mrn-screen-open'); trigger.setAttribute('aria-expanded', 'true');
    links.querySelector('.show-settings').focus();
   }
@@ -64,10 +83,11 @@
    if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeScreenMenu(true); }
    else if (event.target.closest('#screen-meta-links')) { event.stopPropagation(); }
   });
-  links.addEventListener('click', function (event) { if (event.target.closest('.show-settings')) { closeScreenMenu(false); } });
+  links.addEventListener('click', function (event) { if (event.target.closest('.show-settings')) { contextualOptions(); closeScreenMenu(false); } });
   document.addEventListener('click', function (event) { if (!screen.contains(event.target)) { closeScreenMenu(false); } });
   screen.addEventListener('focusout', function (event) { if (event.relatedTarget && !screen.contains(event.relatedTarget)) { closeScreenMenu(false); } });
   var close = document.createElement('button'); close.type = 'button'; close.className = 'mrn-screen-close'; close.textContent = labels.closeScreen;
+  close.setAttribute('aria-label', labels.closeScreenLabel);
   function closePanel() {
    var active = links.querySelector('.screen-meta-active');
    if (active) { active.click(); closeScreenMenu(true); }
@@ -105,12 +125,17 @@
     holder.classList.add('mrn-shell-mask'); holder.style.setProperty('background-image', 'none', 'important');
    }
   });
-  var relevanssiIcon = document.querySelector('#toplevel_page_relevanssi-relevanssi .wp-menu-image img');
-  if (relevanssiIcon && /relevanssi-icon\.svg(?:[?#]|$)/.test(relevanssiIcon.src)) {
-   var holder = relevanssiIcon.parentElement;
-   holder.style.setProperty('--mrn-shell-icon', 'url("' + relevanssiIcon.src.replace(/["\\\n\r]/g, '') + '")');
-   holder.classList.add('mrn-shell-mask');
-  }
+  [
+   ['#toplevel_page_relevanssi-relevanssi .wp-menu-image img', /relevanssi-icon\.svg(?:[?#]|$)/],
+   ['#toplevel_page_options-general-page-updraftplus .wp-menu-image img', /\/updraftplus\/images\/dashicon-white\.png(?:[?#]|$)/]
+  ].forEach(function (entry) {
+   var icon = document.querySelector(entry[0]);
+   if (icon && entry[1].test(icon.src)) {
+    var holder = icon.parentElement;
+    holder.style.setProperty('--mrn-shell-icon', 'url("' + icon.src.replace(/["\\\n\r]/g, '') + '")');
+    holder.classList.add('mrn-shell-mask');
+   }
+  });
  }
  // Keep the title and native Add action together on the audited native screens.
  if (document.body.classList.contains('mrn-modern-admin')) {

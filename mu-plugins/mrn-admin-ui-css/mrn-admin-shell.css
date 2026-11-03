@@ -39,36 +39,66 @@ body.mrn-appearance #wpadminbar .ab-item:focus { background: var(--mrn-admin-sur
 body.mrn-appearance #wpadminbar .ab-sub-wrapper { background: var(--mrn-admin-surface); box-shadow: var(--mrn-admin-overlay-shadow); border: 1px solid var(--mrn-admin-line); }
 body.mrn-appearance #wpadminbar .ab-submenu .ab-item:is(:hover,:focus) { background: var(--mrn-admin-surface-hover) !important; color: var(--mrn-admin-ink) !important; }
 body.mrn-appearance #wpadminbar .ab-item:focus-visible { outline: 2px solid var(--mrn-admin-focus); outline-offset: -3px; }
-/* Personal appearance belongs to the existing account dropdown. */
-body.mrn-appearance #wpadminbar #wp-admin-bar-mrn-account-appearance > .ab-item { height: auto; padding: 0; }
-body.mrn-appearance #wpadminbar .mrn-appearance-form { padding: 12px; width: 264px; max-width: calc(100vw - 32px); box-sizing: border-box; white-space: normal; border-top: 1px solid var(--mrn-admin-line); }
-body.mrn-appearance #wpadminbar #mrn-appearance-label { display: block; font-size: 12px; font-weight: 650; line-height: 1.5; margin-bottom: 8px; color: var(--mrn-admin-muted); }
+/* Compact account menu. Core profile spans have explicit white text, so theme
+   those descendants as well as the surrounding native account link. */
+body.mrn-appearance #wpadminbar #wp-admin-bar-my-account > .ab-sub-wrapper { width: 304px; max-width: calc(100vw - 16px); box-sizing: border-box; border-radius: 10px; }
+body.mrn-appearance #wpadminbar #wp-admin-bar-user-actions { margin: 0; padding: 8px; }
+body.mrn-appearance #wpadminbar #wp-admin-bar-user-actions > li { margin: 0; }
+body.mrn-appearance #wpadminbar #wp-admin-bar-user-info { height: auto; margin: 0 0 4px; }
+body.mrn-appearance #wpadminbar #wp-admin-bar-user-info > a { position: relative; box-sizing: border-box; height: auto; min-height: 56px; padding: 8px 8px 8px 56px; border-radius: 6px; }
+body.mrn-appearance #wpadminbar #wp-admin-bar-user-info img { width: 36px; height: 36px; position: absolute; left: 8px; top: 9px; margin: 0; border-radius: 50%; }
+body.mrn-appearance #wpadminbar #wp-admin-bar-user-info :is(.display-name,.username) { color: var(--mrn-admin-ink) !important; line-height: 20px; height: auto; opacity: 1; }
+body.mrn-appearance #wpadminbar #wp-admin-bar-user-info .edit-profile { color: var(--mrn-admin-muted) !important; font-size: 12px; }
+body.mrn-appearance #wpadminbar #wp-admin-bar-user-info a:is(:hover,:focus) span { color: var(--mrn-admin-ink) !important; }
+body.mrn-appearance #wpadminbar #wp-admin-bar-logout > a { height: auto; min-height: 32px; padding: 4px 8px; line-height: 24px; box-sizing: border-box; border-radius: 6px; }
+/* Personal appearance retains its native per-user form and save behavior. */
+body.mrn-appearance #wpadminbar #wp-admin-bar-mrn-account-appearance > .ab-item { height: auto; padding: 0; background: transparent !important; }
+body.mrn-appearance #wpadminbar .mrn-appearance-form { padding: 10px 0 0; margin-top: 8px; width: 100%; box-sizing: border-box; white-space: normal; border-top: 1px solid var(--mrn-admin-line); }
+body.mrn-appearance #wpadminbar #mrn-appearance-label { display: block; font-size: 12px; font-weight: 650; line-height: 1.5; margin: 0 4px 6px; color: var(--mrn-admin-muted); }
 body.mrn-appearance #wpadminbar .mrn-appearance-choices { display: flex; gap: 4px; }
-body.mrn-appearance #wpadminbar .mrn-appearance-choices button { display: flex; flex: 1; align-items: center; flex-direction: column; gap: 4px; min-height: 56px; padding: 8px 6px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: var(--mrn-admin-ink); font-size: 12px; line-height: 1.4; cursor: pointer; }
-body.mrn-appearance #wpadminbar .mrn-appearance-choices svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+body.mrn-appearance #wpadminbar .mrn-appearance-choices button { display: flex; flex: 1; align-items: center; justify-content: center; gap: 6px; box-sizing: border-box; min-width: 0; min-height: 36px; padding: 6px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: var(--mrn-admin-ink); font-size: 12px; line-height: 1.4; cursor: pointer; }
+body.mrn-appearance #wpadminbar .mrn-appearance-choices svg { flex: 0 0 16px; width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 body.mrn-appearance #wpadminbar .mrn-appearance-choices button:hover { background: var(--mrn-admin-surface-hover); }
 body.mrn-appearance #wpadminbar .mrn-appearance-choices button[aria-pressed=true] { background: var(--mrn-admin-selected); color: var(--mrn-admin-selected-ink); border-color: var(--mrn-admin-accent); }
 body.mrn-appearance #wpadminbar .mrn-appearance-choices button:focus-visible { outline: 3px solid var(--mrn-admin-focus); outline-offset: -3px; }
 body.mrn-appearance #wpadminbar .mrn-appearance-choices button:disabled { cursor: wait; color: var(--mrn-admin-disabled-ink); }
-body.mrn-appearance #wpadminbar .mrn-appearance-status { white-space: normal; color: var(--mrn-admin-muted); font-size: 12px; line-height: 1.5; margin: 8px 0 0; }
+body.mrn-appearance #wpadminbar .mrn-appearance-status { white-space: normal; color: var(--mrn-admin-muted); font-size: 12px; line-height: 1.5; margin: 8px 4px 0; }
 body.mrn-appearance #wpadminbar .mrn-appearance-status:empty { display: none; }
-/* Native page-specific controls move as one node; their panels/forms stay put. */
+/* Original native toggles/forms remain intact. Border-box prevents toolbar core
+   content-box sizing from pushing padded hover targets out of the popover. */
 body.mrn-appearance #wpadminbar #wp-admin-bar-mrn-screen { display: block; }
-body.mrn-appearance #wpadminbar #wp-admin-bar-mrn-screen-controls > .ab-item { height: auto; padding: 6px; }
-body.mrn-appearance #wpadminbar #screen-meta-links { display: flex !important; flex-direction: column; float: none; position: static; height: auto; margin: 0; min-width: 180px; }
-body.mrn-appearance #wpadminbar #screen-meta-links .screen-meta-toggle { float: none; margin: 0; top: auto; }
-body.mrn-appearance #wpadminbar #screen-meta-links .show-settings { width: 100%; height: auto; min-height: 38px; text-align: start; border: 0; border-radius: 5px; padding: 8px 12px; background: var(--mrn-admin-surface); color: var(--mrn-admin-ink); box-shadow: none; font-size: 13px; line-height: 1.5; cursor: pointer; }
+body.mrn-appearance #wpadminbar #wp-admin-bar-mrn-screen > .ab-sub-wrapper { width: 216px; max-width: calc(100vw - 16px); right: 0; left: auto; box-sizing: border-box; border-radius: 10px; }
+body.mrn-appearance #wpadminbar #wp-admin-bar-mrn-screen .ab-submenu { padding: 0; }
+body.mrn-appearance #wpadminbar #wp-admin-bar-mrn-screen-controls > .ab-item { height: auto; padding: 6px; box-sizing: border-box; background: transparent !important; }
+body.mrn-appearance #wpadminbar #screen-meta-links { display: flex !important; flex-direction: column; gap: 2px; float: none; position: static; height: auto; margin: 0; min-width: 0; width: 100%; box-sizing: border-box; }
+body.mrn-appearance #wpadminbar #screen-meta-links .screen-meta-toggle { float: none; margin: 0; top: auto; box-sizing: border-box; }
+body.mrn-appearance #wpadminbar #screen-meta-links .show-settings { width: 100%; height: auto; min-height: 36px; box-sizing: border-box; text-align: start; border: 0; border-radius: 5px; padding: 7px 10px; background: transparent; color: var(--mrn-admin-ink); box-shadow: none; font-size: 13px; line-height: 1.5; cursor: pointer; }
 body.mrn-appearance #wpadminbar #screen-meta-links .show-settings::after { content: none; }
-body.mrn-appearance #wpadminbar #screen-meta-links .show-settings:hover { background: var(--mrn-admin-surface-hover); }
+body.mrn-appearance #wpadminbar #screen-meta-links .show-settings:is(:hover,:focus) { background: var(--mrn-admin-surface-hover); color: var(--mrn-admin-ink); }
 body.mrn-appearance #wpadminbar #screen-meta-links .show-settings:focus-visible { outline: 3px solid var(--mrn-admin-focus); outline-offset: -3px; }
 body.mrn-appearance #wpadminbar #wp-admin-bar-mrn-screen.mrn-screen-open > .ab-sub-wrapper { display: block; }
-body.mrn-screen-tools-ready #screen-meta { position: fixed; top: var(--mrn-adminbar-height,32px); left: 0; right: 0; margin: 0; max-height: 70vh; overflow: auto; z-index: 100001; background: var(--mrn-admin-surface); color: var(--mrn-admin-ink); border-color: var(--mrn-admin-line); box-shadow: var(--mrn-admin-overlay-shadow); }
-body.mrn-screen-tools-ready #screen-meta .mrn-screen-close { float: right; margin: 12px; padding: 8px 12px; min-height: 36px; border: 1px solid var(--mrn-admin-control-line); border-radius: 6px; background: var(--mrn-admin-surface); color: var(--mrn-admin-ink); cursor: pointer; }
+body.mrn-screen-tools-ready #screen-meta { position: fixed; top: calc(var(--mrn-adminbar-height,32px) + 8px); left: auto; right: 12px; width: min(640px,calc(100vw - 24px)); box-sizing: border-box; margin: 0; max-height: calc(100vh - var(--mrn-adminbar-height,32px) - 24px); overflow: auto; z-index: 100001; background: var(--mrn-admin-surface); color: var(--mrn-admin-ink); border: 1px solid var(--mrn-admin-line); border-radius: 10px; box-shadow: var(--mrn-admin-overlay-shadow); }
+body.mrn-screen-tools-ready #screen-options-wrap { padding: 20px; }
+body.mrn-screen-tools-ready #screen-options-wrap fieldset { margin: 0 0 18px; }
+body.mrn-screen-tools-ready #screen-options-wrap fieldset:last-of-type { margin-bottom: 0; }
+body.mrn-screen-tools-ready #screen-options-wrap legend { padding: 0 76px 0 0; margin-bottom: 12px; font-size: 14px; font-weight: 650; }
+body.mrn-screen-tools-ready #screen-options-wrap .metabox-prefs label { display: inline-flex; align-items: center; gap: 7px; min-height: 32px; margin: 0 16px 4px 0; padding: 0; line-height: 1.5; }
+body.mrn-screen-tools-ready #screen-options-wrap .metabox-prefs input { margin: 0; }
+body.mrn-screen-tools-ready #screen-options-wrap .mrn-view-hint { margin: 0 0 10px; color: var(--mrn-admin-muted); }
+body.mrn-screen-tools-ready #screen-options-wrap .mrn-view-settings { margin-bottom: 14px; }
+body.mrn-workspace #screen-options-wrap :is(.columns-prefs,.mrn-managed-region-toggle) { display: none !important; }
+body.mrn-screen-tools-ready #screen-meta .mrn-screen-close { position: absolute; top: 10px; right: 10px; z-index: 1; margin: 0; padding: 4px 10px; min-height: 32px; border: 1px solid var(--mrn-admin-control-line); border-radius: 6px; background: var(--mrn-admin-surface); color: var(--mrn-admin-ink); cursor: pointer; }
+body.mrn-screen-tools-ready #screen-meta .mrn-screen-close:hover { background: var(--mrn-admin-surface-hover); }
+body.mrn-screen-tools-ready #contextual-help-wrap .contextual-help-tabs-wrap { padding-top: 44px; }
 body.mrn-screen-tools-ready #screen-meta :is(button,a,input):focus-visible { outline: 3px solid var(--mrn-admin-focus); outline-offset: 2px; }
 @media (max-width:782px) {
  body.mrn-appearance #wpadminbar #wp-admin-bar-mrn-screen > a { min-width: 46px; padding: 0 8px; }
- body.mrn-appearance #wpadminbar #screen-meta-links .show-settings { min-height: 44px; }
- body.mrn-screen-tools-ready #screen-meta { top: var(--mrn-adminbar-height,46px); }
+ body.mrn-appearance #wpadminbar #screen-meta-links .show-settings,
+ body.mrn-appearance #wpadminbar .mrn-appearance-choices button,
+ body.mrn-appearance #wpadminbar #wp-admin-bar-logout > a { min-height: 44px; }
+ body.mrn-screen-tools-ready #screen-meta { top: calc(var(--mrn-adminbar-height,46px) + 8px); max-height: calc(100vh - var(--mrn-adminbar-height,46px) - 24px); }
+ body.mrn-screen-tools-ready #screen-meta .mrn-screen-close { min-height: 44px; }
+ body.mrn-screen-tools-ready #screen-options-wrap legend { min-height: 30px; }
 }
 @media (prefers-reduced-motion:reduce) { .mrn-appearance #adminmenu * { animation: none !important; transition: none !important; } }
 /* Intentional native islands: no filters, no color inversion, no plugin-internal selectors. */

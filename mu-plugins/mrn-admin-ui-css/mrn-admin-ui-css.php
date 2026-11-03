@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MRN Admin UI CSS
  * Description: Unified admin UI CSS loader for wp-admin.
- * Version: 3.3.3
+ * Version: 3.3.4
  */
 
 defined('ABSPATH') || exit;

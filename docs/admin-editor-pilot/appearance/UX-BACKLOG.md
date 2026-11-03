@@ -2,13 +2,14 @@
 
 **Round 1 approved — 2 November 2026.** All ten annotations / seven clusters were approved by the owner's “Let's make these changes for now” instruction. Source changes are implemented in the existing task worktree; native Light/Dark visual and save/reload checks are complete for the selected fixtures; full automated/performance qualification remains open. See [the implementation and verification record](review/REFINEMENTS-ROUND1.md). No cluster is visually accepted or closed. [Round 2 paired annotations](review/round-2.html) are ready without WordPress login; this is not release sign-off.
 
-## Round 3 — collecting; no implementation approval (3 November 2026)
+## Round 3 — approved for implementation and review-site deployment (3 November 2026)
 
-Six findings `UX-018`–`UX-023` are preserved with five original images in
-[batch 005](review/annotation-batches/005-round3-screen-and-account.json) and
-[batch 006](review/annotation-batches/006-editor-dashboard-return.json).
+Seven findings `UX-018`–`UX-024` are preserved with six original images in
+[batch 005](review/annotation-batches/005-round3-screen-and-account.json),
+[batch 006](review/annotation-batches/006-editor-dashboard-return.json) and
+[batch 007](review/annotation-batches/007-updraftplus-icon-light.json).
 [Detailed triage](review/ANNOTATIONS.md#round-3--account-appearance-and-contextual-view-options)
-groups them into four bounded refinements:
+groups them into five bounded refinements:
 
 1. **P1 reported text legibility / P2 density — UX-C09:** readable account/profile
    states and compact horizontal Light/Dark/System controls. Measure the reported
@@ -24,9 +25,13 @@ groups them into four bounded refinements:
    site-name dropdown above Visit Site; preserve Back to list, AME ownership,
    permissions and native unsaved-change warnings. No new runtime workload.
 
-All four remain **awaiting approval**. Prefer scoped CSS/existing events; no new
-startup scanning, polling, observer or preference system. No product/runtime
-changes were made while collecting. Next annotation: `UX-024`.
+5. **P2 icon visibility — UX-C01 / UX-024:** UpdraftPlus still uses a nearly white
+   glyph on the light sidebar. Match semantic shell icon colors using a narrow
+   renderer-specific treatment; preserve the glyph, AME configuration and vendor
+   interface. Confirm both themes/states without adding runtime work.
+
+All five are **approved** by “Make these udpates and push to dev” on 3 November. Prefer scoped CSS/existing events; no new
+startup scanning, polling, observer or preference system. Collection preserved the runtime; implementation now proceeds in the existing worktree. Next annotation: `UX-025`.
 
 ## Round 2 — installed on protected mrndev.io; functional checks passed; performance open (3 November 2026)
 
@@ -54,7 +59,7 @@ Prefer CSS and existing state/event paths. No new polling, startup-wide field re
 | P2, rank 5 | UX-C05 / UX-008 | Compact parent/nested ACF tab strips with clearer selected, hover and focus states. | Live native activation, wrapping and conditional/validation behavior. |
 | P2, rank 6 | UX-C03 / UX-002, UX-016 | Round-1 title-row placement superseded by the approved round-2 Screen toolbar menu. | Both-theme native panel/focus/Escape checks pass; human review remains. |
 
-Round 2 contains `UX-011`–`UX-017`; round 3 is recorded above, with next ID `UX-024`. Retain original references and group Light/Dark symptoms by shared component. No further refinements are authorized automatically by newly collected annotations.
+Round 2 contains `UX-011`–`UX-017`; round 3 is recorded above, with next ID `UX-025`. Retain original references and group Light/Dark symptoms by shared component. No further refinements are authorized automatically by newly collected annotations.
 
 ## Technical blockers and existing follow-up
 
