@@ -6,8 +6,9 @@ const req = require('node:module').createRequire('/Users/khofmeyer/Development/M
 const {chromium, expect:baseExpect} = req('@playwright/test');
 const Axe = req('@axe-core/playwright').default;
 const expect = baseExpect.configure({timeout:30000});
-const base = 'https://admin-editor-pilot.localhost';
-const out = 'outputs/admin-refinements/round2';
+const base = process.env.MRN_PILOT_URL || 'https://admin-editor-pilot.localhost';
+assert(['https://admin-editor-pilot.localhost','https://admin-editor-pilot.mrndev.io'].includes(base));
+const out = process.env.MRN_PILOT_OUTPUT || 'outputs/admin-refinements/round2';
 const content = '.acf-field[data-name="page_content_rows"]';
 const root = content + ' > .acf-input > .acf-flexible-content > .values > .layout:not(.acf-clone)';
 const fixture = JSON.parse(fs.readFileSync(out + '/empty-fixture.json'));
@@ -15,8 +16,8 @@ assert(Number.isInteger(fixture.id) && fixture.status === 'draft');
 assert(Object.values(fixture.counts).every(count => count === 0), 'Expected owned empty fixture; do not reset a changed draft');
 (async () => {
  const browser = await chromium.launch();
- const context = await browser.newContext({ignoreHTTPSErrors:true,viewport:{width:1487,height:1100}});
- await context.addCookies(JSON.parse(fs.readFileSync('/Users/khofmeyer/Development/MRN-sites/admin-editor-pilot/logs/administrator-auth.json')));
+ const context = await browser.newContext({ignoreHTTPSErrors:base.endsWith('.localhost'),httpCredentials:process.env.MRN_PILOT_HTTP_AUTH ? JSON.parse(fs.readFileSync(process.env.MRN_PILOT_HTTP_AUTH)) : undefined,viewport:{width:1487,height:1100}});
+ await context.addCookies(JSON.parse(fs.readFileSync(process.env.MRN_PILOT_AUTH || '/Users/khofmeyer/Development/MRN-sites/admin-editor-pilot/logs/administrator-auth.json')));
  const page = await context.newPage(), cdp = await context.newCDPSession(page);
  await cdp.send('Network.enable');
  await cdp.send('Network.setBlockedURLs',{urlPatterns:[{urlPattern:base+'/*',block:false},{urlPattern:'*://*:*/*',block:true}],urls:['http://*','https://*']});

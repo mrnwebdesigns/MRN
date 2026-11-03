@@ -1,7 +1,7 @@
 <?php
-/** Isolated, reusable empty-page fixture for the approved Local Hub review. */
-if ( ! defined( 'WP_CLI' ) || ! WP_CLI || 'admin-editor-pilot.localhost' !== wp_parse_url( home_url(), PHP_URL_HOST ) ) {
-	throw new RuntimeException( 'Only the authorized Local Hub fixture is supported.' );
+/** Isolated, reusable empty-page fixture for the approved pilot review. */
+if ( ! defined( 'WP_CLI' ) || ! WP_CLI || ! in_array( wp_parse_url( home_url(), PHP_URL_HOST ), array( 'admin-editor-pilot.localhost', 'admin-editor-pilot.mrndev.io' ), true ) ) {
+	throw new RuntimeException( 'Only the authorized pilot fixtures are supported.' );
 }
 $mode = $args[0] ?? 'readback';
 $id   = (int) get_option( 'mrn_editor_round2_empty_fixture', 0 );
