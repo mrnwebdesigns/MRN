@@ -1,0 +1,20 @@
+{
+  "host": "admin-editor-pilot.mrndev.io",
+  "status": "applied",
+  "before_sha256": "d80ff4706cd91e5c601988bc4804708ec922bf3e4d20b17a6aa7ce31e0ce683b",
+  "after_sha256": "b4cf2f6c6e717cbc87300116f8a9f6213261cdb097eea4c2e10acf9d8d008068",
+  "backup": {
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1793728974,
+    "label": "pre-admin-pilot-codex-review-access-20261103",
+    "nonce": "ea882f502baf",
+    "key": "sites/admin-editor-pilot-mrndev-io/backup_2026-11-03-1802_Trilliant_ea882f502baf-db.gz",
+    "size": 6229429,
+    "sha256": "d6740220ce27bdee16c6848d1abe1849f8ef76e448626af4d591ced5dd858d68"
+  },
+  "rollback": "/home/mrndev-admin-editor/review-private/before-codex-review-http-gate.conf",
+  "http_auth": false,
+  "wordpress_auth": "unchanged",
+  "https_noindex_waf": "unchanged"
+}

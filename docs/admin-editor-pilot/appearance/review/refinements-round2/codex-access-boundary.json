@@ -1,0 +1,14 @@
+{
+  "host": "admin-editor-pilot.mrndev.io",
+  "browser": "Codex in-app browser",
+  "anonymous_navigation": "Native WordPress login form at /site-login/ with redirect to /wp-admin/",
+  "signed_in": "Dashboard at /wp-admin/ visibly showed Welcome, mrn-admin",
+  "tab_retained": true,
+  "password_reset": false,
+  "transient_credential_file_removed": true,
+  "separate_anonymous_head_probes": {
+    "/": 403,
+    "/wp-admin/": 403,
+    "interpretation": "Not public-header qualification; browser sign-in and dashboard verified independently"
+  }
+}

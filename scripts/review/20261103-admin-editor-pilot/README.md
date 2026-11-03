@@ -51,9 +51,10 @@ The original imported Trilliant source and the local review copy are preserved.
 
 ## Current state
 
-The isolated clone is installed, HTTPS validates, unauthenticated access returns
-HTTP 401, and native 19/32-section content hashes match the source after URL
-normalization. Admin UI 3.3.3 / Editor Lockdown 1.0.42 are installed. Labeled
+The isolated clone is installed, HTTPS validates, and native 19/32-section
+content hashes match the source after URL normalization. Basic Auth protected the
+initial migration; the owner approved its exact-site removal on 3 November to
+enable normal WordPress sign-in inside Codex. Admin UI 3.3.3 / Editor Lockdown 1.0.42 are installed. Labeled
 remote Updraft database backups precede clone activation, certificate work, QA
 and the account-node compatibility correction. Both-theme captures and scoped
 accessibility checks pass. See
@@ -76,13 +77,23 @@ The complete installed-picker 0→1→0 workflow now passes, including both nati
 saves and explicit reloads. The final empty fixture is restored to zero rows;
 complex fixture content/ACF hashes remain unchanged.
 
-The migration's Basic Auth directives are directly in this site's Nginx vhost,
-independent of CloudPanel's per-site Basic Auth switch. The realm is
-`MRN editor review`. The anonymous/fake-cookie boundary tests pass.
-Codex's embedded browser rejected Basic Auth; live authentication remains
-protected. Native Chrome navigation exposes the ordinary sign-in prompt. The
-static paired gallery is available for Codex annotations while live access is
-resolved. No release/Fleet action is part of this migration.
+The owner explicitly approved removing only the extra HTTP password gate on
+3 November. `remove-review-http-gate.py` removed four migration-owned directives
+from the exact prepared vhost hash after verified remote database backup
+`ea882f502baf`; the exact S3 object's size was also verified. Private vhost rollback
+and the password file remain available. Nginx configuration validation and reload
+passed; existing shared deprecation/stapling warnings were not changed.
+HTTPS, noindex, WordPress authentication and Cloudflare settings were preserved.
+The review frontend and public assets no longer require the extra HTTP password.
+
+Codex then reached native WordPress sign-in and successfully authenticated as
+`mrn-admin` with the existing account. The live dashboard was visibly verified and
+left open for annotations. No new login endpoint, cookie injection or password
+reset was used. The transient credential file was deleted. Separate anonymous
+command-line HEAD probes returned HTTP 403 and do not qualify public response
+headers; the browser's native sign-in and dashboard are the verified access path.
+See [the applied receipt](../../../docs/admin-editor-pilot/appearance/review/refinements-round2/review-http-gate-removal.json).
+No release/Fleet action is part of this access change.
 
 The canonical shell wrapper cannot traverse `/home` with the new site-owner account.
 `backup.php` uses its existing Updraft API fallback and the same history/checksum/
