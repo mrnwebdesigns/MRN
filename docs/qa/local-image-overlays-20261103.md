@@ -27,10 +27,12 @@ alone is excluded by the owner. Full-theme configured PHPStan has zero errors;
 the partial engine scan has 41 advisories with no baseline changes.
 
 This is a code checkpoint, not final site acceptance or a Stack release. The final
-runtime-bound Classic Editor save/readback and complete Contact page/form remain
-held: an earlier owned draft save preceded a runtime CSS refinement and its binding
-correctly refused stale proof; localhost subsequently refused HTTPS. Owned drafts
-were removed and authored source/styles/routes/media preserved. No release lock,
+runtime-bound Classic Editor save/readback is now verified after HTTPS recovered
+without a service change in this chat: all 59 configured values / 69 expected
+metadata keys survive and rendered HTML remains byte-identical. An earlier draft
+correctly refused a changed CSS binding; no guard was relaxed. Complete Contact
+page/form and backend performance acceptance remain held. Owned drafts are removed
+and authored source/styles/routes/media preserved. No release lock,
 version, package, Fleet promotion, remote site deployment or database write.
 
 Site migration evidence and exact local rollback receipts are recorded in the
