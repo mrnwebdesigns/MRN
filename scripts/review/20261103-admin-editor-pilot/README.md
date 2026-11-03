@@ -55,3 +55,9 @@ Provisioning and qualification are in progress. A private site account/vhost was
 created and HTTP 401 verified; the first database creation was rejected by
 CloudPanel validation before any database or content existed. Review access is
 not yet ready. Final receipts and unresolved blockers belong in the review report.
+
+The canonical shell wrapper cannot traverse `/home` with the new site-owner account.
+`backup.php` uses its existing Updraft API fallback and the same history/checksum/
+upload-log verification, restricted to this exact host and isolated S3 prefix.
+The migration additionally verifies the remote object through AWS CLI. No shared
+permissions or deployment-tool source are changed.
