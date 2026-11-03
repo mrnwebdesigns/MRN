@@ -1,6 +1,6 @@
 <?php
 /**
- * Opt-in Local Hub section navigation. Native ACF remains the content owner.
+ * Opt-in pilot section navigation. Native ACF remains the content owner.
  *
  * @package MRNEditorLockdown
  */
@@ -8,14 +8,14 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * A single local-only switch also serves as the emergency disable mechanism.
+ * One switch disables the pilot on Local Hub and its exact approved review host.
  *
  * @return bool
  */
 function mrn_editor_experience_enabled() {
 	$host = (string) wp_parse_url( home_url(), PHP_URL_HOST );
 	return defined( 'MRN_EDITOR_EXPERIENCE_ENABLED' ) && true === MRN_EDITOR_EXPERIENCE_ENABLED
-		&& str_ends_with( $host, '.localhost' );
+		&& ( str_ends_with( $host, '.localhost' ) || 'admin-editor-pilot.mrndev.io' === $host );
 }
 
 /**
