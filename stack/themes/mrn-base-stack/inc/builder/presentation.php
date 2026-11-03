@@ -116,7 +116,7 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 		return $fields;
 	}
 	if ( 'image_content' === $layout ) {
-		return array_merge( mrn_base_stack_get_content_frame_fields( $layout, $seed ), mrn_base_stack_get_image_action_fields( $seed ), array(
+		return array_merge( mrn_base_stack_get_content_frame_fields( $layout, $seed ), mrn_base_stack_get_image_action_fields( $seed ), mrn_base_stack_get_image_overlay_fields( $seed ), array(
 			$make(
 				'image_presentation',
 				'Image Presentation',

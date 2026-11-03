@@ -37,6 +37,7 @@ function mrn_base_stack_wrap_image_action( $markup, array $row, $image ) {
 	$follow = ! empty( $row['image_action_marker'] ) && in_array( $row['image_action_follow_pointer'] ?? false, array( true, 1, '1' ), true );
 	$follow_attrs = $follow ? ' data-mrn-image-action-follow="' . esc_attr( (string) mrn_base_stack_get_image_action_integer( $row['image_action_follow_inset'] ?? '', 18 ) ) . '"' : '';
 	$blank = '_blank' === ( $link['target'] ?? '' );
+	if ( 'marker-only' === ( $row['image_action_scope'] ?? '' ) ) { return mrn_base_stack_render_marker_only_image_action( $markup, $row, $url, $label, $blank, $styles, $follow_attrs ); }
 	return '<a class="mrn-image-action"' . $follow_attrs . ' href="' . $url . '" aria-label="' . esc_attr( $label ) . '"' . ( $blank ? ' target="_blank" rel="noopener noreferrer"' : '' ) . ( $styles ? ' style="' . esc_attr( implode( ';', $styles ) ) . '"' : '' ) . '>' . $markup . ( ! empty( $row['image_action_marker'] ) ? '<span class="mrn-image-action__marker" aria-hidden="true">' . esc_html( $title ) . ' <svg width="12" height="10" viewBox="0 0 12 10" aria-hidden="true" focusable="false"><path d="M5 1l4 4-4 4M0 5h9" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></span>' : '' ) . '</a>';
 }
 

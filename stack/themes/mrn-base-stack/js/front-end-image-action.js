@@ -46,6 +46,7 @@
 		action.addEventListener( 'pointerleave', reset );
 		action.addEventListener( 'pointercancel', reset );
 		action.addEventListener( 'focus', reset );
+		action.addEventListener( 'focusin', reset );
 		// Scrolling invalidates cached coordinates, including nested scroll containers.
 		window.addEventListener( 'scroll', reset, { passive: true, capture: true } );
 		window.addEventListener( 'resize', reset, { passive: true } );
