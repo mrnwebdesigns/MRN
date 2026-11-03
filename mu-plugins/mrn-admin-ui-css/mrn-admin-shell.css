@@ -89,7 +89,7 @@ body.mrn-screen-tools-ready #screen-options-wrap .mrn-view-settings { margin-bot
 body.mrn-workspace #screen-options-wrap :is(.columns-prefs,.mrn-managed-region-toggle) { display: none !important; }
 body.mrn-screen-tools-ready #screen-meta .mrn-screen-close { position: absolute; top: 10px; right: 10px; z-index: 1; margin: 0; padding: 4px 10px; min-height: 32px; border: 1px solid var(--mrn-admin-control-line); border-radius: 6px; background: var(--mrn-admin-surface); color: var(--mrn-admin-ink); cursor: pointer; }
 body.mrn-screen-tools-ready #screen-meta .mrn-screen-close:hover { background: var(--mrn-admin-surface-hover); }
-body.mrn-screen-tools-ready #contextual-help-wrap :is(.contextual-help-tabs-wrap,.contextual-help-sidebar) { padding-top: 44px; }
+body.mrn-screen-tools-ready #contextual-help-wrap :is(.contextual-help-tabs,.contextual-help-tabs-wrap,.contextual-help-sidebar) { padding-top: 44px; }
 body.mrn-screen-tools-ready #screen-meta :is(button,a,input):focus-visible { outline: 3px solid var(--mrn-admin-focus); outline-offset: 2px; }
 @media (max-width:782px) {
  body.mrn-appearance #wpadminbar #wp-admin-bar-mrn-screen > a { min-width: 46px; padding: 0 8px; }
@@ -247,4 +247,9 @@ body.mrn-appearance #adminmenu li.ame-menu-heading-item > a.menu-top:is(:hover,:
 body.mrn-screen-tools-ready #screen-meta :is(#contextual-help-back,.contextual-help-sidebar) { background: var(--mrn-admin-surface-subtle); color: var(--mrn-admin-ink); border-color: var(--mrn-admin-line); }
 body.mrn-screen-tools-ready #screen-meta a { color: var(--mrn-admin-accent); }
 body.mrn-screen-tools-ready #screen-meta :is(input,select) { color: var(--mrn-admin-ink); background-color: var(--mrn-admin-surface); border-color: var(--mrn-admin-control-line); }
+/* Core's white checked SVG is invisible on the light panel. Keep the native
+   checkbox and draw its selected glyph using the semantic primary pair. */
+body.mrn-screen-tools-ready #screen-meta input[type=checkbox]:checked { position: relative; background-color: var(--mrn-admin-primary); border-color: var(--mrn-admin-primary); }
+body.mrn-screen-tools-ready #screen-meta input[type=checkbox]:checked::before { content: ""; position: absolute; left: 50%; top: 45%; float: none; margin: 0; width: 25%; height: 50%; border: solid var(--mrn-admin-on-primary); border-width: 0 2px 2px 0; transform: translate(-50%,-50%) rotate(45deg); }
+body.mrn-screen-tools-ready #screen-meta input[type=radio]:checked::before { background-color: var(--mrn-admin-primary); }
 body.mrn-screen-tools-ready #screen-meta .contextual-help-tabs .active { background: var(--mrn-admin-selected); border-color: var(--mrn-admin-line); }
