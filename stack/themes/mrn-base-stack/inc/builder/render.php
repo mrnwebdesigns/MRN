@@ -198,7 +198,12 @@ function mrn_base_stack_wrap_cloned_reusable_builder_markup( $inner_markup, arra
 		$frame_contract = mrn_base_stack_get_faq_frame_contract( $row );
 		$row_classes = trim( $row_classes . ' ' . implode( ' ', $frame_contract['classes'] ) );
 		$row_attributes = mrn_base_stack_merge_builder_attributes( $row_attributes, $frame_contract['attributes'] );
-		if ( ! empty( $frame_contract['classes'] ) && ! empty( $row['faq_exclusive'] ) && class_exists( 'WP_HTML_Tag_Processor' ) ) {
+		$scroll_contract = mrn_base_stack_get_faq_scroll_contract( $row );
+		$row_classes = trim( $row_classes . ' ' . implode( ' ', $scroll_contract['classes'] ) );
+		$row_attributes = mrn_base_stack_merge_builder_attributes( $row_attributes, $scroll_contract['attributes'] );
+		if ( ! empty( $scroll_contract['classes'] ) ) {
+			$inner_markup = mrn_base_stack_prepare_faq_scroll_markup( $inner_markup );
+		} elseif ( ! empty( $frame_contract['classes'] ) && ! empty( $row['faq_exclusive'] ) && class_exists( 'WP_HTML_Tag_Processor' ) ) {
 			$tags = new WP_HTML_Tag_Processor( $inner_markup );
 			$group = wp_unique_id( 'mrn-faq-' );
 			while ( $tags->next_tag( array( 'tag_name' => 'DETAILS', 'class_name' => 'mrn-faq__item' ) ) ) { $tags->set_attribute( 'name', $group ); }

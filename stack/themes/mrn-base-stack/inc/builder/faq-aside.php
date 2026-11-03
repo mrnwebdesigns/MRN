@@ -7,6 +7,7 @@ function mrn_base_stack_get_faq_frame_fields( $seed ) {
 	foreach ( array( 'question_size' => 'Question Font Size', 'question_size_mobile' => 'Small-Screen Question Font Size', 'question_line_height' => 'Question Line Height', 'answer_size' => 'Answer Font Size', 'answer_size_mobile' => 'Small-Screen Answer Font Size', 'answer_line_height' => 'Answer Line Height', 'answer_paragraph_space_after' => 'Space After Answer Paragraphs', 'item_padding' => 'Vertical Space Inside Each Item', 'item_padding_mobile' => 'Small-Screen Item Space', 'answer_space_before' => 'Space Before Answers', 'icon_gap' => 'Space Between Icon and Question', 'icon_width' => 'Question Icon Width', 'item_gap' => 'Space Between Questions', 'inner_gutter' => 'Inner Horizontal Gutter' ) as $name => $label ) {
 		$fields[] = array( 'key' => $seed . '_faq_' . $name, 'name' => 'faq_' . $name, 'label' => $label, 'type' => 'text', 'default_value' => '', 'instructions' => 'Optional non-negative CSS length or clamp(). Line heights also accept unitless numbers. Small-screen values apply at 767px; section spacing uses row presets.', 'wrapper' => array( 'width' => '50' ) );
 	}
+	$fields[] = array( 'key' => $seed . '_faq_question_letter_spacing', 'name' => 'faq_question_letter_spacing', 'label' => 'Question Letter Spacing', 'type' => 'text', 'default_value' => '', 'instructions' => 'Optional bounded letter spacing, including negative em/px values. Blank retains existing tracking.' );
 	$fields[] = array( 'key' => $seed . '_faq_question_weight', 'name' => 'faq_question_weight', 'label' => 'Question Font Weight', 'type' => 'select', 'choices' => array( '' => 'Use Existing Weight' ) + array_combine( range( 100, 900, 100 ), range( 100, 900, 100 ) ), 'default_value' => '' );
 	$fields[] = array( 'key' => $seed . '_faq_question_font', 'name' => 'faq_question_font', 'label' => 'Question Font', 'type' => 'select', 'choices' => array( '' => 'Use Existing Font', 'heading' => 'Site Heading Font', 'body' => 'Site Body Font' ), 'default_value' => '' );
 	$fields[] = array( 'key' => $seed . '_faq_icon_style', 'name' => 'faq_icon_style', 'label' => 'Question Icon', 'type' => 'select', 'choices' => array( '' => 'Use Existing Icon', 'chevron' => 'Chevron' ), 'default_value' => '' );
@@ -20,7 +21,7 @@ function mrn_base_stack_get_faq_frame_fields( $seed ) {
 		if ( $field['name'] !== $fields[0]['name'] ) { $field['conditional_logic'] = array( array( array( 'field' => $fields[0]['key'], 'operator' => '==', 'value' => 'faq_frame' === $fields[0]['name'] ? 'editorial' : 'aside' ) ) ); }
 	}
 	unset( $field );
-	return $fields;
+	return array_merge( $fields, mrn_base_stack_get_faq_scroll_fields( $seed ) );
 }
 
 /** Palette lookup is explicit; an unknown slug cannot create a CSS variable. */
@@ -44,6 +45,8 @@ function mrn_base_stack_get_faq_frame_contract( array $row ) {
 			if ( in_array( $name, array( 'answer_size', 'answer_size_mobile', 'answer_paragraph_space_after' ), true ) ) { $result['classes'][] = 'has-faq-' . str_replace( '_', '-', $name ); }
 		}
 	}
+	$tracking = mrn_base_stack_get_frame_letter_spacing( $row['faq_question_letter_spacing'] ?? '' );
+	if ( '' !== $tracking ) { $styles[] = '--mrn-faq-frame-question-letter-spacing:' . $tracking; $result['classes'][] = 'has-faq-question-tracking'; }
 	$weight = $row['faq_question_weight'] ?? '';
 	if ( is_scalar( $weight ) && in_array( (string) $weight, array_map( 'strval', range( 100, 900, 100 ) ), true ) ) { $styles[] = '--mrn-faq-frame-question-weight:' . $weight; }
 	foreach ( array( 'question', 'question_open', 'answer', 'icon', 'icon_open' ) as $part ) {

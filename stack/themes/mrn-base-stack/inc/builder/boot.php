@@ -19,6 +19,7 @@ require_once __DIR__ . '/hero-frame.php';
 
 require_once __DIR__ . '/cta-frame.php';
 require_once __DIR__ . '/faq-aside.php';
+require_once __DIR__ . '/faq-scroll.php';
 require_once __DIR__ . '/text-tags.php';
 require_once __DIR__ . '/image-action.php';
 require_once __DIR__ . '/card-frame.php';

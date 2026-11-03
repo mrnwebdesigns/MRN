@@ -14,7 +14,7 @@ function group(reduced = false, named = true) {
   item.click=()=>summaryHandlers.click({preventDefault(){}});item.finish=()=>[...transitions].forEach(cb=>cb({propertyName:'height'}));item.pending=()=>transitions.size;item.answer=answer;items.push(item);return item;
  }
  const first=make(true),second=make(false);
- vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../../js/front-end-faq.js'),'utf8'),{document:{readyState:'complete',querySelectorAll:()=>items},window:{matchMedia:()=>({matches:reduced})}});
+ vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../../js/front-end-faq.js'),'utf8'),{document:{readyState:'complete',querySelectorAll:s=>s === '.mrn-faq__item' ? items : []},window:{matchMedia:()=>({matches:reduced})}});
  return {first,second};
 }
 for(const reduced of [false,true]){

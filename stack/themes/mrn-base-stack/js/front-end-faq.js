@@ -14,7 +14,7 @@
 		}
 
 		faqItems.forEach( function( item ) {
-			if ( item.dataset.mrnFaqMounted === 'true' ) {
+			if ( item.dataset.mrnFaqMounted === 'true' || ( item.closest && item.closest( '[data-mrn-faq-scroll]' ) ) ) {
 				return;
 			}
 
@@ -118,4 +118,61 @@
 	} else {
 		initAnimatedFaqs();
 	}
+}() );
+
+/* Opt-in scroll-active FAQ. Native details remain usable without this enhancement. */
+( function() {
+	function initScrollFaqs() {
+		var groups = [];
+		var queued = false;
+		var reduced = window.matchMedia( '(prefers-reduced-motion: reduce)' );
+		var mobile = window.matchMedia( '(max-width: 767px)' );
+		document.querySelectorAll( '[data-mrn-faq-scroll]' ).forEach( function( root ) {
+			if ( root.dataset.mrnFaqScrollMounted ) { return; }
+			var items = Array.from( root.querySelectorAll( '.mrn-faq__item' ) );
+			if ( ! items.length ) { return; }
+			root.dataset.mrnFaqScrollMounted = 'true';
+			var ratio = Number( root.dataset.mrnFaqScroll );
+			if ( ! Number.isFinite( ratio ) || ratio < 0.1 || ratio > 0.9 ) { ratio = 0.45; }
+			var group = { root: root, items: items, ratio: ratio, expanded: null };
+			groups.push( group );
+			// Manual controls keep focus and never initiate scrolling or motion.
+			items.forEach( function( item ) {
+				item.addEventListener( 'toggle', function() {
+					if ( ! item.open || group.expanded || ! item.contains( document.activeElement ) ) { return; }
+					items.forEach( function( peer ) { if ( peer !== item && ! peer.contains( document.activeElement ) ) { peer.open = false; } } );
+				} );
+			} );
+			root.addEventListener( 'focusout', schedule );
+		} );
+		if ( ! groups.length ) { return; }
+		function update() {
+			queued = false;
+			groups.forEach( function( group ) {
+				var expanded = reduced.matches || ( mobile.matches && group.root.dataset.mrnFaqMobileAll === 'true' );
+				var changed = expanded !== group.expanded;
+				group.expanded = expanded;
+				if ( expanded ) {
+					// Expand on entry, but retain the reader's subsequent manual choices.
+					if ( changed ) { group.items.forEach( function( item ) { item.open = true; } ); }
+					return;
+				}
+				// Never close content around keyboard focus, including answer links.
+				if ( group.root.contains( document.activeElement ) ) { return; }
+				var threshold = window.innerHeight * group.ratio;
+				var active = group.items[0];
+				group.items.forEach( function( item ) { if ( item.getBoundingClientRect().top <= threshold ) { active = item; } } );
+				group.items.forEach( function( item ) { item.open = item === active; } );
+			} );
+		}
+		function schedule() {
+			if ( ! queued ) { queued = true; window.requestAnimationFrame( update ); }
+		}
+		window.addEventListener( 'scroll', schedule, { passive: true } );
+		window.addEventListener( 'resize', schedule );
+		reduced.addEventListener( 'change', schedule );
+		mobile.addEventListener( 'change', schedule );
+		update();
+	}
+	if ( document.readyState === 'loading' ) { document.addEventListener( 'DOMContentLoaded', initScrollFaqs ); } else { initScrollFaqs(); }
 }() );
