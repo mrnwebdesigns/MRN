@@ -90,7 +90,21 @@
   close.setAttribute('aria-label', labels.closeScreenLabel);
   function closePanel() {
    var active = links.querySelector('.screen-meta-active');
-   if (active) { active.click(); closeScreenMenu(true); }
+   // Core adds its active class only after the opening slide finishes. A fast
+   // Close/Escape must also work during that transition. Complete only the
+   // native panel's queued animation, then use its original toggle handler.
+   if (!active) {
+    active = Array.from(links.querySelectorAll('.show-settings')).find(function (button) {
+     var panel = document.getElementById(button.getAttribute('aria-controls'));
+     return panel && panel.getClientRects().length;
+    });
+   }
+   if (active) {
+    var panel = document.getElementById(active.getAttribute('aria-controls'));
+    if (panel && window.jQuery) { window.jQuery(panel).finish(); }
+    if (panel && panel.getClientRects().length) { active.click(); }
+    closeScreenMenu(true);
+   }
   }
   close.addEventListener('click', closePanel); meta.prepend(close);
   meta.addEventListener('keydown', function (event) { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closePanel(); } });
