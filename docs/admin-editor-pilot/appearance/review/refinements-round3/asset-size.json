@@ -1,0 +1,23 @@
+[
+  {
+    "file": "mrn-admin-ui-css/appearance.js",
+    "before_bytes": 8359,
+    "after_bytes": 10364,
+    "gzip_before": 2685,
+    "gzip_after": 3253
+  },
+  {
+    "file": "mrn-admin-ui-css/mrn-admin-shell.css",
+    "before_bytes": 32387,
+    "after_bytes": 37114,
+    "gzip_before": 5431,
+    "gzip_after": 6306
+  },
+  {
+    "file": "mrn-editor-lockdown/assets/section-navigator.js",
+    "before_bytes": 35439,
+    "after_bytes": 36063,
+    "gzip_before": 9304,
+    "gzip_after": 9502
+  }
+]

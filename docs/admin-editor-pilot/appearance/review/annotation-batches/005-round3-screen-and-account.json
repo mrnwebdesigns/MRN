@@ -7,13 +7,13 @@
     "mrn-admin-ui-css": "3.3.3",
     "mrn-editor-lockdown": "1.0.42"
   },
-  "status": "Approved for implementation and exact review-site deployment",
+  "status": "Implemented on authorized dev; awaiting human visual review",
   "approvedClusters": [
     "UX-C09",
     "UX-C03",
     "UX-C10"
   ],
-  "implementedRefinements": 0,
+  "implementedRefinements": 5,
   "ownerPriority": "Performance and usability; retain existing components and native behavior",
   "originalMessage": [
     "These could look way better. Appearance is too large, text above is white on white",
@@ -159,5 +159,13 @@
     "instruction": "Make these udpates and push to dev",
     "target": "https://admin-editor-pilot.mrndev.io",
     "scope": "UX-018 through UX-024; no production, release or Fleet activation"
+  },
+  "implementation": {
+    "candidate": "4dd60f23",
+    "host": "admin-editor-pilot.mrndev.io",
+    "admin_ui": "3.3.4",
+    "editor_lockdown": "1.0.43",
+    "evidence": "../REFINEMENTS-ROUND3.md",
+    "visualAcceptance": "pending"
   }
 }

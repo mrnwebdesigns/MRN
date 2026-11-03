@@ -2,7 +2,7 @@
 
 **Round 1 approved — 2 November 2026.** All ten annotations / seven clusters were approved by the owner's “Let's make these changes for now” instruction. Source changes are implemented in the existing task worktree; native Light/Dark visual and save/reload checks are complete for the selected fixtures; full automated/performance qualification remains open. See [the implementation and verification record](review/REFINEMENTS-ROUND1.md). No cluster is visually accepted or closed. [Round 2 paired annotations](review/round-2.html) are ready without WordPress login; this is not release sign-off.
 
-## Round 3 — approved for implementation and review-site deployment (3 November 2026)
+## Round 3 — installed on dev; awaiting visual review (3 November 2026)
 
 Seven findings `UX-018`–`UX-024` are preserved with six original images in
 [batch 005](review/annotation-batches/005-round3-screen-and-account.json),
@@ -22,7 +22,7 @@ groups them into five bounded refinements:
    personal display preferences remain distinct; required ACF regions stay usable.
 
 4. **P2 navigation — UX-C11:** explicit Dashboard return entry in the existing
-   site-name dropdown above Visit Site; preserve Back to list, AME ownership,
+   site-name dropdown alongside Visit Site; preserve Back to list, AME ownership,
    permissions and native unsaved-change warnings. No new runtime workload.
 
 5. **P2 icon visibility — UX-C01 / UX-024:** UpdraftPlus still uses a nearly white
@@ -31,7 +31,7 @@ groups them into five bounded refinements:
    interface. Confirm both themes/states without adding runtime work.
 
 All five are **approved** by “Make these udpates and push to dev” on 3 November. Prefer scoped CSS/existing events; no new
-startup scanning, polling, observer or preference system. Collection preserved the runtime; implementation now proceeds in the existing worktree. Next annotation: `UX-025`.
+startup scanning, polling, observer or preference system. Implementation is installed on the exact review host. [Evidence and open checks](review/REFINEMENTS-ROUND3.md); [next paired review](review/round-4.html). No cluster is visually accepted automatically. Next annotation: `UX-025`.
 
 ## Round 2 — installed on protected mrndev.io; functional checks passed; performance open (3 November 2026)
 
@@ -62,6 +62,9 @@ Prefer CSS and existing state/event paths. No new polling, startup-wide field re
 Round 2 contains `UX-011`–`UX-017`; round 3 is recorded above, with next ID `UX-025`. Retain original references and group Light/Dark symptoms by shared component. No further refinements are authorized automatically by newly collected annotations.
 
 ## Technical blockers and existing follow-up
+
+- **P1 — Review-site list preference POST:** Cloudflare rejects the native `edit.php` items-per-page submission with HTTP 403. The original value remains 20. A separate exact-path security-rule approval and fresh preflight are needed before extending the prior `post.php` exception; no WAF change was made. Native column and optional editor-panel AJAX persistence pass.
+- **P1 — Timing qualification under host contention:** the round-3 balanced client-asset probe is prepared but not run. Local load exceeded 200 and remained unstable; no performance acceptance is claimed. The bounded source adds 1,641 gzip bytes. Preserve the existing OOM/startup/save latency gates below.
 
 - **P1 — Native save latency:** the approved exact-site exception is verified, and 19/32 native saves/reloads plus incomplete-save rejection pass. Save responses took 41.6s / 120.5s in one serial run. Attribute latency before release; preserve native storage, validation and ACF lifecycle. The complete empty-page 0→1→0 workflow passes after the native append-route correction.
 - **Resolved — Live annotation access:** the owner-approved review-site HTTP-gate removal is recorded in commit `19ee2d9d`; native WordPress sign-in was verified in Codex. WordPress authentication remains required. Static captures remain available for comparison.

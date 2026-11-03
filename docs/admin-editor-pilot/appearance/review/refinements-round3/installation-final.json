@@ -1,0 +1,50 @@
+{
+  "host": "admin-editor-pilot.mrndev.io",
+  "commit": "4dd60f2327c4268f02a13a5cc68da59b6433f801",
+  "backup": {
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1793735004,
+    "label": "pre-admin-pilot-round3-install-20261103",
+    "nonce": "e127512c8a2a",
+    "key": "sites/admin-editor-pilot-mrndev-io/backup_2026-11-03-1943_Trilliant_e127512c8a2a-db.gz",
+    "size": 6220903,
+    "sha256": "49e8eaf7b59aad3f090c2b522c9dcf5449c2899ea45c9848706755231b5bef02"
+  },
+  "rollback": "/home/mrndev-admin-editor/review-private/before-round3-4dd60f2327c4",
+  "files": {
+    "mrn-admin-ui-css/appearance.php": {
+      "before": "41fc2098746a1e4c3a325c24011c05841d7a966ba33daae48918ffaa02ffafbd",
+      "after": "41fc2098746a1e4c3a325c24011c05841d7a966ba33daae48918ffaa02ffafbd"
+    },
+    "mrn-admin-ui-css/appearance.js": {
+      "before": "8a80d525f4a15a3cbd80224c1badc1f6b0064b6b5ab121ae75cf766c514d6734",
+      "after": "8f5d6dc1574df79d507168b97e3fbc65122cb98bb494fd7ebbff9a404070504e"
+    },
+    "mrn-admin-ui-css/mrn-admin-shell.css": {
+      "before": "06b43cd6bf91654ec018c85a884642241527962470464672ca49b5c897112d4e",
+      "after": "06b43cd6bf91654ec018c85a884642241527962470464672ca49b5c897112d4e"
+    },
+    "mrn-admin-ui-css/mrn-admin-ui-css.php": {
+      "before": "d3b12533a9d498a10d9f7d1d966829a337d182968b6c7a670212634c5caf3496",
+      "after": "d3b12533a9d498a10d9f7d1d966829a337d182968b6c7a670212634c5caf3496"
+    },
+    "mrn-admin-ui-css/stack.lock": {
+      "before": "b61b5934f66e2900ae4f2509a2d856091354ec96db7176c0d902e5a9b89085f8",
+      "after": "b61b5934f66e2900ae4f2509a2d856091354ec96db7176c0d902e5a9b89085f8"
+    },
+    "mrn-editor-lockdown/assets/section-navigator.js": {
+      "before": "505d116422631051691351cf0a6e3989f3ee93cc6dd321f548ac8e3211bb9590",
+      "after": "505d116422631051691351cf0a6e3989f3ee93cc6dd321f548ac8e3211bb9590"
+    },
+    "mrn-editor-lockdown/mrn-editor-lockdown.php": {
+      "before": "2a8de881e23e8c4a20374e2e53ecf16c8a7fd250cb10d11d791cb674e6313f46",
+      "after": "2a8de881e23e8c4a20374e2e53ecf16c8a7fd250cb10d11d791cb674e6313f46"
+    },
+    "mrn-editor-lockdown/stack.lock": {
+      "before": "387157427c37dc4a7b58a7b5ba0352acee9b08594daeb40ebfd30055b5f75be9",
+      "after": "387157427c37dc4a7b58a7b5ba0352acee9b08594daeb40ebfd30055b5f75be9"
+    }
+  },
+  "status": "installed"
+}

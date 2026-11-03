@@ -188,3 +188,6 @@ runtime change. Next annotation: `UX-025`.
 
 
 **Round 3 approval:** “Make these udpates and push to dev,” 3 November 2026. This supersedes the historical awaiting-approval status for UX-018–UX-024 / UX-C01, UX-C03, UX-C09, UX-C10 and UX-C11. Exact destination: admin-editor-pilot.mrndev.io. No production, release or Fleet authority is added.
+
+
+**Round 3 installed:** UX-018–UX-024 are implemented on the exact authorized dev review site (candidate `4dd60f23`), with [before/after evidence and checks](REFINEMENTS-ROUND3.md). Human visual acceptance remains pending. Native per-page POST is blocked by Cloudflare; other targeted preference checks pass. No production/Fleet action or new WAF change. Next annotation: `UX-025`.

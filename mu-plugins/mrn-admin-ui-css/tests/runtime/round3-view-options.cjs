@@ -12,7 +12,7 @@ function contrast(a,b){const lum=s=>s.match(/[\d.]+/g).slice(0,3).map(Number).ma
  const browser=await chromium.launch(),context=await browser.newContext({viewport:{width:1487,height:1100}});
  await context.addCookies(JSON.parse(fs.readFileSync(process.env.MRN_PILOT_AUTH)));
  await context.route('**/*',r=>new URL(r.request().url()).origin===base?r.continue():r.abort());
- const p=await context.newPage(),cdp=await context.newCDPSession(p),result={phase,at:new Date().toISOString(),checks:[],geometry:[],contrast:[],timings:[],axe:{},errors:[]};let original;
+ const p=await context.newPage(),cdp=await context.newCDPSession(p),result={phase,at:new Date().toISOString(),checks:[],skipped:[],nativeOnly:!!process.env.MRN_PILOT_NATIVE_ONLY,geometry:[],contrast:[],timings:[],axe:{},errors:[]};let original;
  p.on('pageerror',e=>result.errors.push(e.message));
  await cdp.send('Performance.enable');
  async function go(path,count){console.log(phase,'load',path);const t=performance.now();const r=await p.goto(base+'/wp-admin/'+path,{waitUntil:'load',timeout:120000});assert.equal(r.status(),200);assert(p.url().startsWith(base+'/wp-admin/'),'Expected native admin session');if(count!==undefined){await expect(p.locator('.mrn-section-link')).toHaveCount(count);await p.waitForFunction(()=>window.tinymce&&tinymce.editors.every(e=>e.initialized),null,{timeout:60000});}const m=Object.fromEntries((await cdp.send('Performance.getMetrics')).metrics.map(x=>[x.name,x.value]));result.timings.push({path,mode:await p.locator('html').getAttribute('data-mrn-appearance'),wall_ms:performance.now()-t,cpu_ms:m.TaskDuration*1000,heap_mb:m.JSHeapUsedSize/1024/1024,dom_nodes:await p.locator('*').count()});}
@@ -25,7 +25,7 @@ function contrast(a,b){const lum=s=>s.match(/[\d.]+/g).slice(0,3).map(Number).ma
  async function scan(name,selectors){if(selectors.includes('#screen-options-wrap')){const check=p.locator('#screen-options-wrap input[type=checkbox]:checked:visible').first();if(await check.count()){const colors=await check.evaluate(e=>({ink:getComputedStyle(e,'::before').borderRightColor,bg:getComputedStyle(e).backgroundColor}));const ratio=contrast(colors.ink,colors.bg);result.contrast.push({target:name+' checked indicator',ratio});assert(ratio>=3,'Selected checkbox must be visible');}}let axe=new Axe({page:p}).withTags(['wcag2a','wcag2aa','wcag21aa']);for(const s of selectors)axe=axe.include(s);result.axe[name]=(await axe.analyze()).violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))}));}
  try{
   await go('index.php');original=await p.locator('html').getAttribute('data-mrn-appearance');
-  for(const mode of ['light','dark']){
+  for(const mode of (process.env.MRN_PILOT_NATIVE_ONLY?[]:['light','dark'])){
    await appearance(mode);await go('index.php');await shot(mode+'-dashboard');
    await account();await shot(mode+'-account-full');await shot(mode+'-account','#wp-admin-bar-my-account > .ab-sub-wrapper');
    const accountData=await p.evaluate(()=>{const menu=document.querySelector('#wp-admin-bar-my-account > .ab-sub-wrapper'),text=document.querySelector('#wp-admin-bar-user-info .display-name'),button=document.querySelector('.mrn-appearance-choices button'),c=getComputedStyle(text);return {width:menu.getBoundingClientRect().width,height:menu.getBoundingClientRect().height,buttonHeight:button.getBoundingClientRect().height,text:c.color,background:getComputedStyle(menu).backgroundColor};});
@@ -59,9 +59,10 @@ function contrast(a,b){const lum=s=>s.match(/[\d.]+/g).slice(0,3).map(Number).ma
   if(phase==='after'){
    // Native list-table per-page and column preference forms, restored after checks.
    await go('edit.php?post_type=team_member');await openOptions();
-   const perPage=p.locator('#screen-options-wrap .screen-per-page'),oldCount=await perPage.inputValue();
+   if(!process.env.MRN_PILOT_SKIP_PER_PAGE){const perPage=p.locator('#screen-options-wrap .screen-per-page'),oldCount=await perPage.inputValue();
    try{await perPage.fill('5');await Promise.all([p.waitForNavigation({waitUntil:'load'}),p.locator('#screen-options-apply').click()]);await openOptions();await expect(perPage).toHaveValue('5');assert(await p.locator('#the-list > tr').count()<=5);result.checks.push('CPT native items-per-page persisted and affected the visible row count');}
    finally{await perPage.fill(oldCount);await Promise.all([p.waitForNavigation({waitUntil:'load'}),p.locator('#screen-options-apply').click()]);}
+   }else{result.skipped.push('Native items-per-page submission: confirmed HTTP 403 from the custom Cloudflare challenge; awaiting exact exception approval.');}
    await openOptions();const date=p.locator('#date-hide'),dateBefore=await date.isChecked();
    try{const done=p.waitForResponse(r=>r.request().postData()?.includes('action=hidden-columns')&&r.status()===200);await date.setChecked(!dateBefore);await done;await p.reload({waitUntil:'load'});await openOptions();assert.equal(await date.isChecked(),!dateBefore);result.checks.push('Native list column visibility persisted');}
    finally{const done=p.waitForResponse(r=>r.request().postData()?.includes('action=hidden-columns')&&r.status()===200);await date.setChecked(dateBefore);await done;}

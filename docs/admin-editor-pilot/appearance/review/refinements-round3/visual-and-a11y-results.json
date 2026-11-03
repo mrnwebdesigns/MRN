@@ -1,0 +1,260 @@
+{
+  "phase": "after",
+  "at": "2026-11-03T19:43:25.732Z",
+  "checks": [
+    "light Dashboard return link coexists with Visit Site in AME-owned menu order",
+    "dark Dashboard return link coexists with Visit Site in AME-owned menu order"
+  ],
+  "geometry": [
+    {
+      "mode": "light",
+      "account": {
+        "width": 304,
+        "height": 185,
+        "buttonHeight": 36,
+        "text": "rgb(28, 46, 66)",
+        "background": "rgb(255, 255, 255)"
+      }
+    },
+    {
+      "mode": "light",
+      "viewMenu": {
+        "menu": {
+          "left": 1102.109375,
+          "right": 1318.109375,
+          "width": 216
+        },
+        "button": {
+          "left": 1109.109375,
+          "right": 1311.109375,
+          "width": 202
+        }
+      }
+    },
+    {
+      "mode": "dark",
+      "account": {
+        "width": 304,
+        "height": 185,
+        "buttonHeight": 36,
+        "text": "rgb(229, 237, 247)",
+        "background": "rgb(27, 40, 57)"
+      }
+    },
+    {
+      "mode": "dark",
+      "viewMenu": {
+        "menu": {
+          "left": 1102.109375,
+          "right": 1318.109375,
+          "width": 216
+        },
+        "button": {
+          "left": 1109.109375,
+          "right": 1311.109375,
+          "width": 202
+        }
+      }
+    }
+  ],
+  "contrast": [
+    {
+      "mode": "light",
+      "target": "profile-name",
+      "ratio": 13.826315486846623
+    },
+    {
+      "mode": "light",
+      "target": "updraft-icon",
+      "ratio": 4.851926016608219
+    },
+    {
+      "target": "light-dashboard-options checked indicator",
+      "ratio": 6.8566867324773
+    },
+    {
+      "target": "light-pages-options checked indicator",
+      "ratio": 6.8566867324773
+    },
+    {
+      "target": "light-team-options checked indicator",
+      "ratio": 6.8566867324773
+    },
+    {
+      "target": "light-empty-editor-options checked indicator",
+      "ratio": 6.8566867324773
+    },
+    {
+      "target": "light-editor-options checked indicator",
+      "ratio": 6.8566867324773
+    },
+    {
+      "mode": "dark",
+      "target": "profile-name",
+      "ratio": 12.623013088524207
+    },
+    {
+      "mode": "dark",
+      "target": "updraft-icon",
+      "ratio": 8.050645987669778
+    },
+    {
+      "target": "dark-dashboard-options checked indicator",
+      "ratio": 8.824703996417995
+    },
+    {
+      "target": "dark-pages-options checked indicator",
+      "ratio": 8.824703996417995
+    },
+    {
+      "target": "dark-team-options checked indicator",
+      "ratio": 8.824703996417995
+    },
+    {
+      "target": "dark-empty-editor-options checked indicator",
+      "ratio": 8.824703996417995
+    },
+    {
+      "target": "dark-editor-options checked indicator",
+      "ratio": 8.824703996417995
+    }
+  ],
+  "timings": [
+    {
+      "path": "index.php",
+      "mode": "light",
+      "wall_ms": 5668.018625,
+      "cpu_ms": 2773.467,
+      "heap_mb": 34.83877944946289,
+      "dom_nodes": 1391
+    },
+    {
+      "path": "index.php",
+      "mode": "light",
+      "wall_ms": 2675.088208000001,
+      "cpu_ms": 3216.031,
+      "heap_mb": 52.8289680480957,
+      "dom_nodes": 1389
+    },
+    {
+      "path": "edit.php?post_type=page",
+      "mode": "light",
+      "wall_ms": 3140.1794580000005,
+      "cpu_ms": 4979.706,
+      "heap_mb": 58.31307601928711,
+      "dom_nodes": 2747
+    },
+    {
+      "path": "edit.php?post_type=team_member",
+      "mode": "light",
+      "wall_ms": 2503.6923339999994,
+      "cpu_ms": 6116.961,
+      "heap_mb": 64.5845832824707,
+      "dom_nodes": 2376
+    },
+    {
+      "path": "options-general.php",
+      "mode": "light",
+      "wall_ms": 2197.954375000001,
+      "cpu_ms": 7337.018,
+      "heap_mb": 62.20944595336914,
+      "dom_nodes": 1768
+    },
+    {
+      "path": "post.php?post=2580&action=edit",
+      "mode": "light",
+      "wall_ms": 4926.233749999999,
+      "cpu_ms": 8767.948,
+      "heap_mb": 59.747650146484375,
+      "dom_nodes": 3083
+    },
+    {
+      "path": "post.php?post=2523&action=edit",
+      "mode": "light",
+      "wall_ms": 14393.775000000001,
+      "cpu_ms": 14027.763,
+      "heap_mb": 40.52751541137695,
+      "dom_nodes": 34276
+    },
+    {
+      "path": "index.php",
+      "mode": "dark",
+      "wall_ms": 3502.2216249999983,
+      "cpu_ms": 26888.445,
+      "heap_mb": 56.020469665527344,
+      "dom_nodes": 1389
+    },
+    {
+      "path": "edit.php?post_type=page",
+      "mode": "dark",
+      "wall_ms": 3294.167208999992,
+      "cpu_ms": 29168.257,
+      "heap_mb": 91.62885665893555,
+      "dom_nodes": 2747
+    },
+    {
+      "path": "edit.php?post_type=team_member",
+      "mode": "dark",
+      "wall_ms": 2554.0899160000117,
+      "cpu_ms": 31003.882999999998,
+      "heap_mb": 86.89207458496094,
+      "dom_nodes": 2376
+    },
+    {
+      "path": "options-general.php",
+      "mode": "dark",
+      "wall_ms": 2437.9819169999973,
+      "cpu_ms": 32125.017,
+      "heap_mb": 97.12305068969727,
+      "dom_nodes": 1768
+    },
+    {
+      "path": "post.php?post=2580&action=edit",
+      "mode": "dark",
+      "wall_ms": 4555.087875000012,
+      "cpu_ms": 32998.092,
+      "heap_mb": 118.91730499267578,
+      "dom_nodes": 3083
+    },
+    {
+      "path": "post.php?post=2523&action=edit",
+      "mode": "dark",
+      "wall_ms": 26340.78495799999,
+      "cpu_ms": 40209.637,
+      "heap_mb": 56.228675842285156,
+      "dom_nodes": 34276
+    },
+    {
+      "path": "edit.php?post_type=team_member",
+      "mode": "dark",
+      "wall_ms": 8427.26583400002,
+      "cpu_ms": 58141.894,
+      "heap_mb": 62.593238830566406,
+      "dom_nodes": 2376
+    },
+    {
+      "path": "index.php",
+      "mode": "dark",
+      "wall_ms": 5421.1615000000165,
+      "cpu_ms": 872.0949999999999,
+      "heap_mb": 29.74285125732422,
+      "dom_nodes": 1389
+    }
+  ],
+  "axe": {
+    "light-account": [],
+    "light-dashboard-options": [],
+    "light-pages-options": [],
+    "light-team-options": [],
+    "light-empty-editor-options": [],
+    "light-editor-options": [],
+    "dark-account": [],
+    "dark-dashboard-options": [],
+    "dark-pages-options": [],
+    "dark-team-options": [],
+    "dark-empty-editor-options": [],
+    "dark-editor-options": []
+  },
+  "errors": [],
+  "failure": "expect(locator).toHaveValue(expected) failed\n\nLocator:  locator('#screen-options-wrap .screen-per-page')\nExpected: \"5\"\nReceived: \"20\"\nTimeout:  30000ms\n\nCall log:\n  - Expect \"to.have.value\" with timeout 30000ms\n  - waiting for locator('#screen-options-wrap .screen-per-page')\n    56 × locator resolved to <input min=\"1\" step=\"1\" max=\"999\" value=\"20\" type=\"number\" id=\"edit_team_member_per_page\" name=\"wp_screen_options[value]\" class=\"screen-per-page small-text\"/>\n       - unexpected value \"20\"\n"
+}

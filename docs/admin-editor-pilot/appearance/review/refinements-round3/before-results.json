@@ -1,0 +1,186 @@
+{
+  "phase": "before",
+  "at": "2026-11-03T19:19:16.205Z",
+  "checks": [],
+  "geometry": [
+    {
+      "mode": "light",
+      "account": {
+        "width": 370,
+        "height": 228,
+        "buttonHeight": 74,
+        "text": "rgb(255, 255, 255)",
+        "background": "rgb(255, 255, 255)"
+      }
+    },
+    {
+      "mode": "light",
+      "viewMenu": {
+        "menu": {
+          "left": 1124.109375,
+          "right": 1318.109375,
+          "width": 194
+        },
+        "button": {
+          "left": 1131.109375,
+          "right": 1335.109375,
+          "width": 204
+        }
+      }
+    },
+    {
+      "mode": "dark",
+      "account": {
+        "width": 370,
+        "height": 228,
+        "buttonHeight": 74,
+        "text": "rgb(255, 255, 255)",
+        "background": "rgb(27, 40, 57)"
+      }
+    },
+    {
+      "mode": "dark",
+      "viewMenu": {
+        "menu": {
+          "left": 1124.109375,
+          "right": 1318.109375,
+          "width": 194
+        },
+        "button": {
+          "left": 1131.109375,
+          "right": 1335.109375,
+          "width": 204
+        }
+      }
+    }
+  ],
+  "contrast": [
+    {
+      "mode": "light",
+      "target": "profile-name",
+      "ratio": 1
+    },
+    {
+      "mode": "dark",
+      "target": "profile-name",
+      "ratio": 14.90206587469448
+    }
+  ],
+  "timings": [
+    {
+      "path": "index.php",
+      "mode": "light",
+      "wall_ms": 7452.2006249999995,
+      "cpu_ms": 4159.473,
+      "heap_mb": 38.52184295654297,
+      "dom_nodes": 1389
+    },
+    {
+      "path": "index.php",
+      "mode": "light",
+      "wall_ms": 4725.4832910000005,
+      "cpu_ms": 4800.91,
+      "heap_mb": 52.86668395996094,
+      "dom_nodes": 1387
+    },
+    {
+      "path": "edit.php?post_type=page",
+      "mode": "light",
+      "wall_ms": 4401.963292,
+      "cpu_ms": 6237.793,
+      "heap_mb": 69.27087020874023,
+      "dom_nodes": 2745
+    },
+    {
+      "path": "edit.php?post_type=team_member",
+      "mode": "light",
+      "wall_ms": 3201.2445420000004,
+      "cpu_ms": 7262.193,
+      "heap_mb": 51.036197662353516,
+      "dom_nodes": 2374
+    },
+    {
+      "path": "options-general.php",
+      "mode": "light",
+      "wall_ms": 2853.311540999999,
+      "cpu_ms": 8369.598999999998,
+      "heap_mb": 46.6467399597168,
+      "dom_nodes": 1766
+    },
+    {
+      "path": "post.php?post=2580&action=edit",
+      "mode": "light",
+      "wall_ms": 7527.830709000002,
+      "cpu_ms": 10476.539,
+      "heap_mb": 67.15926742553711,
+      "dom_nodes": 3081
+    },
+    {
+      "path": "post.php?post=2523&action=edit",
+      "mode": "light",
+      "wall_ms": 21560.902292000006,
+      "cpu_ms": 15520.453,
+      "heap_mb": 36.79562759399414,
+      "dom_nodes": 34274
+    },
+    {
+      "path": "index.php",
+      "mode": "dark",
+      "wall_ms": 3703.356541999994,
+      "cpu_ms": 19415.966,
+      "heap_mb": 58.86232376098633,
+      "dom_nodes": 1387
+    },
+    {
+      "path": "edit.php?post_type=page",
+      "mode": "dark",
+      "wall_ms": 4690.875291000004,
+      "cpu_ms": 20888.876,
+      "heap_mb": 53.871280670166016,
+      "dom_nodes": 2745
+    },
+    {
+      "path": "edit.php?post_type=team_member",
+      "mode": "dark",
+      "wall_ms": 3116.7609159999993,
+      "cpu_ms": 21956.748,
+      "heap_mb": 46.80424499511719,
+      "dom_nodes": 2374
+    },
+    {
+      "path": "options-general.php",
+      "mode": "dark",
+      "wall_ms": 2722.0927920000104,
+      "cpu_ms": 22951.486,
+      "heap_mb": 64.91441345214844,
+      "dom_nodes": 1766
+    },
+    {
+      "path": "post.php?post=2580&action=edit",
+      "mode": "dark",
+      "wall_ms": 7526.576541000002,
+      "cpu_ms": 24465.620000000003,
+      "heap_mb": 84.72848510742188,
+      "dom_nodes": 3081
+    },
+    {
+      "path": "post.php?post=2523&action=edit",
+      "mode": "dark",
+      "wall_ms": 11703.374500000005,
+      "cpu_ms": 28236.716,
+      "heap_mb": 51.7628173828125,
+      "dom_nodes": 34274
+    },
+    {
+      "path": "index.php",
+      "mode": "dark",
+      "wall_ms": 3310.28304200001,
+      "cpu_ms": 30655.509,
+      "heap_mb": 65.57170104980469,
+      "dom_nodes": 1387
+    }
+  ],
+  "axe": {},
+  "errors": [],
+  "passed": true
+}

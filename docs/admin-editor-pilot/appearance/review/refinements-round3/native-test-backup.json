@@ -1,0 +1,10 @@
+{
+  "valid": true,
+  "host": "admin-editor-pilot.mrndev.io",
+  "checked_at": 1793735340,
+  "label": "pre-admin-pilot-round3-native-tests-20261103",
+  "nonce": "cd409b2325b5",
+  "key": "sites/admin-editor-pilot-mrndev-io/backup_2026-11-03-1948_Trilliant_cd409b2325b5-db.gz",
+  "size": 6221037,
+  "sha256": "cccd47d8d2aca2f9399de36684c99bb5df3d9990bbf77589df96eadf76038df1"
+}

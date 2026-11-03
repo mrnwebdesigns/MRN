@@ -3,11 +3,11 @@
   "round": 3,
   "receivedDate": "2026-11-03",
   "sourceCommitAtCollection": "00103b41",
-  "status": "Approved for implementation and exact review-site deployment",
+  "status": "Implemented on authorized dev; awaiting human visual review",
   "approvedClusters": [
     "UX-C01"
   ],
-  "implementedRefinements": 0,
+  "implementedRefinements": 1,
   "ambientPageUrl": "https://admin-editor-pilot.mrndev.io/wp-admin/edit.php?post_type=page",
   "observedAppearance": "Light in supplied screenshot",
   "browserViewport": null,
@@ -50,7 +50,14 @@
     "Actual icon renderer is not established by the crop",
     "Visible text names the link; this is not automatically an essential non-text contrast failure"
   ],
-  "implementation": false,
+  "implementation": {
+    "candidate": "4dd60f23",
+    "host": "admin-editor-pilot.mrndev.io",
+    "admin_ui": "3.3.4",
+    "editor_lockdown": "1.0.43",
+    "evidence": "../REFINEMENTS-ROUND3.md",
+    "visualAcceptance": "pending"
+  },
   "approval": {
     "date": "2026-11-03",
     "instruction": "Make these udpates and push to dev",

@@ -1,0 +1,69 @@
+{
+  "phase": "after",
+  "at": "2026-11-03T19:51:26.643Z",
+  "checks": [
+    "Native list column visibility persisted",
+    "Optional Page Settings panel visibility uses native persistence",
+    "0/19/32 sections retain native form ancestry and required region entry points",
+    "Light/Dark/System persisted; System responds to operating-system color scheme"
+  ],
+  "skipped": [
+    "Native items-per-page submission: confirmed HTTP 403 from the custom Cloudflare challenge; awaiting exact exception approval."
+  ],
+  "nativeOnly": true,
+  "geometry": [],
+  "contrast": [],
+  "timings": [
+    {
+      "path": "index.php",
+      "mode": "light",
+      "wall_ms": 10370.610916,
+      "cpu_ms": 5438.43,
+      "heap_mb": 29.771602630615234,
+      "dom_nodes": 1391
+    },
+    {
+      "path": "edit.php?post_type=team_member",
+      "mode": "light",
+      "wall_ms": 4476.616583999999,
+      "cpu_ms": 6180.519,
+      "heap_mb": 54.494842529296875,
+      "dom_nodes": 2376
+    },
+    {
+      "path": "post.php?post=2580&action=edit",
+      "mode": "light",
+      "wall_ms": 9832.318999999996,
+      "cpu_ms": 8699.066,
+      "heap_mb": 65.08564758300781,
+      "dom_nodes": 3084
+    },
+    {
+      "path": "post.php?post=2524&action=edit",
+      "mode": "light",
+      "wall_ms": 17669.653583,
+      "cpu_ms": 16991.865,
+      "heap_mb": 44.79035568237305,
+      "dom_nodes": 54083
+    },
+    {
+      "path": "index.php",
+      "mode": "system",
+      "wall_ms": 4679.741292000006,
+      "cpu_ms": 19071.761,
+      "heap_mb": 63.68513107299805,
+      "dom_nodes": 1389
+    },
+    {
+      "path": "index.php",
+      "mode": "system",
+      "wall_ms": 3527.945000000007,
+      "cpu_ms": 20462.729,
+      "heap_mb": 54.28947830200195,
+      "dom_nodes": 1389
+    }
+  ],
+  "axe": {},
+  "errors": [],
+  "passed": true
+}

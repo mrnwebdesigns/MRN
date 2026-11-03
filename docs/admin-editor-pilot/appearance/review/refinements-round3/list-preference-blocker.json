@@ -1,0 +1,15 @@
+{
+  "host": "admin-editor-pilot.mrndev.io",
+  "request_method": "POST",
+  "request_path": "/wp-admin/edit.php",
+  "query": "post_type=team_member",
+  "submitted_option": "edit_team_member_per_page",
+  "submitted_value": "5",
+  "original_value": "20",
+  "response_status": 403,
+  "challenge_observed": true,
+  "subsequent_value": "20",
+  "status": "blocked by review-site Cloudflare challenge; no WAF change",
+  "cloudflare_preflight": "OP CLI lookup timed out; no configuration fetched or changed",
+  "prior_exception_scope": "logged-in-cookie POST /wp-admin/post.php only"
+}

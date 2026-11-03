@@ -1,0 +1,15 @@
+{
+  "at": "2026-11-03T19:37:00Z",
+  "status": "qualification deferred due host contention",
+  "local_load_averages": [
+    211.33,
+    126.21,
+    71.53
+  ],
+  "page_size_bytes": 16384,
+  "compressed_memory_pages": 636010,
+  "protocol_prepared": "mu-plugins/mrn-admin-ui-css/tests/runtime/round3-performance.cjs",
+  "balanced_probe_run": false,
+  "asset_gzip_delta_bytes": 1641,
+  "scope_note": "Functional-harness CPU/heap numbers are descriptive only. No original-pilot or round-3 performance acceptance claimed. Original OOM/startup qualification and native save latency remain open."
+}

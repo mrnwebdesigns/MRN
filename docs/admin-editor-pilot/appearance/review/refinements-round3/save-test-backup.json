@@ -1,0 +1,10 @@
+{
+  "valid": true,
+  "host": "admin-editor-pilot.mrndev.io",
+  "checked_at": 1793735593,
+  "label": "pre-admin-pilot-round3-save-integrity-20261103",
+  "nonce": "a76a4db7ac24",
+  "key": "sites/admin-editor-pilot-mrndev-io/backup_2026-11-03-1953_Trilliant_a76a4db7ac24-db.gz",
+  "size": 6221244,
+  "sha256": "195116061518f2986485850765c51eb44e242191b54cde60e0e476d6c542e08f"
+}
