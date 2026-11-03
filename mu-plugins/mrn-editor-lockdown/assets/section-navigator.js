@@ -247,7 +247,9 @@
 	function addTo( field ) {
 		mode = 'content'; overview = true; applyView();
 		var box = field.$el[ 0 ].closest( '.postbox' ); if ( box ) { box.classList.remove( 'closed' ); }
-		var add = field.$el[ 0 ].querySelector( '.acf-actions [data-name="add-layout"]' );
+		// The top action inserts before the first row, which does not exist when empty.
+		// Use this field's native append action, excluding top and nested clone controls.
+		var add = field.$el[ 0 ].querySelector( ':scope > .acf-input > .acf-flexible-content > .acf-actions:not(.acf-fc-top-actions) [data-name="add-layout"]' );
 		if ( add ) { add.scrollIntoView( { block: 'center', behavior: 'instant' } ); add.click(); }
 		closePanel( false );
 	}
