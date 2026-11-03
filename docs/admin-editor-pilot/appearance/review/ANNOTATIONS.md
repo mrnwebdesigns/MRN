@@ -1,6 +1,6 @@
 # Annotation log
 
-**Round 3 collecting — 3 November 2026:** five findings (`UX-018`–`UX-022`) from four supplied screenshots; three component clusters. Collected only; no product changes approved or applied. Next ID: `UX-023`. See [batch 005](annotation-batches/005-round3-screen-and-account.json).
+**Round 3 collecting — 3 November 2026:** six findings (`UX-018`–`UX-023`) from five supplied screenshots; four component clusters. Collected only; no product changes approved or applied. Next ID: `UX-024`. See [batch 005](annotation-batches/005-round3-screen-and-account.json) and [batch 006](annotation-batches/006-editor-dashboard-return.json).
 
 **Round 2 approved — 3 November 2026:** UX-011–UX-017 / five clusters approved by “Make those udpates, then we can do another round from there.” Source implementation is installed on the authorized protected mrndev.io review copy; native save qualification and performance checks are tracked separately. [Round-2 status](REFINEMENTS-ROUND2.md).
 
@@ -135,3 +135,32 @@ Performance constraints: favor scoped CSS and existing screen/state handlers;
 no polling, new global observer, full-form rescan, second preference store or new
 component framework. CPU/save-latency/OOM gates remain open independently of this
 batch. No implementation, deployment, release or Fleet approval is inferred.
+
+
+### Round 3 follow-up — Dashboard return path
+
+**UX-023:** “Dashboard link is gone.” The [original screenshot](annotation-batches/006-editor-dashboard-return.png)
+shows the site-name dropdown with Visit Site only, with Site menu and Back to list
+below. [Batch 006](annotation-batches/006-editor-dashboard-return.json) retains
+original wording, provenance and image checksum. Light is observed; Dark and
+keyboard behavior have not been rechecked. No native annotation ID/selector or
+browser viewport was supplied, and no live controls were changed during triage.
+
+**UX-C11 — editor return navigation, P2:** propose an explicit **Dashboard** entry
+above **Visit Site** in the existing site-name menu. Preserve Back to list and
+AME's ownership of navigation order, labels, branding and role visibility; inspect
+the existing AME toolbar configuration before implementing a fallback or creating
+a duplicate entry. Keep native unsaved-change warnings and same-site admin URLs.
+Use the existing server-rendered menu path, without new polling, observers or
+network requests. Status: **awaiting approval**, no implementation.
+
+The current workspace source hides the main navigation until Site menu opens it.
+[WordPress's core menu function](https://developer.wordpress.org/reference/functions/wp_admin_bar_site_menu/)
+adds Visit Site inside admin and Dashboard on the frontend. Together these support
+a missing/discoverable return-route problem in the workspace; they do not prove
+a configured Dashboard entry was deleted or that access permissions changed.
+Verify exact menu configuration and duplicate avoidance during approved work.
+
+After approval, check editor/list/Dashboard routes, both themes, keyboard/focus,
+narrow layouts, role visibility, AME configuration and unsaved-edit navigation.
+Next annotation: `UX-024`. Existing CPU/save-latency/OOM release blockers are unchanged.

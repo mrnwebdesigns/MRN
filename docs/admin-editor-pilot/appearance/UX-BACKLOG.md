@@ -4,10 +4,11 @@
 
 ## Round 3 — collecting; no implementation approval (3 November 2026)
 
-Five findings `UX-018`–`UX-022` are preserved with the four original images in
-[batch 005](review/annotation-batches/005-round3-screen-and-account.json).
+Six findings `UX-018`–`UX-023` are preserved with five original images in
+[batch 005](review/annotation-batches/005-round3-screen-and-account.json) and
+[batch 006](review/annotation-batches/006-editor-dashboard-return.json).
 [Detailed triage](review/ANNOTATIONS.md#round-3--account-appearance-and-contextual-view-options)
-groups them into three bounded refinements:
+groups them into four bounded refinements:
 
 1. **P1 reported text legibility / P2 density — UX-C09:** readable account/profile
    states and compact horizontal Light/Dark/System controls. Measure the reported
@@ -19,9 +20,13 @@ groups them into three bounded refinements:
    reconcile legacy box/layout choices with Content/Page Settings. Page data and
    personal display preferences remain distinct; required ACF regions stay usable.
 
-All three remain **awaiting approval**. Prefer scoped CSS/existing events; no new
+4. **P2 navigation — UX-C11:** explicit Dashboard return entry in the existing
+   site-name dropdown above Visit Site; preserve Back to list, AME ownership,
+   permissions and native unsaved-change warnings. No new runtime workload.
+
+All four remain **awaiting approval**. Prefer scoped CSS/existing events; no new
 startup scanning, polling, observer or preference system. No product/runtime
-changes were made while collecting. Next annotation: `UX-023`.
+changes were made while collecting. Next annotation: `UX-024`.
 
 ## Round 2 — installed on protected mrndev.io; functional checks passed; performance open (3 November 2026)
 
@@ -49,7 +54,7 @@ Prefer CSS and existing state/event paths. No new polling, startup-wide field re
 | P2, rank 5 | UX-C05 / UX-008 | Compact parent/nested ACF tab strips with clearer selected, hover and focus states. | Live native activation, wrapping and conditional/validation behavior. |
 | P2, rank 6 | UX-C03 / UX-002, UX-016 | Round-1 title-row placement superseded by the approved round-2 Screen toolbar menu. | Both-theme native panel/focus/Escape checks pass; human review remains. |
 
-Round 2 contains `UX-011`–`UX-017`; round 3 is recorded above, with next ID `UX-023`. Retain original references and group Light/Dark symptoms by shared component. No further refinements are authorized automatically by newly collected annotations.
+Round 2 contains `UX-011`–`UX-017`; round 3 is recorded above, with next ID `UX-024`. Retain original references and group Light/Dark symptoms by shared component. No further refinements are authorized automatically by newly collected annotations.
 
 ## Technical blockers and existing follow-up
 

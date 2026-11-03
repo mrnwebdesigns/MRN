@@ -1,0 +1,63 @@
+{
+  "batch": "006-editor-dashboard-return",
+  "round": 3,
+  "receivedDate": "2026-11-03",
+  "sourceCommitAtCollection": "32c2a726",
+  "status": "Collected; awaiting separate refinement approval",
+  "approvedClusters": [],
+  "implementedRefinements": 0,
+  "ambientPageUrl": "https://admin-editor-pilot.mrndev.io/wp-admin/post.php?post=2580&action=edit",
+  "observedAppearance": "Light in supplied screenshot",
+  "browserViewport": null,
+  "screenshot": {
+    "originalFilename": "Screenshot 2026-11-03 at 1.31.17 PM.png",
+    "path": "006-editor-dashboard-return.png",
+    "sha256": "c1c7f20e32f49c7323b50ef3fb2beee0b8a67f307e1938118e86d273148de4e9",
+    "imagePixels": {
+      "width": 606,
+      "height": 310
+    }
+  },
+  "annotations": [
+    {
+      "id": "UX-023",
+      "originalWording": "Dashboard link is gone",
+      "cluster": "UX-C11",
+      "priority": "P2 navigation discoverability; no total access outage established",
+      "state": "Site-name toolbar dropdown open in editor; Visit Site shown, Site menu and Back to list visible below",
+      "nativeAnnotationId": null,
+      "selector": null
+    }
+  ],
+  "findings": [
+    {
+      "type": "screenshot",
+      "finding": "No Dashboard entry is visible in the supplied site-name dropdown."
+    },
+    {
+      "type": "read-only source",
+      "path": "mu-plugins/mrn-admin-ui-css/mrn-editor-workspace.css",
+      "finding": "Workspace hides #adminmenumain until mrn-site-menu-open is set."
+    },
+    {
+      "type": "read-only source",
+      "path": "mu-plugins/mrn-editor-lockdown/assets/section-navigator.js",
+      "finding": "Site menu button toggles the existing main navigation; Back to list retains the native post-type list destination."
+    },
+    {
+      "type": "primary source",
+      "url": "https://developer.wordpress.org/reference/functions/wp_admin_bar_site_menu/",
+      "finding": "Core site-name menu adds Visit Site inside admin and Dashboard on the frontend for eligible logged-in users."
+    }
+  ],
+  "diagnosisLimit": "Default core behavior plus hidden workspace main navigation supports a discoverability gap. No live menu configuration or permission change was performed; this does not prove an existing configured Dashboard node was deleted.",
+  "recommendation": "Add an explicit Dashboard entry above Visit Site in the existing site-name dropdown through the existing AME-owned navigation path where supported. Preserve Visit Site, Back to list, native permissions and unsaved-change warnings; avoid duplicate nodes or new navigation systems.",
+  "verificationAfterApproval": [
+    "Editor and Dashboard/list screens; one correct same-site Dashboard link",
+    "Light/Dark, desktop/narrow widths, keyboard/focus and submenu states",
+    "AME order/labels/branding and role visibility remain authoritative",
+    "Unsaved editor navigation guard, native form and save/publish behavior unchanged"
+  ],
+  "performanceConstraint": "Use an existing server-rendered menu node/configuration; no request, observer or polling added for this shortcut.",
+  "implementation": false
+}
