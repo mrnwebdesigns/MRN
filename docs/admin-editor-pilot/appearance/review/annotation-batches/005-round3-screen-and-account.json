@@ -1,0 +1,153 @@
+{
+  "batch": "005-round3-screen-and-account",
+  "round": 3,
+  "receivedDate": "2026-11-03",
+  "sourceCommitAtCollection": "19ee2d9d",
+  "installedComponents": {
+    "mrn-admin-ui-css": "3.3.3",
+    "mrn-editor-lockdown": "1.0.42"
+  },
+  "status": "Collected; awaiting separate refinement approval",
+  "approvedClusters": [],
+  "implementedRefinements": 0,
+  "ownerPriority": "Performance and usability; retain existing components and native behavior",
+  "originalMessage": [
+    "These could look way better. Appearance is too large, text above is white on white",
+    "Screen options has padding/spacing issues. Hover issues.",
+    "Screen options don't make sense with the two page design of \"Content\" \"Page Settings\" but sometimes the page setting contains the amount of items loaded."
+  ],
+  "ambientPageUrl": "https://admin-editor-pilot.mrndev.io/wp-admin/post.php?post=2580&action=edit",
+  "pageContextLimit": "Ambient URL supplies editor context, not an explicit per-image target; image 4 visibly identifies the empty-page fixture. No native annotation IDs or selectors were supplied.",
+  "observedAppearance": "Light in all four supplied screenshots",
+  "darkEvidence": "No Dark-mode defect confirmed; shared controls require both-theme comparison after approval",
+  "browserViewport": null,
+  "imageScale": "Original screenshot pixels only; browser zoom and CSS pixel scale are unknown",
+  "screenshots": [
+    {
+      "attachment": 1,
+      "originalFilename": "Screenshot 2026-11-03 at 1.27.36 PM.png",
+      "path": "005-round3-screen-and-account/01-screen-menu.png",
+      "sha256": "71d961c89a49de884e14dcb893783edaf9e64aa353af6f59d41c4139ab5d0f64",
+      "bytes": 53569,
+      "imagePixels": {
+        "width": 586,
+        "height": 392
+      }
+    },
+    {
+      "attachment": 2,
+      "originalFilename": "Screenshot 2026-11-03 at 1.27.57 PM.png",
+      "path": "005-round3-screen-and-account/02-account-appearance.png",
+      "sha256": "697c1837be34c452a7489d4c9a4862797d449a4267f49a3dfe4253ea7694511d",
+      "bytes": 62590,
+      "imagePixels": {
+        "width": 768,
+        "height": 464
+      }
+    },
+    {
+      "attachment": 3,
+      "originalFilename": "Screenshot 2026-11-03 at 1.28.42 PM.png",
+      "path": "005-round3-screen-and-account/03-screen-hover.png",
+      "sha256": "3b5b27cfe0ec888f0c027e21463e08add7e581a5653f9dd4b500e849e1a55fd0",
+      "bytes": 40376,
+      "imagePixels": {
+        "width": 660,
+        "height": 290
+      }
+    },
+    {
+      "attachment": 4,
+      "originalFilename": "Screenshot 2026-11-03 at 1.29.21 PM.png",
+      "path": "005-round3-screen-and-account/04-editor-screen-options.png",
+      "sha256": "b89c60931c18d1bbbbfd1e4ffcc6ef4fa35c495ccf5d84908ebf570d58ce95e8",
+      "bytes": 325160,
+      "imagePixels": {
+        "width": 2728,
+        "height": 1456
+      }
+    }
+  ],
+  "annotations": [
+    {
+      "id": "UX-018",
+      "originalWording": "These could look way better. Appearance is too large, text above is white on white",
+      "symptom": "Appearance controls occupy too much of the account dropdown",
+      "attachments": [
+        2
+      ],
+      "cluster": "UX-C09",
+      "priority": "P2 density"
+    },
+    {
+      "id": "UX-019",
+      "originalWording": "These could look way better. Appearance is too large, text above is white on white",
+      "symptom": "Account text above Appearance reported white on white",
+      "attachments": [
+        2
+      ],
+      "cluster": "UX-C09",
+      "priority": "P1 reported legibility; measured contrast pending",
+      "evidenceLimit": "Supplied crop shows pale account/profile text; exact white-on-white state and responsible rule are not yet measured"
+    },
+    {
+      "id": "UX-020",
+      "originalWording": "Screen options has padding/spacing issues. Hover issues.",
+      "symptom": "Screen dropdown padding, row sizing and hover bounds are inconsistent; hover shape visibly extends past the panel edge",
+      "attachments": [
+        1,
+        3
+      ],
+      "cluster": "UX-C03",
+      "priority": "P2"
+    },
+    {
+      "id": "UX-021",
+      "originalWording": "Screen options has padding/spacing issues. Hover issues.",
+      "symptom": "Open Screen Options panel crowds the viewport edge and overlays the editing workspace",
+      "attachments": [
+        4
+      ],
+      "cluster": "UX-C03",
+      "priority": "P2",
+      "evidenceLimit": "Attachment is cropped; exact left clipping and computed panel geometry require later live inspection"
+    },
+    {
+      "id": "UX-022",
+      "originalWording": "Screen options don't make sense with the two page design of \"Content\" \"Page Settings\" but sometimes the page setting contains the amount of items loaded.",
+      "symptom": "Generic Screen Options competes with Content/Page Settings; useful screen-specific item-count preferences must remain available",
+      "attachments": [
+        4
+      ],
+      "cluster": "UX-C10",
+      "priority": "P2 workflow",
+      "interpretation": "Items loaded is interpreted as list-table items per page, not ACF section count; preserve any actual plugin-owned loading or pagination control until its owner is identified"
+    }
+  ],
+  "readOnlySourceFindings": [
+    {
+      "path": "mu-plugins/mrn-admin-ui-css/mrn-admin-shell.css",
+      "finding": "Appearance group uses a fixed 264px form with vertical icon/text choices and 56px minimum choice height. This supports the density complaint; runtime cascade/zoom is unmeasured."
+    },
+    {
+      "path": "mu-plugins/mrn-admin-ui-css/mrn-admin-shell.css",
+      "finding": "Screen Options buttons use width:100% plus horizontal padding without a scoped box-sizing declaration. This is an overflow lead, not a computed-style diagnosis."
+    },
+    {
+      "path": "mu-plugins/mrn-admin-ui-css/appearance.js",
+      "finding": "Only original Screen Options/Help toggle nodes are moved into the toolbar; native panels and controls retain their original content. Contextual contents were not adapted to the workspace."
+    },
+    {
+      "path": "mu-plugins/mrn-admin-ui-css/mrn-editor-workspace.css",
+      "finding": "Workspace owns content/settings visibility and neutralizes native postbox floats/widths. Generic one/two-column controls in the screenshot need reconciliation with that workflow."
+    }
+  ],
+  "guardrails": [
+    "Collect only; no product source/runtime/theme preference/content changes",
+    "Do not remove useful list-table columns or items-per-page preferences globally",
+    "Keep Page Settings about page content; display preferences remain per-user, per-screen",
+    "Keep ACF fields in their native form; preserve conditional logic, validation, publishing and save integrity",
+    "No new observers, polling, dependencies, preference store or architecture redesign",
+    "No release/Fleet action; performance/OOM qualification remains open"
+  ]
+}

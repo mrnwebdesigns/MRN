@@ -1,5 +1,7 @@
 # Annotation log
 
+**Round 3 collecting — 3 November 2026:** five findings (`UX-018`–`UX-022`) from four supplied screenshots; three component clusters. Collected only; no product changes approved or applied. Next ID: `UX-023`. See [batch 005](annotation-batches/005-round3-screen-and-account.json).
+
 **Round 2 approved — 3 November 2026:** UX-011–UX-017 / five clusters approved by “Make those udpates, then we can do another round from there.” Source implementation is installed on the authorized protected mrndev.io review copy; native save qualification and performance checks are tracked separately. [Round-2 status](REFINEMENTS-ROUND2.md).
 
 **Round 1 collection complete. Received: 10 annotations in 3 batches. Grouped: 7 refinement clusters. Approved clusters: 7. Source implementation: 7; native Light/Dark review and 19/32 save/reload evidence available; automated/performance qualification open.**
@@ -92,3 +94,44 @@ Received 3 November 2026 against local candidate `4c4ec6e9`. Preserve all seven 
 **Performance-first constraint:** prefer scoped CSS and reuse the existing native controls, reconciliation state, delegated handlers and preference endpoint. Do not add polling, a second editor-content index, startup-wide form rescans, a new framework or another global MutationObserver for these refinements. These are implementation constraints to verify, not performance claims. Keep bytes/requests, startup CPU, long tasks, retained heap and input/search latency visible in matched, fully initialized before/candidate 0/19/32-section measurements. Separate server/forwarding delay from client CPU. Current Local Hub OOM and matched editor CPU blockers remain open, independently of visual approval. No heavy browser benchmark or VM/runtime change was performed merely to collect this feedback.
 
 **Round 2 status:** all five clusters approved by the subsequent owner instruction, source changes implemented and installed on the authorized protected mrndev.io copy; scoped visual/accessibility and account/Screen tests pass, and the explicitly approved exact-site Cloudflare save exception has been applied; native save qualification is being completed. No further annotation batch is approved automatically. Next annotation `UX-018`. ACF definition/storage, Classic Editor, AME configuration, publishing, release and deployment behavior remain preserved in scope. See [implementation status](REFINEMENTS-ROUND2.md).
+
+
+## Round 3 — account appearance and contextual view options
+
+The four original user screenshots are copied byte-for-byte into
+[batch 005](annotation-batches/005-round3-screen-and-account.json), with filenames,
+image dimensions and SHA-256 checksums. They show Light appearance; Dark symptoms
+remain unverified. Screenshot pixel dimensions are not browser viewport values.
+The ambient page is editor fixture 2580; no per-image selectors, opaque annotation
+IDs or browser zoom were supplied. No live page controls were changed for triage.
+
+| ID | Original wording | Observation / cluster |
+| --- | --- | --- |
+| UX-018 | “These could look way better. Appearance is too large, text above is white on white” | Oversized account Appearance choices; UX-C09. |
+| UX-019 | Same original comment as UX-018, separately tracked symptom | Reported white-on-white account text above Appearance; UX-C09. Exact contrast/state remains to be measured. |
+| UX-020 | “Screen options has padding/spacing issues. Hover issues.” | Screen popover row spacing and hover extending past its edge; UX-C03. |
+| UX-021 | Same original comment as UX-020, separately tracked symptom | Expanded native Screen Options panel edge spacing and large workspace overlay; UX-C03. Crop prevents exact geometry attribution. |
+| UX-022 | “Screen options don't make sense with the two page design of "Content" "Page Settings" but sometimes the page setting contains the amount of items loaded.” | Contextual display preferences compete with the editor's Content/Page Settings model; UX-C10. |
+
+### Proposed refinements — awaiting approval
+
+| Priority | Shared component / cluster | Bounded recommendation | Verification after approval |
+| --- | --- | --- | --- |
+| P1 reported legibility, then P2 density | UX-C09 — account appearance; existing Admin UI shell/tokens | Compact single-row Light/Dark/System segmented choices with small icons beside short labels. Reduce surrounding space without shrinking touch/focus targets. Give username, profile and sign-out consistent readable default/hover/focus colors. Preserve native account links and existing per-user appearance endpoint. | Light/Dark/System, actual text contrast, keyboard/pressed/focus/disabled states, 390px reflow, successful persistence and failed-save rollback. No extra network request for opening the menu. |
+| P2 | UX-C03 — toolbar Screen controls and native panel | Normalize compact menu rows, panel insets, sizing and contained hover/focus backgrounds. Remove overflow and excessive overlay footprint; preserve Help, Escape, native toggle events and focus return. Inspect the complete account/toolbar CSS cascade before selecting narrow overrides. | Open/hover/focus/close on dashboard, editor, list and settings screens; both themes; no overflow/clipped content at desktop, narrow widths or zoom; publishing and workspace navigation remain reachable. |
+| P2 | UX-C10 — contextual view preferences; Admin UI + Editor Workspace/native WordPress | Use a clear “View options” role for per-user display preferences. On lists retain native columns and items per page; on Dashboard retain widget visibility. In the editor, offer only optional workspace/panel visibility that makes sense under Content/Page Settings, identify the affected area, and retire obsolete one/two-column layout controls only for the managed workspace. Required content regions/Add paths remain reachable. Keep page data in Page Settings and Help separately discoverable. | Native list count/column persistence; dashboard widget behavior; editor optional panels mapped to the correct area; 0/19/32 section paths; restoration of previously hidden panels; native fallback when pilot disabled; unchanged form serialization, ACF lifecycle, validation and save/reload. Preserve third-party-owned controls. |
+
+“Amount of items loaded” is interpreted as list-table items per page. It is not
+permission to alter ACF row loading, lazy loading or pagination. Any actual
+plugin-owned control requires owner-specific inspection before modification.
+
+Source inspection supports the density and workflow leads: the appearance form
+is 264px with vertical 56px-minimum choices; the Screen buttons combine 100% width
+with padding and no scoped box-sizing; original native panel contents are moved
+unchanged behind the toolbar trigger. The workspace independently owns box
+visibility and layout. These are leads, not computed-style or performance results.
+
+Performance constraints: favor scoped CSS and existing screen/state handlers;
+no polling, new global observer, full-form rescan, second preference store or new
+component framework. CPU/save-latency/OOM gates remain open independently of this
+batch. No implementation, deployment, release or Fleet approval is inferred.

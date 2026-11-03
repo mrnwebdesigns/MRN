@@ -2,6 +2,27 @@
 
 **Round 1 approved — 2 November 2026.** All ten annotations / seven clusters were approved by the owner's “Let's make these changes for now” instruction. Source changes are implemented in the existing task worktree; native Light/Dark visual and save/reload checks are complete for the selected fixtures; full automated/performance qualification remains open. See [the implementation and verification record](review/REFINEMENTS-ROUND1.md). No cluster is visually accepted or closed. [Round 2 paired annotations](review/round-2.html) are ready without WordPress login; this is not release sign-off.
 
+## Round 3 — collecting; no implementation approval (3 November 2026)
+
+Five findings `UX-018`–`UX-022` are preserved with the four original images in
+[batch 005](review/annotation-batches/005-round3-screen-and-account.json).
+[Detailed triage](review/ANNOTATIONS.md#round-3--account-appearance-and-contextual-view-options)
+groups them into three bounded refinements:
+
+1. **P1 reported text legibility / P2 density — UX-C09:** readable account/profile
+   states and compact horizontal Light/Dark/System controls. Measure the reported
+   white-on-white state; Light evidence does not establish a Dark defect.
+2. **P2 menu/panel geometry — UX-C03:** consistent row/inset sizing, contained
+   hover/focus backgrounds and a restrained Screen Options panel footprint.
+3. **P2 workflow — UX-C10:** contextual View options. Preserve native list columns
+   and items-per-page, Dashboard widgets and meaningful optional editor panels;
+   reconcile legacy box/layout choices with Content/Page Settings. Page data and
+   personal display preferences remain distinct; required ACF regions stay usable.
+
+All three remain **awaiting approval**. Prefer scoped CSS/existing events; no new
+startup scanning, polling, observer or preference system. No product/runtime
+changes were made while collecting. Next annotation: `UX-023`.
+
 ## Round 2 — installed on protected mrndev.io; functional checks passed; performance open (3 November 2026)
 
 Seven comments (`UX-011`–`UX-017`) are preserved in [batch 004](review/annotation-batches/004-round2-new-page-and-toolbar.json) and [triaged in the annotation log](review/ANNOTATIONS.md#round-2--new-page-workflow-and-toolbar). The owner approved all five clusters with “Make those udpates, then we can do another round from there.” Source changes are installed on the authorized mrndev.io review copy. Scoped both-theme visual/accessibility, account preference and native Screen panel checks pass. The approved exact-site Cloudflare exception is applied; 19/32-section save/reload and incomplete-save rejection pass. Slow native saves remain a performance blocker. Live Codex sign-in is verified after the owner-approved extra HTTP-gate removal; WordPress authentication remains intact. [32 paired captures](review/round-3.html) remain available for comparison. [Current implementation/check status](review/REFINEMENTS-ROUND2.md). Performance and usability lead the work; the approved workspace structure is preserved.
@@ -28,12 +49,12 @@ Prefer CSS and existing state/event paths. No new polling, startup-wide field re
 | P2, rank 5 | UX-C05 / UX-008 | Compact parent/nested ACF tab strips with clearer selected, hover and focus states. | Live native activation, wrapping and conditional/validation behavior. |
 | P2, rank 6 | UX-C03 / UX-002, UX-016 | Round-1 title-row placement superseded by the approved round-2 Screen toolbar menu. | Both-theme native panel/focus/Escape checks pass; human review remains. |
 
-Round 2 now contains `UX-011`–`UX-017`; next is `UX-018`. Retain original references and group Light/Dark symptoms by shared component. No further refinements are authorized automatically by newly collected annotations.
+Round 2 contains `UX-011`–`UX-017`; round 3 is recorded above, with next ID `UX-023`. Retain original references and group Light/Dark symptoms by shared component. No further refinements are authorized automatically by newly collected annotations.
 
 ## Technical blockers and existing follow-up
 
 - **P1 — Native save latency:** the approved exact-site exception is verified, and 19/32 native saves/reloads plus incomplete-save rejection pass. Save responses took 41.6s / 120.5s in one serial run. Attribute latency before release; preserve native storage, validation and ACF lifecycle. The complete empty-page 0→1→0 workflow passes after the native append-route correction.
-- **P1 — Live annotation access:** Codex rejected Basic Auth; retain protection. Current static captures are available for visual annotations.
+- **Resolved — Live annotation access:** the owner-approved review-site HTTP-gate removal is recorded in commit `19ee2d9d`; native WordPress sign-in was verified in Codex. WordPress authentication remains required. Static captures remain available for comparison.
 - **P2 — Picker cancellation lifecycle:** the Escape/synthetic-append diagnostic left a backing ACF cancel listener that consumed the next click. Target a real cancel→next action keyboard regression before changing the existing picker owner; successful visible-card selection and 0→1→0 saves are verified.
 - **P2 — Backup policy evidence:** successful isolated remote jobs do not independently prove Premium advanced-retention capability.
 
