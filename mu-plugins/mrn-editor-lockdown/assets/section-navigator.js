@@ -299,7 +299,19 @@
 			var container = field.$layoutsWrap && field.$layoutsWrap()[ 0 ]; if ( ! container ) { return; }
 			observer.observe( container, { childList: true } );
 			field.$el[ 0 ].classList.add( 'mrn-workspace-field' );
-			var box = field.$el[ 0 ].closest( '.postbox' ); if ( box ) { box.classList.add( 'mrn-workspace-region' ); box.classList.remove( 'closed' ); }
+			var box = field.$el[ 0 ].closest( '.postbox' );
+			if ( box ) {
+				box.classList.add( 'mrn-workspace-region' ); box.classList.remove( 'closed' );
+				// Content regions are managed by the workspace, not optional settings
+				// panels. Restore only native hidden-box preferences; preserve ACF's
+				// conditional field classes and keep every field in the original form.
+				var preference = document.getElementById( box.id + '-hide' );
+				if ( preference ) {
+					if ( ! preference.checked ) { box.classList.remove( 'hide-if-js' ); box.style.removeProperty( 'display' ); preference.checked = true; }
+					var preferenceLabel = preference.closest( 'label' );
+					if ( preferenceLabel ) { preferenceLabel.classList.add( 'mrn-managed-region-toggle' ); }
+				}
+			}
 			var label = field.$el.children( '.acf-label' ).text().trim() || field.get( 'name' );
 			var group = element( 'li', 'mrn-section-group' ), header = element( 'div', 'mrn-group-heading' ), groupList = element( 'ol' );
 			var add = button( '+ ' + labels.add, 'mrn-region-add' ); add.setAttribute( 'aria-label', labels.add + ': ' + label ); add.title = labels.add + ': ' + label;
