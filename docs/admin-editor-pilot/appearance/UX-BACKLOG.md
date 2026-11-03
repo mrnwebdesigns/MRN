@@ -2,6 +2,20 @@
 
 **Round 1 approved — 2 November 2026.** All ten annotations / seven clusters were approved by the owner's “Let's make these changes for now” instruction. Source changes are implemented in the existing task worktree; native Light/Dark visual and save/reload checks are complete for the selected fixtures; full automated/performance qualification remains open. See [the implementation and verification record](review/REFINEMENTS-ROUND1.md). No cluster is visually accepted or closed. [Round 2 paired annotations](review/round-2.html) are ready without WordPress login; this is not release sign-off.
 
+## Round 2 — collected, awaiting approval (3 November 2026)
+
+Seven comments (`UX-011`–`UX-017`) are preserved in [batch 004](review/annotation-batches/004-round2-new-page-and-toolbar.json) and [triaged in the annotation log](review/ANNOTATIONS.md#round-2--new-page-workflow-and-toolbar). No product changes have been made for this batch. Performance and usability lead the next refinement decisions; keep the approved workspace structure.
+
+| Priority | Cluster / comments | Bounded next change proposed |
+| --- | --- | --- |
+| P1 functional blocker | UX-C08 / UX-011, UX-013 | Restore reachable Add section paths on a zero-section page, use a useful empty state, remove unavailable controls and inspect avoidable new-page gaps. Existing source hides both Add routes outside Arrange mode. |
+| P2 | UX-C06 / UX-012 | Consistent empty/arrangement region insets; preserve native nested fields and controls. |
+| P2 | UX-C01 / UX-014, UX-015 | Diagnose and narrowly correct WPForms/SEOPress sidebar glyphs in both themes; preserve AME configuration. |
+| P2 | UX-C03 / UX-016 | Replace the unsatisfactory detached header utilities with one page-specific Screen utility in the existing toolbar, retaining native panels. Placement awaits approval. |
+| P2 | UX-C09 / UX-017 | Compact labelled Light/Dark/System icons in the user dropdown, using existing user-meta save/first-paint behavior. |
+
+Prefer CSS and existing state/event paths. No new polling, startup-wide field rescans, global observer, dependency or settings system. Qualify matched startup CPU/long tasks/heap and input latency on authorized 0/19/32-section fixtures before claiming performance acceptance. OOM/CPU remain separate release blockers; annotation collection does not clear them.
+
 ## Human refinement queue — implemented, awaiting visual review
 
 | Priority | Cluster / references | Material change | Remaining gate |
@@ -14,7 +28,7 @@
 | P2, rank 5 | UX-C05 / UX-008 | Compact parent/nested ACF tab strips with clearer selected, hover and focus states. | Live native activation, wrapping and conditional/validation behavior. |
 | P2, rank 6 | UX-C03 / UX-002 | Native Screen Options/Help grouped in the page-title row on allowlisted screens. | Light native panels pass; paired Dashboard/list/settings alignment captured. Complete Dark panel/reflow and human utility placement review remain. |
 
-Round 2 starts at `UX-011`. Retain original references and group Light/Dark symptoms by shared component. No further refinements are authorized automatically by newly collected annotations.
+Round 2 now contains `UX-011`–`UX-017`; next is `UX-018`. Retain original references and group Light/Dark symptoms by shared component. No further refinements are authorized automatically by newly collected annotations.
 
 ## Technical blockers and existing follow-up
 

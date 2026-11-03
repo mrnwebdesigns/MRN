@@ -1,5 +1,7 @@
 # Annotation log
 
+**Round 2 open — 3 November 2026:** seven new annotations (`UX-011`–`UX-017`), grouped into five existing/new clusters. Collected only; no product source/runtime change or refinement approval. Performance and usability are the owner's leading priorities. [Original batch 004](annotation-batches/004-round2-new-page-and-toolbar.json).
+
 **Round 1 collection complete. Received: 10 annotations in 3 batches. Grouped: 7 refinement clusters. Approved clusters: 7. Source implementation: 7; native Light/Dark review and 19/32 save/reload evidence available; automated/performance qualification open.**
 
 Owner approval, 2 November 2026: “Let's make these changes for now, then another round of annotations.” This authorizes all seven bounded clusters below. The [implementation record](REFINEMENTS-ROUND1.md) separates installed source changes from blocked runtime evidence. No cluster is visually accepted or closed yet.
@@ -27,7 +29,7 @@ The [third batch](annotation-batches/003-editor-hierarchy-and-search.json) adds 
 | UX-009 | 2 Nov 2026 / batch 003, User Comment 3 | “Style a way for sub components stand out. THis page gets really long, ideas?” | Nested Cards repeater inside the selected Stacked Content Section | Light screenshot / 1487×1909 | UX-C06 |
 | UX-010 | 2 Nov 2026 / batch 003, User Comment 4 | “Can this also serach the content in the layouts to help get to a layout faster?” | Persistent Page structure search | Light context / 1487×1909 | UX-C07 |
 
-Next annotation ID: `UX-011`. Original typos remain intact. Triage interprets “con” as the selected icon and “reset” as likely “rest” (matching neighboring icons); those are interpretations, not edits to the feedback. No unsent browser drafts were inspected.
+Round 1 ended at `UX-010`; round 2 is recorded below. Next annotation ID: `UX-018`. Original typos remain intact. Triage interprets “con” as the selected icon and “reset” as likely “rest” (matching neighboring icons); those are interpretations, not edits to the feedback. No unsent browser drafts were inspected.
 
 ## Refinement clusters
 
@@ -61,3 +63,32 @@ The proposed order now puts nested section usability and content discovery ahead
 - Product source changes authorized: **All seven bounded refinements**, local fixture only.
 - Implementation status: source written and eight files initially installed with rollback copies; source/installed and complete native data hashes match; native checks pass. Full automated/performance qualification remains open.
 - Next action: collect the next annotations from the revised native editor/admin tabs or paired gallery while keeping the remaining qualification gates closed. Do not collect final visual approval against historical screenshots or call this release-ready.
+
+
+## Round 2 — new-page workflow and toolbar
+
+Received 3 November 2026 against local candidate `4c4ec6e9`. Preserve all seven original comments and target references in [batch 004](annotation-batches/004-round2-new-page-and-toolbar.json). The supplied screenshots show Light appearance; Dark defects are not inferred as confirmed. Original images remain attached in chat. No user tab was navigated, no new draft was created, and no controls/settings/content were changed while collecting this batch.
+
+| ID / source | Original wording | State | Cluster |
+| --- | --- | --- | --- |
+| UX-011 / Comment 1 | “No way to add sections on a new page” | New page, zero sections, Content focus view | UX-C08 |
+| UX-012 / Comment 2 | “Padding so the broders aren't hitting the edges” | New page, Arrange view, empty Hero field | UX-C06 |
+| UX-013 / Comment 3 | “I like this, just not the empty space” | New page, Page settings; broad workspace target | UX-C08; spacing cross-reference UX-C04 |
+| UX-014 / Comment 4 | “Icon issue” | WPForms sidebar icon | UX-C01 |
+| UX-015 / Comment 5 | “Icon issue” | SEOPress sidebar icon, distinct from the previously refined toolbar icon | UX-C01 |
+| UX-016 / Comment 6 | “Still not a fan and the top looks broken. WOnder if this becomes part of the universal serial bar or the User Dropdown in the upper right? Thoughts?” | Dashboard Screen Options / header | UX-C03 |
+| UX-017 / Comment 7 | “Ths hould be part of the user drop down and simpler with icons” | Open appearance menu | UX-C09 |
+
+### Triage and bounded recommendations — awaiting approval
+
+| Priority | Cluster / owner | Recommendation and evidence | Verification after approval |
+| --- | --- | --- | --- |
+| P1 — functional blocker | UX-C08 — zero-section onboarding; Editor Lockdown + workspace CSS | Keep each eligible region's existing Add section entry reachable when empty. Show a concise first-section prompt; distinguish a genuinely empty page from a nonempty page with no search matches. Hide unavailable arrange/previous/next controls in the empty state. Current `filter()` hides the group including its Add button; `applyView()` parks regions without an active row, while focused CSS hides native Add actions. Arrange mode reveals them, matching the supplied screenshot. Preserve the approved Content/Page settings structure. UX-013's exact unwanted gap is not established by the broad target; inspect the existing title/tool spacing and empty-state treatment before changing it. | Authorized blank fixture: zero→first section, last section removal→zero, Hero/Content/After Content entry, native layout picker, correct first selection, keyboard/mobile/both modes, conditional eligibility, no-results behavior, native ACF save/reload and incomplete-submission guard. Existing 19/32-section fixture behavior must remain intact. |
+| P2 | UX-C06 — component/region insets; Admin UI CSS | Add consistent inner spacing for native empty-builder/arrangement surfaces, preserving nested component hierarchy. Existing root field/inside padding is explicitly zero; do not apply a global ACF padding rule. | Empty/populated Hero, Content and After Content, arrangement handles/Add buttons, native picker, Light/Dark, 390px reflow and unchanged field placement. |
+| P2 | UX-C01 — shell icons; Admin UI CSS, AME retains configuration | Extend the renderer-specific visibility audit to WPForms and SEOPress sidebar icons. These are distinct targets from the previous toolbar SEO/Relevanssi fixes. Reuse their actual existing glyphs and semantic colors after inspecting the rendered formats; no broad filters or application-interior styling. | Default/hover/active/focus/expanded/folded states in Light/Dark; contrast, accessible labels, preserved branding and links. Root cause remains unconfirmed for these targets. |
+| P2 | UX-C03 — page utilities; Admin UI shell + native WordPress | The previous heading-row placement remains visually unsatisfactory. Recommend one compact, page-specific “Screen” utility in the existing WordPress toolbar near the user menu, opening the native Screen Options/Help panels. Keep native IDs, form placement, listeners and focus behavior. Avoid adding a publishing bar to Dashboard/list/settings screens. Keep page-specific controls distinct from account preferences; placement is a recommendation, not an approved change. | Dashboard/list/settings/editor, native panel toggles, native screen-option persistence, keyboard/Escape/focus return, mobile overflow, title/Add Page alignment, no collisions with publishing/workspace bars or vendor-owned screens. |
+| P2 | UX-C09 — personal appearance; Admin UI CSS appearance component | Move the existing per-user Light/Dark/System choice into the native user dropdown as a compact labelled sun/moon/system icon group. Keep text labels and selected state; avoid ambiguous icon-only controls. Preserve the current save endpoint, nonce/capability checks, optimistic rollback, System behavior and early theme selection. No extra settings layer. | Mouse/keyboard/assistive names, preference persistence and failed-save recovery, System follow behavior, initial paint/navigation, Light/Dark focus/contrast, mobile user-menu reachability and third-party native islands. |
+
+**Performance-first constraint:** prefer scoped CSS and reuse the existing native controls, reconciliation state, delegated handlers and preference endpoint. Do not add polling, a second editor-content index, startup-wide form rescans, a new framework or another global MutationObserver for these refinements. These are implementation constraints to verify, not performance claims. Keep bytes/requests, startup CPU, long tasks, retained heap and input/search latency visible in matched, fully initialized before/candidate 0/19/32-section measurements. Separate server/forwarding delay from client CPU. Current Local Hub OOM and matched editor CPU blockers remain open, independently of visual approval. No heavy browser benchmark or VM/runtime change was performed merely to collect this feedback.
+
+**Round 2 status:** collection open; all five clusters await separate approval. Previous round approval does not authorize this batch. Next annotation `UX-018`. No source, ACF definition/storage, Classic Editor, AME configuration, publishing, release or deployment change was made.

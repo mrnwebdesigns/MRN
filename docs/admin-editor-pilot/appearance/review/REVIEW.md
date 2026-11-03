@@ -1,5 +1,7 @@
 # MRN annotation review — open
 
+**Current, 3 November 2026:** local round-1 refinements are installed at `4c4ec6e9` (Admin UI 3.3.1 / Editor Lockdown 1.0.39). [Current paired gallery](http://127.0.0.1:8765/review/round-2.html), [verification](REFINEMENTS-ROUND1.md), and [round-2 annotations UX-011–UX-017](ANNOTATIONS.md#round-2--new-page-workflow-and-toolbar). Round 2 is collect-only pending separate approval; performance and usability are the leading priorities. Historical appearance review instructions follow.
+
 Review candidate: `c1f249f1`, Admin UI CSS 3.3.0, in the existing `codex/admin-editor-pilot-20261029` worktree. Preparation date: 2 November 2026. Product source, AME configuration, native ACF forms, Classic Editor and publishing behavior are preserved. Release preparation, publication, shared-environment deployment and Fleet gates remain closed.
 
 ## Start review
@@ -16,7 +18,7 @@ When Annotation mode captures navigation clicks, exit using the browser's annota
 
 ## Collection and decisions
 
-The [annotation log](ANNOTATIONS.md) starts empty. On each submitted batch:
+The [annotation log](ANNOTATIONS.md) retains all submitted batches. On each submitted batch:
 
 1. Preserve the original wording and native annotation reference in a new `UX-###` record. Record screen, state, Light/Dark/Both, viewport and the desired outcome. Keep an unknown value unknown; ask only when it prevents useful triage.
 2. Cluster related comments across modes and screens by the underlying component or workflow. Keep mode-specific differences and all source annotation references. A Light comment does not establish that Dark has the same defect.

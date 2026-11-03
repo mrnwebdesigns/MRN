@@ -1,0 +1,154 @@
+{
+  "batch": "004-round2-new-page-and-toolbar",
+  "receivedDate": "2026-11-03",
+  "reviewedCandidate": "4c4ec6e9",
+  "round": 2,
+  "viewport": {
+    "width": 1487,
+    "height": 1909
+  },
+  "frame": "top document",
+  "observedAppearance": "Light in supplied marked screenshots",
+  "darkEvidence": "No Dark-mode annotation supplied; shared-component consequences require later comparison",
+  "status": "Collected; awaiting separate refinement approval",
+  "approvedClusters": [],
+  "implementedRefinements": 0,
+  "ownerPriority": "performance is the most important thing here along with usability",
+  "screenshotProvenance": "Seven original labelled marker images are attached to the submitted chat message. No local image paths or opaque annotation IDs were supplied; none invented. Blue outlines and numbered markers are annotation overlays, not product styling.",
+  "annotations": [
+    {
+      "id": "UX-011",
+      "sourceComment": 1,
+      "position": {
+        "x": 487,
+        "y": 161
+      },
+      "pageUrl": "https://admin-editor-pilot.localhost/wp-admin/post-new.php?post_type=page",
+      "target": "PERMALINK Permalink Status Draft Visibility Public Publish immediately Save Draf",
+      "selector": "div#wpbody-content",
+      "path": "div > div > div > div",
+      "comment": "No way to add sections on a new page",
+      "cluster": "UX-C08",
+      "state": "New page, Content focus view, zero sections",
+      "screenshot": "Original submitted marker image for User Comment 1; attached in chat"
+    },
+    {
+      "id": "UX-012",
+      "sourceComment": 2,
+      "position": {
+        "x": 592,
+        "y": 458
+      },
+      "pageUrl": "https://admin-editor-pilot.localhost/wp-admin/post-new.php?post_type=page",
+      "target": "Hero Click the \"Add Hero Row\" button below to start creating your layout Add Her",
+      "selector": "div#acf-group_mrn_hero_builder > div.inside.acf-fields:nth-of-type(2) > div.acf-field.acf-field-flexible-content",
+      "path": "div > div > div > div",
+      "comment": "Padding so the broders aren't hitting the edges",
+      "cluster": "UX-C06",
+      "state": "New page, Arrange sections, empty Hero builder",
+      "screenshot": "Original submitted marker image for User Comment 2; attached in chat"
+    },
+    {
+      "id": "UX-013",
+      "sourceComment": 3,
+      "position": {
+        "x": 378,
+        "y": 161
+      },
+      "pageUrl": "https://admin-editor-pilot.localhost/wp-admin/post-new.php?post_type=page",
+      "target": "PERMALINK Permalink Status Draft Visibility Public Publish immediately Save Draf",
+      "selector": "div#wpbody-content",
+      "path": "div > div > div > div",
+      "comment": "I like this, just not the empty space",
+      "cluster": "UX-C08",
+      "state": "New page, Page settings; broad workspace target",
+      "screenshot": "Original submitted marker image for User Comment 3; attached in chat"
+    },
+    {
+      "id": "UX-014",
+      "sourceComment": 4,
+      "position": {
+        "x": 29,
+        "y": 1404
+      },
+      "pageUrl": "https://admin-editor-pilot.localhost/wp-admin/",
+      "target": "WPForms",
+      "selector": "li#toplevel_page_wpforms-overview > a.wp-has-submenu.wp-not-current-submenu",
+      "path": "div > ul > li > a",
+      "comment": "Icon issue",
+      "cluster": "UX-C01",
+      "state": "Dashboard, WPForms sidebar icon",
+      "screenshot": "Original submitted marker image for User Comment 4; attached in chat"
+    },
+    {
+      "id": "UX-015",
+      "sourceComment": 5,
+      "position": {
+        "x": 36,
+        "y": 1474
+      },
+      "pageUrl": "https://admin-editor-pilot.localhost/wp-admin/",
+      "target": "SEO",
+      "selector": "li#toplevel_page_seopress-option > a.wp-has-submenu.wp-not-current-submenu",
+      "path": "div > ul > li > a",
+      "comment": "Icon issue",
+      "cluster": "UX-C01",
+      "state": "Dashboard, SEOPress sidebar icon",
+      "screenshot": "Original submitted marker image for User Comment 5; attached in chat"
+    },
+    {
+      "id": "UX-016",
+      "sourceComment": 6,
+      "position": {
+        "x": 1318,
+        "y": 77
+      },
+      "pageUrl": "https://admin-editor-pilot.localhost/wp-admin/",
+      "target": "Screen Options",
+      "selector": "button#show-settings-link",
+      "path": "div > div > div > button",
+      "comment": "Still not a fan and the top looks broken. WOnder if this becomes part of the universal serial bar or the User Dropdown in the upper right? Thoughts?",
+      "cluster": "UX-C03",
+      "state": "Dashboard, closed Screen Options; requests placement recommendation",
+      "screenshot": "Original submitted marker image for User Comment 6; attached in chat"
+    },
+    {
+      "id": "UX-017",
+      "sourceComment": 7,
+      "position": {
+        "x": 339,
+        "y": 49
+      },
+      "pageUrl": "https://admin-editor-pilot.localhost/wp-admin/",
+      "target": "Your appearance Light Dark System Saved to your account. System follows your dev",
+      "selector": "li#wp-admin-bar-mrn-appearance-controls > div.ab-item.ab-empty-item > form.mrn-appearance-form",
+      "path": "ul > li > div > form",
+      "comment": "Ths hould be part of the user drop down and simpler with icons",
+      "cluster": "UX-C09",
+      "state": "Dashboard, open appearance menu",
+      "screenshot": "Original submitted marker image for User Comment 7; attached in chat"
+    }
+  ],
+  "readOnlySourceFindings": [
+    {
+      "file": "mu-plugins/mrn-editor-lockdown/assets/section-navigator.js",
+      "functions": [
+        "filter",
+        "applyView",
+        "addTo"
+      ],
+      "finding": "filter hides a whole outline group when it has no matching row, including its existing Add button. applyView parks every region without an active row outside overview. Workspace CSS also hides native Add actions outside overview. With zero rows, the normal content view loses both Add entry routes; Arrange mode reveals native controls.",
+      "evidenceLevel": "Current source plus supplied zero-section / Arrange screenshots; no live click or save performed in this collection turn."
+    },
+    {
+      "file": "mu-plugins/mrn-admin-ui-css/mrn-editor-workspace.css",
+      "finding": "Workspace regions, inside containers and root flexible fields explicitly remove padding; source supports the edge-to-edge symptom, but exact inset must be reviewed in native empty and populated states.",
+      "evidenceLevel": "Read-only source; not a measured padding fix."
+    },
+    {
+      "file": "mu-plugins/mrn-admin-ui-css/appearance.js",
+      "finding": "Existing narrow mask treatment handles SEOPress toolbar and Relevanssi sidebar only. The newly reported WPForms and SEOPress sidebar renderers are different targets; their exact computed rendering is not diagnosed.",
+      "evidenceLevel": "Read-only source; do not assume vendor renderer or AME configuration is at fault."
+    }
+  ]
+}
