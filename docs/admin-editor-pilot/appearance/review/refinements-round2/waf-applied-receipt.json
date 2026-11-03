@@ -1,0 +1,13 @@
+{
+  "status": "applied-and-read-back",
+  "zone": "mrndev.io",
+  "host": "admin-editor-pilot.mrndev.io",
+  "rule_id": "5778f8dc0ad64ea19abc7a6601cb89a8",
+  "before_version": "8",
+  "after_version": "9",
+  "last_updated": "2026-11-03T16:32:10.734839Z",
+  "expression": "((ends_with(http.host, \".mrndev.io\") and http.host ne \"wpcontrol.mrndev.io\" and ((http.request.method eq \"POST\" and (http.request.uri.path eq \"/wp-login.php\" or http.request.uri.path eq \"/site-login\" or http.request.uri.path eq \"/site-login.php\")) or (starts_with(http.request.uri.path, \"/wp-admin/\") and http.request.uri.path ne \"/wp-admin/admin-ajax.php\" and http.request.method in {\"POST\" \"PUT\" \"PATCH\" \"DELETE\"}))) and not (http.host eq \"admin-editor-pilot.mrndev.io\" and http.request.uri.path eq \"/wp-admin/post.php\" and http.request.method eq \"POST\" and http.cookie contains \"wordpress_logged_in_\"))",
+  "other_custom_rules_and_order_unchanged": true,
+  "managed_ruleset_unchanged": true,
+  "rollback_snapshot_sha256": "e755c0be10d14eddf0dd59272bd30e3eecfa0ca8a19d5444903cc0eedcfd969a"
+}

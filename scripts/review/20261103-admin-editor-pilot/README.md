@@ -59,13 +59,20 @@ and the account-node compatibility correction. Both-theme captures and scoped
 accessibility checks pass. See
 [the review record](../../../docs/admin-editor-pilot/appearance/review/REFINEMENTS-ROUND2.md).
 
-Native save/reload remains blocked by Cloudflare's shared custom admin challenge.
-`proposed-save-challenge.json` contains the exact before/after rule expression and
-rollback values; it is prepared, not applied or authorized. No other host or
-security product is proposed for alteration. Codex's embedded browser rejected
-Basic Auth; live authentication remains protected. The static paired gallery is
-available for annotation while access is resolved. No release/Fleet action is
-part of this migration.
+The owner explicitly approved the exact save exception on 3 November. The guarded
+`apply-save-challenge.py` matched live rule version 8, saved a private provider
+configuration rollback, patched only that rule, and verified version 9 plus
+unchanged other custom rules/order and managed rules. See
+[the readback receipt](../../../docs/admin-editor-pilot/appearance/review/refinements-round2/waf-applied-receipt.json).
+`proposed-save-challenge.json` remains the original approved before/after artifact;
+its preparation status is historical. The apply script deliberately refuses
+changed or already-applied live state. Native save qualification is being rerun;
+the first focused native save succeeded, but harness timeouts need attribution.
+
+Codex's embedded browser rejected Basic Auth; live authentication remains
+protected. Native Chrome navigation exposes the ordinary sign-in prompt. The
+static paired gallery is available for Codex annotations while live access is
+resolved. No release/Fleet action is part of this migration.
 
 The canonical shell wrapper cannot traverse `/home` with the new site-owner account.
 `backup.php` uses its existing Updraft API fallback and the same history/checksum/
