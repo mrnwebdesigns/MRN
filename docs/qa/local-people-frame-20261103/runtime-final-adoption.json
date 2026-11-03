@@ -1,0 +1,33 @@
+{
+  "local_only": true,
+  "base_stack_commit": "f5f6f8ab",
+  "files": {
+    "inc/builder/content-list-people.php": {
+      "before": null,
+      "after": "ad4438a30fdcf288e682efe31f87426f2f7aa0f479e0c0606b39323a0d83a300",
+      "final_installed": "ad4438a30fdcf288e682efe31f87426f2f7aa0f479e0c0606b39323a0d83a300"
+    },
+    "inc/builder/boot.php": {
+      "before": "6068011fec58aed868b1731e09430135048941d2d109591fd3716b55f60246a2",
+      "after": "980f549cc87efd92e80759add54a1fd01eaeae578042e417b6132c75d554f59f",
+      "final_installed": "980f549cc87efd92e80759add54a1fd01eaeae578042e417b6132c75d554f59f"
+    },
+    "inc/builder/presentation.php": {
+      "before": "26d0c20f199abf52dbe58eae581979d944bc58738c6d3bfae0676dfb5256e6da",
+      "after": "68811273dae9004cf45ec44febcfe71b88eac3a9147c2fa84068053e26c3e1c3",
+      "final_installed": "68811273dae9004cf45ec44febcfe71b88eac3a9147c2fa84068053e26c3e1c3"
+    },
+    "template-parts/builder/content-lists.php": {
+      "before": "c6e655d3d9fe494114262c1cf0de8e5151a29325a1937fe7fd91285378e75e36",
+      "after": "85daac6d4a0201252a765bd6373f269621c45d031037be155d1816c145dbf88b",
+      "final_installed": "85daac6d4a0201252a765bd6373f269621c45d031037be155d1816c145dbf88b"
+    },
+    "css/presentation.css": {
+      "before": "d9c0602491c9d9543c3cf1ae4021bc763cdca730ffd128233d71f67ff76b6c89",
+      "after": "c5697aca5019f18d3e7934f8ea062bbd4daa7f5b15af10e5ba2b35140fb17fb6",
+      "final_installed": "448ee2c91f67562f64e27f8b43c4d3d92f4294e979c84f2c04bb62e274aec921"
+    }
+  },
+  "defaults_opt_in": true,
+  "publication": "unpublished local overlay; parent header and lock files unchanged"
+}

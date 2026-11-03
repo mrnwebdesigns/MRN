@@ -1,0 +1,25 @@
+{
+  "widths": [
+    1920,
+    1280,
+    1199,
+    992,
+    991,
+    783,
+    769,
+    768,
+    767,
+    641,
+    640,
+    421,
+    420,
+    390
+  ],
+  "samples": 28,
+  "boxes_per_sample": 9,
+  "geometry_differences": 0,
+  "typography_differences": [],
+  "ordered_content_media_differences": 0,
+  "comparison": "existing local legacy Team row against saved native People row in source chrome; reduced motion; authored Team page unchanged",
+  "live_parity_qualified": false
+}

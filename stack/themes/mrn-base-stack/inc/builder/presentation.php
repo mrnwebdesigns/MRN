@@ -254,7 +254,7 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 					'instructions'  => 'People use designation and hover_video. Comparisons use before_image, after_image and tags. Sources, selection, order and pagination remain controlled by Content Lists.',
 				)
 			),
-		), mrn_base_stack_get_career_list_fields( $seed ) );
+		), mrn_base_stack_get_career_list_fields( $seed ), function_exists( 'mrn_base_stack_get_people_frame_fields' ) ? mrn_base_stack_get_people_frame_fields( $seed ) : array() );
 	}
 	if ( 'video' === $layout ) {
 		return array(
@@ -706,7 +706,8 @@ function mrn_base_stack_render_record_presentation( WP_Post $post, array $args )
 	$media  = '';
 	$detail = '';
 	if ( 'people' === $profile ) {
-		$media = get_the_post_thumbnail( $post, 'mrn-content-media', array( 'loading' => 'lazy' ) );
+		$people_settings = is_array( $args['people_settings'] ?? null ) ? $args['people_settings'] : array();
+		$media = get_the_post_thumbnail( $post, function_exists( 'mrn_base_stack_get_people_image_size' ) ? mrn_base_stack_get_people_image_size( $people_settings ) : 'mrn-content-media', array( 'loading' => 'lazy' ) );
 		$video = $data['hover_video'] ?? '';
 		$video = is_array( $video ) ? ( $video['url'] ?? '' ) : ( is_numeric( $video ) ? wp_get_attachment_url( (int) $video ) : $video );
 		if ( is_string( $video ) && '' !== esc_url( $video, array( 'http', 'https' ) ) ) {

@@ -31,6 +31,7 @@ require_once __DIR__ . '/showcase-bento.php';
 require_once __DIR__ . '/showcase-records.php';
 require_once __DIR__ . '/strip-frame.php';
 require_once __DIR__ . '/content-list-careers.php';
+require_once __DIR__ . '/content-list-people.php';
 
 require_once __DIR__ . '/lazy-layouts.php';
 
