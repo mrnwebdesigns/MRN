@@ -56,6 +56,8 @@ function mrn_editor_experience_enqueue() {
 			'close'    => __( 'Close sections', 'mrn-editor-lockdown' ),
 			'return'   => __( 'Return to sections', 'mrn-editor-lockdown' ),
 			'empty'    => __( 'No matching sections. Your content is unchanged.', 'mrn-editor-lockdown' ),
+			'start'    => __( 'No sections yet. Add a section to get started.', 'mrn-editor-lockdown' ),
+			'startHint' => __( 'Add your first section using a region below or the page outline.', 'mrn-editor-lockdown' ),
 			'errors'   => __( 'Needs attention', 'mrn-editor-lockdown' ),
 			'all'      => __( 'Show all sections', 'mrn-editor-lockdown' ),
 			'untitled' => __( 'Untitled section', 'mrn-editor-lockdown' ),

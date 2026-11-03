@@ -176,6 +176,7 @@
 	function applyView() {
 		document.body.classList.toggle( 'mrn-workspace-settings', mode === 'settings' );
 		document.body.classList.toggle( 'mrn-workspace-overview', overview );
+		document.body.classList.toggle( 'mrn-workspace-empty', rows.length === 0 );
 		modeButtons.forEach( function( item ) { item.button.setAttribute( 'aria-pressed', String( item.mode === mode ) ); } );
 		var active = rows.findIndex( function( item ) { return item.row === activeRow; } );
 		rows.forEach( function( item ) {
@@ -185,7 +186,7 @@
 		} );
 		fields.forEach( function( field ) {
 			var box = field.$el[ 0 ].closest( '.postbox' );
-			if ( box ) { box.classList.toggle( 'mrn-region-parked', ! overview && ( ! activeRow || ! field.$el[ 0 ].contains( activeRow ) ) ); }
+			if ( box ) { box.classList.toggle( 'mrn-region-parked', rows.length > 0 && ! overview && ( ! activeRow || ! field.$el[ 0 ].contains( activeRow ) ) ); }
 		} );
 		var positionText = active < 0 ? '0 / ' + rows.length : ( active + 1 ) + ' / ' + rows.length;
 		if ( position.textContent !== positionText ) { position.textContent = positionText; }
@@ -194,7 +195,7 @@
 		if ( moves.length ) { moves[ 0 ].disabled = moving || ! selected || ! rows[ active - 1 ] || rows[ active - 1 ].field !== selected.field; moves[ 1 ].disabled = moving || ! selected || ! rows[ active + 1 ] || rows[ active + 1 ].field !== selected.field; }
 		viewButton.textContent = overview ? labels.focus : labels.overview;
 		viewButton.setAttribute( 'aria-pressed', String( overview ) );
-		hint.textContent = mode === 'settings' ? labels.settingsHint : ( overview ? labels.arrangeHint : labels.hint );
+		hint.textContent = mode === 'settings' ? labels.settingsHint : ( ! rows.length ? labels.startHint : ( overview ? labels.arrangeHint : labels.hint ) );
 	}
 	function filter() {
 		var query = search.value.trim().toLocaleLowerCase(), count = 0, errors = rows.filter( function( item ) { return item.errors; } ).length;
@@ -216,10 +217,14 @@
 			item.item.hidden = ! match; if ( match ) { count++; }
 		} );
 		list.querySelectorAll( '.mrn-section-group' ).forEach( function( group ) {
-			group.hidden = ! group.querySelector( 'ol > li:not([hidden])' );
+			// Empty eligible regions still own an Add button. Filtering a populated
+			// page may hide unmatched groups, but an empty page must remain usable.
+			group.hidden = rows.length > 0 && Boolean( query || errorsOnly ) && ! group.querySelector( 'ol > li:not([hidden])' );
 		} );
 		var statusText = count + ' / ' + rows.length + ' sections';
-		if ( status.textContent !== statusText ) { status.textContent = statusText; } empty.hidden = count !== 0;
+		if ( status.textContent !== statusText ) { status.textContent = statusText; }
+		empty.textContent = rows.length ? labels.empty : labels.start;
+		empty.hidden = count !== 0;
 		errorFilter.hidden = ! errors; errorFilter.textContent = errorsOnly ? labels.all : labels.errors + ' (' + errors + ')';
 		errorFilter.setAttribute( 'aria-pressed', String( errorsOnly ) );
 		mobileToggle.textContent = labels.title + ( errors ? ' · ' + errors + ' ' + labels.errors : '' );
@@ -313,7 +318,10 @@
 				refreshItem( entry ); groupList.appendChild( entry.item ); rows.push( entry );
 			} );
 		} );
-		var added = oldRows.length && rows.find( function( item ) { return ! oldRows.some( function( old ) { return old.row === item.row; } ); } );
+		var added = rows.find( function( item ) { return ! oldRows.some( function( old ) { return old.row === item.row; } ); } );
+		// Initial hydration must retain the saved section; the first appended row
+		// on an already-mounted empty page should enter focused editing directly.
+		if ( ! oldRows.length && ! document.body.classList.contains( 'mrn-workspace-empty' ) ) { added = null; }
 		if ( added ) { select( added.row, false ); }
 		else if ( ! activeRow || ! activeRow.isConnected ) { var restoredSection = ! oldRows.length && restoreSection(); activeRow = restoredSection ? restoredSection.row : ( rows.length ? rows[ Math.max( 0, Math.min( oldIndex, rows.length - 1 ) ) ].row : null ); }
 		filter(); applyView(); if ( activeRow && ! overview && mode === 'content' ) { reveal( activeRow ); nestedComponents( activeRow ); }
