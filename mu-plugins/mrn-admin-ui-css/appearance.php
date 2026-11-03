@@ -41,8 +41,9 @@ add_action( 'admin_enqueue_scripts', function () {
 		'url' => admin_url( 'admin-ajax.php' ),
 		'saving' => __( 'Saving appearance…', 'mrn-admin-ui-css' ),
 		'saved' => __( 'Appearance saved for your account.', 'mrn-admin-ui-css' ),
-		'failed' => __( 'Appearance could not be saved. Your previous preference has been restored. Try Save again.', 'mrn-admin-ui-css' ),
+		'failed' => __( 'Appearance could not be saved. Your previous preference has been restored. Try again.', 'mrn-admin-ui-css' ),
 		'visit' => __( 'Visit %s', 'mrn-admin-ui-css' ),
+		'closeScreen' => __( 'Close screen panel', 'mrn-admin-ui-css' ),
 	) );
 }, 30 );
 
@@ -50,29 +51,38 @@ add_action( 'admin_bar_menu', function ( $bar ) {
 	if ( ! mrn_admin_appearance_enabled() || ! current_user_can( 'read' ) ) {
 		return;
 	}
-	$bar->add_node( array(
-		'id' => 'mrn-appearance',
-		'title' => '<span class="ab-icon dashicons dashicons-admin-appearance" aria-hidden="true"></span><span class="ab-label">' . esc_html__( 'Appearance', 'mrn-admin-ui-css' ) . '</span>',
-		'href' => '#mrn-appearance-preference',
-		'meta' => array( 'title' => __( 'Your admin appearance', 'mrn-admin-ui-css' ) ),
-	) );
 	ob_start();
 	?>
 	<form class="mrn-appearance-form" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="post">
 		<input type="hidden" name="action" value="mrn_admin_appearance">
 		<?php wp_nonce_field( 'mrn_admin_appearance' ); ?>
-		<label for="mrn-appearance-preference"><?php esc_html_e( 'Your appearance', 'mrn-admin-ui-css' ); ?></label>
-		<select id="mrn-appearance-preference" name="appearance" aria-describedby="mrn-appearance-help">
-			<?php foreach ( array( 'light' => __( 'Light', 'mrn-admin-ui-css' ), 'dark' => __( 'Dark', 'mrn-admin-ui-css' ), 'system' => __( 'System', 'mrn-admin-ui-css' ) ) as $value => $label ) : ?>
-			<option value="<?php echo esc_attr( $value ); ?>" <?php selected( mrn_admin_appearance_preference(), $value ); ?>><?php echo esc_html( $label ); ?></option>
+		<span id="mrn-appearance-label"><?php esc_html_e( 'Appearance', 'mrn-admin-ui-css' ); ?></span>
+		<div class="mrn-appearance-choices" role="group" aria-labelledby="mrn-appearance-label">
+			<?php
+			$choices = array(
+				'light' => array( __( 'Light', 'mrn-admin-ui-css' ), 'M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6 7 7m10 10 1.4 1.4M5.6 18.4 7 17m10-10 1.4-1.4M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0' ),
+				'dark' => array( __( 'Dark', 'mrn-admin-ui-css' ), 'M20.5 14A8.8 8.8 0 0 1 10 3.5 9 9 0 1 0 20.5 14Z' ),
+				'system' => array( __( 'System', 'mrn-admin-ui-css' ), 'M4 3h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1ZM8 21h8m-4-4v4' ),
+			);
+			foreach ( $choices as $value => $choice ) : ?>
+			<button type="submit" name="appearance" value="<?php echo esc_attr( $value ); ?>" aria-pressed="<?php echo mrn_admin_appearance_preference() === $value ? 'true' : 'false'; ?>"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="<?php echo esc_attr( $choice[1] ); ?>" /></svg><?php echo esc_html( $choice[0] ); ?></button>
 			<?php endforeach; ?>
-		</select>
-		<p id="mrn-appearance-help"><?php esc_html_e( 'Saved to your account. System follows your device. Plugin applications and media dialogs keep their native appearance.', 'mrn-admin-ui-css' ); ?></p>
-		<button type="submit"><?php esc_html_e( 'Save appearance', 'mrn-admin-ui-css' ); ?></button>
+		</div>
 		<p class="mrn-appearance-status" role="status" aria-live="polite"></p>
 	</form>
 	<?php
-	$bar->add_node( array( 'id' => 'mrn-appearance-controls', 'parent' => 'mrn-appearance', 'title' => ob_get_clean() ) );
+	$bar->add_node( array( 'id' => 'mrn-appearance-controls', 'parent' => 'user-actions', 'title' => ob_get_clean() ) );
+	$workspace = function_exists( 'mrn_editor_experience_screen' ) && mrn_editor_experience_screen();
+	if ( $workspace || mrn_admin_ui_modern_screen() ) {
+		$bar->add_node( array(
+			'id' => 'mrn-screen',
+			'parent' => 'top-secondary',
+			'title' => '<span class="ab-icon dashicons dashicons-admin-generic" aria-hidden="true"></span><span class="ab-label">' . esc_html__( 'Screen', 'mrn-admin-ui-css' ) . '</span>',
+			'href' => '#screen-meta',
+			'meta' => array( 'class' => 'hide-if-no-js', 'title' => __( 'Screen options and help', 'mrn-admin-ui-css' ) ),
+		) );
+		$bar->add_node( array( 'id' => 'mrn-screen-controls', 'parent' => 'mrn-screen', 'title' => '' ) );
+	}
 }, 90 );
 
 /** Accept only a self-owned preference; never accept a user ID from the request. */

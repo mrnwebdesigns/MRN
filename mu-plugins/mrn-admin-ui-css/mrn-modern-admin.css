@@ -135,15 +135,11 @@ body.mrn-modern-admin #wpbody-content :is(a,button,input,select,textarea,summary
 .mrn-admin-dashboard.is-dragging-metaboxes #dashboard-widgets .empty-container,
 .mrn-admin-dashboard #dashboard-widgets:has(.handle-order-higher:focus,.handle-order-lower:focus) .empty-container { display: block; min-height: 150px; }
 
-/* Native Screen Options / Help are aligned with the page title, not floating. */
+/* Keep the native title and Add action together; screen utilities use the toolbar. */
 .mrn-modern-admin .mrn-page-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
 .mrn-modern-admin .mrn-page-heading { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; min-width: 0; }
 .mrn-modern-admin .mrn-page-heading h1 { font-size: 30px; font-weight: 650; letter-spacing: -.035em; line-height: 1.3; padding: 0; margin: 0; color: var(--mrn-admin-ink); }
 .mrn-modern-admin .mrn-page-heading .page-title-action { position: static; margin: 0; padding: 8px 14px; border: 1px solid var(--mrn-admin-primary); border-radius: 6px; background: var(--mrn-admin-primary); color: var(--mrn-admin-on-primary); font-weight: 600; }
-.mrn-modern-admin .mrn-page-header #screen-meta-links { float: none; position: static; margin: 0; display: flex; flex-shrink: 0; gap: 6px; height: auto; }
-.mrn-modern-admin .mrn-page-header #screen-meta-links .screen-meta-toggle { float: none; margin: 0; top: auto; }
-.mrn-modern-admin .mrn-page-header #screen-meta-links .show-settings { border-radius: 6px !important; min-height: 34px; box-shadow: none; }
 @media (max-width: 782px) {
  .mrn-modern-admin .mrn-page-header { align-items: flex-start; flex-wrap: wrap; margin-bottom: 20px; }
- .mrn-modern-admin .mrn-page-header #screen-meta-links .show-settings { min-height: 44px; }
 }

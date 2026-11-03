@@ -39,22 +39,36 @@ body.mrn-appearance #wpadminbar .ab-item:focus { background: var(--mrn-admin-sur
 body.mrn-appearance #wpadminbar .ab-sub-wrapper { background: var(--mrn-admin-surface); box-shadow: var(--mrn-admin-overlay-shadow); border: 1px solid var(--mrn-admin-line); }
 body.mrn-appearance #wpadminbar .ab-submenu .ab-item:is(:hover,:focus) { background: var(--mrn-admin-surface-hover) !important; color: var(--mrn-admin-ink) !important; }
 body.mrn-appearance #wpadminbar .ab-item:focus-visible { outline: 2px solid var(--mrn-admin-focus); outline-offset: -3px; }
-body.mrn-appearance #wpadminbar #wp-admin-bar-mrn-appearance { display: block; }
+/* Personal appearance belongs to the existing account dropdown. */
 body.mrn-appearance #wpadminbar #wp-admin-bar-mrn-appearance-controls > .ab-item { height: auto; padding: 0; }
-body.mrn-appearance #wpadminbar .mrn-appearance-form { padding: 18px; width: 270px; box-sizing: border-box; white-space: normal; }
-body.mrn-appearance #wpadminbar .mrn-appearance-form label { display: block; font-size: 14px; font-weight: 650; color: var(--mrn-admin-ink); }
-body.mrn-appearance #wpadminbar .mrn-appearance-form :is(select,button) { width: 100%; min-height: 38px; margin-top: 8px; border: 1px solid var(--mrn-admin-control-line); border-radius: 6px; background: var(--mrn-admin-surface); color: var(--mrn-admin-ink); padding: 6px 10px; font-size: 14px; line-height: 1.5; }
-body.mrn-appearance #wpadminbar .mrn-appearance-form p { white-space: normal; color: var(--mrn-admin-muted); font-size: 12px; line-height: 1.5; margin: 10px 0 0; }
-body.mrn-appearance #wpadminbar .mrn-appearance-form button { background: var(--mrn-admin-primary); color: var(--mrn-admin-on-primary); cursor: pointer; }
-body.mrn-appearance #wpadminbar .mrn-appearance-form button:hover { background: var(--mrn-admin-primary-hover); }
-body.mrn-appearance #wpadminbar .mrn-appearance-form :is(select,button):focus-visible { outline: 3px solid var(--mrn-admin-focus); outline-offset: 2px; }
-body.mrn-appearance #wpadminbar .mrn-appearance-form :disabled { opacity: 1; background: var(--mrn-admin-disabled); color: var(--mrn-admin-disabled-ink); }
+body.mrn-appearance #wpadminbar .mrn-appearance-form { padding: 12px; width: 264px; max-width: calc(100vw - 32px); box-sizing: border-box; white-space: normal; border-top: 1px solid var(--mrn-admin-line); }
+body.mrn-appearance #wpadminbar #mrn-appearance-label { display: block; font-size: 12px; font-weight: 650; line-height: 1.5; margin-bottom: 8px; color: var(--mrn-admin-muted); }
+body.mrn-appearance #wpadminbar .mrn-appearance-choices { display: flex; gap: 4px; }
+body.mrn-appearance #wpadminbar .mrn-appearance-choices button { display: flex; flex: 1; align-items: center; flex-direction: column; gap: 4px; min-height: 56px; padding: 8px 6px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: var(--mrn-admin-ink); font-size: 12px; line-height: 1.4; cursor: pointer; }
+body.mrn-appearance #wpadminbar .mrn-appearance-choices svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+body.mrn-appearance #wpadminbar .mrn-appearance-choices button:hover { background: var(--mrn-admin-surface-hover); }
+body.mrn-appearance #wpadminbar .mrn-appearance-choices button[aria-pressed=true] { background: var(--mrn-admin-selected); color: var(--mrn-admin-selected-ink); border-color: var(--mrn-admin-accent); }
+body.mrn-appearance #wpadminbar .mrn-appearance-choices button:focus-visible { outline: 3px solid var(--mrn-admin-focus); outline-offset: -3px; }
+body.mrn-appearance #wpadminbar .mrn-appearance-choices button:disabled { cursor: wait; color: var(--mrn-admin-disabled-ink); }
+body.mrn-appearance #wpadminbar .mrn-appearance-status { white-space: normal; color: var(--mrn-admin-muted); font-size: 12px; line-height: 1.5; margin: 8px 0 0; }
+body.mrn-appearance #wpadminbar .mrn-appearance-status:empty { display: none; }
+/* Native page-specific controls move as one node; their panels/forms stay put. */
+body.mrn-appearance #wpadminbar #wp-admin-bar-mrn-screen { display: block; }
+body.mrn-appearance #wpadminbar #wp-admin-bar-mrn-screen-controls > .ab-item { height: auto; padding: 6px; }
+body.mrn-appearance #wpadminbar #screen-meta-links { display: flex !important; flex-direction: column; float: none; position: static; height: auto; margin: 0; min-width: 180px; }
+body.mrn-appearance #wpadminbar #screen-meta-links .screen-meta-toggle { float: none; margin: 0; top: auto; }
+body.mrn-appearance #wpadminbar #screen-meta-links .show-settings { width: 100%; height: auto; min-height: 38px; text-align: start; border: 0; border-radius: 5px; padding: 8px 12px; background: var(--mrn-admin-surface); color: var(--mrn-admin-ink); box-shadow: none; font-size: 13px; line-height: 1.5; cursor: pointer; }
+body.mrn-appearance #wpadminbar #screen-meta-links .show-settings::after { content: none; }
+body.mrn-appearance #wpadminbar #screen-meta-links .show-settings:hover { background: var(--mrn-admin-surface-hover); }
+body.mrn-appearance #wpadminbar #screen-meta-links .show-settings:focus-visible { outline: 3px solid var(--mrn-admin-focus); outline-offset: -3px; }
+body.mrn-appearance #wpadminbar #wp-admin-bar-mrn-screen.mrn-screen-open > .ab-sub-wrapper { display: block; }
+body.mrn-screen-tools-ready #screen-meta { position: fixed; top: var(--mrn-adminbar-height,32px); left: 0; right: 0; margin: 0; max-height: 70vh; overflow: auto; z-index: 100001; background: var(--mrn-admin-surface); color: var(--mrn-admin-ink); border-color: var(--mrn-admin-line); box-shadow: var(--mrn-admin-overlay-shadow); }
+body.mrn-screen-tools-ready #screen-meta .mrn-screen-close { float: right; margin: 12px; padding: 8px 12px; min-height: 36px; border: 1px solid var(--mrn-admin-control-line); border-radius: 6px; background: var(--mrn-admin-surface); color: var(--mrn-admin-ink); cursor: pointer; }
+body.mrn-screen-tools-ready #screen-meta :is(button,a,input):focus-visible { outline: 3px solid var(--mrn-admin-focus); outline-offset: 2px; }
 @media (max-width:782px) {
- body.mrn-appearance #wpadminbar #wp-admin-bar-mrn-appearance > a { width: 46px; padding: 0; text-align: center; }
- body.mrn-appearance #wpadminbar #wp-admin-bar-mrn-appearance > a .ab-label { display: none; }
- body.mrn-appearance #wpadminbar #wp-admin-bar-mrn-appearance .ab-icon { float: none; display: inline-block; width: 28px; height: 46px; padding: 0; }
- body.mrn-appearance #wpadminbar #wp-admin-bar-mrn-appearance .ab-icon:before { font-size: 24px; top: 10px; }
- body.mrn-appearance #wpadminbar #wp-admin-bar-mrn-appearance .ab-sub-wrapper { left: auto; right: 0; }
+ body.mrn-appearance #wpadminbar #wp-admin-bar-mrn-screen > a { min-width: 46px; padding: 0 8px; }
+ body.mrn-appearance #wpadminbar #screen-meta-links .show-settings { min-height: 44px; }
+ body.mrn-screen-tools-ready #screen-meta { top: var(--mrn-adminbar-height,46px); }
 }
 @media (prefers-reduced-motion:reduce) { .mrn-appearance #adminmenu * { animation: none !important; transition: none !important; } }
 /* Intentional native islands: no filters, no color inversion, no plugin-internal selectors. */
@@ -181,10 +195,6 @@ body.mrn-appearance #wpadminbar .wrap-seopress-noindex .ab-icon::before { color:
 .mrn-admin-settings #wpbody-content .importer-title { color: var(--mrn-admin-ink); }
 .mrn-admin-settings .privacy-settings-header { background: var(--mrn-admin-surface); color: var(--mrn-admin-ink); border-color: var(--mrn-admin-line); }
 
-/* Once activated, keyboard interaction is independent of hover-intent timing. */
-body.mrn-appearance #wpadminbar #wp-admin-bar-mrn-appearance.mrn-appearance-open > .ab-sub-wrapper { display: block; }
-body.mrn-appearance #wpadminbar #wp-admin-bar-mrn-appearance.mrn-appearance-open > .ab-item { background: var(--mrn-admin-surface-hover) !important; }
-
 /* AME's collapsible group controls stay native; reduce the decorative gaps. */
 body.mrn-appearance #adminmenu li.ame-menu-heading-item > a.menu-top { min-height: 32px; margin-bottom: 4px; background: var(--mrn-admin-surface-subtle) !important; }
 body.mrn-appearance #adminmenu li.ame-menu-heading-item .wp-menu-name { padding-top: 8px; padding-bottom: 8px; font-weight: 750; letter-spacing: .075em; }
@@ -203,3 +213,8 @@ body.mrn-appearance #adminmenu :is(li.current,li.wp-has-current-submenu) > a .mr
  body.mrn-appearance #adminmenu .wp-menu-image { padding-top: 4px; }
 }
 body.mrn-appearance #adminmenu li.ame-menu-heading-item > a.menu-top:is(:hover,:focus) { background: var(--mrn-admin-nav-hover) !important; }
+
+body.mrn-screen-tools-ready #screen-meta :is(#contextual-help-back,.contextual-help-sidebar) { background: var(--mrn-admin-surface-subtle); color: var(--mrn-admin-ink); border-color: var(--mrn-admin-line); }
+body.mrn-screen-tools-ready #screen-meta a { color: var(--mrn-admin-accent); }
+body.mrn-screen-tools-ready #screen-meta :is(input,select) { color: var(--mrn-admin-ink); background-color: var(--mrn-admin-surface); border-color: var(--mrn-admin-control-line); }
+body.mrn-screen-tools-ready #screen-meta .contextual-help-tabs .active { background: var(--mrn-admin-selected); border-color: var(--mrn-admin-line); }
