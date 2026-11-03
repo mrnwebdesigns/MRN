@@ -40,7 +40,7 @@ body.mrn-appearance #wpadminbar .ab-sub-wrapper { background: var(--mrn-admin-su
 body.mrn-appearance #wpadminbar .ab-submenu .ab-item:is(:hover,:focus) { background: var(--mrn-admin-surface-hover) !important; color: var(--mrn-admin-ink) !important; }
 body.mrn-appearance #wpadminbar .ab-item:focus-visible { outline: 2px solid var(--mrn-admin-focus); outline-offset: -3px; }
 /* Personal appearance belongs to the existing account dropdown. */
-body.mrn-appearance #wpadminbar #wp-admin-bar-mrn-appearance-controls > .ab-item { height: auto; padding: 0; }
+body.mrn-appearance #wpadminbar #wp-admin-bar-mrn-account-appearance > .ab-item { height: auto; padding: 0; }
 body.mrn-appearance #wpadminbar .mrn-appearance-form { padding: 12px; width: 264px; max-width: calc(100vw - 32px); box-sizing: border-box; white-space: normal; border-top: 1px solid var(--mrn-admin-line); }
 body.mrn-appearance #wpadminbar #mrn-appearance-label { display: block; font-size: 12px; font-weight: 650; line-height: 1.5; margin-bottom: 8px; color: var(--mrn-admin-muted); }
 body.mrn-appearance #wpadminbar .mrn-appearance-choices { display: flex; gap: 4px; }
@@ -134,7 +134,7 @@ body.mrn-appearance :is(.media-modal,.mce-container,.wp-editor-container),
 /* Generated AME toolbar colors must not override the account appearance palette. */
 body.mrn-appearance #wpadminbar,
 body.mrn-appearance #wpadminbar :is(.ab-sub-wrapper,.ab-submenu),
-body.mrn-appearance #wpadminbar #wp-admin-bar-mrn-appearance-controls > .ab-item { background: var(--mrn-admin-surface) !important; }
+body.mrn-appearance #wpadminbar #wp-admin-bar-mrn-account-appearance > .ab-item { background: var(--mrn-admin-surface) !important; }
 .mrn-themed-content #wpbody-content :is(.acf-link .link-wrap,.acf-input-append,.acf-input-prepend) { background: var(--mrn-admin-surface-subtle); color: var(--mrn-admin-muted); border-color: var(--mrn-admin-control-line); }
 body.mrn-appearance #adminmenu > li.current > a.current:after { display: none; }
 .mrn-themed-content #wpbody-content :is(code,.editinline.button-link,.acf-btn.acf-btn-clear,.mrn-icon-chooser-selection) { color: var(--mrn-admin-muted); }

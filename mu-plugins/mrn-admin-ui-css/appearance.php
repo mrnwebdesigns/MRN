@@ -71,7 +71,9 @@ add_action( 'admin_bar_menu', function ( $bar ) {
 		<p class="mrn-appearance-status" role="status" aria-live="polite"></p>
 	</form>
 	<?php
-	$bar->add_node( array( 'id' => 'mrn-appearance-controls', 'parent' => 'user-actions', 'title' => ob_get_clean() ) );
+	// The former standalone node has a persisted parent in Toolbar Editor.
+	// A distinct account-node ID avoids reviving that orphaned placement.
+	$bar->add_node( array( 'id' => 'mrn-account-appearance', 'parent' => 'user-actions', 'title' => ob_get_clean() ) );
 	$workspace = function_exists( 'mrn_editor_experience_screen' ) && mrn_editor_experience_screen();
 	if ( $workspace || mrn_admin_ui_modern_screen() ) {
 		$bar->add_node( array(

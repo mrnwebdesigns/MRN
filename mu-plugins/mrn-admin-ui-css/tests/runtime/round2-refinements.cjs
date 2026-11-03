@@ -1,5 +1,5 @@
 'use strict';
-// Approved Local Hub only. The owned empty draft is the only content mutation.
+// Exact authorized pilot hosts only. The owned empty draft is the only content mutation.
 const fs = require('node:fs');
 const assert = require('node:assert/strict');
 const req = require('node:module').createRequire('/Users/khofmeyer/Development/MRN-qa-engine/package.json');
@@ -25,14 +25,16 @@ assert(Object.values(fixture.counts).every(count => count === 0), 'Expected owne
  page.on('pageerror', error => result.errors.push(error.message));
  page.on('dialog', dialog => dialog.accept());
  async function go(path) {
-  await page.goto(base+'/wp-admin/'+path,{waitUntil:'domcontentloaded',timeout:90000});
+  console.log('Load',path);
+  const response=await page.goto(base+'/wp-admin/'+path,{waitUntil:'domcontentloaded',timeout:90000});
+  assert.equal(response.status(),200); assert(page.url().startsWith(base+'/wp-admin/'),'Expected authenticated admin screen');
   await page.waitForFunction(()=>document.readyState==='complete',null,{timeout:90000});
  }
  async function ready(count) {
   await expect(page.locator('.mrn-section-link')).toHaveCount(count);
   await page.waitForFunction(()=>window.tinymce && tinymce.editors.every(editor=>editor.initialized),null,{timeout:60000});
  }
- async function shot(name) { await page.screenshot({path:out+'/after/'+name+'.png',fullPage:true}); }
+ async function shot(name) { fs.mkdirSync(out+'/after',{recursive:true}); await page.screenshot({path:out+'/after/'+name+'.png',fullPage:true}); }
  async function appearance(value) {
   const previous=await page.locator('html').getAttribute('data-mrn-appearance');
   await page.locator('#wp-admin-bar-my-account > a').hover();
