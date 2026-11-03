@@ -39,7 +39,7 @@ function contrast(a,b){const lum=s=>s.match(/[\d.]+/g).slice(0,3).map(Number).ma
    const boxes=await p.evaluate(()=>{const rect=s=>{const r=document.querySelector(s).getBoundingClientRect();return {left:r.left,right:r.right,width:r.width};};return {menu:rect('#wp-admin-bar-mrn-screen > .ab-sub-wrapper'),button:rect('#contextual-help-link')};});result.geometry.push({mode,viewMenu:boxes});if(phase==='after')assert(boxes.button.left>=boxes.menu.left&&boxes.button.right<=boxes.menu.right);
    await p.locator('#show-settings-link').click();await expect(p.locator('#screen-options-wrap')).toBeFocused();await shot(mode+'-dashboard-options');if(phase==='after'){assert((await p.locator('#screen-meta').boundingBox()).width<=641);await scan(mode+'-dashboard-options',['#screen-options-wrap']);}
    await p.keyboard.press('Escape');await expect(p.locator('#wp-admin-bar-mrn-screen > a')).toBeFocused();
-   await openMenu();await p.locator('#contextual-help-link').click();await expect(p.locator('#contextual-help-wrap')).toBeFocused();await shot(mode+'-help');await p.keyboard.press('Escape');
+   await openMenu();await p.locator('#contextual-help-link').click();await expect(p.locator('#contextual-help-wrap')).toBeFocused();await shot(mode+'-help');if(phase==='after'){await p.setViewportSize({width:390,height:844});await openMenu();await p.locator('#contextual-help-link').click();await shot(mode+'-mobile-help');assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await p.setViewportSize({width:1487,height:1100});}await p.keyboard.press('Escape');
    await p.locator('#wp-admin-bar-site-name > a').focus();await p.keyboard.press('Enter');await shot(mode+'-site-menu','#wp-admin-bar-site-name > .ab-sub-wrapper');
    if(phase==='after'){await expect(p.locator('#wp-admin-bar-site-name #wp-admin-bar-dashboard > a')).toHaveAttribute('href',base+'/wp-admin/');const labels=await p.locator('#wp-admin-bar-site-name .ab-submenu > li > a').allTextContents();assert(labels.includes('Dashboard')&&labels.includes('Visit Site')); result.checks.push(mode+' Dashboard return link coexists with Visit Site in AME-owned menu order');}
    await p.mouse.move(1000,250);
@@ -51,7 +51,7 @@ function contrast(a,b){const lum=s=>s.match(/[\d.]+/g).slice(0,3).map(Number).ma
      await scan(mode+'-'+name+'-options',['#screen-options-wrap']);
     }
     if(name==='empty-editor'){
-     await p.setViewportSize({width:390,height:844});await shot(mode+'-mobile-options');if(phase==='after'){const r=await p.locator('#screen-meta').boundingBox();assert(r.x>=0&&r.x+r.width<=390);assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));}await p.setViewportSize({width:1487,height:1100});
+     await p.setViewportSize({width:390,height:844});await openOptions();await shot(mode+'-mobile-options');if(phase==='after'){const r=await p.locator('#screen-meta').boundingBox();assert(r.x>=0&&r.x+r.width<=390);assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));}await p.setViewportSize({width:1487,height:1100});await openOptions();
     }
     await closePanel();
    }

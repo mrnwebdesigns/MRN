@@ -89,7 +89,7 @@ body.mrn-screen-tools-ready #screen-options-wrap .mrn-view-settings { margin-bot
 body.mrn-workspace #screen-options-wrap :is(.columns-prefs,.mrn-managed-region-toggle) { display: none !important; }
 body.mrn-screen-tools-ready #screen-meta .mrn-screen-close { position: absolute; top: 10px; right: 10px; z-index: 1; margin: 0; padding: 4px 10px; min-height: 32px; border: 1px solid var(--mrn-admin-control-line); border-radius: 6px; background: var(--mrn-admin-surface); color: var(--mrn-admin-ink); cursor: pointer; }
 body.mrn-screen-tools-ready #screen-meta .mrn-screen-close:hover { background: var(--mrn-admin-surface-hover); }
-body.mrn-screen-tools-ready #contextual-help-wrap .contextual-help-tabs-wrap { padding-top: 44px; }
+body.mrn-screen-tools-ready #contextual-help-wrap :is(.contextual-help-tabs-wrap,.contextual-help-sidebar) { padding-top: 44px; }
 body.mrn-screen-tools-ready #screen-meta :is(button,a,input):focus-visible { outline: 3px solid var(--mrn-admin-focus); outline-offset: 2px; }
 @media (max-width:782px) {
  body.mrn-appearance #wpadminbar #wp-admin-bar-mrn-screen > a { min-width: 46px; padding: 0 8px; }
