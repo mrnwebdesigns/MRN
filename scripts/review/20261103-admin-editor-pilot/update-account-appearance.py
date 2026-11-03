@@ -15,7 +15,7 @@ for name in FILES:
     target = ROOT / 'wp-content/mu-plugins/mrn-admin-ui-css' / name
     if sha(target) != old['mu-plugins/mrn-admin-ui-css/' + name] or sha(PRIVATE / 'account-patch' / name) != new[name]:
         raise SystemExit('Source or installed drift: ' + name)
-subprocess.run(['wp', '--path=' + str(ROOT), 'eval-file', str(PRIVATE / 'backup.php'), 'pre-account-menu-fix-20261103'], check=True, timeout=180)
+subprocess.run(['wp', '--path=' + str(ROOT), 'eval-file', str(PRIVATE / 'backup.php'), 'pre-admin-pilot-account-menu-fix-20261103'], check=True, timeout=180)
 receipt = json.loads((PRIVATE / 'verified-backup.json').read_text())
 if not receipt.get('valid') or receipt.get('host') != HOST or time.time() - receipt.get('checked_at', 0) > 300:
     raise SystemExit('Fresh verified remote backup required')
