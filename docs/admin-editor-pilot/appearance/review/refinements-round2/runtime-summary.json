@@ -1,0 +1,27 @@
+{
+  "checks": [
+    "Account Light/Dark/System buttons activate by keyboard and persist across navigation",
+    "light: reported icons visible; native Screen Options/Help open, focus and close",
+    "dark: reported icons visible; native Screen Options/Help open, focus and close"
+  ],
+  "axe": {
+    "light-toolbar": [],
+    "dark-toolbar": []
+  },
+  "errors": [],
+  "new_page": "Native region picker, first appended row, selected row and 390px zero-state reflow exercised; save/reload blocked. No functional integrity pass claimed.",
+  "blocker": {
+    "action": "managed_challenge",
+    "source": "firewallCustom",
+    "rule_id": "5778f8dc0ad64ea19abc7a6601cb89a8",
+    "ray": "a54c68921942215d",
+    "path": "/wp-admin/post.php",
+    "at": "2026-11-03T15:28:23Z"
+  },
+  "content_readback": "19/32 source hashes unchanged after challenged submissions",
+  "fixture_ids": [
+    2523,
+    2524,
+    2580
+  ]
+}

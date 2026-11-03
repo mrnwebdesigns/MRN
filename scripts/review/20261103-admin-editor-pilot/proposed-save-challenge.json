@@ -1,0 +1,26 @@
+{
+  "status": "prepared-not-authorized-not-applied",
+  "zone": "mrndev.io",
+  "account": "MRN Web Designs",
+  "ruleset_id": "0a802372b6c045dba696331685f1c72c",
+  "rule_id": "5778f8dc0ad64ea19abc7a6601cb89a8",
+  "expected_version": "8",
+  "before": {
+    "action": "managed_challenge",
+    "description": "WP Login/Admin Challenge (all subdomains except wpcontrol)",
+    "enabled": true,
+    "expression": "(ends_with(http.host, \".mrndev.io\") and http.host ne \"wpcontrol.mrndev.io\" and ((http.request.method eq \"POST\" and (http.request.uri.path eq \"/wp-login.php\" or http.request.uri.path eq \"/site-login\" or http.request.uri.path eq \"/site-login.php\")) or (starts_with(http.request.uri.path, \"/wp-admin/\") and http.request.uri.path ne \"/wp-admin/admin-ajax.php\" and http.request.method in {\"POST\" \"PUT\" \"PATCH\" \"DELETE\"})))",
+    "id": "5778f8dc0ad64ea19abc7a6601cb89a8",
+    "last_updated": "2026-10-22T18:56:04.596693Z",
+    "ref": "5778f8dc0ad64ea19abc7a6601cb89a8",
+    "version": "8"
+  },
+  "after": {
+    "action": "managed_challenge",
+    "description": "WP Login/Admin Challenge (all subdomains except wpcontrol)",
+    "enabled": true,
+    "ref": "5778f8dc0ad64ea19abc7a6601cb89a8",
+    "expression": "((ends_with(http.host, \".mrndev.io\") and http.host ne \"wpcontrol.mrndev.io\" and ((http.request.method eq \"POST\" and (http.request.uri.path eq \"/wp-login.php\" or http.request.uri.path eq \"/site-login\" or http.request.uri.path eq \"/site-login.php\")) or (starts_with(http.request.uri.path, \"/wp-admin/\") and http.request.uri.path ne \"/wp-admin/admin-ajax.php\" and http.request.method in {\"POST\" \"PUT\" \"PATCH\" \"DELETE\"}))) and not (http.host eq \"admin-editor-pilot.mrndev.io\" and http.request.uri.path eq \"/wp-admin/post.php\" and http.request.method eq \"POST\" and http.cookie contains \"wordpress_logged_in_\"))"
+  },
+  "scope": "Only the exact review host native post.php POST with a WordPress logged-in cookie is excluded from this custom managed challenge. Basic Auth, WordPress cookie/nonce/capability validation, managed WAF and all other hosts/routes remain enforced. Cookie presence at the edge is not authentication."
+}

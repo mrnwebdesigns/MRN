@@ -51,10 +51,21 @@ The original imported Trilliant source and the local review copy are preserved.
 
 ## Current state
 
-Provisioning and qualification are in progress. A private site account/vhost was
-created and HTTP 401 verified; the first database creation was rejected by
-CloudPanel validation before any database or content existed. Review access is
-not yet ready. Final receipts and unresolved blockers belong in the review report.
+The isolated clone is installed, HTTPS validates, unauthenticated access returns
+HTTP 401, and native 19/32-section content hashes match the source after URL
+normalization. Admin UI 3.3.3 / Editor Lockdown 1.0.41 are installed. Labeled
+remote Updraft database backups precede clone activation, certificate work, QA
+and the account-node compatibility correction. Both-theme captures and scoped
+accessibility checks pass. See
+[the review record](../../../docs/admin-editor-pilot/appearance/review/REFINEMENTS-ROUND2.md).
+
+Native save/reload remains blocked by Cloudflare's shared custom admin challenge.
+`proposed-save-challenge.json` contains the exact before/after rule expression and
+rollback values; it is prepared, not applied or authorized. No other host or
+security product is proposed for alteration. Codex's embedded browser rejected
+Basic Auth; live authentication remains protected. The static paired gallery is
+available for annotation while access is resolved. No release/Fleet action is
+part of this migration.
 
 The canonical shell wrapper cannot traverse `/home` with the new site-owner account.
 `backup.php` uses its existing Updraft API fallback and the same history/checksum/

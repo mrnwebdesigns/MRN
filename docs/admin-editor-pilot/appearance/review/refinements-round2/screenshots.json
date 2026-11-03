@@ -1,0 +1,201 @@
+{
+  "captured": "2026-11-03",
+  "source": "https://admin-editor-pilot.mrndev.io",
+  "admin_version": "3.3.3",
+  "editor_version": "1.0.41",
+  "note": "Actual full-page captures. Light/Dark representative screens use response-only appearance overrides; account and empty-page captures use saved user preferences. External requests are blocked by the QA harness; imported off-origin AME branding is absent.",
+  "screenshots": [
+    {
+      "file": "after/dark-account.png",
+      "sha256": "876fc1ecf1bb9e2104f7653dd2b3689ae656bd2fc774a3656418a502d45b42d7",
+      "width": 1487,
+      "height": 1649
+    },
+    {
+      "file": "after/dark-contextual-help-wrap.png",
+      "sha256": "fc4d8095dd97986bf52615b8cd4d6fc06954d402399ab786aae480ac297ce729",
+      "width": 1487,
+      "height": 1649
+    },
+    {
+      "file": "after/dark-dashboard-mobile.png",
+      "sha256": "0d2f9238414a661b9cfd123c2bdd8963a4ee0fa33fa3bafc28e00939da0beb27",
+      "width": 390,
+      "height": 1947
+    },
+    {
+      "file": "after/dark-dashboard.png",
+      "sha256": "3828bba83371f1e521704097c858ada9b96c37185ec675d0a9fb241ae1fc72e7",
+      "width": 1487,
+      "height": 1649
+    },
+    {
+      "file": "after/dark-editor-arrange.png",
+      "sha256": "07d9af0fc73ca97d19cad81be7dec22de8c6a3fa5699886c738fa4203af7c536",
+      "width": 1487,
+      "height": 3129
+    },
+    {
+      "file": "after/dark-editor-mobile.png",
+      "sha256": "395e25552c9115a4089ea80eccf8fe0df895d4a0d18e4642f2901ab371167008",
+      "width": 390,
+      "height": 15921
+    },
+    {
+      "file": "after/dark-editor-settings.png",
+      "sha256": "8f5091a3926bbc6096f2a2a5e7c4c34f938e28e925733aa8563118be012cc056",
+      "width": 1487,
+      "height": 3204
+    },
+    {
+      "file": "after/dark-editor.png",
+      "sha256": "f390bc6bb02e1af7a5ba8d3aac5e7e8a8892b143c1a2d14f58d0ca1a46ff8414",
+      "width": 1487,
+      "height": 10978
+    },
+    {
+      "file": "after/dark-empty-mobile.png",
+      "sha256": "ac0622cb52d2aa3aaffb7a2bf816bccfae5261cb817e009899a6d9cd98fea56f",
+      "width": 390,
+      "height": 1209
+    },
+    {
+      "file": "after/dark-empty.png",
+      "sha256": "71bb3dd57f7716af0d00ca176e8773e9dc1a25944f4c86e90a0c5d57e6f8ff9c",
+      "width": 1487,
+      "height": 1275
+    },
+    {
+      "file": "after/dark-mrn-settings.png",
+      "sha256": "b34a4b4dae8efdc61ff0a7d054329339b39a61d7abf69266265c726733cd89f8",
+      "width": 1487,
+      "height": 1599
+    },
+    {
+      "file": "after/dark-pages.png",
+      "sha256": "8c35a08fe5eedced4cadbaff213cf23e38eaccb3f73dedf67c6b6830285088b5",
+      "width": 1487,
+      "height": 2412
+    },
+    {
+      "file": "after/dark-screen-options-wrap.png",
+      "sha256": "737f2c2fe846dbe7e4ce1c8c349f7d917f6803bcd7b16caa675b5a0ab0973d09",
+      "width": 1487,
+      "height": 1649
+    },
+    {
+      "file": "after/dark-settings-mobile.png",
+      "sha256": "ceec05762ee04613432a47c7e93d4b88e0bbac2c6f9930dc38398b456c761838",
+      "width": 390,
+      "height": 2655
+    },
+    {
+      "file": "after/dark-settings.png",
+      "sha256": "9b492266bab6799224cba66dc7618164612e751413e23c5880ffb00a983cc6fa",
+      "width": 1487,
+      "height": 2300
+    },
+    {
+      "file": "after/dark-sidebar-expanded.png",
+      "sha256": "25ae51acb2508ecc341dfb488bc1e9fad0dfec4dbc6442f11eeb9554dd3fdb0f",
+      "width": 1487,
+      "height": 1649
+    },
+    {
+      "file": "after/light-account.png",
+      "sha256": "64e56628e1a51adfdcc9bae3b23f6488c2780dc3a6f00bf82ea236da8b0c2ca7",
+      "width": 1487,
+      "height": 1649
+    },
+    {
+      "file": "after/light-contextual-help-wrap.png",
+      "sha256": "bdbfa6b49d4e65a8a2d8c086822a19c2a660d860e4978d10984fb4d6ed8adb1f",
+      "width": 1487,
+      "height": 1649
+    },
+    {
+      "file": "after/light-dashboard-mobile.png",
+      "sha256": "ee4bd7ba3f8a36e2dd76175978c0c09a73e9bf7033a316e76a5b5bd1eb4d1047",
+      "width": 390,
+      "height": 1929
+    },
+    {
+      "file": "after/light-dashboard.png",
+      "sha256": "b04978998e5a611d5ee522cfae36b0cf7727bcb78aa841607a13cc328c42fdf5",
+      "width": 1487,
+      "height": 1649
+    },
+    {
+      "file": "after/light-editor-arrange.png",
+      "sha256": "3367626122bd498875331d11151f7a5ede85f63900969ee6344b70af519c07f1",
+      "width": 1487,
+      "height": 3129
+    },
+    {
+      "file": "after/light-editor-mobile.png",
+      "sha256": "ba96375e44bec71ca7b5b932ff64726bf851307a54a950955345aa90b16a0b41",
+      "width": 390,
+      "height": 15921
+    },
+    {
+      "file": "after/light-editor-settings.png",
+      "sha256": "162a5be037675c2d8cd149e8345e84c655712161b39e07dd7473a89a68ffe9f6",
+      "width": 1487,
+      "height": 3204
+    },
+    {
+      "file": "after/light-editor.png",
+      "sha256": "3bb8a5be874e533c9fd063d5271df05d57501eb77dd333be92b7d5da2deb2798",
+      "width": 1487,
+      "height": 10978
+    },
+    {
+      "file": "after/light-empty-mobile.png",
+      "sha256": "864b4e4137b93ed335391f474d734273e2239b9627e95be77f786d0c544dbffb",
+      "width": 390,
+      "height": 1209
+    },
+    {
+      "file": "after/light-empty.png",
+      "sha256": "e39f0667689a7a6b452ba291878b0b1ccd1eff97a47ad5b9b9655001048e8ebe",
+      "width": 1487,
+      "height": 1275
+    },
+    {
+      "file": "after/light-mrn-settings.png",
+      "sha256": "7644c02ec6451dd86029ba90242c09960780c632cf162d74994f62111d8e1128",
+      "width": 1487,
+      "height": 1599
+    },
+    {
+      "file": "after/light-pages.png",
+      "sha256": "aacb84b0c2ba6c264cdfcd94ae0448fc05a866a5eb0cb6bdaed5a033e2bca5b8",
+      "width": 1487,
+      "height": 2412
+    },
+    {
+      "file": "after/light-screen-options-wrap.png",
+      "sha256": "a2d59642c25b3ece237d9ea68c4bb38ceed72ca603eee4bba00e43a72f3c6711",
+      "width": 1487,
+      "height": 1649
+    },
+    {
+      "file": "after/light-settings-mobile.png",
+      "sha256": "c0b0cb9a761a468ea630fd82abeaeba384a4e9460b072cba84ca8f364e6f9d4a",
+      "width": 390,
+      "height": 2655
+    },
+    {
+      "file": "after/light-settings.png",
+      "sha256": "4dc250552531037d6c1b1c0db1e8fc96c284e816d6e0a7e47126fef7f5b1018e",
+      "width": 1487,
+      "height": 2300
+    },
+    {
+      "file": "after/light-sidebar-expanded.png",
+      "sha256": "cdb4bc63565084f12eb7ba1e8a97c70b6b63186fa83ed20d5398334afc6eb43b",
+      "width": 1487,
+      "height": 1649
+    }
+  ]
+}

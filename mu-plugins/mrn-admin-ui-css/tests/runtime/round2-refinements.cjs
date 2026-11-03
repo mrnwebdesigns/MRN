@@ -36,17 +36,20 @@ assert(Object.values(fixture.counts).every(count => count === 0), 'Expected owne
  }
  async function shot(name) { fs.mkdirSync(out+'/after',{recursive:true}); await page.screenshot({path:out+'/after/'+name+'.png',fullPage:true}); }
  async function appearance(value) {
+  console.log('Appearance',value);
   const previous=await page.locator('html').getAttribute('data-mrn-appearance');
-  await page.locator('#wp-admin-bar-my-account > a').hover();
   const choice=page.locator('.mrn-appearance-choices button[value="'+value+'"]');
-  await choice.focus(); await choice.press('Enter');
+  if (!await choice.isVisible()) { await page.locator('#wp-admin-bar-my-account > a').focus(); await page.keyboard.press('Enter'); }
+  await expect(choice).toBeVisible(); await choice.focus(); await expect(choice).toBeFocused(); await choice.press('Enter');
   if (previous!==value) await expect(page.locator('.mrn-appearance-status')).toContainText('saved for your account');
   await expect(choice).toHaveAttribute('aria-pressed','true');
   await expect(choice).toBeEnabled();
   await expect(page.locator('html')).toHaveAttribute('data-mrn-appearance',value);
+  await page.keyboard.press('Escape');
  }
  async function saveDraft() {
-  await Promise.all([page.waitForNavigation({waitUntil:'domcontentloaded',timeout:90000}),page.locator('#mrn-usb-draft').click()]);
+  const submitted=page.waitForResponse(r=>r.request().method()==='POST'&&new URL(r.url()).pathname==='/wp-admin/post.php',{timeout:30000}).then(r=>assert(r.status()<400,'Native save rejected with HTTP '+r.status()));
+  await Promise.all([submitted,page.waitForNavigation({waitUntil:'domcontentloaded',timeout:90000}),page.locator('#mrn-usb-draft').click()]);
   await expect(page.locator('#message')).toContainText('draft updated');
   await page.reload({waitUntil:'domcontentloaded',timeout:90000});
  }
@@ -68,7 +71,10 @@ assert(Object.values(fixture.counts).every(count => count === 0), 'Expected owne
     assert(await icon.evaluate(el=>getComputedStyle(el,'::after').maskImage!=='none'));
    }
    await shot(mode+'-dashboard');
-   await page.locator('#wp-admin-bar-my-account > a').hover(); await shot(mode+'-account');
+   await page.locator('#wp-admin-bar-my-account > a').focus(); await page.keyboard.press('Enter');
+   await expect(page.locator('.mrn-appearance-choices')).toBeVisible(); await shot(mode+'-account');
+   await page.locator('.mrn-appearance-choices button').first().focus(); await page.keyboard.press('Escape');
+   await page.mouse.move(900,200); await expect(page.locator('.mrn-appearance-choices')).toBeHidden();
    result.axe[mode+'-toolbar']=(await new Axe({page}).include('#wpadminbar').include('#adminmenu').withTags(['wcag2a','wcag2aa','wcag21aa']).analyze()).violations;
    for (const [button,panel] of [['#show-settings-link','#screen-options-wrap'],['#contextual-help-link','#contextual-help-wrap']]) {
     await page.locator('#wp-admin-bar-mrn-screen > a').focus(); await page.keyboard.press('Enter');
@@ -119,7 +125,7 @@ assert(Object.values(fixture.counts).every(count => count === 0), 'Expected owne
   }
   for(const [name,violations] of Object.entries(result.axe)) assert.deepEqual(violations.map(v=>v.id),[],name);
   assert.deepEqual(result.errors,[]);
- } catch(error) { result.failure=error.message; throw error; }
+ } catch(error) { result.failure=error.message; result.page={url:page.url(),title:await page.title()}; await shot('failure'); throw error; }
  finally {
   if(preference && page.url().startsWith(base)) { try { await appearance(preference); } catch(error) { result.preferenceRestoreFailure=error.message; process.exitCode=1; } }
   fs.writeFileSync(out+'/runtime-results.json',JSON.stringify(result,null,2)+'\n'); await browser.close();

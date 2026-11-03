@@ -1,0 +1,42 @@
+{
+  "method": "Unminified source asset sizes and deterministic gzip; not measured runtime transfer or CPU",
+  "assets": [
+    {
+      "file": "mrn-admin-ui-css/appearance.js",
+      "before_bytes": 6007,
+      "after_bytes": 8359,
+      "gzip_before_bytes": 2123,
+      "gzip_after_bytes": 2685
+    },
+    {
+      "file": "mrn-admin-ui-css/mrn-admin-shell.css",
+      "before_bytes": 29827,
+      "after_bytes": 32387,
+      "gzip_before_bytes": 4990,
+      "gzip_after_bytes": 5431
+    },
+    {
+      "file": "mrn-admin-ui-css/mrn-editor-workspace.css",
+      "before_bytes": 24557,
+      "after_bytes": 25940,
+      "gzip_before_bytes": 4489,
+      "gzip_after_bytes": 4697
+    },
+    {
+      "file": "mrn-admin-ui-css/mrn-modern-admin.css",
+      "before_bytes": 16524,
+      "after_bytes": 16029,
+      "gzip_before_bytes": 3373,
+      "gzip_after_bytes": 3299
+    },
+    {
+      "file": "mrn-editor-lockdown/assets/section-navigator.js",
+      "before_bytes": 34549,
+      "after_bytes": 35200,
+      "gzip_before_bytes": 8979,
+      "gzip_after_bytes": 9205
+    }
+  ],
+  "total_byte_delta": 6451,
+  "total_gzip_delta": 1363
+}

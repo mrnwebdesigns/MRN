@@ -1,0 +1,27 @@
+{
+  "checks": [
+    "light dashboard rendered and captured",
+    "light pages rendered and captured",
+    "light settings rendered and captured",
+    "light mrn-settings rendered and captured",
+    "light editor rendered and captured",
+    "dark dashboard rendered and captured",
+    "dark pages rendered and captured",
+    "dark settings rendered and captured",
+    "dark mrn-settings rendered and captured",
+    "dark editor rendered and captured"
+  ],
+  "axe": {
+    "light-dashboard": [],
+    "light-pages": [],
+    "light-settings": [],
+    "light-mrn-settings": [],
+    "light-editor": [],
+    "dark-dashboard": [],
+    "dark-pages": [],
+    "dark-settings": [],
+    "dark-mrn-settings": [],
+    "dark-editor": []
+  },
+  "errors": []
+}

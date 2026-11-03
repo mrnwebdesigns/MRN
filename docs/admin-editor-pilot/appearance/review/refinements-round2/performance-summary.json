@@ -1,0 +1,185 @@
+{
+  "protocol": "Fresh serial Chromium contexts. One warm-up then balanced three Light/three Dark samples per 0/19/32-section fixture. All native TinyMCE initialized. Response-only theme override; no preferences/content changed. Request interception disables browser cache and buffers HTML, so wall time includes instrumentation and is not server TTFB. No prior-candidate baseline; not a release regression verdict.",
+  "results": [
+    {
+      "sections": 0,
+      "mode": "light",
+      "samples": 3,
+      "cpu_ms": {
+        "median": 526.07,
+        "min": 474.34,
+        "max": 600.57
+      },
+      "retained_heap_mb": {
+        "median": 17.75,
+        "min": 17.67,
+        "max": 17.77
+      },
+      "idle_cpu_ms": {
+        "median": 6.81,
+        "min": 1.99,
+        "max": 7.15
+      },
+      "search_wall_ms": {
+        "median": 22.24,
+        "min": 19.07,
+        "max": 30.0
+      },
+      "wall_ms": {
+        "median": 4815.77,
+        "min": 4805.33,
+        "max": 11631.91
+      }
+    },
+    {
+      "sections": 0,
+      "mode": "dark",
+      "samples": 3,
+      "cpu_ms": {
+        "median": 651.39,
+        "min": 517.77,
+        "max": 724.14
+      },
+      "retained_heap_mb": {
+        "median": 17.71,
+        "min": 17.7,
+        "max": 17.77
+      },
+      "idle_cpu_ms": {
+        "median": 7.03,
+        "min": 4.78,
+        "max": 7.65
+      },
+      "search_wall_ms": {
+        "median": 21.96,
+        "min": 17.87,
+        "max": 35.69
+      },
+      "wall_ms": {
+        "median": 4872.27,
+        "min": 4826.28,
+        "max": 8034.16
+      }
+    },
+    {
+      "sections": 19,
+      "mode": "light",
+      "samples": 3,
+      "cpu_ms": {
+        "median": 1786.01,
+        "min": 1583.44,
+        "max": 2014.9
+      },
+      "retained_heap_mb": {
+        "median": 27.33,
+        "min": 27.21,
+        "max": 27.38
+      },
+      "idle_cpu_ms": {
+        "median": 17.72,
+        "min": 14.01,
+        "max": 18.67
+      },
+      "search_wall_ms": {
+        "median": 43.8,
+        "min": 41.78,
+        "max": 56.27
+      },
+      "wall_ms": {
+        "median": 10680.18,
+        "min": 10097.97,
+        "max": 11053.55
+      }
+    },
+    {
+      "sections": 19,
+      "mode": "dark",
+      "samples": 3,
+      "cpu_ms": {
+        "median": 1786.36,
+        "min": 1425.76,
+        "max": 2271.67
+      },
+      "retained_heap_mb": {
+        "median": 27.32,
+        "min": 27.21,
+        "max": 28.41
+      },
+      "idle_cpu_ms": {
+        "median": 19.38,
+        "min": 18.46,
+        "max": 21.29
+      },
+      "search_wall_ms": {
+        "median": 66.77,
+        "min": 56.46,
+        "max": 71.66
+      },
+      "wall_ms": {
+        "median": 11321.57,
+        "min": 11117.98,
+        "max": 12805.22
+      }
+    },
+    {
+      "sections": 32,
+      "mode": "light",
+      "samples": 3,
+      "cpu_ms": {
+        "median": 2281.38,
+        "min": 2208.88,
+        "max": 2468.51
+      },
+      "retained_heap_mb": {
+        "median": 30.35,
+        "min": 30.13,
+        "max": 30.4
+      },
+      "idle_cpu_ms": {
+        "median": 22.27,
+        "min": 22.1,
+        "max": 24.58
+      },
+      "search_wall_ms": {
+        "median": 59.1,
+        "min": 50.39,
+        "max": 69.05
+      },
+      "wall_ms": {
+        "median": 12137.89,
+        "min": 11710.06,
+        "max": 12865.9
+      }
+    },
+    {
+      "sections": 32,
+      "mode": "dark",
+      "samples": 3,
+      "cpu_ms": {
+        "median": 2437.43,
+        "min": 2233.66,
+        "max": 2519.3
+      },
+      "retained_heap_mb": {
+        "median": 30.35,
+        "min": 30.12,
+        "max": 30.38
+      },
+      "idle_cpu_ms": {
+        "median": 21.08,
+        "min": 20.99,
+        "max": 27.76
+      },
+      "search_wall_ms": {
+        "median": 69.71,
+        "min": 54.77,
+        "max": 93.68
+      },
+      "wall_ms": {
+        "median": 11650.59,
+        "min": 11123.39,
+        "max": 32296.97
+      }
+    }
+  ]
+}

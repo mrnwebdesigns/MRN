@@ -1,0 +1,46 @@
+{
+  "date": "2026-11-03",
+  "destination": "https://admin-editor-pilot.mrndev.io",
+  "source": "https://admin-editor-pilot.localhost",
+  "scope": "Owner-authorized isolated review migration only",
+  "installed": {
+    "mrn-admin-ui-css": "3.3.3",
+    "mrn-editor-lockdown": "1.0.41"
+  },
+  "isolation": [
+    "Dedicated CloudPanel owner and database",
+    "Independent uploads; source symlink not copied",
+    "HTTPS validated; unauthenticated HTTP 401",
+    "HTTP Basic Auth retained",
+    "Cron, mail and indexing disabled; outbound HTTP restricted",
+    "MainWP and SMTP clone identity detached",
+    "Local source and original Trilliant record preserved"
+  ],
+  "verified_remote_database_backup_nonces": [
+    "e9f7f44c868f",
+    "c9edc5b77fef",
+    "82cc0ccabdf4",
+    "55857f199532"
+  ],
+  "last_backup": {
+    "label": "pre-admin-pilot-account-menu-fix-20261103",
+    "size": 6066953,
+    "sha256": "d95ed79855e2e0707fbb60cbd698619b6a1514820a3e44292fba8976a1fc1771"
+  },
+  "backup_prefix": "sites/admin-editor-pilot-mrndev-io",
+  "backup_limit": "Successful remote jobs verified; Premium advanced-retention capability not independently qualified",
+  "rollback": "Component copies outside web root and verified remote database backups",
+  "content_integrity": "19/32 fixture hashes match source after URL canonicalization; unchanged after challenged saves",
+  "open_gates": [
+    "Cloudflare native save challenge; prepared exception not authorized or applied",
+    "Protected live sign-in in Codex embedded browser",
+    "Matched prior/candidate CPU/startup-memory qualification",
+    "Separate Local Hub retained socket/OOM issue"
+  ],
+  "not_performed": [
+    "Source promotion",
+    "Release publication",
+    "Production client deployment",
+    "Fleet activation"
+  ]
+}

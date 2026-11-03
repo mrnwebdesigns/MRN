@@ -1,0 +1,19 @@
+{
+  "at": "2026-11-03T15:39:19.774Z",
+  "checks": [
+    {
+      "width": 1487,
+      "images": 32,
+      "overflow": false,
+      "annotationMetadata": true,
+      "violations": []
+    },
+    {
+      "width": 390,
+      "images": 32,
+      "overflow": false,
+      "annotationMetadata": true,
+      "violations": []
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+/Users/khofmeyer/Development/MRN/.worktrees/admin-editor-pilot-20261029/mu-plugins/mrn-admin-ui-css/appearance.php
+/Users/khofmeyer/Development/MRN/.worktrees/admin-editor-pilot-20261029/mu-plugins/mrn-admin-ui-css/modern-admin.php
+/Users/khofmeyer/Development/MRN/.worktrees/admin-editor-pilot-20261029/mu-plugins/mrn-admin-ui-css/mrn-admin-ui-css.php
+/Users/khofmeyer/Development/MRN/.worktrees/admin-editor-pilot-20261029/mu-plugins/mrn-editor-lockdown/includes/editor-assets.php
+/Users/khofmeyer/Development/MRN/.worktrees/admin-editor-pilot-20261029/mu-plugins/mrn-editor-lockdown/includes/section-navigator.php
+/Users/khofmeyer/Development/MRN/.worktrees/admin-editor-pilot-20261029/mu-plugins/mrn-editor-lockdown/mrn-editor-lockdown.php
+
+ [OK] No errors                                                                 
+
