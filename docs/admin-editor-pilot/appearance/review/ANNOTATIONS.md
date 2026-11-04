@@ -320,3 +320,13 @@ installed checks pass; existing WPForms Light label contrast remains separate.
 Source `82850e991d29`; [evidence](media-icons-20261104/REVIEW.md). Installed after
 scoped QA and verified backup. Fresh Codex Media tab ready; human acceptance
 pending. Next annotation: `UX-036`.
+
+### UX-036 — Left-align headings through AME ownership
+
+“Left justified unless this is a styling I can achieve in AME.” **P2**.
+AME has Title → Alignment in its heading style editor. Removed MRN's horizontal
+centering/title overrides, restoring the existing native left alignment while
+preserving vertical caret centering. This supersedes UX-034's horizontal choice.
+Source `fcd00a2aa5b7` installed after scoped QA and verified remote backup.
+[Evidence](heading-owner-20261104/REVIEW.md). Both themes, native disclosure,
+mobile and Media drawer pass. Human acceptance pending; next annotation `UX-037`.

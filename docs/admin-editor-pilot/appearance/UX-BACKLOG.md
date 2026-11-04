@@ -117,6 +117,11 @@ menu geometry, mobile visibility and keyboard behavior verified in both themes.
 [Installed evidence](review/media-icons-20261104/REVIEW.md). Await visual review;
 next annotation `UX-036`.
 
+**P2 UX-036:** Restored native AME left title alignment by removing the MRN
+horizontal overrides; caret remains vertically centered. AME's Title → Alignment
+control retains ownership. [Installed evidence](review/heading-owner-20261104/REVIEW.md).
+This supersedes UX-034's centered choice. Await review; next annotation `UX-037`.
+
 ## Technical blockers and existing follow-up
 
 - **P2 — Vendor navigation label contrast:** WPForms' orange NEW and Addons spans
