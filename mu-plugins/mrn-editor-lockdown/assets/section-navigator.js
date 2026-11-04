@@ -24,6 +24,24 @@
 		if ( text ) { node.textContent = text; } return node;
 	}
 	function button( text, className ) { var node = element( 'button', className, text ); node.type = 'button'; return node; }
+	function preservePanelPreferences() {
+		// Core derives hidden preferences from :hidden, which also matches panels
+		// parked by Content/Page settings. Only explicit native checkboxes should
+		// change those preferences. Keep core's request, nonce and callback intact.
+		window.jQuery.ajaxPrefilter( function( options, original ) {
+			var data = original.data;
+			if ( ! document.body.classList.contains( 'mrn-workspace' ) || ! data || typeof data !== 'object'
+				|| data.action !== 'closed-postboxes' || ! window.postboxes || data.page !== window.postboxes.page
+				|| options.url !== window.ajaxurl || typeof options.data !== 'string' ) { return; }
+			var hidden = new Set( String( data.hidden || '' ).split( ',' ).filter( Boolean ) );
+			document.querySelectorAll( '#screen-options-wrap .hide-postbox-tog' ).forEach( function( toggle ) {
+				if ( toggle.checked ) { hidden.delete( toggle.value ); }
+				else { hidden.add( toggle.value ); }
+			} );
+			var payload = new URLSearchParams( options.data );
+			payload.set( 'hidden', Array.from( hidden ).join( ',' ) ); options.data = payload.toString();
+		} );
+	}
 	function owner( row ) { return acf.getField( window.jQuery( row.closest( '.acf-field[data-type="flexible_content"]' ) ) ); }
 	function eligibleFields() {
 		return acf.getFields( { type: 'flexible_content' } ).filter( function( field ) {
@@ -422,7 +440,7 @@
 		noticeObserver = new MutationObserver( collectNotices );
 		noticeObserver.observe( document.getElementById( 'wpbody-content' ), { childList: true } );
 		noticeObserver.observe( document.querySelector( '#poststuff' ).closest( '.wrap' ), { childList: true } );
-		collectNotices();
+		collectNotices(); preservePanelPreferences();
 		var toolbarEntry = document.querySelector( '#wp-admin-bar-mrn-page-sections > a' ); if ( toolbarEntry ) { toolbarEntry.addEventListener( 'click', function( event ) { event.preventDefault(); openPanel( toolbarEntry ); } ); }
 		panel.addEventListener( 'keydown', function( event ) { if ( event.key === 'Escape' ) { event.preventDefault(); closePanel( true ); } } );
 		document.addEventListener( 'keydown', function( event ) { if ( event.key === 'Escape' && document.body.classList.contains( 'mrn-site-menu-open' ) ) { document.body.classList.remove( 'mrn-site-menu-open' ); menu.setAttribute( 'aria-expanded', 'false' ); menu.focus(); } } );
