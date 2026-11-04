@@ -287,3 +287,16 @@ validation reveals hidden items. Main section navigation and field bands remain.
 Source `8106b4fbd6a7` is installed on the review site after scoped QA and a fresh
 verified backup. [Evidence](subsections-20261104/REVIEW.md). This supersedes the
 sticky portion of UX-030. Next annotation: `UX-033`.
+
+### UX-033 — Give Media a focused workspace
+
+“Have media not use the wordpress side bar just like content.” **P2**.
+Installed on the authorized review site: Library list/grid and Add Media open
+full width; **Site menu** in the toolbar reveals the original AME navigation.
+Folders and native media controls remain available. Mobile wrappers stack and
+wrap instead of squeezing the library. Light/Dark, keyboard, native dialog,
+responsive and fallback checks pass. Startup layout shift was reduced before
+installation; broader CPU/OOM/release gates remain open. Source `976258a2` plus
+`d6ccdacd6661`; [installed evidence](media-workspace-20261104/REVIEW.md).
+A fresh Codex tab is ready for annotations. Human acceptance pending.
+Next annotation: `UX-034`.

@@ -101,6 +101,12 @@ and newly added items remain editable. Native keyboard/group controls,
 validation reveal and form-value checks pass in both themes. [Installed evidence](review/subsections-20261104/REVIEW.md).
 Await visual review; next annotation `UX-033`.
 
+**P2 UX-033:** Media Library list/grid and Add Media now use full width, with
+original AME navigation available through **Site menu**. Folders remain native;
+mobile layout, both themes, keyboard and dialog checks pass. A startup layout
+jump was corrected; bounded retained heap is unchanged. [Installed evidence](review/media-workspace-20261104/REVIEW.md).
+Await visual review; next annotation `UX-034`. Existing performance gates remain.
+
 ## Technical blockers and existing follow-up
 
 - **P1 — Review-site list preference POST:** Cloudflare rejects the native `edit.php` items-per-page submission with HTTP 403. The original value remains 20. A separate exact-path security-rule approval and fresh preflight are needed before extending the prior `post.php` exception; no WAF change was made. Native column and optional editor-panel AJAX persistence pass.

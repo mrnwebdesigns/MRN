@@ -1,0 +1,30 @@
+{
+  "host": "admin-editor-pilot.mrndev.io",
+  "commit": "d6ccdacd66619df3beb922267c74b8fbfff30dab",
+  "files": {
+    "mrn-admin-ui-css/appearance.php": {
+      "before": "41fc2098746a1e4c3a325c24011c05841d7a966ba33daae48918ffaa02ffafbd",
+      "after": "c43e5b7c822d1058a22bd1f0f28c17d3b763be2be0b175484519572618e8c8cd"
+    },
+    "mrn-admin-ui-css/appearance.js": {
+      "before": "8f5d6dc1574df79d507168b97e3fbc65122cb98bb494fd7ebbff9a404070504e",
+      "after": "aea028b6eb652045130c24812786e3274f4d2185ca780b2197ac5a3cdb29ffa0"
+    },
+    "mrn-admin-ui-css/mrn-admin-shell.css": {
+      "before": "5857e84dfc76bf7cec4cbfeac51155c869f19ba8019a869c8c6a04198f86bf3f",
+      "after": "712befbf7c183fcf50d3155e3b2c5b7e0fd94198bce1339860ed4b0d44486303"
+    }
+  },
+  "backup": {
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1793813515,
+    "label": "pre-admin-pilot-media-workspace-install-20261104",
+    "nonce": "a7195b5ae3b9",
+    "key": "sites/admin-editor-pilot-mrndev-io/backup_2026-11-04-1731_Trilliant_a7195b5ae3b9-db.gz",
+    "size": 6311660,
+    "sha256": "e16130f0ae2e5afa827a450fe927623d50ae1b2cea5dc9f1d478acbd096d82b4"
+  },
+  "rollback": "/home/mrndev-admin-editor/review-private/before-media-workspace-d6ccdacd6661",
+  "status": "installed"
+}

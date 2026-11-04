@@ -1,0 +1,100 @@
+{
+  "phase": "candidate",
+  "checks": [
+    {
+      "mode": "list",
+      "geometry": {
+        "#wpcontent": {
+          "left": 0,
+          "width": 1487,
+          "right": 1487
+        },
+        "#wpbody-content": {
+          "left": 362,
+          "width": 1125,
+          "right": 1487
+        },
+        "#happyfiles-sidebar": {
+          "left": 20,
+          "width": 342,
+          "right": 362
+        }
+      }
+    },
+    {
+      "mode": "list",
+      "mobile": {
+        "width": 390,
+        "scroll": 390,
+        "label": "block",
+        "body": "mrn-media-workspace wp-admin wp-core-ui js mrn-appearance mrn-native-app acf-admin-5-3 acf-admin-7-0 acf-browser-chrome upload-php auto-fold admin-bar post-type-attachment branch-7 version-7-0-4 admin-color-modern locale-en-us svg wp-theme-mrn-base-stack wp-child-theme-mrn-base-stack-child customize-support mrn-media-menu-ready"
+      }
+    },
+    "List search, bulk selector and native grid link retained",
+    {
+      "mode": "grid",
+      "geometry": {
+        "#wpcontent": {
+          "left": 0,
+          "width": 1487,
+          "right": 1487
+        },
+        "#wpbody-content": {
+          "left": 362,
+          "width": 1125,
+          "right": 1487
+        },
+        "#happyfiles-sidebar": {
+          "left": 20,
+          "width": 342,
+          "right": 362
+        }
+      }
+    },
+    {
+      "mode": "grid",
+      "mobile": {
+        "width": 390,
+        "scroll": 390,
+        "label": "block",
+        "body": "mrn-media-workspace wp-admin wp-core-ui js mrn-appearance mrn-native-app acf-admin-5-3 acf-admin-7-0 acf-browser-chrome upload-php auto-fold admin-bar post-type-attachment branch-7 version-7-0-4 admin-color-modern locale-en-us svg wp-theme-mrn-base-stack wp-child-theme-mrn-base-stack-child customize-support mrn-media-menu-ready supports-drag-drop"
+      }
+    },
+    "Native grid attachment dialog opens and closes",
+    "Native Add Media upload form remains available; no upload performed",
+    "Failed-script anchor fallback still exposes native navigation",
+    {
+      "noJS": {
+        "workspaceRuleApplies": false,
+        "menuDisplay": "block",
+        "wrapperDisplay": "block",
+        "wrapperVisibility": "visible"
+      }
+    },
+    "No-JavaScript retains the existing native/AME state; workspace CSS does not apply"
+  ],
+  "axe": [
+    {
+      "mode": "list",
+      "theme": "light",
+      "violations": []
+    },
+    {
+      "mode": "list",
+      "theme": "dark",
+      "violations": []
+    },
+    {
+      "mode": "grid",
+      "theme": "light",
+      "violations": []
+    },
+    {
+      "mode": "grid",
+      "theme": "dark",
+      "violations": []
+    }
+  ],
+  "errors": [],
+  "passed": true
+}

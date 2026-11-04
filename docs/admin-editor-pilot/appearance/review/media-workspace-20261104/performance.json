@@ -1,0 +1,60 @@
+{
+  "protocol": "One warm-up, then serial ABBA isolated Chromium contexts. Current installed HTML; candidate injects the two exact PHP shell outputs, and current client assets. Four bounded samples, CPU before forced GC and retained heap after forced GC; not global CPU/OOM qualification.",
+  "records": [
+    {
+      "phase": "before",
+      "warmup": true,
+      "retainedHeapBytes": 26305836,
+      "cpuMs": 1195.2130000000002,
+      "scriptMs": 1004.2560000000001,
+      "heapBytes": 30699580,
+      "cls": 0.38957332501495817,
+      "domMs": 2683.5999999940395,
+      "resources": 197
+    },
+    {
+      "phase": "before",
+      "warmup": false,
+      "retainedHeapBytes": 26163504,
+      "cpuMs": 403.508,
+      "scriptMs": 229.294,
+      "heapBytes": 42943740,
+      "cls": 0.3891975912119336,
+      "domMs": 2343.800000011921,
+      "resources": 195
+    },
+    {
+      "phase": "candidate",
+      "warmup": false,
+      "retainedHeapBytes": 26143384,
+      "cpuMs": 403.795,
+      "scriptMs": 248.401,
+      "heapBytes": 38477752,
+      "cls": 0.22091562934300815,
+      "domMs": 2746.2000000029802,
+      "resources": 193
+    },
+    {
+      "phase": "candidate",
+      "warmup": false,
+      "retainedHeapBytes": 26144952,
+      "cpuMs": 360.48999999999995,
+      "scriptMs": 230.72400000000002,
+      "heapBytes": 40179288,
+      "cls": 0.22132021171549981,
+      "domMs": 2402.5,
+      "resources": 193
+    },
+    {
+      "phase": "before",
+      "warmup": false,
+      "retainedHeapBytes": 26166332,
+      "cpuMs": 431.093,
+      "scriptMs": 246.23000000000002,
+      "heapBytes": 28808660,
+      "cls": 0.38957332501495817,
+      "domMs": 2597.0999999940395,
+      "resources": 195
+    }
+  ]
+}

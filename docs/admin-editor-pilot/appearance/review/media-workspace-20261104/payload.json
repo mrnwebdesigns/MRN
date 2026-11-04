@@ -1,0 +1,20 @@
+[
+  {
+    "file": "appearance.php",
+    "before": 6986,
+    "after": 7932,
+    "gzip_delta": 177
+  },
+  {
+    "file": "appearance.js",
+    "before": 10364,
+    "after": 12395,
+    "gzip_delta": 379
+  },
+  {
+    "file": "mrn-admin-shell.css",
+    "before": 40691,
+    "after": 44986,
+    "gzip_delta": 743
+  }
+]
