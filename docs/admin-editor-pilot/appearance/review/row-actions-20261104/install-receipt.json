@@ -1,0 +1,34 @@
+{
+  "host": "admin-editor-pilot.mrndev.io",
+  "files": {
+    "modern-admin.js": {
+      "before": "90defaa6aabd1dfa1a6ea37dd6b0bb705b7acb8b4080d49138d65d2846a9f62a",
+      "after": "bc7df4383d9bee69f7cb5ad12e6753efb35269d670c47c0e950419dbc2d86b40"
+    },
+    "mrn-modern-admin.css": {
+      "before": "1810408835e74702a3bb1aec2fe301a9e66572602da971b2fdd7f3a2fa809eba",
+      "after": "663236af2222099c5ffe6e5f8f9b6f254cb324b2c6c99fcb086004664a33a64e"
+    },
+    "mrn-admin-ui-css.php": {
+      "before": "d3b12533a9d498a10d9f7d1d966829a337d182968b6c7a670212634c5caf3496",
+      "after": "6eb279d53ad823bd2d4c4369c15a6bf3810adadf1e23648cfa522468aef8cae4"
+    },
+    "stack.lock": {
+      "before": "b61b5934f66e2900ae4f2509a2d856091354ec96db7176c0d902e5a9b89085f8",
+      "after": "69276b57ca2da8d9fb61a953187c8153df39ebbc1bbb23469fe4b07314bb5187"
+    }
+  },
+  "commit": "74532ad7745688674c2851a490994cf9cd7dd4bf",
+  "backup": {
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1793802663,
+    "label": "pre-admin-pilot-row-actions-install-20261104",
+    "nonce": "0647cea226ed",
+    "key": "sites/admin-editor-pilot-mrndev-io/backup_2026-11-04-1430_Trilliant_0647cea226ed-db.gz",
+    "size": 6308227,
+    "sha256": "da7e67466bb4bddb798efd37b825eb57a748ad580ebeaf979cc2c350ea62face"
+  },
+  "rollback": "/home/mrndev-admin-editor/review-private/before-row-actions-74532ad77456",
+  "status": "installed"
+}

@@ -191,3 +191,23 @@ runtime change. Next annotation: `UX-025`.
 
 
 **Round 3 installed:** UX-018–UX-024 are implemented on the exact authorized dev review site (candidate `4dd60f23`), with [before/after evidence and checks](REFINEMENTS-ROUND3.md). Human visual acceptance remains pending. Native per-page POST is blocked by Cloudflare; other targeted preference checks pass. No production/Fleet action or new WAF change. Next annotation: `UX-025`.
+
+### Round 4 — native navigation and list density
+
+Standing owner approval: “As I send feedback, consider approval to implement
+them and deploy to test after qa.” This supersedes the earlier collection-only
+approval language for subsequent feedback. Scope remains the dedicated review
+site; no production, release publication or Fleet authority is added.
+
+- **UX-025 / UX-C02, P2:** “Secondary active menu looks to close in styling to
+  the primary.” Primary retains its filled highlight; the indented current
+  submenu uses an underlined label without a competing fill. Installed source
+  `162a1d8d`; [Light/Dark, keyboard and mobile evidence](menu-hierarchy-20261104/REVIEW.md).
+- **UX-026 / UX-C12, P2:** “In the stack in media, we build this is a dropdown,
+  lets replicate that anywhere these occure as they also get messed up with long
+  horizontal table data.” Compact Actions menus preserve original native controls
+  and remain above clipped tables. Source `74532ad7`; [scope, native Quick Edit,
+  accessibility and overflow evidence](row-actions-20261104/REVIEW.md).
+
+Both share Light/Dark tokens and await the next human annotation round. No new
+configuration owner or dependency. Next annotation: `UX-027`.

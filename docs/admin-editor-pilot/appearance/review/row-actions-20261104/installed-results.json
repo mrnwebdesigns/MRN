@@ -1,0 +1,87 @@
+{
+  "phase": "installed",
+  "checks": [
+    "light native action preservation, Enter/Tab/ArrowDown/Escape, outside click, focus-out, Quick Edit cancel and axe",
+    "dark native action preservation, Enter/Tab/ArrowDown/Escape, outside click, focus-out, Quick Edit cancel and axe",
+    "Unchanged native Quick Edit save/reload on draft 2580, replacement row re-enhanced once and focus restored",
+    "posts native actions, bounds and keyboard close",
+    "team native actions, bounds and keyboard close",
+    "categories native actions, bounds and keyboard close",
+    "users native actions, bounds and keyboard close",
+    "plugins native actions, bounds and keyboard close",
+    "trash native actions, bounds and keyboard close",
+    "Menu remains hit-testable above clipped 2400px-wide table; table scrolling dismisses it",
+    "390px menu bounds; resizing dismisses menu",
+    "JavaScript-disabled native row-action fallback"
+  ],
+  "axe": [
+    {
+      "mode": "light",
+      "violations": []
+    },
+    {
+      "mode": "dark",
+      "violations": []
+    }
+  ],
+  "errors": [],
+  "geometry": [
+    {
+      "label": "light pages",
+      "x": 303,
+      "y": 491.484375,
+      "width": 240,
+      "height": 202.5
+    },
+    {
+      "label": "dark pages",
+      "x": 303,
+      "y": 491.484375,
+      "width": 240,
+      "height": 202.5
+    },
+    {
+      "label": "posts",
+      "x": 297,
+      "y": 545.890625,
+      "width": 240,
+      "height": 202.5
+    },
+    {
+      "label": "team",
+      "x": 303,
+      "y": 474.09375,
+      "width": 240,
+      "height": 202.5
+    },
+    {
+      "label": "categories",
+      "x": 727.109375,
+      "y": 371.296875,
+      "width": 240,
+      "height": 167
+    },
+    {
+      "label": "users",
+      "x": 345,
+      "y": 451.296875,
+      "width": 240,
+      "height": 120.5
+    },
+    {
+      "label": "plugins",
+      "x": 306,
+      "y": 438.09375,
+      "width": 240,
+      "height": 120.5
+    },
+    {
+      "label": "trash",
+      "x": 303,
+      "y": 472.59375,
+      "width": 240,
+      "height": 96
+    }
+  ],
+  "passed": true
+}

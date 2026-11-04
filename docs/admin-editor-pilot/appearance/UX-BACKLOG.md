@@ -59,7 +59,13 @@ Prefer CSS and existing state/event paths. No new polling, startup-wide field re
 | P2, rank 5 | UX-C05 / UX-008 | Compact parent/nested ACF tab strips with clearer selected, hover and focus states. | Live native activation, wrapping and conditional/validation behavior. |
 | P2, rank 6 | UX-C03 / UX-002, UX-016 | Round-1 title-row placement superseded by the approved round-2 Screen toolbar menu. | Both-theme native panel/focus/Escape checks pass; human review remains. |
 
-Round 2 contains `UX-011`–`UX-017`; round 3 is recorded above, with next ID `UX-025`. Retain original references and group Light/Dark symptoms by shared component. No further refinements are authorized automatically by newly collected annotations.
+Round 2 contains `UX-011`–`UX-017`; round 3 is recorded above. Retain original references and group Light/Dark symptoms by shared component. The owner's later standing instruction authorizes feedback implementation and test deployment after QA; production, release and Fleet gates remain closed.
+
+Round 4: **UX-025 / UX-C02** primary/submenu distinction and **UX-026 / UX-C12**
+compact native row-action dropdowns are implemented on the dedicated test site,
+with targeted Light/Dark, keyboard/mobile and native-workflow checks. Human
+acceptance remains pending. See [menu hierarchy](review/menu-hierarchy-20261104/REVIEW.md)
+and [row actions](review/row-actions-20261104/REVIEW.md). Next annotation: `UX-027`.
 
 ## Technical blockers and existing follow-up
 
