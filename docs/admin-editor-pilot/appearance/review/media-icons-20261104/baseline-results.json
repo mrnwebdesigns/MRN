@@ -1,0 +1,171 @@
+{
+  "phase": "baseline",
+  "checks": [
+    {
+      "screen": "list",
+      "width": 1487,
+      "mode": "light",
+      "icons": [
+        {
+          "id": "toplevel_page_wpforms-overview",
+          "holder": {
+            "width": 36,
+            "height": 34,
+            "position": "static"
+          },
+          "glyph": {
+            "width": 244,
+            "height": 16.8906,
+            "left": 8,
+            "top": 7
+          },
+          "imageOpacity": null
+        },
+        {
+          "id": "toplevel_page_seopress-option",
+          "holder": {
+            "width": 36,
+            "height": 34,
+            "position": "static"
+          },
+          "glyph": {
+            "width": 264,
+            "height": 20,
+            "left": 8,
+            "top": 7
+          },
+          "imageOpacity": null
+        },
+        {
+          "id": "toplevel_page_relevanssi-relevanssi",
+          "holder": {
+            "width": 36,
+            "height": 34,
+            "position": "static"
+          },
+          "glyph": {
+            "width": 264,
+            "height": 20,
+            "left": 8,
+            "top": 7
+          },
+          "imageOpacity": "1"
+        },
+        {
+          "id": "toplevel_page_options-general-page-updraftplus",
+          "holder": {
+            "width": 36,
+            "height": 34,
+            "position": "static"
+          },
+          "glyph": {
+            "width": 264,
+            "height": 20,
+            "left": 8,
+            "top": 7
+          },
+          "imageOpacity": "0"
+        }
+      ]
+    },
+    {
+      "screen": "list",
+      "width": 1487,
+      "mode": "dark",
+      "icons": [
+        {
+          "id": "toplevel_page_wpforms-overview",
+          "holder": {
+            "width": 36,
+            "height": 34,
+            "position": "static"
+          },
+          "glyph": {
+            "width": 244,
+            "height": 16.8906,
+            "left": 8,
+            "top": 7
+          },
+          "imageOpacity": null
+        },
+        {
+          "id": "toplevel_page_seopress-option",
+          "holder": {
+            "width": 36,
+            "height": 34,
+            "position": "static"
+          },
+          "glyph": {
+            "width": 264,
+            "height": 20,
+            "left": 8,
+            "top": 7
+          },
+          "imageOpacity": null
+        },
+        {
+          "id": "toplevel_page_relevanssi-relevanssi",
+          "holder": {
+            "width": 36,
+            "height": 34,
+            "position": "static"
+          },
+          "glyph": {
+            "width": 264,
+            "height": 20,
+            "left": 8,
+            "top": 7
+          },
+          "imageOpacity": "1"
+        },
+        {
+          "id": "toplevel_page_options-general-page-updraftplus",
+          "holder": {
+            "width": 36,
+            "height": 34,
+            "position": "static"
+          },
+          "glyph": {
+            "width": 264,
+            "height": 20,
+            "left": 8,
+            "top": 7
+          },
+          "imageOpacity": "0"
+        }
+      ]
+    }
+  ],
+  "axe": [
+    {
+      "mode": "light",
+      "width": 1487,
+      "violations": [
+        {
+          "id": "color-contrast",
+          "nodes": [
+            {
+              "target": [
+                "#toplevel_page_wpforms-overview > .wp-submenu.wp-submenu-wrap > li:nth-child(5) > a > .wpforms-menu-new"
+              ],
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.28 (foreground color: #f18500, background color: #edf1f6, font size: 6.8pt (9px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "target": [
+                "li:nth-child(10) > a[href=\"admin.php?page=wpforms-addons\"] > span"
+              ],
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.28 (foreground color: #f18500, background color: #edf1f6, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "dark",
+      "width": 1487,
+      "violations": []
+    }
+  ],
+  "errors": [],
+  "passed": true
+}

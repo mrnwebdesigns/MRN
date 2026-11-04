@@ -1,0 +1,22 @@
+{
+  "host": "admin-editor-pilot.mrndev.io",
+  "commit": "82850e991d290172e86340598204533a736dbc45",
+  "files": {
+    "mrn-admin-ui-css/mrn-admin-shell.css": {
+      "before": "124bd449832445391a4599da67be240e768085c8c793cd2ba7528d5987315677",
+      "after": "559e73d5fa0d8eb9dfdf75da57e79b41504cd1f77df2f0644fcdb4eea7b1b92b"
+    }
+  },
+  "backup": {
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1793815196,
+    "label": "pre-admin-pilot-media-icons-install-20261104",
+    "nonce": "fc0f58704010",
+    "key": "sites/admin-editor-pilot-mrndev-io/backup_2026-11-04-1759_Trilliant_fc0f58704010-db.gz",
+    "size": 6312158,
+    "sha256": "8540195c6a0ab5adb933f3812ef086c99d32d101933888b8844e51f54062a9a1"
+  },
+  "rollback": "/home/mrndev-admin-editor/review-private/before-media-icons-82850e991d29",
+  "status": "installed"
+}

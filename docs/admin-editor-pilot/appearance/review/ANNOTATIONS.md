@@ -309,3 +309,14 @@ sidebar, mobile and Media drawer; native disclosure and menu configuration remai
 unchanged. Source `c4cd1947e5a4` installed after scoped QA and fresh verified backup.
 [Evidence](heading-align-20261104/REVIEW.md). Fresh Codex dashboard is ready for
 review. Human acceptance pending; next annotation `UX-035`.
+
+### UX-035 — Fix oversized and displaced Media drawer icons
+
+Owner screenshot shows WPForms covering its submenu and displaced/duplicate
+SEO/Relevanssi icons. **P1**. The drawer now anchors masks to their own holders;
+the duplicate source image is hidden. Related mobile wrapper visibility and
+submenu overlap conflicts were corrected in the same scoped CSS. Candidate and
+installed checks pass; existing WPForms Light label contrast remains separate.
+Source `82850e991d29`; [evidence](media-icons-20261104/REVIEW.md). Installed after
+scoped QA and verified backup. Fresh Codex Media tab ready; human acceptance
+pending. Next annotation: `UX-036`.

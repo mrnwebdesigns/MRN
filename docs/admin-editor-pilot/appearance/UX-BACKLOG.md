@@ -112,7 +112,17 @@ AME navigation. Both themes, native keyboard disclosure, mobile and Media drawer
 checks pass. [Installed evidence](review/heading-align-20261104/REVIEW.md).
 Await visual review; next annotation `UX-035`. Existing performance gates remain.
 
+**P1 UX-035:** Oversized/displaced Media drawer icons are corrected, with nested
+menu geometry, mobile visibility and keyboard behavior verified in both themes.
+[Installed evidence](review/media-icons-20261104/REVIEW.md). Await visual review;
+next annotation `UX-036`.
+
 ## Technical blockers and existing follow-up
+
+- **P2 — Vendor navigation label contrast:** WPForms' orange NEW and Addons spans
+  measure 2.28:1 in Light Mode, unchanged by UX-035. Refine these toolbar/menu
+  labels with semantic tokens without restyling the WPForms application.
+
 
 - **P1 — Review-site list preference POST:** Cloudflare rejects the native `edit.php` items-per-page submission with HTTP 403. The original value remains 20. A separate exact-path security-rule approval and fresh preflight are needed before extending the prior `post.php` exception; no WAF change was made. Native column and optional editor-panel AJAX persistence pass.
 - **P1 — Timing qualification under host contention:** the round-3 balanced client-asset probe is prepared but not run. Local load exceeded 200 and remained unstable; no performance acceptance is claimed. The bounded source adds 1,641 gzip bytes. Preserve the existing OOM/startup/save latency gates below.
