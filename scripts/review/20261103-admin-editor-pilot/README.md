@@ -100,3 +100,22 @@ The canonical shell wrapper cannot traverse `/home` with the new site-owner acco
 upload-log verification, restricted to this exact host and isolated S3 prefix.
 The migration additionally verifies the remote object through AWS CLI. No shared
 permissions or deployment-tool source are changed.
+
+## Update connectivity repair — 4 November 2026
+
+The migration's backup-only `WP_ACCESSIBLE_HOSTS` blocks native WordPress and
+vendor metadata checks. Development mode also defaults to visible PHP warnings.
+`repair-update-connectivity.py` is a dry-run by default; `--apply` creates and
+verifies a fresh labeled remote Updraft database backup, retains the original
+configuration outside the web root, and changes only this review site's
+`wp-config.php`. It adds exactly `api.wordpress.org`, `adminmenueditor.com`, and
+`updraftplus.com` to the existing allowlist. All other HTTP isolation, mail,
+cron, indexing, authentication and WAF settings remain unchanged. PHP debug
+logging goes to a private owner-only file instead of the HTML response.
+
+Run the script as the dedicated site owner. Unexpected source/owner/target
+drift fails closed. A successfully applied rerun is a no-op. The private
+receipt records before/after hashes, backup and rollback paths.
+`verify-update-connectivity.php` probes public HTTPS metadata without installing
+updates, changing licenses, or printing response bodies. Native Updates-page
+verification follows; product versions must remain unchanged.
