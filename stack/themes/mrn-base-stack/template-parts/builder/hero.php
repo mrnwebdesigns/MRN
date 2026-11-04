@@ -292,14 +292,8 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Shared image helper returns escaped wp_get_attachment_image markup.
 				echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image(
 					$image,
-					'mrn-hero',
-					function_exists( 'mrn_base_stack_get_hero_image_attributes' )
-						? mrn_base_stack_get_hero_image_attributes()
-						: array(
-							'loading'       => 'eager',
-							'fetchpriority' => 'high',
-							'decoding'      => 'async',
-						)
+					'full' === ( $row['hero_media_size'] ?? '' ) ? 'full' : 'mrn-hero',
+					mrn_base_stack_get_hero_media_image_attributes( $row )
 				) : '';
 				?>
 			</div>

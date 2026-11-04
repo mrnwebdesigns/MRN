@@ -68,6 +68,23 @@ try {
 	$expect( $empty === mrn_base_stack_get_hero_frame_contract( array( 'hero_row_spacing_mobile_breakpoint' => '782', 'hero_inner_max_width' => '-1px' ) ), 'Existing row-spacing breakpoint and invalid width retain defaults' );
 	$default = array( 'acf_fc_layout' => 'basic_block', 'heading' => 'Existing native defaults', 'hero_heading_mode' => 'custom_title', 'content' => '<p>Original formatting.</p>' );
 	$expect( ! str_contains( $render( $default ), '--mrn-hero-content-width' ) && ! str_contains( $render( $default ), 'has-hero-text-' ), 'Existing basic Hero rendering stays opt-in' );
+	$media = array_merge( $row, array(
+		'hero_inner_gutter_narrow' => '28px', 'hero_inner_gutter_small' => '20px', 'hero_padding_mobile_breakpoint' => '900', 'hero_padding_bottom_mobile_source' => 'desktop',
+		'hero_media_width' => '422px', 'hero_media_max_share' => '40', 'hero_media_stack_breakpoint' => '900', 'hero_media_column_gap' => '64px', 'hero_media_row_gap' => '40px', 'hero_media_radius' => '0px', 'hero_media_ratio' => '540 / 430', 'hero_media_shadow' => 'none', 'hero_media_size' => 'full',
+		'hero_heading_size_narrow' => 'clamp(44px, 9vw, 64px)', 'hero_heading_line_height_narrow' => '1', 'hero_heading_space_after_narrow' => '24px', 'hero_actions_space_before_narrow' => '32px', 'hero_actions_gap_narrow' => '12px', 'hero_actions_small_layout' => 'full-column',
+		'hero_paragraph_space_before' => '22px', 'hero_lead_size' => '15px', 'hero_lead_line_height' => '36px', 'hero_lead_space_after' => '14px', 'hero_lead_weight' => '600', 'hero_lead_transform' => 'uppercase',
+	) );
+	update_field( 'field_mrn_page_hero_rows', array( $media ), $id ); $saved_media = get_field( 'page_hero_rows', $id )[0];
+	foreach ( $media as $name => $value ) { if ( str_starts_with( $name, 'hero_' ) ) { $expect( $value === $saved_media[ $name ], 'Native media frame persists ' . $name ); } }
+	$media_html = $render( $saved_media );
+	$expect( str_contains( $media_html, 'has-hero-media-stack-breakpoint-900' ) && str_contains( $media_html, '--mrn-hero-media-max-share:40%' ) && str_contains( $media_html, '--mrn-hero-media-ratio:540 / 430' ), 'Native renderer consumes bounded media, ratio and stacking fields' );
+	$expect( str_contains( $media_html, 'font-size:var(--mrn-hero-current-heading-size, clamp(32px, 5vw, 64px))' ) && str_contains( $media_html, '--mrn-hero-heading-size-narrow:clamp(44px, 9vw, 64px)' ), 'Narrow heading override preserves the authored desktop inline fallback' );
+	$expect( str_contains( $media_html, 'has-hero-padding-mobile-breakpoint-900' ) && str_contains( $media_html, 'has-hero-lead-transform' ) && str_contains( $media_html, 'has-hero-actions-small-layout-full-column' ), 'Editable preset breakpoint, lead paragraph and small actions are opt-in' );
+	foreach ( array( '0 / 1', '1 / 0', '10001 / 2', '1 / 2;position:fixed', array( '4 / 3' ) ) as $bad_ratio ) { $expect( $empty === mrn_base_stack_get_hero_frame_contract( array( 'hero_media_ratio' => $bad_ratio ) ), 'Unsafe media ratio is refused: ' . wp_json_encode( $bad_ratio ) ); }
+	$expect( $empty === mrn_base_stack_get_hero_frame_contract( array( 'hero_media_width' => '-1px', 'hero_media_max_share' => '100', 'hero_media_shadow' => 'url(bad)', 'hero_media_stack_breakpoint' => array( '900' ), 'hero_padding_mobile_breakpoint' => '900;bad', 'hero_lead_weight' => '999', 'hero_lead_transform' => 'bad', 'hero_lead_color' => 'unconfigured-color', 'hero_heading_size_narrow' => 'calc(2px + 3px)' ) ), 'Malformed media/type/breakpoint settings cannot add output' );
+	$attributes = mrn_base_stack_get_hero_media_image_attributes( $media );
+	$expect( 'eager' === $attributes['loading'] && 'high' === $attributes['fetchpriority'] && 'async' === $attributes['decoding'] && '(max-width: 900px) 100vw, min(422px, 40vw)' === $attributes['sizes'], 'Bounded responsive image hints retain native Hero priority' );
+	$expect( mrn_base_stack_get_hero_image_attributes() === mrn_base_stack_get_hero_media_image_attributes( array( 'hero_media_width' => '422px;bad', 'hero_media_max_share' => '40' ) ) && mrn_base_stack_get_hero_image_attributes() === mrn_base_stack_get_hero_media_image_attributes( array() ), 'Default and malformed media hints retain original priority attributes' );
 	$proof = getenv( 'MRN_HERO_FRAME_PROOF_PATH' );
 	if ( $proof ) {
 		$expect( str_ends_with( $proof, '.html' ) && is_dir( dirname( $proof ) ), 'Explicit source proof directory exists' );
