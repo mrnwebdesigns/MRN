@@ -1,0 +1,80 @@
+{
+  "phase": "candidate",
+  "checks": [
+    "light six original Media actions, danger divider, Enter/Tab/ArrowDown/Escape, focus return/departure, outside click and axe",
+    "dark six original Media actions, danger divider, Enter/Tab/ArrowDown/Escape, focus return/departure, outside click and axe",
+    "Native Copy URL handler copied the original attachment URL",
+    "Popover is hit-testable above the existing wide Media table",
+    "390px Media menu stays in viewport; resize dismisses it",
+    "One enhancement for a dynamically inserted native row",
+    "Pages shared styling, native node integrity and Quick Edit cancel/focus regression",
+    "JS-disabled Media native disclosure fallback",
+    "No-Popover Media native disclosure fallback",
+    "WordPress REST root healthy; no new API, save or authorization path"
+  ],
+  "axe": [
+    {
+      "mode": "light",
+      "violations": []
+    },
+    {
+      "mode": "dark",
+      "violations": []
+    }
+  ],
+  "errors": [],
+  "geometry": [
+    {
+      "label": "light media",
+      "x": 412,
+      "y": 516.78125,
+      "width": 240,
+      "height": 238
+    },
+    {
+      "mode": "light",
+      "background": "rgb(255, 255, 255)",
+      "ink": "rgb(28, 46, 66)",
+      "danger": "rgb(173, 36, 42)"
+    },
+    {
+      "label": "dark media",
+      "x": 412,
+      "y": 516.78125,
+      "width": 240,
+      "height": 238
+    },
+    {
+      "mode": "dark",
+      "background": "rgb(27, 40, 57)",
+      "ink": "rgb(229, 237, 247)",
+      "danger": "rgb(255, 182, 186)"
+    },
+    {
+      "label": "mobile media",
+      "x": 138,
+      "y": 466,
+      "width": 240,
+      "height": 218.5
+    }
+  ],
+  "initialization": [
+    {
+      "screen": "media",
+      "rows": 20,
+      "ms": 4.899999991059303
+    },
+    {
+      "screen": "pages",
+      "rows": 20,
+      "ms": 2.4000000059604645
+    }
+  ],
+  "assets": {
+    "jsBytes": 8993,
+    "jsGzipBytes": 3005,
+    "cssBytes": 2904,
+    "cssGzipBytes": 941
+  },
+  "passed": true
+}

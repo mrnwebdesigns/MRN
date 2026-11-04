@@ -330,3 +330,15 @@ preserving vertical caret centering. This supersedes UX-034's horizontal choice.
 Source `fcd00a2aa5b7` installed after scoped QA and verified remote backup.
 [Evidence](heading-owner-20261104/REVIEW.md). Both themes, native disclosure,
 mobile and Media drawer pass. Human acceptance pending; next annotation `UX-037`.
+
+
+### UX-037 — Media uses the shared Actions component
+
+“Update to our shared component.” **P2**. Media list now uses the same initializer
+and extracted shared stylesheet as the native/MRN lists. Original action nodes,
+nonces, handlers and form/row ancestry remain intact. Light/Dark, keyboard/focus,
+mobile, native Copy URL, Pages regression, fallback and exact asset scoping pass.
+Source `8bd54ff425dd`, installed to the dedicated review host after MRN source QA
+and a verified remote backup. [Evidence](media-actions-20261104/REVIEW.md).
+Codex Media tab refreshed with the dropdown open. Human visual acceptance pending;
+next annotation `UX-038`. Existing editor CPU and Local Hub OOM gates remain open.

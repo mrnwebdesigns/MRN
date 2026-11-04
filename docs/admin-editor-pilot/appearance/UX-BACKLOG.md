@@ -122,6 +122,13 @@ horizontal overrides; caret remains vertically centered. AME's Title → Alignme
 control retains ownership. [Installed evidence](review/heading-owner-20261104/REVIEW.md).
 This supersedes UX-034's centered choice. Await review; next annotation `UX-037`.
 
+**P2 UX-037:** Media list now uses the reusable shared Actions component, with
+original Media handlers preserved. Installed Light/Dark, accessibility, keyboard,
+mobile, native fallback and Pages regression checks pass. Bounded Media initializer
+3.5 ms for 20 rows; this does not clear the existing editor CPU/OOM blockers.
+[Installed evidence](review/media-actions-20261104/REVIEW.md). Await visual review;
+next annotation `UX-038`.
+
 ## Technical blockers and existing follow-up
 
 - **P2 — Vendor navigation label contrast:** WPForms' orange NEW and Addons spans
