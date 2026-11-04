@@ -2,6 +2,22 @@
    Shell color overrides take precedence over AME's generated color rules.
    Named MRN helper overrides below also cover existing inline colors. */
 body.mrn-appearance { background: var(--mrn-admin-canvas); }
+/* Post Types Order/HappyFiles own the handles and sorting. Keep each glyph beside the
+   native checkbox, with matching header/footer selection alignment. */
+body.mrn-appearance.mrn-row-reorder .wp-list-table .check-column {
+ --mrn-row-checkbox-size: 16px; --mrn-row-control-top: 16px;
+ position: relative; box-sizing: content-box; width: var(--mrn-row-checkbox-size);
+ padding: var(--mrn-row-control-top) 10px 16px 36px;
+}
+body.mrn-appearance.mrn-row-reorder .wp-list-table .check-column input[type=checkbox] { margin: 0; vertical-align: top; }
+body.mrn-appearance.mrn-row-reorder .wp-list-table #the-list > tr .check-column::after {
+ /* HappyFiles places this below the checkbox with a three-ID selector. */
+ inset: calc(var(--mrn-row-control-top) + (var(--mrn-row-checkbox-size) - 20px) / 2) auto auto 8px !important;
+ width: 20px; height: 20px; line-height: 20px; text-align: center; margin: 0; color: var(--mrn-admin-muted);
+}
+@media (max-width:782px) {
+ body.mrn-appearance.mrn-row-reorder .wp-list-table .check-column { --mrn-row-checkbox-size: 25px; --mrn-row-control-top: 12px; }
+}
 /* Shared workspace navigation for the editor and Media. Rendered before Media
    content so its final space is reserved from the first paint. */
 .mrn-appearance .mrn-workspace-header { position: sticky; top: var(--wp-admin--admin-bar--height, 32px); z-index: 9900; display: flex; align-items: center; gap: 24px; min-height: 54px; padding: 0 28px; box-sizing: border-box; border-bottom: 1px solid var(--mrn-admin-line); background: var(--mrn-admin-surface); }

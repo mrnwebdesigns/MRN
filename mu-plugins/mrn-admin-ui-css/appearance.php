@@ -50,6 +50,12 @@ add_filter( 'admin_body_class', function ( $classes ) {
 		return $classes;
 	}
 	$workspace = function_exists( 'mrn_editor_experience_screen' ) && mrn_editor_experience_screen();
+	$screen = get_current_screen();
+	// Reserve the native reorder gutter before the footer initializes Sortable.
+	// Follow its owner's eligibility (including filters and mobile exclusions).
+	if ( $screen && ( 'upload' === $screen->base || 'list' === mrn_admin_ui_modern_screen() ) && ( wp_style_is( 'cpt-archive-dd' ) || ( 'upload' === $screen->base && wp_style_is( 'happyfiles' ) ) ) ) {
+		$classes .= ' mrn-row-reorder';
+	}
 	return $classes . ' mrn-appearance' . ( $workspace || mrn_admin_ui_modern_screen() ? ' mrn-themed-content' : ' mrn-native-app' ) . ( mrn_admin_media_workspace_screen() ? ' mrn-media-workspace' : '' );
 } );
 
