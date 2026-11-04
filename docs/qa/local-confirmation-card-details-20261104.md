@@ -49,3 +49,11 @@ Site evidence: docs/stack-migration-2026-11-04/LOCAL_CONFIRMATION_CARDS.md on th
 migration branch, including redacted MRN report, screenshots, preservation and SQL
 receipt. No merge, PR, release/Fleet promotion, remote deployment or case-study-model
 change. The owner’s local-only boundary defers remote parity/deploy-readiness gates.
+
+The exact staged Stack source gate for **1b36ec6b** passes lint, PHPCS security,
+WordPress standards, compatibility, Semgrep and diff checks. PHPStan is advisory
+because the isolated snapshot lacks wp-cli-stubs.php. Site source **3b44682**
+passes its source gate with 81 partial-analysis diagnostics including unknown
+WP_CLI symbols; these are not cleared. The separate configured full-theme analysis
+has zero errors. Runtime passes/failing Web Vitals above remain separate from the
+source gates; no runtime or release acceptance follows from their success.
