@@ -1,0 +1,30 @@
+{
+  "host": "admin-editor-pilot.mrndev.io",
+  "commit": "6a54037e4f25e08e5b95a4e7d8a1686a37fe092c",
+  "files": {
+    "mrn-admin-ui-css/mrn-admin-shell.css": {
+      "before": "7d70f5dbdda4a4d56717232b68ef7963e13ae071268e0ff3104ac38b8ec4dcd4",
+      "after": "5857e84dfc76bf7cec4cbfeac51155c869f19ba8019a869c8c6a04198f86bf3f"
+    },
+    "mrn-admin-ui-css/mrn-editor-workspace.css": {
+      "before": "2e8956a5dc471138e8184614b24b2a9c8872f5c19e1357c6d59dad4c991fe52b",
+      "after": "fd8084630fe178fb8442110a7deaa691c4a4a5e501fbf960dde64bcfb68512f4"
+    },
+    "mrn-editor-lockdown/assets/section-navigator.js": {
+      "before": "803fc6f08cc281f4caf8aa7d127ba1432959f22f3f7cd6ed30d595119d0fd3e0",
+      "after": "27a8c4a4a555d9ac62fac338b0dbc0f3022b1a760fc7dd00af9c1abfa9fc1eb7"
+    }
+  },
+  "backup": {
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1793809399,
+    "label": "pre-admin-pilot-section-orientation-install-20261104",
+    "nonce": "f324a494d65c",
+    "key": "sites/admin-editor-pilot-mrndev-io/backup_2026-11-04-1623_Trilliant_f324a494d65c-db.gz",
+    "size": 6309350,
+    "sha256": "9b0e90f3dd6ce8b7b4f6ab6d7409e994770caba5691f81194242760de26551b9"
+  },
+  "rollback": "/home/mrndev-admin-editor/review-private/before-section-orientation-6a54037e4f25",
+  "status": "installed"
+}

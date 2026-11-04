@@ -80,6 +80,14 @@ ACF and supported native MRN settings tabs now use one active underline without
 stacked rules or boxed edges. [Verification](review/tab-borders-20261104/REVIEW.md).
 Await the next visual annotation round. Next annotation: `UX-029`.
 
+**P2 UX-029 / UX-C01 and UX-030 / UX-C06:** Native ACF number/grip contrast,
+compact sticky section context, alternating visible field rows and nested-card
+surfaces are installed on the review site. Both-theme, mobile/short-window,
+keyboard, native-tab and form-value checks pass. Bounded timings show no
+consistent added slowdown, but are noisy and do not clear CPU/OOM qualification.
+[Evidence and next visual review](review/section-orientation-20261104/REVIEW.md).
+Await owner feedback on orientation and stripe strength. Next annotation: `UX-031`.
+
 ## Technical blockers and existing follow-up
 
 - **P1 — Review-site list preference POST:** Cloudflare rejects the native `edit.php` items-per-page submission with HTTP 403. The original value remains 20. A separate exact-path security-rule approval and fresh preflight are needed before extending the prior `post.php` exception; no WAF change was made. Native column and optional editor-panel AJAX persistence pass.

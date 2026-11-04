@@ -1,0 +1,430 @@
+{
+  "phase": "installed",
+  "checks": [
+    {
+      "theme": "light",
+      "geometry": {
+        "top": 157,
+        "bottom": 220.6875,
+        "chrome": 157,
+        "position": "sticky"
+      }
+    },
+    {
+      "theme": "dark",
+      "geometry": {
+        "top": 157,
+        "bottom": 220.6875,
+        "chrome": 157,
+        "position": "sticky"
+      }
+    },
+    "Native tabs preserve fields and values; bands follow actual visible rows and paired columns",
+    "Short/mobile viewports and arrangement retain normal scrolling; Page Settings remains available; native form values unchanged",
+    "Empty fixture retains native Add section controls without a sticky heading"
+  ],
+  "rows": [
+    {
+      "label": "light content",
+      "count": 8,
+      "fields": [
+        {
+          "name": "internal_name",
+          "top": 309.390625,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "label",
+          "top": 468.390625,
+          "band": true,
+          "background": "rgb(246, 248, 251)"
+        },
+        {
+          "name": "label_tag",
+          "top": 468.390625,
+          "band": true,
+          "background": "rgb(246, 248, 251)"
+        },
+        {
+          "name": "heading",
+          "top": 608.390625,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "heading_tag",
+          "top": 608.390625,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "subheading",
+          "top": 748.390625,
+          "band": true,
+          "background": "rgb(246, 248, 251)"
+        },
+        {
+          "name": "subheading_tag",
+          "top": 748.390625,
+          "band": true,
+          "background": "rgb(246, 248, 251)"
+        },
+        {
+          "name": "content",
+          "top": 888.390625,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "image",
+          "top": 1422.578125,
+          "band": true,
+          "background": "rgb(246, 248, 251)"
+        },
+        {
+          "top": 1701.578125,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "links",
+          "top": 1805.578125,
+          "band": true,
+          "background": "rgb(246, 248, 251)"
+        }
+      ]
+    },
+    {
+      "label": "dark content",
+      "count": 8,
+      "fields": [
+        {
+          "name": "internal_name",
+          "top": 309.390625,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "label",
+          "top": 468.390625,
+          "band": true,
+          "background": "rgb(34, 50, 71)"
+        },
+        {
+          "name": "label_tag",
+          "top": 468.390625,
+          "band": true,
+          "background": "rgb(34, 50, 71)"
+        },
+        {
+          "name": "heading",
+          "top": 608.390625,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "heading_tag",
+          "top": 608.390625,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "subheading",
+          "top": 748.390625,
+          "band": true,
+          "background": "rgb(34, 50, 71)"
+        },
+        {
+          "name": "subheading_tag",
+          "top": 748.390625,
+          "band": true,
+          "background": "rgb(34, 50, 71)"
+        },
+        {
+          "name": "content",
+          "top": 888.390625,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "image",
+          "top": 1422.578125,
+          "band": true,
+          "background": "rgb(34, 50, 71)"
+        },
+        {
+          "top": 1701.578125,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "links",
+          "top": 1805.578125,
+          "band": true,
+          "background": "rgb(34, 50, 71)"
+        }
+      ]
+    },
+    {
+      "label": "Configs visible rows",
+      "count": 5,
+      "fields": [
+        {
+          "top": 543.390625,
+          "band": false,
+          "background": "rgb(255, 255, 255)"
+        },
+        {
+          "top": 733.59375,
+          "band": true,
+          "background": "rgb(34, 50, 71)"
+        },
+        {
+          "top": 776.796875,
+          "band": false,
+          "background": "rgb(255, 255, 255)"
+        },
+        {
+          "top": 820,
+          "band": true,
+          "background": "rgb(34, 50, 71)"
+        },
+        {
+          "top": 863.203125,
+          "band": false,
+          "background": "rgb(255, 255, 255)"
+        }
+      ]
+    },
+    {
+      "label": "Return to Content",
+      "count": 8,
+      "fields": [
+        {
+          "name": "internal_name",
+          "top": 544.390625,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "label",
+          "top": 703.390625,
+          "band": true,
+          "background": "rgb(34, 50, 71)"
+        },
+        {
+          "name": "label_tag",
+          "top": 703.390625,
+          "band": true,
+          "background": "rgb(34, 50, 71)"
+        },
+        {
+          "name": "heading",
+          "top": 843.390625,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "heading_tag",
+          "top": 843.390625,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "subheading",
+          "top": 983.390625,
+          "band": true,
+          "background": "rgb(34, 50, 71)"
+        },
+        {
+          "name": "subheading_tag",
+          "top": 983.390625,
+          "band": true,
+          "background": "rgb(34, 50, 71)"
+        },
+        {
+          "name": "content",
+          "top": 1123.390625,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "image",
+          "top": 1657.578125,
+          "band": true,
+          "background": "rgb(34, 50, 71)"
+        },
+        {
+          "top": 1936.578125,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "links",
+          "top": 2040.578125,
+          "band": true,
+          "background": "rgb(34, 50, 71)"
+        }
+      ]
+    },
+    {
+      "label": "390px reflow",
+      "count": 8,
+      "fields": [
+        {
+          "name": "internal_name",
+          "top": 797.78125,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "label",
+          "top": 1005.46875,
+          "band": true,
+          "background": "rgb(246, 248, 251)"
+        },
+        {
+          "name": "label_tag",
+          "top": 1005.46875,
+          "band": true,
+          "background": "rgb(246, 248, 251)"
+        },
+        {
+          "name": "heading",
+          "top": 1155.65625,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "heading_tag",
+          "top": 1155.65625,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "subheading",
+          "top": 1305.84375,
+          "band": true,
+          "background": "rgb(246, 248, 251)"
+        },
+        {
+          "name": "subheading_tag",
+          "top": 1305.84375,
+          "band": true,
+          "background": "rgb(246, 248, 251)"
+        },
+        {
+          "name": "content",
+          "top": 1456.03125,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "image",
+          "top": 2192.21875,
+          "band": true,
+          "background": "rgb(246, 248, 251)"
+        },
+        {
+          "top": 2471.21875,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "links",
+          "top": 2618.96875,
+          "band": true,
+          "background": "rgb(246, 248, 251)"
+        }
+      ]
+    },
+    {
+      "label": "Nested card section",
+      "count": 7,
+      "fields": [
+        {
+          "name": "internal_name",
+          "top": 409.390625,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "label",
+          "top": 568.390625,
+          "band": true,
+          "background": "rgb(246, 248, 251)"
+        },
+        {
+          "name": "label_tag",
+          "top": 568.390625,
+          "band": true,
+          "background": "rgb(246, 248, 251)"
+        },
+        {
+          "name": "heading",
+          "top": 708.390625,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "heading_tag",
+          "top": 708.390625,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "subheading",
+          "top": 848.390625,
+          "band": true,
+          "background": "rgb(246, 248, 251)"
+        },
+        {
+          "name": "subheading_tag",
+          "top": 848.390625,
+          "band": true,
+          "background": "rgb(246, 248, 251)"
+        },
+        {
+          "top": 988.390625,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "links",
+          "top": 1092.390625,
+          "band": true,
+          "background": "rgb(246, 248, 251)"
+        },
+        {
+          "name": "card_items",
+          "top": 1439.890625,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        }
+      ]
+    }
+  ],
+  "contrast": [
+    {
+      "theme": "light",
+      "ratio": 5.724602638972004
+    },
+    {
+      "theme": "dark",
+      "ratio": 6.8411615431248345
+    }
+  ],
+  "axe": [
+    {
+      "theme": "light",
+      "violations": []
+    },
+    {
+      "theme": "dark",
+      "violations": []
+    }
+  ],
+  "errors": [],
+  "passed": true
+}

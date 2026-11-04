@@ -1,0 +1,421 @@
+{
+  "phase": "baseline",
+  "checks": [
+    {
+      "theme": "light",
+      "geometry": {
+        "top": -649.296875,
+        "bottom": -558.890625,
+        "chrome": 157,
+        "position": "static"
+      }
+    },
+    {
+      "theme": "dark",
+      "geometry": {
+        "top": -649.296875,
+        "bottom": -558.890625,
+        "chrome": 157,
+        "position": "static"
+      }
+    },
+    "Native tabs preserve fields and values; bands follow actual visible rows and paired columns",
+    "Short/mobile viewports and arrangement retain normal scrolling; Page Settings remains available; native form values unchanged",
+    "Empty fixture retains native Add section controls without a sticky heading"
+  ],
+  "rows": [
+    {
+      "label": "light content",
+      "count": 8,
+      "fields": [
+        {
+          "name": "internal_name",
+          "top": 336.109375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "label",
+          "top": 495.109375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "label_tag",
+          "top": 495.109375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "heading",
+          "top": 635.109375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "heading_tag",
+          "top": 635.109375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "subheading",
+          "top": 775.109375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "subheading_tag",
+          "top": 775.109375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "content",
+          "top": 915.109375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "image",
+          "top": 1449.296875,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "top": 1728.296875,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "links",
+          "top": 1832.296875,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "label": "dark content",
+      "count": 8,
+      "fields": [
+        {
+          "name": "internal_name",
+          "top": 336.109375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "label",
+          "top": 495.109375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "label_tag",
+          "top": 495.109375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "heading",
+          "top": 635.109375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "heading_tag",
+          "top": 635.109375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "subheading",
+          "top": 775.109375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "subheading_tag",
+          "top": 775.109375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "content",
+          "top": 915.109375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "image",
+          "top": 1449.296875,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "top": 1728.296875,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "links",
+          "top": 1832.296875,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "label": "Configs visible rows",
+      "count": 5,
+      "fields": [
+        {
+          "top": 543.109375,
+          "band": false,
+          "background": "rgb(255, 255, 255)"
+        },
+        {
+          "top": 733.3125,
+          "band": false,
+          "background": "rgb(255, 255, 255)"
+        },
+        {
+          "top": 776.515625,
+          "band": false,
+          "background": "rgb(255, 255, 255)"
+        },
+        {
+          "top": 819.71875,
+          "band": false,
+          "background": "rgb(255, 255, 255)"
+        },
+        {
+          "top": 862.921875,
+          "band": false,
+          "background": "rgb(255, 255, 255)"
+        }
+      ]
+    },
+    {
+      "label": "Return to Content",
+      "count": 8,
+      "fields": [
+        {
+          "name": "internal_name",
+          "top": 544.109375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "label",
+          "top": 703.109375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "label_tag",
+          "top": 703.109375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "heading",
+          "top": 843.109375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "heading_tag",
+          "top": 843.109375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "subheading",
+          "top": 983.109375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "subheading_tag",
+          "top": 983.109375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "content",
+          "top": 1123.109375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "image",
+          "top": 1657.296875,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "top": 1936.296875,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "links",
+          "top": 2040.296875,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "label": "390px reflow",
+      "count": 8,
+      "fields": [
+        {
+          "name": "internal_name",
+          "top": 785.5,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "label",
+          "top": 993.1875,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "label_tag",
+          "top": 993.1875,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "heading",
+          "top": 1143.375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "heading_tag",
+          "top": 1143.375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "subheading",
+          "top": 1293.5625,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "subheading_tag",
+          "top": 1293.5625,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "content",
+          "top": 1443.75,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "image",
+          "top": 2179.9375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "top": 2458.9375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "links",
+          "top": 2606.6875,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "label": "Nested card section",
+      "count": 7,
+      "fields": [
+        {
+          "name": "internal_name",
+          "top": 436.109375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "label",
+          "top": 595.109375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "label_tag",
+          "top": 595.109375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "heading",
+          "top": 735.109375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "heading_tag",
+          "top": 735.109375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "subheading",
+          "top": 875.109375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "subheading_tag",
+          "top": 875.109375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "top": 1015.109375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "links",
+          "top": 1119.109375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "name": "card_items",
+          "top": 1466.609375,
+          "band": false,
+          "background": "rgba(0, 0, 0, 0)"
+        }
+      ]
+    }
+  ],
+  "contrast": [
+    {
+      "theme": "light",
+      "ratio": 1.139610887040401
+    },
+    {
+      "theme": "dark",
+      "ratio": 1.139610887040401
+    }
+  ],
+  "axe": [],
+  "errors": [],
+  "passed": true
+}

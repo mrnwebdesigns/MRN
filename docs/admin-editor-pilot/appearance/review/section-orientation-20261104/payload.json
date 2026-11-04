@@ -1,0 +1,20 @@
+{
+  "mrn-admin-ui-css/mrn-admin-shell.css": {
+    "baseline": 6824,
+    "candidate": 6944,
+    "delta": 120,
+    "sha256": "5857e84dfc76bf7cec4cbfeac51155c869f19ba8019a869c8c6a04198f86bf3f"
+  },
+  "mrn-admin-ui-css/mrn-editor-workspace.css": {
+    "baseline": 4502,
+    "candidate": 4681,
+    "delta": 179,
+    "sha256": "fd8084630fe178fb8442110a7deaa691c4a4a5e501fbf960dde64bcfb68512f4"
+  },
+  "mrn-editor-lockdown/assets/section-navigator.js": {
+    "baseline": 9889,
+    "candidate": 10525,
+    "delta": 636,
+    "sha256": "27a8c4a4a555d9ac62fac338b0dbc0f3022b1a760fc7dd00af9c1abfa9fc1eb7"
+  }
+}

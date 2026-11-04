@@ -1,0 +1,266 @@
+{
+  "method": "Serial ABBAABBA loads of the same authorized 19-section fixture; native Basic section fully initialized. One warm-up tab pair, then 10 native tab switches and a separate 24-frame scroll sample. Source QA is not concurrent.",
+  "units": "milliseconds",
+  "samples": [
+    {
+      "phase": "baseline",
+      "switching": {
+        "TaskDuration": 452.50299999999964,
+        "ScriptDuration": 150.85599999999965,
+        "RecalcStyleDuration": 56.048000000000016,
+        "LayoutDuration": 14.372999999999998
+      },
+      "scrolling": {
+        "TaskDuration": 46.805999999999685,
+        "ScriptDuration": 17.821999999999782,
+        "RecalcStyleDuration": 8.897000000000016,
+        "LayoutDuration": 1.6489999999999978
+      },
+      "bandTiming": []
+    },
+    {
+      "phase": "candidate",
+      "switching": {
+        "TaskDuration": 654.6530000000001,
+        "ScriptDuration": 245.1620000000001,
+        "RecalcStyleDuration": 82.11099999999999,
+        "LayoutDuration": 21.355999999999987
+      },
+      "scrolling": {
+        "TaskDuration": 51.38899999999946,
+        "ScriptDuration": 18.823000000000256,
+        "RecalcStyleDuration": 7.661000000000029,
+        "LayoutDuration": 0.9679999999999966
+      },
+      "bandTiming": [
+        0.29999999701976776,
+        0.4000000059604645,
+        0.29999999701976776,
+        0.20000000298023224,
+        0.09999999403953552,
+        0,
+        0.20000000298023224,
+        0.09999999403953552,
+        0.09999999403953552,
+        0.19999998807907104,
+        0.20000000298023224,
+        0.09999999403953552,
+        0.20000000298023224,
+        0.09999999403953552,
+        0,
+        0,
+        0.09999999403953552
+      ]
+    },
+    {
+      "phase": "candidate",
+      "switching": {
+        "TaskDuration": 685.4100000000001,
+        "ScriptDuration": 245.05599999999993,
+        "RecalcStyleDuration": 81.059,
+        "LayoutDuration": 20.315
+      },
+      "scrolling": {
+        "TaskDuration": 48.5610000000003,
+        "ScriptDuration": 12.53599999999988,
+        "RecalcStyleDuration": 8.782000000000012,
+        "LayoutDuration": 0.9909999999999919
+      },
+      "bandTiming": [
+        0.29999999701976776,
+        0.5,
+        0.5,
+        0.09999999403953552,
+        0.20000000298023224,
+        0.29999999701976776,
+        0.10000000894069672,
+        0,
+        0.09999999403953552,
+        0.09999999403953552,
+        0.09999999403953552,
+        0.09999999403953552,
+        0,
+        0.09999999403953552,
+        0.09999999403953552,
+        0.09999999403953552,
+        0.09999999403953552
+      ]
+    },
+    {
+      "phase": "baseline",
+      "switching": {
+        "TaskDuration": 760.5279999999999,
+        "ScriptDuration": 277.466,
+        "RecalcStyleDuration": 84.97900000000003,
+        "LayoutDuration": 19.380999999999982
+      },
+      "scrolling": {
+        "TaskDuration": 51.94399999999977,
+        "ScriptDuration": 16.450999999999993,
+        "RecalcStyleDuration": 10.616000000000014,
+        "LayoutDuration": 1.383000000000023
+      },
+      "bandTiming": []
+    },
+    {
+      "phase": "baseline",
+      "switching": {
+        "TaskDuration": 1609.7660000000005,
+        "ScriptDuration": 606.242,
+        "RecalcStyleDuration": 162.69199999999995,
+        "LayoutDuration": 39.311000000000014
+      },
+      "scrolling": {
+        "TaskDuration": 89.22199999999947,
+        "ScriptDuration": 26.498000000000133,
+        "RecalcStyleDuration": 17.372,
+        "LayoutDuration": 1.9629999999999925
+      },
+      "bandTiming": []
+    },
+    {
+      "phase": "candidate",
+      "switching": {
+        "TaskDuration": 935.1060000000002,
+        "ScriptDuration": 346.32000000000016,
+        "RecalcStyleDuration": 112.65400000000002,
+        "LayoutDuration": 29.210000000000015
+      },
+      "scrolling": {
+        "TaskDuration": 140.06700000000018,
+        "ScriptDuration": 88.52399999999983,
+        "RecalcStyleDuration": 13.93799999999995,
+        "LayoutDuration": 1.9369999999999665
+      },
+      "bandTiming": [
+        0.20000000298023224,
+        0.10000000894069672,
+        0.20000000298023224,
+        0.5,
+        0.20000000298023224,
+        0.10000000894069672,
+        0.09999999403953552,
+        0.09999999403953552,
+        0.29999999701976776,
+        0.20000000298023224,
+        0.20000000298023224,
+        0.10000000894069672,
+        0.20000000298023224,
+        0.09999999403953552,
+        0.20000000298023224,
+        0,
+        0.20000000298023224
+      ]
+    },
+    {
+      "phase": "candidate",
+      "switching": {
+        "TaskDuration": 564.94,
+        "ScriptDuration": 190.677,
+        "RecalcStyleDuration": 71.02200000000003,
+        "LayoutDuration": 17.641999999999992
+      },
+      "scrolling": {
+        "TaskDuration": 50.74100000000037,
+        "ScriptDuration": 16.55999999999991,
+        "RecalcStyleDuration": 9.797,
+        "LayoutDuration": 1.1279999999999901
+      },
+      "bandTiming": [
+        0.10000000894069672,
+        0.20000000298023224,
+        0.09999999403953552,
+        0.29999999701976776,
+        0.20000000298023224,
+        0.20000000298023224,
+        0,
+        0.09999999403953552,
+        0,
+        0,
+        0,
+        0.09999999403953552,
+        0,
+        0.09999999403953552,
+        0.09999999403953552,
+        0.09999999403953552,
+        0
+      ]
+    },
+    {
+      "phase": "baseline",
+      "switching": {
+        "TaskDuration": 1250.5990000000002,
+        "ScriptDuration": 427.8820000000001,
+        "RecalcStyleDuration": 122.52400000000002,
+        "LayoutDuration": 32.559999999999995
+      },
+      "scrolling": {
+        "TaskDuration": 67.1940000000002,
+        "ScriptDuration": 20.099999999999785,
+        "RecalcStyleDuration": 16.024000000000036,
+        "LayoutDuration": 1.5150000000000163
+      },
+      "bandTiming": []
+    }
+  ],
+  "mean": {
+    "baseline": {
+      "switching": {
+        "TaskDuration": 1018.349,
+        "ScriptDuration": 365.6114999999999,
+        "RecalcStyleDuration": 106.56075,
+        "LayoutDuration": 26.40625
+      },
+      "scrolling": {
+        "TaskDuration": 63.791499999999786,
+        "ScriptDuration": 20.217749999999924,
+        "RecalcStyleDuration": 13.227250000000017,
+        "LayoutDuration": 1.6275000000000075
+      }
+    },
+    "candidate": {
+      "switching": {
+        "TaskDuration": 710.0272500000001,
+        "ScriptDuration": 256.80375000000004,
+        "RecalcStyleDuration": 86.71150000000002,
+        "LayoutDuration": 22.13075
+      },
+      "scrolling": {
+        "TaskDuration": 72.68950000000008,
+        "ScriptDuration": 34.11074999999997,
+        "RecalcStyleDuration": 10.0445,
+        "LayoutDuration": 1.2559999999999862
+      }
+    }
+  },
+  "median": {
+    "baseline": {
+      "switching": {
+        "TaskDuration": 1005.5635,
+        "ScriptDuration": 352.6740000000001,
+        "RecalcStyleDuration": 103.75150000000002,
+        "LayoutDuration": 25.970499999999987
+      },
+      "scrolling": {
+        "TaskDuration": 59.56899999999999,
+        "ScriptDuration": 18.960999999999785,
+        "RecalcStyleDuration": 13.320000000000025,
+        "LayoutDuration": 1.582000000000007
+      }
+    },
+    "candidate": {
+      "switching": {
+        "TaskDuration": 670.0315,
+        "ScriptDuration": 245.109,
+        "RecalcStyleDuration": 81.585,
+        "LayoutDuration": 20.835499999999996
+      },
+      "scrolling": {
+        "TaskDuration": 51.06499999999991,
+        "ScriptDuration": 17.691500000000083,
+        "RecalcStyleDuration": 9.289500000000007,
+        "LayoutDuration": 1.059499999999991
+      }
+    }
+  }
+}

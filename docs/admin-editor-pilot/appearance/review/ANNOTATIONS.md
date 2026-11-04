@@ -241,3 +241,26 @@ Parent/nested ACF tabs and supported native MRN settings tabs share tokens.
 Source `1d0f6c68`; [visual, accessibility and timing evidence](tab-borders-20261104/REVIEW.md).
 The workspace structure, native fields and third-party application ownership
 remain intact. Next human annotation round pending; next ID `UX-029`.
+
+### UX-029 / UX-C01 — Native ACF number/grip visibility
+
+“That pill is from ACF, is it normal to be a pill till hover or touch?” **P2**.
+The number-to-grip swap is native ACF behavior. Native active-layout colors left
+the number nearly white on the MRN header. Shared semantic tokens now preserve
+readable numbers and the native grip; Light/Dark contrast and hover checks pass.
+[Installed evidence](section-orientation-20261104/REVIEW.md).
+
+### UX-030 / UX-C06 — Orientation within long Content sections
+
+“For sections inside content, this is still cumbersome and you get lost.
+Possible seperation with zebra stripes? Maybe a stick and box scrolls over box
+as you go?” **P2**. Implemented a compact sticky native section heading plus
+alternating visible field-row and nested-card surfaces, sharing Light/Dark
+tokens. Paired fields stay together. One document scrollbar; native forms and
+controls remain in place. Mobile, short windows and Arrange sections retain
+normal scrolling. Existing focus handling clears the heading.
+
+Source `6a54037e4f25` is installed on the exact review site after source/runtime
+QA and fresh remote backup. [Checks, performance limits and captures](section-orientation-20261104/REVIEW.md).
+The user's unsaved new page is preserved. Human visual acceptance remains open;
+CPU/OOM and release gates are unchanged. Next annotation: `UX-031`.
