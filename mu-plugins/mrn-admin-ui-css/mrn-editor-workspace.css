@@ -98,7 +98,7 @@ body.mrn-workspace { --mrn-editor-ink: var(--mrn-admin-ink); --mrn-editor-muted:
 .mrn-section-error { color: var(--mrn-admin-danger); font-size: 12px; margin-top: 4px; }
 .mrn-outline-errors { border: 1px solid var(--mrn-admin-danger-line); border-radius: 6px; color: var(--mrn-admin-danger); background: var(--mrn-admin-danger-surface); padding: 8px; cursor: pointer; }
 .mrn-workspace [hidden] { display: none !important; }
-.mrn-workspace :is(button, a, input, select, textarea, summary):focus-visible:not(:where(.wp-editor-wrap *, .media-modal *)), .mrn-workspace .acf-fc-layout-handle:focus { outline: 2px solid var(--mrn-admin-accent); outline-offset: 3px; box-shadow: none; }
+.mrn-workspace :is(button, a, input, select, textarea, summary):focus-visible:not(:where(.wp-editor-wrap *, .media-modal *)), .mrn-workspace .acf-fc-layout-handle:focus-visible { outline: 2px solid var(--mrn-admin-accent); outline-offset: 3px; box-shadow: none; }
 @media (min-width: 1001px) { .mrn-outline-close, .mrn-outline-toggle { display: none; } }
 @media (max-width: 1000px) {
  .mrn-workspace #wpbody-content > .wrap { margin: 20px 24px 0; }
