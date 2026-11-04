@@ -63,7 +63,8 @@ $offset              = absint( $row['offset'] ?? 0 );
 $filter_source       = isset( $row['filter_source'] ) ? sanitize_key( (string) $row['filter_source'] ) : 'none';
 $manual_post_ids     = 'manual_posts' === $filter_source ? mrn_base_stack_get_content_list_manual_post_ids( $row, $list_post_type ) : array();
 $tax_query           = mrn_base_stack_get_content_list_tax_query( $row, $context_post_id, $list_post_type );
-$show_pagination     = ! empty( $row['enable_pagination'] ) && 'all' !== ( $row['list_count_mode'] ?? '' );
+$is_article_list     = mrn_base_stack_is_article_list( $row );
+$show_pagination     = ! $is_article_list && ! empty( $row['enable_pagination'] ) && 'all' !== ( $row['list_count_mode'] ?? '' );
 $show_featured_image = ! empty( $row['show_featured_image'] );
 $show_publish_date   = ! empty( $row['show_publish_date'] );
 $show_excerpt        = ! empty( $row['show_excerpt'] );
@@ -109,6 +110,7 @@ if ( ! empty( $tax_query ) ) {
 }
 
 $query_args = mrn_base_stack_get_content_list_collection_query( $row, $query_args );
+$query_args = mrn_base_stack_get_article_collection_query( $row, $query_args );
 $query = new WP_Query( $query_args );
 
 $has_intro      = '' !== trim( wp_strip_all_tags( $intro ) );
@@ -147,6 +149,8 @@ $career_contract = mrn_base_stack_get_career_list_contract( $row );
 $section_classes = mrn_base_stack_merge_builder_section_classes( $section_classes, $career_contract );
 $people_contract = function_exists( 'mrn_base_stack_get_people_frame_contract' ) ? mrn_base_stack_get_people_frame_contract( $row ) : array( 'classes' => array(), 'attributes' => array() );
 $section_classes = mrn_base_stack_merge_builder_section_classes( $section_classes, $people_contract );
+$article_contract = mrn_base_stack_get_article_list_contract( $row );
+$section_classes = mrn_base_stack_merge_builder_section_classes( $section_classes, $article_contract );
 $section_styles = array();
 
 if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' ) ) {
@@ -173,6 +177,7 @@ $section_classes   = mrn_base_stack_merge_builder_section_classes( $section_clas
 $section_classes   = mrn_base_stack_merge_builder_section_classes( $section_classes, $motion_contract );
 $section_attrs     = mrn_base_stack_merge_builder_attributes( $display_contract['attributes'], $career_contract['attributes'] );
 $section_attrs     = mrn_base_stack_merge_builder_attributes( $section_attrs, $people_contract['attributes'] );
+$section_attrs     = mrn_base_stack_merge_builder_attributes( $section_attrs, $article_contract['attributes'] );
 $section_attrs     = mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array() );
 $section_attrs     = mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
 $section_attr_html = mrn_base_stack_get_html_attributes( $section_attrs );
@@ -253,6 +258,7 @@ echo mrn_base_stack_get_builder_anchor_markup( $row ); // phpcs:ignore WordPress
 					</div>
 				<?php endif; ?>
 
+				<?php echo mrn_base_stack_get_article_controls( $row ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Shared helper escapes all controls. ?>
 					<<?php echo esc_html( $list_tag ); ?> class="mrn-content-list-row__items mrn-content-list-row__items--<?php echo esc_attr( $list_style ); ?> mrn-ui__items">
 					<?php if ( $has_posts ) : ?>
 						<?php while ( $query->have_posts() ) : ?>
@@ -269,6 +275,7 @@ echo mrn_base_stack_get_builder_anchor_markup( $row ); // phpcs:ignore WordPress
 										'record_presentation' => $record_presentation,
 										'career_settings' => $row,
 										'people_settings' => $row,
+										'article_settings' => $row,
 										'display_style'   => $display_style,
 										'show_featured_image' => $show_featured_image,
 										'show_publish_date' => $show_publish_date,
@@ -284,11 +291,13 @@ echo mrn_base_stack_get_builder_anchor_markup( $row ); // phpcs:ignore WordPress
 							?>
 						<?php endwhile; ?>
 					<?php elseif ( '' !== $empty_message ) : ?>
-							<li class="mrn-content-list-row__item mrn-content-list-row__item--empty mrn-ui__item">
+							<li class="mrn-content-list-row__item mrn-content-list-row__item--empty mrn-ui__item"<?php echo $is_article_list ? ' data-article-empty' : ''; ?>>
 								<p class="mrn-content-list-row__empty mrn-ui__text"><?php echo esc_html( $empty_message ); ?></p>
 							</li>
 					<?php endif; ?>
+					<?php if ( $is_article_list && $has_posts ) : ?><li class="mrn-article__empty" data-article-empty hidden><?php echo esc_html( $empty_message ); ?></li><?php endif; ?>
 				</<?php echo esc_html( $list_tag ); ?>>
+				<?php echo mrn_base_stack_get_article_controls( $row, true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Shared helper escapes all controls. ?>
 
 				<?php if ( '' !== $pagination_html ) : ?>
 					<nav class="mrn-content-list-row__pagination" aria-label="<?php echo esc_attr( $pagination_label ); ?>">
