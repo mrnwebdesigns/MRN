@@ -1,0 +1,148 @@
+{
+  "phase": "candidate",
+  "checks": [
+    {
+      "name": "Matched native fields, form ancestry, rows, TinyMCE and Select2 across runs",
+      "data": [
+        {
+          "mode": "before",
+          "cpuMs": 8130.644,
+          "heap": 36720160,
+          "nodes": 127854,
+          "fields": 3206,
+          "rows": 19,
+          "editors": 1,
+          "select2": 0,
+          "integrity": "913456c78e26d0fad4403559035747700e48d644be1981acadc5c494cd6d5cd0"
+        },
+        {
+          "mode": "candidate",
+          "cpuMs": 3657.2110000000002,
+          "heap": 37161504,
+          "nodes": 131032,
+          "fields": 3206,
+          "rows": 19,
+          "editors": 1,
+          "select2": 0,
+          "integrity": "913456c78e26d0fad4403559035747700e48d644be1981acadc5c494cd6d5cd0"
+        },
+        {
+          "mode": "candidate",
+          "cpuMs": 4223.345,
+          "heap": 37058748,
+          "nodes": 131274,
+          "fields": 3206,
+          "rows": 19,
+          "editors": 1,
+          "select2": 0,
+          "integrity": "913456c78e26d0fad4403559035747700e48d644be1981acadc5c494cd6d5cd0"
+        },
+        {
+          "mode": "before",
+          "cpuMs": 3652.225,
+          "heap": 36514556,
+          "nodes": 131239,
+          "fields": 3206,
+          "rows": 19,
+          "editors": 1,
+          "select2": 0,
+          "integrity": "913456c78e26d0fad4403559035747700e48d644be1981acadc5c494cd6d5cd0"
+        }
+      ]
+    },
+    {
+      "name": "Workspace settings, 19-section outline, content search and nested collapse",
+      "data": true
+    },
+    {
+      "name": "Native publishing toolbar available without content save",
+      "data": true
+    },
+    {
+      "name": "light workspace scoped axe",
+      "data": 0
+    },
+    {
+      "name": "dark workspace scoped axe",
+      "data": 0
+    },
+    {
+      "name": "Mobile editor tabs and toolbar",
+      "data": true
+    },
+    {
+      "name": "Selection feedback, shared Actions keyboard and Quick Edit cancel",
+      "data": true
+    },
+    {
+      "name": "Mobile list feedback stays inside toolbar",
+      "data": true
+    },
+    {
+      "name": "Native heading index.php",
+      "data": true
+    },
+    {
+      "name": "Native heading options-general.php",
+      "data": true
+    },
+    {
+      "name": "Fail-open navigator",
+      "data": true
+    },
+    {
+      "name": "Fail-open toolbar",
+      "data": true
+    },
+    {
+      "name": "Fail-open no-js",
+      "data": true
+    }
+  ],
+  "performance": [
+    {
+      "mode": "before",
+      "cpuMs": 8130.644,
+      "heap": 36720160,
+      "nodes": 127854,
+      "fields": 3206,
+      "rows": 19,
+      "editors": 1,
+      "select2": 0,
+      "integrity": "913456c78e26d0fad4403559035747700e48d644be1981acadc5c494cd6d5cd0"
+    },
+    {
+      "mode": "candidate",
+      "cpuMs": 3657.2110000000002,
+      "heap": 37161504,
+      "nodes": 131032,
+      "fields": 3206,
+      "rows": 19,
+      "editors": 1,
+      "select2": 0,
+      "integrity": "913456c78e26d0fad4403559035747700e48d644be1981acadc5c494cd6d5cd0"
+    },
+    {
+      "mode": "candidate",
+      "cpuMs": 4223.345,
+      "heap": 37058748,
+      "nodes": 131274,
+      "fields": 3206,
+      "rows": 19,
+      "editors": 1,
+      "select2": 0,
+      "integrity": "913456c78e26d0fad4403559035747700e48d644be1981acadc5c494cd6d5cd0"
+    },
+    {
+      "mode": "before",
+      "cpuMs": 3652.225,
+      "heap": 36514556,
+      "nodes": 131239,
+      "fields": 3206,
+      "rows": 19,
+      "editors": 1,
+      "select2": 0,
+      "integrity": "913456c78e26d0fad4403559035747700e48d644be1981acadc5c494cd6d5cd0"
+    }
+  ]
+}

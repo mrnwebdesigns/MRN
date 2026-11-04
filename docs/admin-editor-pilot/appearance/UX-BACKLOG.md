@@ -153,3 +153,6 @@ next annotation `UX-038`.
 6. **P3 — Fixture branding.** Resolve the imported off-origin branding URL through the existing AME/Local Hub owner workflow before using this clone as a polished demo; do not change production branding or media to correct an isolated QA capture.
 
 Only the dedicated mrndev.io review deployment is authorized. No release preparation, promotion, production deployment or Fleet rollout is authorized.
+
+
+**P1 UX-038:** Visible editor assembly and late list reflow corrected on the review host. Editor first-paint visibility is coordinated with the existing workspace and publishing toolbar; no native ACF lifecycle or save-path changes. Targeted source/runtime QA and fail-open checks pass. [Trace, captures and limitations](review/admin-load-20261104/REVIEW.md). Await owner visual review; next annotation `UX-039`. The separate CPU qualification and Local Hub OOM release blockers remain open.

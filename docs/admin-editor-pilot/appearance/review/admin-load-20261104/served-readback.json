@@ -1,0 +1,26 @@
+{
+  "mrn-admin-ui-css/mrn-admin-shell.css": {
+    "status": 200,
+    "sha256": "172f40f4cdf18bf127162acc04a7ee476ebf8169d41ffea5f08420a8adfb1e83"
+  },
+  "mrn-admin-ui-css/appearance.js": {
+    "status": 200,
+    "sha256": "f6ab9539767666de0660deeb09ba4ad70921e67ccbaa2aeba92e8e18bb1afc9c"
+  },
+  "mrn-editor-lockdown/assets/section-navigator.js": {
+    "status": 200,
+    "sha256": "803c928599a59f15a3e2cc44547c33ee98dbf06c6cad3d822587cb4918d6dfbb"
+  },
+  "mrn-admin-ui-css/mrn-modern-admin.css": {
+    "status": 200,
+    "sha256": "b03a5a28aadbe63839e84832843344bfdcafd48b04f48bf56ef545fbe323cdcf"
+  },
+  "mrn-admin-ui-css/modern-admin.js": {
+    "status": 200,
+    "sha256": "f73988e8ea7082f9e7ef43f121afc10d09112e5eb58413529359352e817c7ae8"
+  },
+  "rest": {
+    "status": 200,
+    "has_routes": true
+  }
+}

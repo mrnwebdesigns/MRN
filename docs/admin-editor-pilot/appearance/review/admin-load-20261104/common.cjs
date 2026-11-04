@@ -1,0 +1,8 @@
+const fs=require('fs'),path=require('path'),req=require('module').createRequire('/Users/khofmeyer/Development/MRN-qa-engine/package.json');
+const {chromium,expect}=req('@playwright/test'),Axe=req('@axe-core/playwright').default;
+const host='https://admin-editor-pilot.mrndev.io',out=path.resolve('docs/admin-editor-pilot/appearance/review/admin-load-20261104');
+async function context(b,candidate,opts={}) {const c=await b.newContext({viewport:{width:1487,height:1000},...opts});await c.addCookies(JSON.parse(fs.readFileSync(process.env.MRN_REVIEW_AUTH_FILE)));
+if(candidate){for(const [component,f]of [['mrn-admin-ui-css','modern-admin.js'],['mrn-admin-ui-css','appearance.js'],['mrn-admin-ui-css','mrn-admin-shell.css'],['mrn-admin-ui-css','mrn-modern-admin.css'],['mrn-editor-lockdown','assets/section-navigator.js']])await c.route('**/'+component+'/'+f+'*',r=>r.fulfill({contentType:f.endsWith('.js')?'text/javascript':'text/css',body:fs.readFileSync('mu-plugins/'+component+'/'+f,'utf8')}));
+await c.route('**/wp-admin/post.php?*',async r=>{const response=await r.fetch();let html=await response.text();const source=fs.readFileSync('mu-plugins/mrn-admin-ui-css/appearance.php','utf8'),boot=source.match(/wp_print_inline_script_tag\( "([^"]+)" \)/)[1];html=html.replace('</head>','<script>'+boot+'</script></head>').replace(/(<body[^>]*>)/,'$1<div id="mrn-editor-opening" role="status" aria-live="polite">Opening editor…</div>');await r.fulfill({response,body:html});});}return c;}
+async function goto(p,relative){await p.goto(host+'/wp-admin/'+relative,{waitUntil:'load',timeout:90000});if(!p.url().startsWith(host+'/wp-admin/'))throw Error('Authenticated review session unavailable');}
+module.exports={fs,path,chromium,expect,Axe,context,goto,host,out};

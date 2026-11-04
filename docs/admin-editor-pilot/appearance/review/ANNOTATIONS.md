@@ -342,3 +342,8 @@ Source `8bd54ff425dd`, installed to the dedicated review host after MRN source Q
 and a verified remote backup. [Evidence](media-actions-20261104/REVIEW.md).
 Codex Media tab refreshed with the dropdown open. Human visual acceptance pending;
 next annotation `UX-038`. Existing editor CPU and Local Hub OOM gates remain open.
+
+
+### UX-038 — Visible admin assembly during navigation
+
+**P1, implemented and installed for review.** Replaced the editor's visible native-to-workspace transition with a brief themed opening state and an 8-second fail-open fallback; toolbar geometry is measured on insertion. Native list headings, selection feedback and shared Actions reserve their final space before enhancement. Native ACF lifecycle/values, keyboard, scoped axe, Light/Dark, mobile and failure recovery checks pass. [Evidence](admin-load-20261104/REVIEW.md). Existing CPU/OOM release blockers stay open. Await human visual acceptance; next annotation `UX-039`.

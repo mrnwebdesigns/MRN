@@ -1,0 +1,1194 @@
+{
+  "shifts": [
+    {
+      "time": 5696.4000000059605,
+      "value": 0.0004777323103751907,
+      "sources": [
+        {
+          "node": "UL#wp-admin-bar-top-secondary.ab-top-secondary ab-top-menu",
+          "previous": {
+            "x": 1132.953125,
+            "y": 0,
+            "width": 354.046875,
+            "height": 32,
+            "top": 0,
+            "right": 1487,
+            "bottom": 32,
+            "left": 1132.953125
+          },
+          "current": {
+            "x": 1121.859375,
+            "y": 0,
+            "width": 365.140625,
+            "height": 32,
+            "top": 0,
+            "right": 1487,
+            "bottom": 32,
+            "left": 1121.859375
+          }
+        },
+        {
+          "node": "LI#wp-admin-bar-seopress.menupop",
+          "previous": {
+            "x": 247.171875,
+            "y": 0,
+            "width": 216.921875,
+            "height": 32,
+            "top": 0,
+            "right": 464.09375,
+            "bottom": 32,
+            "left": 247.171875
+          },
+          "current": {
+            "x": 269.359375,
+            "y": 0,
+            "width": 222.46875,
+            "height": 32,
+            "top": 0,
+            "right": 491.828125,
+            "bottom": 32,
+            "left": 269.359375
+          }
+        },
+        {
+          "node": "LI#wp-admin-bar-preview.",
+          "previous": {
+            "x": 531.609375,
+            "y": 0,
+            "width": 77.96875,
+            "height": 32,
+            "top": 0,
+            "right": 609.578125,
+            "bottom": 32,
+            "left": 531.609375
+          },
+          "current": {
+            "x": 559.34375,
+            "y": 0,
+            "width": 77.96875,
+            "height": 32,
+            "top": 0,
+            "right": 637.3125,
+            "bottom": 32,
+            "left": 559.34375
+          }
+        },
+        {
+          "node": "LI#wp-admin-bar-mrn-page-sections.",
+          "previous": {
+            "x": 464.09375,
+            "y": 0,
+            "width": 67.515625,
+            "height": 32,
+            "top": 0,
+            "right": 531.609375,
+            "bottom": 32,
+            "left": 464.09375
+          },
+          "current": {
+            "x": 491.828125,
+            "y": 0,
+            "width": 67.515625,
+            "height": 32,
+            "top": 0,
+            "right": 559.34375,
+            "bottom": 32,
+            "left": 491.828125
+          }
+        },
+        {
+          "node": "LI#wp-admin-bar-new-content.menupop",
+          "previous": {
+            "x": 184.796875,
+            "y": 0,
+            "width": 62.375,
+            "height": 32,
+            "top": 0,
+            "right": 247.171875,
+            "bottom": 32,
+            "left": 184.796875
+          },
+          "current": {
+            "x": 201.4375,
+            "y": 0,
+            "width": 67.921875,
+            "height": 32,
+            "top": 0,
+            "right": 269.359375,
+            "bottom": 32,
+            "left": 201.4375
+          }
+        }
+      ]
+    },
+    {
+      "time": 5984.4000000059605,
+      "value": 0.5342963427942414,
+      "sources": [
+        {
+          "node": "DIV#.wrap",
+          "previous": {
+            "x": 247,
+            "y": 845.640625,
+            "width": 1220,
+            "height": 154.359375,
+            "top": 845.640625,
+            "right": 1467,
+            "bottom": 1000,
+            "left": 247
+          },
+          "current": {
+            "x": 247,
+            "y": 641.265625,
+            "width": 1220,
+            "height": 358.734375,
+            "top": 641.265625,
+            "right": 1467,
+            "bottom": 1000,
+            "left": 247
+          }
+        },
+        {
+          "node": "DIV#.notice notice-warning \n\t\t\t",
+          "previous": {
+            "x": 260,
+            "y": 713.609375,
+            "width": 1212,
+            "height": 122.03125,
+            "top": 713.609375,
+            "right": 1472,
+            "bottom": 835.640625,
+            "left": 260
+          },
+          "current": {
+            "x": 260,
+            "y": 509.234375,
+            "width": 1212,
+            "height": 122.03125,
+            "top": 509.234375,
+            "right": 1472,
+            "bottom": 631.265625,
+            "left": 260
+          }
+        },
+        {
+          "node": "DIV#.update-nag gt-admin-notice",
+          "previous": {
+            "x": 247,
+            "y": 401.09375,
+            "width": 612.34375,
+            "height": 207,
+            "top": 401.09375,
+            "right": 859.34375,
+            "bottom": 608.09375,
+            "left": 247
+          },
+          "current": {
+            "x": 247,
+            "y": 285.90625,
+            "width": 1220,
+            "height": 117.8125,
+            "top": 285.90625,
+            "right": 1467,
+            "bottom": 403.71875,
+            "left": 247
+          }
+        },
+        {
+          "node": "DIV#.notice notice-warning",
+          "previous": {
+            "x": 260,
+            "y": 613.09375,
+            "width": 1212,
+            "height": 95.515625,
+            "top": 613.09375,
+            "right": 1472,
+            "bottom": 708.609375,
+            "left": 260
+          },
+          "current": {
+            "x": 260,
+            "y": 408.71875,
+            "width": 1212,
+            "height": 95.515625,
+            "top": 408.71875,
+            "right": 1472,
+            "bottom": 504.234375,
+            "left": 260
+          }
+        },
+        {
+          "node": "DIV#acf-group_mrn_hero_builder.postbox ",
+          "previous": {
+            "x": 245,
+            "y": 960.640625,
+            "width": 924,
+            "height": 39.359375,
+            "top": 960.640625,
+            "right": 1169,
+            "bottom": 1000,
+            "left": 245
+          },
+          "current": {
+            "x": 245,
+            "y": 756.265625,
+            "width": 924,
+            "height": 220.96875,
+            "top": 756.265625,
+            "right": 1169,
+            "bottom": 977.234375,
+            "left": 245
+          }
+        }
+      ]
+    },
+    {
+      "time": 7258.4000000059605,
+      "value": 0.0012150495959377143,
+      "sources": [
+        {
+          "node": "DIV#.inside acf-fields -top",
+          "previous": {
+            "x": 248,
+            "y": 809.859375,
+            "width": 918,
+            "height": 163.375,
+            "top": 809.859375,
+            "right": 1166,
+            "bottom": 973.234375,
+            "left": 248
+          },
+          "current": {
+            "x": 248,
+            "y": 794.859375,
+            "width": 918,
+            "height": 168.375,
+            "top": 794.859375,
+            "right": 1166,
+            "bottom": 963.234375,
+            "left": 248
+          }
+        },
+        {
+          "node": "DIV#acf-group_mrn_content_builder.postbox acf-postbox",
+          "previous": {
+            "x": 245,
+            "y": 993.234375,
+            "width": 924,
+            "height": 6.765625,
+            "top": 993.234375,
+            "right": 1169,
+            "bottom": 1000,
+            "left": 245
+          },
+          "current": {
+            "x": 245,
+            "y": 983.234375,
+            "width": 924,
+            "height": 16.765625,
+            "top": 983.234375,
+            "right": 1169,
+            "bottom": 1000,
+            "left": 245
+          }
+        },
+        {
+          "node": "::before#.",
+          "previous": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0,
+            "left": 0
+          },
+          "current": {
+            "x": 1142.546875,
+            "y": 992.328125,
+            "width": 20.5,
+            "height": 7.671875,
+            "top": 992.328125,
+            "right": 1163.046875,
+            "bottom": 1000,
+            "left": 1142.546875
+          }
+        }
+      ]
+    },
+    {
+      "time": 7889.79999999702,
+      "value": 0.8894694014794889,
+      "sources": [
+        {
+          "node": "DIV#wpcontent.",
+          "previous": {
+            "x": 225,
+            "y": 32,
+            "width": 1262,
+            "height": 968,
+            "top": 32,
+            "right": 1487,
+            "bottom": 1000,
+            "left": 225
+          },
+          "current": {
+            "x": 0,
+            "y": 32,
+            "width": 1487,
+            "height": 448.59375,
+            "top": 32,
+            "right": 1487,
+            "bottom": 480.59375,
+            "left": 0
+          }
+        },
+        {
+          "node": "DIV#postbox-container-2.postbox-container",
+          "previous": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0,
+            "left": 0
+          },
+          "current": {
+            "x": 328,
+            "y": 410.390625,
+            "width": 1123,
+            "height": 2,
+            "top": 410.390625,
+            "right": 1451,
+            "bottom": 412.390625,
+            "left": 328
+          }
+        }
+      ]
+    },
+    {
+      "time": 8457.90000000596,
+      "value": 0.02678152280535771,
+      "sources": [
+        {
+          "node": "DIV#.wrap",
+          "previous": {
+            "x": 328,
+            "y": 108,
+            "width": 1123,
+            "height": 322.59375,
+            "top": 108,
+            "right": 1451,
+            "bottom": 430.59375,
+            "left": 328
+          },
+          "current": {
+            "x": 328,
+            "y": 179,
+            "width": 1123,
+            "height": 322.59375,
+            "top": 179,
+            "right": 1451,
+            "bottom": 501.59375,
+            "left": 328
+          }
+        },
+        {
+          "node": "NAV#mrn-section-outline.mrn-section-outline",
+          "previous": {
+            "x": 0,
+            "y": 86,
+            "width": 292,
+            "height": 914,
+            "top": 86,
+            "right": 292,
+            "bottom": 1000,
+            "left": 0
+          },
+          "current": {
+            "x": 0,
+            "y": 157,
+            "width": 292,
+            "height": 843,
+            "top": 157,
+            "right": 292,
+            "bottom": 1000,
+            "left": 0
+          }
+        },
+        {
+          "node": "DIV#.layout -collapsed mrn-editor-section",
+          "previous": {
+            "x": 301,
+            "y": 334.703125,
+            "width": 1177,
+            "height": 118.6875,
+            "top": 334.703125,
+            "right": 1478,
+            "bottom": 453.390625,
+            "left": 301
+          },
+          "current": {
+            "x": 301,
+            "y": 405.703125,
+            "width": 1177,
+            "height": 118.6875,
+            "top": 405.703125,
+            "right": 1478,
+            "bottom": 524.390625,
+            "left": 301
+          }
+        },
+        {
+          "node": "DIV#mrn-workspace-header.mrn-workspace-header",
+          "previous": {
+            "x": 0,
+            "y": 32,
+            "width": 1487,
+            "height": 54,
+            "top": 32,
+            "right": 1487,
+            "bottom": 86,
+            "left": 0
+          },
+          "current": {
+            "x": 0,
+            "y": 103,
+            "width": 1487,
+            "height": 54,
+            "top": 103,
+            "right": 1487,
+            "bottom": 157,
+            "left": 0
+          }
+        }
+      ]
+    },
+    {
+      "time": 11386.29999999702,
+      "value": 0.0015104236718224613,
+      "sources": [
+        {
+          "node": "DIV#postbox-container-2.postbox-container",
+          "previous": {
+            "x": 328,
+            "y": 481.390625,
+            "width": 1123,
+            "height": 2,
+            "top": 481.390625,
+            "right": 1451,
+            "bottom": 483.390625,
+            "left": 328
+          },
+          "current": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0,
+            "left": 0
+          }
+        }
+      ]
+    },
+    {
+      "time": 11402.60000000894,
+      "value": 0.0003480793134762653,
+      "sources": [
+        {
+          "node": "DIV#.acf-field acf-field-text acf-field-mrn-card-heading -c0",
+          "previous": {
+            "x": 330,
+            "y": 845.265625,
+            "width": 839.25,
+            "height": 138.6875,
+            "top": 845.265625,
+            "right": 1169.25,
+            "bottom": 983.953125,
+            "left": 330
+          },
+          "current": {
+            "x": 330,
+            "y": 848.390625,
+            "width": 839.25,
+            "height": 140,
+            "top": 848.390625,
+            "right": 1169.25,
+            "bottom": 988.390625,
+            "left": 330
+          }
+        },
+        {
+          "node": "DIV#.acf-field acf-field-select acf-field-mrn-card-heading-tag",
+          "previous": {
+            "x": 1169.25,
+            "y": 845.265625,
+            "width": 279.75,
+            "height": 113.1875,
+            "top": 845.265625,
+            "right": 1449,
+            "bottom": 958.453125,
+            "left": 1169.25
+          },
+          "current": {
+            "x": 1169.25,
+            "y": 848.390625,
+            "width": 279.75,
+            "height": 140,
+            "top": 848.390625,
+            "right": 1449,
+            "bottom": 988.390625,
+            "left": 1169.25
+          }
+        },
+        {
+          "node": "DIV#.acf-field acf-field-text acf-field-mrn-card-subheading mrn-field-band -c0",
+          "previous": {
+            "x": 330,
+            "y": 983.953125,
+            "width": 839.25,
+            "height": 16.046875,
+            "top": 983.953125,
+            "right": 1169.25,
+            "bottom": 1000,
+            "left": 330
+          },
+          "current": {
+            "x": 330,
+            "y": 988.390625,
+            "width": 839.25,
+            "height": 11.609375,
+            "top": 988.390625,
+            "right": 1169.25,
+            "bottom": 1000,
+            "left": 330
+          }
+        },
+        {
+          "node": "DIV#.acf-field acf-field-select acf-field-mrn-card-subheading-tag mrn-field-band",
+          "previous": {
+            "x": 1169.25,
+            "y": 983.953125,
+            "width": 279.75,
+            "height": 16.046875,
+            "top": 983.953125,
+            "right": 1449,
+            "bottom": 1000,
+            "left": 1169.25
+          },
+          "current": {
+            "x": 1169.25,
+            "y": 988.390625,
+            "width": 279.75,
+            "height": 11.609375,
+            "top": 988.390625,
+            "right": 1449,
+            "bottom": 1000,
+            "left": 1169.25
+          }
+        }
+      ]
+    }
+  ],
+  "states": [
+    {
+      "time": 5623.100000008941,
+      "ready": "loading",
+      "workspace": false,
+      "starting": false,
+      "title": null,
+      "heading": null,
+      "sidebar": {
+        "x": 0,
+        "y": 32,
+        "h": 0,
+        "visible": "visible",
+        "display": "block"
+      },
+      "usb": null,
+      "header": null,
+      "outline": null
+    },
+    {
+      "time": 5748.79999999702,
+      "ready": "loading",
+      "workspace": false,
+      "starting": false,
+      "title": {
+        "x": 247,
+        "y": 898.640625,
+        "h": 43,
+        "visible": "visible",
+        "display": "block"
+      },
+      "heading": {
+        "x": 247,
+        "y": 845.640625,
+        "h": 42.890625,
+        "visible": "visible",
+        "display": "inline-block"
+      },
+      "sidebar": {
+        "x": 0,
+        "y": 32,
+        "h": 0,
+        "visible": "visible",
+        "display": "block"
+      },
+      "usb": null,
+      "header": null,
+      "outline": null
+    },
+    {
+      "time": 5990.70000000298,
+      "ready": "loading",
+      "workspace": false,
+      "starting": false,
+      "title": {
+        "x": 247,
+        "y": 694.265625,
+        "h": 43,
+        "visible": "visible",
+        "display": "block"
+      },
+      "heading": {
+        "x": 247,
+        "y": 641.265625,
+        "h": 42.890625,
+        "visible": "visible",
+        "display": "inline-block"
+      },
+      "sidebar": {
+        "x": 0,
+        "y": 32,
+        "h": 0,
+        "visible": "visible",
+        "display": "block"
+      },
+      "usb": null,
+      "header": null,
+      "outline": null
+    },
+    {
+      "time": 8320.5,
+      "ready": "interactive",
+      "workspace": true,
+      "starting": false,
+      "title": {
+        "x": 328,
+        "y": 172.203125,
+        "h": 78,
+        "visible": "visible",
+        "display": "block"
+      },
+      "heading": {
+        "x": 327,
+        "y": 107,
+        "h": 14,
+        "visible": "visible",
+        "display": "block"
+      },
+      "sidebar": {
+        "x": 0,
+        "y": 0,
+        "h": 0,
+        "visible": "visible",
+        "display": "none"
+      },
+      "usb": {
+        "x": 0,
+        "y": 32,
+        "h": 70.984375,
+        "visible": "visible",
+        "display": "flex"
+      },
+      "header": {
+        "x": 0,
+        "y": 32,
+        "h": 54,
+        "visible": "visible",
+        "display": "flex"
+      },
+      "outline": {
+        "x": 0,
+        "y": 86,
+        "h": 914,
+        "visible": "visible",
+        "display": "block"
+      }
+    },
+    {
+      "time": 8465.40000000596,
+      "ready": "interactive",
+      "workspace": true,
+      "starting": false,
+      "title": {
+        "x": 328,
+        "y": 243.203125,
+        "h": 78,
+        "visible": "visible",
+        "display": "block"
+      },
+      "heading": {
+        "x": 327,
+        "y": 178,
+        "h": 14,
+        "visible": "visible",
+        "display": "block"
+      },
+      "sidebar": {
+        "x": 0,
+        "y": 0,
+        "h": 0,
+        "visible": "visible",
+        "display": "none"
+      },
+      "usb": {
+        "x": 0,
+        "y": 32,
+        "h": 70.984375,
+        "visible": "visible",
+        "display": "flex"
+      },
+      "header": {
+        "x": 0,
+        "y": 103,
+        "h": 54,
+        "visible": "visible",
+        "display": "flex"
+      },
+      "outline": {
+        "x": 0,
+        "y": 157,
+        "h": 843,
+        "visible": "visible",
+        "display": "block"
+      }
+    },
+    {
+      "time": 11358.20000000298,
+      "ready": "complete",
+      "workspace": true,
+      "starting": false,
+      "title": {
+        "x": 328,
+        "y": 243.203125,
+        "h": 78,
+        "visible": "visible",
+        "display": "block"
+      },
+      "heading": {
+        "x": 327,
+        "y": 178,
+        "h": 14,
+        "visible": "visible",
+        "display": "block"
+      },
+      "sidebar": {
+        "x": 0,
+        "y": 0,
+        "h": 0,
+        "visible": "visible",
+        "display": "none"
+      },
+      "usb": {
+        "x": 0,
+        "y": 32,
+        "h": 70.984375,
+        "visible": "visible",
+        "display": "flex"
+      },
+      "header": {
+        "x": 0,
+        "y": 103,
+        "h": 54,
+        "visible": "visible",
+        "display": "flex"
+      },
+      "outline": {
+        "x": 0,
+        "y": 157,
+        "h": 843,
+        "visible": "visible",
+        "display": "block"
+      }
+    }
+  ],
+  "paint": [
+    {
+      "name": "first-paint",
+      "time": 5720
+    },
+    {
+      "name": "first-contentful-paint",
+      "time": 5720
+    }
+  ],
+  "navigation": {
+    "name": "https://admin-editor-pilot.mrndev.io/wp-admin/post.php?post=2523&action=edit",
+    "entryType": "navigation",
+    "startTime": 0,
+    "duration": 11277.79999999702,
+    "initiatorType": "navigation",
+    "deliveryType": "",
+    "nextHopProtocol": "h2",
+    "renderBlockingStatus": "non-blocking",
+    "contentType": "text/html",
+    "contentEncoding": "br",
+    "workerStart": 0,
+    "workerRouterEvaluationStart": 0,
+    "workerCacheLookupStart": 0,
+    "workerMatchedSourceType": "",
+    "workerFinalSourceType": "",
+    "redirectStart": 0,
+    "redirectEnd": 0,
+    "fetchStart": 0.10000000894069672,
+    "domainLookupStart": 0.9000000059604645,
+    "domainLookupEnd": 3.2999999970197678,
+    "connectStart": 3.2999999970197678,
+    "secureConnectionStart": 20.600000008940697,
+    "connectEnd": 48.20000000298023,
+    "requestStart": 48.29999999701977,
+    "responseStart": 4390.600000008941,
+    "firstInterimResponseStart": 0,
+    "finalResponseHeadersStart": 4390.600000008941,
+    "responseEnd": 4445.29999999702,
+    "transferSize": 302509,
+    "encodedBodySize": 302209,
+    "decodedBodySize": 3951080,
+    "responseStatus": 200,
+    "serverTiming": [],
+    "unloadEventStart": 0,
+    "unloadEventEnd": 0,
+    "domInteractive": 7318.70000000298,
+    "domContentLoadedEventStart": 7325.20000000298,
+    "domContentLoadedEventEnd": 7410,
+    "domComplete": 11274.79999999702,
+    "loadEventStart": 11275.10000000894,
+    "loadEventEnd": 11277.79999999702,
+    "type": "navigate",
+    "redirectCount": 0,
+    "activationStart": 0,
+    "criticalCHRestart": 0,
+    "notRestoredReasons": null,
+    "confidence": {
+      "randomizedTriggerRate": 0.4994798,
+      "value": "high"
+    }
+  },
+  "scripts": [
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/jquery/jquery.min.js?ver=3.7.1",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.4.1",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/hoverIntent.min.js?ver=1.10.2",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/utils.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/dom-ready.min.js?ver=a06281ae5cf5500e9317",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/hooks.min.js?ver=7496969728ca0f95732d",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/i18n.min.js?ver=781d11515ad3d91786ec",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/a11y.min.js?ver=af934e5259bc51b8718e",
+    "https://admin-editor-pilot.mrndev.io/wp-content/plugins/admin-menu-editor-pro/js/admin-helpers.js?ver=20160407-2",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/jquery/ui/core.min.js?ver=1.13.3",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/jquery/ui/mouse.min.js?ver=1.13.3",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/jquery/ui/sortable.min.js?ver=1.13.3",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/plupload/moxie.min.js?ver=1.3.5.1",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/plupload/plupload.min.js?ver=2.1.9",
+    "https://admin-editor-pilot.mrndev.io/wp-content/plugins/admin-menu-editor-pro/js/menu-highlight-fix.js?ver=1787161995",
+    "https://admin-editor-pilot.mrndev.io/wp-content/plugins/admin-menu-editor-pro/js/jquery.biscuit.js?ver=1787161995",
+    "https://admin-editor-pilot.mrndev.io/wp-content/plugins/admin-menu-editor-pro/extras/pro-admin-helpers.js?ver=1787161994",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/jquery/ui/resizable.min.js?ver=1.13.3",
+    "https://admin-editor-pilot.mrndev.io/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/acf.min.js?ver=6.8.9",
+    "https://admin-editor-pilot.mrndev.io/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/acf-input.min.js?ver=6.8.9",
+    "https://admin-editor-pilot.mrndev.io/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/pro/acf-pro-input.min.js?ver=6.8.9",
+    "https://admin-editor-pilot.mrndev.io/wp-content/plugins/admin-menu-editor-pro/extras/third-level-menus.js?ver=1787161994",
+    "https://admin-editor-pilot.mrndev.io/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/pro/acf-pro-ui-options-page.min.js?ver=6.8.9",
+    "https://admin-editor-pilot.mrndev.io/wp-content/plugins/advanced-custom-fields-pro/assets/inc/select2/4/select2.full.min.js?ver=4.0.13",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/jquery/ui/datepicker.min.js?ver=1.13.3",
+    "https://admin-editor-pilot.mrndev.io/wp-content/plugins/advanced-custom-fields-pro/assets/inc/timepicker/jquery-ui-timepicker-addon.min.js?ver=1.6.1",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/jquery/ui/draggable.min.js?ver=1.13.3",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/jquery/ui/slider.min.js?ver=1.13.3",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/jquery/jquery.ui.touch-punch.js?ver=0.2.2",
+    "https://admin-editor-pilot.mrndev.io/wp-admin/js/iris.min.js?ver=1.1.1",
+    "https://admin-editor-pilot.mrndev.io/wp-admin/js/color-picker.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-content/plugins/advanced-custom-fields-pro/assets/inc/color-picker-alpha/wp-color-picker-alpha.js?ver=3.0.0",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/wp-emoji-release.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-admin/js/common.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/hoverintent-js.min.js?ver=2.2.1",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/admin-bar.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/heartbeat.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/autosave.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/jquery/suggest.min.js?ver=1.1-20110113",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/wp-ajax-response.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/jquery/jquery.color.min.js?ver=3.0.0",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/wp-lists.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-admin/js/postbox.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/jquery/ui/menu.min.js?ver=1.13.3",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/jquery/ui/autocomplete.min.js?ver=1.13.3",
+    "https://admin-editor-pilot.mrndev.io/wp-admin/js/tags-suggest.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-admin/js/tags-box.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/underscore.min.js?ver=1.13.8",
+    "https://admin-editor-pilot.mrndev.io/wp-admin/js/word-count.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/wp-sanitize.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/clipboard.min.js?ver=2.0.11",
+    "https://admin-editor-pilot.mrndev.io/wp-admin/js/post.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/thickbox/thickbox.js?ver=3.1-20121105",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/shortcode.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/backbone.min.js?ver=1.6.1",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/wp-util.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/wp-backbone.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/media-models.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/plupload/wp-plupload.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/mediaelement/mediaelement-and-player.min.js?ver=4.2.17",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/mediaelement/mediaelement-migrate.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/mediaelement/wp-mediaelement.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/api-request.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/media-views.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/media-editor.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/media-audiovideo.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/mce-view.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/imgareaselect/jquery.imgareaselect.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-admin/js/image-edit.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-admin/js/svg-painter.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/wp-auth-check.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/vendor/react.min.js?ver=18.3.1.1",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/vendor/react-dom.min.js?ver=18.3.1.1",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/vendor/react-jsx-runtime.min.js?ver=18.3.1",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/deprecated.min.js?ver=990e85f234fee8f7d446",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/dom.min.js?ver=66a6cf58e0c4cd128af0",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/escape-html.min.js?ver=3f093e5cca67aa0f8b56",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/element.min.js?ver=15ba804677f72a8db97b",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/is-shallow-equal.min.js?ver=5d84b9f3cb50d2ce7d04",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/keycodes.min.js?ver=aa1a141e3468afe7f852",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/priority-queue.min.js?ver=1f0e89e247bc0bd3f9b9",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/undo-manager.min.js?ver=27bb0ae036a2c9d4a1b5",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/compose.min.js?ver=fbe37f6b46750554f947",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/vendor/moment.min.js?ver=2.30.1",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/date.min.js?ver=c9f8e7dd3232716f34e9",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/html-entities.min.js?ver=8c6fa5b869dfeadc4af2",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/primitives.min.js?ver=a5c905ec27bcd76ef287",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/private-apis.min.js?ver=835912f0086b9e59aed4",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/redux-routine.min.js?ver=64f9f5001aabc046c605",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/data.min.js?ver=1756b6a2676c1b3369ab",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/rich-text.min.js?ver=16449e6108f48327f368",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/warning.min.js?ver=36fdbdc984d93aee8a97",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/components.min.js?ver=5dedfe13f08880193a28",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/keyboard-shortcuts.min.js?ver=2ed78d3b4c23f38804e0",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/commands.min.js?ver=e3d8bba53f4ffea4fcd2",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/url.min.js?ver=bb0f766c3d2efe497871",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/api-fetch.min.js?ver=d7efe4dc1468d36c39b8",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/blob.min.js?ver=198af75fe06d924090d8",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/block-serialization-default-parser.min.js?ver=bff55bd3f1ce9df0c99c",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/autop.min.js?ver=9d0d0901b46f0a9027c9",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/shortcode.min.js?ver=11742fe18cc215d3d5ab",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/blocks.min.js?ver=ef38e42500165bfda301",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/notices.min.js?ver=218d0173a31ae7269246",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/preferences-persistence.min.js?ver=e8033be98338d1861bca",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/preferences.min.js?ver=035813168e404aa30193",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/style-engine.min.js?ver=faa37ce61b7ec8394b2a",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/theme.min.js?ver=e22ce547a4420507b323",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/token-list.min.js?ver=16f0aebdd39d87c2a84b",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/upload-media.min.js?ver=d359c2cccf866d7082d2",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/block-editor.min.js?ver=f3d941bcb2e86c269881",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/core-data.min.js?ver=89931f90e4df5eb5f8a3",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/router.min.js?ver=0249e6724784b1c2583b",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/dist/core-commands.min.js?ver=b209152e7e51279d7c28",
+    "https://admin-editor-pilot.mrndev.io/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/acf-escaped-html-notice.min.js?ver=6.8.9",
+    "https://admin-editor-pilot.mrndev.io/wp-content/plugins/happyfiles-pro/assets/js/happyfiles.min.js?ver=1787162057",
+    "https://admin-editor-pilot.mrndev.io/wp-content/plugins/post-duplicator/assets/build/postDuplicator.js?ver=1788457001",
+    "https://admin-editor-pilot.mrndev.io/wp-content/plugins/wp-seopress-pro/assets/js/seopress-pro-ai.min.js?ver=10.3",
+    "https://admin-editor-pilot.mrndev.io/wp-content/plugins/wp-seopress/public/admin/command-palette.js?ver=eecd2be7bfedca7c67f5",
+    "https://admin-editor-pilot.mrndev.io/wp-content/plugins/wp-seopress/public/metaboxe.js?ver=10.3",
+    "https://admin-editor-pilot.mrndev.io/wp-content/plugins/wp-seopress-pro/public/admin/command-palette/index.js?ver=b3e4ae2b8891dd596d0c",
+    "https://admin-editor-pilot.mrndev.io/wp-content/plugins/wp-seopress-pro/assets/js/seopress-redirection-conflict.js?ver=10.3",
+    "https://admin-editor-pilot.mrndev.io/wp-content/themes/mrn-base-stack/js/admin-editor-startup.js?ver=1791987250",
+    "https://admin-editor-pilot.mrndev.io/wp-admin/js/editor.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/quicktags.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/wplink.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-admin/js/media-upload.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-content/plugins/wp-seopress/assets/js/seopress-classic-editor.min.js?ver=10.3",
+    "https://admin-editor-pilot.mrndev.io/wp-content/themes/mrn-base-stack/js/content-builder-admin.js?ver=1791987250",
+    "https://admin-editor-pilot.mrndev.io/wp-content/themes/mrn-base-stack/js/admin-row-flex-layout.js?ver=1791987250",
+    "https://admin-editor-pilot.mrndev.io/wp-content/plugins/post-types-order/js/cpt.js?ver=2.5.6",
+    "https://admin-editor-pilot.mrndev.io/wp-content/plugins/wpforms/assets/js/admin/education/edit-post.es5.min.js?ver=2.0.1.1",
+    "https://admin-editor-pilot.mrndev.io/wp-content/plugins/mrn-acf-focal-point/assets/admin.js?ver=1.1.2",
+    "https://admin-editor-pilot.mrndev.io/wp-content/plugins/mrn-config-helper/assets/js/acf-layout-picker.js?ver=1791980235",
+    "https://admin-editor-pilot.mrndev.io/wp-content/plugins/mrn-layout-import-export/assets/js/layout-import-export.js?ver=1791980274",
+    "https://admin-editor-pilot.mrndev.io/wp-content/themes/mrn-base-stack/js/admin-repeater-controls.js?ver=1791987250",
+    "https://admin-editor-pilot.mrndev.io/wp-content/mu-plugins/mrn-shared-assets/assets/icon-chooser/admin-icon-chooser.js?ver=0.1.3",
+    "https://admin-editor-pilot.mrndev.io/wp-content/themes/mrn-base-stack/js/admin-icon-choosers.js?ver=1791987250",
+    "https://admin-editor-pilot.mrndev.io/wp-content/mu-plugins/mrn-admin-ui-css/appearance.js?ver=1793813515",
+    "https://admin-editor-pilot.mrndev.io/wp-content/themes/mrn-base-stack/js/admin-lazy-layouts.js?ver=1791987250",
+    "https://admin-editor-pilot.mrndev.io/wp-content/mu-plugins/mrn-editor-lockdown/assets/section-navigator.js?ver=1793811387",
+    "https://admin-editor-pilot.mrndev.io/wp-content/plugins/mrn-universal-sticky-bar/assets/universal-sticky-bar.js?ver=1.2.3",
+    "https://admin-editor-pilot.mrndev.io/wp-content/mu-plugins/mrn-editor-lockdown/assets/command-palette-loader.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-content/plugins/wpforms/assets/js/admin/admin-editor.min.js?ver=2.0.1.1",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/wp-embed.min.js?ver=7.0.4",
+    "https://admin-editor-pilot.mrndev.io/wp-includes/js/tinymce/wp-tinymce.js?ver=49110-20250317"
+  ],
+  "fields": 3206,
+  "body": "wp-admin wp-core-ui js mrn-appearance mrn-themed-content acf-admin-5-3 acf-admin-7-0 acf-browser-chrome post-php auto-fold admin-bar post-type-page branch-7 version-7-0-4 admin-color-modern locale-en-us svg wp-theme-mrn-base-stack wp-child-theme-mrn-base-stack-child customize-support mrn-screen-tools-ready mrn-editor-experience mrn-workspace mrn-editor-page-ready sticky-menu mrn-usb-active",
+  "metrics": {
+    "Timestamp": 90087.574676,
+    "AudioHandlers": 0,
+    "AudioWorkletProcessors": 0,
+    "Documents": 27,
+    "Frames": 20,
+    "JSEventListeners": 8187,
+    "LayoutObjects": 2730,
+    "MediaKeySessions": 0,
+    "MediaKeys": 0,
+    "Nodes": 165180,
+    "Resources": 270,
+    "ContextLifecycleStateObservers": 211,
+    "V8PerContextDatas": 10,
+    "WorkerGlobalScopes": 0,
+    "UACSSResources": 0,
+    "RTCPeerConnections": 0,
+    "ResourceFetchers": 27,
+    "AdSubframes": 0,
+    "DetachedScriptStates": 6,
+    "ArrayBufferContents": 2,
+    "LayoutCount": 65,
+    "RecalcStyleCount": 317,
+    "LayoutDuration": 0.139927,
+    "RecalcStyleDuration": 0.198476,
+    "DevToolsCommandDuration": 0.008188,
+    "ScriptDuration": 2.560756,
+    "V8CompileDuration": 0.012444,
+    "TaskDuration": 3.613426,
+    "TaskOtherDuration": 0.693635,
+    "ThreadTime": 3.216502,
+    "ProcessTime": 4.539313,
+    "JSHeapUsedSize": 33721880,
+    "JSHeapTotalSize": 63799296,
+    "FirstMeaningfulPaint": 90080.238213,
+    "DomContentLoaded": 90081.84653,
+    "NavigationStart": 90074.521322
+  },
+  "cls": 1.4540985519706997,
+  "frames": [
+    {
+      "index": 0,
+      "time": 1793817773.318758
+    },
+    {
+      "index": 1,
+      "time": 1793817779.022029
+    },
+    {
+      "index": 2,
+      "time": 1793817779.109913
+    },
+    {
+      "index": 3,
+      "time": 1793817779.136096
+    },
+    {
+      "index": 4,
+      "time": 1793817779.620024
+    },
+    {
+      "index": 5,
+      "time": 1793817779.856567
+    },
+    {
+      "index": 6,
+      "time": 1793817779.882454
+    },
+    {
+      "index": 7,
+      "time": 1793817780.595707
+    },
+    {
+      "index": 8,
+      "time": 1793817780.75248
+    },
+    {
+      "index": 9,
+      "time": 1793817780.846989
+    },
+    {
+      "index": 10,
+      "time": 1793817780.869405
+    },
+    {
+      "index": 11,
+      "time": 1793817780.892768
+    },
+    {
+      "index": 12,
+      "time": 1793817780.916347
+    },
+    {
+      "index": 13,
+      "time": 1793817780.942366
+    },
+    {
+      "index": 14,
+      "time": 1793817780.96987
+    },
+    {
+      "index": 15,
+      "time": 1793817781.045131
+    },
+    {
+      "index": 16,
+      "time": 1793817781.067267
+    },
+    {
+      "index": 17,
+      "time": 1793817781.089594
+    },
+    {
+      "index": 18,
+      "time": 1793817781.113783
+    },
+    {
+      "index": 19,
+      "time": 1793817781.13709
+    },
+    {
+      "index": 20,
+      "time": 1793817781.160544
+    },
+    {
+      "index": 21,
+      "time": 1793817781.18567
+    },
+    {
+      "index": 22,
+      "time": 1793817781.211757
+    },
+    {
+      "index": 23,
+      "time": 1793817781.235702
+    },
+    {
+      "index": 24,
+      "time": 1793817781.258553
+    },
+    {
+      "index": 25,
+      "time": 1793817781.647909
+    },
+    {
+      "index": 26,
+      "time": 1793817781.785555
+    },
+    {
+      "index": 27,
+      "time": 1793817781.896298
+    },
+    {
+      "index": 28,
+      "time": 1793817784.725741
+    },
+    {
+      "index": 29,
+      "time": 1793817784.737726
+    }
+  ]
+}
