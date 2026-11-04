@@ -1,0 +1,25 @@
+{
+  "phase": "baseline",
+  "checks": [
+    "Reproduced: checked Page Settings panels are erroneously included in native hidden payload"
+  ],
+  "errors": [],
+  "requests": [
+    {
+      "label": "Hide Slug from Content view",
+      "hidden": [
+        "postimagediv",
+        "submitdiv",
+        "pageparentdiv",
+        "authordiv",
+        "mrn-layout-import",
+        "slugdiv",
+        "seopress_metabox_opener"
+      ],
+      "closed": "",
+      "page": "page"
+    }
+  ],
+  "axe": [],
+  "passed": true
+}

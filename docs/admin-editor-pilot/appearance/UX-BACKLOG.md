@@ -67,7 +67,13 @@ with targeted Light/Dark, keyboard/mobile and native-workflow checks. UX-026 was
 visually accepted with the explicit requirement to remain a reusable component;
 its native markup interface and central ownership are documented in the shared
 Admin UI contract. UX-025 human acceptance remains pending. See [menu hierarchy](review/menu-hierarchy-20261104/REVIEW.md)
-and [row actions](review/row-actions-20261104/REVIEW.md). Next annotation: `UX-027`.
+and [row actions](review/row-actions-20261104/REVIEW.md).
+
+**P1 UX-027 / UX-C10:** Page Settings panels were accidentally persisted as hidden
+by native View-option saves while Content was active. The bounded compatibility
+fix preserves explicit checkbox choices; five review-account panels are restored
+and the empty sidebar gap is removed. [Evidence](review/page-settings-20261104/REVIEW.md).
+Await the owner's visual recheck. Next annotation: `UX-028`.
 
 ## Technical blockers and existing follow-up
 

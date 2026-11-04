@@ -1,0 +1,49 @@
+{
+  "host": "admin-editor-pilot.mrndev.io",
+  "files": {
+    "mrn-editor-lockdown/assets/section-navigator.js": {
+      "before": "505d116422631051691351cf0a6e3989f3ee93cc6dd321f548ac8e3211bb9590",
+      "after": "803fc6f08cc281f4caf8aa7d127ba1432959f22f3f7cd6ed30d595119d0fd3e0"
+    },
+    "mrn-admin-ui-css/mrn-editor-workspace.css": {
+      "before": "0ad2f227e8358f360ad2ebe0c38042edac4696accf177482d259da3d8ea73201",
+      "after": "a577bef2c38824f6a634513d56aed693c571d3ec2539ccd43cc413104d0d5d11"
+    }
+  },
+  "recovery_sha256": "45b63669b2ae8e235d63113d9f5ad1e2294d9ba680d6aa065919f72c85e6d971",
+  "commit": "35b018699e1522385c5c691465fbb3221fece271",
+  "backup": {
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1793805276,
+    "label": "pre-admin-pilot-page-settings-install-20261104",
+    "nonce": "32cea1509ed7",
+    "key": "sites/admin-editor-pilot-mrndev-io/backup_2026-11-04-1514_Trilliant_32cea1509ed7-db.gz",
+    "size": 6308705,
+    "sha256": "aba3390dff27876f71e9f523b942459ceb0cf06d00a46fc0a000e3980fcb1243"
+  },
+  "recovery": {
+    "user": "mrn-admin",
+    "key": "metaboxhidden_page",
+    "before": [
+      "postimagediv",
+      "pageparentdiv",
+      "authordiv",
+      "mrn-layout-import",
+      "revisionsdiv",
+      "seopress_metabox_opener"
+    ],
+    "after": [
+      "revisionsdiv"
+    ],
+    "restored": [
+      "postimagediv",
+      "pageparentdiv",
+      "authordiv",
+      "mrn-layout-import",
+      "seopress_metabox_opener"
+    ]
+  },
+  "rollback": "/home/mrndev-admin-editor/review-private/before-page-settings-35b018699e15",
+  "status": "installed"
+}

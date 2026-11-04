@@ -1,0 +1,34 @@
+{
+  "phase": "candidate",
+  "checks": [
+    "Native preference POST uses only unchecked boxes from Content view; original nonce and page preserved",
+    "Settings collapse preserves hidden preferences and core closed-state payload",
+    "No 250px empty sidebar placeholder when all side panels are intentionally hidden",
+    "New-page native fields/form values unchanged; Light/Dark panel and workspace axe scans pass",
+    "390px Page Settings uses one column",
+    "19-section existing page preserves fields and settings preferences through workspace toggles"
+  ],
+  "errors": [],
+  "requests": [
+    {
+      "label": "Hide Slug from Content view",
+      "hidden": [
+        "slugdiv",
+        "submitdiv"
+      ],
+      "closed": "",
+      "page": "page"
+    }
+  ],
+  "axe": [
+    {
+      "mode": "light",
+      "violations": []
+    },
+    {
+      "mode": "dark",
+      "violations": []
+    }
+  ],
+  "passed": true
+}

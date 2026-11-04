@@ -219,3 +219,14 @@ now documents the native markup interface, central ownership, supported-screen
 scope, progressive fallback and reuse verification. No new renderer, API,
 dependency or runtime change is needed. This visual acceptance does not clear
 the independent performance or release gates, or imply acceptance of UX-025.
+
+### UX-027 / UX-C10 — Page Settings visibility regression
+
+“Page settings lost all of it's boxes?” New-page screenshot and installed DOM
+confirm hidden optional settings panels plus an empty sidebar gap. **P1** root
+cause: core's `:hidden` preference serialization includes panels parked by the
+workspace. Source `35b01869` preserves explicit checkbox choices in the existing
+native save path, removes the artificial sidebar minimum height and restores the
+five affected review-account panels after verified backup. [Reproduction,
+regression and installed evidence](page-settings-20261104/REVIEW.md). Keep the
+user's unsaved new page intact. Human recheck pending; next annotation `UX-028`.

@@ -1,0 +1,8 @@
+{
+  "host": "admin-editor-pilot.mrndev.io",
+  "user": "mrn-admin",
+  "metaboxhidden_page": [
+    "revisionsdiv"
+  ],
+  "verified_after_native_save_reload": true
+}
