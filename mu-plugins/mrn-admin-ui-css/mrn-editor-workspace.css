@@ -134,9 +134,12 @@ body.mrn-workspace #mrn-universal-sticky-toolbar #mrn-usb-publish.button.button-
 body.mrn-workspace .mrn-editor-section > .acf-fc-layout-actions-wrap { background: var(--mrn-admin-surface); }
 body.mrn-workspace #side-sortables { width: auto !important; }
 body.mrn-workspace #poststuff #post-body #side-sortables { min-height: 0; }
-body.mrn-workspace-settings #side-sortables { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 20px; }
-body.mrn-workspace-settings #side-sortables > .postbox { margin: 0; min-width: 0; }
-@media (max-width: 700px) { body.mrn-workspace-settings #side-sortables { grid-template-columns: 1fr; } }
+/* Flow settings panels in reading order without equal-height grid-row gaps. */
+body.mrn-workspace-settings #side-sortables { display: block; columns: 2; column-gap: 20px; padding-bottom: 16px; }
+body.mrn-workspace-settings #poststuff #side-sortables > .postbox { width: 100%; box-sizing: border-box; break-inside: avoid; margin: 0 0 16px; min-width: 0; }
+@media (max-width: 700px) { body.mrn-workspace-settings #side-sortables { columns: 1; } }
+body.mrn-workspace-settings #major-publishing-actions { background: var(--mrn-admin-surface-subtle); border-top-color: var(--mrn-admin-line); }
+body.mrn-workspace-settings #poststuff #delete-action .submitdelete { color: var(--mrn-admin-danger); }
 body.mrn-workspace .mrn-region-add { font-size: 11px; font-weight: 600; padding: 4px 7px; }
 .mrn-outline-controls { position: sticky; top: -24px; z-index: 1; background: var(--mrn-admin-surface); padding-bottom: 8px; }
 /* Header height follows wrapped controls at narrow widths and zoom. */
