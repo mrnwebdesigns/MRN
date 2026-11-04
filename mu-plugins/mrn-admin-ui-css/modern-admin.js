@@ -41,11 +41,14 @@
  }
  function enhance(actions) {
   if (!actions.isConnected || buttons.has(actions) || !actions.querySelector('a,button')) { return; }
-  // Adopt only the existing MRN Media disclosure. Keep the original action
+  // Adopt only our first-paint disclosure or the existing MRN Media disclosure.
+  // Keep the original action
   // nodes, attributes, handlers and row/form ancestry; other details stay native.
-  var legacy = document.body.matches('.mrn-media-workspace.upload-php') && actions.querySelector(':scope > .mrn_media_actions > details.mrn-media-actions-menu');
+  var native = actions.querySelector(':scope > .mrn_actions > details.mrn-row-actions-native');
+  var legacy = native || (document.body.matches('.mrn-media-workspace.upload-php') && actions.querySelector(':scope > .mrn_media_actions > details.mrn-media-actions-menu'));
+  var wasOpen = native && native.open, focused = native && native.contains(document.activeElement) ? document.activeElement : null;
   if (legacy && legacy.parentElement.children.length === 1) {
-   var content = legacy.querySelector(':scope > .mrn-media-actions-menu__content');
+   var content = legacy.querySelector(':scope > .mrn-row-actions-native__content, :scope > .mrn-media-actions-menu__content');
    if (content) {
     var items = Array.from(content.children).filter(function(item) { return !item.classList.contains('mrn-media-actions-menu__separator'); });
     items.forEach(function(item) {
@@ -92,6 +95,9 @@
    if (!actions.matches(':popover-open')) { actions.showPopover({ source: button }); position(actions, button); }
    actions.querySelector('a,button').focus();
   });
+  // Preserve interaction if the owner opened the native control before JS arrived.
+  if (wasOpen) { actions.showPopover({ source: button }); position(actions, button); }
+  if (focused) { (focused.isConnected ? focused : button).focus({ preventScroll: true }); }
  }
  function scan(root) {
   if (root.nodeType !== 1) { return; }

@@ -39,3 +39,29 @@ add_filter( 'admin_body_class', function ( $classes ) {
 	$scope = mrn_admin_ui_modern_screen();
 	return $scope ? $classes . ' mrn-modern-admin mrn-admin-' . $scope : $classes;
 } );
+
+/** Paint a usable native disclosure before the shared popover enhancement loads. */
+function mrn_admin_ui_post_actions( $actions, $post ) {
+	$screen = get_current_screen();
+	if ( ! $screen || 'edit' !== $screen->base || 'list' !== mrn_admin_ui_modern_screen() || ! $actions ) {
+		return $actions;
+	}
+	// Leave application-owned disclosures with their owner. Original action HTML
+	// already contains its owner's capability checks, URLs, nonces and handlers.
+	foreach ( $actions as $action ) {
+		if ( ! is_string( $action ) || false !== stripos( $action, '<details' ) || false !== stripos( $action, 'popover=' ) ) {
+			return $actions;
+		}
+	}
+	$title = wp_strip_all_tags( get_the_title( $post ) );
+	$name = $title ? sprintf( __( 'Actions for %s', 'mrn-admin-ui-css' ), $title ) : __( 'Actions', 'mrn-admin-ui-css' );
+	$html = '<details class="mrn-row-actions-native"><summary class="button" aria-label="' . esc_attr( $name ) . '">' . esc_html__( 'Actions', 'mrn-admin-ui-css' ) . '</summary><div class="mrn-row-actions-native__content">';
+	foreach ( $actions as $key => $action ) {
+		// Retain class lists such as core's "inline hide-if-no-js" verbatim.
+		$html .= '<span class="' . esc_attr( $key ) . '">' . $action . '</span>';
+	}
+	$html .= '</div></details>';
+	return array( 'mrn_actions' => $html );
+}
+add_filter( 'post_row_actions', 'mrn_admin_ui_post_actions', PHP_INT_MAX, 2 );
+add_filter( 'page_row_actions', 'mrn_admin_ui_post_actions', PHP_INT_MAX, 2 );
