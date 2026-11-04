@@ -5,7 +5,7 @@
  if (!labels) { return; }
  // Media uses the existing AME-owned menu as a temporary drawer. No cloned
  // links, saved menu preference, observers, scroll handlers or media listeners.
- var mediaMenu = document.querySelector('body.mrn-media-workspace #wp-admin-bar-mrn-media-menu > a');
+ var mediaMenu = document.querySelector('body.mrn-media-workspace #mrn-media-menu');
  var siteMenu = document.getElementById('adminmenumain');
  if (mediaMenu && siteMenu) {
   function closeMediaMenu(restore) {
@@ -22,6 +22,7 @@
    if (first) { first.focus(); }
   }
   mediaMenu.setAttribute('aria-controls', 'adminmenumain');
+  mediaMenu.setAttribute('role', 'button');
   mediaMenu.setAttribute('aria-expanded', 'false');
   mediaMenu.addEventListener('click', function(event) { event.preventDefault(); toggleMediaMenu(); });
   mediaMenu.addEventListener('keydown', function(event) {

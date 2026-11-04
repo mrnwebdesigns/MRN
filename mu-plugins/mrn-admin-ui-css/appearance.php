@@ -76,19 +76,22 @@ add_action( 'admin_enqueue_scripts', function () {
 	) );
 }, 30 );
 
+// Render workspace navigation before the media/folder layout, without a late
+// toolbar insertion or rebuilding AME's menu. The anchor is the no-script fallback.
+add_action( 'in_admin_header', function () {
+	if ( mrn_admin_media_workspace_screen() && current_user_can( 'upload_files' ) ) {
+		$library = 'upload' === get_current_screen()->base;
+		?>
+		<nav id="mrn-media-workspace-header" class="mrn-workspace-header hide-if-no-js" aria-label="<?php esc_attr_e( 'Media workspace', 'mrn-admin-ui-css' ); ?>">
+			<a id="mrn-media-menu" class="mrn-workspace-button mrn-site-menu" href="#adminmenumain" aria-controls="adminmenumain"><?php esc_html_e( 'Site menu', 'mrn-admin-ui-css' ); ?></a>
+			<a class="mrn-workspace-back" href="<?php echo esc_url( admin_url( $library ? 'index.php' : 'upload.php' ) ); ?>">&larr; <?php echo esc_html( $library ? __( 'Dashboard', 'mrn-admin-ui-css' ) : __( 'Back to library', 'mrn-admin-ui-css' ) ); ?></a>
+		</nav>
+		<?php
+	}
+} );
+
 // Register the native Dashboard node before the site menu, so it precedes Visit
 // Site. Toolbar Editor runs afterwards and retains configuration/role ownership.
-add_action( 'admin_bar_menu', function ( $bar ) {
-	if ( mrn_admin_media_workspace_screen() && current_user_can( 'upload_files' ) ) {
-		$bar->add_node( array(
-			'id' => 'mrn-media-menu',
-			'title' => '<span class="ab-icon dashicons dashicons-menu" aria-hidden="true"></span><span class="ab-label">' . esc_html__( 'Site menu', 'mrn-admin-ui-css' ) . '</span>',
-			'href' => '#adminmenumain',
-			'meta' => array( 'class' => 'hide-if-no-js' ),
-		) );
-	}
-}, 9 );
-
 add_action( 'admin_bar_menu', function ( $bar ) {
 	if ( mrn_admin_appearance_enabled() && current_user_can( 'read' ) && ! $bar->get_node( 'dashboard' ) ) {
 		$bar->add_node( array( 'id' => 'dashboard', 'parent' => 'site-name', 'title' => __( 'Dashboard', 'mrn-admin-ui-css' ), 'href' => admin_url() ) );

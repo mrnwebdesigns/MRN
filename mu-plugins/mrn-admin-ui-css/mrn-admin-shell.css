@@ -2,21 +2,36 @@
    Shell color overrides take precedence over AME's generated color rules.
    Named MRN helper overrides below also cover existing inline colors. */
 body.mrn-appearance { background: var(--mrn-admin-canvas); }
+/* Shared workspace navigation for the editor and Media. Rendered before Media
+   content so its final space is reserved from the first paint. */
+.mrn-appearance .mrn-workspace-header { position: sticky; top: var(--wp-admin--admin-bar--height, 32px); z-index: 9900; display: flex; align-items: center; gap: 24px; min-height: 54px; padding: 0 28px; box-sizing: border-box; border-bottom: 1px solid var(--mrn-admin-line); background: var(--mrn-admin-surface); }
+.mrn-appearance .mrn-workspace-button { display: inline-flex; align-items: center; box-sizing: border-box; min-height: 36px; padding: 7px 12px; border: 0; border-radius: 6px; background: transparent; color: var(--mrn-admin-muted); cursor: pointer; font-size: 14px; font-weight: 600; text-decoration: none; }
+.mrn-appearance .mrn-workspace-back { color: var(--mrn-admin-accent); text-decoration: none; font-weight: 500; }
+.mrn-appearance .mrn-workspace-button:hover { color: var(--mrn-admin-ink); background: var(--mrn-admin-surface-hover); }
+.mrn-appearance .mrn-workspace-header :is(a,button):focus-visible { outline: 2px solid var(--mrn-admin-accent); outline-offset: 3px; }
+body.mrn-media-workspace { --mrn-media-header-bottom: calc(var(--wp-admin--admin-bar--height, 32px) + 54px); }
+body.mrn-media-workspace #mrn-media-workspace-header { height: 54px; }
+body.mrn-media-workspace.no-js #mrn-media-workspace-header { display: none; }
+@media (min-width:783px) {
+ body.mrn-media-workspace #wpbody > #happyfiles-sidebar { top: var(--mrn-media-header-bottom); height: calc(100vh - var(--mrn-media-header-bottom)); }
+}
+@media (max-width:782px) {
+ body.mrn-media-workspace #mrn-media-workspace-header { padding-inline: 16px; gap: 16px; }
+ body.mrn-media-workspace #mrn-media-workspace-header a { min-height: 44px; display: inline-flex; align-items: center; }
+}
 /* Server-scoped Media starts full width before first paint. Core no-JS keeps
    its sidebar; a failed enhancement still exposes the menu through :target.
    Media shares the focused workspace approach. Only core shell dimensions
    change; folder UI, media list/grid, dialogs and action owners stay native. */
 body.mrn-appearance.mrn-media-workspace.js #wpcontent,
 body.mrn-appearance.mrn-media-workspace.js #wpfooter { margin-left: 0 !important; }
+body.mrn-appearance.mrn-media-workspace.js #wpcontent { padding-left: 0 !important; }
 body.mrn-appearance.mrn-media-workspace.js #wpbody-content { min-width: 0; }
 body.mrn-appearance.mrn-media-workspace.js #adminmenumain { display: none; }
 body.mrn-appearance.mrn-media-workspace.js #wpadminbar #wp-admin-bar-menu-toggle { display: none; }
-body.mrn-appearance.mrn-media-workspace.js #wpadminbar #wp-admin-bar-mrn-media-menu { display: block; }
-body.mrn-appearance.mrn-media-workspace.js #wpadminbar #wp-admin-bar-mrn-media-menu .ab-label { display: inline; }
-body.mrn-appearance.mrn-media-workspace.js #wpadminbar #wp-admin-bar-mrn-media-menu .ab-icon { top: 0; }
 body.mrn-appearance.mrn-media-workspace.js:not(.mrn-media-menu-ready) #adminmenumain:target,
 body.mrn-appearance.mrn-media-workspace.js.mrn-media-menu-open #adminmenumain {
- display: block; position: fixed; z-index: 99990; inset: 32px auto 0 0;
+ display: block; position: fixed; z-index: 99990; inset: var(--mrn-media-header-bottom) auto 0 0;
  width: min(280px, calc(100vw - 24px)); overflow: auto;
  background: var(--mrn-admin-nav); box-shadow: var(--mrn-admin-overlay-shadow);
  color-scheme: var(--mrn-admin-scheme);
@@ -34,11 +49,6 @@ body.mrn-appearance.mrn-media-workspace.js #collapse-menu { display: none !impor
 body.mrn-appearance.mrn-media-workspace.js #adminmenu li:is(.wp-has-current-submenu,.opensub,:hover,:focus-within) > .wp-submenu { display: block !important; }
 @media (max-width:782px) {
  body.mrn-appearance.mrn-media-workspace.js #wpadminbar { position: fixed; }
- body.mrn-appearance.mrn-media-workspace.js:not(.mrn-media-menu-ready) #adminmenumain:target,
- body.mrn-appearance.mrn-media-workspace.js.mrn-media-menu-open #adminmenumain { top: 46px; }
- body.mrn-appearance.mrn-media-workspace.js #wpadminbar #wp-admin-bar-mrn-media-menu > a { display: flex; align-items: center; gap: 6px; min-height: 46px; padding: 0 10px; }
- body.mrn-appearance.mrn-media-workspace.js #wpadminbar #wp-admin-bar-mrn-media-menu .ab-icon { font-size: 20px !important; width: 20px; line-height: 46px !important; margin: 0 !important; padding: 0; }
- body.mrn-appearance.mrn-media-workspace.js #wpadminbar #wp-admin-bar-mrn-media-menu .ab-label { position: static !important; clip: auto !important; clip-path: none !important; width: auto !important; height: auto !important; margin: 0 !important; overflow: visible !important; }
  body.mrn-appearance.mrn-media-workspace.js #wpbody { flex-wrap: wrap; }
  /* Only the observed folder panel's outer placement changes on narrow screens. */
  body.mrn-appearance.mrn-media-workspace.js #wpbody > #happyfiles-sidebar { position: static; height: auto; max-width: 100%; }
