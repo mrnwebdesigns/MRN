@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MRN Admin UI CSS
  * Description: Unified admin UI CSS loader for wp-admin.
- * Version: 3.3.4
+ * Version: 3.3.5
  */
 
 defined('ABSPATH') || exit;
@@ -83,7 +83,9 @@ add_action('admin_enqueue_scripts', function ($hook) {
     wp_enqueue_script('mrn-modern-admin', content_url('mu-plugins/mrn-admin-ui-css/modern-admin.js'), array(), (string) filemtime(__DIR__ . '/modern-admin.js'), true);
     wp_localize_script('mrn-modern-admin', 'mrnModernAdminLabels', array(
       'selection' => __('%d selected · Choose a bulk action, then Apply.', 'mrn-admin-ui-css'),
-      'hint' => __('Select items to use bulk actions. Row actions are available beneath each title.', 'mrn-admin-ui-css'),
+      'hint' => __('Select items to use bulk actions. Use each row’s Actions menu for individual items.', 'mrn-admin-ui-css'),
+      'actions' => __('Actions', 'mrn-admin-ui-css'),
+      'actionsFor' => __('Actions for %s', 'mrn-admin-ui-css'),
     ));
     return;
   }
