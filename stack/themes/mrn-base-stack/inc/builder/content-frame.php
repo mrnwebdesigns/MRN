@@ -1,5 +1,6 @@
 <?php
 /** Optional editable frames for composed text, metrics and image rows. */
+require_once __DIR__ . '/frame-spacing.php';
 function mrn_base_stack_get_content_frame_config( $layout ) {
 	$configs = array(
 		'wpforms' => array( 'prefix' => 'form', 'dimensions' => array( 'canvas_width', 'content_width', 'inner_gutter', 'inner_gutter_compact', 'inner_gutter_mobile', 'heading_size', 'heading_line_height', 'heading_space_after' ), 'weights' => array( 'heading_weight' ), 'colors' => array( 'heading_color' ), 'transforms' => array() ),
@@ -26,6 +27,7 @@ function mrn_base_stack_get_content_frame_fields( $layout, $seed ) {
 	if ( 'wpforms' === $layout ) { $fields[] = array( 'key' => $seed . '_form_content_alignment', 'name' => 'form_content_alignment', 'label' => 'Content Alignment in Canvas', 'type' => 'select', 'choices' => array( '' => 'Leading Edge', 'center' => 'Center', 'end' => 'Trailing Edge' ), 'default_value' => '', 'instructions' => 'Aligns the bounded heading/form group inside its canvas. Section margins and padding remain in row presets.' ); }
 	if ( 'wpforms' === $layout ) { $fields[] = array( 'key' => $seed . '_form_heading_mobile', 'name' => 'form_heading_mobile', 'label' => 'Small-Screen Heading', 'type' => 'select', 'choices' => array( '' => 'Visible', 'screen-reader' => 'Visually Hidden, Available to Screen Readers' ), 'default_value' => '', 'instructions' => 'Optional at 767px and below. The semantic heading remains available to assistive technology.' ); }
 	if ( 'body_text' === $layout ) {
+		$fields = array_merge( $fields, mrn_base_stack_get_frame_spacing_fields( $seed, 'body' ) );
 		$fields[] = array( 'key' => $seed . '_body_frame_breakpoints', 'name' => 'body_frame_breakpoints', 'label' => 'Heading and Text Spacing Breakpoints', 'type' => 'select', 'choices' => array( '' => 'Use Existing (900px / 560px)', '991-600' => 'Tablet at 991px; Mobile at 600px' ), 'default_value' => '', 'instructions' => 'Controls heading size/line height and space before text. Body text size keeps its separate small-screen breakpoint.' );
 		$fields[] = array( 'key' => $seed . '_body_heading_font', 'name' => 'body_heading_font', 'label' => 'Heading Font', 'type' => 'select', 'choices' => array( '' => 'Use Existing Font', 'heading' => 'Site Heading Font', 'body' => 'Site Body Font' ), 'default_value' => '' );
 		foreach ( array( 'text_size_mobile', 'text_line_height_mobile' ) as $name ) { $fields[] = array( 'key' => $seed . '_body_' . $name, 'name' => 'body_' . $name, 'label' => ucwords( str_replace( '_', ' ', $name ) ), 'type' => 'text' ); }
@@ -71,6 +73,9 @@ function mrn_base_stack_get_content_frame_contract( array $row, $layout ) {
 	if ( 'wpforms' === $layout && in_array( $row['form_content_alignment'] ?? '', array( 'center', 'end' ), true ) ) { $result['classes'][] = 'has-form-content-align-' . $row['form_content_alignment']; }
 	if ( 'wpforms' === $layout && 'screen-reader' === ( $row['form_heading_mobile'] ?? '' ) ) { $result['classes'][] = 'has-form-heading-mobile-sr'; }
 	if ( 'body_text' === $layout ) {
+		$spacing = mrn_base_stack_get_frame_spacing_contract( $row, 'body' );
+		$result['classes'] = array_merge( $result['classes'], $spacing['classes'] );
+		$styles = array_merge( $styles, $spacing['styles'] );
 		if ( '991-600' === ( $row['body_frame_breakpoints'] ?? '' ) ) { $result['classes'][] = 'has-body-breakpoints-991-600'; }
 		if ( in_array( $row['body_heading_font'] ?? '', array( 'heading', 'body' ), true ) ) { $result['classes'][] = 'has-body-heading-font-' . $row['body_heading_font']; }
 		foreach ( array( 'text_size_mobile', 'text_line_height_mobile', 'quote_mark_width', 'quote_mark_gap' ) as $name ) {
