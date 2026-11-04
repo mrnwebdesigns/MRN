@@ -42,6 +42,7 @@ try {
 		'cta_actions_space_before' => '0px', 'cta_action_min_width' => '200px', 'cta_content_alignment' => 'center',
 		'links' => array( array( 'link' => array( 'title' => 'Exact action', 'url' => home_url( '/?first=1&second=2' ), 'target' => '_blank' ), 'is_button' => 1 ) ),
 	);
+	$row = array_merge( $row, array( 'cta_text_space_after' => '40px', 'cta_text_space_after_narrow' => '20px', 'cta_text_space_after_narrow_breakpoint' => '1199', 'cta_heading_space_after_narrow' => '14px', 'cta_paragraph_typography' => 'inherit-body', 'cta_content_fill' => true, 'cta_action_layout' => 'inline', 'cta_action_border_width' => '1px' ) );
 	foreach ( array( 'margin', 'padding' ) as $kind ) {
 		foreach ( array( 'top', 'right', 'bottom', 'left' ) as $side ) { $row[ 'row_spacing_' . $kind . '_' . $side . '_preset' ] = '0px'; }
 	}
@@ -65,6 +66,10 @@ try {
 	$expect( ! str_contains( $old, 'has-cta-frame' ) && ! str_contains( $old, '--mrn-cta-frame-' ) && 1 === substr_count( $old, 'data-mrn-row-spacing=' ), 'Unconfigured CTA retains its existing wrapper and reusable contracts' );
 	$alias = $row; $alias['acf_fc_layout'] = 'cta_block';
 	$expect( str_contains( $render( $alias ), 'has-cta-frame' ) && 1 === substr_count( $render( $alias ), 'data-mrn-row-spacing=' ), 'Compatibility CTA layout uses the same optional single-owner contract' );
+	$detail = mrn_base_stack_get_cta_frame_contract( $row );
+	$expect( in_array( 'has-cta-paragraph-body-typography', $detail['classes'], true ) && in_array( 'has-cta-content-fill', $detail['classes'], true ) && in_array( 'has-cta-text-space-after-at-1199', $detail['classes'], true ) && in_array( 'has-cta-action-layout-inline', $detail['classes'], true ) && str_contains( $detail['attributes']['style'], '--mrn-cta-frame-action-border-width:1px' ), 'Explicit paragraph, fill and border options resolve through the native contract' );
+	$bad_detail = mrn_base_stack_get_cta_frame_contract( array( 'cta_frame' => 'stacked', 'cta_text_space_after' => '-1px', 'cta_action_border_width' => 'url(bad)', 'cta_paragraph_typography' => array( 'inherit-body' ), 'cta_content_fill' => '1;bad', 'cta_action_border_color' => 'unknown' ) );
+	$expect( array( 'has-cta-frame' ) === $bad_detail['classes'] && ! $bad_detail['attributes'], 'Unsafe optional paragraph, border and fill values retain defaults' );
 } finally { wp_delete_post( $id, true ); }
 $expect( null === get_post( $id ), 'Owned fixture removed' );
 WP_CLI::line( wp_json_encode( array( 'checks' => $checks, 'count' => count( $checks ), 'result' => 'passed', 'source_version' => _S_VERSION ), JSON_PRETTY_PRINT ) );
