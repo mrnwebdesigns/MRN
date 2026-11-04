@@ -1,0 +1,16 @@
+/* Shared Actions component for qualified native/MRN and Media list tables.
+   Original action containers stay in their native row/form. The top layer
+   prevents wide tables and overflow:hidden cards from clipping the dropdown. */
+body.mrn-appearance .wp-list-table .mrn-row-actions-toggle { display: inline-flex; align-items: center; gap: 7px; margin-top: 7px; padding: 3px 10px; min-height: 30px; border: 1px solid var(--mrn-admin-control-line); border-radius: 999px !important; background: var(--mrn-admin-surface); color: var(--mrn-admin-ink); font-size: 12px; line-height: 1.5; white-space: nowrap; }
+body.mrn-appearance .mrn-row-actions-toggle::after { content: '\25BE'; font-size: 15px; line-height: 1; }
+body.mrn-appearance .mrn-row-actions-toggle:is(:hover,[aria-expanded="true"]) { background: var(--mrn-admin-surface-hover); color: var(--mrn-admin-ink); border-color: var(--mrn-admin-accent); }
+body.mrn-appearance .mrn-row-actions-toggle[aria-expanded="true"]::after { transform: rotate(180deg); }
+body.mrn-appearance .wp-list-table .row-actions.mrn-row-action-popover { position: fixed; inset: auto; margin: 0; padding: 6px; box-sizing: border-box; width: min(240px,calc(100vw - 24px)); overflow: auto; border: 1px solid var(--mrn-admin-control-line); border-radius: 8px; background: var(--mrn-admin-surface); color: var(--mrn-admin-ink); box-shadow: var(--mrn-admin-overlay-shadow); font-size: 13px; line-height: 1.5; visibility: visible; }
+body.mrn-appearance .wp-list-table .row-actions.mrn-row-action-popover:not(:popover-open) { display: none !important; }
+body.mrn-appearance .wp-list-table .row-actions.mrn-row-action-popover:popover-open { display: block !important; }
+body.mrn-appearance .row-actions.mrn-row-action-popover > :is(span,.mrn-media-action) { display: block; float: none; padding: 0; }
+body.mrn-appearance #wpbody-content .row-actions.mrn-row-action-popover :is(a,button) { display: block; width: 100%; box-sizing: border-box; padding: 8px 10px; margin: 0; border: 0; border-radius: 4px; background: transparent; color: var(--mrn-admin-ink); text-align: start; font: inherit; text-decoration: none; white-space: normal; overflow-wrap: anywhere; cursor: pointer; }
+body.mrn-appearance #wpbody-content .row-actions.mrn-row-action-popover :is(.trash,.delete,.delete_permanent,.delete_permanently) a { color: var(--mrn-admin-danger); }
+body.mrn-appearance .row-actions.mrn-row-action-popover .mrn-row-action-divider { border-top: 1px solid var(--mrn-admin-line); padding-top: 5px; margin-top: 5px; }
+body.mrn-appearance #wpbody-content .row-actions.mrn-row-action-popover :is(a,button):hover { background: var(--mrn-admin-surface-hover); text-decoration: underline; }
+body.mrn-appearance .wp-list-table :is(.mrn-row-actions-toggle,.mrn-row-action-popover a,.mrn-row-action-popover button):focus-visible { outline: 2px solid var(--mrn-admin-focus); outline-offset: -2px; }

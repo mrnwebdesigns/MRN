@@ -77,9 +77,20 @@ add_action('admin_enqueue_scripts', function ($hook) {
     return;
   }
 
-  if (mrn_admin_ui_modern_screen()) {
+  $modern_scope = mrn_admin_ui_modern_screen();
+  $screen = get_current_screen();
+  // Core resolves/persists the requested Media mode before admin_enqueue_scripts.
+  // Reuse that preference so Grid and Add Media load no row-action assets.
+  $media_actions = mrn_admin_appearance_enabled() && $screen && 'upload' === $screen->id && 'upload' === $screen->base
+    && 'list' === get_user_option('media_library_mode');
+  if ($modern_scope || $media_actions) {
     wp_enqueue_style('mrn-admin-tokens', content_url('mu-plugins/mrn-admin-ui-css/mrn-admin-tokens.css'), array('common'), (string) filemtime(__DIR__ . '/mrn-admin-tokens.css'));
-    wp_enqueue_style('mrn-modern-admin', content_url('mu-plugins/mrn-admin-ui-css/mrn-modern-admin.css'), array('mrn-admin-tokens'), (string) filemtime(__DIR__ . '/mrn-modern-admin.css'));
+    if ($modern_scope) {
+      wp_enqueue_style('mrn-modern-admin', content_url('mu-plugins/mrn-admin-ui-css/mrn-modern-admin.css'), array('mrn-admin-tokens'), (string) filemtime(__DIR__ . '/mrn-modern-admin.css'));
+    }
+    if ('dashboard' !== $modern_scope) {
+      wp_enqueue_style('mrn-row-actions', content_url('mu-plugins/mrn-admin-ui-css/row-actions.css'), array('mrn-admin-tokens'), (string) filemtime(__DIR__ . '/row-actions.css'));
+    }
     wp_enqueue_script('mrn-modern-admin', content_url('mu-plugins/mrn-admin-ui-css/modern-admin.js'), array(), (string) filemtime(__DIR__ . '/modern-admin.js'), true);
     wp_localize_script('mrn-modern-admin', 'mrnModernAdminLabels', array(
       'selection' => __('%d selected · Choose a bulk action, then Apply.', 'mrn-admin-ui-css'),
@@ -87,7 +98,7 @@ add_action('admin_enqueue_scripts', function ($hook) {
       'actions' => __('Actions', 'mrn-admin-ui-css'),
       'actionsFor' => __('Actions for %s', 'mrn-admin-ui-css'),
     ));
-    return;
+    if ($modern_scope) { return; }
   }
 
   // Never load this cleanup stylesheet on JS-heavy editor/app screens.

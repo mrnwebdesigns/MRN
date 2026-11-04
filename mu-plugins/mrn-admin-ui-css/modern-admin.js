@@ -14,12 +14,12 @@
  form.addEventListener('change', update); update();
 })();
 
-/* Reuse Media's Actions disclosure pattern on the supported native/MRN tables.
+/* Shared Actions disclosure for supported native/MRN and Media list tables.
    Keep the original row-actions node, links, handlers and form ancestry. Native
    popovers render above overflow-clipped tables without portalling any controls. */
 (function() {
  'use strict';
- if (!document.body.classList.contains('mrn-modern-admin') || document.body.classList.contains('mrn-admin-dashboard') || !window.mrnModernAdminLabels || !('showPopover' in HTMLElement.prototype)) { return; }
+ if ((!document.body.classList.contains('mrn-modern-admin') && !document.body.matches('.mrn-media-workspace.upload-php')) || document.body.classList.contains('mrn-admin-dashboard') || !window.mrnModernAdminLabels || !('showPopover' in HTMLElement.prototype)) { return; }
  var labels = window.mrnModernAdminLabels, serial = 0, active = null, quickEdit = null, placement = null;
  var selector = '.row-actions', buttons = new WeakMap();
  function close() { if (active && active.isConnected && active.matches(':popover-open')) { active.hidePopover(); } active = null; }
@@ -40,10 +40,25 @@
   placement = { x: anchor.x, y: anchor.y, width: window.innerWidth, height: window.innerHeight };
  }
  function enhance(actions) {
-  // Existing Media/details menus and application-owned controls retain ownership.
-  if (!actions.isConnected || buttons.has(actions) || actions.querySelector('details,[popover]') || !actions.querySelector('a,button')) { return; }
+  if (!actions.isConnected || buttons.has(actions) || !actions.querySelector('a,button')) { return; }
+  // Adopt only the existing MRN Media disclosure. Keep the original action
+  // nodes, attributes, handlers and row/form ancestry; other details stay native.
+  var legacy = document.body.matches('.mrn-media-workspace.upload-php') && actions.querySelector(':scope > .mrn_media_actions > details.mrn-media-actions-menu');
+  if (legacy && legacy.parentElement.children.length === 1) {
+   var content = legacy.querySelector(':scope > .mrn-media-actions-menu__content');
+   if (content) {
+    var items = Array.from(content.children).filter(function(item) { return !item.classList.contains('mrn-media-actions-menu__separator'); });
+    items.forEach(function(item) {
+     ['trash','delete','delete_permanent','delete_permanently'].forEach(function(key) {
+      if (item.classList.contains('mrn-media-action-' + key)) { item.classList.add(key); }
+     });
+    });
+    legacy.parentElement.replaceWith.apply(legacy.parentElement, items);
+   }
+  }
+  if (actions.querySelector('details,[popover]')) { return; }
   var row = actions.closest('tr'); if (!row || row.classList.contains('inline-edit-row')) { return; }
-  var title = row.querySelector('.row-title,.plugin-title strong,.username strong,.column-name strong');
+  var title = row.querySelector('.row-title,.plugin-title strong,.username strong,.column-name strong,.column-title strong');
   var name = title ? title.textContent.replace(/\s+/g, ' ').trim() : '';
   var button = document.createElement('button'); button.type = 'button';
   button.className = 'button mrn-row-actions-toggle'; button.textContent = labels.actions;
