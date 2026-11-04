@@ -210,3 +210,14 @@ body.mrn-workspace .mrn-nested-header:hover { background: var(--mrn-admin-surfac
 @media (max-width:782px) {
  .mrn-workspace:is(.mrn-workspace-empty,.mrn-workspace-overview) .mrn-workspace-field { padding: 14px !important; }
 }
+
+/* Long sections: one page scroll, stable context, and native field-row bands. */
+body.mrn-workspace .mrn-editor-section > .acf-fc-layout-actions-wrap .acf-fc-layout-handle { padding: 12px 18px !important; }
+body.mrn-workspace .mrn-section-caption { font-size: 18px; line-height: 1.25; margin-top: 3px; }
+body.mrn-workspace .mrn-section-kind { font-size: 11px; line-height: 1.2; }
+body.mrn-workspace #wpbody-content .mrn-editor-section > .acf-fields > .acf-field.mrn-field-band:not(.-error) { background: var(--mrn-admin-surface-subtle); }
+body.mrn-workspace #wpbody-content .mrn-nested-component > .acf-input > .acf-repeater > .acf-table > tbody > .acf-row:nth-child(even of .acf-row:not(.acf-clone)) > td { background: var(--mrn-admin-surface); }
+@media (min-width: 1001px) and (min-height: 700px) {
+ body.mrn-workspace:not(.mrn-workspace-overview) .mrn-editor-section:not(.-collapsed) > .acf-fc-layout-actions-wrap { position: sticky; top: calc(var(--mrn-editor-offset, 103px) + var(--mrn-workspace-header-height, 54px)); z-index: 30; }
+ body.mrn-workspace .mrn-editor-section .acf-field { scroll-margin-top: calc(var(--mrn-editor-offset, 103px) + var(--mrn-workspace-header-height, 54px) + 96px); }
+}

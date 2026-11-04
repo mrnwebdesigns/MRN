@@ -141,6 +141,12 @@ body.mrn-appearance :is(.media-modal,.mce-container,.wp-editor-container),
 .mrn-themed-content #wpbody-content .acf-tab-group li a { background: var(--mrn-admin-surface-subtle); color: var(--mrn-admin-muted); border-color: var(--mrn-admin-line); }
 .mrn-themed-content #wpbody-content .acf-tab-group li.active a { background: var(--mrn-admin-surface); color: var(--mrn-admin-accent); }
 
+/* ACF swaps the row number for its native grip on hover. Active-row colors
+   must remain readable against the MRN header in both appearances. */
+body.mrn-themed-content #wpbody-content .acf-fc-layout-actions-wrap .acf-fc-layout-order { color: var(--mrn-admin-muted); background: var(--mrn-admin-surface-subtle); border-color: var(--mrn-admin-control-line); }
+body.mrn-themed-content #wpbody-content .acf-fc-layout-actions-wrap .acf-fc-layout-draggable-icon { color: var(--mrn-admin-on-primary); background: var(--mrn-admin-primary); border-color: var(--mrn-admin-primary); }
+body.mrn-themed-content #wpbody-content .acf-fc-layout-actions-wrap .acf-fc-layout-draggable-icon::before { background: var(--mrn-admin-on-primary); }
+
 /* One tab treatment on supported screens. ACF owns visibility and field order.
    Keep internal field/card separators; tab rows and their first field add no extra lines.
    Vertical ACF tabs and application-owned navigation keep their native layout. */

@@ -6,7 +6,7 @@
 	var labels = mrnSectionNavigator, rows = [], fields = [], activeRow, mode = 'content', overview = false;
 	var panel, list, search, status, empty, errorFilter, mobileToggle, modeButtons, viewButton, position, previous, next, hint;
 	var observer, titleObserver, noticeObserver, frame = 0, refreshFrame = 0, dirtyRows = new Set(), moving = false, sorting = false, errorsOnly = false, mounted = false, lastInvoker, pendingInvalid = false;
-	var richEditors = new WeakSet(), nestedRows = new WeakSet();
+	var richEditors = new WeakSet(), nestedRows = new WeakSet(), bandFrame = 0;
 	var observed = new WeakSet(), captions = new WeakMap(), remembered = '';
 	function rememberSection() {
 		var item = rows.find( function( entry ) { return entry.row === activeRow; } ), id = document.getElementById( 'post_ID' );
@@ -41,6 +41,28 @@
 			var payload = new URLSearchParams( options.data );
 			payload.set( 'hidden', Array.from( hidden ).join( ',' ) ); options.data = payload.toString();
 		} );
+	}
+	// ACF's declared widths and -c0 markers identify field rows. Reuse that
+	// metadata only on selection, visibility changes and resize: no geometry reads, descendant scans, or per-keystroke work.
+	function queueFieldBands() {
+		if ( ! mounted || ! activeRow || mode !== 'content' || overview || bandFrame ) { return; }
+		bandFrame = window.requestAnimationFrame( function() {
+			bandFrame = 0;
+			if ( ! activeRow || ! activeRow.isConnected || mode !== 'content' || overview ) { return; }
+			var index = -1, used = 0;
+			activeRow.querySelectorAll( ':scope > .acf-fields > .acf-field' ).forEach( function( field ) {
+				var hidden = field.matches( '.acf-hidden,.hidden,.acf-field-tab,.-endpoint,[hidden]' ) || field.style.display === 'none';
+				if ( hidden ) { return; } // Keep parked tab decoration; avoid needless class mutations.
+				var width = Math.min( 100, Math.max( 1, parseFloat( field.dataset.width ) || 100 ) );
+				if ( index < 0 || used + width > 100.01 || ( used > 0 && field.classList.contains( '-c0' ) ) ) { index++; used = 0; }
+				used += width;
+				field.classList.toggle( 'mrn-field-band', index % 2 === 1 );
+			} );
+		} );
+	}
+	function visibleFieldChanged( field ) {
+		var node = field && field.$el && field.$el[ 0 ];
+		if ( mounted && activeRow && node && node.parentElement && node.parentElement.parentElement === activeRow ) { queueFieldBands(); }
 	}
 	function owner( row ) { return acf.getField( window.jQuery( row.closest( '.acf-field[data-type="flexible_content"]' ) ) ); }
 	function eligibleFields() {
@@ -214,6 +236,7 @@
 		viewButton.textContent = overview ? labels.focus : labels.overview;
 		viewButton.setAttribute( 'aria-pressed', String( overview ) );
 		hint.textContent = mode === 'settings' ? labels.settingsHint : ( ! rows.length ? labels.startHint : ( overview ? labels.arrangeHint : labels.hint ) );
+		queueFieldBands();
 	}
 	function filter() {
 		var query = search.value.trim().toLocaleLowerCase(), count = 0, errors = rows.filter( function( item ) { return item.errors; } ).length;
@@ -376,6 +399,7 @@
 			if ( window.ResizeObserver && ! observed.has( bar ) ) { observed.add( bar ); new ResizeObserver( updateChromeOffset ).observe( bar ); }
 		}
 		document.body.style.setProperty( '--mrn-editor-offset', offset + 'px' );
+		queueFieldBands();
 	}
 	function collectNotices() {
 		var wrap = document.querySelector( '#poststuff' ).closest( '.wrap' );
@@ -449,6 +473,7 @@
 	// Reveal after ACF initializes its fields. Early show eagerly enhances Select2
 	// controls in otherwise hidden panels and sections.
 	acf.addAction( 'load', function() { nativeReady = true; schedule(); }, 100 );
+	acf.addAction( 'show_field', visibleFieldChanged ); acf.addAction( 'hide_field', visibleFieldChanged );
 	acf.addAction( 'ready', schedule ); acf.addAction( 'append', schedule ); acf.addAction( 'remove', schedule ); acf.addAction( 'sortstart', function() { sorting = true; } ); acf.addAction( 'sortstop', function() { sorting = false; schedule(); } );
 	document.addEventListener( 'click', function( event ) {
 		if ( event.target.closest( '.mrn-section-return' ) ) { openPanel( event.target ); }
@@ -480,5 +505,16 @@
 	document.addEventListener( 'input', function( event ) { if ( event.target.closest( '.mrn-workspace-field' ) ) { refresh( event.target ); } } );
 	document.addEventListener( 'change', function( event ) { if ( event.target.closest( '.mrn-workspace-field' ) ) { refresh( event.target ); } } );
 	// If ACF opens a nested field tab during validation, keep that field's section visible.
-	document.addEventListener( 'focusin', function( event ) { var item = rootRow( event.target ); if ( item && item.row !== activeRow ) { activeRow = item.row; applyView(); } } );
+	document.addEventListener( 'focusin', function( event ) {
+		var item = rootRow( event.target );
+		if ( item && item.row !== activeRow ) { activeRow = item.row; applyView(); }
+		// Keep keyboard/validation focus below the CSS-sticky section heading.
+		if ( item && event.target.matches( 'input,select,textarea,iframe,button,a[href],[tabindex],[contenteditable=true]' ) ) {
+			var heading = item.row.querySelector( ':scope > .acf-fc-layout-actions-wrap' );
+			if ( heading && ! heading.contains( event.target ) && getComputedStyle( heading ).position === 'sticky' ) {
+				var bottom = heading.getBoundingClientRect().bottom, top = event.target.getBoundingClientRect().top;
+				if ( top < bottom + 2 ) { window.scrollBy( { top: top - bottom - 12, behavior: 'instant' } ); }
+			}
+		}
+	} );
 } )();
