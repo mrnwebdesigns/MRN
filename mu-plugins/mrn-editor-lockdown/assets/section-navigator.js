@@ -2,6 +2,7 @@
 ( function() {
 	'use strict';
 	if ( ! window.acf || ! window.mrnSectionNavigator ) { return; }
+	var reconciled = false;
 	var nativeReady = document.readyState === 'complete';
 	var labels = mrnSectionNavigator, rows = [], fields = [], activeRow, mode = 'content', overview = false;
 	var panel, list, search, status, empty, errorFilter, mobileToggle, modeButtons, viewButton, position, previous, next, hint;
@@ -336,7 +337,7 @@
 		}, 50 );
 	}
 	function reconcile() {
-		frame = 0; if ( sorting ) { return; } fields = eligibleFields(); if ( ! fields.length ) { return; }
+		frame = 0; if ( sorting ) { return; } fields = eligibleFields(); if ( ! fields.length ) { document.documentElement.classList.remove( 'mrn-editor-starting' ); return; }
 		if ( ! mounted ) { mount(); }
 		var focused = document.activeElement, oldRows = rows, outlineScroll = panel.scrollTop, oldIndex = oldRows.findIndex( function( item ) { return item.row === activeRow; } );
 		// Disconnect before re-indexing: removed layouts must not be retained by observers.
@@ -386,6 +387,7 @@
 		else if ( ! activeRow || ! activeRow.isConnected ) { var restoredSection = ! oldRows.length && restoreSection(); activeRow = restoredSection ? restoredSection.row : ( rows.length ? rows[ Math.max( 0, Math.min( oldIndex, rows.length - 1 ) ) ].row : null ); }
 		filter(); applyView(); if ( activeRow && ! overview && mode === 'content' ) { reveal( activeRow ); nestedComponents( activeRow ); }
 		if ( ! added ) { panel.scrollTop = outlineScroll; } rememberSection();
+		reconciled = true; updateChromeOffset();
 		if ( focused && focused.isConnected && focused.matches( '.mrn-section-link' ) ) { focused.focus( { preventScroll: true } ); }
 	}
 	function schedule() { if ( sorting ) { return; } if ( ! frame ) { frame = window.requestAnimationFrame( reconcile ); } }
@@ -404,6 +406,9 @@
 			if ( window.ResizeObserver && ! observed.has( bar ) ) { observed.add( bar ); new ResizeObserver( updateChromeOffset ).observe( bar ); }
 		}
 		document.body.style.setProperty( '--mrn-editor-offset', offset + 'px' );
+		if ( reconciled && ( bar || ! document.querySelector( 'script[src*="/mrn-universal-sticky-bar/assets/universal-sticky-bar.js"]' ) ) ) {
+			document.documentElement.classList.remove( 'mrn-editor-starting' );
+		}
 		queueFieldBands();
 	}
 	function collectNotices() {
@@ -466,14 +471,19 @@
 		steps.append( previous, position, next ); tools.append( mobileToggle, viewButton, arrangement, steps );
 		hint = element( 'p', 'mrn-workspace-hint' ); var title = document.getElementById( 'titlediv' );
 		var titleLabel = element( 'label', 'mrn-page-title-label', labels.pageName ); titleLabel.htmlFor = 'title'; title.prepend( titleLabel ); title.after( tools, hint );
-		noticeObserver = new MutationObserver( collectNotices );
+		noticeObserver = new MutationObserver( function( changes ) {
+			collectNotices();
+			// The toolbar can mount after ACF's ready callback. Measure it on
+			// insertion, before paint, rather than correcting the offset 500ms later.
+			if ( changes.some( function( change ) { return Array.from( change.addedNodes ).some( function( node ) { return node.id === 'mrn-universal-sticky-toolbar'; } ); } ) ) { updateChromeOffset(); }
+		} );
 		noticeObserver.observe( document.getElementById( 'wpbody-content' ), { childList: true } );
 		noticeObserver.observe( document.querySelector( '#poststuff' ).closest( '.wrap' ), { childList: true } );
 		collectNotices(); preservePanelPreferences();
 		var toolbarEntry = document.querySelector( '#wp-admin-bar-mrn-page-sections > a' ); if ( toolbarEntry ) { toolbarEntry.addEventListener( 'click', function( event ) { event.preventDefault(); openPanel( toolbarEntry ); } ); }
 		panel.addEventListener( 'keydown', function( event ) { if ( event.key === 'Escape' ) { event.preventDefault(); closePanel( true ); } } );
 		document.addEventListener( 'keydown', function( event ) { if ( event.key === 'Escape' && document.body.classList.contains( 'mrn-site-menu-open' ) ) { document.body.classList.remove( 'mrn-site-menu-open' ); menu.setAttribute( 'aria-expanded', 'false' ); menu.focus(); } } );
-		window.addEventListener( 'resize', updateChromeOffset ); updateChromeOffset(); window.setTimeout( updateChromeOffset, 500 );
+		window.addEventListener( 'resize', updateChromeOffset ); updateChromeOffset();
 	}
 	// Reveal after ACF initializes its fields. Early show eagerly enhances Select2
 	// controls in otherwise hidden panels and sections.

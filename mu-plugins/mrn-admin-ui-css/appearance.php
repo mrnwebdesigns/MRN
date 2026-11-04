@@ -22,6 +22,21 @@ function mrn_admin_appearance_preference() {
 	return in_array( $value, array( 'light', 'dark', 'system' ), true ) ? $value : 'system';
 }
 
+// Keep native form geometry available to ACF during startup, but do not paint
+// the intermediate native layout. This is editor-only and always fails open.
+add_action( 'admin_head', function () {
+	if ( ! function_exists( 'mrn_editor_experience_screen' ) || ! mrn_editor_experience_screen() ) {
+		return;
+	}
+	wp_print_inline_script_tag( "document.documentElement.classList.add('mrn-editor-starting');window.setTimeout(function(){document.documentElement.classList.remove('mrn-editor-starting');},8000);" );
+}, 1 );
+
+add_action( 'in_admin_header', function () {
+	if ( function_exists( 'mrn_editor_experience_screen' ) && mrn_editor_experience_screen() ) {
+		echo '<div id="mrn-editor-opening" role="status" aria-live="polite">' . esc_html__( 'Opening editor…', 'mrn-admin-ui-css' ) . '</div>';
+	}
+} );
+
 // The preference is in the opening HTML tag, before any styles or visible DOM.
 // System is resolved by CSS media queries, including with JavaScript disabled.
 add_action( 'admin_xml_ns', function () {

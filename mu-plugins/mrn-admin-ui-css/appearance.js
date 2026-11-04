@@ -187,16 +187,4 @@
    }
   });
  }
- // Keep the title and native Add action together on the audited native screens.
- if (document.body.classList.contains('mrn-modern-admin')) {
-  var heading = document.querySelector('#wpbody-content > .wrap > h1');
-  if (heading) {
-   var header = document.createElement('div'), title = document.createElement('div');
-   header.className = 'mrn-page-header'; title.className = 'mrn-page-heading';
-   heading.before(header); header.appendChild(title);
-   var action = heading.nextElementSibling;
-   title.appendChild(heading);
-   if (action && action.classList.contains('page-title-action')) { title.appendChild(action); }
-  }
- }
 })();

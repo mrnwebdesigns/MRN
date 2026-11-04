@@ -331,3 +331,10 @@ body.mrn-screen-tools-ready #screen-meta input[type=checkbox]:checked { position
 body.mrn-screen-tools-ready #screen-meta input[type=checkbox]:checked::before { content: ""; position: absolute; left: 50%; top: 45%; float: none; margin: 0; width: 25%; height: 50%; border: solid var(--mrn-admin-on-primary); border-width: 0 2px 2px 0; transform: translate(-50%,-50%) rotate(45deg); }
 body.mrn-screen-tools-ready #screen-meta input[type=radio]:checked::before { background-color: var(--mrn-admin-primary); }
 body.mrn-screen-tools-ready #screen-meta .contextual-help-tabs .active { background: var(--mrn-admin-selected); border-color: var(--mrn-admin-line); }
+
+/* Editor first paint: retain native field geometry/lifecycle while the existing
+   workspace mounts. The head marker expires after 8s if enhancement fails. */
+#mrn-editor-opening { display: none; }
+html.mrn-editor-starting body.mrn-appearance #wpcontent { margin-left: 0 !important; }
+html.mrn-editor-starting body.mrn-appearance :is(#wpbody-content,#wpbody-content *,#adminmenumain,#adminmenumain *,#wpfooter) { visibility: hidden !important; }
+html.mrn-editor-starting body.mrn-appearance #mrn-editor-opening { display: block; visibility: visible !important; position: fixed; z-index: 9998; inset: 140px 24px auto; padding: 24px; max-width: 360px; margin-inline: auto; border: 1px solid var(--mrn-admin-line); border-radius: var(--mrn-admin-radius-component); background: var(--mrn-admin-surface); color: var(--mrn-admin-muted); text-align: center; font-size: 14px; }
