@@ -10,6 +10,7 @@
 		var batch = Number( root.getAttribute( 'data-mrn-articles' ) );
 		batch = Number.isInteger( batch ) && batch >= 1 && batch <= 1000 ? batch : 9;
 		var incremental = root.getAttribute( 'data-article-incremental' ) === '1';
+		var imageSizes = new WeakMap();
 		var shown = batch;
 		var active = '*';
 		var message = root.getAttribute( 'data-article-status-message' ) || 'Showing %1$d of %2$d posts';
@@ -17,6 +18,25 @@
 			var matches = cards.filter( function( card ) { return active === '*' || ( card.getAttribute( 'data-categories' ) || '' ).split( /\s+/ ).includes( active ); } );
 			var visible = incremental ? matches.slice( 0, shown ) : matches;
 			var visibleSet = new Set( visible );
+			// An auto-sized image loses its measured width when its card is hidden. Pin
+			// that width first so hiding a card cannot request a larger fallback image.
+			// Read every width before changing attributes to avoid repeated layouts.
+			var imageStates = cards.map( function( card ) {
+				var img = card.querySelector( '.mrn-article__media img[sizes]' );
+				var hide = ! visibleSet.has( card );
+				var auto = img && /^auto(?:,|$)/.test( img.getAttribute( 'sizes' ) );
+				return { img: img, hide: hide, width: hide && ! card.hidden && auto ? img.getBoundingClientRect().width : 0 };
+			} );
+			imageStates.forEach( function( state ) {
+				if ( ! state.img ) { return; }
+				if ( state.hide && state.width > 0 ) {
+					imageSizes.set( state.img, state.img.getAttribute( 'sizes' ) );
+					state.img.setAttribute( 'sizes', Math.ceil( state.width ) + 'px' );
+				} else if ( ! state.hide && imageSizes.has( state.img ) ) {
+					state.img.setAttribute( 'sizes', imageSizes.get( state.img ) );
+					imageSizes.delete( state.img );
+				}
+			} );
 			cards.forEach( function( card ) { card.hidden = ! visibleSet.has( card ); } );
 			filters.forEach( function( filter ) { filter.setAttribute( 'aria-pressed', filter.getAttribute( 'data-article-filter' ) === active ? 'true' : 'false' ); } );
 			if ( empty ) { empty.hidden = matches.length !== 0; }

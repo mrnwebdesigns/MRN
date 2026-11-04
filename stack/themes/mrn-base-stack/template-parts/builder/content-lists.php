@@ -112,6 +112,7 @@ if ( ! empty( $tax_query ) ) {
 $query_args = mrn_base_stack_get_content_list_collection_query( $row, $query_args );
 $query_args = mrn_base_stack_get_article_collection_query( $row, $query_args );
 $query = new WP_Query( $query_args );
+if ( $is_article_list && $show_featured_image ) { update_post_thumbnail_cache( $query ); }
 
 $has_intro      = '' !== trim( wp_strip_all_tags( $intro ) );
 $has_heading    = '' !== $heading;
