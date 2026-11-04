@@ -10,9 +10,7 @@ body.mrn-modern-admin { background: var(--mrn-admin-canvas); color: var(--mrn-ad
 .mrn-modern-admin #wpbody-content :is(input[type=text],input[type=search],input[type=email],input[type=url],input[type=number],input[type=password],select,textarea):not(.select2-search__field):not(:where(#dashboard-widgets .postbox:not(#mrn_support_widget) *)) { border-color: var(--mrn-admin-control-line); border-radius: 6px; min-height: 36px; color: var(--mrn-admin-ink); }
 .mrn-modern-admin #wpbody-content :is(input,select,textarea):disabled:not(:where(#dashboard-widgets .postbox:not(#mrn_support_widget) *)) { color: var(--mrn-admin-muted); }
 .mrn-modern-admin .wrap > .notice, .mrn-modern-admin .wrap > .updated, .mrn-modern-admin .wrap > .error { border-radius: 7px; box-shadow: none; margin: 16px 0; }
-.mrn-modern-admin .nav-tab-wrapper { display: flex; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid var(--mrn-admin-line); padding: 0 0 12px; margin: 20px 0; }
-.mrn-modern-admin .nav-tab { margin: 0; background: transparent; border: 0; border-radius: 6px; padding: 9px 14px; color: var(--mrn-admin-muted); }
-.mrn-modern-admin .nav-tab-active { background: var(--mrn-admin-selected); color: var(--mrn-admin-selected-ink); }
+.mrn-modern-admin .nav-tab-wrapper { margin: 20px 0; }
 /* Dashboard uses the existing widgets in DOM order. Empty stored columns consume no space. */
 .mrn-admin-dashboard #dashboard-widgets { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 24px; }
 .mrn-admin-dashboard #dashboard-widgets .postbox-container { float: none !important; width: auto !important; min-width: 0; }
