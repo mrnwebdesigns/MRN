@@ -36,7 +36,7 @@
   document.addEventListener('focusin', function(event) {
    if (!siteMenu.contains(event.target) && !mediaMenu.contains(event.target)) { closeMediaMenu(false); }
   });
-  // Fail back to the original sidebar if the control or script is unavailable.
+  // Mark enhanced behavior; CSS retains the anchor fallback until this runs.
   document.body.classList.add('mrn-media-menu-ready');
  }
  var form = document.querySelector('.mrn-appearance-form');
