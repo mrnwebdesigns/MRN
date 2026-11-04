@@ -1,0 +1,38 @@
+{
+  "host": "admin-editor-pilot.mrndev.io",
+  "commit": "f9f231e290a1767810aba213838edd1a22a9e712",
+  "files": {
+    "mrn-admin-ui-css/mrn-admin-shell.css": {
+      "before": "33bc326f7b7fd5e0f1e4fd61ed94e2e340fb773a271b1a97f257b71d69fb1f72",
+      "after": "091e5374a652d7246dc241495690ce0659f35f92699577dd144f71030317e3e8"
+    },
+    "mrn-admin-ui-css/mrn-editor-workspace.css": {
+      "before": "83ef9f7a4e4195c2c8abf570acca29d0438211190efbe399a733b3764d6e08f6",
+      "after": "5b54b8ce113a81b75d62209132556e470f110b632ba9b4a86bb5160bff510446"
+    },
+    "mrn-admin-ui-css/appearance.js": {
+      "before": "7fa7e315c472fd7aa384598d952117a73dea842c1cc0ab40b59af86dc94b0f8c",
+      "after": "d50837e51bbaae300a6602ed46520615557869427ecb4dee731abfd2dac11a82"
+    },
+    "mrn-admin-ui-css/appearance.php": {
+      "before": "07cb357af62825a78826f0f6b91700cf97adead4176573ee4b9d0d4b99c08e9c",
+      "after": "d35b096f0e87ea0501bbb1b88fb0d7366754611a4ea6b8c12a35485bf34a3fbf"
+    },
+    "mrn-editor-lockdown/assets/section-navigator.js": {
+      "before": "803c928599a59f15a3e2cc44547c33ee98dbf06c6cad3d822587cb4918d6dfbb",
+      "after": "bea710cbd1f8d61e4ffeed0a3d80b0ecaa1baf6834b3b22f5bc92cd13f26c3f9"
+    }
+  },
+  "backup": {
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1793821235,
+    "label": "pre-admin-pilot-site-menu-install-20261104",
+    "nonce": "16399919c4c7",
+    "key": "sites/admin-editor-pilot-mrndev-io/backup_2026-11-04-1940_Trilliant_16399919c4c7-db.gz",
+    "size": 6312549,
+    "sha256": "3c5afd02300a6bff7504bf75a35ac3e893394482d827b0214f2763cfdfaaffd0"
+  },
+  "rollback": "/home/mrndev-admin-editor/review-private/before-site-menu-f9f231e290a1",
+  "status": "installed"
+}

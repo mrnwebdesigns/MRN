@@ -356,3 +356,7 @@ next annotation `UX-038`. Existing editor CPU and Local Hub OOM gates remain ope
 ### UX-040 — Use the editor navigation pattern for Media
 
 “I like this over the top dropdown you added for media.” **P2, implemented and installed for review.** Media now shares the editor's Site menu bar below the WordPress toolbar, with Dashboard/Back to library navigation. AME owns the original drawer contents; the shared row Actions component remains unchanged. Both themes, keyboard, mobile, native media controls, editor regression and fallbacks pass. Source `253be2e2`; [evidence](media-navigation-20261104/REVIEW.md). Fresh Codex Media tab ready for annotations. Await visual review; next annotation `UX-041`.
+
+### UX-041 — Shared Site menu behavior and stable disclosure
+
+**P1, implemented for review.** Media, Edit and Create now share one controller and drawer styles. Removed automatic Dashboard focus and hover/current/vendor expansion; explicit submenu buttons preserve native links and AME groups. Keyboard, both themes, mobile, scrolled opening, native controls and failure fallbacks are covered. Source `f9f231e2`; [evidence](shared-site-menu-20261104/REVIEW.md). Await visual review; next annotation `UX-042`.

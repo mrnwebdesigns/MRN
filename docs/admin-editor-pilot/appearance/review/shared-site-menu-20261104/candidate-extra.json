@@ -1,0 +1,35 @@
+[
+  {
+    "name": "Bounded first-open and repeat open/close including layout",
+    "samples_ms": [
+      29.5,
+      5.600000008940697,
+      1.5,
+      1.3999999910593033,
+      1.1000000089406967,
+      1,
+      0.7999999970197678,
+      1.0999999940395355,
+      1.2999999970197678,
+      0.9000000059604645
+    ],
+    "toggles": 21
+  },
+  {
+    "name": "Scrolled open preserves page position; native AME disclosure preserves links",
+    "scrollY": 500
+  },
+  {
+    "name": "Native REST health",
+    "status": 200
+  },
+  {
+    "name": "no-js native navigation available"
+  },
+  {
+    "name": "media-script-failure native navigation available"
+  },
+  {
+    "name": "editor-script-failure native navigation available"
+  }
+]

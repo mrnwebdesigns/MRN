@@ -1,0 +1,120 @@
+{
+  "phase": "candidate",
+  "checks": [
+    {
+      "name": "media opens without focus scroll or automatic submenus",
+      "data": {
+        "elapsed_ms": 131.69
+      }
+    },
+    {
+      "name": "media hover does not expand or reflow menu",
+      "data": true
+    },
+    {
+      "name": "media explicit click/Space/Enter disclosure",
+      "data": true
+    },
+    {
+      "name": "media shared keyboard entry and Escape return",
+      "data": true
+    },
+    {
+      "name": "media light scoped axe and capture",
+      "data": true
+    },
+    {
+      "name": "media dark scoped axe and capture",
+      "data": true
+    },
+    {
+      "name": "media mobile drawer and disclosure",
+      "data": true
+    },
+    {
+      "name": "editor opens without focus scroll or automatic submenus",
+      "data": {
+        "elapsed_ms": 410.3
+      }
+    },
+    {
+      "name": "editor hover does not expand or reflow menu",
+      "data": true
+    },
+    {
+      "name": "editor explicit click/Space/Enter disclosure",
+      "data": true
+    },
+    {
+      "name": "editor shared keyboard entry and Escape return",
+      "data": true
+    },
+    {
+      "name": "editor light scoped axe and capture",
+      "data": true
+    },
+    {
+      "name": "editor dark scoped axe and capture",
+      "data": true
+    },
+    {
+      "name": "editor native form values unchanged",
+      "data": true
+    },
+    {
+      "name": "editor mobile drawer and disclosure",
+      "data": true
+    },
+    {
+      "name": "create opens without focus scroll or automatic submenus",
+      "data": {
+        "elapsed_ms": 60.27
+      }
+    },
+    {
+      "name": "create hover does not expand or reflow menu",
+      "data": true
+    },
+    {
+      "name": "create explicit click/Space/Enter disclosure",
+      "data": true
+    },
+    {
+      "name": "create shared keyboard entry and Escape return",
+      "data": true
+    },
+    {
+      "name": "create light scoped axe and capture",
+      "data": true
+    },
+    {
+      "name": "create dark scoped axe and capture",
+      "data": true
+    },
+    {
+      "name": "create native form values unchanged",
+      "data": true
+    },
+    {
+      "name": "create mobile drawer and disclosure",
+      "data": true
+    },
+    {
+      "name": "Grid uses shared menu; native attachment dialog retained",
+      "data": true
+    },
+    {
+      "name": "Add Media uses shared menu; upload controls retained",
+      "data": true
+    },
+    {
+      "name": "Shared Media row Actions retained; saved view restored to List",
+      "data": true
+    },
+    {
+      "name": "No uncaught page errors",
+      "data": true
+    }
+  ],
+  "errors": []
+}

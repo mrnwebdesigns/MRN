@@ -1,0 +1,26 @@
+{
+  "mrn-admin-ui-css/appearance.js": {
+    "before_bytes": 11794,
+    "after_bytes": 13904,
+    "before_gzip": 3455,
+    "after_gzip": 3962
+  },
+  "mrn-admin-ui-css/mrn-admin-shell.css": {
+    "before_bytes": 46913,
+    "after_bytes": 48780,
+    "before_gzip": 8281,
+    "after_gzip": 8597
+  },
+  "mrn-admin-ui-css/mrn-editor-workspace.css": {
+    "before_bytes": 24949,
+    "after_bytes": 24579,
+    "before_gzip": 4723,
+    "after_gzip": 4667
+  },
+  "mrn-editor-lockdown/assets/section-navigator.js": {
+    "before_bytes": 40524,
+    "after_bytes": 40150,
+    "before_gzip": 10891,
+    "after_gzip": 10844
+  }
+}

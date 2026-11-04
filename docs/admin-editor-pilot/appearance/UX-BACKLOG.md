@@ -161,3 +161,5 @@ Only the dedicated mrndev.io review deployment is authorized. No release prepara
 **P2 UX-039:** Removed the pointer-selected section-heading border on the review host; preserved keyboard focus. Both themes and installed CSS verified. [Evidence](review/section-focus-20261104/REVIEW.md). Await visual review; next annotation `UX-040`.
 
 **P2 UX-040:** Media now uses the shared editor-style Site menu bar with Dashboard/Back to library navigation. Installed Light/Dark, mobile, keyboard, native controls, editor regression and fallback checks pass. Original AME menu and row Actions remain intact. [Evidence](review/media-navigation-20261104/REVIEW.md). Await visual review; next annotation `UX-041`. Existing CPU/OOM release blockers remain open.
+
+**P1 UX-041:** Replaced separate Media/editor menu behavior with one shared controller and drawer. Submenus start collapsed and open explicitly; focus/hover/vendor rules no longer cause unsolicited expansion or reflow. [Evidence](review/shared-site-menu-20261104/REVIEW.md). Await visual review; next annotation `UX-042`. CPU/OOM and release gates remain open.

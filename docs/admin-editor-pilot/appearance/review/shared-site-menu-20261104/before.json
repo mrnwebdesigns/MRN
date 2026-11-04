@@ -1,0 +1,14 @@
+{
+  "phase": "before",
+  "checks": [
+    {
+      "name": "Media automatically expands unrelated submenus",
+      "data": [
+        "menu-dashboard",
+        "menu-media",
+        "toplevel_page_wpforms-overview"
+      ]
+    }
+  ],
+  "errors": []
+}

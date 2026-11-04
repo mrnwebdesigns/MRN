@@ -22,6 +22,18 @@ Eligible native/MRN tables receive it through their existing `.wp-list-table` an
 instead of copying the renderer, styles or interaction handlers. The existing
 screen allowlist and native fallback remain authoritative.
 
+The **Site menu** is shared by the Media and ACF editor workspaces. Its delegated
+controller lives in `appearance.js`, and its drawer/disclosure styles live in
+`mrn-admin-shell.css`. Both render `.mrn-site-menu` inside `.mrn-workspace-header`;
+the editor only supplies its publishing-toolbar offset. Do not add a second
+controller or hover-driven submenu rules in a consumer. The controller prepares
+disclosure buttons on first use, retains the original AME links/groups, and never
+writes menu preferences. Submenus open explicitly; hover, native focus/current
+classes and vendor styles cannot expand them. Escape returns focus, Tab or
+ArrowDown enters the drawer, and the anchor keeps navigation available if the
+appearance script fails. This component is scoped to the two existing workspace
+body classes; ordinary WordPress/plugin navigation remains native.
+
 ## Local editor pilot
 
 On an eligible, explicitly enabled Editor Lockdown pilot screen, load
