@@ -1,0 +1,39 @@
+{
+  "phase": "candidate",
+  "checks": [
+    "light primary/secondary hierarchy, native links, contrast, hover, keyboard, axe",
+    "dark primary/secondary hierarchy, native links, contrast, hover, keyboard, axe",
+    "Native collapsed sidebar flyout remains usable; restored expanded sidebar",
+    "390px mobile navigation visible without horizontal overflow"
+  ],
+  "contrast": [
+    {
+      "mode": "light",
+      "normal": 9.791240261617618
+    },
+    {
+      "mode": "light",
+      "hover": 8.731040782237509
+    },
+    {
+      "mode": "dark",
+      "normal": 12.09161523688928
+    },
+    {
+      "mode": "dark",
+      "hover": 8.077452806647118
+    }
+  ],
+  "axe": [
+    {
+      "mode": "light",
+      "violations": []
+    },
+    {
+      "mode": "dark",
+      "violations": []
+    }
+  ],
+  "errors": [],
+  "passed": true
+}

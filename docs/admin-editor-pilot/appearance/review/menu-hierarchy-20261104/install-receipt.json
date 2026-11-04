@@ -1,0 +1,18 @@
+{
+  "host": "admin-editor-pilot.mrndev.io",
+  "file": "mrn-admin-ui-css/mrn-admin-shell.css",
+  "before": "06b43cd6bf91654ec018c85a884642241527962470464672ca49b5c897112d4e",
+  "after": "6b94f2f5452e1ff87f2139d393f85fdbba9ea2c6325ebf4b6a0dd19d4281aabe",
+  "backup": {
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1793801090,
+    "label": "pre-admin-pilot-menu-hierarchy-install-20261104",
+    "nonce": "891cd15a0159",
+    "key": "sites/admin-editor-pilot-mrndev-io/backup_2026-11-04-1404_Trilliant_891cd15a0159-db.gz",
+    "size": 6298683,
+    "sha256": "a44abafb9c38bb936a73584bc67d6897ec66b8437b2e390d3dbb6d62aa2b15ab"
+  },
+  "rollback": "/home/mrndev-admin-editor/review-private/before-menu-hierarchy-20261104.css",
+  "status": "installed"
+}
