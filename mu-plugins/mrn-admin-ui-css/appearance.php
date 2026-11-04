@@ -7,6 +7,15 @@ function mrn_admin_appearance_enabled() {
 	return is_admin() && function_exists( 'mrn_editor_experience_enabled' ) && mrn_editor_experience_enabled();
 }
 
+/** Only the native Media Library and upload screen use the focused media shell. */
+function mrn_admin_media_workspace_screen() {
+	if ( ! mrn_admin_appearance_enabled() || ! function_exists( 'get_current_screen' ) ) {
+		return false;
+	}
+	$screen = get_current_screen();
+	return $screen && in_array( $screen->id, array( 'upload', 'media' ), true ) && in_array( $screen->base, array( 'upload', 'media' ), true );
+}
+
 /** Invalid or unset stored preferences follow the operating system. */
 function mrn_admin_appearance_preference() {
 	$value = get_user_meta( get_current_user_id(), 'mrn_admin_appearance', true );
@@ -26,7 +35,7 @@ add_filter( 'admin_body_class', function ( $classes ) {
 		return $classes;
 	}
 	$workspace = function_exists( 'mrn_editor_experience_screen' ) && mrn_editor_experience_screen();
-	return $classes . ' mrn-appearance' . ( $workspace || mrn_admin_ui_modern_screen() ? ' mrn-themed-content' : ' mrn-native-app' );
+	return $classes . ' mrn-appearance' . ( $workspace || mrn_admin_ui_modern_screen() ? ' mrn-themed-content' : ' mrn-native-app' ) . ( mrn_admin_media_workspace_screen() ? ' mrn-media-workspace' : '' );
 } );
 
 add_action( 'admin_enqueue_scripts', function () {
@@ -54,6 +63,17 @@ add_action( 'admin_enqueue_scripts', function () {
 
 // Register the native Dashboard node before the site menu, so it precedes Visit
 // Site. Toolbar Editor runs afterwards and retains configuration/role ownership.
+add_action( 'admin_bar_menu', function ( $bar ) {
+	if ( mrn_admin_media_workspace_screen() && current_user_can( 'upload_files' ) ) {
+		$bar->add_node( array(
+			'id' => 'mrn-media-menu',
+			'title' => '<span class="ab-icon dashicons dashicons-menu" aria-hidden="true"></span><span class="ab-label">' . esc_html__( 'Site menu', 'mrn-admin-ui-css' ) . '</span>',
+			'href' => '#adminmenumain',
+			'meta' => array( 'class' => 'hide-if-no-js' ),
+		) );
+	}
+}, 9 );
+
 add_action( 'admin_bar_menu', function ( $bar ) {
 	if ( mrn_admin_appearance_enabled() && current_user_can( 'read' ) && ! $bar->get_node( 'dashboard' ) ) {
 		$bar->add_node( array( 'id' => 'dashboard', 'parent' => 'site-name', 'title' => __( 'Dashboard', 'mrn-admin-ui-css' ), 'href' => admin_url() ) );

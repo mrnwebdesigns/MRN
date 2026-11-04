@@ -3,6 +3,42 @@
  'use strict';
  var labels = window.mrnAdminAppearance;
  if (!labels) { return; }
+ // Media uses the existing AME-owned menu as a temporary drawer. No cloned
+ // links, saved menu preference, observers, scroll handlers or media listeners.
+ var mediaMenu = document.querySelector('body.mrn-media-workspace #wp-admin-bar-mrn-media-menu > a');
+ var siteMenu = document.getElementById('adminmenumain');
+ if (mediaMenu && siteMenu) {
+  function closeMediaMenu(restore) {
+   if (!document.body.classList.contains('mrn-media-menu-open')) { return; }
+   document.body.classList.remove('mrn-media-menu-open');
+   mediaMenu.setAttribute('aria-expanded', 'false');
+   if (restore) { mediaMenu.focus(); }
+  }
+  function toggleMediaMenu() {
+   if (document.body.classList.contains('mrn-media-menu-open')) { closeMediaMenu(true); return; }
+   document.body.classList.add('mrn-media-menu-open');
+   mediaMenu.setAttribute('aria-expanded', 'true');
+   var first = siteMenu.querySelector('#adminmenu a.menu-top');
+   if (first) { first.focus(); }
+  }
+  mediaMenu.setAttribute('aria-controls', 'adminmenumain');
+  mediaMenu.setAttribute('aria-expanded', 'false');
+  mediaMenu.addEventListener('click', function(event) { event.preventDefault(); toggleMediaMenu(); });
+  mediaMenu.addEventListener('keydown', function(event) {
+   if (event.key === ' ' || event.key === 'ArrowDown') { event.preventDefault(); event.stopPropagation(); toggleMediaMenu(); }
+  });
+  document.addEventListener('keydown', function(event) {
+   if (event.key === 'Escape' && document.body.classList.contains('mrn-media-menu-open')) { event.preventDefault(); closeMediaMenu(true); }
+  });
+  document.addEventListener('click', function(event) {
+   if (!siteMenu.contains(event.target) && !mediaMenu.contains(event.target)) { closeMediaMenu(false); }
+  });
+  document.addEventListener('focusin', function(event) {
+   if (!siteMenu.contains(event.target) && !mediaMenu.contains(event.target)) { closeMediaMenu(false); }
+  });
+  // Fail back to the original sidebar if the control or script is unavailable.
+  document.body.classList.add('mrn-media-menu-ready');
+ }
  var form = document.querySelector('.mrn-appearance-form');
  var account = document.getElementById('wp-admin-bar-my-account');
  var accountTrigger = account && account.querySelector(':scope > a');
