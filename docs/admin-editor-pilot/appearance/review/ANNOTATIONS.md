@@ -211,3 +211,11 @@ site; no production, release publication or Fleet authority is added.
 
 Both share Light/Dark tokens and await the next human annotation round. No new
 configuration owner or dependency. Next annotation: `UX-027`.
+
+**UX-026 accepted:** “This should be a reusable component FYI, looks great.”
+The owner approves the row-actions appearance and requires shared reuse. The
+[existing Admin UI contract](../../../../mu-plugins/mrn-admin-ui-css/ADMIN_UI_CONTRACT.md#reusable-row-actions-component)
+now documents the native markup interface, central ownership, supported-screen
+scope, progressive fallback and reuse verification. No new renderer, API,
+dependency or runtime change is needed. This visual acceptance does not clear
+the independent performance or release gates, or imply acceptance of UX-025.

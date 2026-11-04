@@ -63,8 +63,10 @@ Round 2 contains `UX-011`–`UX-017`; round 3 is recorded above. Retain original
 
 Round 4: **UX-025 / UX-C02** primary/submenu distinction and **UX-026 / UX-C12**
 compact native row-action dropdowns are implemented on the dedicated test site,
-with targeted Light/Dark, keyboard/mobile and native-workflow checks. Human
-acceptance remains pending. See [menu hierarchy](review/menu-hierarchy-20261104/REVIEW.md)
+with targeted Light/Dark, keyboard/mobile and native-workflow checks. UX-026 was
+visually accepted with the explicit requirement to remain a reusable component;
+its native markup interface and central ownership are documented in the shared
+Admin UI contract. UX-025 human acceptance remains pending. See [menu hierarchy](review/menu-hierarchy-20261104/REVIEW.md)
 and [row actions](review/row-actions-20261104/REVIEW.md). Next annotation: `UX-027`.
 
 ## Technical blockers and existing follow-up

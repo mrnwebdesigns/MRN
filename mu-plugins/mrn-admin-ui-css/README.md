@@ -16,6 +16,12 @@ Runtime browser, accessibility, API, and performance checks should be run separa
 
 The semantic component and action rules live in [`ADMIN_UI_CONTRACT.md`](ADMIN_UI_CONTRACT.md). Stack consumers can feature-detect `mrn_admin_ui_contract_version()` and read native class/verb mappings through `mrn_admin_ui_contract_get()`. Consumers must still render functional WordPress-native markup when this MU plugin is absent.
 
+The **Actions dropdown** is a reusable shared component, not a per-screen feature.
+Eligible native/MRN tables receive it through their existing `.wp-list-table` and
+`.row-actions` markup. Reuse the [row-actions contract](ADMIN_UI_CONTRACT.md#reusable-row-actions-component)
+instead of copying the renderer, styles or interaction handlers. The existing
+screen allowlist and native fallback remain authoritative.
+
 ## Local editor pilot
 
 On an eligible, explicitly enabled Editor Lockdown pilot screen, load
