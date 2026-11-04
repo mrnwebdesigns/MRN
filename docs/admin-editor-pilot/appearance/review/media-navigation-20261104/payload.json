@@ -1,0 +1,20 @@
+{
+  "appearance.js": {
+    "before_bytes": 11767,
+    "after_bytes": 11794,
+    "before_gzip": 3452,
+    "after_gzip": 3455
+  },
+  "mrn-admin-shell.css": {
+    "before_bytes": 46152,
+    "after_bytes": 46913,
+    "before_gzip": 8053,
+    "after_gzip": 8281
+  },
+  "mrn-editor-workspace.css": {
+    "before_bytes": 25430,
+    "after_bytes": 24949,
+    "before_gzip": 4797,
+    "after_gzip": 4723
+  }
+}

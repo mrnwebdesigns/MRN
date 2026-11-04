@@ -352,3 +352,7 @@ next annotation `UX-038`. Existing editor CPU and Local Hub OOM gates remain ope
 ### UX-039 — Remove the active section-heading border
 
 **P2, implemented and installed for review.** The heading outline now uses `:focus-visible`, removing the pointer-selection rectangle and retaining the keyboard focus indicator. Light/Dark pointer and keyboard checks, source QA and served-file hash verification pass. [Evidence](section-focus-20261104/REVIEW.md). Next annotation: `UX-040`.
+
+### UX-040 — Use the editor navigation pattern for Media
+
+“I like this over the top dropdown you added for media.” **P2, implemented and installed for review.** Media now shares the editor's Site menu bar below the WordPress toolbar, with Dashboard/Back to library navigation. AME owns the original drawer contents; the shared row Actions component remains unchanged. Both themes, keyboard, mobile, native media controls, editor regression and fallbacks pass. Source `253be2e2`; [evidence](media-navigation-20261104/REVIEW.md). Fresh Codex Media tab ready for annotations. Await visual review; next annotation `UX-041`.

@@ -1,0 +1,108 @@
+{
+  "phase": "candidate",
+  "checks": [
+    {
+      "name": "list server-positioned bar and return link",
+      "data": {
+        "top": 32,
+        "barBottom": 32,
+        "height": 54,
+        "right": 1487
+      }
+    },
+    {
+      "name": "list light drawer/Escape/focus/axe",
+      "data": true
+    },
+    {
+      "name": "list dark drawer/Escape/focus/axe",
+      "data": true
+    },
+    {
+      "name": "list keyboard open and outside dismissal",
+      "data": true
+    },
+    {
+      "name": "List Actions and scrolled folder panel below bar",
+      "data": true
+    },
+    {
+      "name": "list 390px menu placement",
+      "data": true
+    },
+    {
+      "name": "grid server-positioned bar and return link",
+      "data": {
+        "top": 32,
+        "barBottom": 32,
+        "height": 54,
+        "right": 1487
+      }
+    },
+    {
+      "name": "grid light drawer/Escape/focus/axe",
+      "data": true
+    },
+    {
+      "name": "grid dark drawer/Escape/focus/axe",
+      "data": true
+    },
+    {
+      "name": "grid keyboard open and outside dismissal",
+      "data": true
+    },
+    {
+      "name": "Native grid attachment details open/close",
+      "data": true
+    },
+    {
+      "name": "grid 390px menu placement",
+      "data": true
+    },
+    {
+      "name": "add server-positioned bar and return link",
+      "data": {
+        "top": 32,
+        "barBottom": 32,
+        "height": 54,
+        "right": 1487
+      }
+    },
+    {
+      "name": "add light drawer/Escape/focus/axe",
+      "data": true
+    },
+    {
+      "name": "add dark drawer/Escape/focus/axe",
+      "data": true
+    },
+    {
+      "name": "add keyboard open and outside dismissal",
+      "data": true
+    },
+    {
+      "name": "Native upload controls retained",
+      "data": true
+    },
+    {
+      "name": "add 390px menu placement",
+      "data": true
+    },
+    {
+      "name": "Editor shared-bar geometry and menu preserved",
+      "data": {
+        "height": 54,
+        "top": 103,
+        "barBottom": 102.984375
+      }
+    },
+    {
+      "name": "no-js native navigation fallback",
+      "data": true
+    },
+    {
+      "name": "blocked-script native navigation fallback",
+      "data": true
+    }
+  ]
+}

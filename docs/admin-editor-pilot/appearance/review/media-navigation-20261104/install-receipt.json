@@ -1,0 +1,34 @@
+{
+  "host": "admin-editor-pilot.mrndev.io",
+  "commit": "253be2e25cd279f688602d735958e82dc4c9c2ca",
+  "files": {
+    "mrn-admin-ui-css/mrn-admin-shell.css": {
+      "before": "172f40f4cdf18bf127162acc04a7ee476ebf8169d41ffea5f08420a8adfb1e83",
+      "after": "33bc326f7b7fd5e0f1e4fd61ed94e2e340fb773a271b1a97f257b71d69fb1f72"
+    },
+    "mrn-admin-ui-css/mrn-editor-workspace.css": {
+      "before": "f3d3a8bdfe2f5f07d40e6a356a12e142b0ac0a4f96fafdfcefb51e5f3bc1b78c",
+      "after": "83ef9f7a4e4195c2c8abf570acca29d0438211190efbe399a733b3764d6e08f6"
+    },
+    "mrn-admin-ui-css/appearance.js": {
+      "before": "f6ab9539767666de0660deeb09ba4ad70921e67ccbaa2aeba92e8e18bb1afc9c",
+      "after": "7fa7e315c472fd7aa384598d952117a73dea842c1cc0ab40b59af86dc94b0f8c"
+    },
+    "mrn-admin-ui-css/appearance.php": {
+      "before": "5ef56fd2bac0f2486cfe1cc599beb20c5a45f5c28497038c9ad52a0280033dfd",
+      "after": "07cb357af62825a78826f0f6b91700cf97adead4176573ee4b9d0d4b99c08e9c"
+    }
+  },
+  "backup": {
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1793820200,
+    "label": "pre-admin-pilot-media-nav-install-20261104",
+    "nonce": "c4b494886141",
+    "key": "sites/admin-editor-pilot-mrndev-io/backup_2026-11-04-1923_Trilliant_c4b494886141-db.gz",
+    "size": 6312325,
+    "sha256": "de7c1679cbb79a06e1863de9e31b2607984b2e7f5172172aa2e67c389595ecdf"
+  },
+  "rollback": "/home/mrndev-admin-editor/review-private/before-media-nav-253be2e25cd2",
+  "status": "installed"
+}

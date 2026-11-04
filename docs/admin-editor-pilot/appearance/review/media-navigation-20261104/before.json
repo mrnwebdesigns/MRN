@@ -1,0 +1,9 @@
+{
+  "phase": "before",
+  "checks": [
+    {
+      "name": "Original top toolbar menu captured",
+      "data": true
+    }
+  ]
+}
