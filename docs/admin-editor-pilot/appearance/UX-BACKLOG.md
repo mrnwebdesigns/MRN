@@ -81,8 +81,8 @@ stacked rules or boxed edges. [Verification](review/tab-borders-20261104/REVIEW.
 Await the next visual annotation round. Next annotation: `UX-029`.
 
 **P2 UX-029 / UX-C01 and UX-030 / UX-C06:** Native ACF number/grip contrast,
-compact sticky section context, alternating visible field rows and nested-card
-surfaces are installed on the review site. Both-theme, mobile/short-window,
+alternating visible field rows and nested-card surfaces are installed on the
+review site. The sticky section experiment was subsequently disabled by UX-032. Both-theme, mobile/short-window,
 keyboard, native-tab and form-value checks pass. Bounded timings show no
 consistent added slowdown, but are noisy and do not clear CPU/OOM qualification.
 [Evidence and next visual review](review/section-orientation-20261104/REVIEW.md).
@@ -93,6 +93,13 @@ Installed native CSS columns retain whole panels, 16px separation, mobile reflow
 and DOM/form order. Existing Dark Publish-footer contrast is corrected. Both
 fixtures and themes pass scoped checks; [evidence](review/settings-flow-20261104/REVIEW.md).
 Await the next visual review. Next annotation: `UX-032`.
+
+**P2 UX-032 / UX-C06:** Owner rejected the sticky section direction and clarified
+that nested Cards/FAQ items should start collapsed. The sticky CSS and focus
+adjustment are commented out; existing items start compact once while opened
+and newly added items remain editable. Native keyboard/group controls,
+validation reveal and form-value checks pass in both themes. [Installed evidence](review/subsections-20261104/REVIEW.md).
+Await visual review; next annotation `UX-033`.
 
 ## Technical blockers and existing follow-up
 

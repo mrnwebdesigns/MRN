@@ -1,0 +1,47 @@
+{
+  "phase": "candidate",
+  "checks": [
+    {
+      "index": 0,
+      "collapsed": {
+        "height": 1852.375,
+        "items": 10
+      }
+    },
+    "Keyboard toggle and choice retained on revisit: 0",
+    {
+      "index": 17,
+      "collapsed": {
+        "height": 1827.875,
+        "items": 5
+      }
+    },
+    "Keyboard toggle and choice retained on revisit: 17",
+    "Native invalid_field reveals a collapsed nested item",
+    "Native newly added row remains expanded; add/remove preserves original form values"
+  ],
+  "axe": [
+    {
+      "index": 0,
+      "theme": "light",
+      "violations": []
+    },
+    {
+      "index": 0,
+      "theme": "dark",
+      "violations": []
+    },
+    {
+      "index": 17,
+      "theme": "light",
+      "violations": []
+    },
+    {
+      "index": 17,
+      "theme": "dark",
+      "violations": []
+    }
+  ],
+  "errors": [],
+  "passed": true
+}

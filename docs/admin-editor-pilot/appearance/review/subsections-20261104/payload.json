@@ -1,0 +1,10 @@
+{
+  "mrn-admin-ui-css/mrn-editor-workspace.css": {
+    "before_gzip": 4752,
+    "after_gzip": 4795
+  },
+  "mrn-editor-lockdown/assets/section-navigator.js": {
+    "before_gzip": 10525,
+    "after_gzip": 10680
+  }
+}

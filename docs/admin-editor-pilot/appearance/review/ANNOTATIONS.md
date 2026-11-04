@@ -275,3 +275,15 @@ baseline QA was corrected with existing semantic tokens. Source `d822de61c747`
 is installed after QA and a verified remote backup. [Evidence](settings-flow-20261104/REVIEW.md).
 The existing editor tab remains untouched; a fresh review tab is open. Human
 acceptance is pending; next annotation `UX-032`.
+
+### UX-032 / UX-C06 — Pause sticky sections; restore collapsed nested items
+
+“Not 100% what I had in mind with the scrolling. Comment that work out, bring
+back the collapsed sub sections.” Owner clarification: **“Nested Cards/FAQ
+items start collapsed.”** **P2**. The sticky heading/scroll adjustment is now
+commented out. Existing nested rows start collapsed once, preserve explicit
+expansion on revisit, and use native ACF controls. Newly added rows stay open;
+validation reveals hidden items. Main section navigation and field bands remain.
+Source `8106b4fbd6a7` is installed on the review site after scoped QA and a fresh
+verified backup. [Evidence](subsections-20261104/REVIEW.md). This supersedes the
+sticky portion of UX-030. Next annotation: `UX-033`.
