@@ -1,0 +1,30 @@
+{
+  "host": "admin-editor-pilot.mrndev.io",
+  "files": {
+    "mrn-admin-ui-css/mrn-admin-shell.css": {
+      "before": "6b94f2f5452e1ff87f2139d393f85fdbba9ea2c6325ebf4b6a0dd19d4281aabe",
+      "after": "7d70f5dbdda4a4d56717232b68ef7963e13ae071268e0ff3104ac38b8ec4dcd4"
+    },
+    "mrn-admin-ui-css/mrn-editor-workspace.css": {
+      "before": "a577bef2c38824f6a634513d56aed693c571d3ec2539ccd43cc413104d0d5d11",
+      "after": "2e8956a5dc471138e8184614b24b2a9c8872f5c19e1357c6d59dad4c991fe52b"
+    },
+    "mrn-admin-ui-css/mrn-modern-admin.css": {
+      "before": "663236af2222099c5ffe6e5f8f9b6f254cb324b2c6c99fcb086004664a33a64e",
+      "after": "4b1411d441cf192ae8a85f51d5551b1728f88893ea57870c6b79650f3bfe2d73"
+    }
+  },
+  "commit": "1d0f6c68d203feb4ae68f8fa5ae17f3d42ebf0cf",
+  "backup": {
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1793806846,
+    "label": "pre-admin-pilot-tab-borders-install-20261104",
+    "nonce": "8977b47749c8",
+    "key": "sites/admin-editor-pilot-mrndev-io/backup_2026-11-04-1540_Trilliant_8977b47749c8-db.gz",
+    "size": 6309039,
+    "sha256": "d67100ab1a9957271823336ba30d49031ba03d67d9a0c33d171b7a5b84da029d"
+  },
+  "rollback": "/home/mrndev-admin-editor/review-private/before-tab-borders-1d0f6c68d203",
+  "status": "installed"
+}

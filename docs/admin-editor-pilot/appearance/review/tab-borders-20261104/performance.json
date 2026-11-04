@@ -1,0 +1,76 @@
+{
+  "method": "One initialized 19-section fixture, CSS replaced in original stylesheet positions, ABBAABBA order, one warm-up pair then 10 native tab switches per sample; four samples per variant. No page save.",
+  "units": "milliseconds",
+  "samples": [
+    {
+      "phase": "baseline",
+      "TaskDuration": 2545.499,
+      "ScriptDuration": 961.7549999999999,
+      "RecalcStyleDuration": 465.901,
+      "LayoutDuration": 311.94300000000004
+    },
+    {
+      "phase": "candidate",
+      "TaskDuration": 2457.516,
+      "ScriptDuration": 928.4180000000002,
+      "RecalcStyleDuration": 427.4310000000001,
+      "LayoutDuration": 253.47400000000005
+    },
+    {
+      "phase": "candidate",
+      "TaskDuration": 3014.0520000000006,
+      "ScriptDuration": 945.9759999999999,
+      "RecalcStyleDuration": 443.41600000000005,
+      "LayoutDuration": 311.4429999999999
+    },
+    {
+      "phase": "baseline",
+      "TaskDuration": 3225.4330000000004,
+      "ScriptDuration": 1135.306,
+      "RecalcStyleDuration": 519.5349999999999,
+      "LayoutDuration": 380.2359999999998
+    },
+    {
+      "phase": "baseline",
+      "TaskDuration": 3058.4550000000004,
+      "ScriptDuration": 1033.76,
+      "RecalcStyleDuration": 458.1219999999999,
+      "LayoutDuration": 316.0960000000002
+    },
+    {
+      "phase": "candidate",
+      "TaskDuration": 2888.3759999999975,
+      "ScriptDuration": 1107.3440000000003,
+      "RecalcStyleDuration": 512.146,
+      "LayoutDuration": 352.17200000000014
+    },
+    {
+      "phase": "candidate",
+      "TaskDuration": 2612.193000000001,
+      "ScriptDuration": 828.5389999999993,
+      "RecalcStyleDuration": 384.78999999999974,
+      "LayoutDuration": 259.17900000000003
+    },
+    {
+      "phase": "baseline",
+      "TaskDuration": 1654.760999999997,
+      "ScriptDuration": 617.443999999999,
+      "RecalcStyleDuration": 293.9949999999998,
+      "LayoutDuration": 196.53399999999976
+    }
+  ],
+  "medians": {
+    "baseline": {
+      "TaskDuration": 2801.977,
+      "ScriptDuration": 997.7574999999999,
+      "RecalcStyleDuration": 462.01149999999996,
+      "LayoutDuration": 314.0195000000001
+    },
+    "candidate": {
+      "TaskDuration": 2750.2844999999993,
+      "ScriptDuration": 937.1970000000001,
+      "RecalcStyleDuration": 435.4235000000001,
+      "LayoutDuration": 285.311
+    }
+  }
+}

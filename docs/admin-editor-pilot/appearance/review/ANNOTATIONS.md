@@ -230,3 +230,14 @@ native save path, removes the artificial sidebar minimum height and restores the
 five affected review-account panels after verified backup. [Reproduction,
 regression and installed evidence](page-settings-20261104/REVIEW.md). Keep the
 user's unsaved new page intact. Human recheck pending; next annotation `UX-028`.
+
+### UX-028 / UX-C05 — Clean horizontal tab borders
+
+“Clean up all the top and bottom borders acrosss the board on tabs.” **P2**.
+ACF's native list border, workspace wrapper rule, per-tab borders and the first
+field's partial-width rule overlapped. Shared Admin UI CSS now uses one active
+underline, no tab perimeter or wrapper rule, and a separate visible focus ring.
+Parent/nested ACF tabs and supported native MRN settings tabs share tokens.
+Source `1d0f6c68`; [visual, accessibility and timing evidence](tab-borders-20261104/REVIEW.md).
+The workspace structure, native fields and third-party application ownership
+remain intact. Next human annotation round pending; next ID `UX-029`.

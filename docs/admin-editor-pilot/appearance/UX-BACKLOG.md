@@ -75,6 +75,11 @@ fix preserves explicit checkbox choices; five review-account panels are restored
 and the empty sidebar gap is removed. [Evidence](review/page-settings-20261104/REVIEW.md).
 Await the owner's visual recheck. Next annotation: `UX-028`.
 
+**P2 UX-028 / UX-C05:** Consolidate horizontal tab borders. Shared parent/nested
+ACF and supported native MRN settings tabs now use one active underline without
+stacked rules or boxed edges. [Verification](review/tab-borders-20261104/REVIEW.md).
+Await the next visual annotation round. Next annotation: `UX-029`.
+
 ## Technical blockers and existing follow-up
 
 - **P1 — Review-site list preference POST:** Cloudflare rejects the native `edit.php` items-per-page submission with HTTP 403. The original value remains 20. A separate exact-path security-rule approval and fresh preflight are needed before extending the prior `post.php` exception; no WAF change was made. Native column and optional editor-panel AJAX persistence pass.

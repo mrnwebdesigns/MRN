@@ -1,0 +1,14 @@
+{
+  "mrn-admin-shell.css": {
+    "before_gzip": 6427,
+    "after_gzip": 6824
+  },
+  "mrn-editor-workspace.css": {
+    "before_gzip": 4709,
+    "after_gzip": 4502
+  },
+  "mrn-modern-admin.css": {
+    "before_gzip": 3886,
+    "after_gzip": 3844
+  }
+}

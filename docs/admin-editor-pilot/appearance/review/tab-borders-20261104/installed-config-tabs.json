@@ -1,0 +1,99 @@
+[
+  {
+    "group": "Breadcrumb options",
+    "wrapperBorder": [
+      "0px",
+      "0px"
+    ],
+    "tabs": [
+      {
+        "label": "Advanced Breadcrumbs",
+        "top": "0px",
+        "bottom": "2px"
+      },
+      {
+        "label": "Behavior",
+        "top": "0px",
+        "bottom": "2px"
+      },
+      {
+        "label": "Styling",
+        "top": "0px",
+        "bottom": "2px"
+      },
+      {
+        "label": "Output",
+        "top": "0px",
+        "bottom": "2px"
+      },
+      {
+        "label": "Instructions",
+        "top": "0px",
+        "bottom": "2px"
+      }
+    ]
+  },
+  {
+    "group": "Admin configuration sections",
+    "wrapperBorder": [
+      "0px",
+      "0px"
+    ],
+    "tabs": [
+      {
+        "label": "Editor Controls",
+        "top": "0px",
+        "bottom": "2px"
+      },
+      {
+        "label": "Security Controls",
+        "top": "0px",
+        "bottom": "2px"
+      },
+      {
+        "label": "Content Types",
+        "top": "0px",
+        "bottom": "2px"
+      },
+      {
+        "label": "Builder Layouts",
+        "top": "0px",
+        "bottom": "2px"
+      },
+      {
+        "label": "Section Picker Cards",
+        "top": "0px",
+        "bottom": "2px"
+      }
+    ]
+  },
+  {
+    "group": "Font Awesome options",
+    "wrapperBorder": [
+      "0px",
+      "0px"
+    ],
+    "tabs": [
+      {
+        "label": "Pack Builder",
+        "top": "0px",
+        "bottom": "2px"
+      },
+      {
+        "label": "Designer Instructions",
+        "top": "0px",
+        "bottom": "2px"
+      },
+      {
+        "label": "Pack Status",
+        "top": "0px",
+        "bottom": "2px"
+      },
+      {
+        "label": "Stack Status",
+        "top": "0px",
+        "bottom": "2px"
+      }
+    ]
+  }
+]

@@ -1,0 +1,143 @@
+{
+  "phase": "installed",
+  "checks": [
+    "Parent/nested native ACF tabs switch via keyboard and pointer with unchanged form values; Light/Dark axe and focus pass",
+    "Content/Page Settings navigation and recovered settings panels remain intact",
+    "390px tabs wrap within the viewport with 44px targets",
+    "MRN Notifications native navigation shares the tab treatment in both themes"
+  ],
+  "styles": [
+    {
+      "label": "light parent",
+      "top": "0px",
+      "bottom": "2px",
+      "left": "0px",
+      "shadow": "none",
+      "active": "rgb(36, 75, 215)",
+      "color": "rgb(36, 75, 215)",
+      "wrapperTop": "0px",
+      "wrapperBottom": "0px",
+      "listTop": "0px",
+      "listBottom": "0px",
+      "margin": "0px",
+      "height": 40
+    },
+    {
+      "label": "light nested",
+      "top": "0px",
+      "bottom": "2px",
+      "left": "0px",
+      "shadow": "none",
+      "active": "rgb(36, 75, 215)",
+      "color": "rgb(36, 75, 215)",
+      "wrapperTop": "0px",
+      "wrapperBottom": "0px",
+      "listTop": "0px",
+      "listBottom": "0px",
+      "margin": "0px",
+      "height": 40
+    },
+    {
+      "label": "dark parent",
+      "top": "0px",
+      "bottom": "2px",
+      "left": "0px",
+      "shadow": "none",
+      "active": "rgb(171, 198, 255)",
+      "color": "rgb(171, 198, 255)",
+      "wrapperTop": "0px",
+      "wrapperBottom": "0px",
+      "listTop": "0px",
+      "listBottom": "0px",
+      "margin": "0px",
+      "height": 40
+    },
+    {
+      "label": "dark nested",
+      "top": "0px",
+      "bottom": "2px",
+      "left": "0px",
+      "shadow": "none",
+      "active": "rgb(171, 198, 255)",
+      "color": "rgb(171, 198, 255)",
+      "wrapperTop": "0px",
+      "wrapperBottom": "0px",
+      "listTop": "0px",
+      "listBottom": "0px",
+      "margin": "0px",
+      "height": 40
+    },
+    {
+      "label": "light native settings",
+      "top": "0px",
+      "bottom": "2px",
+      "left": "0px",
+      "shadow": "none",
+      "active": "rgb(36, 75, 215)",
+      "color": "rgb(36, 75, 215)",
+      "wrapperTop": "0px",
+      "wrapperBottom": "0px",
+      "listTop": "0px",
+      "listBottom": "0px",
+      "margin": "0px",
+      "height": 40
+    },
+    {
+      "label": "dark native settings",
+      "top": "0px",
+      "bottom": "2px",
+      "left": "0px",
+      "shadow": "none",
+      "active": "rgb(36, 75, 215)",
+      "color": "rgb(36, 75, 215)",
+      "wrapperTop": "0px",
+      "wrapperBottom": "0px",
+      "listTop": "0px",
+      "listBottom": "0px",
+      "margin": "0px",
+      "height": 40
+    }
+  ],
+  "axe": [
+    {
+      "label": "light parent tabs",
+      "violations": []
+    },
+    {
+      "label": "light nested tabs",
+      "violations": []
+    },
+    {
+      "label": "light hover and focus",
+      "violations": []
+    },
+    {
+      "label": "dark parent tabs",
+      "violations": []
+    },
+    {
+      "label": "dark nested tabs",
+      "violations": []
+    },
+    {
+      "label": "dark hover and focus",
+      "violations": []
+    },
+    {
+      "label": "light native settings tabs",
+      "violations": []
+    },
+    {
+      "label": "dark native settings tabs",
+      "violations": []
+    }
+  ],
+  "errors": [],
+  "tabPerformance": {
+    "TaskDuration": 1143.015,
+    "ScriptDuration": 384.25399999999996,
+    "RecalcStyleDuration": 215.32000000000002,
+    "LayoutDuration": 122.225
+  },
+  "passed": true
+}
