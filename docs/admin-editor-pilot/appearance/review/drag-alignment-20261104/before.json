@@ -1,0 +1,213 @@
+{
+  "phase": "before",
+  "checks": [
+    {
+      "name": "Posts light 1487 alignment",
+      "data": {
+        "left": 261,
+        "checkboxLeft": 269,
+        "centerDelta": 20.203100000000006,
+        "gap": -12,
+        "headerDelta": 0,
+        "width": 27,
+        "content": "\"\""
+      }
+    },
+    {
+      "name": "Posts light 390 alignment",
+      "data": {
+        "left": 20,
+        "checkboxLeft": 28,
+        "centerDelta": 30.5,
+        "gap": -12,
+        "headerDelta": 0,
+        "width": 232.28125,
+        "content": "\"\""
+      }
+    },
+    {
+      "name": "Posts dark 1487 alignment",
+      "data": {
+        "left": 261,
+        "checkboxLeft": 269,
+        "centerDelta": 20.203100000000006,
+        "gap": -12,
+        "headerDelta": 0,
+        "width": 27,
+        "content": "\"\""
+      }
+    },
+    {
+      "name": "Posts dark 390 alignment",
+      "data": {
+        "left": 20,
+        "checkboxLeft": 28,
+        "centerDelta": 30.5,
+        "gap": -12,
+        "headerDelta": 0,
+        "width": 232.28125,
+        "content": "\"\""
+      }
+    },
+    {
+      "name": "Posts keyboard and select all",
+      "data": true
+    },
+    {
+      "name": "Pages light 1487 alignment",
+      "data": {
+        "left": 261,
+        "checkboxLeft": 269,
+        "centerDelta": 20.203100000000006,
+        "gap": -12,
+        "headerDelta": 0,
+        "width": 33,
+        "content": "\"\""
+      }
+    },
+    {
+      "name": "Pages light 390 alignment",
+      "data": {
+        "left": 20,
+        "checkboxLeft": 28,
+        "centerDelta": 30.5,
+        "gap": -12,
+        "headerDelta": 0,
+        "width": 241.015625,
+        "content": "\"\""
+      }
+    },
+    {
+      "name": "Pages dark 1487 alignment",
+      "data": {
+        "left": 261,
+        "checkboxLeft": 269,
+        "centerDelta": 20.203100000000006,
+        "gap": -12,
+        "headerDelta": 0,
+        "width": 33,
+        "content": "\"\""
+      }
+    },
+    {
+      "name": "Pages dark 390 alignment",
+      "data": {
+        "left": 20,
+        "checkboxLeft": 28,
+        "centerDelta": 30.5,
+        "gap": -12,
+        "headerDelta": 0,
+        "width": 241.015625,
+        "content": "\"\""
+      }
+    },
+    {
+      "name": "Pages keyboard and select all",
+      "data": true
+    },
+    {
+      "name": "CPT light 1487 alignment",
+      "data": {
+        "left": 261,
+        "checkboxLeft": 269,
+        "centerDelta": 20.203100000000006,
+        "gap": -12,
+        "headerDelta": 0,
+        "width": 33,
+        "content": "\"\""
+      }
+    },
+    {
+      "name": "CPT light 390 alignment",
+      "data": {
+        "left": 20,
+        "checkboxLeft": 28,
+        "centerDelta": 30.5,
+        "gap": -12,
+        "headerDelta": 0,
+        "width": 249.203125,
+        "content": "\"\""
+      }
+    },
+    {
+      "name": "CPT dark 1487 alignment",
+      "data": {
+        "left": 261,
+        "checkboxLeft": 269,
+        "centerDelta": 20.203100000000006,
+        "gap": -12,
+        "headerDelta": 0,
+        "width": 33,
+        "content": "\"\""
+      }
+    },
+    {
+      "name": "CPT dark 390 alignment",
+      "data": {
+        "left": 20,
+        "checkboxLeft": 28,
+        "centerDelta": 30.5,
+        "gap": -12,
+        "headerDelta": 0,
+        "width": 249.203125,
+        "content": "\"\""
+      }
+    },
+    {
+      "name": "CPT keyboard and select all",
+      "data": true
+    },
+    {
+      "name": "Media light 1487 alignment",
+      "data": {
+        "left": 356,
+        "checkboxLeft": 356,
+        "centerDelta": 21,
+        "gap": -16,
+        "headerDelta": 0,
+        "width": 37,
+        "content": "\"\""
+      }
+    },
+    {
+      "name": "Media light 390 alignment",
+      "data": {
+        "left": 12,
+        "checkboxLeft": 12,
+        "centerDelta": 16.5,
+        "gap": -16,
+        "headerDelta": 0,
+        "width": 183.953125,
+        "content": "\"\""
+      }
+    },
+    {
+      "name": "Media dark 1487 alignment",
+      "data": {
+        "left": 356,
+        "checkboxLeft": 356,
+        "centerDelta": 21,
+        "gap": -16,
+        "headerDelta": 0,
+        "width": 37,
+        "content": "\"\""
+      }
+    },
+    {
+      "name": "Media dark 390 alignment",
+      "data": {
+        "left": 12,
+        "checkboxLeft": 12,
+        "centerDelta": 16.5,
+        "gap": -16,
+        "headerDelta": 0,
+        "width": 183.953125,
+        "content": "\"\""
+      }
+    },
+    {
+      "name": "Media keyboard and select all",
+      "data": true
+    }
+  ]
+}

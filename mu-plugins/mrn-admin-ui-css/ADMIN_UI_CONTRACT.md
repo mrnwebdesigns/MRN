@@ -93,6 +93,12 @@ separate Stack release gates are satisfied.
 
 ## Icons
 
+Native list drag indicators sit left of the selection checkbox on the same
+horizontal centerline. The shared shell reserves this gutter before initialization
+when Post Types Order is enqueued on a supported list, or HappyFiles is enqueued
+on Media. Their original handles, glyphs and drag/save behavior remain authoritative.
+Header/footer checkboxes align with the row checkboxes; do not add per-list copies.
+
 - Visible text is the default for actions.
 - A Dashicon may precede visible text with `.mrn-admin-action-with-icon`; mark the icon `aria-hidden="true"`.
 - Icon-only controls are reserved for spatially constrained, repeated utilities such as reorder arrows. They require an accessible name and consistent icon usage.

@@ -1,0 +1,26 @@
+{
+  "host": "admin-editor-pilot.mrndev.io",
+  "commit": "95fd44183318e74ea7c92076dc6012ca63a96af3",
+  "files": {
+    "mrn-admin-ui-css/appearance.php": {
+      "before": "d35b096f0e87ea0501bbb1b88fb0d7366754611a4ea6b8c12a35485bf34a3fbf",
+      "after": "c0e2b9be36a9e0000031b2e5545678ea712bf368ea15a50a00535efdcce7e97f"
+    },
+    "mrn-admin-ui-css/mrn-admin-shell.css": {
+      "before": "091e5374a652d7246dc241495690ce0659f35f92699577dd144f71030317e3e8",
+      "after": "31628d006faa30c2afb00aaabd33cb930efcb3bd569f76d43f7b9f687c5d873f"
+    }
+  },
+  "backup": {
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1793823440,
+    "label": "pre-admin-pilot-drag-alignment-install-20261104",
+    "nonce": "e5b5d4559557",
+    "key": "sites/admin-editor-pilot-mrndev-io/backup_2026-11-04-2017_Trilliant_e5b5d4559557-db.gz",
+    "size": 6313391,
+    "sha256": "2d275cae264599e4cfe3879f9275669835a863c15a7c6c3aa1653d32fdac0eed"
+  },
+  "rollback": "/home/mrndev-admin-editor/review-private/before-drag-alignment-95fd44183318",
+  "status": "installed"
+}

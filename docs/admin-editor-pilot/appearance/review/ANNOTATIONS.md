@@ -364,3 +364,7 @@ next annotation `UX-038`. Existing editor CPU and Local Hub OOM gates remain ope
 ### UX-042 — Actions visibly builds on All Pages
 
 **P1, implemented and installed for review.** Eligible Posts/Pages/CPT lists now render the shared Actions disclosure in the initial HTML. Enhancement preserves its geometry, native action nodes, open state and focus. Installed delayed-script measurements show zero control/row movement in both themes; keyboard, Quick Edit, mobile, native fallback and Media regression checks pass. Source `5eb079d95e39`; [evidence](actions-first-paint-20261104/REVIEW.md). All Pages refreshed in Codex. Await visual review; next annotation `UX-043`. Existing editor CPU/OOM release blockers remain open.
+
+### UX-043 — Drag indicator beside the checkbox
+
+**P2, implemented for review.** Shared row-control styling places the original drag glyph left of its checkbox on the same horizontal centerline. Post Types Order and HappyFiles retain the original handles and persistence. The server reserves the gutter before initialization; no new JavaScript. Source `95fd44183318`; [evidence](drag-alignment-20261104/REVIEW.md). Installed checks pass; await visual review. Next annotation `UX-044`.

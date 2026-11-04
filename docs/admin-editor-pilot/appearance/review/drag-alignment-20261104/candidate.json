@@ -1,0 +1,241 @@
+{
+  "phase": "candidate",
+  "checks": [
+    {
+      "name": "Posts light 1487 alignment",
+      "data": {
+        "left": 266,
+        "checkboxLeft": 294,
+        "centerDelta": 0,
+        "gap": 8,
+        "headerDelta": 0,
+        "width": 62,
+        "content": "\"\""
+      }
+    },
+    {
+      "name": "Posts light 390 alignment",
+      "data": {
+        "left": 25,
+        "checkboxLeft": 53,
+        "centerDelta": 0,
+        "gap": 8,
+        "headerDelta": 0,
+        "width": 222.390625,
+        "content": "\"\""
+      }
+    },
+    {
+      "name": "Posts dark 1487 alignment",
+      "data": {
+        "left": 266,
+        "checkboxLeft": 294,
+        "centerDelta": 0,
+        "gap": 8,
+        "headerDelta": 0,
+        "width": 62,
+        "content": "\"\""
+      }
+    },
+    {
+      "name": "Posts dark 390 alignment",
+      "data": {
+        "left": 25,
+        "checkboxLeft": 53,
+        "centerDelta": 0,
+        "gap": 8,
+        "headerDelta": 0,
+        "width": 222.390625,
+        "content": "\"\""
+      }
+    },
+    {
+      "name": "Posts keyboard and select all",
+      "data": true
+    },
+    {
+      "name": "Posts original drag handle works; persistence intercepted",
+      "data": true
+    },
+    {
+      "name": "Pages light 1487 alignment",
+      "data": {
+        "left": 266,
+        "checkboxLeft": 294,
+        "centerDelta": 0,
+        "gap": 8,
+        "headerDelta": 0,
+        "width": 62,
+        "content": "\"\""
+      }
+    },
+    {
+      "name": "Pages light 390 alignment",
+      "data": {
+        "left": 25,
+        "checkboxLeft": 53,
+        "centerDelta": 0,
+        "gap": 8,
+        "headerDelta": 0,
+        "width": 241.015625,
+        "content": "\"\""
+      }
+    },
+    {
+      "name": "Pages dark 1487 alignment",
+      "data": {
+        "left": 266,
+        "checkboxLeft": 294,
+        "centerDelta": 0,
+        "gap": 8,
+        "headerDelta": 0,
+        "width": 62,
+        "content": "\"\""
+      }
+    },
+    {
+      "name": "Pages dark 390 alignment",
+      "data": {
+        "left": 25,
+        "checkboxLeft": 53,
+        "centerDelta": 0,
+        "gap": 8,
+        "headerDelta": 0,
+        "width": 241.015625,
+        "content": "\"\""
+      }
+    },
+    {
+      "name": "Pages keyboard and select all",
+      "data": true
+    },
+    {
+      "name": "Pages original drag handle works; persistence intercepted",
+      "data": true
+    },
+    {
+      "name": "CPT light 1487 alignment",
+      "data": {
+        "left": 266,
+        "checkboxLeft": 294,
+        "centerDelta": 0,
+        "gap": 8,
+        "headerDelta": 0,
+        "width": 62,
+        "content": "\"\""
+      }
+    },
+    {
+      "name": "CPT light 390 alignment",
+      "data": {
+        "left": 25,
+        "checkboxLeft": 53,
+        "centerDelta": 0,
+        "gap": 8,
+        "headerDelta": 0,
+        "width": 249.203125,
+        "content": "\"\""
+      }
+    },
+    {
+      "name": "CPT dark 1487 alignment",
+      "data": {
+        "left": 266,
+        "checkboxLeft": 294,
+        "centerDelta": 0,
+        "gap": 8,
+        "headerDelta": 0,
+        "width": 62,
+        "content": "\"\""
+      }
+    },
+    {
+      "name": "CPT dark 390 alignment",
+      "data": {
+        "left": 25,
+        "checkboxLeft": 53,
+        "centerDelta": 0,
+        "gap": 8,
+        "headerDelta": 0,
+        "width": 249.203125,
+        "content": "\"\""
+      }
+    },
+    {
+      "name": "CPT keyboard and select all",
+      "data": true
+    },
+    {
+      "name": "CPT original drag handle works; persistence intercepted",
+      "data": true
+    },
+    {
+      "name": "Media light 1487 alignment",
+      "data": {
+        "left": 353,
+        "checkboxLeft": 381,
+        "centerDelta": 0,
+        "gap": 8,
+        "headerDelta": 0,
+        "width": 108,
+        "content": "\"\""
+      }
+    },
+    {
+      "name": "Media light 390 alignment",
+      "data": {
+        "left": 9,
+        "checkboxLeft": 37,
+        "centerDelta": 0,
+        "gap": 8,
+        "headerDelta": 0,
+        "width": 438.640625,
+        "content": "\"\""
+      }
+    },
+    {
+      "name": "Media dark 1487 alignment",
+      "data": {
+        "left": 353,
+        "checkboxLeft": 381,
+        "centerDelta": 0,
+        "gap": 8,
+        "headerDelta": 0,
+        "width": 108,
+        "content": "\"\""
+      }
+    },
+    {
+      "name": "Media dark 390 alignment",
+      "data": {
+        "left": 9,
+        "checkboxLeft": 37,
+        "centerDelta": 0,
+        "gap": 8,
+        "headerDelta": 0,
+        "width": 438.640625,
+        "content": "\"\""
+      }
+    },
+    {
+      "name": "Media keyboard and select all",
+      "data": true
+    },
+    {
+      "name": "Media original drag handle works; persistence intercepted",
+      "data": true
+    },
+    {
+      "name": "Native sort-disabled screen keeps original checkbox gutter",
+      "data": true
+    },
+    {
+      "name": "Scoped checkbox axe",
+      "data": true
+    },
+    {
+      "name": "REST health",
+      "data": true
+    }
+  ]
+}
