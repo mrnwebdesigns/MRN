@@ -1,0 +1,22 @@
+{
+  "host": "admin-editor-pilot.mrndev.io",
+  "commit": "d822de61c747c87f94a0e273c15826c1ec6191ce",
+  "files": {
+    "mrn-admin-ui-css/mrn-editor-workspace.css": {
+      "before": "fd8084630fe178fb8442110a7deaa691c4a4a5e501fbf960dde64bcfb68512f4",
+      "after": "36b075d654bc3240011c4ff97d7540b34ebe25a436488d41e35a2213800856d3"
+    }
+  },
+  "backup": {
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1793810421,
+    "label": "pre-admin-pilot-settings-flow-install-20261104",
+    "nonce": "5aa9f2cf62c3",
+    "key": "sites/admin-editor-pilot-mrndev-io/backup_2026-11-04-1640_Trilliant_5aa9f2cf62c3-db.gz",
+    "size": 6309423,
+    "sha256": "8f82db69102d5297586274b09034e074386af056dcbe5b02159d2a659e9cc1fa"
+  },
+  "rollback": "/home/mrndev-admin-editor/review-private/before-settings-flow-d822de61c747",
+  "status": "installed"
+}

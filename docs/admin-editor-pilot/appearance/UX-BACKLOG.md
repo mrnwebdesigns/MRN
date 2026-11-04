@@ -88,6 +88,12 @@ consistent added slowdown, but are noisy and do not clear CPU/OOM qualification.
 [Evidence and next visual review](review/section-orientation-20261104/REVIEW.md).
 Await owner feedback on orientation and stripe strength. Next annotation: `UX-031`.
 
+**P2 UX-031 / UX-C10:** Remove the large blank grid-row gaps in Page Settings.
+Installed native CSS columns retain whole panels, 16px separation, mobile reflow
+and DOM/form order. Existing Dark Publish-footer contrast is corrected. Both
+fixtures and themes pass scoped checks; [evidence](review/settings-flow-20261104/REVIEW.md).
+Await the next visual review. Next annotation: `UX-032`.
+
 ## Technical blockers and existing follow-up
 
 - **P1 — Review-site list preference POST:** Cloudflare rejects the native `edit.php` items-per-page submission with HTTP 403. The original value remains 20. A separate exact-path security-rule approval and fresh preflight are needed before extending the prior `post.php` exception; no WAF change was made. Native column and optional editor-panel AJAX persistence pass.

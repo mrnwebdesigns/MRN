@@ -1,0 +1,197 @@
+{
+  "phase": "baseline",
+  "geometry": [
+    {
+      "label": "2580 light",
+      "cards": [
+        {
+          "id": "postimagediv",
+          "x": 328,
+          "y": 352.703125,
+          "bottom": 448.796875,
+          "height": 96.09375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "submitdiv",
+          "x": 899.5,
+          "y": 352.703125,
+          "bottom": 644.296875,
+          "height": 291.59375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "pageparentdiv",
+          "x": 328,
+          "y": 684.296875,
+          "bottom": 1005.390625,
+          "height": 321.09375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "authordiv",
+          "x": 899.5,
+          "y": 684.296875,
+          "bottom": 780.890625,
+          "height": 96.59375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "mrn-layout-import",
+          "x": 328,
+          "y": 1045.390625,
+          "bottom": 1317.140625,
+          "height": 271.75,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        }
+      ]
+    },
+    {
+      "label": "2580 dark",
+      "cards": [
+        {
+          "id": "postimagediv",
+          "x": 328,
+          "y": 352.703125,
+          "bottom": 448.796875,
+          "height": 96.09375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "submitdiv",
+          "x": 899.5,
+          "y": 352.703125,
+          "bottom": 644.296875,
+          "height": 291.59375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "pageparentdiv",
+          "x": 328,
+          "y": 684.296875,
+          "bottom": 1005.390625,
+          "height": 321.09375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "authordiv",
+          "x": 899.5,
+          "y": 684.296875,
+          "bottom": 780.890625,
+          "height": 96.59375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "mrn-layout-import",
+          "x": 328,
+          "y": 1045.390625,
+          "bottom": 1317.140625,
+          "height": 271.75,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        }
+      ]
+    },
+    {
+      "label": "2580 mobile",
+      "cards": [
+        {
+          "id": "postimagediv",
+          "x": 12,
+          "y": 508.09375,
+          "bottom": 612.1875,
+          "height": 104.09375,
+          "width": 366,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "submitdiv",
+          "x": 12,
+          "y": 652.1875,
+          "bottom": 1002.78125,
+          "height": 350.59375,
+          "width": 366,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "pageparentdiv",
+          "x": 12,
+          "y": 1042.78125,
+          "bottom": 1375.875,
+          "height": 333.09375,
+          "width": 366,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "authordiv",
+          "x": 12,
+          "y": 1415.875,
+          "bottom": 1522.46875,
+          "height": 106.59375,
+          "width": 366,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "mrn-layout-import",
+          "x": 12,
+          "y": 1562.46875,
+          "bottom": 1869.71875,
+          "height": 307.25,
+          "width": 366,
+          "fragments": 1,
+          "display": "block"
+        }
+      ]
+    }
+  ],
+  "axe": [
+    {
+      "id": 2580,
+      "theme": "light",
+      "violations": []
+    },
+    {
+      "id": 2580,
+      "theme": "dark",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "nodes": [
+            {
+              "target": [
+                "#delete-action > .submitdelete.deletion"
+              ],
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.59 (foreground color: #abc6ff, background color: #f6f7f7, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "preventedPreferenceWrites": 0,
+  "passed": true
+}

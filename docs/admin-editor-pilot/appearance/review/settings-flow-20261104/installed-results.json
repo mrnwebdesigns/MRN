@@ -1,0 +1,530 @@
+{
+  "phase": "installed",
+  "geometry": [
+    {
+      "label": "2523 light",
+      "cards": [
+        {
+          "id": "postimagediv",
+          "x": 328,
+          "y": 352.703125,
+          "bottom": 448.796875,
+          "height": 96.09375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "pageparentdiv",
+          "x": 328,
+          "y": 464.796875,
+          "bottom": 785.890625,
+          "height": 321.09375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "authordiv",
+          "x": 899.5,
+          "y": 352.703125,
+          "bottom": 449.296875,
+          "height": 96.59375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "mrn-layout-import",
+          "x": 899.5,
+          "y": 465.296875,
+          "bottom": 737.046875,
+          "height": 271.75,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        }
+      ]
+    },
+    {
+      "label": "2523 dark",
+      "cards": [
+        {
+          "id": "postimagediv",
+          "x": 328,
+          "y": 352.703125,
+          "bottom": 448.796875,
+          "height": 96.09375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "pageparentdiv",
+          "x": 328,
+          "y": 464.796875,
+          "bottom": 785.890625,
+          "height": 321.09375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "authordiv",
+          "x": 899.5,
+          "y": 352.703125,
+          "bottom": 449.296875,
+          "height": 96.59375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "mrn-layout-import",
+          "x": 899.5,
+          "y": 465.296875,
+          "bottom": 737.046875,
+          "height": 271.75,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        }
+      ]
+    },
+    {
+      "label": "2523 collapsed",
+      "cards": [
+        {
+          "id": "postimagediv",
+          "x": 328,
+          "y": 352.703125,
+          "bottom": 448.796875,
+          "height": 96.09375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "pageparentdiv",
+          "x": 328,
+          "y": 464.796875,
+          "bottom": 502.390625,
+          "height": 37.59375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "authordiv",
+          "x": 328,
+          "y": 518.390625,
+          "bottom": 614.984375,
+          "height": 96.59375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "mrn-layout-import",
+          "x": 899.5,
+          "y": 352.703125,
+          "bottom": 624.453125,
+          "height": 271.75,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        }
+      ]
+    },
+    {
+      "label": "2523 restored",
+      "cards": [
+        {
+          "id": "postimagediv",
+          "x": 328,
+          "y": 352.703125,
+          "bottom": 448.796875,
+          "height": 96.09375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "pageparentdiv",
+          "x": 328,
+          "y": 464.796875,
+          "bottom": 785.890625,
+          "height": 321.09375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "authordiv",
+          "x": 899.5,
+          "y": 352.703125,
+          "bottom": 449.296875,
+          "height": 96.59375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "mrn-layout-import",
+          "x": 899.5,
+          "y": 465.296875,
+          "bottom": 737.046875,
+          "height": 271.75,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        }
+      ]
+    },
+    {
+      "label": "2523 mobile",
+      "cards": [
+        {
+          "id": "postimagediv",
+          "x": 12,
+          "y": 508.09375,
+          "bottom": 612.1875,
+          "height": 104.09375,
+          "width": 366,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "pageparentdiv",
+          "x": 12,
+          "y": 628.1875,
+          "bottom": 961.28125,
+          "height": 333.09375,
+          "width": 366,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "authordiv",
+          "x": 12,
+          "y": 977.28125,
+          "bottom": 1083.875,
+          "height": 106.59375,
+          "width": 366,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "mrn-layout-import",
+          "x": 12,
+          "y": 1099.875,
+          "bottom": 1407.125,
+          "height": 307.25,
+          "width": 366,
+          "fragments": 1,
+          "display": "block"
+        }
+      ]
+    },
+    {
+      "label": "2580 light",
+      "cards": [
+        {
+          "id": "postimagediv",
+          "x": 328,
+          "y": 352.703125,
+          "bottom": 448.796875,
+          "height": 96.09375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "submitdiv",
+          "x": 328,
+          "y": 464.796875,
+          "bottom": 756.390625,
+          "height": 291.59375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "pageparentdiv",
+          "x": 899.5,
+          "y": 352.703125,
+          "bottom": 673.796875,
+          "height": 321.09375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "authordiv",
+          "x": 899.5,
+          "y": 689.796875,
+          "bottom": 786.390625,
+          "height": 96.59375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "mrn-layout-import",
+          "x": 899.5,
+          "y": 802.390625,
+          "bottom": 1074.140625,
+          "height": 271.75,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        }
+      ]
+    },
+    {
+      "label": "2580 dark",
+      "cards": [
+        {
+          "id": "postimagediv",
+          "x": 328,
+          "y": 352.703125,
+          "bottom": 448.796875,
+          "height": 96.09375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "submitdiv",
+          "x": 328,
+          "y": 464.796875,
+          "bottom": 756.390625,
+          "height": 291.59375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "pageparentdiv",
+          "x": 899.5,
+          "y": 352.703125,
+          "bottom": 673.796875,
+          "height": 321.09375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "authordiv",
+          "x": 899.5,
+          "y": 689.796875,
+          "bottom": 786.390625,
+          "height": 96.59375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "mrn-layout-import",
+          "x": 899.5,
+          "y": 802.390625,
+          "bottom": 1074.140625,
+          "height": 271.75,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        }
+      ]
+    },
+    {
+      "label": "2580 collapsed",
+      "cards": [
+        {
+          "id": "postimagediv",
+          "x": 328,
+          "y": 352.703125,
+          "bottom": 448.796875,
+          "height": 96.09375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "submitdiv",
+          "x": 328,
+          "y": 464.796875,
+          "bottom": 756.390625,
+          "height": 291.59375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "pageparentdiv",
+          "x": 899.5,
+          "y": 352.703125,
+          "bottom": 390.296875,
+          "height": 37.59375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "authordiv",
+          "x": 899.5,
+          "y": 406.296875,
+          "bottom": 502.890625,
+          "height": 96.59375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "mrn-layout-import",
+          "x": 899.5,
+          "y": 518.890625,
+          "bottom": 790.640625,
+          "height": 271.75,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        }
+      ]
+    },
+    {
+      "label": "2580 restored",
+      "cards": [
+        {
+          "id": "postimagediv",
+          "x": 328,
+          "y": 352.703125,
+          "bottom": 448.796875,
+          "height": 96.09375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "submitdiv",
+          "x": 328,
+          "y": 464.796875,
+          "bottom": 756.390625,
+          "height": 291.59375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "pageparentdiv",
+          "x": 899.5,
+          "y": 352.703125,
+          "bottom": 673.796875,
+          "height": 321.09375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "authordiv",
+          "x": 899.5,
+          "y": 689.796875,
+          "bottom": 786.390625,
+          "height": 96.59375,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "mrn-layout-import",
+          "x": 899.5,
+          "y": 802.390625,
+          "bottom": 1074.140625,
+          "height": 271.75,
+          "width": 551.5,
+          "fragments": 1,
+          "display": "block"
+        }
+      ]
+    },
+    {
+      "label": "2580 mobile",
+      "cards": [
+        {
+          "id": "postimagediv",
+          "x": 12,
+          "y": 508.09375,
+          "bottom": 612.1875,
+          "height": 104.09375,
+          "width": 366,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "submitdiv",
+          "x": 12,
+          "y": 628.1875,
+          "bottom": 978.78125,
+          "height": 350.59375,
+          "width": 366,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "pageparentdiv",
+          "x": 12,
+          "y": 994.78125,
+          "bottom": 1327.875,
+          "height": 333.09375,
+          "width": 366,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "authordiv",
+          "x": 12,
+          "y": 1343.875,
+          "bottom": 1450.46875,
+          "height": 106.59375,
+          "width": 366,
+          "fragments": 1,
+          "display": "block"
+        },
+        {
+          "id": "mrn-layout-import",
+          "x": 12,
+          "y": 1466.46875,
+          "bottom": 1773.71875,
+          "height": 307.25,
+          "width": 366,
+          "fragments": 1,
+          "display": "block"
+        }
+      ]
+    }
+  ],
+  "axe": [
+    {
+      "id": 2523,
+      "theme": "light",
+      "violations": []
+    },
+    {
+      "id": 2523,
+      "theme": "dark",
+      "violations": []
+    },
+    {
+      "id": 2580,
+      "theme": "light",
+      "violations": []
+    },
+    {
+      "id": 2580,
+      "theme": "dark",
+      "violations": []
+    }
+  ],
+  "errors": [],
+  "preventedPreferenceWrites": 4,
+  "passed": true
+}

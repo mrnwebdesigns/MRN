@@ -264,3 +264,14 @@ Source `6a54037e4f25` is installed on the exact review site after source/runtime
 QA and fresh remote backup. [Checks, performance limits and captures](section-orientation-20261104/REVIEW.md).
 The user's unsaved new page is preserved. Human visual acceptance remains open;
 CPU/OOM and release gates are unchanged. Next annotation: `UX-031`.
+
+### UX-031 / UX-C10 — Remove empty Page Settings grid space
+
+“No white space.” **P2**. The supplied Page Settings screenshot shows large
+holes beneath short panels in equal-height grid rows. Native CSS column flow now
+packs whole cards with 16px separation, preserving DOM/form order and one-column
+mobile layout. One existing native Publish-footer Dark contrast defect found in
+baseline QA was corrected with existing semantic tokens. Source `d822de61c747`
+is installed after QA and a verified remote backup. [Evidence](settings-flow-20261104/REVIEW.md).
+The existing editor tab remains untouched; a fresh review tab is open. Human
+acceptance is pending; next annotation `UX-032`.
