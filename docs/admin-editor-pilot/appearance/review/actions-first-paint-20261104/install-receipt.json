@@ -1,0 +1,30 @@
+{
+  "host": "admin-editor-pilot.mrndev.io",
+  "commit": "5eb079d95e39c450de7bbdfe2a4c82e41d93311a",
+  "files": {
+    "mrn-admin-ui-css/modern-admin.php": {
+      "before": "736e9baba0ebe1be94301846183849a84d757533f0e629fb8b2fb40a76df51a0",
+      "after": "27ee160d7f8c88e32581c9a50c79607edde4c6fe76bb4aeb819d34e2926be954"
+    },
+    "mrn-admin-ui-css/modern-admin.js": {
+      "before": "f73988e8ea7082f9e7ef43f121afc10d09112e5eb58413529359352e817c7ae8",
+      "after": "b4bd73be65def5b9670c7600a18190c2080b3bc91da400dcab38357901b7c618"
+    },
+    "mrn-admin-ui-css/row-actions.css": {
+      "before": "cff670e55ebb7bd48702a55537d05d0c3a59955871c51231b7d024e031c64e0a",
+      "after": "8d74a047b0b76f691a9e4046e544e3d836350c15a022b9308b628290a4bea359"
+    }
+  },
+  "backup": {
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1793822099,
+    "label": "pre-admin-pilot-actions-paint-install-20261104",
+    "nonce": "e37f3986cfd2",
+    "key": "sites/admin-editor-pilot-mrndev-io/backup_2026-11-04-1954_Trilliant_e37f3986cfd2-db.gz",
+    "size": 6312894,
+    "sha256": "010eca0401f0ca34e213d563adc9c71b52cc717d98f9c89fd704e072057179c3"
+  },
+  "rollback": "/home/mrndev-admin-editor/review-private/before-actions-paint-5eb079d95e39",
+  "status": "installed"
+}

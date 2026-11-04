@@ -1,0 +1,81 @@
+{
+  "phase": "installed",
+  "checks": [
+    {
+      "name": "light before/after action geometry",
+      "data": {
+        "rowHeight": 0,
+        "rowTop": 0,
+        "controlWidth": 0,
+        "controlHeight": 0,
+        "controlTop": 0
+      }
+    },
+    {
+      "name": "light native links/nonces/handlers and Quick Edit classes preserved",
+      "data": true
+    },
+    {
+      "name": "light keyboard, Escape and Quick Edit cancel",
+      "data": true
+    },
+    {
+      "name": "light scoped axe",
+      "data": true
+    },
+    {
+      "name": "dark before/after action geometry",
+      "data": {
+        "rowHeight": 0,
+        "rowTop": 0,
+        "controlWidth": 0,
+        "controlHeight": 0,
+        "controlTop": 0
+      }
+    },
+    {
+      "name": "dark native links/nonces/handlers and Quick Edit classes preserved",
+      "data": true
+    },
+    {
+      "name": "dark keyboard, Escape and Quick Edit cancel",
+      "data": true
+    },
+    {
+      "name": "dark scoped axe",
+      "data": true
+    },
+    {
+      "name": "no-js working native Actions",
+      "data": true
+    },
+    {
+      "name": "blocked-script working native Actions",
+      "data": true
+    },
+    {
+      "name": "no-popover working native Actions",
+      "data": true
+    },
+    {
+      "name": "Posts shared component retained",
+      "data": true
+    },
+    {
+      "name": "CPT shared component retained",
+      "data": true
+    },
+    {
+      "name": "Media shared component retained",
+      "data": true
+    },
+    {
+      "name": "390px popover placement",
+      "data": true
+    },
+    {
+      "name": "Native REST health",
+      "data": true
+    }
+  ]
+}

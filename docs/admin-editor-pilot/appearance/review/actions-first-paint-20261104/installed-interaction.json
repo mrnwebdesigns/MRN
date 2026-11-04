@@ -1,0 +1,9 @@
+{
+  "early_native_open_preserved": true,
+  "early_focus_preserved": true,
+  "native_row_replacement_enhanced_once": true,
+  "served_assets": [
+    "row-actions.css",
+    "modern-admin.js"
+  ]
+}

@@ -360,3 +360,7 @@ next annotation `UX-038`. Existing editor CPU and Local Hub OOM gates remain ope
 ### UX-041 — Shared Site menu behavior and stable disclosure
 
 **P1, implemented for review.** Media, Edit and Create now share one controller and drawer styles. Removed automatic Dashboard focus and hover/current/vendor expansion; explicit submenu buttons preserve native links and AME groups. Keyboard, both themes, mobile, scrolled opening, native controls and failure fallbacks are covered. Source `f9f231e2`; [evidence](shared-site-menu-20261104/REVIEW.md). Await visual review; next annotation `UX-042`.
+
+### UX-042 — Actions visibly builds on All Pages
+
+**P1, implemented and installed for review.** Eligible Posts/Pages/CPT lists now render the shared Actions disclosure in the initial HTML. Enhancement preserves its geometry, native action nodes, open state and focus. Installed delayed-script measurements show zero control/row movement in both themes; keyboard, Quick Edit, mobile, native fallback and Media regression checks pass. Source `5eb079d95e39`; [evidence](actions-first-paint-20261104/REVIEW.md). All Pages refreshed in Codex. Await visual review; next annotation `UX-043`. Existing editor CPU/OOM release blockers remain open.

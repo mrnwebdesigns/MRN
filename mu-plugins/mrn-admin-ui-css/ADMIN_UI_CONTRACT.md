@@ -49,6 +49,11 @@ copy its JavaScript/CSS into a consuming plugin, or add a new preference.
 - On an eligible screen, `modern-admin.js` and shared `row-actions.css` enhance that
   markup automatically. Original actions stay in their original row and form.
   Native AJAX row replacement is enhanced once without a consumer callback.
+- Eligible Posts, Pages and CPT lists render a working native Actions disclosure
+  through the existing post/page row-action filters. Its initial geometry matches
+  the enhanced control, avoiding an inline-links-to-button change during loading.
+  The shared enhancer adopts the original nodes and preserves an already-open menu
+  and its focus. Existing owner disclosures are left alone.
 - Use the existing native destructive wrappers (`trash`, `delete`,
   `delete_permanent`, `delete_permanently`) where applicable. The shared component
   places these actions last, behind a divider, with the semantic danger color.
@@ -59,9 +64,10 @@ copy its JavaScript/CSS into a consuming plugin, or add a new preference.
 - Light/Dark styling, viewport placement over clipped tables, keyboard opening,
   Escape/focus return and Quick Edit replacement behavior have one owner here.
   Do not add per-screen positioning, a document-body portal, or a polling loop.
-- Without the enabled appearance pilot, JavaScript or native Popover support,
-  original inline actions (or Media’s native disclosure) remain usable. Consumers
-  must not hide them themselves.
+- Without the enabled appearance pilot, original native actions remain unchanged.
+  Without JavaScript or native Popover support, Posts/Pages/CPT and Media retain
+  working native disclosures; other eligible tables retain their original inline
+  actions. Consumers must not hide them themselves.
 
 Eligibility is bounded by `mrn_admin_ui_modern_screen()` plus the exact Media
 Library **list** screen while appearance is enabled. The Media integration adopts
@@ -79,6 +85,8 @@ Reuse acceptance checks: native links/nonces and form ancestry, Quick Edit where
 present, keyboard/focus, Light/Dark hover and destructive states, narrow viewports,
 wide/clipped tables and native fallback. See the
 [verified review implementation](../../docs/admin-editor-pilot/appearance/review/row-actions-20261104/REVIEW.md).
+The [first-paint qualification](../../docs/admin-editor-pilot/appearance/review/actions-first-paint-20261104/REVIEW.md)
+also covers delayed initialization, early interaction and native fallbacks.
 This documents the existing native-markup contract; it adds no runtime dependency
 or contract-version requirement. The candidate remains review-only until the
 separate Stack release gates are satisfied.

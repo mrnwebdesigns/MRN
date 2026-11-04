@@ -1,0 +1,41 @@
+{
+  "phase": "before",
+  "checks": [
+    {
+      "name": "light before/after action geometry",
+      "data": {
+        "rowHeight": 0,
+        "rowTop": 0,
+        "controlWidth": -248.859375,
+        "controlHeight": -7,
+        "controlTop": 7
+      }
+    },
+    {
+      "name": "light keyboard, Escape and Quick Edit cancel",
+      "data": true
+    },
+    {
+      "name": "light scoped axe",
+      "data": true
+    },
+    {
+      "name": "dark before/after action geometry",
+      "data": {
+        "rowHeight": 0,
+        "rowTop": 0,
+        "controlWidth": -248.859375,
+        "controlHeight": -7,
+        "controlTop": 7
+      }
+    },
+    {
+      "name": "dark keyboard, Escape and Quick Edit cancel",
+      "data": true
+    },
+    {
+      "name": "dark scoped axe",
+      "data": true
+    }
+  ]
+}
