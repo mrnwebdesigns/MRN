@@ -220,7 +220,9 @@ body.mrn-workspace .mrn-section-caption { font-size: 18px; line-height: 1.25; ma
 body.mrn-workspace .mrn-section-kind { font-size: 11px; line-height: 1.2; }
 body.mrn-workspace #wpbody-content .mrn-editor-section > .acf-fields > .acf-field.mrn-field-band:not(.-error) { background: var(--mrn-admin-surface-subtle); }
 body.mrn-workspace #wpbody-content .mrn-nested-component > .acf-input > .acf-repeater > .acf-table > tbody > .acf-row:nth-child(even of .acf-row:not(.acf-clone)) > td { background: var(--mrn-admin-surface); }
+/* UX-032: Sticky section experiment disabled at the owner's request.
 @media (min-width: 1001px) and (min-height: 700px) {
  body.mrn-workspace:not(.mrn-workspace-overview) .mrn-editor-section:not(.-collapsed) > .acf-fc-layout-actions-wrap { position: sticky; top: calc(var(--mrn-editor-offset, 103px) + var(--mrn-workspace-header-height, 54px)); z-index: 30; }
  body.mrn-workspace .mrn-editor-section .acf-field { scroll-margin-top: calc(var(--mrn-editor-offset, 103px) + var(--mrn-workspace-header-height, 54px) + 96px); }
 }
+*/

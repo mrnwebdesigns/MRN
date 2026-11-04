@@ -6,7 +6,7 @@
 	var labels = mrnSectionNavigator, rows = [], fields = [], activeRow, mode = 'content', overview = false;
 	var panel, list, search, status, empty, errorFilter, mobileToggle, modeButtons, viewButton, position, previous, next, hint;
 	var observer, titleObserver, noticeObserver, frame = 0, refreshFrame = 0, dirtyRows = new Set(), moving = false, sorting = false, errorsOnly = false, mounted = false, lastInvoker, pendingInvalid = false;
-	var richEditors = new WeakSet(), nestedRows = new WeakSet(), bandFrame = 0;
+	var richEditors = new WeakSet(), nestedRows = new WeakSet(), addedNestedRows = new WeakSet(), bandFrame = 0;
 	var observed = new WeakSet(), captions = new WeakMap(), remembered = '';
 	function rememberSection() {
 		var item = rows.find( function( entry ) { return entry.row === activeRow; } ), id = document.getElementById( 'post_ID' );
@@ -179,8 +179,13 @@
 				var name = label.querySelector( 'label' ), text = ( index + 1 ) + ' · ' + ( title ? title.value.trim().slice( 0, 120 ) : ( name ? name.textContent.trim() : labels.component ) );
 				if ( header.textContent !== text ) { header.textContent = text; }
 				function state() { header.setAttribute( 'aria-expanded', String( ! item.classList.contains( '-collapsed' ) ) ); update(); }
+				if ( ! nestedRows.has( item ) ) {
+					nestedRows.add( item );
+					// Existing subsections start compact once; new rows and editing choices stay open.
+					if ( ! addedNestedRows.has( item ) && ! item.classList.contains( '-collapsed' ) ) { field.collapse( window.jQuery( item ) ); }
+					new MutationObserver( state ).observe( item, { attributes: true, attributeFilter: [ 'class' ] } );
+				}
 				state();
-				if ( ! nestedRows.has( item ) ) { nestedRows.add( item ); new MutationObserver( state ).observe( item, { attributes: true, attributeFilter: [ 'class' ] } ); }
 			} );
 			update();
 		} );
@@ -474,7 +479,10 @@
 	// controls in otherwise hidden panels and sections.
 	acf.addAction( 'load', function() { nativeReady = true; schedule(); }, 100 );
 	acf.addAction( 'show_field', visibleFieldChanged ); acf.addAction( 'hide_field', visibleFieldChanged );
-	acf.addAction( 'ready', schedule ); acf.addAction( 'append', schedule ); acf.addAction( 'remove', schedule ); acf.addAction( 'sortstart', function() { sorting = true; } ); acf.addAction( 'sortstop', function() { sorting = false; schedule(); } );
+	acf.addAction( 'ready', schedule ); acf.addAction( 'append', function( $el ) {
+		$el.find( '.acf-row:not(.acf-clone)' ).addBack( '.acf-row:not(.acf-clone)' ).each( function() { addedNestedRows.add( this ); } );
+		schedule();
+	} ); acf.addAction( 'remove', schedule ); acf.addAction( 'sortstart', function() { sorting = true; } ); acf.addAction( 'sortstop', function() { sorting = false; schedule(); } );
 	document.addEventListener( 'click', function( event ) {
 		if ( event.target.closest( '.mrn-section-return' ) ) { openPanel( event.target ); }
 		var control = event.target.closest( '.mrn-nested-header,.mrn-nested-all' );
@@ -508,6 +516,7 @@
 	document.addEventListener( 'focusin', function( event ) {
 		var item = rootRow( event.target );
 		if ( item && item.row !== activeRow ) { activeRow = item.row; applyView(); }
+		/* UX-032: Disabled with the sticky section experiment.
 		// Keep keyboard/validation focus below the CSS-sticky section heading.
 		if ( item && event.target.matches( 'input,select,textarea,iframe,button,a[href],[tabindex],[contenteditable=true]' ) ) {
 			var heading = item.row.querySelector( ':scope > .acf-fc-layout-actions-wrap' );
@@ -516,5 +525,6 @@
 				if ( top < bottom + 2 ) { window.scrollBy( { top: top - bottom - 12, behavior: 'instant' } ); }
 			}
 		}
+		*/
 	} );
 } )();

@@ -38,15 +38,9 @@ assert(process.env.MRN_QA_AUTH_FILE, 'Set the private QA session file');
    await page.mouse.move(10, 10); await page.locator(row).evaluate(e => e.classList.remove('active-layout'));
    await page.evaluate(selector => { const e = document.querySelector(selector); scrollTo(0, e.getBoundingClientRect().top + scrollY + 450); }, '.mrn-editor-section:not(.mrn-section-parked)'); await settle();
    const geometry = await page.locator(heading).evaluate(e => ({ top: e.getBoundingClientRect().top, bottom: e.getBoundingClientRect().bottom, chrome: document.querySelector('.mrn-workspace-header').getBoundingClientRect().bottom, position: getComputedStyle(e).position }));
-   result.checks.push({ theme, geometry }); if (phase !== 'baseline') { assert.equal(geometry.position, 'sticky'); assert(Math.abs(geometry.top - geometry.chrome) <= 1); }
+   result.checks.push({ theme, geometry }); if (phase !== 'baseline') { assert.notEqual(geometry.position, 'sticky'); /* UX-032: section scrolling experiment is disabled. */ }
    await page.screenshot({ path: out + '/' + phase + '-' + theme + '-scrolled.png' });
    if (phase !== 'baseline') {
-    const input = page.locator(row + ' > .acf-fields > .acf-field input[type=text]').first();
-    await input.evaluate(e => { const header = e.closest('.layout').querySelector('.acf-fc-layout-actions-wrap'); scrollBy(0, e.getBoundingClientRect().top - header.getBoundingClientRect().top - 4); e.blur(); e.focus({ preventScroll: true }); }); await settle();
-    assert(await input.evaluate(e => e.getBoundingClientRect().top >= e.closest('.layout').querySelector('.acf-fc-layout-actions-wrap').getBoundingClientRect().bottom + 10));
-    const media = page.locator(row + ' .insert-media').first();
-    await media.evaluate(e => { const header = e.closest('.layout').querySelector('.acf-fc-layout-actions-wrap'); scrollBy(0, e.getBoundingClientRect().top - header.getBoundingClientRect().top - 4); e.blur(); e.focus({ preventScroll: true }); }); await settle();
-    assert(await media.evaluate(e => e.getBoundingClientRect().top >= e.closest('.layout').querySelector('.acf-fc-layout-actions-wrap').getBoundingClientRect().bottom + 10));
     const findings = (await new Axe({ page }).include('.mrn-editor-section:not(.mrn-section-parked) > .acf-fc-layout-actions-wrap').include('.mrn-editor-section:not(.mrn-section-parked) > .acf-fields > .acf-field-text').include('.mrn-editor-section:not(.mrn-section-parked) > .acf-fields > .acf-field-select').withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()).violations;
     result.axe.push({ theme, violations: findings.map(v => ({ id: v.id, targets: v.nodes.map(n => n.target) })) }); assert.equal(findings.length, 0);
    }
