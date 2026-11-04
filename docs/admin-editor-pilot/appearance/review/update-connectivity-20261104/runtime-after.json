@@ -1,0 +1,39 @@
+{
+    "host": "admin-editor-pilot.mrndev.io",
+    "wordpress": "7.0.4",
+    "debug_enabled": true,
+    "debug_display": false,
+    "debug_log_private": true,
+    "external_block_enabled": true,
+    "unrelated_host_blocked": true,
+    "backup_host_allowed": true,
+    "cron_disabled": true,
+    "indexing": 0,
+    "mail_blocked": true,
+    "metadata": {
+        "wordpress": {
+            "host": "api.wordpress.org",
+            "blocked": false,
+            "milliseconds": 81,
+            "http_status": 200,
+            "json_metadata": true,
+            "version_present": true
+        },
+        "admin_menu_editor": {
+            "host": "adminmenueditor.com",
+            "blocked": false,
+            "milliseconds": 322,
+            "http_status": 200,
+            "json_metadata": true,
+            "version_present": true
+        },
+        "updraftplus": {
+            "host": "updraftplus.com",
+            "blocked": false,
+            "milliseconds": 132,
+            "http_status": 200,
+            "json_metadata": true,
+            "version_present": false
+        }
+    }
+}
