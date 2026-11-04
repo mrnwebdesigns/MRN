@@ -53,3 +53,11 @@ Final preservation, rollback and actual QA receipts are recorded on the site bra
 in `docs/stack-migration-2026-11-04/LOCAL_CONFIRMATION_HERO.md`. This is a local source
 checkpoint, not full-page acceptance, promotion/Fleet publication or remote deployment.
 The site apply allow-list and existing form/case-study/performance holds remain.
+
+The staged Stack/source gate passes with advisories (implementation c646ea66).
+Lint, PHPCS security, WordPress standards, compatibility, diff and Semgrep pass.
+The isolated snapshot lacks its WP-CLI stub dependency; that advisory is distinct
+from the separate configured full-theme analysis with zero errors. The site gate
+passes with 78 partial-analysis advisories, including unresolved WP_CLI symbols;
+these are not claimed cleared. Neither source gate qualifies runtime/browser/API
+health, full-page acceptance or the existing performance holds.
