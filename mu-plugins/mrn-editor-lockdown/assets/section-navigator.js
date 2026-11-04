@@ -434,9 +434,8 @@
 	function mount() {
 		mounted = true; observer = new MutationObserver( schedule ); titleObserver = new MutationObserver( function( changes ) { changes.forEach( function( change ) { refresh( change.target.parentElement ); } ); } ); document.body.classList.add( 'mrn-editor-experience', 'mrn-workspace' );
 		var header = element( 'div', 'mrn-workspace-header' ); header.id = 'mrn-workspace-header';
-		var menu = button( labels.menu, 'mrn-workspace-button mrn-site-menu' ), back = element( 'a', 'mrn-workspace-back', '← ' + labels.back ); back.href = labels.backUrl;
-		menu.setAttribute( 'aria-controls', 'adminmenumain' ); menu.setAttribute( 'aria-expanded', 'false' );
-		menu.addEventListener( 'click', function() { var open = document.body.classList.toggle( 'mrn-site-menu-open' ); menu.setAttribute( 'aria-expanded', String( open ) ); } );
+		var menu = element( 'a', 'mrn-workspace-button mrn-site-menu', labels.menu ), back = element( 'a', 'mrn-workspace-back', '← ' + labels.back ); back.href = labels.backUrl;
+		menu.href = '#adminmenumain'; menu.setAttribute( 'role', 'button' ); menu.setAttribute( 'aria-controls', 'adminmenumain' ); menu.setAttribute( 'aria-expanded', 'false' );
 		var modes = element( 'div', 'mrn-workspace-modes' ); modes.setAttribute( 'role', 'group' ); modes.setAttribute( 'aria-label', 'Workspace' );
 		modeButtons = [ { mode: 'content', button: button( labels.content, 'mrn-mode-content' ) }, { mode: 'settings', button: button( labels.settings, 'mrn-mode-settings' ) } ];
 		modeButtons.forEach( function( item ) { item.button.addEventListener( 'click', function() { mode = item.mode; applyView(); window.scrollTo( { top: 0, behavior: 'instant' } ); } ); modes.appendChild( item.button ); } );
@@ -482,7 +481,6 @@
 		collectNotices(); preservePanelPreferences();
 		var toolbarEntry = document.querySelector( '#wp-admin-bar-mrn-page-sections > a' ); if ( toolbarEntry ) { toolbarEntry.addEventListener( 'click', function( event ) { event.preventDefault(); openPanel( toolbarEntry ); } ); }
 		panel.addEventListener( 'keydown', function( event ) { if ( event.key === 'Escape' ) { event.preventDefault(); closePanel( true ); } } );
-		document.addEventListener( 'keydown', function( event ) { if ( event.key === 'Escape' && document.body.classList.contains( 'mrn-site-menu-open' ) ) { document.body.classList.remove( 'mrn-site-menu-open' ); menu.setAttribute( 'aria-expanded', 'false' ); menu.focus(); } } );
 		window.addEventListener( 'resize', updateChromeOffset ); updateChromeOffset();
 	}
 	// Reveal after ACF initializes its fields. Early show eagerly enhances Select2

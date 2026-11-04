@@ -1,9 +1,6 @@
 /* Local editor workspace. ACF fields retain their native form, order and controls. */
-body.mrn-workspace { --mrn-editor-ink: var(--mrn-admin-ink); --mrn-editor-muted: var(--mrn-admin-muted); --mrn-editor-accent: var(--mrn-admin-accent); --mrn-outline-width: 292px; background: var(--mrn-admin-canvas); color: var(--mrn-editor-ink); }
+body.mrn-workspace { --mrn-site-menu-top: calc(var(--mrn-editor-offset, 110px) + var(--mrn-workspace-header-height, 54px)); --mrn-editor-ink: var(--mrn-admin-ink); --mrn-editor-muted: var(--mrn-admin-muted); --mrn-editor-accent: var(--mrn-admin-accent); --mrn-outline-width: 292px; background: var(--mrn-admin-canvas); color: var(--mrn-editor-ink); }
 .mrn-workspace #wpcontent, .mrn-workspace #wpfooter { margin-left: 0 !important; padding-left: 0 !important; }
-.mrn-workspace #adminmenumain { display: none; }
-.mrn-workspace.mrn-site-menu-open #adminmenumain { display: block; position: fixed; z-index: 9999; top: calc(var(--mrn-editor-offset, 110px) + 54px); bottom: 0; overflow: auto; width: 240px; box-shadow: var(--mrn-admin-overlay-shadow); }
-.mrn-workspace.mrn-site-menu-open #adminmenuwrap, .mrn-workspace.mrn-site-menu-open #adminmenuback { position: static !important; }
 .mrn-workspace #wpbody-content { padding-bottom: 50px; }
 .mrn-workspace #wpbody-content > .wrap { margin: 24px 36px 0 calc(var(--mrn-outline-width) + 36px); }
 .mrn-workspace .wrap > h1, .mrn-workspace .wrap > .page-title-action { display: none; }
@@ -141,7 +138,7 @@ body.mrn-workspace-settings #poststuff #delete-action .submitdelete { color: var
 body.mrn-workspace .mrn-region-add { font-size: 11px; font-weight: 600; padding: 4px 7px; }
 .mrn-outline-controls { position: sticky; top: -24px; z-index: 1; background: var(--mrn-admin-surface); padding-bottom: 8px; }
 /* Header height follows wrapped controls at narrow widths and zoom. */
-body.mrn-workspace .mrn-section-outline, body.mrn-workspace.mrn-site-menu-open #adminmenumain { top: calc(var(--mrn-editor-offset, 110px) + var(--mrn-workspace-header-height, 54px)); }
+body.mrn-workspace .mrn-section-outline { top: calc(var(--mrn-editor-offset, 110px) + var(--mrn-workspace-header-height, 54px)); }
 body.mrn-workspace .mrn-editor-tools, body.mrn-workspace .mrn-editor-section { scroll-margin-top: calc(var(--mrn-editor-offset, 110px) + var(--mrn-workspace-header-height, 54px) + 16px); }
 @media (max-width: 1000px) {
  body.mrn-workspace-settings #mrn-universal-sticky-toolbar .mrn-usb-publishing { display: flex; flex-wrap: wrap; }

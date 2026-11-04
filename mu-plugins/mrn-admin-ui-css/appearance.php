@@ -67,6 +67,7 @@ add_action( 'admin_enqueue_scripts', function () {
 		'saved' => __( 'Appearance saved for your account.', 'mrn-admin-ui-css' ),
 		'failed' => __( 'Appearance could not be saved. Your previous preference has been restored. Try again.', 'mrn-admin-ui-css' ),
 		'visit' => __( 'Visit %s', 'mrn-admin-ui-css' ),
+		'submenu' => __( '%s submenu', 'mrn-admin-ui-css' ),
 		'closeScreen' => __( 'Close', 'mrn-admin-ui-css' ),
 		'closeScreenLabel' => __( 'Close view options or help', 'mrn-admin-ui-css' ),
 		'viewOptions' => __( 'View options', 'mrn-admin-ui-css' ),

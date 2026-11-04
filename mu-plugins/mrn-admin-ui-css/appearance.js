@@ -3,42 +3,83 @@
  'use strict';
  var labels = window.mrnAdminAppearance;
  if (!labels) { return; }
- // Media uses the existing AME-owned menu as a temporary drawer. No cloned
- // links, saved menu preference, observers, scroll handlers or media listeners.
- var mediaMenu = document.querySelector('body.mrn-media-workspace #mrn-media-menu');
+ // One delegated Site menu component serves the server-rendered Media bar and
+ // the editor bar mounted later by ACF. Native AME links/groups stay in place.
  var siteMenu = document.getElementById('adminmenumain');
- if (mediaMenu && siteMenu) {
-  function closeMediaMenu(restore) {
-   if (!document.body.classList.contains('mrn-media-menu-open')) { return; }
-   document.body.classList.remove('mrn-media-menu-open');
-   mediaMenu.setAttribute('aria-expanded', 'false');
-   if (restore) { mediaMenu.focus(); }
-  }
-  function toggleMediaMenu() {
-   if (document.body.classList.contains('mrn-media-menu-open')) { closeMediaMenu(true); return; }
-   document.body.classList.add('mrn-media-menu-open');
-   mediaMenu.setAttribute('aria-expanded', 'true');
-   var first = siteMenu.querySelector('#adminmenu a.menu-top');
-   if (first) { first.focus(); }
-  }
-  mediaMenu.setAttribute('aria-controls', 'adminmenumain');
-  mediaMenu.setAttribute('role', 'button');
-  mediaMenu.setAttribute('aria-expanded', 'false');
-  mediaMenu.addEventListener('click', function(event) { event.preventDefault(); toggleMediaMenu(); });
-  mediaMenu.addEventListener('keydown', function(event) {
-   if (event.key === ' ' || event.key === 'ArrowDown') { event.preventDefault(); event.stopPropagation(); toggleMediaMenu(); }
+ var menuTrigger = null, menuPrepared = false;
+ function workspaceMenu() {
+  return document.body.matches('.mrn-workspace, .mrn-media-workspace');
+ }
+ function prepareSiteMenu() {
+  if (menuPrepared) { return; }
+  siteMenu.querySelectorAll('#adminmenu > li.wp-has-submenu:not(.ame-menu-heading-item)').forEach(function(item, index) {
+   var link = item.querySelector(':scope > a.menu-top'), submenu = item.querySelector(':scope > .wp-submenu');
+   if (!link || !submenu) { return; }
+   var toggle = document.createElement('button'), name = link.querySelector('.wp-menu-name');
+   if (!submenu.id) { submenu.id = 'mrn-site-submenu-' + index; }
+   toggle.type = 'button'; toggle.className = 'mrn-site-submenu-toggle';
+   toggle.setAttribute('aria-controls', submenu.id); toggle.setAttribute('aria-expanded', 'false');
+   toggle.setAttribute('aria-label', (labels.submenu || '%s submenu').replace('%s', (name || link).textContent.trim()));
+   item.classList.add('mrn-site-has-submenu'); link.after(toggle);
+  });
+  menuPrepared = true;
+ }
+ function closeSiteMenu(restore) {
+  if (!document.body.classList.contains('mrn-site-menu-open')) { return; }
+  document.body.classList.remove('mrn-site-menu-open');
+  menuTrigger.setAttribute('aria-expanded', 'false');
+  if (restore) { menuTrigger.focus({preventScroll: true}); }
+ }
+ function openSiteMenu(trigger) {
+  prepareSiteMenu(); menuTrigger = trigger;
+  document.body.classList.add('mrn-site-menu-open');
+  trigger.setAttribute('aria-expanded', 'true');
+  // Keep focus on the trigger. Focusing Dashboard used to open its submenu and
+  // scroll the drawer; keyboard users enter the menu with Tab or ArrowDown.
+ }
+ function enterSiteMenu() {
+  var first = Array.from(siteMenu.querySelectorAll('#adminmenu a.menu-top')).find(function(link) { return link.getClientRects().length; });
+  if (first) { first.focus({preventScroll: true}); }
+ }
+ if (siteMenu) {
+  var mediaMenu = document.getElementById('mrn-media-menu');
+  if (mediaMenu) { mediaMenu.setAttribute('role', 'button'); mediaMenu.setAttribute('aria-expanded', 'false'); }
+  document.body.classList.add('mrn-site-menu-ready');
+  document.addEventListener('click', function(event) {
+   if (!workspaceMenu()) { return; }
+   var trigger = event.target.closest('.mrn-workspace-header .mrn-site-menu');
+   if (trigger) {
+    event.preventDefault();
+    if (document.body.classList.contains('mrn-site-menu-open')) { closeSiteMenu(true); }
+    else { openSiteMenu(trigger); }
+    return;
+   }
+   var toggle = event.target.closest('.mrn-site-submenu-toggle');
+   if (toggle && siteMenu.contains(toggle)) {
+    event.preventDefault(); event.stopPropagation();
+    var open = toggle.getAttribute('aria-expanded') !== 'true';
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.parentElement.classList.toggle('mrn-site-submenu-open', open);
+    return;
+   }
+   if (!siteMenu.contains(event.target)) { closeSiteMenu(false); }
   });
   document.addEventListener('keydown', function(event) {
-   if (event.key === 'Escape' && document.body.classList.contains('mrn-media-menu-open')) { event.preventDefault(); closeMediaMenu(true); }
-  });
-  document.addEventListener('click', function(event) {
-   if (!siteMenu.contains(event.target) && !mediaMenu.contains(event.target)) { closeMediaMenu(false); }
+   if (!workspaceMenu()) { return; }
+   var trigger = event.target.closest('.mrn-workspace-header .mrn-site-menu');
+   if (trigger && (event.key === ' ' || event.key === 'ArrowDown')) {
+    event.preventDefault();
+    if (event.key === ' ' && document.body.classList.contains('mrn-site-menu-open')) { closeSiteMenu(true); }
+    else { openSiteMenu(trigger); if (event.key === 'ArrowDown') { enterSiteMenu(); } }
+   } else if (trigger && event.key === 'Tab' && !event.shiftKey && document.body.classList.contains('mrn-site-menu-open')) {
+    event.preventDefault(); enterSiteMenu();
+   } else if (event.key === 'Escape' && document.body.classList.contains('mrn-site-menu-open')) {
+    event.preventDefault(); closeSiteMenu(true);
+   }
   });
   document.addEventListener('focusin', function(event) {
-   if (!siteMenu.contains(event.target) && !mediaMenu.contains(event.target)) { closeMediaMenu(false); }
+   if (workspaceMenu() && !siteMenu.contains(event.target) && !event.target.closest('.mrn-workspace-header .mrn-site-menu')) { closeSiteMenu(false); }
   });
-  // Mark enhanced behavior; CSS retains the anchor fallback until this runs.
-  document.body.classList.add('mrn-media-menu-ready');
  }
  var form = document.querySelector('.mrn-appearance-form');
  var account = document.getElementById('wp-admin-bar-my-account');
