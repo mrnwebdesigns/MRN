@@ -156,3 +156,6 @@ Only the dedicated mrndev.io review deployment is authorized. No release prepara
 
 
 **P1 UX-038:** Visible editor assembly and late list reflow corrected on the review host. Editor first-paint visibility is coordinated with the existing workspace and publishing toolbar; no native ACF lifecycle or save-path changes. Targeted source/runtime QA and fail-open checks pass. [Trace, captures and limitations](review/admin-load-20261104/REVIEW.md). Await owner visual review; next annotation `UX-039`. The separate CPU qualification and Local Hub OOM release blockers remain open.
+
+
+**P2 UX-039:** Removed the pointer-selected section-heading border on the review host; preserved keyboard focus. Both themes and installed CSS verified. [Evidence](review/section-focus-20261104/REVIEW.md). Await visual review; next annotation `UX-040`.

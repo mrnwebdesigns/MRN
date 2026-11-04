@@ -1,0 +1,32 @@
+{
+  "phase": "before",
+  "checks": [
+    {
+      "theme": "light",
+      "mouse": {
+        "outline": "solid",
+        "width": "2px",
+        "focusVisible": false
+      },
+      "keyboard": {
+        "outline": "solid",
+        "width": "2px",
+        "focusVisible": true
+      }
+    },
+    {
+      "theme": "dark",
+      "mouse": {
+        "outline": "solid",
+        "width": "2px",
+        "focusVisible": false
+      },
+      "keyboard": {
+        "outline": "solid",
+        "width": "2px",
+        "focusVisible": true
+      }
+    }
+  ],
+  "servedSha": "7c054ada75b692db8aeac6fb4a189b7c6d26859fd8a4044f716cc6ecc26b3543"
+}

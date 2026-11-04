@@ -1,0 +1,32 @@
+{
+  "phase": "installed",
+  "checks": [
+    {
+      "theme": "light",
+      "mouse": {
+        "outline": "none",
+        "width": "0px",
+        "focusVisible": false
+      },
+      "keyboard": {
+        "outline": "solid",
+        "width": "2px",
+        "focusVisible": true
+      }
+    },
+    {
+      "theme": "dark",
+      "mouse": {
+        "outline": "none",
+        "width": "0px",
+        "focusVisible": false
+      },
+      "keyboard": {
+        "outline": "solid",
+        "width": "2px",
+        "focusVisible": true
+      }
+    }
+  ],
+  "servedSha": "f3d3a8bdfe2f5f07d40e6a356a12e142b0ac0a4f96fafdfcefb51e5f3bc1b78c"
+}
