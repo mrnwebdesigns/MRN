@@ -300,3 +300,12 @@ installation; broader CPU/OOM/release gates remain open. Source `976258a2` plus
 `d6ccdacd6661`; [installed evidence](media-workspace-20261104/REVIEW.md).
 A fresh Codex tab is ready for annotations. Human acceptance pending.
 Next annotation: `UX-034`.
+
+### UX-034 — Center heading label and caret
+
+“Center text and carrot.” **P2**. Native AME section labels and carets now center
+as one group horizontally and vertically. Shared CSS covers Light/Dark, regular
+sidebar, mobile and Media drawer; native disclosure and menu configuration remain
+unchanged. Source `c4cd1947e5a4` installed after scoped QA and fresh verified backup.
+[Evidence](heading-align-20261104/REVIEW.md). Fresh Codex dashboard is ready for
+review. Human acceptance pending; next annotation `UX-035`.

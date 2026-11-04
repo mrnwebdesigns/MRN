@@ -107,6 +107,11 @@ mobile layout, both themes, keyboard and dialog checks pass. A startup layout
 jump was corrected; bounded retained heap is unchanged. [Installed evidence](review/media-workspace-20261104/REVIEW.md).
 Await visual review; next annotation `UX-034`. Existing performance gates remain.
 
+**P2 UX-034:** Section heading text and carets now center together in the existing
+AME navigation. Both themes, native keyboard disclosure, mobile and Media drawer
+checks pass. [Installed evidence](review/heading-align-20261104/REVIEW.md).
+Await visual review; next annotation `UX-035`. Existing performance gates remain.
+
 ## Technical blockers and existing follow-up
 
 - **P1 — Review-site list preference POST:** Cloudflare rejects the native `edit.php` items-per-page submission with HTTP 403. The original value remains 20. A separate exact-path security-rule approval and fresh preflight are needed before extending the prior `post.php` exception; no WAF change was made. Native column and optional editor-panel AJAX persistence pass.
