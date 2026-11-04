@@ -304,8 +304,8 @@ body.mrn-appearance #wpadminbar .wrap-seopress-noindex .ab-icon::before { color:
 
 /* AME's collapsible group controls stay native; reduce the decorative gaps. */
 body.mrn-appearance #adminmenu li.ame-menu-heading-item > a.menu-top { min-height: 32px; margin-bottom: 4px; background: var(--mrn-admin-surface-subtle) !important; }
-body.mrn-appearance #adminmenu li.ame-menu-heading-item .wp-menu-name { padding: 8px 10px; align-items: center; justify-content: center; font-weight: 750; letter-spacing: .075em; }
-body.mrn-appearance #adminmenu li.ame-menu-heading-item .ame-mh-title { flex: 0 1 auto; margin: 0; text-align: center; }
+/* AME owns horizontal title alignment; only center the caret vertically. */
+body.mrn-appearance #adminmenu li.ame-menu-heading-item .wp-menu-name { padding: 8px 10px; align-items: center; font-weight: 750; letter-spacing: .075em; }
 body.mrn-appearance #adminmenu .ame-mh-divider { display: none !important; }
 body.mrn-appearance #adminmenu :is(a.menu-top,li.menu-top)::after, body.mrn-appearance #adminmenu a.menu-top::before { display: none !important; }
 body.mrn-appearance #adminmenu :is(li.current,li.wp-has-current-submenu) > a.menu-top { border-radius: 6px !important; clip-path: none !important; }
