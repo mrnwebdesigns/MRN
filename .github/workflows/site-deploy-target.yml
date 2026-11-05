@@ -289,6 +289,11 @@ jobs:
             exit 1
           fi
           umask 077
+          if [[ "$DEPLOY_BACKUP_PROVIDER" == kinsta && -z "$DEPLOY_KINSTA_MANUAL_BACKUP_APPROVAL" ]]; then
+            printf 'DEPLOY_KEY_FILE=native-kinsta\n' >> "$GITHUB_ENV"
+          else
+            printf 'DEPLOY_KEY_FILE=%s/site-deploy.key\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+          fi
           printf '%s\n' "$SSH_KEY" > "$RUNNER_TEMP/site-deploy.key"
           printf '%s\n' "$KNOWN_HOSTS" > "$RUNNER_TEMP/site-deploy.known_hosts"
           if [[ "$DEPLOY_HOST_PROVIDER" == wpengine ]]; then
@@ -316,7 +321,6 @@ jobs:
         id: activation
         shell: bash
         env:
-          DEPLOY_KEY_FILE: ${{ runner.temp }}/site-deploy.key
           DEPLOY_KNOWN_HOSTS_FILE: ${{ runner.temp }}/site-deploy.known_hosts
           DEPLOY_KINSTA_API_TOKEN: ${{ secrets.DEPLOY_KINSTA_API_TOKEN }}
         run: |
@@ -353,7 +357,6 @@ jobs:
         if: failure() && inputs.mode == 'deploy' && steps.activation.outcome == 'success' && steps.browser.outcome == 'failure'
         env:
           DEPLOY_KINSTA_API_TOKEN: ${{ secrets.DEPLOY_KINSTA_API_TOKEN }}
-          DEPLOY_KEY_FILE: ${{ runner.temp }}/site-deploy.key
           DEPLOY_KNOWN_HOSTS_FILE: ${{ runner.temp }}/site-deploy.known_hosts
         run: |
           python3 "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/atomic_runner.py" \
@@ -377,7 +380,6 @@ jobs:
         if: failure() && (inputs.target == 'live' || inputs.qualify_dev) && inputs.mode == 'deploy' && steps.activation.outcome == 'success' && steps.runtime.outcome == 'failure'
         env:
           DEPLOY_KINSTA_API_TOKEN: ${{ secrets.DEPLOY_KINSTA_API_TOKEN }}
-          DEPLOY_KEY_FILE: ${{ runner.temp }}/site-deploy.key
           DEPLOY_KNOWN_HOSTS_FILE: ${{ runner.temp }}/site-deploy.known_hosts
         run: |
           python3 "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/atomic_runner.py" \
@@ -395,7 +397,6 @@ jobs:
         if: failure() && inputs.mode == 'deploy' && steps.activation.outcome == 'success' && steps.local_readback.outcome == 'failure'
         env:
           DEPLOY_KINSTA_API_TOKEN: ${{ secrets.DEPLOY_KINSTA_API_TOKEN }}
-          DEPLOY_KEY_FILE: ${{ runner.temp }}/site-deploy.key
           DEPLOY_KNOWN_HOSTS_FILE: ${{ runner.temp }}/site-deploy.known_hosts
         run: |
           python3 "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/atomic_runner.py" \
