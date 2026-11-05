@@ -8,7 +8,8 @@ server SSH credentials. No shared plugin/runtime package is changed.
 ## Scope
 
 - Existing node: `mrn-qa-engine`, Tailscale `100.97.81.44`.
-- Public egress: `159.65.33.118` and `2604:a880:800:14:0:2:f6f6:b000`.
+- Host public addresses: `159.65.33.118` and `2604:a880:800:14:0:2:f6f6:b000`.
+  Website QA uses only the verified IPv4 path.
 - CI tag: `tag:amishmike-ci`, with only Internet web/DNS access via `tag:qa`.
 - Federation: GitHub OIDC, exact private repository ID, protected main workflow,
   and `production` environment. The identity can create tagged ephemeral nodes;
@@ -21,8 +22,10 @@ server SSH credentials. No shared plugin/runtime package is changed.
   granted. Existing administrator grants and policy comments are preserved.
 
 The separate site workflow defaults `QA_EGRESS_ENABLED` to `0`. Its wrapper
-selects this exact exit node, verifies IPv4 and IPv6 through two services each,
-executes the unchanged QA commands and restores routing even after failure.
+selects this exact exit node and verifies IPv4 through two services. Only the
+isolated GitHub runner temporarily disables IPv6 during QA; its original
+per-interface settings and route selection are restored even after failure.
+The acceptance commands and assertions remain unchanged.
 GitHub's Tailscale action logs out the ephemeral node during job cleanup. A
 hard-killed runner must still disappear from device inventory after expiry.
 
@@ -59,10 +62,10 @@ version. Never replace concurrent administrator changes.
    and scope. Store its generated client ID and audience in the site's protected
    GitHub production environment as `TS_QA_CLIENT_ID` and `TS_QA_AUDIENCE`.
    There is no long-lived client secret or reusable auth key.
-5. Create site-specific bot-protection exceptions for only the two verified
-   public addresses. Preserve bot protection and all unrelated rules. Scope any
+5. Create site-specific bot-protection exceptions for only the verified IPv4
+   address used by QA. Preserve bot protection and all unrelated rules. Scope any
    Cloudflare catalog-rule exclusion to this site's GET/HEAD requests and these
-   addresses; preserve the full original rule and verify readback.
+   address; preserve the full original rule and verify readback.
 6. Enable the protected QA egress variable and dispatch **runtime**, not deploy.
    Check the route receipts, strict existing QA results and ephemeral-node
    removal. Verify denied SSH/internal access using Tailscale policy tests.
