@@ -205,3 +205,13 @@ screenshots](review/settings-toolbar-20261105/REVIEW.md). Await visual acceptanc
 next annotation UX-049. Separate refinement: Header/Footer's existing collapse
 chevron does not close its panel in either baseline or candidate. CPU/memory/OOM
 qualification remains open; this CSS-only patch does not close those release gates.
+
+
+**P2 UX-049 — universal tab component:** implemented and installed for visual
+review. ACF, native WordPress navigation, settings toolbars, workspace modes and
+Classic Visual/Text controls now share typography, target size, active underline,
+hover and keyboard focus treatment. Duplicate per-screen rules were removed;
+native behavior and vendor ownership remain intact. [Screenshots and evidence](review/universal-tabs-20261105/REVIEW.md).
+Next annotation UX-050: review density/wrapping, especially the mobile settings
+bar. Existing Header/Footer collapse, CPU/memory and Local Hub OOM items remain
+separate; release and Fleet gates remain closed.

@@ -1,0 +1,12 @@
+[
+  {
+    "phase": "before",
+    "vendorControlCount": 32,
+    "digest": "b7a03b540bf525c925ad7445c970aa25f179bcdccacbe1e58b665131c464b43e"
+  },
+  {
+    "phase": "candidate",
+    "vendorControlCount": 32,
+    "digest": "b7a03b540bf525c925ad7445c970aa25f179bcdccacbe1e58b665131c464b43e"
+  }
+]

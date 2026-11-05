@@ -1,0 +1,62 @@
+[
+  {
+    "phase": "before",
+    "requests": 126,
+    "cls": 0.021914952254893223,
+    "scriptMs": 1589.3619999999999,
+    "layoutMs": 25.273,
+    "recalcStyleMs": 25.652,
+    "taskMs": 1719.641,
+    "heapMB": 30.838420867919922
+  },
+  {
+    "phase": "candidate",
+    "requests": 127,
+    "cls": 0.023389214285520463,
+    "scriptMs": 185.726,
+    "layoutMs": 20.164,
+    "recalcStyleMs": 20.327,
+    "taskMs": 295.601,
+    "heapMB": 27.326026916503906
+  },
+  {
+    "phase": "before",
+    "requests": 127,
+    "cls": 0.02193517345915215,
+    "scriptMs": 267.01399999999995,
+    "layoutMs": 19.703,
+    "recalcStyleMs": 24.195999999999998,
+    "taskMs": 379.622,
+    "heapMB": 35.134647369384766
+  },
+  {
+    "phase": "candidate",
+    "requests": 127,
+    "cls": 0.023342581712433558,
+    "scriptMs": 213.76700000000002,
+    "layoutMs": 17.31,
+    "recalcStyleMs": 22.931,
+    "taskMs": 333.729,
+    "heapMB": 36.91989517211914
+  },
+  {
+    "phase": "before",
+    "requests": 127,
+    "cls": 0.02193517345915215,
+    "scriptMs": 214.158,
+    "layoutMs": 21.408,
+    "recalcStyleMs": 24.42,
+    "taskMs": 330.077,
+    "heapMB": 27.606525421142578
+  },
+  {
+    "phase": "candidate",
+    "requests": 127,
+    "cls": 0.023389214285520463,
+    "scriptMs": 220.04299999999998,
+    "layoutMs": 21.488,
+    "recalcStyleMs": 26.125,
+    "taskMs": 345.94599999999997,
+    "heapMB": 36.86808776855469
+  }
+]

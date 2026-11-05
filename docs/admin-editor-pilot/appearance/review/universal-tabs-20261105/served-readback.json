@@ -1,0 +1,21 @@
+{
+  "files": [
+    {
+      "path": "mrn-admin-ui-css/mrn-modern-admin.css",
+      "url": "https://admin-editor-pilot.mrndev.io/wp-content/mu-plugins/mrn-admin-ui-css/mrn-modern-admin.css?ver=1793892304",
+      "sha256": "4463be2d962619efe5d3ce2a24f4ddb0b058cedb74d790f7d4d11efa24c6bb51"
+    },
+    {
+      "path": "mrn-admin-ui-css/mrn-admin-shell.css",
+      "url": "https://admin-editor-pilot.mrndev.io/wp-content/mu-plugins/mrn-admin-ui-css/mrn-admin-shell.css?ver=1793892304",
+      "sha256": "e2fb229834bd73a3cfce48c402c7dc418d259fd8ec9502b0fc67c51512537139"
+    },
+    {
+      "path": "mrn-admin-ui-css/mrn-editor-workspace.css",
+      "url": "https://admin-editor-pilot.mrndev.io/wp-content/mu-plugins/mrn-admin-ui-css/mrn-editor-workspace.css?ver=1793892304",
+      "sha256": "29f02e9658753bb3b11f2470c396ed4d220479851c36bbcb2315534208cc37a9"
+    }
+  ],
+  "restStatus": 200,
+  "wpV2": true
+}

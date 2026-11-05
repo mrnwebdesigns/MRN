@@ -1,0 +1,28 @@
+{
+  "files": [
+    {
+      "file": "mrn-admin-shell.css",
+      "beforeBytes": 59192,
+      "afterBytes": 60141,
+      "beforeGzip": 10330,
+      "afterGzip": 10610
+    },
+    {
+      "file": "mrn-modern-admin.css",
+      "beforeBytes": 15471,
+      "afterBytes": 15003,
+      "beforeGzip": 3365,
+      "afterGzip": 3312
+    },
+    {
+      "file": "mrn-editor-workspace.css",
+      "beforeBytes": 24937,
+      "afterBytes": 24207,
+      "beforeGzip": 4702,
+      "afterGzip": 4617
+    }
+  ],
+  "gzipDelta": 142,
+  "newJSBytes": 0,
+  "newAssetURLs": 0
+}

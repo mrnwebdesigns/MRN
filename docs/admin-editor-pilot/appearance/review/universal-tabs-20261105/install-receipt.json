@@ -1,0 +1,30 @@
+{
+  "host": "admin-editor-pilot.mrndev.io",
+  "commit": "33759d5c20ff31a13e972cf00a6c56dedebbd2a7",
+  "files": {
+    "mrn-admin-ui-css/mrn-admin-shell.css": {
+      "before": "169ea81aea5cba6ed8a8d0c884d23088c9bfd7bfed96c54275be19cd4c97416e",
+      "after": "e2fb229834bd73a3cfce48c402c7dc418d259fd8ec9502b0fc67c51512537139"
+    },
+    "mrn-admin-ui-css/mrn-modern-admin.css": {
+      "before": "b03a5a28aadbe63839e84832843344bfdcafd48b04f48bf56ef545fbe323cdcf",
+      "after": "4463be2d962619efe5d3ce2a24f4ddb0b058cedb74d790f7d4d11efa24c6bb51"
+    },
+    "mrn-admin-ui-css/mrn-editor-workspace.css": {
+      "before": "24882dd018abad31d4613e2e6a873359172113e9aa88623238eac40bb292bf3b",
+      "after": "29f02e9658753bb3b11f2470c396ed4d220479851c36bbcb2315534208cc37a9"
+    }
+  },
+  "backup": {
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1793892304,
+    "label": "pre-admin-pilot-universal-tabs-install-20261105",
+    "nonce": "7a44c2276699",
+    "key": "sites/admin-editor-pilot-mrndev-io/backup_2026-11-05-1524_Trilliant_7a44c2276699-db.gz",
+    "size": 6316692,
+    "sha256": "43859a32fdb076b5ec01cfe0870855cd7fd741923ee3a044556c4a14f029896d"
+  },
+  "rollback": "/home/mrndev-admin-editor/review-private/before-universal-tabs-33759d5c20ff",
+  "status": "installed"
+}

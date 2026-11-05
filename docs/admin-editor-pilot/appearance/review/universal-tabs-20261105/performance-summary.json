@@ -1,0 +1,18 @@
+{
+  "before": {
+    "cls": 0.02193517345915215,
+    "scriptMs": 267.01399999999995,
+    "layoutMs": 21.408,
+    "recalcStyleMs": 24.42,
+    "taskMs": 379.622,
+    "heapMB": 30.838420867919922
+  },
+  "candidate": {
+    "cls": 0.023389214285520463,
+    "scriptMs": 213.76700000000002,
+    "layoutMs": 20.164,
+    "recalcStyleMs": 22.931,
+    "taskMs": 333.729,
+    "heapMB": 36.86808776855469
+  }
+}

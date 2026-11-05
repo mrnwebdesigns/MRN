@@ -1,0 +1,174 @@
+[
+  {
+    "name": "chromium light classic",
+    "pass": true,
+    "default": {
+      "font": "14px",
+      "weight": "600",
+      "padding": "10px 14px",
+      "minHeight": "44px",
+      "height": 44,
+      "color": "rgb(36, 75, 215)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderTop": "0px",
+      "borderBottom": "2px",
+      "borderColor": "rgb(36, 75, 215)",
+      "radius": "6px",
+      "outline": "3px",
+      "decoration": "none"
+    },
+    "hover": {
+      "font": "14px",
+      "weight": "600",
+      "padding": "10px 14px",
+      "minHeight": "44px",
+      "height": 44,
+      "color": "rgb(28, 46, 66)",
+      "background": "rgb(234, 240, 248)",
+      "borderTop": "0px",
+      "borderBottom": "2px",
+      "borderColor": "rgba(0, 0, 0, 0)",
+      "radius": "6px",
+      "outline": "3px",
+      "decoration": "none"
+    },
+    "focus": {
+      "font": "14px",
+      "weight": "600",
+      "padding": "10px 14px",
+      "minHeight": "44px",
+      "height": 44,
+      "color": "rgb(28, 46, 66)",
+      "background": "rgb(234, 240, 248)",
+      "borderTop": "0px",
+      "borderBottom": "2px",
+      "borderColor": "rgba(0, 0, 0, 0)",
+      "radius": "6px",
+      "outline": "2px",
+      "decoration": "none"
+    },
+    "active": {
+      "font": "14px",
+      "weight": "600",
+      "padding": "10px 14px",
+      "minHeight": "44px",
+      "height": 44,
+      "color": "rgb(36, 75, 215)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderTop": "0px",
+      "borderBottom": "2px",
+      "borderColor": "rgb(36, 75, 215)",
+      "radius": "6px",
+      "outline": "2px",
+      "decoration": "none"
+    },
+    "accent": "#244bd7",
+    "axeViolations": 0,
+    "nativeActivation": true,
+    "formValuesUnchanged": false
+  },
+  {
+    "name": "chromium dark classic",
+    "pass": true,
+    "default": {
+      "font": "14px",
+      "weight": "600",
+      "padding": "10px 14px",
+      "minHeight": "44px",
+      "height": 44,
+      "color": "rgb(171, 198, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderTop": "0px",
+      "borderBottom": "2px",
+      "borderColor": "rgb(171, 198, 255)",
+      "radius": "6px",
+      "outline": "3px",
+      "decoration": "none"
+    },
+    "hover": {
+      "font": "14px",
+      "weight": "600",
+      "padding": "10px 14px",
+      "minHeight": "44px",
+      "height": 44,
+      "color": "rgb(229, 237, 247)",
+      "background": "rgb(43, 63, 87)",
+      "borderTop": "0px",
+      "borderBottom": "2px",
+      "borderColor": "rgba(0, 0, 0, 0)",
+      "radius": "6px",
+      "outline": "3px",
+      "decoration": "none"
+    },
+    "focus": {
+      "font": "14px",
+      "weight": "600",
+      "padding": "10px 14px",
+      "minHeight": "44px",
+      "height": 44,
+      "color": "rgb(229, 237, 247)",
+      "background": "rgb(43, 63, 87)",
+      "borderTop": "0px",
+      "borderBottom": "2px",
+      "borderColor": "rgba(0, 0, 0, 0)",
+      "radius": "6px",
+      "outline": "2px",
+      "decoration": "none"
+    },
+    "active": {
+      "font": "14px",
+      "weight": "600",
+      "padding": "10px 14px",
+      "minHeight": "44px",
+      "height": 44,
+      "color": "rgb(171, 198, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderTop": "0px",
+      "borderBottom": "2px",
+      "borderColor": "rgb(171, 198, 255)",
+      "radius": "6px",
+      "outline": "2px",
+      "decoration": "none"
+    },
+    "accent": "#abc6ff",
+    "axeViolations": 0,
+    "nativeActivation": true,
+    "formValuesUnchanged": false
+  },
+  {
+    "name": "responsive 900 classic",
+    "pass": true,
+    "rects": [
+      {
+        "x": 739.4375,
+        "y": 417.796875,
+        "w": 69.140625,
+        "h": 44
+      },
+      {
+        "x": 812.578125,
+        "y": 417.796875,
+        "w": 63.421875,
+        "h": 44
+      }
+    ]
+  },
+  {
+    "name": "responsive 390 classic",
+    "pass": true,
+    "rects": [
+      {
+        "x": 241.4375,
+        "y": 542.6875,
+        "w": 69.140625,
+        "h": 44
+      },
+      {
+        "x": 314.578125,
+        "y": 542.6875,
+        "w": 63.421875,
+        "h": 44
+      }
+    ]
+  }
+]
