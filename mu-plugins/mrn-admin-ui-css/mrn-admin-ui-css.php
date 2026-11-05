@@ -88,16 +88,22 @@ add_action('admin_enqueue_scripts', function ($hook) {
     if ($modern_scope) {
       wp_enqueue_style('mrn-modern-admin', content_url('mu-plugins/mrn-admin-ui-css/mrn-modern-admin.css'), array('mrn-admin-tokens'), (string) filemtime(__DIR__ . '/mrn-modern-admin.css'));
     }
-    if ('dashboard' !== $modern_scope) {
+    // These qualified settings forms contain no row-action tables. Unknown MRN
+    // screens retain the shared enhancer; taxonomy/native lists still receive it.
+    $page = isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : '';
+    $form_only = 'settings' === $modern_scope && ($screen->id === 'options-general' || in_array($page, array('mrn-business-information', 'mrn-theme-header-footer', 'mrn-header-utility-message', 'mrn-config-helper'), true));
+    if ('dashboard' !== $modern_scope && !$form_only) {
       wp_enqueue_style('mrn-row-actions', content_url('mu-plugins/mrn-admin-ui-css/row-actions.css'), array('mrn-admin-tokens'), (string) filemtime(__DIR__ . '/row-actions.css'));
     }
-    wp_enqueue_script('mrn-modern-admin', content_url('mu-plugins/mrn-admin-ui-css/modern-admin.js'), array(), (string) filemtime(__DIR__ . '/modern-admin.js'), true);
-    wp_localize_script('mrn-modern-admin', 'mrnModernAdminLabels', array(
-      'selection' => __('%d selected · Choose a bulk action, then Apply.', 'mrn-admin-ui-css'),
-      'hint' => __('Select items to use bulk actions. Use each row’s Actions menu for individual items.', 'mrn-admin-ui-css'),
-      'actions' => __('Actions', 'mrn-admin-ui-css'),
-      'actionsFor' => __('Actions for %s', 'mrn-admin-ui-css'),
-    ));
+    if (!$form_only && 'dashboard' !== $modern_scope) {
+      wp_enqueue_script('mrn-modern-admin', content_url('mu-plugins/mrn-admin-ui-css/modern-admin.js'), array(), (string) filemtime(__DIR__ . '/modern-admin.js'), true);
+      wp_localize_script('mrn-modern-admin', 'mrnModernAdminLabels', array(
+        'selection' => __('%d selected · Choose a bulk action, then Apply.', 'mrn-admin-ui-css'),
+        'hint' => __('Select items to use bulk actions. Use each row’s Actions menu for individual items.', 'mrn-admin-ui-css'),
+        'actions' => __('Actions', 'mrn-admin-ui-css'),
+        'actionsFor' => __('Actions for %s', 'mrn-admin-ui-css'),
+      ));
+    }
     if ($modern_scope) { return; }
   }
 

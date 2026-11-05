@@ -1,10 +1,6 @@
 /* Original native list checkboxes remain the source of truth. No stored selection. */
 (function() {
  'use strict';
- // AME emits decorative submenu rules as otherwise unnamed tab stops.
- document.querySelectorAll('#adminmenu a.wp-menu-separator').forEach(function(link) {
-  if (link.querySelector('hr.ws-submenu-separator') && !link.textContent.trim()) { link.setAttribute('tabindex','-1'); link.setAttribute('aria-hidden','true'); }
- });
  var form = document.querySelector('body.mrn-admin-list #posts-filter');
  if (!form || !window.mrnModernAdminLabels) { return; }
  var toolbar = form.querySelector('.tablenav.top'); if (!toolbar) { return; }

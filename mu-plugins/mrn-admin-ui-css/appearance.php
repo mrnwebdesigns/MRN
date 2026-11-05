@@ -37,6 +37,17 @@ add_action( 'in_admin_header', function () {
 	}
 } );
 
+/** Only qualified MRN settings with ACF input assets need native form readiness. */
+function mrn_admin_settings_acf_startup() {
+	return mrn_admin_appearance_enabled() && 'settings' === mrn_admin_ui_modern_screen() && wp_script_is( 'acf-input', 'enqueued' );
+}
+
+add_action( 'in_admin_header', function () {
+	if ( mrn_admin_settings_acf_startup() ) {
+		echo '<div id="mrn-settings-opening"><p role="status">' . esc_html__( 'Opening settings…', 'mrn-admin-ui-css' ) . '</p></div>';
+	}
+} );
+
 // The preference is in the opening HTML tag, before any styles or visible DOM.
 // System is resolved by CSS media queries, including with JavaScript disabled.
 add_action( 'admin_xml_ns', function () {
@@ -62,6 +73,11 @@ add_filter( 'admin_body_class', function ( $classes ) {
 add_action( 'admin_enqueue_scripts', function () {
 	if ( ! mrn_admin_appearance_enabled() ) {
 		return;
+	}
+	if ( mrn_admin_settings_acf_startup() ) {
+		// Attach before any form markup, after ACF itself. Never trigger or replace
+		// ACF's prepare/ready actions. An asset failure must not strand the form.
+		wp_add_inline_script( 'acf-input', "(function(){var root=document.documentElement;function done(){root.classList.remove('mrn-settings-starting');window.clearTimeout(timer);}var timer=window.setTimeout(done,8000);root.classList.add('mrn-settings-starting');acf.addAction('ready',done,99);})();", 'after' );
 	}
 	foreach ( array( 'mrn-admin-tokens', 'mrn-admin-shell' ) as $name ) {
 		wp_enqueue_style( $name, content_url( 'mu-plugins/mrn-admin-ui-css/' . $name . '.css' ), array( 'common' ), (string) filemtime( __DIR__ . '/' . $name . '.css' ) );

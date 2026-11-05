@@ -3,6 +3,10 @@
  'use strict';
  var labels = window.mrnAdminAppearance;
  if (!labels) { return; }
+ // AME emits decorative submenu rules as otherwise unnamed tab stops.
+ document.querySelectorAll('#adminmenu a.wp-menu-separator').forEach(function(link) {
+  if (link.querySelector('hr.ws-submenu-separator') && !link.textContent.trim()) { link.setAttribute('tabindex','-1'); link.setAttribute('aria-hidden','true'); }
+ });
  // One delegated Site menu component serves the server-rendered Media bar and
  // the editor bar mounted later by ACF. Native AME links/groups stay in place.
  var siteMenu = document.getElementById('adminmenumain');

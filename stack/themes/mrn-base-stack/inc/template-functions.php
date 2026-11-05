@@ -126,31 +126,17 @@ function mrn_base_stack_filter_document_title_parts( $title ) {
 add_filter( 'document_title_parts', 'mrn_base_stack_filter_document_title_parts', 20 );
 
 /**
- * Add stack-specific guidance to the core General Settings tagline field.
- *
- * @return void
+ * Render tagline guidance with core's existing description, before first paint.
+ * Keep the native aria-describedby target and the localized core example.
  */
-function mrn_base_stack_print_general_settings_tagline_help() {
-	?>
-	<script>
-		document.addEventListener( 'DOMContentLoaded', function() {
-			var field = document.getElementById( 'blogdescription' );
-			var help;
-
-			if ( ! field || document.getElementById( 'mrn-base-stack-tagline-help' ) ) {
-				return;
-			}
-
-			help = document.createElement( 'p' );
-			help.id = 'mrn-base-stack-tagline-help';
-			help.className = 'description';
-			help.textContent = '<?php echo esc_js( __( 'Limited inline HTML allowed: span, strong, em, br. The tagline never controls the page title.', 'mrn-base-stack' ) ); ?>';
-			field.insertAdjacentElement( 'afterend', help );
-		} );
-	</script>
-	<?php
-}
-add_action( 'admin_footer-options-general.php', 'mrn_base_stack_print_general_settings_tagline_help' );
+add_action( 'load-options-general.php', function () {
+	add_filter( 'gettext_default', function ( $translation, $text ) {
+		if ( 'In a few words, explain what this site is about. Example: &#8220;%s.&#8221;' !== $text ) {
+			return $translation;
+		}
+		return esc_html__( 'Limited inline HTML allowed: span, strong, em, br. The tagline never controls the page title.', 'mrn-base-stack' ) . '<br>' . $translation;
+	}, 10, 2 );
+} );
 
 /**
  * Add a pingback url auto-discovery header for single posts, pages, or attachments.

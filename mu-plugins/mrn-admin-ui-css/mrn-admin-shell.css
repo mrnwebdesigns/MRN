@@ -308,15 +308,21 @@ body.mrn-themed-content #wpbody-content .acf-tab-wrap.-left > .acf-tab-group > l
 .mrn-themed-content #wpbody-content .mrn-notifications-center__item--alert { border-left-color: var(--mrn-admin-warning-line); }
 .mrn-themed-content #wpbody-content :is(.mrn-notifications-center__meta,.mrn-config-helper-field-description) { color: var(--mrn-admin-muted); }
 .mrn-themed-content #wpbody-content :is(.mrn-notifications-center__tabs,.mrn-notifications-center__toolbar,.mrn-config-helper-section-header) { background: transparent; color: var(--mrn-admin-ink); }
-/* Shared MRN settings bar: use the editor's surfaces and controls. The existing
-   helper retains positioning, responsive spacer measurement and native saving. */
+/* Keep the settings bar in flow from first paint. Its actual wrapped height
+   reserves the space; the legacy measured spacer is unnecessary in this shell.
+   The helper still owns dirty-state detection and native saving. */
 body.mrn-appearance.mrn-admin-settings #wpbody-content .mrn-sticky-save-bar {
- --mrn-toolbar-left: var(--ame-ms-menu-width, 160px); --mrn-toolbar-right: 0px;
+ position: sticky; left: auto; right: auto; width: calc(100% + 20px); margin: 0 0 0 -20px;
  top: var(--wp-admin--admin-bar--height, 32px); z-index: 9900; min-height: 64px;
  padding: 12px 28px; gap: 12px 24px; flex-wrap: wrap;
  border: 0; border-bottom: 1px solid var(--mrn-admin-line); box-shadow: none;
  background: var(--mrn-admin-surface); color: var(--mrn-admin-ink);
 }
+body.mrn-appearance.mrn-admin-settings #wpbody-content .mrn-admin-toolbar-spacer { display: none; }
+/* Config Helper renders the same bar inside its wrap. Let that bar occupy the
+   full shell and keep the original content gutter on its existing native form. */
+body.mrn-appearance.mrn-admin-settings #wpbody-content > .wrap:has(> #mrn-site-config-toolbar) { margin: 0; max-width: none; }
+body.mrn-appearance.mrn-admin-settings #mrn-site-config-form { margin: 32px 32px 0 12px; max-width: 1600px; }
 body.mrn-appearance.mrn-admin-settings .mrn-settings-toolbar__meta { min-width: 0; flex: 1 1 auto; }
 body.mrn-appearance.mrn-admin-settings .mrn-settings-toolbar__title { font-size: 18px; font-weight: 650; line-height: 1.4; white-space: normal; color: var(--mrn-admin-ink); }
 body.mrn-appearance.mrn-admin-settings #wpbody-content .mrn-settings-toolbar__actions { min-width: 0; margin: 0; width: auto; flex: 1 1 auto; justify-content: flex-end; gap: 12px; }
@@ -339,15 +345,10 @@ body.mrn-appearance.mrn-admin-settings #wpbody-content:has(.mrn-sticky-save-bar)
 body.mrn-appearance.mrn-admin-settings #wpbody-content:has(.mrn-sticky-save-bar) :is(#acf-group_mrn_business_information,#acf-group_mrn_theme_header_footer,#acf-group_mrn_header_utility_message):not(.closed) > .postbox-header { position: absolute; top: 8px; right: 8px; z-index: 3; border: 0; background: transparent; }
 body.mrn-appearance.mrn-admin-settings #wpbody-content:has(.mrn-sticky-save-bar) :is(#acf-group_mrn_business_information,#acf-group_mrn_theme_header_footer,#acf-group_mrn_header_utility_message) > .inside > .acf-tab-wrap > .acf-tab-group { padding-right: 44px; }
 body.mrn-appearance.mrn-admin-settings #wpbody-content:has(.mrn-sticky-save-bar) :is(#acf-group_mrn_business_information,#acf-group_mrn_theme_header_footer,#acf-group_mrn_header_utility_message) > .inside > .acf-field:first-child > .acf-label { padding-right: 44px; }
-@media (min-width: 783px) {
- body.mrn-appearance.mrn-admin-settings.folded #wpbody-content .mrn-sticky-save-bar { --mrn-toolbar-left: 36px; }
-}
-@media (min-width: 783px) and (max-width: 960px) {
- body.mrn-appearance.mrn-admin-settings.auto-fold #wpbody-content .mrn-sticky-save-bar { --mrn-toolbar-left: 36px; }
-}
 @media (max-width: 782px) {
+ body.mrn-appearance.mrn-admin-settings #mrn-site-config-form { margin: 22px 16px 0 6px; }
  body.mrn-appearance.mrn-admin-settings:has(.mrn-sticky-save-bar) #wpadminbar { position: fixed; }
- body.mrn-appearance.mrn-admin-settings #wpbody-content .mrn-sticky-save-bar { --mrn-toolbar-left: 0px; padding: 8px 12px; gap: 8px 12px; }
+ body.mrn-appearance.mrn-admin-settings #wpbody-content .mrn-sticky-save-bar { width: calc(100% + 10px); margin-left: -10px; padding: 8px 12px; gap: 8px 12px; }
  body.mrn-appearance.mrn-admin-settings #wpbody-content .mrn-settings-toolbar__actions:has(.mrn-settings-tabs) { flex-basis: 100%; }
  body.mrn-appearance.mrn-admin-settings #wpbody-content .mrn-sticky-save-bar :is(.button,.mrn-settings-tab) { min-height: 44px; }
 }
@@ -492,3 +493,11 @@ body.mrn-screen-tools-ready #screen-meta .contextual-help-tabs .active { backgro
 html.mrn-editor-starting body.mrn-appearance #wpcontent { margin-left: 0 !important; }
 html.mrn-editor-starting body.mrn-appearance :is(#wpbody-content,#wpbody-content *,#adminmenumain,#adminmenumain *,#wpfooter) { visibility: hidden !important; }
 html.mrn-editor-starting body.mrn-appearance #mrn-editor-opening { display: block; visibility: visible !important; position: fixed; z-index: 9998; inset: 140px 24px auto; padding: 24px; max-width: 360px; margin-inline: auto; border: 1px solid var(--mrn-admin-line); border-radius: var(--mrn-admin-radius-component); background: var(--mrn-admin-surface); color: var(--mrn-admin-muted); text-align: center; font-size: 14px; }
+
+/* ACF constructs tabs/conditional rows in its native ready lifecycle. Only the
+   initializing settings panels wait; shell/navigation and other content paint
+   normally. Visibility preserves ACF measurement; no-JS and timeout fail open. */
+#mrn-settings-opening { display: none; }
+html.mrn-settings-starting .mrn-admin-settings .acf-postbox { visibility: hidden; }
+html.mrn-settings-starting #mrn-settings-opening { display: block; height: 0; position: relative; margin: 0; color: var(--mrn-admin-muted); }
+html.mrn-settings-starting #mrn-settings-opening > p { position: absolute; top: 96px; left: 12px; margin: 0; }
