@@ -240,7 +240,10 @@
 	function openPanel( invoker ) {
 		lastInvoker = invoker || document.activeElement;
 		document.body.classList.add( 'mrn-outline-open' ); mobileToggle.setAttribute( 'aria-expanded', 'true' );
-		scrollSelection(); search.focus( { preventScroll: true } );
+		scrollSelection();
+		var target = search.hidden ? contentList.querySelector( 'button' ) : search;
+		if ( ! target ) { target = panel; panel.setAttribute( 'tabindex', '-1' ); }
+		target.focus( { preventScroll: true } );
 	}
 	function closePanel( restore ) {
 		document.body.classList.remove( 'mrn-outline-open' ); mobileToggle.setAttribute( 'aria-expanded', 'false' );
