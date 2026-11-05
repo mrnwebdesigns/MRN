@@ -270,7 +270,39 @@ body.mrn-modern-admin:not(.mrn-admin-dashboard) #wpbody-content .nav-tab-wrapper
 .mrn-admin-list .inline-edit-row :is(td,fieldset,legend), .mrn-admin-list .inline-edit-row { background: var(--mrn-admin-surface-subtle); color: var(--mrn-admin-ink); }
 .mrn-admin-list .inline-edit-row :is(.title,.checkbox-title,.inline-edit-group label) { color: var(--mrn-admin-ink); }
 .mrn-admin-list .wp-list-table :is(td,th) { color: var(--mrn-admin-ink); border-color: var(--mrn-admin-line); }
-.mrn-admin-list .tablenav-pages :is(.tablenav-pages-navspan,.pagination-links a) { background: var(--mrn-admin-surface); color: var(--mrn-admin-muted); border-color: var(--mrn-admin-line); }
+/* Shared native list pagination. Keep WP URLs, labels, input and disabled spans;
+   align before first paint without an initializer or per-screen copies. */
+body.mrn-appearance:is(.mrn-admin-list,.upload-php) #wpbody-content .tablenav-pages:not(.no-pages) {
+ --mrn-pagination-size: 36px;
+ display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px 12px;
+ min-height: var(--mrn-pagination-size); height: auto; color: var(--mrn-pagination-text,var(--mrn-admin-muted));
+}
+/* Media's vendor-owned canvas remains native light; its unboxed text follows it. */
+body.mrn-appearance.mrn-native-app.upload-php .tablenav-pages { --mrn-pagination-text: var(--mrn-native-ink); }
+body.mrn-appearance:is(.mrn-admin-list,.upload-php) #wpbody-content .tablenav-pages .displaying-num { margin: 0; line-height: 1.5; }
+body.mrn-appearance:is(.mrn-admin-list,.upload-php) #wpbody-content .tablenav-pages:not(.one-page) .pagination-links,
+body.mrn-appearance:is(.mrn-admin-list,.upload-php) #wpbody-content .tablenav-pages .paging-input {
+ display: inline-flex; align-items: center; gap: 4px; margin: 0; white-space: nowrap;
+}
+body.mrn-appearance:is(.mrn-admin-list,.upload-php) #wpbody-content .tablenav-pages :is(.pagination-links a,.tablenav-pages-navspan,.current-page) {
+ box-sizing: border-box; min-width: var(--mrn-pagination-size); height: var(--mrn-pagination-size); min-height: var(--mrn-pagination-size);
+ margin: 0; padding: 0 8px; border: 1px solid var(--mrn-admin-control-line); border-radius: 6px;
+ background: var(--mrn-admin-surface); color: var(--mrn-admin-ink); text-align: center; box-shadow: none;
+}
+body.mrn-appearance:is(.mrn-admin-list,.upload-php) #wpbody-content .tablenav-pages :is(.pagination-links a,.tablenav-pages-navspan) {
+ display: inline-flex; align-items: center; justify-content: center; line-height: 1; font-size: 20px; text-decoration: none;
+}
+body.mrn-appearance:is(.mrn-admin-list,.upload-php) #wpbody-content .tablenav-pages .pagination-links a { color: var(--mrn-admin-accent); }
+body.mrn-appearance:is(.mrn-admin-list,.upload-php) #wpbody-content .tablenav-pages .pagination-links a:hover { background: var(--mrn-admin-surface-hover); }
+body.mrn-appearance:is(.mrn-admin-list,.upload-php) #wpbody-content .tablenav-pages .tablenav-pages-navspan {
+ /* Core marks .button.disabled colors important, including on these spans. */
+ background: var(--mrn-admin-disabled) !important; color: var(--mrn-admin-disabled-ink) !important; border-color: var(--mrn-admin-line) !important; cursor: default;
+}
+body.mrn-appearance:is(.mrn-admin-list,.upload-php) #wpbody-content .tablenav-pages :is(a,input):focus-visible { outline: 2px solid var(--mrn-admin-focus); outline-offset: 2px; }
+@media (max-width:782px) {
+ body.mrn-appearance:is(.mrn-admin-list,.upload-php) #wpbody-content .tablenav-pages:not(.no-pages) { --mrn-pagination-size: 44px; justify-content: center; }
+ body.mrn-appearance:is(.mrn-admin-list,.upload-php) #wpbody-content .tablenav-pages .displaying-num { position: static; }
+}
 /* Native dialogs/editor chrome remain one coherent light island in either mode. */
 .mrn-themed-content #wpbody-content .wp-editor-wrap .wp-editor-tools { background: var(--mrn-native-surface); color: var(--mrn-native-ink); }
 .mrn-themed-content #wpbody-content .wp-editor-wrap .wp-editor-tools button { color-scheme: light; color: var(--mrn-native-ink); }

@@ -91,6 +91,27 @@ This documents the existing native-markup contract; it adds no runtime dependenc
 or contract-version requirement. The candidate remains review-only until the
 separate Stack release gates are satisfied.
 
+### Reusable pagination component
+
+Use WordPress's native `.tablenav-pages` output for pagination on supported
+MRN lists and the Media Library list. The shared appearance shell owns its
+alignment and Light/Dark states; do not copy the styles into consumers or
+replace the controls with a JavaScript renderer.
+
+- Keep `.displaying-num`, `.pagination-links`, `.paging-input`, `.current-page`,
+  native accessible labels and disabled `.tablenav-pages-navspan` elements.
+  WordPress owns URLs, query/filter preservation, page bounds and form submission.
+- Count, arrows, page input and total share one horizontal centerline. Controls
+  are 36px tall on desktop and 44px on narrow screens. The toolbar keeps its
+  native placement; the group centers on narrow screens and wraps as needed.
+- Top and bottom pagination use the same rules, including the read-only bottom
+  page count. Preserve core `.one-page`/`.no-pages` behavior and hidden controls.
+- Media's unboxed count text follows its native light canvas; controls keep their
+  own theme surfaces. Do not apply dark text tokens over a vendor-owned canvas.
+- Styling is available at first paint with no extra request, script or observer.
+  Only the existing audited list-screen scope and native Media screen opt in;
+  vendor-owned tables are not a reason to broaden this selector.
+
 ## Icons
 
 Native list drag indicators sit left of the selection checkbox on the same
