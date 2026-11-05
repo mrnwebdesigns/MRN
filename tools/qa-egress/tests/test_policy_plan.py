@@ -78,7 +78,8 @@ class PolicyPlan(unittest.TestCase):
         identity = plan.IDENTITY
         self.assertEqual(identity['scopes'], ['auth_keys'])
         self.assertEqual(identity['tags'], [plan.CI_TAG])
-        self.assertEqual(identity['subject'], 'repo:mrnwebdesigns/amishmike-theme:environment:production')
+        self.assertEqual(identity['subject'],
+                         'repo:mrnwebdesigns@273106862/amishmike-theme@1421114071:environment:production')
         self.assertEqual(identity['customClaimRules']['ref'], 'refs/heads/main')
         self.assertEqual(identity['customClaimRules']['repository_id'], '1421114071')
         self.assertEqual(identity['customClaimRules']['repository_visibility'], 'private')

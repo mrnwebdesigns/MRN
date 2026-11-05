@@ -13,6 +13,10 @@ server SSH credentials. No shared plugin/runtime package is changed.
 - Federation: GitHub OIDC, exact private repository ID, protected main workflow,
   and `production` environment. The identity can create tagged ephemeral nodes;
   it cannot administer the policy, host or other devices.
+- The subject includes the immutable owner/repository IDs issued by this
+  repository. Verify the received subject before enrollment; GitHub repositories
+  created after July 15, 2026 use the ID-bearing format. Keep all six custom
+  claims exact; do not replace the subject with a wildcard to fix a mismatch.
 - No SSH, internal subnets, production servers or public SSH destinations are
   granted. Existing administrator grants and policy comments are preserved.
 

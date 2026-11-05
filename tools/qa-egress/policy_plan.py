@@ -22,7 +22,7 @@ IDENTITY = {
     'keyType': 'federated', 'description': 'Amish Mike protected-main release QA',
     'scopes': ['auth_keys'], 'tags': [CI_TAG],
     'issuer': 'https://token.actions.githubusercontent.com',
-    'subject': 'repo:' + REPOSITORY + ':environment:production',
+    'subject': 'repo:mrnwebdesigns@273106862/amishmike-theme@1421114071:environment:production',
     'customClaimRules': {
         'repository': REPOSITORY, 'repository_id': '1421114071',
         'repository_owner_id': '273106862', 'ref': 'refs/heads/main',
