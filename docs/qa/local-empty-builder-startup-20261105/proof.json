@@ -1,0 +1,471 @@
+{
+  "empty_render_before": {
+    "page_hero_rows": {
+      "can_skip": false,
+      "added_local_fields": 5911,
+      "elapsed_ms": 468.711,
+      "rendered": false,
+      "output_bytes": 0
+    },
+    "page_after_content_rows": {
+      "can_skip": false,
+      "added_local_fields": 2403,
+      "elapsed_ms": 79.756,
+      "rendered": false,
+      "output_bytes": 0
+    }
+  },
+  "empty_render_after": {
+    "page_hero_rows": {
+      "can_skip": true,
+      "added_local_fields": 0,
+      "elapsed_ms": 16.511,
+      "rendered": false,
+      "output_bytes": 0
+    },
+    "page_after_content_rows": {
+      "can_skip": true,
+      "added_local_fields": 0,
+      "elapsed_ms": 0.068,
+      "rendered": false,
+      "output_bytes": 0
+    }
+  },
+  "installed_runtime_regression": {
+    "empty_added_definitions": {
+      "page_hero_rows": 0,
+      "page_after_content_rows": 0
+    },
+    "fallback_contracts": "pass",
+    "repeaters": [
+      {
+        "key": "field_mrn_content_grid_items",
+        "pagination": false,
+        "max_with_55_rows": 55
+      },
+      {
+        "key": "field_mrn_reusable_partner_logo_items",
+        "pagination": false,
+        "max_with_55_rows": 55
+      },
+      {
+        "key": "field_mrn_faq_items",
+        "pagination": false,
+        "max_with_55_rows": 55
+      },
+      {
+        "key": "field_mrn_career_tags",
+        "pagination": false,
+        "max_with_55_rows": 55
+      },
+      {
+        "key": "field_mrn_slider_items",
+        "pagination": false,
+        "max_with_55_rows": 55
+      },
+      {
+        "key": "field_mrn_tabbed_layout_tabs",
+        "pagination": false,
+        "max_with_55_rows": 55
+      },
+      {
+        "key": "field_mrn_card_items",
+        "pagination": false,
+        "max_with_55_rows": 55
+      },
+      {
+        "key": "field_mrn_logos_items",
+        "pagination": false,
+        "max_with_55_rows": 55
+      },
+      {
+        "key": "field_mrn_stats_items",
+        "pagination": false,
+        "max_with_55_rows": 55
+      },
+      {
+        "key": "field_mrn_showcase_items",
+        "pagination": false,
+        "max_with_55_rows": 55
+      },
+      {
+        "key": "field_mrn_gallery_items",
+        "pagination": false,
+        "max_with_55_rows": 55
+      },
+      {
+        "key": "field_mrn_event_sponsors",
+        "pagination": false,
+        "max_with_55_rows": 55
+      },
+      {
+        "key": "field_mrn_business_holidays",
+        "pagination": false,
+        "max_with_55_rows": 55
+      },
+      {
+        "key": "field_mrn_404_helpful_links",
+        "pagination": false,
+        "max_with_55_rows": 55
+      },
+      {
+        "key": "field_mrn_location_social_links",
+        "pagination": false,
+        "max_with_55_rows": 55
+      }
+    ]
+  },
+  "main_markup_parity": [
+    {
+      "page": "home",
+      "result": "passed",
+      "normalization": "Only declared PHP uniqid IDs and their matching references, mapped by prefix and first occurrence. No copy, fields, links, media or style normalization.",
+      "generated_ids": {
+        "features": 1,
+        "logos_slider": 1,
+        "videos": 1,
+        "cta_no_image": 1,
+        "cta_image": 1,
+        "consultation": 1,
+        "tabs": 1,
+        "work": 1,
+        "timeline": 1
+      },
+      "normalized_main_sha256": "b96888ba6dcb39d38376cd52c80d5191c6e973076a3e51cccacaea16389d5ca7",
+      "normalized_bytes": 119937
+    },
+    {
+      "page": "thank-you",
+      "result": "passed",
+      "normalization": "Only declared PHP uniqid IDs and their matching references, mapped by prefix and first occurrence. No copy, fields, links, media or style normalization.",
+      "generated_ids": {
+        "cta_no_image": 2
+      },
+      "normalized_main_sha256": "7f6785ee948b4c9fed60368699cf69f4ea8c4b2336d3327ff7938f9a0d290832",
+      "normalized_bytes": 26538
+    }
+  ],
+  "header_footer_parity": [
+    {
+      "page": "home",
+      "region": "header",
+      "result": "passed",
+      "normalized_sha256": "32a5a43f5f1b612ce07bc45f80cf58ee48582a14b35c3d6b9ca352c6566486fc",
+      "normalization": "Only Mailchimp hidden request timestamp and equivalent antispambot encoding on validated plain-email links."
+    },
+    {
+      "page": "home",
+      "region": "footer",
+      "result": "passed",
+      "normalized_sha256": "52a2dd050c7fb3d98938571eaae72cddee0185e3dd089eb5842281d6cf344bbb",
+      "normalization": "Only Mailchimp hidden request timestamp and equivalent antispambot encoding on validated plain-email links."
+    },
+    {
+      "page": "thank-you",
+      "region": "header",
+      "result": "passed",
+      "normalized_sha256": "32a5a43f5f1b612ce07bc45f80cf58ee48582a14b35c3d6b9ca352c6566486fc",
+      "normalization": "Only Mailchimp hidden request timestamp and equivalent antispambot encoding on validated plain-email links."
+    },
+    {
+      "page": "thank-you",
+      "region": "footer",
+      "result": "passed",
+      "normalized_sha256": "52a2dd050c7fb3d98938571eaae72cddee0185e3dd089eb5842281d6cf344bbb",
+      "normalization": "Only Mailchimp hidden request timestamp and equivalent antispambot encoding on validated plain-email links."
+    }
+  ],
+  "php_test_runs": [
+    {
+      "php": "8.2",
+      "test": "acf-cloned-ajax-fields.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.2",
+      "test": "acf-select-field-finalization.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.2",
+      "test": "business-information-defaults.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.2",
+      "test": "business-information-memoization.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.2",
+      "test": "content-list-articles.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.2",
+      "test": "content-toc.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.2",
+      "test": "editor-startup.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.2",
+      "test": "empty-builder-startup.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.2",
+      "test": "events-cpt-contract.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.2",
+      "test": "faq-scroll.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.2",
+      "test": "frontend-asset-meta-index.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.2",
+      "test": "frontend-component-assets.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.2",
+      "test": "header-utility-message-schedule.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.2",
+      "test": "image-overlays.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.2",
+      "test": "image-priority-loading.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.2",
+      "test": "layout-classes.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.2",
+      "test": "lazy-layouts.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.2",
+      "test": "locations.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.2",
+      "test": "mobile-navigation-breakpoint.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.2",
+      "test": "motion-assets.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.2",
+      "test": "motion-target-choices.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.2",
+      "test": "not-found-lazy-layouts.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.2",
+      "test": "people-frame.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.2",
+      "test": "read-time.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.2",
+      "test": "rendered-social-link-asset-needs.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.2",
+      "test": "resource-featured-image-support.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.2",
+      "test": "row-spacing-meta-index.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.2",
+      "test": "search-form-contract.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.2",
+      "test": "tab-switch-renderer.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.5",
+      "test": "acf-cloned-ajax-fields.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.5",
+      "test": "acf-select-field-finalization.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.5",
+      "test": "business-information-defaults.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.5",
+      "test": "business-information-memoization.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.5",
+      "test": "content-list-articles.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.5",
+      "test": "content-toc.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.5",
+      "test": "editor-startup.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.5",
+      "test": "empty-builder-startup.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.5",
+      "test": "events-cpt-contract.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.5",
+      "test": "faq-scroll.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.5",
+      "test": "frontend-asset-meta-index.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.5",
+      "test": "frontend-component-assets.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.5",
+      "test": "header-utility-message-schedule.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.5",
+      "test": "image-overlays.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.5",
+      "test": "image-priority-loading.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.5",
+      "test": "layout-classes.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.5",
+      "test": "lazy-layouts.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.5",
+      "test": "locations.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.5",
+      "test": "mobile-navigation-breakpoint.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.5",
+      "test": "motion-assets.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.5",
+      "test": "motion-target-choices.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.5",
+      "test": "not-found-lazy-layouts.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.5",
+      "test": "people-frame.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.5",
+      "test": "read-time.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.5",
+      "test": "rendered-social-link-asset-needs.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.5",
+      "test": "resource-featured-image-support.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.5",
+      "test": "row-spacing-meta-index.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.5",
+      "test": "search-form-contract.php",
+      "exit_code": 0
+    },
+    {
+      "php": "8.5",
+      "test": "tab-switch-renderer.php",
+      "exit_code": 0
+    }
+  ],
+  "scope": "Shared source regression and local adoption proof only. Request timing samples are diagnostic, not a whole-site speed or Fleet acceptance claim."
+}

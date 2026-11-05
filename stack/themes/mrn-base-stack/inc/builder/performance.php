@@ -53,6 +53,9 @@ function mrn_base_stack_builder_field_is_empty( $name, $post_id ) {
 		'mrn_base_stack_finalize_acf_builder_field_tree',
 		'mrn_base_stack_apply_primary_layout_contract_on_flexible_load',
 		'mrn_base_stack_dedupe_flexible_layout_effects_on_load',
+		// Initial Content catalogs leave the eligible Hero/After Content fields unchanged.
+		'mrn_base_stack_stage_initial_builder_catalog',
+		'mrn_base_stack_restore_initial_builder_catalog',
 	);
 	$hooks = array( 'acf/pre_load_post_id', 'acf/validate_post_id', 'acf/get_post_id_info', 'acf/pre_load_reference', 'acf/load_reference', 'acf/pre_load_metadata', 'acf/load_metadata', 'acf/get_valid_post_id', 'acf/get_field_reference', 'acf/get_valid_field', 'acf/is_field_key' );
 	foreach ( array( 'pre_load_field', 'validate_field', 'translate_field', 'load_field', 'pre_load_value', 'load_value', 'pre_format_value', 'format_value' ) as $hook ) {
