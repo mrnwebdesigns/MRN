@@ -124,7 +124,9 @@ function mrn_base_stack_prime_revision_insert_cache( $revision_id, $post_id ) {
 		$cache = $pending[ $key ];
 		unset( $pending[ $key ] );
 		if ( is_array( $cache ) ) {
-			$cache[ $key ][] = maybe_serialize( $value );
+			$stored         = maybe_serialize( $value );
+			// Native SQL metadata reads return scalar strings, or SQL NULL.
+			$cache[ $key ][] = null === $stored ? null : (string) $stored;
 			// Do not replace a cache populated by another callback.
 			wp_cache_add( $object_id, $cache, 'post_meta' );
 		}
