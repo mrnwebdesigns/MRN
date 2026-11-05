@@ -1,0 +1,22 @@
+{
+  "host": "admin-editor-pilot.mrndev.io",
+  "commit": "d2b1b0e9344850b3aaaa5ce7c01270eff6247f84",
+  "files": {
+    "mrn-editor-lockdown/assets/section-navigator.js": {
+      "before": "974d57031568fffda007129b2ca2dd196cc91d7a636be82a685d53e65e1cc6c6",
+      "after": "2d95eeb9aa314b6ab9a2ea8e818351d5e8ae4f5a3cd730b9deabd26e49697206"
+    }
+  },
+  "backup": {
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1793883729,
+    "label": "pre-admin-pilot-content-focus-install-20261105",
+    "nonce": "b15622a6a7b2",
+    "key": "sites/admin-editor-pilot-mrndev-io/backup_2026-11-05-1302_Trilliant_b15622a6a7b2-db.gz",
+    "size": 6315791,
+    "sha256": "befc040865715dbaf6a7e3f857aeaf2b3503f6f26d5113ca3a2f5adfa1b60d95"
+  },
+  "rollback": "/home/mrndev-admin-editor/review-private/before-content-focus-d2b1b0e93448",
+  "status": "installed"
+}

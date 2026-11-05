@@ -179,3 +179,13 @@ review. Embedded SEOPress is a consistent native light surface inside the themed
 MRN shell; its title placeholder now exceeds 4.5:1 contrast. Native tabs and adjacent
 controls pass in Light/Dark/System. [Evidence](review/seo-appearance-20261105/REVIEW.md).
 Human visual acceptance remains pending. Next annotation: UX-046.
+
+**P1 UX-046 — content/settings classification:** implemented and installed for review.
+Team Member Job Title/Bio, native supported body/excerpt/photo and authored ACF groups
+now belong in Content, including mixed sidebar groups. Native form ownership and
+save/reload pass. [Evidence](review/content-routing-20261105/REVIEW.md). Await visual
+acceptance; next annotation UX-047. Follow-up: mixed-group names supplied by the
+child theme (such as “Team Member Settings”) may need content-oriented labels after
+review; no fields were split or renamed. Existing native TinyMCE button/textarea
+accessibility findings require owner/vendor qualification before release, alongside
+open CPU/OOM gates.

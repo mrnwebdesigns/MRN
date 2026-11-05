@@ -1,0 +1,9 @@
+{
+  "type": "synthetic no-flexible-fields lifecycle case",
+  "viewport": 390,
+  "checks": [
+    "native core content remains in its form",
+    "outline focuses first content panel when section search is absent",
+    "Escape returns focus to invoker"
+  ]
+}

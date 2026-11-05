@@ -1,0 +1,269 @@
+{
+    "team_member": {
+        "core": [
+            "titlediv",
+            "postimagediv"
+        ],
+        "groups": [
+            {
+                "id": "acf-group_mrn_team_member_profile",
+                "position": "acf_after_title",
+                "fields": [
+                    {
+                        "name": "team_member_position",
+                        "type": "text"
+                    },
+                    {
+                        "name": "team_member_bio",
+                        "type": "wysiwyg"
+                    }
+                ]
+            },
+            {
+                "id": "acf-group_mrn_after_content_builder",
+                "position": "acf_after_title",
+                "fields": [
+                    {
+                        "name": "page_after_content_rows",
+                        "type": "flexible_content"
+                    }
+                ]
+            },
+            {
+                "id": "acf-group_mrn_team_member_settings",
+                "position": "side",
+                "fields": [
+                    {
+                        "name": "team_member_public_profile",
+                        "type": "true_false"
+                    },
+                    {
+                        "name": "team_profile_eyebrow",
+                        "type": "text"
+                    },
+                    {
+                        "name": "team_profile_back_label",
+                        "type": "text"
+                    }
+                ]
+            }
+        ]
+    },
+    "post": {
+        "core": [
+            "titlediv",
+            "postdivrich",
+            "postexcerpt",
+            "postimagediv"
+        ],
+        "groups": [
+            {
+                "id": "acf-group_mrn_hero_builder",
+                "position": "acf_after_title",
+                "fields": [
+                    {
+                        "name": "page_hero_rows",
+                        "type": "flexible_content"
+                    }
+                ]
+            },
+            {
+                "id": "acf-group_mrn_content_builder",
+                "position": "acf_after_title",
+                "fields": [
+                    {
+                        "name": "page_content_rows",
+                        "type": "flexible_content"
+                    }
+                ]
+            },
+            {
+                "id": "acf-group_mrn_after_content_builder",
+                "position": "acf_after_title",
+                "fields": [
+                    {
+                        "name": "page_after_content_rows",
+                        "type": "flexible_content"
+                    }
+                ]
+            },
+            {
+                "id": "acf-group_trilliant_blog_detail_presentation",
+                "position": "normal",
+                "fields": [
+                    {
+                        "name": "blog_detail_type_label",
+                        "type": "text"
+                    },
+                    {
+                        "name": "blog_detail_published_label",
+                        "type": "text"
+                    }
+                ]
+            },
+            {
+                "id": "acf-group_trilliant_post_card",
+                "position": "side",
+                "fields": [
+                    {
+                        "name": "post_card_label",
+                        "type": "text"
+                    },
+                    {
+                        "name": "post_featured_label",
+                        "type": "text"
+                    },
+                    {
+                        "name": "post_read_label",
+                        "type": "text"
+                    },
+                    {
+                        "name": "post_back_label",
+                        "type": "text"
+                    }
+                ]
+            }
+        ]
+    },
+    "page": {
+        "core": [
+            "titlediv",
+            "postimagediv"
+        ],
+        "groups": [
+            {
+                "id": "acf-group_mrn_hero_builder",
+                "position": "acf_after_title",
+                "fields": [
+                    {
+                        "name": "page_hero_rows",
+                        "type": "flexible_content"
+                    }
+                ]
+            },
+            {
+                "id": "acf-group_mrn_content_builder",
+                "position": "acf_after_title",
+                "fields": [
+                    {
+                        "name": "page_content_rows",
+                        "type": "flexible_content"
+                    }
+                ]
+            },
+            {
+                "id": "acf-group_mrn_after_content_builder",
+                "position": "acf_after_title",
+                "fields": [
+                    {
+                        "name": "page_after_content_rows",
+                        "type": "flexible_content"
+                    }
+                ]
+            }
+        ]
+    },
+    "resource": {
+        "core": [
+            "titlediv",
+            "postexcerpt",
+            "postimagediv"
+        ],
+        "groups": [
+            {
+                "id": "acf-group_mrn_resource",
+                "position": "acf_after_title",
+                "fields": [
+                    {
+                        "name": "resource_source",
+                        "type": "radio"
+                    },
+                    {
+                        "name": "resource_file",
+                        "type": "file"
+                    },
+                    {
+                        "name": "resource_video_remote",
+                        "type": "url"
+                    }
+                ]
+            }
+        ]
+    },
+    "press_release": {
+        "core": [
+            "titlediv",
+            "postdivrich",
+            "postexcerpt",
+            "postimagediv"
+        ],
+        "groups": [
+            {
+                "id": "acf-group_trilliant_press_release_presentation",
+                "position": "acf_after_title",
+                "fields": [
+                    {
+                        "name": "press_release_summary",
+                        "type": "textarea"
+                    }
+                ]
+            },
+            {
+                "id": "acf-group_mrn_press_release",
+                "position": "acf_after_title",
+                "fields": [
+                    {
+                        "name": "press_release_date",
+                        "type": "date_picker"
+                    },
+                    {
+                        "name": "press_release_dateline",
+                        "type": "text"
+                    },
+                    {
+                        "name": "press_release_subheadline",
+                        "type": "textarea"
+                    },
+                    {
+                        "name": "press_release_media_contact_name",
+                        "type": "text"
+                    },
+                    {
+                        "name": "press_release_media_contact_email",
+                        "type": "email"
+                    }
+                ]
+            },
+            {
+                "id": "acf-group_mrn_after_content_builder",
+                "position": "acf_after_title",
+                "fields": [
+                    {
+                        "name": "page_after_content_rows",
+                        "type": "flexible_content"
+                    }
+                ]
+            },
+            {
+                "id": "acf-group_mrn_press_release_boilerplate",
+                "position": "normal",
+                "fields": [
+                    {
+                        "name": "press_release_boilerplate",
+                        "type": "wysiwyg"
+                    }
+                ]
+            },
+            {
+                "id": "acf-group_trilliant_press_release_detail_media",
+                "position": "side",
+                "fields": [
+                    {
+                        "name": "press_release_detail_image",
+                        "type": "image"
+                    }
+                ]
+            }
+        ]
+    }
+}

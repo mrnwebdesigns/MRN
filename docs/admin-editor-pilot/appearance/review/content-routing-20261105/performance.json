@@ -1,0 +1,68 @@
+[
+  {
+    "phase": "before",
+    "iteration": 0,
+    "ttfb": 5420.70000000298,
+    "load": 10843.20000000298,
+    "resources": 210,
+    "scriptMs": 2143.157,
+    "taskMs": 2568.297,
+    "heapBytes": 25919664,
+    "nodes": 167663
+  },
+  {
+    "phase": "candidate",
+    "iteration": 0,
+    "ttfb": 5096.0999999940395,
+    "load": 10322,
+    "resources": 210,
+    "scriptMs": 1740.102,
+    "taskMs": 2404.6620000000003,
+    "heapBytes": 37000740,
+    "nodes": 131272
+  },
+  {
+    "phase": "before",
+    "iteration": 1,
+    "ttfb": 4818.5999999940395,
+    "load": 9747.70000000298,
+    "resources": 210,
+    "scriptMs": 1535.759,
+    "taskMs": 2141.111,
+    "heapBytes": 38908772,
+    "nodes": 131266
+  },
+  {
+    "phase": "candidate",
+    "iteration": 1,
+    "ttfb": 4527,
+    "load": 8448.29999999702,
+    "resources": 210,
+    "scriptMs": 604.347,
+    "taskMs": 917.99,
+    "heapBytes": 25951820,
+    "nodes": 167764
+  },
+  {
+    "phase": "before",
+    "iteration": 2,
+    "ttfb": 4625.4000000059605,
+    "load": 8348.90000000596,
+    "resources": 210,
+    "scriptMs": 517.5110000000001,
+    "taskMs": 807.8539999999999,
+    "heapBytes": 30648132,
+    "nodes": 165315
+  },
+  {
+    "phase": "candidate",
+    "iteration": 2,
+    "ttfb": 4154,
+    "load": 8349.59999999404,
+    "resources": 210,
+    "scriptMs": 767.2909999999999,
+    "taskMs": 1224.071,
+    "heapBytes": 27878176,
+    "nodes": 131271
+  }
+]

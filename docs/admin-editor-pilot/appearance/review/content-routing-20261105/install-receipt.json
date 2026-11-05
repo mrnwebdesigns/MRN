@@ -1,0 +1,30 @@
+{
+  "host": "admin-editor-pilot.mrndev.io",
+  "commit": "48728b7f58846a7d46dddcd967a6b39b7f970854",
+  "files": {
+    "mrn-editor-lockdown/includes/section-navigator.php": {
+      "before": "3ae13388886e4a9f25eb43745e6b04f2703214d683f25dbd516b0a83ffde66be",
+      "after": "b3c22540b85265fefac2b3c33ffb25d6bbe70b27fa870a108cc7518a7db4c9c6"
+    },
+    "mrn-editor-lockdown/assets/section-navigator.js": {
+      "before": "bea710cbd1f8d61e4ffeed0a3d80b0ecaa1baf6834b3b22f5bc92cd13f26c3f9",
+      "after": "974d57031568fffda007129b2ca2dd196cc91d7a636be82a685d53e65e1cc6c6"
+    },
+    "mrn-admin-ui-css/mrn-editor-workspace.css": {
+      "before": "5b54b8ce113a81b75d62209132556e470f110b632ba9b4a86bb5160bff510446",
+      "after": "24882dd018abad31d4613e2e6a873359172113e9aa88623238eac40bb292bf3b"
+    }
+  },
+  "backup": {
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1793883397,
+    "label": "pre-admin-pilot-content-routing-install-20261105",
+    "nonce": "20858424ca68",
+    "key": "sites/admin-editor-pilot-mrndev-io/backup_2026-11-05-1256_Trilliant_20858424ca68-db.gz",
+    "size": 6315464,
+    "sha256": "f86bd0f5bd47f7f4882113835742084294390782cbf9f8ed4baaace1eb1108d7"
+  },
+  "rollback": "/home/mrndev-admin-editor/review-private/before-content-routing-48728b7f5884",
+  "status": "installed"
+}

@@ -1,0 +1,12 @@
+[
+  {
+    "file": "mu-plugins/mrn-editor-lockdown/assets/section-navigator.js",
+    "url": "https://admin-editor-pilot.mrndev.io/wp-content/mu-plugins/mrn-editor-lockdown/assets/section-navigator.js?ver=1793883730",
+    "sha256": "2d95eeb9aa314b6ab9a2ea8e818351d5e8ae4f5a3cd730b9deabd26e49697206"
+  },
+  {
+    "file": "mu-plugins/mrn-admin-ui-css/mrn-editor-workspace.css",
+    "url": "https://admin-editor-pilot.mrndev.io/wp-content/mu-plugins/mrn-admin-ui-css/mrn-editor-workspace.css?ver=1793883397",
+    "sha256": "24882dd018abad31d4613e2e6a873359172113e9aa88623238eac40bb292bf3b"
+  }
+]

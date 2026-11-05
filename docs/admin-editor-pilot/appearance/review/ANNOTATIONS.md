@@ -388,3 +388,15 @@ Generated-title placeholder contrast improves from 1.08:1 to 4.71:1. Light/Dark/
 narrow layouts, native tabs, keyboard and adjacent controls pass. Source `68bf806a964c`;
 [evidence](seo-appearance-20261105/REVIEW.md). No added JS. Await visual review;
 next annotation `UX-046`.
+
+### UX-046 — ACF and core authoring fields appear in Page Settings
+
+“Content should never be in page settings, need to determine ACF, from Wordpress core fields usage.”
+**P1, implemented and installed for review.** The existing workspace now classifies
+native title/body/excerpt/photo from post-type support and ACF panels from their
+existing definitions. Authored and mixed groups stay intact in Content; only
+configuration-only ACF sidebar groups remain in Settings. Ordinary content panels
+have outline links and validation routing. Native save/reload, 18 installed checks,
+Light/Dark, keyboard/mobile and complex-page regressions pass. Existing native TinyMCE
+accessibility findings and CPU/OOM blockers remain documented. Source `48728b7f`,
+`d2b1b0e9`; [evidence](content-routing-20261105/REVIEW.md). Next annotation: UX-047.

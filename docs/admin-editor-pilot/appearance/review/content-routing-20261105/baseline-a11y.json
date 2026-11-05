@@ -1,0 +1,318 @@
+{
+  "text": [
+    {
+      "id": "label",
+      "count": 1,
+      "nodes": [
+        {
+          "target": [
+            "#acf-editor-43"
+          ],
+          "html": "<textarea id=\"acf-editor-43\" class=\"wp-editor-area\" name=\"acf[field_mrn_team_member_bio]\" style=\"height:300px;\"></textarea>"
+        }
+      ]
+    }
+  ],
+  "visual": [
+    {
+      "id": "button-name",
+      "count": 24,
+      "nodes": [
+        {
+          "target": [
+            "#mceu_1-button"
+          ],
+          "html": "<button id=\"mceu_1-button\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-bold\"></i></button>"
+        },
+        {
+          "target": [
+            "#mceu_2-button"
+          ],
+          "html": "<button id=\"mceu_2-button\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-italic\"></i></button>"
+        },
+        {
+          "target": [
+            "#mceu_3-button"
+          ],
+          "html": "<button id=\"mceu_3-button\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-blockquote\"></i></button>"
+        },
+        {
+          "target": [
+            "#mceu_4 > button[hidefocus=\"1\"]:nth-child(1)"
+          ],
+          "html": "<button type=\"button\" hidefocus=\"1\" tabindex=\"-1\"><i class=\"mce-ico mce-i-bullist\"></i></button>"
+        },
+        {
+          "target": [
+            "#mceu_4 > .mce-open[hidefocus=\"1\"]"
+          ],
+          "html": "<button type=\"button\" class=\"mce-open\" hidefocus=\"1\" tabindex=\"-1\"> <i class=\"mce-caret\"></i></button>"
+        },
+        {
+          "target": [
+            "#mceu_5 > button[hidefocus=\"1\"]:nth-child(1)"
+          ],
+          "html": "<button type=\"button\" hidefocus=\"1\" tabindex=\"-1\"><i class=\"mce-ico mce-i-numlist\"></i></button>"
+        },
+        {
+          "target": [
+            "#mceu_5 > .mce-open[hidefocus=\"1\"]"
+          ],
+          "html": "<button type=\"button\" class=\"mce-open\" hidefocus=\"1\" tabindex=\"-1\"> <i class=\"mce-caret\"></i></button>"
+        },
+        {
+          "target": [
+            "#mceu_6-button"
+          ],
+          "html": "<button id=\"mceu_6-button\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-alignleft\"></i></button>"
+        },
+        {
+          "target": [
+            "#mceu_7-button"
+          ],
+          "html": "<button id=\"mceu_7-button\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-aligncenter\"></i></button>"
+        },
+        {
+          "target": [
+            "#mceu_8-button"
+          ],
+          "html": "<button id=\"mceu_8-button\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-alignright\"></i></button>"
+        },
+        {
+          "target": [
+            "#mceu_9-button"
+          ],
+          "html": "<button id=\"mceu_9-button\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-link\"></i></button>"
+        },
+        {
+          "target": [
+            "#mceu_10-button"
+          ],
+          "html": "<button id=\"mceu_10-button\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-unlink\"></i></button>"
+        },
+        {
+          "target": [
+            "#mceu_11-button"
+          ],
+          "html": "<button id=\"mceu_11-button\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-undo\"></i></button>"
+        },
+        {
+          "target": [
+            "#mceu_12-button"
+          ],
+          "html": "<button id=\"mceu_12-button\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-redo\"></i></button>"
+        },
+        {
+          "target": [
+            "#mceu_15-button"
+          ],
+          "html": "<button id=\"mceu_15-button\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-outdent\"></i></button>"
+        },
+        {
+          "target": [
+            "#mceu_16-button"
+          ],
+          "html": "<button id=\"mceu_16-button\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-indent\"></i></button>"
+        },
+        {
+          "target": [
+            "#mceu_17-button"
+          ],
+          "html": "<button id=\"mceu_17-button\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-pastetext\"></i></button>"
+        },
+        {
+          "target": [
+            "#mceu_18-button"
+          ],
+          "html": "<button id=\"mceu_18-button\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-removeformat\"></i></button>"
+        },
+        {
+          "target": [
+            "#mceu_19-button"
+          ],
+          "html": "<button id=\"mceu_19-button\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-charmap\"></i></button>"
+        },
+        {
+          "target": [
+            "#mceu_20-button"
+          ],
+          "html": "<button id=\"mceu_20-button\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-wp_more\"></i></button>"
+        },
+        {
+          "target": [
+            "button[hidefocus=\"1\"][role=\"presentation\"]"
+          ],
+          "html": "<button role=\"presentation\" hidefocus=\"1\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-forecolor\"></i><span id=\"mceu_21-preview\" class=\"mce-preview\"></span></button>"
+        },
+        {
+          "target": [
+            "#mceu_21 > .mce-open[hidefocus=\"1\"]"
+          ],
+          "html": "<button type=\"button\" class=\"mce-open\" hidefocus=\"1\" tabindex=\"-1\"> <i class=\"mce-caret\"></i></button>"
+        },
+        {
+          "target": [
+            "#mceu_22-open"
+          ],
+          "html": "<button id=\"mceu_22-open\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-table\"></i> <i class=\"mce-caret\"></i></button>"
+        },
+        {
+          "target": [
+            "#mceu_23-button"
+          ],
+          "html": "<button id=\"mceu_23-button\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-wp_help\"></i></button>"
+        }
+      ]
+    },
+    {
+      "id": "nested-interactive",
+      "count": 24,
+      "nodes": [
+        {
+          "target": [
+            "#mceu_0"
+          ],
+          "html": "<div id=\"mceu_0\" class=\"mce-widget mce-btn mce-menubtn mce-fixed-width mce-listbox mce-first mce-btn-has-text\" tabindex=\"-1\" aria-labelledby=\"mceu_0\" role=\"button\" aria-haspopup=\"true\">"
+        },
+        {
+          "target": [
+            "#mceu_1"
+          ],
+          "html": "<div id=\"mceu_1\" class=\"mce-widget mce-btn\" tabindex=\"-1\" aria-pressed=\"false\" role=\"button\" aria-label=\"Bold (⌘B)\"><button id=\"mceu_1-button\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-bold\"></i></button></div>"
+        },
+        {
+          "target": [
+            "#mceu_2"
+          ],
+          "html": "<div id=\"mceu_2\" class=\"mce-widget mce-btn\" tabindex=\"-1\" aria-pressed=\"false\" role=\"button\" aria-label=\"Italic (⌘I)\"><button id=\"mceu_2-button\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-italic\"></i></button></div>"
+        },
+        {
+          "target": [
+            "#mceu_3"
+          ],
+          "html": "<div id=\"mceu_3\" class=\"mce-widget mce-btn\" tabindex=\"-1\" aria-pressed=\"false\" role=\"button\" aria-label=\"Blockquote (⌃⌥Q)\"><button id=\"mceu_3-button\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-blockquote\"></i></button></div>"
+        },
+        {
+          "target": [
+            "#mceu_4"
+          ],
+          "html": "<div id=\"mceu_4\" class=\"mce-widget mce-btn mce-splitbtn mce-menubtn\" role=\"button\" aria-pressed=\"false\" tabindex=\"-1\" aria-label=\"Bulleted list (⌃⌥U)\" aria-haspopup=\"true\">"
+        },
+        {
+          "target": [
+            "#mceu_5"
+          ],
+          "html": "<div id=\"mceu_5\" class=\"mce-widget mce-btn mce-splitbtn mce-menubtn\" role=\"button\" aria-pressed=\"false\" tabindex=\"-1\" aria-label=\"Numbered list (⌃⌥O)\" aria-haspopup=\"true\">"
+        },
+        {
+          "target": [
+            "#mceu_6"
+          ],
+          "html": "<div id=\"mceu_6\" class=\"mce-widget mce-btn\" tabindex=\"-1\" aria-pressed=\"false\" role=\"button\" aria-label=\"Align left (⌃⌥L)\"><button id=\"mceu_6-button\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-alignleft\"></i></button></div>"
+        },
+        {
+          "target": [
+            "#mceu_7"
+          ],
+          "html": "<div id=\"mceu_7\" class=\"mce-widget mce-btn\" tabindex=\"-1\" aria-pressed=\"false\" role=\"button\" aria-label=\"Align center (⌃⌥C)\"><button id=\"mceu_7-button\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-aligncenter\"></i></button></div>"
+        },
+        {
+          "target": [
+            "#mceu_8"
+          ],
+          "html": "<div id=\"mceu_8\" class=\"mce-widget mce-btn\" tabindex=\"-1\" aria-pressed=\"false\" role=\"button\" aria-label=\"Align right (⌃⌥R)\"><button id=\"mceu_8-button\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-alignright\"></i></button></div>"
+        },
+        {
+          "target": [
+            "#mceu_9"
+          ],
+          "html": "<div id=\"mceu_9\" class=\"mce-widget mce-btn\" tabindex=\"-1\" aria-pressed=\"false\" role=\"button\" aria-label=\"Insert/edit link (⌘K)\"><button id=\"mceu_9-button\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-link\"></i></button></div>"
+        },
+        {
+          "target": [
+            "#mceu_10"
+          ],
+          "html": "<div id=\"mceu_10\" class=\"mce-widget mce-btn\" tabindex=\"-1\" role=\"button\" aria-label=\"Remove link (⌃⌥S)\"><button id=\"mceu_10-button\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-unlink\"></i></button></div>"
+        },
+        {
+          "target": [
+            "#mceu_11"
+          ],
+          "html": "<div id=\"mceu_11\" class=\"mce-widget mce-btn mce-disabled\" tabindex=\"-1\" role=\"button\" aria-label=\"Undo (⌘Z)\" aria-disabled=\"true\"><button id=\"mceu_11-button\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-undo\"></i></button></div>"
+        },
+        {
+          "target": [
+            "#mceu_12"
+          ],
+          "html": "<div id=\"mceu_12\" class=\"mce-widget mce-btn mce-last mce-disabled\" tabindex=\"-1\" role=\"button\" aria-label=\"Redo (⌘Y)\" aria-disabled=\"true\"><button id=\"mceu_12-button\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-redo\"></i></button></div>"
+        },
+        {
+          "target": [
+            "#mceu_13"
+          ],
+          "html": "<div id=\"mceu_13\" class=\"mce-widget mce-btn mce-menubtn mce-fixed-width mce-listbox mce-first mce-btn-has-text\" tabindex=\"-1\" aria-labelledby=\"mceu_13\" role=\"button\" aria-label=\"Font Family\" aria-haspopup=\"true\">"
+        },
+        {
+          "target": [
+            "#mceu_14"
+          ],
+          "html": "<div id=\"mceu_14\" class=\"mce-widget mce-btn mce-menubtn mce-fixed-width mce-listbox mce-btn-has-text\" tabindex=\"-1\" aria-labelledby=\"mceu_14\" role=\"button\" aria-label=\"Font Sizes\" aria-haspopup=\"true\">"
+        },
+        {
+          "target": [
+            "#mceu_15"
+          ],
+          "html": "<div id=\"mceu_15\" class=\"mce-widget mce-btn\" tabindex=\"-1\" role=\"button\" aria-label=\"Decrease indent\"><button id=\"mceu_15-button\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-outdent\"></i></button></div>"
+        },
+        {
+          "target": [
+            "#mceu_16"
+          ],
+          "html": "<div id=\"mceu_16\" class=\"mce-widget mce-btn\" tabindex=\"-1\" role=\"button\" aria-label=\"Increase indent\"><button id=\"mceu_16-button\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-indent\"></i></button></div>"
+        },
+        {
+          "target": [
+            "#mceu_17"
+          ],
+          "html": "<div id=\"mceu_17\" class=\"mce-widget mce-btn\" tabindex=\"-1\" aria-pressed=\"false\" role=\"button\" aria-label=\"Paste as text\"><button id=\"mceu_17-button\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-pastetext\"></i></button></div>"
+        },
+        {
+          "target": [
+            "#mceu_18"
+          ],
+          "html": "<div id=\"mceu_18\" class=\"mce-widget mce-btn\" tabindex=\"-1\" role=\"button\" aria-label=\"Clear formatting\"><button id=\"mceu_18-button\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-removeformat\"></i></button></div>"
+        },
+        {
+          "target": [
+            "#mceu_19"
+          ],
+          "html": "<div id=\"mceu_19\" class=\"mce-widget mce-btn\" tabindex=\"-1\" role=\"button\" aria-label=\"Special character\"><button id=\"mceu_19-button\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-charmap\"></i></button></div>"
+        },
+        {
+          "target": [
+            "#mceu_20"
+          ],
+          "html": "<div id=\"mceu_20\" class=\"mce-widget mce-btn\" tabindex=\"-1\" role=\"button\" aria-label=\"Insert Read More tag (⌃⌥T)\"><button id=\"mceu_20-button\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-wp_more\"></i></button></div>"
+        },
+        {
+          "target": [
+            "#mceu_21"
+          ],
+          "html": "<div id=\"mceu_21\" class=\"mce-widget mce-btn mce-splitbtn mce-colorbutton\" role=\"button\" tabindex=\"-1\" aria-haspopup=\"true\" aria-label=\"Text color\">"
+        },
+        {
+          "target": [
+            "#mceu_22"
+          ],
+          "html": "<div id=\"mceu_22\" class=\"mce-widget mce-btn mce-menubtn\" tabindex=\"-1\" aria-labelledby=\"mceu_22\" role=\"button\" aria-label=\"Table\" aria-haspopup=\"true\">"
+        },
+        {
+          "target": [
+            "#mceu_23"
+          ],
+          "html": "<div id=\"mceu_23\" class=\"mce-widget mce-btn mce-last\" tabindex=\"-1\" role=\"button\" aria-label=\"Keyboard Shortcuts (⌃⌥H)\"><button id=\"mceu_23-button\" role=\"presentation\" type=\"button\" tabindex=\"-1\"><i class=\"mce-ico mce-i-wp_help\"></i></button></div>"
+        }
+      ]
+    }
+  ]
+}

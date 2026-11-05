@@ -1,0 +1,28 @@
+{
+  "before": {
+    "scriptMs": 1535.76,
+    "taskMs": 2141.11,
+    "load": 9747.7,
+    "heapBytes": 30648132,
+    "resources": 210
+  },
+  "candidate": {
+    "scriptMs": 767.29,
+    "taskMs": 1224.07,
+    "load": 8448.3,
+    "heapBytes": 27878176,
+    "resources": 210
+  },
+  "payload": {
+    "mu-plugins/mrn-editor-lockdown/assets/section-navigator.js": {
+      "before_gzip": 10844,
+      "after_gzip": 11594,
+      "delta_gzip": 750
+    },
+    "mu-plugins/mrn-admin-ui-css/mrn-editor-workspace.css": {
+      "before_gzip": 4667,
+      "after_gzip": 4702,
+      "delta_gzip": 35
+    }
+  }
+}

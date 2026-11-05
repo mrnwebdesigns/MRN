@@ -1,0 +1,220 @@
+{
+  "phase": "candidate",
+  "checks": [
+    {
+      "name": "Team Member uses ACF profile and native photo; no unsupported core body",
+      "data": true
+    },
+    {
+      "name": "Team Member light content/settings separation",
+      "data": true
+    },
+    {
+      "name": "Team Member dark content/settings separation",
+      "data": true
+    },
+    {
+      "name": "Mode switching preserves all native form controls, parent nodes and values",
+      "data": true
+    },
+    {
+      "name": "ACF validation opens Content for profile fields",
+      "data": true
+    },
+    {
+      "name": "Outline jumps from Settings to native content panel with keyboard focus",
+      "data": true
+    },
+    {
+      "name": "Mobile mode switching",
+      "data": true
+    },
+    {
+      "name": "Scoped accessibility",
+      "data": [
+        {
+          "id": "button-name",
+          "targets": [
+            [
+              "#mceu_70-button"
+            ],
+            [
+              "#mceu_71-button"
+            ],
+            [
+              "#mceu_72-button"
+            ],
+            [
+              "#mceu_73 > button[hidefocus=\"1\"]:nth-child(1)"
+            ],
+            [
+              "#mceu_73 > .mce-open[hidefocus=\"1\"]"
+            ],
+            [
+              "#mceu_74 > button[hidefocus=\"1\"]:nth-child(1)"
+            ],
+            [
+              "#mceu_74 > .mce-open[hidefocus=\"1\"]"
+            ],
+            [
+              "#mceu_75-button"
+            ],
+            [
+              "#mceu_76-button"
+            ],
+            [
+              "#mceu_77-button"
+            ],
+            [
+              "#mceu_78-button"
+            ],
+            [
+              "#mceu_79-button"
+            ],
+            [
+              "#mceu_80-button"
+            ],
+            [
+              "#mceu_81-button"
+            ],
+            [
+              "#mceu_84-button"
+            ],
+            [
+              "#mceu_85-button"
+            ],
+            [
+              "#mceu_86-button"
+            ],
+            [
+              "#mceu_87-button"
+            ],
+            [
+              "#mceu_88-button"
+            ],
+            [
+              "#mceu_89-button"
+            ],
+            [
+              "#mceu_90 > button[hidefocus=\"1\"][role=\"presentation\"]"
+            ],
+            [
+              "#mceu_90 > .mce-open[hidefocus=\"1\"]"
+            ],
+            [
+              "#mceu_91-open"
+            ],
+            [
+              "#mceu_92-button"
+            ]
+          ]
+        },
+        {
+          "id": "nested-interactive",
+          "targets": [
+            [
+              "#mceu_69"
+            ],
+            [
+              "#mceu_70"
+            ],
+            [
+              "#mceu_71"
+            ],
+            [
+              "#mceu_72"
+            ],
+            [
+              "#mceu_73"
+            ],
+            [
+              "#mceu_74"
+            ],
+            [
+              "#mceu_75"
+            ],
+            [
+              "#mceu_76"
+            ],
+            [
+              "#mceu_77"
+            ],
+            [
+              "#mceu_78"
+            ],
+            [
+              "#mceu_79"
+            ],
+            [
+              "#mceu_80"
+            ],
+            [
+              "#mceu_81"
+            ],
+            [
+              "#mceu_82"
+            ],
+            [
+              "#mceu_83"
+            ],
+            [
+              "#mceu_84"
+            ],
+            [
+              "#mceu_85"
+            ],
+            [
+              "#mceu_86"
+            ],
+            [
+              "#mceu_87"
+            ],
+            [
+              "#mceu_88"
+            ],
+            [
+              "#mceu_89"
+            ],
+            [
+              "#mceu_90"
+            ],
+            [
+              "#mceu_91"
+            ],
+            [
+              "#mceu_92"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "No new accessibility findings; native TinyMCE findings match installed baseline",
+      "data": true
+    },
+    {
+      "name": "Posts: native body, excerpt, image and sidebar ACF text belong to Content; taxonomy stays Settings",
+      "data": true
+    },
+    {
+      "name": "Resource remains outside the approved workspace boundary with native ACF visible",
+      "data": true
+    },
+    {
+      "name": "Builder 2523 retains 19 sections and focused editing",
+      "data": true
+    },
+    {
+      "name": "Builder 2524 retains 32 sections and focused editing",
+      "data": true
+    },
+    {
+      "name": "REST health",
+      "data": true
+    },
+    {
+      "name": "JS errors",
+      "data": []
+    }
+  ]
+}
