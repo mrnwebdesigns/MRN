@@ -7,6 +7,32 @@ import {createHash} from 'node:crypto';
 import {buildAssets} from '../build-assets.mjs';
 import {stylesheetFiles} from '../stylesheet-routes.mjs';
 
+test('Contextual bundles build reproducibly with synchronized source/minified bytes and native full fallback', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'mrn-context-css-'));
+  try {
+    const theme = path.join(root, 'source'); await mkdir(theme);
+    await writeFile(path.join(theme, 'style.css'), '.single-post p { color: red; } .home p { color: blue; }');
+    await writeFile(path.join(theme, 'fonts.css'), '@font-face { font-family: x; src: url(font.woff2); }');
+    await writeFile(path.join(theme, 'font.woff2'), 'font');
+    await writeFile(path.join(theme, 'mrn-asset-routes.json'), JSON.stringify({schema:1,
+      stylesheet_routes:{'/':['home-shell.css','style.css']},
+      stylesheet_contexts:{'home-shell.css':{required_body_classes:['home'],absent_body_classes:['single-post']}},
+      stylesheet_subsets:{'style-home.css':{source:'style.css',context:'home-shell.css'}},
+      stylesheet_bundles:{'home-shell.css':['fonts.css','style-home.css']},
+    }));
+    const one = await buildAssets({theme,output:path.join(root,'one'),slug:'child',sourceSha:'a'.repeat(40)});
+    const two = await buildAssets({theme,output:path.join(root,'two'),slug:'child',sourceSha:'a'.repeat(40)});
+    assert.equal(one.generation,two.generation);
+    for (const name of ['style-home.css','style-home.min.css','home-shell.css','home-shell.min.css']) {
+      assert.deepEqual(await readFile(path.join(root,'one/theme',name)),await readFile(path.join(root,'one/assets',one.public_path,name)));
+    }
+    assert.match(await readFile(path.join(root,'one/theme/home-shell.css'),'utf8'),/url\(font.woff2\)/);
+    assert.doesNotMatch(await readFile(path.join(root,'one/theme/home-shell.css'),'utf8'),/single-post/);
+    assert.match(await readFile(path.join(theme,'style.css'),'utf8'),/single-post/,'editable full source is never changed');
+    assert.deepEqual(stylesheetFiles(one,'https://example.org/other/'),['style.min.css']);
+  } finally { await rm(root,{recursive:true,force:true}); }
+});
+
 test('Gloves regression: warm old URL keeps old bytes; CSS edits get new URLs and synchronized minification', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'mrn-assets-'));
   try {
