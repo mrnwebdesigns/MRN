@@ -1,6 +1,8 @@
 # Local Hub OOM investigation — 31 October 2026
 
-**Status: release blocker remains open.** A guest-agent socket leak now reproduces independently of WordPress. The evidence strongly matches an upstream Lima defect. No upgrade, restart, service/configuration change, memory tuning, release, deployment or Fleet action was performed.
+**Historical investigation; superseded by the [5 November repair and qualification](review/cpu-oom-20261105/REVIEW.md).** The reproduced Lima socket leak is now repaired on host/guest 2.2.1. Separate Hub provisioning/latency and editor CPU gates remain open.
+
+**Status as of 31 October: release blocker remains open.** A guest-agent socket leak now reproduces independently of WordPress. The evidence strongly matches an upstream Lima defect. No upgrade, restart, service/configuration change, memory tuning, release, deployment or Fleet action was performed.
 
 The completed appearance implementation remains `c1f249f1` (`mrn-admin-ui-css` 3.3.0) on `codex/admin-editor-pilot-20261029`. All eight installed runtime files were rechecked against source and the recorded hashes. A serial authenticated refresh returned HTTP 200 for Dashboard, Pages, General settings, MRN Config Helper and the complex editor. The editor initialized four TinyMCE instances and retained its 19-section outline. These refresh checks did not submit content, settings or appearance preferences. They supplement the existing Light/Dark QA and full-page screenshot gallery; they do not replace it or clear the CPU qualification blocker.
 

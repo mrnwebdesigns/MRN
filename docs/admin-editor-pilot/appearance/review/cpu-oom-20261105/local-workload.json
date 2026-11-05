@@ -1,0 +1,33 @@
+[
+  {
+    "cycle": 0,
+    "name": "dashboard",
+    "wallMs": 30232,
+    "loggedIn": true,
+    "sections": 0,
+    "editors": [],
+    "errors": 0
+  },
+  {
+    "cycle": 0,
+    "name": "real19",
+    "wallMs": 54096,
+    "loggedIn": true,
+    "sections": 19,
+    "editors": [
+      {
+        "initialized": true
+      },
+      {
+        "initialized": true
+      },
+      {
+        "initialized": true
+      },
+      {
+        "initialized": true
+      }
+    ],
+    "errors": 0
+  }
+]

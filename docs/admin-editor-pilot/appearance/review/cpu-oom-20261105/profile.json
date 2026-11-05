@@ -1,0 +1,2465 @@
+[
+  {
+    "name": "empty",
+    "self": [
+      [
+        "(native):(idle):-1",
+        3544.440000000006
+      ],
+      [
+        "/cdn-cgi/challenge-platform/scripts/jsd/main.js:mJ._aefa421932d3f736bb718de6:0",
+        1244.4609999999984
+      ],
+      [
+        "(native):(program):-1",
+        180.96699999999993
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:e:1",
+        59.879
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:Ge:1",
+        24.372000000000007
+      ],
+      [
+        "/wp-includes/js/dist/components.min.js:(anonymous):1",
+        21.017000000000003
+      ],
+      [
+        "/wp-content/plugins/wp-seopress/public/admin/settings/tab-title-description.3051416e1dd3a085d741.js:x:1",
+        16.206
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:(anonymous):1",
+        10.444
+      ],
+      [
+        "(native):(garbage collector):-1",
+        8.237
+      ],
+      [
+        "(native):appendChild:-1",
+        7.399
+      ],
+      [
+        "/wp-content/mu-plugins/mrn-editor-lockdown/assets/section-navigator.js:(anonymous):459",
+        7.355
+      ],
+      [
+        "/wp-content/mu-plugins/mrn-editor-lockdown/assets/section-navigator.js:updateChromeOffset:435",
+        5.096
+      ],
+      [
+        "/wp-includes/js/tinymce/wp-tinymce.js:(anonymous):2",
+        4.838
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:I:1",
+        3.8400000000000003
+      ],
+      [
+        "(native):fetch:-1",
+        3.7709999999999995
+      ],
+      [
+        "/wp-content/plugins/wp-seopress/public/metaboxe.js:(anonymous):1",
+        3.769
+      ],
+      [
+        "/wp-content/mu-plugins/mrn-admin-ui-css/appearance.js:(anonymous):1",
+        3.764
+      ],
+      [
+        "/cdn-cgi/challenge-platform/scripts/jsd/main.js:(anonymous):0",
+        3.618
+      ],
+      [
+        "/wp-content/mu-plugins/mrn-editor-lockdown/assets/section-navigator.js:reconcile:384",
+        3.609
+      ],
+      [
+        "(native):querySelectorAll:-1",
+        3.249
+      ],
+      [
+        "(native):removeChild:-1",
+        2.9610000000000003
+      ],
+      [
+        "/wp-includes/js/tinymce/wp-tinymce.js:bw:2",
+        2.75
+      ],
+      [
+        "/wp-includes/js/tinymce/wp-tinymce.js:a:2",
+        2.644
+      ],
+      [
+        "(native):insertBefore:-1",
+        2.567
+      ],
+      [
+        "/cdn-cgi/challenge-platform/scripts/jsd/main.js:Dr:0",
+        2.5649999999999995
+      ],
+      [
+        "/wp-includes/js/tinymce/wp-tinymce.js:r:2",
+        2.543
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:t:1",
+        2.5359999999999996
+      ],
+      [
+        "/wp-includes/js/wp-emoji-release.min.js:d:2",
+        2.5149999999999997
+      ],
+      [
+        "/wp-includes/js/wp-emoji-release.min.js:callback:2",
+        2.511
+      ],
+      [
+        "/wp-includes/js/tinymce/wp-tinymce.js:Ew:2",
+        2.492
+      ],
+      [
+        "/wp-includes/js/tinymce/wp-tinymce.js:(anonymous):4",
+        2.4859999999999998
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:ce.extend.ce.fn.extend:1",
+        2.197
+      ],
+      [
+        "/wp-includes/js/dist/vendor/react-dom.min.js:Gc:163",
+        2.1390000000000002
+      ],
+      [
+        "/wp-includes/js/plupload/moxie.min.js:(anonymous):0",
+        2.1260000000000003
+      ],
+      [
+        "/wp-includes/js/jquery/jquery-migrate.min.js:(anonymous):1",
+        2.057
+      ]
+    ],
+    "callOwners": [
+      [
+        "browser/core",
+        3888.0530000000076
+      ],
+      [
+        "Cloudflare",
+        1267.8149999999987
+      ],
+      [
+        "/wp-content/plugins/admin-menu-editor-pro/extras/third-level-menus.js",
+        75.819
+      ],
+      [
+        "/wp-content/mu-plugins/mrn-editor-lockdown/assets/section-navigator.js",
+        21.185
+      ],
+      [
+        "/wp-content/plugins/wp-seopress/public/metaboxe.js",
+        19.314
+      ],
+      [
+        "/wp-content/plugins/wp-seopress/public/admin/settings/tab-title-description.3051416e1dd3a085d741.js",
+        18.794
+      ],
+      [
+        "/wp-content/plugins/happyfiles-pro/assets/js/happyfiles.min.js",
+        9.012
+      ],
+      [
+        "/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/acf.min.js",
+        6.314
+      ],
+      [
+        "/wp-content/mu-plugins/mrn-admin-ui-css/appearance.js",
+        3.764
+      ],
+      [
+        "/wp-content/plugins/mrn-universal-sticky-bar/assets/universal-sticky-bar.js",
+        3.763
+      ],
+      [
+        "/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/acf-input.min.js",
+        2.8729999999999998
+      ],
+      [
+        "/wp-content/plugins/tinymce-advanced/mce/visualchars/plugin.min.js",
+        2.497
+      ],
+      [
+        "/wp-content/plugins/post-duplicator/assets/build/postDuplicator.js",
+        2.492
+      ],
+      [
+        "/wp-content/plugins/admin-menu-editor-pro/extras/pro-admin-helpers.js",
+        1.274
+      ],
+      [
+        "/wp-content/plugins/advanced-custom-fields-pro/assets/inc/select2/4/select2.full.min.js",
+        1.273
+      ],
+      [
+        "/wp-content/plugins/wp-seopress-pro/assets/js/seopress-redirection-conflict.js",
+        1.259
+      ],
+      [
+        "/wp-content/themes/mrn-base-stack/js/admin-editor-startup.js",
+        1.255
+      ],
+      [
+        "/wp-content/plugins/admin-menu-editor-pro/js/admin-helpers.js",
+        1.254
+      ],
+      [
+        "/wp-content/plugins/admin-menu-editor-pro/js/menu-highlight-fix.js",
+        1.25
+      ],
+      [
+        "/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/pro/acf-pro-input.min.js",
+        1.245
+      ]
+    ],
+    "metrics": {
+      "cpuMs": 1782.172,
+      "scriptMs": 1492.03,
+      "layoutMs": 97.75,
+      "styleMs": 55.719,
+      "heapMiB": 17.995361328125
+    },
+    "state": {
+      "nodes": 3087,
+      "sections": 1,
+      "editors": 1,
+      "scripts": [
+        {
+          "id": "jquery-core-js",
+          "url": "/wp-includes/js/jquery/jquery.min.js"
+        },
+        {
+          "id": "jquery-migrate-js",
+          "url": "/wp-includes/js/jquery/jquery-migrate.min.js"
+        },
+        {
+          "id": "hoverIntent-js",
+          "url": "/wp-includes/js/hoverIntent.min.js"
+        },
+        {
+          "id": "utils-js",
+          "url": "/wp-includes/js/utils.min.js"
+        },
+        {
+          "id": "wp-dom-ready-js",
+          "url": "/wp-includes/js/dist/dom-ready.min.js"
+        },
+        {
+          "id": "wp-hooks-js",
+          "url": "/wp-includes/js/dist/hooks.min.js"
+        },
+        {
+          "id": "wp-i18n-js",
+          "url": "/wp-includes/js/dist/i18n.min.js"
+        },
+        {
+          "id": "wp-a11y-js",
+          "url": "/wp-includes/js/dist/a11y.min.js"
+        },
+        {
+          "id": "ame-helper-script-js",
+          "url": "/wp-content/plugins/admin-menu-editor-pro/js/admin-helpers.js"
+        },
+        {
+          "id": "jquery-ui-core-js",
+          "url": "/wp-includes/js/jquery/ui/core.min.js"
+        },
+        {
+          "id": "jquery-ui-mouse-js",
+          "url": "/wp-includes/js/jquery/ui/mouse.min.js"
+        },
+        {
+          "id": "jquery-ui-sortable-js",
+          "url": "/wp-includes/js/jquery/ui/sortable.min.js"
+        },
+        {
+          "id": "moxiejs-js",
+          "url": "/wp-includes/js/plupload/moxie.min.js"
+        },
+        {
+          "id": "plupload-js",
+          "url": "/wp-includes/js/plupload/plupload.min.js"
+        },
+        {
+          "id": "ame-menu-fix-js",
+          "url": "/wp-content/plugins/admin-menu-editor-pro/js/menu-highlight-fix.js"
+        },
+        {
+          "id": "ame-jquery-cookie-js",
+          "url": "/wp-content/plugins/admin-menu-editor-pro/js/jquery.biscuit.js"
+        },
+        {
+          "id": "ame-pro-admin-helpers-js",
+          "url": "/wp-content/plugins/admin-menu-editor-pro/extras/pro-admin-helpers.js"
+        },
+        {
+          "id": "jquery-ui-resizable-js",
+          "url": "/wp-includes/js/jquery/ui/resizable.min.js"
+        },
+        {
+          "id": "acf-js",
+          "url": "/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/acf.min.js"
+        },
+        {
+          "id": "acf-input-js",
+          "url": "/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/acf-input.min.js"
+        },
+        {
+          "id": "acf-pro-input-js",
+          "url": "/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/pro/acf-pro-input.min.js"
+        },
+        {
+          "id": "ame-third-level-menus-js",
+          "url": "/wp-content/plugins/admin-menu-editor-pro/extras/third-level-menus.js"
+        },
+        {
+          "id": "acf-pro-ui-options-page-js",
+          "url": "/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/pro/acf-pro-ui-options-page.min.js"
+        },
+        {
+          "id": "select2-js",
+          "url": "/wp-content/plugins/advanced-custom-fields-pro/assets/inc/select2/4/select2.full.min.js"
+        },
+        {
+          "id": "jquery-ui-datepicker-js",
+          "url": "/wp-includes/js/jquery/ui/datepicker.min.js"
+        },
+        {
+          "id": "acf-timepicker-js",
+          "url": "/wp-content/plugins/advanced-custom-fields-pro/assets/inc/timepicker/jquery-ui-timepicker-addon.min.js"
+        },
+        {
+          "id": "jquery-ui-draggable-js",
+          "url": "/wp-includes/js/jquery/ui/draggable.min.js"
+        },
+        {
+          "id": "jquery-ui-slider-js",
+          "url": "/wp-includes/js/jquery/ui/slider.min.js"
+        },
+        {
+          "id": "jquery-touch-punch-js",
+          "url": "/wp-includes/js/jquery/jquery.ui.touch-punch.js"
+        },
+        {
+          "id": "iris-js",
+          "url": "/wp-admin/js/iris.min.js"
+        },
+        {
+          "id": "wp-color-picker-js",
+          "url": "/wp-admin/js/color-picker.min.js"
+        },
+        {
+          "id": "acf-color-picker-alpha-js",
+          "url": "/wp-content/plugins/advanced-custom-fields-pro/assets/inc/color-picker-alpha/wp-color-picker-alpha.js"
+        },
+        {
+          "id": "",
+          "url": "/wp-includes/js/wp-emoji-release.min.js"
+        },
+        {
+          "id": "common-js",
+          "url": "/wp-admin/js/common.min.js"
+        },
+        {
+          "id": "hoverintent-js-js",
+          "url": "/wp-includes/js/hoverintent-js.min.js"
+        },
+        {
+          "id": "admin-bar-js",
+          "url": "/wp-includes/js/admin-bar.min.js"
+        },
+        {
+          "id": "heartbeat-js",
+          "url": "/wp-includes/js/heartbeat.min.js"
+        },
+        {
+          "id": "autosave-js",
+          "url": "/wp-includes/js/autosave.min.js"
+        },
+        {
+          "id": "suggest-js",
+          "url": "/wp-includes/js/jquery/suggest.min.js"
+        },
+        {
+          "id": "wp-ajax-response-js",
+          "url": "/wp-includes/js/wp-ajax-response.min.js"
+        },
+        {
+          "id": "jquery-color-js",
+          "url": "/wp-includes/js/jquery/jquery.color.min.js"
+        },
+        {
+          "id": "wp-lists-js",
+          "url": "/wp-includes/js/wp-lists.min.js"
+        },
+        {
+          "id": "postbox-js",
+          "url": "/wp-admin/js/postbox.min.js"
+        },
+        {
+          "id": "jquery-ui-menu-js",
+          "url": "/wp-includes/js/jquery/ui/menu.min.js"
+        },
+        {
+          "id": "jquery-ui-autocomplete-js",
+          "url": "/wp-includes/js/jquery/ui/autocomplete.min.js"
+        },
+        {
+          "id": "tags-suggest-js",
+          "url": "/wp-admin/js/tags-suggest.min.js"
+        },
+        {
+          "id": "tags-box-js",
+          "url": "/wp-admin/js/tags-box.min.js"
+        },
+        {
+          "id": "underscore-js",
+          "url": "/wp-includes/js/underscore.min.js"
+        },
+        {
+          "id": "word-count-js",
+          "url": "/wp-admin/js/word-count.min.js"
+        },
+        {
+          "id": "wp-sanitize-js",
+          "url": "/wp-includes/js/wp-sanitize.min.js"
+        },
+        {
+          "id": "clipboard-js",
+          "url": "/wp-includes/js/clipboard.min.js"
+        },
+        {
+          "id": "post-js",
+          "url": "/wp-admin/js/post.min.js"
+        },
+        {
+          "id": "thickbox-js",
+          "url": "/wp-includes/js/thickbox/thickbox.js"
+        },
+        {
+          "id": "shortcode-js",
+          "url": "/wp-includes/js/shortcode.min.js"
+        },
+        {
+          "id": "backbone-js",
+          "url": "/wp-includes/js/backbone.min.js"
+        },
+        {
+          "id": "wp-util-js",
+          "url": "/wp-includes/js/wp-util.min.js"
+        },
+        {
+          "id": "wp-backbone-js",
+          "url": "/wp-includes/js/wp-backbone.min.js"
+        },
+        {
+          "id": "media-models-js",
+          "url": "/wp-includes/js/media-models.min.js"
+        },
+        {
+          "id": "wp-plupload-js",
+          "url": "/wp-includes/js/plupload/wp-plupload.min.js"
+        },
+        {
+          "id": "mediaelement-core-js",
+          "url": "/wp-includes/js/mediaelement/mediaelement-and-player.min.js"
+        },
+        {
+          "id": "mediaelement-migrate-js",
+          "url": "/wp-includes/js/mediaelement/mediaelement-migrate.min.js"
+        },
+        {
+          "id": "wp-mediaelement-js",
+          "url": "/wp-includes/js/mediaelement/wp-mediaelement.min.js"
+        },
+        {
+          "id": "wp-api-request-js",
+          "url": "/wp-includes/js/api-request.min.js"
+        },
+        {
+          "id": "media-views-js",
+          "url": "/wp-includes/js/media-views.min.js"
+        },
+        {
+          "id": "media-editor-js",
+          "url": "/wp-includes/js/media-editor.min.js"
+        },
+        {
+          "id": "media-audiovideo-js",
+          "url": "/wp-includes/js/media-audiovideo.min.js"
+        },
+        {
+          "id": "mce-view-js",
+          "url": "/wp-includes/js/mce-view.min.js"
+        },
+        {
+          "id": "imgareaselect-js",
+          "url": "/wp-includes/js/imgareaselect/jquery.imgareaselect.min.js"
+        },
+        {
+          "id": "image-edit-js",
+          "url": "/wp-admin/js/image-edit.min.js"
+        },
+        {
+          "id": "svg-painter-js",
+          "url": "/wp-admin/js/svg-painter.js"
+        },
+        {
+          "id": "wp-auth-check-js",
+          "url": "/wp-includes/js/wp-auth-check.min.js"
+        },
+        {
+          "id": "react-js",
+          "url": "/wp-includes/js/dist/vendor/react.min.js"
+        },
+        {
+          "id": "react-dom-js",
+          "url": "/wp-includes/js/dist/vendor/react-dom.min.js"
+        },
+        {
+          "id": "react-jsx-runtime-js",
+          "url": "/wp-includes/js/dist/vendor/react-jsx-runtime.min.js"
+        },
+        {
+          "id": "wp-deprecated-js",
+          "url": "/wp-includes/js/dist/deprecated.min.js"
+        },
+        {
+          "id": "wp-dom-js",
+          "url": "/wp-includes/js/dist/dom.min.js"
+        },
+        {
+          "id": "wp-escape-html-js",
+          "url": "/wp-includes/js/dist/escape-html.min.js"
+        },
+        {
+          "id": "wp-element-js",
+          "url": "/wp-includes/js/dist/element.min.js"
+        },
+        {
+          "id": "wp-is-shallow-equal-js",
+          "url": "/wp-includes/js/dist/is-shallow-equal.min.js"
+        },
+        {
+          "id": "wp-keycodes-js",
+          "url": "/wp-includes/js/dist/keycodes.min.js"
+        },
+        {
+          "id": "wp-priority-queue-js",
+          "url": "/wp-includes/js/dist/priority-queue.min.js"
+        },
+        {
+          "id": "wp-undo-manager-js",
+          "url": "/wp-includes/js/dist/undo-manager.min.js"
+        },
+        {
+          "id": "wp-compose-js",
+          "url": "/wp-includes/js/dist/compose.min.js"
+        },
+        {
+          "id": "moment-js",
+          "url": "/wp-includes/js/dist/vendor/moment.min.js"
+        },
+        {
+          "id": "wp-date-js",
+          "url": "/wp-includes/js/dist/date.min.js"
+        },
+        {
+          "id": "wp-html-entities-js",
+          "url": "/wp-includes/js/dist/html-entities.min.js"
+        },
+        {
+          "id": "wp-primitives-js",
+          "url": "/wp-includes/js/dist/primitives.min.js"
+        },
+        {
+          "id": "wp-private-apis-js",
+          "url": "/wp-includes/js/dist/private-apis.min.js"
+        },
+        {
+          "id": "wp-redux-routine-js",
+          "url": "/wp-includes/js/dist/redux-routine.min.js"
+        },
+        {
+          "id": "wp-data-js",
+          "url": "/wp-includes/js/dist/data.min.js"
+        },
+        {
+          "id": "wp-rich-text-js",
+          "url": "/wp-includes/js/dist/rich-text.min.js"
+        },
+        {
+          "id": "wp-warning-js",
+          "url": "/wp-includes/js/dist/warning.min.js"
+        },
+        {
+          "id": "wp-components-js",
+          "url": "/wp-includes/js/dist/components.min.js"
+        },
+        {
+          "id": "wp-keyboard-shortcuts-js",
+          "url": "/wp-includes/js/dist/keyboard-shortcuts.min.js"
+        },
+        {
+          "id": "wp-commands-js",
+          "url": "/wp-includes/js/dist/commands.min.js"
+        },
+        {
+          "id": "wp-url-js",
+          "url": "/wp-includes/js/dist/url.min.js"
+        },
+        {
+          "id": "wp-api-fetch-js",
+          "url": "/wp-includes/js/dist/api-fetch.min.js"
+        },
+        {
+          "id": "wp-blob-js",
+          "url": "/wp-includes/js/dist/blob.min.js"
+        },
+        {
+          "id": "wp-block-serialization-default-parser-js",
+          "url": "/wp-includes/js/dist/block-serialization-default-parser.min.js"
+        },
+        {
+          "id": "wp-autop-js",
+          "url": "/wp-includes/js/dist/autop.min.js"
+        },
+        {
+          "id": "wp-shortcode-js",
+          "url": "/wp-includes/js/dist/shortcode.min.js"
+        },
+        {
+          "id": "wp-blocks-js",
+          "url": "/wp-includes/js/dist/blocks.min.js"
+        },
+        {
+          "id": "wp-notices-js",
+          "url": "/wp-includes/js/dist/notices.min.js"
+        },
+        {
+          "id": "wp-preferences-persistence-js",
+          "url": "/wp-includes/js/dist/preferences-persistence.min.js"
+        },
+        {
+          "id": "wp-preferences-js",
+          "url": "/wp-includes/js/dist/preferences.min.js"
+        },
+        {
+          "id": "wp-style-engine-js",
+          "url": "/wp-includes/js/dist/style-engine.min.js"
+        },
+        {
+          "id": "wp-theme-js",
+          "url": "/wp-includes/js/dist/theme.min.js"
+        },
+        {
+          "id": "wp-token-list-js",
+          "url": "/wp-includes/js/dist/token-list.min.js"
+        },
+        {
+          "id": "wp-upload-media-js",
+          "url": "/wp-includes/js/dist/upload-media.min.js"
+        },
+        {
+          "id": "wp-block-editor-js",
+          "url": "/wp-includes/js/dist/block-editor.min.js"
+        },
+        {
+          "id": "wp-core-data-js",
+          "url": "/wp-includes/js/dist/core-data.min.js"
+        },
+        {
+          "id": "wp-router-js",
+          "url": "/wp-includes/js/dist/router.min.js"
+        },
+        {
+          "id": "wp-core-commands-js",
+          "url": "/wp-includes/js/dist/core-commands.min.js"
+        },
+        {
+          "id": "acf-escaped-html-notice-js",
+          "url": "/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/acf-escaped-html-notice.min.js"
+        },
+        {
+          "id": "happyfiles-js",
+          "url": "/wp-content/plugins/happyfiles-pro/assets/js/happyfiles.min.js"
+        },
+        {
+          "id": "post-duplicator-js",
+          "url": "/wp-content/plugins/post-duplicator/assets/build/postDuplicator.js"
+        },
+        {
+          "id": "seopress-pro-ai-js",
+          "url": "/wp-content/plugins/wp-seopress-pro/assets/js/seopress-pro-ai.min.js"
+        },
+        {
+          "id": "seopress-command-palette-js",
+          "url": "/wp-content/plugins/wp-seopress/public/admin/command-palette.js"
+        },
+        {
+          "id": "seopress-metabox-js",
+          "url": "/wp-content/plugins/wp-seopress/public/metaboxe.js"
+        },
+        {
+          "id": "seopress-pro-command-palette-js",
+          "url": "/wp-content/plugins/wp-seopress-pro/public/admin/command-palette/index.js"
+        },
+        {
+          "id": "seopress-redirection-conflict-js",
+          "url": "/wp-content/plugins/wp-seopress-pro/assets/js/seopress-redirection-conflict.js"
+        },
+        {
+          "id": "mrn-base-stack-editor-startup-js",
+          "url": "/wp-content/themes/mrn-base-stack/js/admin-editor-startup.js"
+        },
+        {
+          "id": "editor-js",
+          "url": "/wp-admin/js/editor.min.js"
+        },
+        {
+          "id": "quicktags-js",
+          "url": "/wp-includes/js/quicktags.min.js"
+        },
+        {
+          "id": "wplink-js",
+          "url": "/wp-includes/js/wplink.min.js"
+        },
+        {
+          "id": "media-upload-js",
+          "url": "/wp-admin/js/media-upload.min.js"
+        },
+        {
+          "id": "seopress-classic-js",
+          "url": "/wp-content/plugins/wp-seopress/assets/js/seopress-classic-editor.min.js"
+        },
+        {
+          "id": "mrn-base-stack-content-builder-admin-js",
+          "url": "/wp-content/themes/mrn-base-stack/js/content-builder-admin.js"
+        },
+        {
+          "id": "mrn-base-stack-row-flex-layout-admin-js",
+          "url": "/wp-content/themes/mrn-base-stack/js/admin-row-flex-layout.js"
+        },
+        {
+          "id": "cpto-js",
+          "url": "/wp-content/plugins/post-types-order/js/cpt.js"
+        },
+        {
+          "id": "wpforms-edit-post-education-js",
+          "url": "/wp-content/plugins/wpforms/assets/js/admin/education/edit-post.es5.min.js"
+        },
+        {
+          "id": "mrn-acf-focal-point-js",
+          "url": "/wp-content/plugins/mrn-acf-focal-point/assets/admin.js"
+        },
+        {
+          "id": "mrn-config-helper-acf-layout-picker-js",
+          "url": "/wp-content/plugins/mrn-config-helper/assets/js/acf-layout-picker.js"
+        },
+        {
+          "id": "mrn-layout-import-export-admin-js",
+          "url": "/wp-content/plugins/mrn-layout-import-export/assets/js/layout-import-export.js"
+        },
+        {
+          "id": "mrn-base-stack-admin-repeater-controls-js",
+          "url": "/wp-content/themes/mrn-base-stack/js/admin-repeater-controls.js"
+        },
+        {
+          "id": "mrn-shared-icon-chooser-js",
+          "url": "/wp-content/mu-plugins/mrn-shared-assets/assets/icon-chooser/admin-icon-chooser.js"
+        },
+        {
+          "id": "mrn-base-stack-admin-icon-choosers-js",
+          "url": "/wp-content/themes/mrn-base-stack/js/admin-icon-choosers.js"
+        },
+        {
+          "id": "mrn-admin-appearance-js",
+          "url": "/wp-content/mu-plugins/mrn-admin-ui-css/appearance.js"
+        },
+        {
+          "id": "mrn-base-stack-lazy-layouts-js",
+          "url": "/wp-content/themes/mrn-base-stack/js/admin-lazy-layouts.js"
+        },
+        {
+          "id": "mrn-section-navigator-js",
+          "url": "/wp-content/mu-plugins/mrn-editor-lockdown/assets/section-navigator.js"
+        },
+        {
+          "id": "mrn-universal-sticky-bar-js",
+          "url": "/wp-content/plugins/mrn-universal-sticky-bar/assets/universal-sticky-bar.js"
+        },
+        {
+          "id": "mrn-editor-palette-loader-js",
+          "url": "/wp-content/mu-plugins/mrn-editor-lockdown/assets/command-palette-loader.js"
+        },
+        {
+          "id": "wpforms-editor-js",
+          "url": "/wp-content/plugins/wpforms/assets/js/admin/admin-editor.min.js"
+        },
+        {
+          "id": "wp-embed-js",
+          "url": "/wp-includes/js/wp-embed.min.js"
+        },
+        {
+          "id": "wp-tinymce-js",
+          "url": "/wp-includes/js/tinymce/wp-tinymce.js"
+        }
+      ]
+    }
+  },
+  {
+    "name": "real19",
+    "self": [
+      [
+        "(native):(idle):-1",
+        6893.455000000018
+      ],
+      [
+        "(native):(program):-1",
+        251.98699999999997
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:I:1",
+        83.983
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:(anonymous):1",
+        69.05599999999998
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:ce.expr.pseudos.visible:1",
+        63.232
+      ],
+      [
+        "(native):querySelectorAll:-1",
+        53.07500000000002
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:d:1",
+        44.85200000000001
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:Ge:1",
+        29.886999999999993
+      ],
+      [
+        "(native):(garbage collector):-1",
+        18.726000000000003
+      ],
+      [
+        "/wp-includes/js/wp-emoji-release.min.js:d:2",
+        18.383
+      ],
+      [
+        "/wp-content/mu-plugins/mrn-editor-lockdown/assets/section-navigator.js:collectNotices:455",
+        16.029999999999998
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:e:1",
+        15.076000000000002
+      ],
+      [
+        "/wp-includes/js/dist/components.min.js:(anonymous):1",
+        14.977999999999998
+      ],
+      [
+        "/wp-includes/js/tinymce/wp-tinymce.js:(anonymous):2",
+        14.911999999999999
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:ce.extend.ce.fn.extend:1",
+        13.638000000000005
+      ],
+      [
+        "(native):appendChild:-1",
+        13.288000000000002
+      ],
+      [
+        "/cdn-cgi/challenge-platform/scripts/jsd/main.js:nt._d96933dba5be093ad932a5b8:0",
+        12.414
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:r:1",
+        9.965
+      ],
+      [
+        "/wp-includes/js/dist/components.min.js:V9:1",
+        9.949
+      ],
+      [
+        "/wp-content/mu-plugins/mrn-editor-lockdown/assets/section-navigator.js:(anonymous):459",
+        9.93
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:x:1",
+        8.434000000000001
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:data:1",
+        8.309000000000001
+      ],
+      [
+        "/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/acf-input.min.js:(anonymous):0",
+        8.093
+      ],
+      [
+        "/wp-content/mu-plugins/mrn-editor-lockdown/assets/section-navigator.js:reconcile:384",
+        7.562000000000001
+      ],
+      [
+        "/wp-content/mu-plugins/mrn-editor-lockdown/assets/section-navigator.js:updateChromeOffset:435",
+        7.271
+      ],
+      [
+        "/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/acf.min.js:i.doAction:0",
+        6.9879999999999995
+      ],
+      [
+        "/wp-includes/js/wp-emoji-release.min.js:callback:2",
+        6.3870000000000005
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:add:1",
+        6.17
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:Ae:1",
+        5.761
+      ],
+      [
+        "/wp-content/mu-plugins/mrn-admin-ui-css/appearance.js:(anonymous):1",
+        5.014
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:trigger:1",
+        4.981
+      ],
+      [
+        "(native):querySelector:-1",
+        4.957
+      ],
+      [
+        "/wp-includes/js/jquery/jquery-migrate.min.js:(anonymous):1",
+        4.431
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:re:1",
+        4.306
+      ],
+      [
+        "(native):addEventListener:-1",
+        4.281
+      ]
+    ],
+    "callOwners": [
+      [
+        "browser/core",
+        7490.381000000015
+      ],
+      [
+        "/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/acf-input.min.js",
+        173.6749999999999
+      ],
+      [
+        "/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/acf.min.js",
+        90.225
+      ],
+      [
+        "/wp-content/mu-plugins/mrn-editor-lockdown/assets/section-navigator.js",
+        48.765
+      ],
+      [
+        "/wp-content/themes/mrn-base-stack/js/admin-row-flex-layout.js",
+        35.683
+      ],
+      [
+        "Cloudflare",
+        34.485
+      ],
+      [
+        "/wp-content/plugins/admin-menu-editor-pro/extras/third-level-menus.js",
+        21.336
+      ],
+      [
+        "/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/pro/acf-pro-input.min.js",
+        20.384
+      ],
+      [
+        "/wp-content/themes/mrn-base-stack/js/content-builder-admin.js",
+        17.223999999999997
+      ],
+      [
+        "/wp-content/plugins/happyfiles-pro/assets/js/happyfiles.min.js",
+        11.293
+      ],
+      [
+        "/wp-content/plugins/mrn-universal-sticky-bar/assets/universal-sticky-bar.js",
+        11.289000000000001
+      ],
+      [
+        "/wp-content/plugins/wp-seopress/public/metaboxe.js",
+        8.242
+      ],
+      [
+        "/wp-content/plugins/wp-seopress-pro/assets/js/seopress-pro-ai.min.js",
+        7.5390000000000015
+      ],
+      [
+        "/wp-content/plugins/wp-seopress/public/admin/settings/tab-title-description.3051416e1dd3a085d741.js",
+        7.234999999999999
+      ],
+      [
+        "/wp-content/mu-plugins/mrn-admin-ui-css/appearance.js",
+        6.269
+      ],
+      [
+        "/wp-content/plugins/tinymce-advanced/mce/table/plugin.min.js",
+        4.369
+      ],
+      [
+        "/wp-content/plugins/mrn-acf-focal-point/assets/admin.js",
+        3.637
+      ],
+      [
+        "/wp-content/themes/mrn-base-stack/js/admin-icon-choosers.js",
+        3.056
+      ],
+      [
+        "/wp-content/themes/mrn-base-stack/js/admin-repeater-controls.js",
+        2.545
+      ],
+      [
+        "/wp-content/plugins/tinymce-advanced/mce/visualchars/plugin.min.js",
+        2.5
+      ]
+    ],
+    "metrics": {
+      "cpuMs": 1116.611,
+      "scriptMs": 793.3280000000001,
+      "layoutMs": 32.458,
+      "styleMs": 73.607,
+      "heapMiB": 23.743911743164062
+    },
+    "state": {
+      "nodes": 33611,
+      "sections": 20,
+      "editors": 1,
+      "scripts": [
+        {
+          "id": "jquery-core-js",
+          "url": "/wp-includes/js/jquery/jquery.min.js"
+        },
+        {
+          "id": "jquery-migrate-js",
+          "url": "/wp-includes/js/jquery/jquery-migrate.min.js"
+        },
+        {
+          "id": "hoverIntent-js",
+          "url": "/wp-includes/js/hoverIntent.min.js"
+        },
+        {
+          "id": "utils-js",
+          "url": "/wp-includes/js/utils.min.js"
+        },
+        {
+          "id": "wp-dom-ready-js",
+          "url": "/wp-includes/js/dist/dom-ready.min.js"
+        },
+        {
+          "id": "wp-hooks-js",
+          "url": "/wp-includes/js/dist/hooks.min.js"
+        },
+        {
+          "id": "wp-i18n-js",
+          "url": "/wp-includes/js/dist/i18n.min.js"
+        },
+        {
+          "id": "wp-a11y-js",
+          "url": "/wp-includes/js/dist/a11y.min.js"
+        },
+        {
+          "id": "ame-helper-script-js",
+          "url": "/wp-content/plugins/admin-menu-editor-pro/js/admin-helpers.js"
+        },
+        {
+          "id": "jquery-ui-core-js",
+          "url": "/wp-includes/js/jquery/ui/core.min.js"
+        },
+        {
+          "id": "jquery-ui-mouse-js",
+          "url": "/wp-includes/js/jquery/ui/mouse.min.js"
+        },
+        {
+          "id": "jquery-ui-sortable-js",
+          "url": "/wp-includes/js/jquery/ui/sortable.min.js"
+        },
+        {
+          "id": "moxiejs-js",
+          "url": "/wp-includes/js/plupload/moxie.min.js"
+        },
+        {
+          "id": "plupload-js",
+          "url": "/wp-includes/js/plupload/plupload.min.js"
+        },
+        {
+          "id": "ame-menu-fix-js",
+          "url": "/wp-content/plugins/admin-menu-editor-pro/js/menu-highlight-fix.js"
+        },
+        {
+          "id": "ame-jquery-cookie-js",
+          "url": "/wp-content/plugins/admin-menu-editor-pro/js/jquery.biscuit.js"
+        },
+        {
+          "id": "ame-pro-admin-helpers-js",
+          "url": "/wp-content/plugins/admin-menu-editor-pro/extras/pro-admin-helpers.js"
+        },
+        {
+          "id": "jquery-ui-resizable-js",
+          "url": "/wp-includes/js/jquery/ui/resizable.min.js"
+        },
+        {
+          "id": "acf-js",
+          "url": "/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/acf.min.js"
+        },
+        {
+          "id": "acf-input-js",
+          "url": "/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/acf-input.min.js"
+        },
+        {
+          "id": "acf-pro-input-js",
+          "url": "/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/pro/acf-pro-input.min.js"
+        },
+        {
+          "id": "ame-third-level-menus-js",
+          "url": "/wp-content/plugins/admin-menu-editor-pro/extras/third-level-menus.js"
+        },
+        {
+          "id": "acf-pro-ui-options-page-js",
+          "url": "/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/pro/acf-pro-ui-options-page.min.js"
+        },
+        {
+          "id": "select2-js",
+          "url": "/wp-content/plugins/advanced-custom-fields-pro/assets/inc/select2/4/select2.full.min.js"
+        },
+        {
+          "id": "jquery-ui-datepicker-js",
+          "url": "/wp-includes/js/jquery/ui/datepicker.min.js"
+        },
+        {
+          "id": "acf-timepicker-js",
+          "url": "/wp-content/plugins/advanced-custom-fields-pro/assets/inc/timepicker/jquery-ui-timepicker-addon.min.js"
+        },
+        {
+          "id": "jquery-ui-draggable-js",
+          "url": "/wp-includes/js/jquery/ui/draggable.min.js"
+        },
+        {
+          "id": "jquery-ui-slider-js",
+          "url": "/wp-includes/js/jquery/ui/slider.min.js"
+        },
+        {
+          "id": "jquery-touch-punch-js",
+          "url": "/wp-includes/js/jquery/jquery.ui.touch-punch.js"
+        },
+        {
+          "id": "iris-js",
+          "url": "/wp-admin/js/iris.min.js"
+        },
+        {
+          "id": "wp-color-picker-js",
+          "url": "/wp-admin/js/color-picker.min.js"
+        },
+        {
+          "id": "acf-color-picker-alpha-js",
+          "url": "/wp-content/plugins/advanced-custom-fields-pro/assets/inc/color-picker-alpha/wp-color-picker-alpha.js"
+        },
+        {
+          "id": "",
+          "url": "/wp-includes/js/wp-emoji-release.min.js"
+        },
+        {
+          "id": "common-js",
+          "url": "/wp-admin/js/common.min.js"
+        },
+        {
+          "id": "hoverintent-js-js",
+          "url": "/wp-includes/js/hoverintent-js.min.js"
+        },
+        {
+          "id": "admin-bar-js",
+          "url": "/wp-includes/js/admin-bar.min.js"
+        },
+        {
+          "id": "heartbeat-js",
+          "url": "/wp-includes/js/heartbeat.min.js"
+        },
+        {
+          "id": "autosave-js",
+          "url": "/wp-includes/js/autosave.min.js"
+        },
+        {
+          "id": "suggest-js",
+          "url": "/wp-includes/js/jquery/suggest.min.js"
+        },
+        {
+          "id": "wp-ajax-response-js",
+          "url": "/wp-includes/js/wp-ajax-response.min.js"
+        },
+        {
+          "id": "jquery-color-js",
+          "url": "/wp-includes/js/jquery/jquery.color.min.js"
+        },
+        {
+          "id": "wp-lists-js",
+          "url": "/wp-includes/js/wp-lists.min.js"
+        },
+        {
+          "id": "postbox-js",
+          "url": "/wp-admin/js/postbox.min.js"
+        },
+        {
+          "id": "jquery-ui-menu-js",
+          "url": "/wp-includes/js/jquery/ui/menu.min.js"
+        },
+        {
+          "id": "jquery-ui-autocomplete-js",
+          "url": "/wp-includes/js/jquery/ui/autocomplete.min.js"
+        },
+        {
+          "id": "tags-suggest-js",
+          "url": "/wp-admin/js/tags-suggest.min.js"
+        },
+        {
+          "id": "tags-box-js",
+          "url": "/wp-admin/js/tags-box.min.js"
+        },
+        {
+          "id": "underscore-js",
+          "url": "/wp-includes/js/underscore.min.js"
+        },
+        {
+          "id": "word-count-js",
+          "url": "/wp-admin/js/word-count.min.js"
+        },
+        {
+          "id": "wp-sanitize-js",
+          "url": "/wp-includes/js/wp-sanitize.min.js"
+        },
+        {
+          "id": "clipboard-js",
+          "url": "/wp-includes/js/clipboard.min.js"
+        },
+        {
+          "id": "post-js",
+          "url": "/wp-admin/js/post.min.js"
+        },
+        {
+          "id": "thickbox-js",
+          "url": "/wp-includes/js/thickbox/thickbox.js"
+        },
+        {
+          "id": "shortcode-js",
+          "url": "/wp-includes/js/shortcode.min.js"
+        },
+        {
+          "id": "backbone-js",
+          "url": "/wp-includes/js/backbone.min.js"
+        },
+        {
+          "id": "wp-util-js",
+          "url": "/wp-includes/js/wp-util.min.js"
+        },
+        {
+          "id": "wp-backbone-js",
+          "url": "/wp-includes/js/wp-backbone.min.js"
+        },
+        {
+          "id": "media-models-js",
+          "url": "/wp-includes/js/media-models.min.js"
+        },
+        {
+          "id": "wp-plupload-js",
+          "url": "/wp-includes/js/plupload/wp-plupload.min.js"
+        },
+        {
+          "id": "mediaelement-core-js",
+          "url": "/wp-includes/js/mediaelement/mediaelement-and-player.min.js"
+        },
+        {
+          "id": "mediaelement-migrate-js",
+          "url": "/wp-includes/js/mediaelement/mediaelement-migrate.min.js"
+        },
+        {
+          "id": "wp-mediaelement-js",
+          "url": "/wp-includes/js/mediaelement/wp-mediaelement.min.js"
+        },
+        {
+          "id": "wp-api-request-js",
+          "url": "/wp-includes/js/api-request.min.js"
+        },
+        {
+          "id": "media-views-js",
+          "url": "/wp-includes/js/media-views.min.js"
+        },
+        {
+          "id": "media-editor-js",
+          "url": "/wp-includes/js/media-editor.min.js"
+        },
+        {
+          "id": "media-audiovideo-js",
+          "url": "/wp-includes/js/media-audiovideo.min.js"
+        },
+        {
+          "id": "mce-view-js",
+          "url": "/wp-includes/js/mce-view.min.js"
+        },
+        {
+          "id": "imgareaselect-js",
+          "url": "/wp-includes/js/imgareaselect/jquery.imgareaselect.min.js"
+        },
+        {
+          "id": "image-edit-js",
+          "url": "/wp-admin/js/image-edit.min.js"
+        },
+        {
+          "id": "svg-painter-js",
+          "url": "/wp-admin/js/svg-painter.js"
+        },
+        {
+          "id": "wp-auth-check-js",
+          "url": "/wp-includes/js/wp-auth-check.min.js"
+        },
+        {
+          "id": "react-js",
+          "url": "/wp-includes/js/dist/vendor/react.min.js"
+        },
+        {
+          "id": "react-dom-js",
+          "url": "/wp-includes/js/dist/vendor/react-dom.min.js"
+        },
+        {
+          "id": "react-jsx-runtime-js",
+          "url": "/wp-includes/js/dist/vendor/react-jsx-runtime.min.js"
+        },
+        {
+          "id": "wp-deprecated-js",
+          "url": "/wp-includes/js/dist/deprecated.min.js"
+        },
+        {
+          "id": "wp-dom-js",
+          "url": "/wp-includes/js/dist/dom.min.js"
+        },
+        {
+          "id": "wp-escape-html-js",
+          "url": "/wp-includes/js/dist/escape-html.min.js"
+        },
+        {
+          "id": "wp-element-js",
+          "url": "/wp-includes/js/dist/element.min.js"
+        },
+        {
+          "id": "wp-is-shallow-equal-js",
+          "url": "/wp-includes/js/dist/is-shallow-equal.min.js"
+        },
+        {
+          "id": "wp-keycodes-js",
+          "url": "/wp-includes/js/dist/keycodes.min.js"
+        },
+        {
+          "id": "wp-priority-queue-js",
+          "url": "/wp-includes/js/dist/priority-queue.min.js"
+        },
+        {
+          "id": "wp-undo-manager-js",
+          "url": "/wp-includes/js/dist/undo-manager.min.js"
+        },
+        {
+          "id": "wp-compose-js",
+          "url": "/wp-includes/js/dist/compose.min.js"
+        },
+        {
+          "id": "moment-js",
+          "url": "/wp-includes/js/dist/vendor/moment.min.js"
+        },
+        {
+          "id": "wp-date-js",
+          "url": "/wp-includes/js/dist/date.min.js"
+        },
+        {
+          "id": "wp-html-entities-js",
+          "url": "/wp-includes/js/dist/html-entities.min.js"
+        },
+        {
+          "id": "wp-primitives-js",
+          "url": "/wp-includes/js/dist/primitives.min.js"
+        },
+        {
+          "id": "wp-private-apis-js",
+          "url": "/wp-includes/js/dist/private-apis.min.js"
+        },
+        {
+          "id": "wp-redux-routine-js",
+          "url": "/wp-includes/js/dist/redux-routine.min.js"
+        },
+        {
+          "id": "wp-data-js",
+          "url": "/wp-includes/js/dist/data.min.js"
+        },
+        {
+          "id": "wp-rich-text-js",
+          "url": "/wp-includes/js/dist/rich-text.min.js"
+        },
+        {
+          "id": "wp-warning-js",
+          "url": "/wp-includes/js/dist/warning.min.js"
+        },
+        {
+          "id": "wp-components-js",
+          "url": "/wp-includes/js/dist/components.min.js"
+        },
+        {
+          "id": "wp-keyboard-shortcuts-js",
+          "url": "/wp-includes/js/dist/keyboard-shortcuts.min.js"
+        },
+        {
+          "id": "wp-commands-js",
+          "url": "/wp-includes/js/dist/commands.min.js"
+        },
+        {
+          "id": "wp-url-js",
+          "url": "/wp-includes/js/dist/url.min.js"
+        },
+        {
+          "id": "wp-api-fetch-js",
+          "url": "/wp-includes/js/dist/api-fetch.min.js"
+        },
+        {
+          "id": "wp-blob-js",
+          "url": "/wp-includes/js/dist/blob.min.js"
+        },
+        {
+          "id": "wp-block-serialization-default-parser-js",
+          "url": "/wp-includes/js/dist/block-serialization-default-parser.min.js"
+        },
+        {
+          "id": "wp-autop-js",
+          "url": "/wp-includes/js/dist/autop.min.js"
+        },
+        {
+          "id": "wp-shortcode-js",
+          "url": "/wp-includes/js/dist/shortcode.min.js"
+        },
+        {
+          "id": "wp-blocks-js",
+          "url": "/wp-includes/js/dist/blocks.min.js"
+        },
+        {
+          "id": "wp-notices-js",
+          "url": "/wp-includes/js/dist/notices.min.js"
+        },
+        {
+          "id": "wp-preferences-persistence-js",
+          "url": "/wp-includes/js/dist/preferences-persistence.min.js"
+        },
+        {
+          "id": "wp-preferences-js",
+          "url": "/wp-includes/js/dist/preferences.min.js"
+        },
+        {
+          "id": "wp-style-engine-js",
+          "url": "/wp-includes/js/dist/style-engine.min.js"
+        },
+        {
+          "id": "wp-theme-js",
+          "url": "/wp-includes/js/dist/theme.min.js"
+        },
+        {
+          "id": "wp-token-list-js",
+          "url": "/wp-includes/js/dist/token-list.min.js"
+        },
+        {
+          "id": "wp-upload-media-js",
+          "url": "/wp-includes/js/dist/upload-media.min.js"
+        },
+        {
+          "id": "wp-block-editor-js",
+          "url": "/wp-includes/js/dist/block-editor.min.js"
+        },
+        {
+          "id": "wp-core-data-js",
+          "url": "/wp-includes/js/dist/core-data.min.js"
+        },
+        {
+          "id": "wp-router-js",
+          "url": "/wp-includes/js/dist/router.min.js"
+        },
+        {
+          "id": "wp-core-commands-js",
+          "url": "/wp-includes/js/dist/core-commands.min.js"
+        },
+        {
+          "id": "acf-escaped-html-notice-js",
+          "url": "/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/acf-escaped-html-notice.min.js"
+        },
+        {
+          "id": "happyfiles-js",
+          "url": "/wp-content/plugins/happyfiles-pro/assets/js/happyfiles.min.js"
+        },
+        {
+          "id": "post-duplicator-js",
+          "url": "/wp-content/plugins/post-duplicator/assets/build/postDuplicator.js"
+        },
+        {
+          "id": "seopress-pro-ai-js",
+          "url": "/wp-content/plugins/wp-seopress-pro/assets/js/seopress-pro-ai.min.js"
+        },
+        {
+          "id": "seopress-command-palette-js",
+          "url": "/wp-content/plugins/wp-seopress/public/admin/command-palette.js"
+        },
+        {
+          "id": "seopress-metabox-js",
+          "url": "/wp-content/plugins/wp-seopress/public/metaboxe.js"
+        },
+        {
+          "id": "seopress-pro-command-palette-js",
+          "url": "/wp-content/plugins/wp-seopress-pro/public/admin/command-palette/index.js"
+        },
+        {
+          "id": "seopress-redirection-conflict-js",
+          "url": "/wp-content/plugins/wp-seopress-pro/assets/js/seopress-redirection-conflict.js"
+        },
+        {
+          "id": "mrn-base-stack-editor-startup-js",
+          "url": "/wp-content/themes/mrn-base-stack/js/admin-editor-startup.js"
+        },
+        {
+          "id": "editor-js",
+          "url": "/wp-admin/js/editor.min.js"
+        },
+        {
+          "id": "quicktags-js",
+          "url": "/wp-includes/js/quicktags.min.js"
+        },
+        {
+          "id": "wplink-js",
+          "url": "/wp-includes/js/wplink.min.js"
+        },
+        {
+          "id": "media-upload-js",
+          "url": "/wp-admin/js/media-upload.min.js"
+        },
+        {
+          "id": "seopress-classic-js",
+          "url": "/wp-content/plugins/wp-seopress/assets/js/seopress-classic-editor.min.js"
+        },
+        {
+          "id": "mrn-base-stack-content-builder-admin-js",
+          "url": "/wp-content/themes/mrn-base-stack/js/content-builder-admin.js"
+        },
+        {
+          "id": "mrn-base-stack-row-flex-layout-admin-js",
+          "url": "/wp-content/themes/mrn-base-stack/js/admin-row-flex-layout.js"
+        },
+        {
+          "id": "cpto-js",
+          "url": "/wp-content/plugins/post-types-order/js/cpt.js"
+        },
+        {
+          "id": "wpforms-edit-post-education-js",
+          "url": "/wp-content/plugins/wpforms/assets/js/admin/education/edit-post.es5.min.js"
+        },
+        {
+          "id": "mrn-acf-focal-point-js",
+          "url": "/wp-content/plugins/mrn-acf-focal-point/assets/admin.js"
+        },
+        {
+          "id": "mrn-config-helper-acf-layout-picker-js",
+          "url": "/wp-content/plugins/mrn-config-helper/assets/js/acf-layout-picker.js"
+        },
+        {
+          "id": "mrn-layout-import-export-admin-js",
+          "url": "/wp-content/plugins/mrn-layout-import-export/assets/js/layout-import-export.js"
+        },
+        {
+          "id": "mrn-base-stack-admin-repeater-controls-js",
+          "url": "/wp-content/themes/mrn-base-stack/js/admin-repeater-controls.js"
+        },
+        {
+          "id": "mrn-shared-icon-chooser-js",
+          "url": "/wp-content/mu-plugins/mrn-shared-assets/assets/icon-chooser/admin-icon-chooser.js"
+        },
+        {
+          "id": "mrn-base-stack-admin-icon-choosers-js",
+          "url": "/wp-content/themes/mrn-base-stack/js/admin-icon-choosers.js"
+        },
+        {
+          "id": "mrn-admin-appearance-js",
+          "url": "/wp-content/mu-plugins/mrn-admin-ui-css/appearance.js"
+        },
+        {
+          "id": "mrn-base-stack-lazy-layouts-js",
+          "url": "/wp-content/themes/mrn-base-stack/js/admin-lazy-layouts.js"
+        },
+        {
+          "id": "mrn-section-navigator-js",
+          "url": "/wp-content/mu-plugins/mrn-editor-lockdown/assets/section-navigator.js"
+        },
+        {
+          "id": "mrn-universal-sticky-bar-js",
+          "url": "/wp-content/plugins/mrn-universal-sticky-bar/assets/universal-sticky-bar.js"
+        },
+        {
+          "id": "mrn-editor-palette-loader-js",
+          "url": "/wp-content/mu-plugins/mrn-editor-lockdown/assets/command-palette-loader.js"
+        },
+        {
+          "id": "wpforms-editor-js",
+          "url": "/wp-content/plugins/wpforms/assets/js/admin/admin-editor.min.js"
+        },
+        {
+          "id": "wp-embed-js",
+          "url": "/wp-includes/js/wp-embed.min.js"
+        },
+        {
+          "id": "wp-tinymce-js",
+          "url": "/wp-includes/js/tinymce/wp-tinymce.js"
+        }
+      ]
+    }
+  },
+  {
+    "name": "stress32",
+    "self": [
+      [
+        "(native):(idle):-1",
+        5897.868000000021
+      ],
+      [
+        "(native):(program):-1",
+        398.3699999999998
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:I:1",
+        189.36099999999996
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:ce.expr.pseudos.visible:1",
+        152.16100000000003
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:d:1",
+        149.37099999999998
+      ],
+      [
+        "(native):querySelectorAll:-1",
+        124.73599999999998
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:(anonymous):1",
+        105.788
+      ],
+      [
+        "(native):(garbage collector):-1",
+        60.760999999999996
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:Ge:1",
+        48.165
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:ce.extend.ce.fn.extend:1",
+        36.994
+      ],
+      [
+        "/wp-content/mu-plugins/mrn-editor-lockdown/assets/section-navigator.js:collectNotices:455",
+        31.948
+      ],
+      [
+        "/wp-includes/js/wp-emoji-release.min.js:d:2",
+        28.480000000000004
+      ],
+      [
+        "/wp-includes/js/tinymce/wp-tinymce.js:(anonymous):2",
+        21.703
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:r:1",
+        18.608999999999998
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:e:1",
+        16.344
+      ],
+      [
+        "/wp-includes/js/dist/components.min.js:(anonymous):1",
+        16.309
+      ],
+      [
+        "/wp-content/mu-plugins/mrn-editor-lockdown/assets/section-navigator.js:(anonymous):459",
+        16.004999999999995
+      ],
+      [
+        "(native):appendChild:-1",
+        15.886999999999999
+      ],
+      [
+        "/cdn-cgi/challenge-platform/scripts/jsd/main.js:UX:0",
+        15.142999999999999
+      ],
+      [
+        "/wp-includes/js/jquery/jquery-migrate.min.js:(anonymous):1",
+        14.919000000000002
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:Ae:1",
+        14.011000000000001
+      ],
+      [
+        "/wp-includes/js/tinymce/wp-tinymce.js:css:2",
+        11.983
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:trigger:1",
+        11.655999999999999
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:add:1",
+        11.208
+      ],
+      [
+        "(native):querySelector:-1",
+        11.105999999999998
+      ],
+      [
+        "/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/acf.min.js:(anonymous):0",
+        10.431
+      ],
+      [
+        "/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/acf-input.min.js:(anonymous):0",
+        10.282
+      ],
+      [
+        "/wp-content/mu-plugins/mrn-editor-lockdown/assets/section-navigator.js:updateChromeOffset:435",
+        10.240999999999998
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:data:1",
+        9.974
+      ],
+      [
+        "/wp-content/mu-plugins/mrn-editor-lockdown/assets/section-navigator.js:reconcile:384",
+        9.843
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:V:1",
+        9.261000000000001
+      ],
+      [
+        "/wp-includes/js/wp-emoji-release.min.js:callback:2",
+        8.795
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:re:1",
+        8.365
+      ],
+      [
+        "/wp-includes/js/jquery/jquery.min.js:F:1",
+        8.174000000000001
+      ],
+      [
+        "/cdn-cgi/challenge-platform/scripts/jsd/main.js:(anonymous):0",
+        7.659
+      ]
+    ],
+    "callOwners": [
+      [
+        "browser/core",
+        6876.172000000022
+      ],
+      [
+        "/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/acf-input.min.js",
+        390.47300000000035
+      ],
+      [
+        "/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/acf.min.js",
+        207.4729999999999
+      ],
+      [
+        "/wp-content/themes/mrn-base-stack/js/admin-row-flex-layout.js",
+        112.14600000000004
+      ],
+      [
+        "/wp-content/mu-plugins/mrn-editor-lockdown/assets/section-navigator.js",
+        83.82800000000002
+      ],
+      [
+        "Cloudflare",
+        43.06100000000001
+      ],
+      [
+        "/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/pro/acf-pro-input.min.js",
+        36.956999999999994
+      ],
+      [
+        "/wp-content/themes/mrn-base-stack/js/content-builder-admin.js",
+        32.185
+      ],
+      [
+        "/wp-content/plugins/admin-menu-editor-pro/extras/third-level-menus.js",
+        23.904000000000007
+      ],
+      [
+        "/wp-content/plugins/mrn-universal-sticky-bar/assets/universal-sticky-bar.js",
+        17.429
+      ],
+      [
+        "/wp-content/plugins/wp-seopress/public/metaboxe.js",
+        15.589999999999998
+      ],
+      [
+        "/wp-content/plugins/happyfiles-pro/assets/js/happyfiles.min.js",
+        13.675999999999998
+      ],
+      [
+        "/wp-content/plugins/wp-seopress-pro/assets/js/seopress-pro-ai.min.js",
+        12.714
+      ],
+      [
+        "/wp-content/mu-plugins/mrn-admin-ui-css/appearance.js",
+        8.523
+      ],
+      [
+        "/wp-content/themes/mrn-base-stack/js/admin-icon-choosers.js",
+        6.115
+      ],
+      [
+        "/wp-content/themes/mrn-base-stack/js/admin-repeater-controls.js",
+        5.0729999999999995
+      ],
+      [
+        "/wp-content/plugins/wp-seopress/public/admin/settings/tab-title-description.3051416e1dd3a085d741.js",
+        3.631
+      ],
+      [
+        "/wp-content/plugins/mrn-acf-focal-point/assets/admin.js",
+        3.613
+      ],
+      [
+        "/wp-content/plugins/mrn-config-helper/assets/js/acf-layout-picker.js",
+        3.35
+      ],
+      [
+        "/wp-content/plugins/post-duplicator/assets/build/postDuplicator.js",
+        2.51
+      ]
+    ],
+    "metrics": {
+      "cpuMs": 2007.721,
+      "scriptMs": 1493.191,
+      "layoutMs": 39.07299999999999,
+      "styleMs": 107.018,
+      "heapMiB": 27.019969940185547
+    },
+    "state": {
+      "nodes": 53418,
+      "sections": 33,
+      "editors": 1,
+      "scripts": [
+        {
+          "id": "jquery-core-js",
+          "url": "/wp-includes/js/jquery/jquery.min.js"
+        },
+        {
+          "id": "jquery-migrate-js",
+          "url": "/wp-includes/js/jquery/jquery-migrate.min.js"
+        },
+        {
+          "id": "hoverIntent-js",
+          "url": "/wp-includes/js/hoverIntent.min.js"
+        },
+        {
+          "id": "utils-js",
+          "url": "/wp-includes/js/utils.min.js"
+        },
+        {
+          "id": "wp-dom-ready-js",
+          "url": "/wp-includes/js/dist/dom-ready.min.js"
+        },
+        {
+          "id": "wp-hooks-js",
+          "url": "/wp-includes/js/dist/hooks.min.js"
+        },
+        {
+          "id": "wp-i18n-js",
+          "url": "/wp-includes/js/dist/i18n.min.js"
+        },
+        {
+          "id": "wp-a11y-js",
+          "url": "/wp-includes/js/dist/a11y.min.js"
+        },
+        {
+          "id": "ame-helper-script-js",
+          "url": "/wp-content/plugins/admin-menu-editor-pro/js/admin-helpers.js"
+        },
+        {
+          "id": "jquery-ui-core-js",
+          "url": "/wp-includes/js/jquery/ui/core.min.js"
+        },
+        {
+          "id": "jquery-ui-mouse-js",
+          "url": "/wp-includes/js/jquery/ui/mouse.min.js"
+        },
+        {
+          "id": "jquery-ui-sortable-js",
+          "url": "/wp-includes/js/jquery/ui/sortable.min.js"
+        },
+        {
+          "id": "moxiejs-js",
+          "url": "/wp-includes/js/plupload/moxie.min.js"
+        },
+        {
+          "id": "plupload-js",
+          "url": "/wp-includes/js/plupload/plupload.min.js"
+        },
+        {
+          "id": "ame-menu-fix-js",
+          "url": "/wp-content/plugins/admin-menu-editor-pro/js/menu-highlight-fix.js"
+        },
+        {
+          "id": "ame-jquery-cookie-js",
+          "url": "/wp-content/plugins/admin-menu-editor-pro/js/jquery.biscuit.js"
+        },
+        {
+          "id": "ame-pro-admin-helpers-js",
+          "url": "/wp-content/plugins/admin-menu-editor-pro/extras/pro-admin-helpers.js"
+        },
+        {
+          "id": "jquery-ui-resizable-js",
+          "url": "/wp-includes/js/jquery/ui/resizable.min.js"
+        },
+        {
+          "id": "acf-js",
+          "url": "/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/acf.min.js"
+        },
+        {
+          "id": "acf-input-js",
+          "url": "/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/acf-input.min.js"
+        },
+        {
+          "id": "acf-pro-input-js",
+          "url": "/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/pro/acf-pro-input.min.js"
+        },
+        {
+          "id": "ame-third-level-menus-js",
+          "url": "/wp-content/plugins/admin-menu-editor-pro/extras/third-level-menus.js"
+        },
+        {
+          "id": "acf-pro-ui-options-page-js",
+          "url": "/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/pro/acf-pro-ui-options-page.min.js"
+        },
+        {
+          "id": "select2-js",
+          "url": "/wp-content/plugins/advanced-custom-fields-pro/assets/inc/select2/4/select2.full.min.js"
+        },
+        {
+          "id": "jquery-ui-datepicker-js",
+          "url": "/wp-includes/js/jquery/ui/datepicker.min.js"
+        },
+        {
+          "id": "acf-timepicker-js",
+          "url": "/wp-content/plugins/advanced-custom-fields-pro/assets/inc/timepicker/jquery-ui-timepicker-addon.min.js"
+        },
+        {
+          "id": "jquery-ui-draggable-js",
+          "url": "/wp-includes/js/jquery/ui/draggable.min.js"
+        },
+        {
+          "id": "jquery-ui-slider-js",
+          "url": "/wp-includes/js/jquery/ui/slider.min.js"
+        },
+        {
+          "id": "jquery-touch-punch-js",
+          "url": "/wp-includes/js/jquery/jquery.ui.touch-punch.js"
+        },
+        {
+          "id": "iris-js",
+          "url": "/wp-admin/js/iris.min.js"
+        },
+        {
+          "id": "wp-color-picker-js",
+          "url": "/wp-admin/js/color-picker.min.js"
+        },
+        {
+          "id": "acf-color-picker-alpha-js",
+          "url": "/wp-content/plugins/advanced-custom-fields-pro/assets/inc/color-picker-alpha/wp-color-picker-alpha.js"
+        },
+        {
+          "id": "",
+          "url": "/wp-includes/js/wp-emoji-release.min.js"
+        },
+        {
+          "id": "common-js",
+          "url": "/wp-admin/js/common.min.js"
+        },
+        {
+          "id": "hoverintent-js-js",
+          "url": "/wp-includes/js/hoverintent-js.min.js"
+        },
+        {
+          "id": "admin-bar-js",
+          "url": "/wp-includes/js/admin-bar.min.js"
+        },
+        {
+          "id": "heartbeat-js",
+          "url": "/wp-includes/js/heartbeat.min.js"
+        },
+        {
+          "id": "autosave-js",
+          "url": "/wp-includes/js/autosave.min.js"
+        },
+        {
+          "id": "suggest-js",
+          "url": "/wp-includes/js/jquery/suggest.min.js"
+        },
+        {
+          "id": "wp-ajax-response-js",
+          "url": "/wp-includes/js/wp-ajax-response.min.js"
+        },
+        {
+          "id": "jquery-color-js",
+          "url": "/wp-includes/js/jquery/jquery.color.min.js"
+        },
+        {
+          "id": "wp-lists-js",
+          "url": "/wp-includes/js/wp-lists.min.js"
+        },
+        {
+          "id": "postbox-js",
+          "url": "/wp-admin/js/postbox.min.js"
+        },
+        {
+          "id": "jquery-ui-menu-js",
+          "url": "/wp-includes/js/jquery/ui/menu.min.js"
+        },
+        {
+          "id": "jquery-ui-autocomplete-js",
+          "url": "/wp-includes/js/jquery/ui/autocomplete.min.js"
+        },
+        {
+          "id": "tags-suggest-js",
+          "url": "/wp-admin/js/tags-suggest.min.js"
+        },
+        {
+          "id": "tags-box-js",
+          "url": "/wp-admin/js/tags-box.min.js"
+        },
+        {
+          "id": "underscore-js",
+          "url": "/wp-includes/js/underscore.min.js"
+        },
+        {
+          "id": "word-count-js",
+          "url": "/wp-admin/js/word-count.min.js"
+        },
+        {
+          "id": "wp-sanitize-js",
+          "url": "/wp-includes/js/wp-sanitize.min.js"
+        },
+        {
+          "id": "clipboard-js",
+          "url": "/wp-includes/js/clipboard.min.js"
+        },
+        {
+          "id": "post-js",
+          "url": "/wp-admin/js/post.min.js"
+        },
+        {
+          "id": "thickbox-js",
+          "url": "/wp-includes/js/thickbox/thickbox.js"
+        },
+        {
+          "id": "shortcode-js",
+          "url": "/wp-includes/js/shortcode.min.js"
+        },
+        {
+          "id": "backbone-js",
+          "url": "/wp-includes/js/backbone.min.js"
+        },
+        {
+          "id": "wp-util-js",
+          "url": "/wp-includes/js/wp-util.min.js"
+        },
+        {
+          "id": "wp-backbone-js",
+          "url": "/wp-includes/js/wp-backbone.min.js"
+        },
+        {
+          "id": "media-models-js",
+          "url": "/wp-includes/js/media-models.min.js"
+        },
+        {
+          "id": "wp-plupload-js",
+          "url": "/wp-includes/js/plupload/wp-plupload.min.js"
+        },
+        {
+          "id": "mediaelement-core-js",
+          "url": "/wp-includes/js/mediaelement/mediaelement-and-player.min.js"
+        },
+        {
+          "id": "mediaelement-migrate-js",
+          "url": "/wp-includes/js/mediaelement/mediaelement-migrate.min.js"
+        },
+        {
+          "id": "wp-mediaelement-js",
+          "url": "/wp-includes/js/mediaelement/wp-mediaelement.min.js"
+        },
+        {
+          "id": "wp-api-request-js",
+          "url": "/wp-includes/js/api-request.min.js"
+        },
+        {
+          "id": "media-views-js",
+          "url": "/wp-includes/js/media-views.min.js"
+        },
+        {
+          "id": "media-editor-js",
+          "url": "/wp-includes/js/media-editor.min.js"
+        },
+        {
+          "id": "media-audiovideo-js",
+          "url": "/wp-includes/js/media-audiovideo.min.js"
+        },
+        {
+          "id": "mce-view-js",
+          "url": "/wp-includes/js/mce-view.min.js"
+        },
+        {
+          "id": "imgareaselect-js",
+          "url": "/wp-includes/js/imgareaselect/jquery.imgareaselect.min.js"
+        },
+        {
+          "id": "image-edit-js",
+          "url": "/wp-admin/js/image-edit.min.js"
+        },
+        {
+          "id": "svg-painter-js",
+          "url": "/wp-admin/js/svg-painter.js"
+        },
+        {
+          "id": "wp-auth-check-js",
+          "url": "/wp-includes/js/wp-auth-check.min.js"
+        },
+        {
+          "id": "react-js",
+          "url": "/wp-includes/js/dist/vendor/react.min.js"
+        },
+        {
+          "id": "react-dom-js",
+          "url": "/wp-includes/js/dist/vendor/react-dom.min.js"
+        },
+        {
+          "id": "react-jsx-runtime-js",
+          "url": "/wp-includes/js/dist/vendor/react-jsx-runtime.min.js"
+        },
+        {
+          "id": "wp-deprecated-js",
+          "url": "/wp-includes/js/dist/deprecated.min.js"
+        },
+        {
+          "id": "wp-dom-js",
+          "url": "/wp-includes/js/dist/dom.min.js"
+        },
+        {
+          "id": "wp-escape-html-js",
+          "url": "/wp-includes/js/dist/escape-html.min.js"
+        },
+        {
+          "id": "wp-element-js",
+          "url": "/wp-includes/js/dist/element.min.js"
+        },
+        {
+          "id": "wp-is-shallow-equal-js",
+          "url": "/wp-includes/js/dist/is-shallow-equal.min.js"
+        },
+        {
+          "id": "wp-keycodes-js",
+          "url": "/wp-includes/js/dist/keycodes.min.js"
+        },
+        {
+          "id": "wp-priority-queue-js",
+          "url": "/wp-includes/js/dist/priority-queue.min.js"
+        },
+        {
+          "id": "wp-undo-manager-js",
+          "url": "/wp-includes/js/dist/undo-manager.min.js"
+        },
+        {
+          "id": "wp-compose-js",
+          "url": "/wp-includes/js/dist/compose.min.js"
+        },
+        {
+          "id": "moment-js",
+          "url": "/wp-includes/js/dist/vendor/moment.min.js"
+        },
+        {
+          "id": "wp-date-js",
+          "url": "/wp-includes/js/dist/date.min.js"
+        },
+        {
+          "id": "wp-html-entities-js",
+          "url": "/wp-includes/js/dist/html-entities.min.js"
+        },
+        {
+          "id": "wp-primitives-js",
+          "url": "/wp-includes/js/dist/primitives.min.js"
+        },
+        {
+          "id": "wp-private-apis-js",
+          "url": "/wp-includes/js/dist/private-apis.min.js"
+        },
+        {
+          "id": "wp-redux-routine-js",
+          "url": "/wp-includes/js/dist/redux-routine.min.js"
+        },
+        {
+          "id": "wp-data-js",
+          "url": "/wp-includes/js/dist/data.min.js"
+        },
+        {
+          "id": "wp-rich-text-js",
+          "url": "/wp-includes/js/dist/rich-text.min.js"
+        },
+        {
+          "id": "wp-warning-js",
+          "url": "/wp-includes/js/dist/warning.min.js"
+        },
+        {
+          "id": "wp-components-js",
+          "url": "/wp-includes/js/dist/components.min.js"
+        },
+        {
+          "id": "wp-keyboard-shortcuts-js",
+          "url": "/wp-includes/js/dist/keyboard-shortcuts.min.js"
+        },
+        {
+          "id": "wp-commands-js",
+          "url": "/wp-includes/js/dist/commands.min.js"
+        },
+        {
+          "id": "wp-url-js",
+          "url": "/wp-includes/js/dist/url.min.js"
+        },
+        {
+          "id": "wp-api-fetch-js",
+          "url": "/wp-includes/js/dist/api-fetch.min.js"
+        },
+        {
+          "id": "wp-blob-js",
+          "url": "/wp-includes/js/dist/blob.min.js"
+        },
+        {
+          "id": "wp-block-serialization-default-parser-js",
+          "url": "/wp-includes/js/dist/block-serialization-default-parser.min.js"
+        },
+        {
+          "id": "wp-autop-js",
+          "url": "/wp-includes/js/dist/autop.min.js"
+        },
+        {
+          "id": "wp-shortcode-js",
+          "url": "/wp-includes/js/dist/shortcode.min.js"
+        },
+        {
+          "id": "wp-blocks-js",
+          "url": "/wp-includes/js/dist/blocks.min.js"
+        },
+        {
+          "id": "wp-notices-js",
+          "url": "/wp-includes/js/dist/notices.min.js"
+        },
+        {
+          "id": "wp-preferences-persistence-js",
+          "url": "/wp-includes/js/dist/preferences-persistence.min.js"
+        },
+        {
+          "id": "wp-preferences-js",
+          "url": "/wp-includes/js/dist/preferences.min.js"
+        },
+        {
+          "id": "wp-style-engine-js",
+          "url": "/wp-includes/js/dist/style-engine.min.js"
+        },
+        {
+          "id": "wp-theme-js",
+          "url": "/wp-includes/js/dist/theme.min.js"
+        },
+        {
+          "id": "wp-token-list-js",
+          "url": "/wp-includes/js/dist/token-list.min.js"
+        },
+        {
+          "id": "wp-upload-media-js",
+          "url": "/wp-includes/js/dist/upload-media.min.js"
+        },
+        {
+          "id": "wp-block-editor-js",
+          "url": "/wp-includes/js/dist/block-editor.min.js"
+        },
+        {
+          "id": "wp-core-data-js",
+          "url": "/wp-includes/js/dist/core-data.min.js"
+        },
+        {
+          "id": "wp-router-js",
+          "url": "/wp-includes/js/dist/router.min.js"
+        },
+        {
+          "id": "wp-core-commands-js",
+          "url": "/wp-includes/js/dist/core-commands.min.js"
+        },
+        {
+          "id": "acf-escaped-html-notice-js",
+          "url": "/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/acf-escaped-html-notice.min.js"
+        },
+        {
+          "id": "happyfiles-js",
+          "url": "/wp-content/plugins/happyfiles-pro/assets/js/happyfiles.min.js"
+        },
+        {
+          "id": "post-duplicator-js",
+          "url": "/wp-content/plugins/post-duplicator/assets/build/postDuplicator.js"
+        },
+        {
+          "id": "seopress-pro-ai-js",
+          "url": "/wp-content/plugins/wp-seopress-pro/assets/js/seopress-pro-ai.min.js"
+        },
+        {
+          "id": "seopress-command-palette-js",
+          "url": "/wp-content/plugins/wp-seopress/public/admin/command-palette.js"
+        },
+        {
+          "id": "seopress-metabox-js",
+          "url": "/wp-content/plugins/wp-seopress/public/metaboxe.js"
+        },
+        {
+          "id": "seopress-pro-command-palette-js",
+          "url": "/wp-content/plugins/wp-seopress-pro/public/admin/command-palette/index.js"
+        },
+        {
+          "id": "seopress-redirection-conflict-js",
+          "url": "/wp-content/plugins/wp-seopress-pro/assets/js/seopress-redirection-conflict.js"
+        },
+        {
+          "id": "mrn-base-stack-editor-startup-js",
+          "url": "/wp-content/themes/mrn-base-stack/js/admin-editor-startup.js"
+        },
+        {
+          "id": "editor-js",
+          "url": "/wp-admin/js/editor.min.js"
+        },
+        {
+          "id": "quicktags-js",
+          "url": "/wp-includes/js/quicktags.min.js"
+        },
+        {
+          "id": "wplink-js",
+          "url": "/wp-includes/js/wplink.min.js"
+        },
+        {
+          "id": "media-upload-js",
+          "url": "/wp-admin/js/media-upload.min.js"
+        },
+        {
+          "id": "seopress-classic-js",
+          "url": "/wp-content/plugins/wp-seopress/assets/js/seopress-classic-editor.min.js"
+        },
+        {
+          "id": "mrn-base-stack-content-builder-admin-js",
+          "url": "/wp-content/themes/mrn-base-stack/js/content-builder-admin.js"
+        },
+        {
+          "id": "mrn-base-stack-row-flex-layout-admin-js",
+          "url": "/wp-content/themes/mrn-base-stack/js/admin-row-flex-layout.js"
+        },
+        {
+          "id": "cpto-js",
+          "url": "/wp-content/plugins/post-types-order/js/cpt.js"
+        },
+        {
+          "id": "wpforms-edit-post-education-js",
+          "url": "/wp-content/plugins/wpforms/assets/js/admin/education/edit-post.es5.min.js"
+        },
+        {
+          "id": "mrn-acf-focal-point-js",
+          "url": "/wp-content/plugins/mrn-acf-focal-point/assets/admin.js"
+        },
+        {
+          "id": "mrn-config-helper-acf-layout-picker-js",
+          "url": "/wp-content/plugins/mrn-config-helper/assets/js/acf-layout-picker.js"
+        },
+        {
+          "id": "mrn-layout-import-export-admin-js",
+          "url": "/wp-content/plugins/mrn-layout-import-export/assets/js/layout-import-export.js"
+        },
+        {
+          "id": "mrn-base-stack-admin-repeater-controls-js",
+          "url": "/wp-content/themes/mrn-base-stack/js/admin-repeater-controls.js"
+        },
+        {
+          "id": "mrn-shared-icon-chooser-js",
+          "url": "/wp-content/mu-plugins/mrn-shared-assets/assets/icon-chooser/admin-icon-chooser.js"
+        },
+        {
+          "id": "mrn-base-stack-admin-icon-choosers-js",
+          "url": "/wp-content/themes/mrn-base-stack/js/admin-icon-choosers.js"
+        },
+        {
+          "id": "mrn-admin-appearance-js",
+          "url": "/wp-content/mu-plugins/mrn-admin-ui-css/appearance.js"
+        },
+        {
+          "id": "mrn-base-stack-lazy-layouts-js",
+          "url": "/wp-content/themes/mrn-base-stack/js/admin-lazy-layouts.js"
+        },
+        {
+          "id": "mrn-section-navigator-js",
+          "url": "/wp-content/mu-plugins/mrn-editor-lockdown/assets/section-navigator.js"
+        },
+        {
+          "id": "mrn-universal-sticky-bar-js",
+          "url": "/wp-content/plugins/mrn-universal-sticky-bar/assets/universal-sticky-bar.js"
+        },
+        {
+          "id": "mrn-editor-palette-loader-js",
+          "url": "/wp-content/mu-plugins/mrn-editor-lockdown/assets/command-palette-loader.js"
+        },
+        {
+          "id": "wpforms-editor-js",
+          "url": "/wp-content/plugins/wpforms/assets/js/admin/admin-editor.min.js"
+        },
+        {
+          "id": "wp-embed-js",
+          "url": "/wp-includes/js/wp-embed.min.js"
+        },
+        {
+          "id": "wp-tinymce-js",
+          "url": "/wp-includes/js/tinymce/wp-tinymce.js"
+        }
+      ]
+    }
+  }
+]

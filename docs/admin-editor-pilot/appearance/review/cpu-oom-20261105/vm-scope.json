@@ -1,0 +1,54 @@
+{
+  "lima-pre-maintenance.json": [
+    {
+      "name": "lima",
+      "status": "Stopped",
+      "limaVersion": "2.1.2",
+      "hostAgentPID": null,
+      "cpus": 2,
+      "memory": 3221225472
+    },
+    {
+      "name": "mrn-openlitespeed",
+      "status": "Running",
+      "limaVersion": "",
+      "hostAgentPID": 21336,
+      "cpus": 4,
+      "memory": 6442450944
+    },
+    {
+      "name": "mrn-unified-qa",
+      "status": "Running",
+      "limaVersion": "2.1.2",
+      "hostAgentPID": 4287,
+      "cpus": 2,
+      "memory": 4294967296
+    }
+  ],
+  "lima-final.json": [
+    {
+      "name": "lima",
+      "status": "Stopped",
+      "limaVersion": "2.1.2",
+      "hostAgentPID": null,
+      "cpus": 2,
+      "memory": 3221225472
+    },
+    {
+      "name": "mrn-openlitespeed",
+      "status": "Running",
+      "limaVersion": "",
+      "hostAgentPID": 82031,
+      "cpus": 4,
+      "memory": 6442450944
+    },
+    {
+      "name": "mrn-unified-qa",
+      "status": "Running",
+      "limaVersion": "2.1.2",
+      "hostAgentPID": 4287,
+      "cpus": 2,
+      "memory": 4294967296
+    }
+  ]
+}

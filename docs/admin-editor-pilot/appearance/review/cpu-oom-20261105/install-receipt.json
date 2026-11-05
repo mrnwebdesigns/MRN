@@ -1,0 +1,22 @@
+{
+  "host": "admin-editor-pilot.mrndev.io",
+  "commit": "b8a6624a13223df21c3f0ed52be3c2478214d331",
+  "files": {
+    "mu-plugins/mrn-editor-lockdown/assets/section-navigator.js": {
+      "before": "2d95eeb9aa314b6ab9a2ea8e818351d5e8ae4f5a3cd730b9deabd26e49697206",
+      "after": "8bb4928abc8f7471d793d4cf985b36c8dd8f6d0e332927bae8c164f0abd47f43"
+    }
+  },
+  "backup": {
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1793901267,
+    "label": "pre-admin-pilot-cpu-notice-install-20261105",
+    "nonce": "5c60266d26a4",
+    "key": "sites/admin-editor-pilot-mrndev-io/backup_2026-11-05-1754_Trilliant_5c60266d26a4-db.gz",
+    "size": 6317650,
+    "sha256": "81d1e93ec75a491c8f9de55e390e9f953565f3f63425d4503d9bd70860d77689"
+  },
+  "rollback": "/home/mrndev-admin-editor/review-private/before-cpu-notice-b8a6624a1322",
+  "status": "installed"
+}

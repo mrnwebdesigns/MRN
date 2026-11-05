@@ -1,0 +1,88 @@
+[
+  {
+    "pid": 1802,
+    "fds": 15,
+    "sockets": 5,
+    "rssKiB": 39236,
+    "availableKiB": 5476032,
+    "swapFreeKiB": 2097148,
+    "pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=673\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=125",
+    "label": "initial",
+    "at": 1793900508.143767
+  },
+  {
+    "pid": 1802,
+    "fds": 15,
+    "sockets": 5,
+    "rssKiB": 39384,
+    "availableKiB": 5535080,
+    "swapFreeKiB": 2097148,
+    "pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=673\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=125",
+    "label": "loopback",
+    "at": 1793900519.650611,
+    "statuses": {
+      "200": 80
+    }
+  },
+  {
+    "pid": 1802,
+    "fds": 15,
+    "sockets": 5,
+    "rssKiB": 40696,
+    "availableKiB": 5539536,
+    "swapFreeKiB": 2097148,
+    "pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=673\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=125",
+    "label": "forward",
+    "at": 1793900523.7807412,
+    "statuses": {
+      "200": 80
+    }
+  },
+  {
+    "pid": 1802,
+    "fds": 15,
+    "sockets": 5,
+    "rssKiB": 43248,
+    "availableKiB": 5537888,
+    "swapFreeKiB": 2097148,
+    "pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=673\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=125",
+    "label": "proxy",
+    "at": 1793900532.667249,
+    "statuses": {
+      "200": 80
+    }
+  },
+  {
+    "pid": 1802,
+    "fds": 15,
+    "sockets": 5,
+    "rssKiB": 44420,
+    "availableKiB": 5537156,
+    "swapFreeKiB": 2097148,
+    "pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=673\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=125",
+    "label": "idle-0",
+    "at": 1793900542.891517
+  },
+  {
+    "pid": 1802,
+    "fds": 15,
+    "sockets": 5,
+    "rssKiB": 45652,
+    "availableKiB": 5536312,
+    "swapFreeKiB": 2097148,
+    "pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=673\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=125",
+    "label": "idle-1",
+    "at": 1793900553.171634
+  },
+  {
+    "pid": 1802,
+    "fds": 15,
+    "sockets": 5,
+    "rssKiB": 46696,
+    "availableKiB": 5534040,
+    "swapFreeKiB": 2097148,
+    "pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=673\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=125",
+    "label": "idle-2",
+    "at": 1793900563.3804648
+  }
+]

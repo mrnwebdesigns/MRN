@@ -1,0 +1,41 @@
+{
+  "servedHash": "8bb4928abc8f7471d793d4cf985b36c8dd8f6d0e332927bae8c164f0abd47f43",
+  "expectedHash": "8bb4928abc8f7471d793d4cf985b36c8dd8f6d0e332927bae8c164f0abd47f43",
+  "beforeHash": "e6045fd526734032ca46a4e23e3cce2c2d5bc2258138cba55ca7c90775a15144",
+  "initial": {
+    "fields": 3263,
+    "wysiwyg": 59,
+    "editors": 1
+  },
+  "initializedEditors": 60,
+  "heaps": [
+    {
+      "cycles": 8,
+      "MiB": 93.29193496704102
+    },
+    {
+      "cycles": 16,
+      "MiB": 93.57365417480469
+    },
+    {
+      "cycles": 24,
+      "MiB": 93.87982177734375
+    },
+    {
+      "cycles": 32,
+      "MiB": 93.68302917480469
+    }
+  ],
+  "modes": [
+    {
+      "mode": "light",
+      "violations": []
+    },
+    {
+      "mode": "dark",
+      "violations": []
+    }
+  ],
+  "afterHash": "e6045fd526734032ca46a4e23e3cce2c2d5bc2258138cba55ca7c90775a15144",
+  "errors": []
+}

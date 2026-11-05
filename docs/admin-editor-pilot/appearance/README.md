@@ -1,6 +1,6 @@
 # MRN administration appearance — Local Hub review candidate
 
-**Status:** implemented locally for visual/workflow review. Functional checks pass; performance qualification remains blocked by variable editor CPU results. No release or Fleet action is authorized.
+**Status:** active isolated mrndev review. The [5 November performance follow-up](review/cpu-oom-20261105/REVIEW.md) repairs the reproduced Lima socket leak and deploys a bounded notice-collection optimization. Whole-editor CPU, native save latency and separate Hub provisioning health remain open. No release or Fleet action is authorized.
 
 **Annotation review is open.** Use the [paired Light/Dark review in the built-in browser](http://127.0.0.1:8764/review/) and [review guide](review/REVIEW.md). The [annotation log](review/ANNOTATIONS.md) records human comments and approvals separately; no refinement is applied automatically. Product source remains the existing appearance candidate.
 

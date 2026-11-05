@@ -1,0 +1,123 @@
+[
+  {
+    "pid": 1802,
+    "fds": 15,
+    "sockets": 5,
+    "rssKiB": 39172,
+    "availableKiB": 5330244,
+    "swapFreeKiB": 2097148,
+    "pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=673\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=125",
+    "label": "soak-start",
+    "at": 1793900744.457255
+  },
+  {
+    "pid": 1802,
+    "fds": 16,
+    "sockets": 6,
+    "rssKiB": 70848,
+    "availableKiB": 5226708,
+    "swapFreeKiB": 2097148,
+    "pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=673\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=125",
+    "label": "batch-1",
+    "at": 1793900780.790973
+  },
+  {
+    "pid": 1802,
+    "fds": 15,
+    "sockets": 5,
+    "rssKiB": 80768,
+    "availableKiB": 5179960,
+    "swapFreeKiB": 2097148,
+    "pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=673\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=125",
+    "label": "batch-2",
+    "at": 1793900815.98596
+  },
+  {
+    "pid": 1802,
+    "fds": 15,
+    "sockets": 5,
+    "rssKiB": 81904,
+    "availableKiB": 5153592,
+    "swapFreeKiB": 2097148,
+    "pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=673\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=125",
+    "label": "batch-3",
+    "at": 1793900848.757642
+  },
+  {
+    "pid": 1802,
+    "fds": 15,
+    "sockets": 5,
+    "rssKiB": 81920,
+    "availableKiB": 5210740,
+    "swapFreeKiB": 2097148,
+    "pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=673\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=125",
+    "label": "batch-4",
+    "at": 1793900882.84268
+  },
+  {
+    "pid": 1802,
+    "fds": 21,
+    "sockets": 11,
+    "rssKiB": 82116,
+    "availableKiB": 4962544,
+    "swapFreeKiB": 2097148,
+    "pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=673\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=125",
+    "label": "batch-5",
+    "at": 1793900920.459507
+  },
+  {
+    "pid": 1802,
+    "fds": 17,
+    "sockets": 7,
+    "rssKiB": 82412,
+    "availableKiB": 4694620,
+    "swapFreeKiB": 2097148,
+    "pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=673\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=125",
+    "label": "batch-6",
+    "at": 1793900956.15405
+  },
+  {
+    "pid": 1802,
+    "fds": 15,
+    "sockets": 5,
+    "rssKiB": 33772,
+    "availableKiB": 5263256,
+    "swapFreeKiB": 2097148,
+    "pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=673\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=125",
+    "label": "batch-7",
+    "at": 1793900989.3409321
+  },
+  {
+    "pid": 1802,
+    "fds": 15,
+    "sockets": 5,
+    "rssKiB": 50924,
+    "availableKiB": 5146928,
+    "swapFreeKiB": 2097148,
+    "pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=673\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=125",
+    "label": "batch-8",
+    "at": 1793901022.6644192
+  },
+  {
+    "pid": 1802,
+    "fds": 15,
+    "sockets": 5,
+    "rssKiB": 52456,
+    "availableKiB": 5187660,
+    "swapFreeKiB": 2097148,
+    "pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=673\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=125",
+    "label": "batch-9",
+    "at": 1793901054.426316
+  },
+  {
+    "pid": 1802,
+    "fds": 15,
+    "sockets": 5,
+    "rssKiB": 60696,
+    "availableKiB": 5042676,
+    "swapFreeKiB": 2097148,
+    "pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=673\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=125",
+    "label": "batch-10",
+    "at": 1793901086.02967
+  }
+]

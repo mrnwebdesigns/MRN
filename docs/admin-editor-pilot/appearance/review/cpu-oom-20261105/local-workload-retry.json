@@ -1,0 +1,55 @@
+[
+  {
+    "cycle": 0,
+    "name": "stress32",
+    "wallMs": 12592,
+    "loggedIn": true,
+    "sections": 32,
+    "editors": [
+      {
+        "initialized": true
+      },
+      {
+        "initialized": true
+      },
+      {
+        "initialized": true
+      },
+      {
+        "initialized": true
+      }
+    ],
+    "errors": 0
+  },
+  {
+    "cycle": 0,
+    "name": "real19",
+    "wallMs": 15353,
+    "loggedIn": true,
+    "sections": 19,
+    "editors": [
+      {
+        "initialized": true
+      },
+      {
+        "initialized": true
+      },
+      {
+        "initialized": true
+      },
+      {
+        "initialized": true
+      }
+    ],
+    "errors": 0
+  },
+  {
+    "cycle": 0,
+    "name": "dashboard",
+    "wallMs": 64439,
+    "loggedIn": true,
+    "sections": 0,
+    "editors": [],
+    "errors": 0
+  }
+]

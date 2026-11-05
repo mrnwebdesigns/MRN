@@ -1,0 +1,5 @@
+lima-guestagent version 2.2.1
+MainPID=1802
+NRestarts=0
+MemoryCurrent=89600000
+ActiveState=active

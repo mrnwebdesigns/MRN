@@ -1,0 +1,891 @@
+{
+  "browser": "148.0.7778.96",
+  "records": [
+    {
+      "phase": "before",
+      "name": "empty",
+      "theme": "light",
+      "wallMs": 6380,
+      "cpuMs": 2604.468,
+      "scriptMs": 2302.292,
+      "layoutMs": 38.931,
+      "styleMs": 77.251,
+      "heapMiB": 17.705245971679688,
+      "sections": 0,
+      "acfFields": 3,
+      "editors": [
+        {
+          "id": "acf_content",
+          "initialized": true
+        }
+      ],
+      "nativeControls": 153,
+      "nodes": 3086,
+      "cls": 0.013405621641765057,
+      "longTasks": [
+        61,
+        1989
+      ],
+      "formHash": "5347001ed00083d8386a0a4d00cf56b0e8a9054e37b2f918024ef6030c738433",
+      "errors": []
+    },
+    {
+      "phase": "before",
+      "name": "empty",
+      "theme": "dark",
+      "wallMs": 6650,
+      "cpuMs": 799.44,
+      "scriptMs": 426.576,
+      "layoutMs": 54.441,
+      "styleMs": 101.893,
+      "heapMiB": 17.898300170898438,
+      "sections": 0,
+      "acfFields": 3,
+      "editors": [
+        {
+          "id": "acf_content",
+          "initialized": true
+        }
+      ],
+      "nativeControls": 153,
+      "nodes": 3087,
+      "cls": 0.013405621641765057,
+      "longTasks": [
+        56,
+        96
+      ],
+      "formHash": "5347001ed00083d8386a0a4d00cf56b0e8a9054e37b2f918024ef6030c738433",
+      "errors": []
+    },
+    {
+      "phase": "before",
+      "name": "real19",
+      "theme": "light",
+      "wallMs": 10084,
+      "cpuMs": 1298.4119999999998,
+      "scriptMs": 831.451,
+      "layoutMs": 43.113,
+      "styleMs": 84.38900000000001,
+      "heapMiB": 23.338890075683594,
+      "sections": 19,
+      "acfFields": 1937,
+      "editors": [
+        {
+          "id": "acf_content",
+          "initialized": true
+        }
+      ],
+      "nativeControls": 3834,
+      "nodes": 33610,
+      "cls": 0.08768257556862456,
+      "longTasks": [
+        59,
+        176,
+        89,
+        59,
+        90,
+        56
+      ],
+      "formHash": "a195d66ade5e58c48f8d45b9d402b4155730cef4a43bd56a7ad93ff1b1fecab7",
+      "errors": []
+    },
+    {
+      "phase": "before",
+      "name": "real19",
+      "theme": "dark",
+      "wallMs": 11390,
+      "cpuMs": 2148.6749999999997,
+      "scriptMs": 1437.1370000000002,
+      "layoutMs": 72.90599999999999,
+      "styleMs": 149.634,
+      "heapMiB": 23.227813720703125,
+      "sections": 19,
+      "acfFields": 1937,
+      "editors": [
+        {
+          "id": "acf_content",
+          "initialized": true
+        }
+      ],
+      "nativeControls": 3834,
+      "nodes": 33609,
+      "cls": 0.08768257556862456,
+      "longTasks": [
+        89,
+        293,
+        60,
+        226,
+        100,
+        163,
+        60
+      ],
+      "formHash": "a195d66ade5e58c48f8d45b9d402b4155730cef4a43bd56a7ad93ff1b1fecab7",
+      "errors": []
+    },
+    {
+      "phase": "before",
+      "name": "stress32",
+      "theme": "light",
+      "wallMs": 12022,
+      "cpuMs": 2524.877,
+      "scriptMs": 1774.868,
+      "layoutMs": 69.963,
+      "styleMs": 150.772,
+      "heapMiB": 26.572349548339844,
+      "sections": 32,
+      "acfFields": 3263,
+      "editors": [
+        {
+          "id": "acf_content",
+          "initialized": true
+        }
+      ],
+      "nativeControls": 6337,
+      "nodes": 53417,
+      "cls": 0.08768257556862456,
+      "longTasks": [
+        75,
+        558,
+        213,
+        131,
+        191,
+        112,
+        51
+      ],
+      "formHash": "e6045fd526734032ca46a4e23e3cce2c2d5bc2258138cba55ca7c90775a15144",
+      "errors": []
+    },
+    {
+      "phase": "before",
+      "name": "stress32",
+      "theme": "dark",
+      "wallMs": 11655,
+      "cpuMs": 2650.525,
+      "scriptMs": 1893.914,
+      "layoutMs": 74.281,
+      "styleMs": 154.201,
+      "heapMiB": 26.508708953857422,
+      "sections": 32,
+      "acfFields": 3263,
+      "editors": [
+        {
+          "id": "acf_content",
+          "initialized": true
+        }
+      ],
+      "nativeControls": 6337,
+      "nodes": 53418,
+      "cls": 0.08768257556862456,
+      "longTasks": [
+        94,
+        554,
+        54,
+        246,
+        130,
+        225,
+        56,
+        55,
+        100
+      ],
+      "formHash": "e6045fd526734032ca46a4e23e3cce2c2d5bc2258138cba55ca7c90775a15144",
+      "errors": []
+    },
+    {
+      "phase": "candidate",
+      "name": "empty",
+      "theme": "light",
+      "wallMs": 5562,
+      "cpuMs": 532.737,
+      "scriptMs": 287.41,
+      "layoutMs": 29.337,
+      "styleMs": 64.958,
+      "heapMiB": 17.80712890625,
+      "sections": 0,
+      "acfFields": 3,
+      "editors": [
+        {
+          "id": "acf_content",
+          "initialized": true
+        }
+      ],
+      "nativeControls": 153,
+      "nodes": 3087,
+      "cls": 0.013019502353732348,
+      "longTasks": [],
+      "formHash": "5347001ed00083d8386a0a4d00cf56b0e8a9054e37b2f918024ef6030c738433",
+      "errors": []
+    },
+    {
+      "phase": "candidate",
+      "name": "empty",
+      "theme": "dark",
+      "wallMs": 5852,
+      "cpuMs": 964.174,
+      "scriptMs": 529.102,
+      "layoutMs": 80.624,
+      "styleMs": 130.55700000000002,
+      "heapMiB": 17.760421752929688,
+      "sections": 0,
+      "acfFields": 3,
+      "editors": [
+        {
+          "id": "acf_content",
+          "initialized": true
+        }
+      ],
+      "nativeControls": 153,
+      "nodes": 3086,
+      "cls": 0.013019502353732348,
+      "longTasks": [
+        53,
+        101,
+        64,
+        62
+      ],
+      "formHash": "5347001ed00083d8386a0a4d00cf56b0e8a9054e37b2f918024ef6030c738433",
+      "errors": []
+    },
+    {
+      "phase": "candidate",
+      "name": "real19",
+      "theme": "light",
+      "wallMs": 11050,
+      "cpuMs": 2422.732,
+      "scriptMs": 1579.175,
+      "layoutMs": 100.605,
+      "styleMs": 170.734,
+      "heapMiB": 23.38824462890625,
+      "sections": 19,
+      "acfFields": 1937,
+      "editors": [
+        {
+          "id": "acf_content",
+          "initialized": true
+        }
+      ],
+      "nativeControls": 3834,
+      "nodes": 33609,
+      "cls": 0.08768257556862456,
+      "longTasks": [
+        68,
+        314,
+        55,
+        162,
+        107,
+        189,
+        58,
+        70,
+        60,
+        53,
+        94,
+        56
+      ],
+      "formHash": "a195d66ade5e58c48f8d45b9d402b4155730cef4a43bd56a7ad93ff1b1fecab7",
+      "errors": []
+    },
+    {
+      "phase": "candidate",
+      "name": "real19",
+      "theme": "dark",
+      "wallMs": 12523,
+      "cpuMs": 3054.601,
+      "scriptMs": 2030.5399999999997,
+      "layoutMs": 107.783,
+      "styleMs": 218.923,
+      "heapMiB": 24.579448699951172,
+      "sections": 19,
+      "acfFields": 1937,
+      "editors": [
+        {
+          "id": "acf_content",
+          "initialized": true
+        }
+      ],
+      "nativeControls": 3834,
+      "nodes": 33610,
+      "cls": 0.08768257556862456,
+      "longTasks": [
+        64,
+        63,
+        89,
+        121,
+        537,
+        73,
+        223,
+        113,
+        161,
+        54,
+        60,
+        51,
+        57,
+        93,
+        54
+      ],
+      "formHash": "a195d66ade5e58c48f8d45b9d402b4155730cef4a43bd56a7ad93ff1b1fecab7",
+      "errors": []
+    },
+    {
+      "phase": "candidate",
+      "name": "stress32",
+      "theme": "light",
+      "wallMs": 13629,
+      "cpuMs": 4567.368,
+      "scriptMs": 3415.593,
+      "layoutMs": 113.103,
+      "styleMs": 239.05100000000002,
+      "heapMiB": 26.48424530029297,
+      "sections": 32,
+      "acfFields": 3263,
+      "editors": [
+        {
+          "id": "acf_content",
+          "initialized": true
+        }
+      ],
+      "nativeControls": 6337,
+      "nodes": 53417,
+      "cls": 0.08768257556862456,
+      "longTasks": [
+        55,
+        56,
+        60,
+        139,
+        1277,
+        115,
+        507,
+        205,
+        56,
+        273,
+        55,
+        57,
+        68,
+        56,
+        55,
+        145,
+        59
+      ],
+      "formHash": "e6045fd526734032ca46a4e23e3cce2c2d5bc2258138cba55ca7c90775a15144",
+      "errors": [],
+      "interactions": {
+        "cycles": 8,
+        "wallMs": [
+          308,
+          495,
+          240,
+          150,
+          144,
+          167,
+          134,
+          140
+        ],
+        "cpuMs": 2254.76,
+        "heapBeforeMiB": 26.52623748779297,
+        "heapAfterMiB": 29.654605865478516
+      }
+    },
+    {
+      "phase": "candidate",
+      "name": "stress32",
+      "theme": "dark",
+      "wallMs": 12984,
+      "cpuMs": 4001.028,
+      "scriptMs": 2870.67,
+      "layoutMs": 121.086,
+      "styleMs": 232.072,
+      "heapMiB": 26.47674560546875,
+      "sections": 32,
+      "acfFields": 3263,
+      "editors": [
+        {
+          "id": "acf_content",
+          "initialized": true
+        }
+      ],
+      "nativeControls": 6337,
+      "nodes": 53417,
+      "cls": 0.08768257556862456,
+      "longTasks": [
+        61,
+        135,
+        1022,
+        83,
+        377,
+        197,
+        252,
+        77,
+        59,
+        52,
+        153,
+        71
+      ],
+      "formHash": "e6045fd526734032ca46a4e23e3cce2c2d5bc2258138cba55ca7c90775a15144",
+      "errors": [],
+      "interactions": {
+        "cycles": 8,
+        "wallMs": [
+          279,
+          305,
+          148,
+          161,
+          157,
+          132,
+          156,
+          133
+        ],
+        "cpuMs": 2544.5019999999995,
+        "heapBeforeMiB": 26.512981414794922,
+        "heapAfterMiB": 29.148841857910156
+      }
+    },
+    {
+      "phase": "candidate",
+      "name": "empty",
+      "theme": "light",
+      "wallMs": 4920,
+      "cpuMs": 844.803,
+      "scriptMs": 460.195,
+      "layoutMs": 55.442,
+      "styleMs": 109.825,
+      "heapMiB": 17.81386947631836,
+      "sections": 0,
+      "acfFields": 3,
+      "editors": [
+        {
+          "id": "acf_content",
+          "initialized": true
+        }
+      ],
+      "nativeControls": 153,
+      "nodes": 3086,
+      "cls": 0.013405621641765057,
+      "longTasks": [
+        60,
+        95,
+        51
+      ],
+      "formHash": "5347001ed00083d8386a0a4d00cf56b0e8a9054e37b2f918024ef6030c738433",
+      "errors": []
+    },
+    {
+      "phase": "candidate",
+      "name": "empty",
+      "theme": "dark",
+      "wallMs": 5552,
+      "cpuMs": 976.798,
+      "scriptMs": 548.16,
+      "layoutMs": 67.313,
+      "styleMs": 133.73399999999998,
+      "heapMiB": 17.78508758544922,
+      "sections": 0,
+      "acfFields": 3,
+      "editors": [
+        {
+          "id": "acf_content",
+          "initialized": true
+        }
+      ],
+      "nativeControls": 153,
+      "nodes": 3086,
+      "cls": 0.013405621641765057,
+      "longTasks": [
+        52,
+        63,
+        109,
+        56
+      ],
+      "formHash": "5347001ed00083d8386a0a4d00cf56b0e8a9054e37b2f918024ef6030c738433",
+      "errors": []
+    },
+    {
+      "phase": "candidate",
+      "name": "real19",
+      "theme": "light",
+      "wallMs": 11854,
+      "cpuMs": 2655.151,
+      "scriptMs": 1686.885,
+      "layoutMs": 100.574,
+      "styleMs": 193.801,
+      "heapMiB": 24.58652114868164,
+      "sections": 19,
+      "acfFields": 1937,
+      "editors": [
+        {
+          "id": "acf_content",
+          "initialized": true
+        }
+      ],
+      "nativeControls": 3834,
+      "nodes": 33609,
+      "cls": 0.08768257556862456,
+      "longTasks": [
+        51,
+        68,
+        122,
+        426,
+        51,
+        183,
+        113,
+        174,
+        63,
+        60,
+        96,
+        56
+      ],
+      "formHash": "a195d66ade5e58c48f8d45b9d402b4155730cef4a43bd56a7ad93ff1b1fecab7",
+      "errors": []
+    },
+    {
+      "phase": "candidate",
+      "name": "real19",
+      "theme": "dark",
+      "wallMs": 19563,
+      "cpuMs": 3612.165,
+      "scriptMs": 2376.722,
+      "layoutMs": 138.016,
+      "styleMs": 248.548,
+      "heapMiB": 23.42071533203125,
+      "sections": 19,
+      "acfFields": 1937,
+      "editors": [
+        {
+          "id": "acf_content",
+          "initialized": true
+        }
+      ],
+      "nativeControls": 3834,
+      "nodes": 33609,
+      "cls": 0.08768257556862456,
+      "longTasks": [
+        72,
+        82,
+        84,
+        131,
+        620,
+        63,
+        293,
+        128,
+        197,
+        53,
+        77,
+        56,
+        72,
+        191,
+        105
+      ],
+      "formHash": "a195d66ade5e58c48f8d45b9d402b4155730cef4a43bd56a7ad93ff1b1fecab7",
+      "errors": []
+    },
+    {
+      "phase": "candidate",
+      "name": "stress32",
+      "theme": "light",
+      "wallMs": 17716,
+      "cpuMs": 4254.873,
+      "scriptMs": 3515.5750000000003,
+      "layoutMs": 57.488,
+      "styleMs": 177.94199999999998,
+      "heapMiB": 26.471240997314453,
+      "sections": 32,
+      "acfFields": 3263,
+      "editors": [
+        {
+          "id": "acf_content",
+          "initialized": true
+        }
+      ],
+      "nativeControls": 6337,
+      "nodes": 53417,
+      "cls": 0.08768257556862456,
+      "longTasks": [
+        79,
+        1516,
+        152,
+        578,
+        202,
+        70,
+        290,
+        69,
+        66,
+        102
+      ],
+      "formHash": "e6045fd526734032ca46a4e23e3cce2c2d5bc2258138cba55ca7c90775a15144",
+      "errors": [],
+      "interactions": {
+        "cycles": 8,
+        "wallMs": [
+          335,
+          357,
+          160,
+          138,
+          194,
+          194,
+          169,
+          137
+        ],
+        "cpuMs": 2947.8900000000003,
+        "heapBeforeMiB": 26.512386322021484,
+        "heapAfterMiB": 29.148815155029297
+      }
+    },
+    {
+      "phase": "candidate",
+      "name": "stress32",
+      "theme": "dark",
+      "wallMs": 13200,
+      "cpuMs": 3748.91,
+      "scriptMs": 2668.337,
+      "layoutMs": 111.009,
+      "styleMs": 215.287,
+      "heapMiB": 26.562206268310547,
+      "sections": 32,
+      "acfFields": 3263,
+      "editors": [
+        {
+          "id": "acf_content",
+          "initialized": true
+        }
+      ],
+      "nativeControls": 6337,
+      "nodes": 53418,
+      "cls": 0.08768257556862456,
+      "longTasks": [
+        59,
+        87,
+        53,
+        127,
+        875,
+        67,
+        308,
+        236,
+        67,
+        271,
+        61,
+        77,
+        63,
+        107
+      ],
+      "formHash": "e6045fd526734032ca46a4e23e3cce2c2d5bc2258138cba55ca7c90775a15144",
+      "errors": [],
+      "interactions": {
+        "cycles": 8,
+        "wallMs": [
+          168,
+          152,
+          116,
+          92,
+          117,
+          128,
+          142,
+          123
+        ],
+        "cpuMs": 1703.8569999999995,
+        "heapBeforeMiB": 26.602420806884766,
+        "heapAfterMiB": 29.242122650146484
+      }
+    },
+    {
+      "phase": "before",
+      "name": "empty",
+      "theme": "light",
+      "wallMs": 5713,
+      "cpuMs": 875.553,
+      "scriptMs": 510.45799999999997,
+      "layoutMs": 59.831,
+      "styleMs": 106.288,
+      "heapMiB": 17.829971313476562,
+      "sections": 0,
+      "acfFields": 3,
+      "editors": [
+        {
+          "id": "acf_content",
+          "initialized": true
+        }
+      ],
+      "nativeControls": 153,
+      "nodes": 3086,
+      "cls": 0.013019502353732348,
+      "longTasks": [
+        57,
+        59,
+        117,
+        53
+      ],
+      "formHash": "5347001ed00083d8386a0a4d00cf56b0e8a9054e37b2f918024ef6030c738433",
+      "errors": []
+    },
+    {
+      "phase": "before",
+      "name": "empty",
+      "theme": "dark",
+      "wallMs": 6759,
+      "cpuMs": 669.43,
+      "scriptMs": 341.113,
+      "layoutMs": 48.230000000000004,
+      "styleMs": 79.488,
+      "heapMiB": 17.748031616210938,
+      "sections": 0,
+      "acfFields": 3,
+      "editors": [
+        {
+          "id": "acf_content",
+          "initialized": true
+        }
+      ],
+      "nativeControls": 153,
+      "nodes": 3086,
+      "cls": 0.013405621641765057,
+      "longTasks": [
+        58
+      ],
+      "formHash": "5347001ed00083d8386a0a4d00cf56b0e8a9054e37b2f918024ef6030c738433",
+      "errors": []
+    },
+    {
+      "phase": "before",
+      "name": "real19",
+      "theme": "light",
+      "wallMs": 10604,
+      "cpuMs": 2418.6580000000004,
+      "scriptMs": 1614.379,
+      "layoutMs": 99.419,
+      "styleMs": 173.811,
+      "heapMiB": 23.477542877197266,
+      "sections": 19,
+      "acfFields": 1937,
+      "editors": [
+        {
+          "id": "acf_content",
+          "initialized": true
+        }
+      ],
+      "nativeControls": 3834,
+      "nodes": 33609,
+      "cls": 0.08768257556862456,
+      "longTasks": [
+        53,
+        84,
+        109,
+        531,
+        52,
+        154,
+        103,
+        145,
+        50
+      ],
+      "formHash": "a195d66ade5e58c48f8d45b9d402b4155730cef4a43bd56a7ad93ff1b1fecab7",
+      "errors": []
+    },
+    {
+      "phase": "before",
+      "name": "real19",
+      "theme": "dark",
+      "wallMs": 12419,
+      "cpuMs": 2883.061,
+      "scriptMs": 1898.535,
+      "layoutMs": 150.26700000000002,
+      "styleMs": 205.5,
+      "heapMiB": 23.305599212646484,
+      "sections": 19,
+      "acfFields": 1937,
+      "editors": [
+        {
+          "id": "acf_content",
+          "initialized": true
+        }
+      ],
+      "nativeControls": 3834,
+      "nodes": 33609,
+      "cls": 0.08768257556862456,
+      "longTasks": [
+        78,
+        95,
+        141,
+        125,
+        566,
+        54,
+        184,
+        100,
+        153,
+        51,
+        54,
+        115,
+        96
+      ],
+      "formHash": "a195d66ade5e58c48f8d45b9d402b4155730cef4a43bd56a7ad93ff1b1fecab7",
+      "errors": []
+    },
+    {
+      "phase": "before",
+      "name": "stress32",
+      "theme": "light",
+      "wallMs": 11488,
+      "cpuMs": 3394.3599999999997,
+      "scriptMs": 2447.283,
+      "layoutMs": 92.625,
+      "styleMs": 197.83700000000002,
+      "heapMiB": 26.545307159423828,
+      "sections": 32,
+      "acfFields": 3263,
+      "editors": [
+        {
+          "id": "acf_content",
+          "initialized": true
+        }
+      ],
+      "nativeControls": 6337,
+      "nodes": 53417,
+      "cls": 0.08768257556862456,
+      "longTasks": [
+        50,
+        113,
+        908,
+        64,
+        273,
+        131,
+        207,
+        53,
+        166,
+        91
+      ],
+      "formHash": "e6045fd526734032ca46a4e23e3cce2c2d5bc2258138cba55ca7c90775a15144",
+      "errors": []
+    },
+    {
+      "phase": "before",
+      "name": "stress32",
+      "theme": "dark",
+      "wallMs": 11980,
+      "cpuMs": 3363.104,
+      "scriptMs": 2525.326,
+      "layoutMs": 72.127,
+      "styleMs": 189.161,
+      "heapMiB": 26.50780487060547,
+      "sections": 32,
+      "acfFields": 3263,
+      "editors": [
+        {
+          "id": "acf_content",
+          "initialized": true
+        }
+      ],
+      "nativeControls": 6337,
+      "nodes": 53417,
+      "cls": 0.08768257556862456,
+      "longTasks": [
+        64,
+        57,
+        97,
+        934,
+        86,
+        377,
+        154,
+        251,
+        51,
+        51,
+        88
+      ],
+      "formHash": "e6045fd526734032ca46a4e23e3cce2c2d5bc2258138cba55ca7c90775a15144",
+      "errors": []
+    }
+  ]
+}
