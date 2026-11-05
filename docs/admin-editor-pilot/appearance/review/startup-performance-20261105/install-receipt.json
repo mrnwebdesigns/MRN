@@ -1,0 +1,42 @@
+{
+  "host": "admin-editor-pilot.mrndev.io",
+  "commit": "de73316444ff716135a8b114ef82c9e0f77f7d82",
+  "files": {
+    "mu-plugins/mrn-admin-ui-css/appearance.js": {
+      "before": "acbd0fdf0c8e2d3a1c5f4d267e6df379b9d14fae97dfe9d5c5f9dc524ca44d05",
+      "after": "db32cb75084ff7214d91f30ca421b1d4fa1d25ff22b0332c4a536438f5055b56"
+    },
+    "mu-plugins/mrn-admin-ui-css/appearance.php": {
+      "before": "c0e2b9be36a9e0000031b2e5545678ea712bf368ea15a50a00535efdcce7e97f",
+      "after": "8e3528807729bad016353ec286a84f25302dbfd75a0d9a19e95c28248f938f0f"
+    },
+    "mu-plugins/mrn-admin-ui-css/modern-admin.js": {
+      "before": "b4bd73be65def5b9670c7600a18190c2080b3bc91da400dcab38357901b7c618",
+      "after": "6590b01acbfaec0e55db473c653b19d82662ac55f845c2e46f6916eadaccc37b"
+    },
+    "mu-plugins/mrn-admin-ui-css/mrn-admin-shell.css": {
+      "before": "e2fb229834bd73a3cfce48c402c7dc418d259fd8ec9502b0fc67c51512537139",
+      "after": "80e75c4bc3b35c8aa72c921a72346802182b3f49e83578931d9a2a725e470463"
+    },
+    "mu-plugins/mrn-admin-ui-css/mrn-admin-ui-css.php": {
+      "before": "dc1002fb9b95bb3d44138e01b9f9627d76c6a9c5d58bcf3828cd2b85d372f08b",
+      "after": "893ff74158e5c1ccce2fe356e35ccd56882cb2d22ba20236bfb8f8e938765b34"
+    },
+    "themes/mrn-base-stack/inc/template-functions.php": {
+      "before": "47bea0d7851e70876d6a0018cf8151294bb400f0636bea5ed8c0cd0a3a930341",
+      "after": "27a69cf490b4edc91c31cccb409797e7291f00ace2aaf328b8e36a6bfb7ad6e2"
+    }
+  },
+  "backup": {
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1793894872,
+    "label": "pre-admin-pilot-startup-install-20261105",
+    "nonce": "5d305a2de507",
+    "key": "sites/admin-editor-pilot-mrndev-io/backup_2026-11-05-1607_Trilliant_5d305a2de507-db.gz",
+    "size": 6316843,
+    "sha256": "6c3e228dc3c53cd3360be531b720994dbb2985c5323a8280650d3b6b397ab6a4"
+  },
+  "rollback": "/home/mrndev-admin-editor/review-private/before-startup-de73316444ff",
+  "status": "installed"
+}

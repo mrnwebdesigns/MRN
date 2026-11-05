@@ -1,0 +1,926 @@
+{
+  "shifts": [
+    {
+      "at": 4272.199999988079,
+      "value": 0.00001748975881083716,
+      "sources": [
+        {
+          "node": "span.ame-mh-title",
+          "before": {
+            "x": 39.28125,
+            "y": 207.734375,
+            "width": 165.71875,
+            "height": 14.296875,
+            "top": 207.734375,
+            "right": 205,
+            "bottom": 222.03125,
+            "left": 39.28125
+          },
+          "after": {
+            "x": 44.828125,
+            "y": 207.734375,
+            "width": 160.171875,
+            "height": 14.296875,
+            "top": 207.734375,
+            "right": 205,
+            "bottom": 222.03125,
+            "left": 44.828125
+          }
+        },
+        {
+          "node": "span.ame-mh-title",
+          "before": {
+            "x": 39.28125,
+            "y": 866.734375,
+            "width": 165.71875,
+            "height": 14.296875,
+            "top": 866.734375,
+            "right": 205,
+            "bottom": 881.03125,
+            "left": 39.28125
+          },
+          "after": {
+            "x": 44.828125,
+            "y": 866.734375,
+            "width": 160.171875,
+            "height": 14.296875,
+            "top": 866.734375,
+            "right": 205,
+            "bottom": 881.03125,
+            "left": 44.828125
+          }
+        },
+        {
+          "node": "span.ame-mh-title",
+          "before": {
+            "x": 39.28125,
+            "y": 925.734375,
+            "width": 165.71875,
+            "height": 14.296875,
+            "top": 925.734375,
+            "right": 205,
+            "bottom": 940.03125,
+            "left": 39.28125
+          },
+          "after": {
+            "x": 44.828125,
+            "y": 925.734375,
+            "width": 160.171875,
+            "height": 14.296875,
+            "top": 925.734375,
+            "right": 205,
+            "bottom": 940.03125,
+            "left": 44.828125
+          }
+        }
+      ]
+    },
+    {
+      "at": 4421.399999991059,
+      "value": 8.093286854148191e-7,
+      "sources": []
+    }
+  ],
+  "longtasks": [
+    {
+      "at": 4327.0999999940395,
+      "ms": 77
+    },
+    {
+      "at": 4513,
+      "ms": 52
+    },
+    {
+      "at": 4751.0999999940395,
+      "ms": 71
+    }
+  ],
+  "geometry": [
+    {
+      "at": 2008.5999999940395,
+      "data": [
+        {
+          "s": "#wpcontent",
+          "rect": null
+        },
+        {
+          "s": "#wpbody-content",
+          "rect": null
+        },
+        {
+          "s": ".wrap",
+          "rect": null
+        },
+        {
+          "s": ".mrn-sticky-save-bar",
+          "rect": null
+        },
+        {
+          "s": ".mrn-admin-toolbar-spacer",
+          "rect": null
+        },
+        {
+          "s": ".acf-postbox .acf-tab-wrap",
+          "rect": null
+        },
+        {
+          "s": ".acf-postbox .acf-field",
+          "rect": null
+        }
+      ]
+    },
+    {
+      "at": 4273.79999999702,
+      "data": [
+        {
+          "s": "#wpcontent",
+          "rect": {
+            "x": 225,
+            "y": 32,
+            "w": 1262,
+            "h": 0
+          }
+        },
+        {
+          "s": "#wpbody-content",
+          "rect": null
+        },
+        {
+          "s": ".wrap",
+          "rect": null
+        },
+        {
+          "s": ".mrn-sticky-save-bar",
+          "rect": null
+        },
+        {
+          "s": ".mrn-admin-toolbar-spacer",
+          "rect": null
+        },
+        {
+          "s": ".acf-postbox .acf-tab-wrap",
+          "rect": null
+        },
+        {
+          "s": ".acf-postbox .acf-field",
+          "rect": null
+        }
+      ]
+    },
+    {
+      "at": 4313.399999991059,
+      "data": [
+        {
+          "s": "#wpcontent",
+          "rect": {
+            "x": 225,
+            "y": 32,
+            "w": 1262,
+            "h": 1612.890625
+          }
+        },
+        {
+          "s": "#wpbody-content",
+          "rect": {
+            "x": 245,
+            "y": 32,
+            "w": 1242,
+            "h": 1160.234375
+          }
+        },
+        {
+          "s": ".wrap",
+          "rect": {
+            "x": 257,
+            "y": 64,
+            "w": 1198,
+            "h": 1063.234375
+          }
+        },
+        {
+          "s": ".mrn-sticky-save-bar",
+          "rect": null
+        },
+        {
+          "s": ".mrn-admin-toolbar-spacer",
+          "rect": null
+        },
+        {
+          "s": ".acf-postbox .acf-tab-wrap",
+          "rect": null
+        },
+        {
+          "s": ".acf-postbox .acf-field",
+          "rect": null
+        }
+      ]
+    }
+  ],
+  "dom": 4666.5999999940395,
+  "load": 4670,
+  "paints": [
+    {
+      "name": "first-paint",
+      "at": 4264
+    },
+    {
+      "name": "first-contentful-paint",
+      "at": 4264
+    }
+  ],
+  "resources": [
+    {
+      "url": "/wp-content/plugins/wp-seopress/assets/css/seopress-admin-bar.min.css?ver=10.3",
+      "at": 1948.2999999970198,
+      "end": 2027.3999999910593
+    },
+    {
+      "url": "/wp-admin/css/colors/modern/colors.min.css?ver=7.0.4",
+      "at": 1948.3999999910593,
+      "end": 2010.5999999940395
+    },
+    {
+      "url": "/wp-includes/js/thickbox/thickbox.css?ver=7.0.4",
+      "at": 1948.3999999910593,
+      "end": 2021.199999988079
+    },
+    {
+      "url": "/wp-content/plugins/admin-menu-editor-pro/extras/pro-admin-styles.css?ver=1787161994",
+      "at": 1948.3999999910593,
+      "end": 2038.0999999940395
+    },
+    {
+      "url": "/wp-content/plugins/admin-menu-editor-pro/extras/font-awesome/scss/font-awesome.css?ver=1787161994",
+      "at": 1948.3999999910593,
+      "end": 2038.7999999970198
+    },
+    {
+      "url": "/wp-content/plugins/advanced-custom-fields-pro/assets/build/css/acf-global.min.css?ver=6.8.9",
+      "at": 1948.3999999910593,
+      "end": 2073.3999999910593
+    },
+    {
+      "url": "/wp-includes/js/mediaelement/wp-mediaelement.min.css?ver=7.0.4",
+      "at": 1948.5,
+      "end": 2012.3999999910593
+    },
+    {
+      "url": "/wp-includes/js/imgareaselect/imgareaselect.css?ver=0.9.8",
+      "at": 1948.5,
+      "end": 2012.699999988079
+    },
+    {
+      "url": "/wp-includes/js/mediaelement/mediaelementplayer-legacy.min.css?ver=4.2.17",
+      "at": 1948.5,
+      "end": 2068.0999999940395
+    },
+    {
+      "url": "/wp-content/plugins/happyfiles-pro/assets/css/happyfiles.min.css?ver=1787162057",
+      "at": 1948.5,
+      "end": 2069
+    },
+    {
+      "url": "/wp-content/plugins/happyfiles-pro/assets/css/gallery.min.css?ver=1787162057",
+      "at": 1948.5999999940395,
+      "end": 2055.8999999910593
+    },
+    {
+      "url": "/wp-content/plugins/wp-seopress/assets/css/seopress.min.css?ver=10.3",
+      "at": 1948.699999988079,
+      "end": 2044.0999999940395
+    },
+    {
+      "url": "/wp-content/plugins/wp-seopress-pro/assets/css/seopress-pro-dashboard.min.css?ver=10.3",
+      "at": 1948.699999988079,
+      "end": 2076.699999988079
+    },
+    {
+      "url": "/wp-content/plugins/wpforms/assets/css/admin-bar.min.css?ver=2.0.1.1",
+      "at": 1948.7999999970198,
+      "end": 2034.0999999940395
+    },
+    {
+      "url": "/wp-content/plugins/wpforms/assets/css/dashboard-widget.min.css?ver=2.0.1.1",
+      "at": 1948.7999999970198,
+      "end": 2072.8999999910593
+    },
+    {
+      "url": "/wp-content/mu-plugins/mrn-admin-ui-css/mrn-modern-admin.css?ver=1793892304",
+      "at": 1948.8999999910593,
+      "end": 2026.199999988079
+    },
+    {
+      "url": "/wp-content/mu-plugins/mrn-admin-ui-css/mrn-admin-tokens.css?ver=7.0.4",
+      "at": 1948.8999999910593,
+      "end": 2037.0999999940395
+    },
+    {
+      "url": "/wp-content/mu-plugins/mrn-admin-ui-css/mrn-admin-shell.css?ver=1793892304",
+      "at": 1948.8999999910593,
+      "end": 2078.2999999970198
+    },
+    {
+      "url": "/wp-content/plugins/admin-menu-editor-pro/css/force-dashicons.css?ver=20230828-2",
+      "at": 1949,
+      "end": 2020.5999999940395
+    },
+    {
+      "url": "/wp-content/plugins/admin-menu-editor-pro/css/admin.css?ver=20220912",
+      "at": 1949,
+      "end": 2036.0999999940395
+    },
+    {
+      "url": "/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.4.1",
+      "at": 1949.0999999940395,
+      "end": 2026.8999999910593
+    },
+    {
+      "url": "/wp-includes/js/hoverIntent.min.js?ver=1.10.2",
+      "at": 1949.0999999940395,
+      "end": 2031.0999999940395
+    },
+    {
+      "url": "/wp-includes/js/jquery/jquery.min.js?ver=3.7.1",
+      "at": 1949.0999999940395,
+      "end": 2094.5
+    },
+    {
+      "url": "/wp-content/plugins/admin-menu-editor-pro/js/menu-highlight-fix.js?ver=1787161995",
+      "at": 1949.199999988079,
+      "end": 2018.199999988079
+    },
+    {
+      "url": "/wp-includes/js/utils.min.js?ver=7.0.4",
+      "at": 1949.199999988079,
+      "end": 2023.8999999910593
+    },
+    {
+      "url": "/wp-content/plugins/admin-menu-editor-pro/js/admin-helpers.js?ver=20160407-2",
+      "at": 1949.199999988079,
+      "end": 2028.8999999910593
+    },
+    {
+      "url": "/wp-content/plugins/admin-menu-editor-pro/js/jquery.biscuit.js?ver=1787161995",
+      "at": 1949.2999999970198,
+      "end": 2058.2999999970198
+    },
+    {
+      "url": "/wp-content/plugins/admin-menu-editor-pro/extras/pro-admin-helpers.js?ver=1787161994",
+      "at": 1949.3999999910593,
+      "end": 2018.8999999910593
+    },
+    {
+      "url": "/wp-includes/js/plupload/plupload.min.js?ver=2.1.9",
+      "at": 1949.3999999910593,
+      "end": 2035.5
+    },
+    {
+      "url": "/wp-content/plugins/admin-menu-editor-pro/extras/third-level-menus.js?ver=1787161994",
+      "at": 1949.3999999910593,
+      "end": 2048.199999988079
+    },
+    {
+      "url": "/wp-includes/js/plupload/moxie.min.js?ver=1.3.5.1",
+      "at": 1949.3999999910593,
+      "end": 2076.7999999970198
+    },
+    {
+      "url": "/wp-content/plugins/gtranslate/gtranslate-notices.css?ver=7.0.4",
+      "at": 1949.5999999940395,
+      "end": 2092
+    },
+    {
+      "url": "/wp-includes/js/dist/i18n.min.js?ver=781d11515ad3d91786ec",
+      "at": 1949.5999999940395,
+      "end": 2150.699999988079
+    },
+    {
+      "url": "/wp-includes/js/dist/a11y.min.js?ver=af934e5259bc51b8718e",
+      "at": 1949.699999988079,
+      "end": 2182.199999988079
+    },
+    {
+      "url": "/wp-admin/js/common.min.js?ver=7.0.4",
+      "at": 1949.7999999970198,
+      "end": 2245.199999988079
+    },
+    {
+      "url": "/wp-includes/js/hoverintent-js.min.js?ver=2.2.1",
+      "at": 1949.7999999970198,
+      "end": 2284.0999999940395
+    },
+    {
+      "url": "/wp-includes/js/admin-bar.min.js?ver=7.0.4",
+      "at": 1949.7999999970198,
+      "end": 2309.699999988079
+    },
+    {
+      "url": "/wp-includes/js/clipboard.min.js?ver=2.0.11",
+      "at": 1949.8999999910593,
+      "end": 2344.199999988079
+    },
+    {
+      "url": "/wp-includes/js/underscore.min.js?ver=1.13.8",
+      "at": 1949.8999999910593,
+      "end": 2362.3999999910593
+    },
+    {
+      "url": "/wp-includes/js/wp-util.min.js?ver=7.0.4",
+      "at": 1949.8999999910593,
+      "end": 2402.199999988079
+    },
+    {
+      "url": "/wp-includes/js/api-request.min.js?ver=7.0.4",
+      "at": 1949.8999999910593,
+      "end": 2414.0999999940395
+    },
+    {
+      "url": "/wp-includes/js/dist/url.min.js?ver=bb0f766c3d2efe497871",
+      "at": 1950,
+      "end": 2463.2999999970198
+    },
+    {
+      "url": "/wp-admin/js/site-health.min.js?ver=7.0.4",
+      "at": 1950,
+      "end": 2488.2999999970198
+    },
+    {
+      "url": "/wp-includes/js/wp-ajax-response.min.js?ver=7.0.4",
+      "at": 1950,
+      "end": 2534.2999999970198
+    },
+    {
+      "url": "/wp-includes/js/jquery/jquery.color.min.js?ver=3.0.0",
+      "at": 1950.0999999940395,
+      "end": 2548.3999999910593
+    },
+    {
+      "url": "/wp-includes/js/wp-lists.min.js?ver=7.0.4",
+      "at": 1950.0999999940395,
+      "end": 2594.0999999940395
+    },
+    {
+      "url": "/wp-includes/js/quicktags.min.js?ver=7.0.4",
+      "at": 1950.0999999940395,
+      "end": 2609.5999999940395
+    },
+    {
+      "url": "/wp-admin/js/edit-comments.min.js?ver=7.0.4",
+      "at": 1950.0999999940395,
+      "end": 2680.199999988079
+    },
+    {
+      "url": "/wp-includes/js/jquery/jquery.query.js?ver=2.2.3",
+      "at": 1950.0999999940395,
+      "end": 2730.5999999940395
+    },
+    {
+      "url": "/wp-includes/js/jquery/ui/mouse.min.js?ver=1.13.3",
+      "at": 1950.199999988079,
+      "end": 2794.699999988079
+    },
+    {
+      "url": "/wp-includes/js/jquery/ui/core.min.js?ver=1.13.3",
+      "at": 1950.199999988079,
+      "end": 2797.199999988079
+    },
+    {
+      "url": "/wp-includes/js/jquery/ui/sortable.min.js?ver=1.13.3",
+      "at": 1950.199999988079,
+      "end": 2844.7999999970198
+    },
+    {
+      "url": "/wp-admin/js/postbox.min.js?ver=7.0.4",
+      "at": 1950.199999988079,
+      "end": 2854.699999988079
+    },
+    {
+      "url": "/wp-includes/js/dist/vendor/moment.min.js?ver=2.30.1",
+      "at": 1950.199999988079,
+      "end": 2921.199999988079
+    },
+    {
+      "url": "/wp-includes/js/dist/deprecated.min.js?ver=990e85f234fee8f7d446",
+      "at": 1950.2999999970198,
+      "end": 2905.199999988079
+    },
+    {
+      "url": "/wp-includes/js/dist/date.min.js?ver=c9f8e7dd3232716f34e9",
+      "at": 1950.2999999970198,
+      "end": 2993.5999999940395
+    },
+    {
+      "url": "/wp-admin/js/dashboard.min.js?ver=7.0.4",
+      "at": 1950.3999999910593,
+      "end": 3002.699999988079
+    },
+    {
+      "url": "/wp-includes/js/thickbox/thickbox.js?ver=3.1-20121105",
+      "at": 1950.3999999910593,
+      "end": 3051.199999988079
+    },
+    {
+      "url": "/wp-admin/js/plugin-install.min.js?ver=7.0.4",
+      "at": 1950.3999999910593,
+      "end": 3067
+    },
+    {
+      "url": "/wp-includes/js/wp-sanitize.min.js?ver=7.0.4",
+      "at": 1950.3999999910593,
+      "end": 3113
+    },
+    {
+      "url": "/wp-admin/js/updates.min.js?ver=7.0.4",
+      "at": 1950.3999999910593,
+      "end": 3146.699999988079
+    },
+    {
+      "url": "/wp-includes/js/shortcode.min.js?ver=7.0.4",
+      "at": 1950.5,
+      "end": 3163.3999999910593
+    },
+    {
+      "url": "/wp-admin/js/media-upload.min.js?ver=7.0.4",
+      "at": 1950.5,
+      "end": 3204.7999999970198
+    },
+    {
+      "url": "/wp-admin/js/svg-painter.js?ver=7.0.4",
+      "at": 1950.5,
+      "end": 3241.5999999940395
+    },
+    {
+      "url": "/wp-includes/js/heartbeat.min.js?ver=7.0.4",
+      "at": 1950.5,
+      "end": 3257.5999999940395
+    },
+    {
+      "url": "/wp-includes/js/wp-auth-check.min.js?ver=7.0.4",
+      "at": 1950.5,
+      "end": 3295.5
+    },
+    {
+      "url": "/wp-includes/js/dist/vendor/react.min.js?ver=18.3.1.1",
+      "at": 1950.5,
+      "end": 3313.699999988079
+    },
+    {
+      "url": "/wp-includes/js/dist/vendor/react-dom.min.js?ver=18.3.1.1",
+      "at": 1950.5999999940395,
+      "end": 3387.7999999970198
+    },
+    {
+      "url": "/wp-includes/js/dist/vendor/react-jsx-runtime.min.js?ver=18.3.1",
+      "at": 1950.5999999940395,
+      "end": 3403.5999999940395
+    },
+    {
+      "url": "/wp-includes/js/dist/dom.min.js?ver=66a6cf58e0c4cd128af0",
+      "at": 1950.5999999940395,
+      "end": 3443.7999999970198
+    },
+    {
+      "url": "/wp-includes/js/dist/escape-html.min.js?ver=3f093e5cca67aa0f8b56",
+      "at": 1950.5999999940395,
+      "end": 3453.699999988079
+    },
+    {
+      "url": "/wp-includes/js/dist/element.min.js?ver=15ba804677f72a8db97b",
+      "at": 1950.5999999940395,
+      "end": 3501.3999999910593
+    },
+    {
+      "url": "/wp-includes/js/dist/is-shallow-equal.min.js?ver=5d84b9f3cb50d2ce7d04",
+      "at": 1950.699999988079,
+      "end": 3515.2999999970198
+    },
+    {
+      "url": "/wp-includes/js/dist/priority-queue.min.js?ver=1f0e89e247bc0bd3f9b9",
+      "at": 1950.699999988079,
+      "end": 3567.5
+    },
+    {
+      "url": "/wp-includes/js/dist/keycodes.min.js?ver=aa1a141e3468afe7f852",
+      "at": 1950.699999988079,
+      "end": 3599.3999999910593
+    },
+    {
+      "url": "/wp-includes/js/dist/undo-manager.min.js?ver=27bb0ae036a2c9d4a1b5",
+      "at": 1950.699999988079,
+      "end": 3618.2999999970198
+    },
+    {
+      "url": "/wp-includes/js/dist/compose.min.js?ver=fbe37f6b46750554f947",
+      "at": 1950.7999999970198,
+      "end": 3660.3999999910593
+    },
+    {
+      "url": "/wp-includes/js/dist/html-entities.min.js?ver=8c6fa5b869dfeadc4af2",
+      "at": 1950.7999999970198,
+      "end": 3669.7999999970198
+    },
+    {
+      "url": "/wp-includes/js/dist/primitives.min.js?ver=a5c905ec27bcd76ef287",
+      "at": 1950.8999999910593,
+      "end": 3716
+    },
+    {
+      "url": "/wp-includes/js/dist/private-apis.min.js?ver=835912f0086b9e59aed4",
+      "at": 1950.8999999910593,
+      "end": 3722.699999988079
+    },
+    {
+      "url": "/wp-includes/js/dist/redux-routine.min.js?ver=64f9f5001aabc046c605",
+      "at": 1950.8999999910593,
+      "end": 3779.199999988079
+    },
+    {
+      "url": "/wp-includes/js/dist/data.min.js?ver=1756b6a2676c1b3369ab",
+      "at": 1950.8999999910593,
+      "end": 3784.699999988079
+    },
+    {
+      "url": "/wp-includes/js/dist/warning.min.js?ver=36fdbdc984d93aee8a97",
+      "at": 1951,
+      "end": 3833.7999999970198
+    },
+    {
+      "url": "/wp-includes/js/dist/rich-text.min.js?ver=16449e6108f48327f368",
+      "at": 1951,
+      "end": 3840.0999999940395
+    },
+    {
+      "url": "/wp-includes/js/dist/keyboard-shortcuts.min.js?ver=2ed78d3b4c23f38804e0",
+      "at": 1951.0999999940395,
+      "end": 3893.3999999910593
+    },
+    {
+      "url": "/wp-includes/js/dist/commands.min.js?ver=e3d8bba53f4ffea4fcd2",
+      "at": 1951.0999999940395,
+      "end": 4012.3999999910593
+    },
+    {
+      "url": "/wp-includes/js/dist/api-fetch.min.js?ver=d7efe4dc1468d36c39b8",
+      "at": 1951.0999999940395,
+      "end": 4168.899999991059
+    },
+    {
+      "url": "/wp-includes/js/dist/components.min.js?ver=5dedfe13f08880193a28",
+      "at": 1951.0999999940395,
+      "end": 4169.199999988079
+    },
+    {
+      "url": "/wp-includes/js/dist/blob.min.js?ver=198af75fe06d924090d8",
+      "at": 1951.0999999940395,
+      "end": 4226.199999988079
+    },
+    {
+      "url": "/wp-includes/js/dist/block-serialization-default-parser.min.js?ver=bff55bd3f1ce9df0c99c",
+      "at": 1951.0999999940395,
+      "end": 4240.5
+    },
+    {
+      "url": "/wp-includes/js/dist/autop.min.js?ver=9d0d0901b46f0a9027c9",
+      "at": 1951.0999999940395,
+      "end": 4264.5999999940395
+    },
+    {
+      "url": "/wp-includes/js/dist/shortcode.min.js?ver=11742fe18cc215d3d5ab",
+      "at": 1951.199999988079,
+      "end": 4264.199999988079
+    },
+    {
+      "url": "/wp-includes/js/dist/blocks.min.js?ver=ef38e42500165bfda301",
+      "at": 1951.199999988079,
+      "end": 4311.399999991059
+    },
+    {
+      "url": "/wp-includes/js/dist/preferences-persistence.min.js?ver=e8033be98338d1861bca",
+      "at": 1951.2999999970198,
+      "end": 4298.29999999702
+    },
+    {
+      "url": "/wp-includes/js/dist/notices.min.js?ver=218d0173a31ae7269246",
+      "at": 1951.2999999970198,
+      "end": 4301.399999991059
+    },
+    {
+      "url": "/wp-includes/js/dist/preferences.min.js?ver=035813168e404aa30193",
+      "at": 1951.2999999970198,
+      "end": 4317.199999988079
+    },
+    {
+      "url": "/wp-includes/js/dist/style-engine.min.js?ver=faa37ce61b7ec8394b2a",
+      "at": 1951.3999999910593,
+      "end": 4278.5999999940395
+    },
+    {
+      "url": "/wp-includes/js/dist/token-list.min.js?ver=16f0aebdd39d87c2a84b",
+      "at": 1951.3999999910593,
+      "end": 4302.5
+    },
+    {
+      "url": "/wp-includes/js/dist/theme.min.js?ver=e22ce547a4420507b323",
+      "at": 1951.3999999910593,
+      "end": 4470.0999999940395
+    },
+    {
+      "url": "/wp-includes/js/dist/upload-media.min.js?ver=d359c2cccf866d7082d2",
+      "at": 1951.3999999910593,
+      "end": 4475.899999991059
+    },
+    {
+      "url": "/wp-includes/js/dist/router.min.js?ver=0249e6724784b1c2583b",
+      "at": 1951.5,
+      "end": 4284.199999988079
+    },
+    {
+      "url": "/wp-includes/js/dist/core-data.min.js?ver=89931f90e4df5eb5f8a3",
+      "at": 1951.5,
+      "end": 4356.5
+    },
+    {
+      "url": "/wp-includes/js/dist/core-commands.min.js?ver=b209152e7e51279d7c28",
+      "at": 1951.5,
+      "end": 4475.199999988079
+    },
+    {
+      "url": "/wp-includes/js/dist/block-editor.min.js?ver=f3d941bcb2e86c269881",
+      "at": 1951.5,
+      "end": 4495
+    },
+    {
+      "url": "/wp-content/plugins/advanced-custom-fields-pro/assets/build/js/acf-escaped-html-notice.min.js?ver=6.8.9",
+      "at": 1951.5999999940395,
+      "end": 4311.29999999702
+    },
+    {
+      "url": "/wp-includes/js/backbone.min.js?ver=1.6.1",
+      "at": 1951.5999999940395,
+      "end": 4311
+    },
+    {
+      "url": "/wp-includes/js/wp-backbone.min.js?ver=7.0.4",
+      "at": 1951.5999999940395,
+      "end": 4479.199999988079
+    },
+    {
+      "url": "/wp-includes/js/mediaelement/mediaelement-migrate.min.js?ver=7.0.4",
+      "at": 1951.699999988079,
+      "end": 4284.699999988079
+    },
+    {
+      "url": "/wp-includes/js/plupload/wp-plupload.min.js?ver=7.0.4",
+      "at": 1951.699999988079,
+      "end": 4313.199999988079
+    },
+    {
+      "url": "/wp-includes/js/mediaelement/wp-mediaelement.min.js?ver=7.0.4",
+      "at": 1951.699999988079,
+      "end": 4363.699999988079
+    },
+    {
+      "url": "/wp-includes/js/mediaelement/mediaelement-and-player.min.js?ver=4.2.17",
+      "at": 1951.699999988079,
+      "end": 4361.199999988079
+    },
+    {
+      "url": "/wp-includes/js/media-models.min.js?ver=7.0.4",
+      "at": 1951.699999988079,
+      "end": 4480
+    },
+    {
+      "url": "/wp-includes/js/media-audiovideo.min.js?ver=7.0.4",
+      "at": 1951.7999999970198,
+      "end": 4287.0999999940395
+    },
+    {
+      "url": "/wp-includes/js/mce-view.min.js?ver=7.0.4",
+      "at": 1951.7999999970198,
+      "end": 4309.399999991059
+    },
+    {
+      "url": "/wp-includes/js/media-editor.min.js?ver=7.0.4",
+      "at": 1951.7999999970198,
+      "end": 4310.699999988079
+    },
+    {
+      "url": "/wp-includes/js/imgareaselect/jquery.imgareaselect.min.js?ver=7.0.4",
+      "at": 1951.7999999970198,
+      "end": 4315.5
+    },
+    {
+      "url": "/wp-includes/js/media-views.min.js?ver=7.0.4",
+      "at": 1951.7999999970198,
+      "end": 4315.699999988079
+    },
+    {
+      "url": "/wp-admin/js/image-edit.min.js?ver=7.0.4",
+      "at": 1951.7999999970198,
+      "end": 4410.699999988079
+    },
+    {
+      "url": "/wp-content/plugins/happyfiles-pro/assets/js/happyfiles.min.js?ver=1787162057",
+      "at": 1951.8999999910593,
+      "end": 4415.5
+    },
+    {
+      "url": "/wp-content/plugins/wp-seopress-pro/assets/js/seopress-pro-ga.min.js?ver=10.3",
+      "at": 1952,
+      "end": 4321.699999988079
+    },
+    {
+      "url": "/wp-includes/js/jquery/ui/tabs.min.js?ver=1.13.3",
+      "at": 1952,
+      "end": 4324.79999999702
+    },
+    {
+      "url": "/wp-content/plugins/wp-seopress-pro/assets/js/seopress-pro-matomo.min.js?ver=10.3",
+      "at": 1952,
+      "end": 4339.199999988079
+    },
+    {
+      "url": "/wp-content/plugins/wp-seopress-pro/assets/js/chart.bundle.min.js?ver=10.3",
+      "at": 1952,
+      "end": 4380.79999999702
+    },
+    {
+      "url": "/wp-content/plugins/wp-seopress-pro/public/admin/command-palette/index.js?ver=b3e4ae2b8891dd596d0c",
+      "at": 1952.0999999940395,
+      "end": 4315.0999999940395
+    },
+    {
+      "url": "/wp-content/plugins/wp-seopress/public/admin/command-palette.js?ver=eecd2be7bfedca7c67f5",
+      "at": 1952.0999999940395,
+      "end": 4405.79999999702
+    },
+    {
+      "url": "/wp-content/mu-plugins/mrn-admin-ui-css/modern-admin.js?ver=1793822099",
+      "at": 1952.199999988079,
+      "end": 4312.5999999940395
+    },
+    {
+      "url": "/wp-content/mu-plugins/mrn-admin-ui-css/appearance.js?ver=1793886849",
+      "at": 1952.199999988079,
+      "end": 4318.5999999940395
+    },
+    {
+      "url": "/wp-content/plugins/wpforms/assets/pro/js/admin/dashboard-widget.min.js?ver=2.0.1.1",
+      "at": 1952.199999988079,
+      "end": 4372.5
+    },
+    {
+      "url": "/wp-content/plugins/wpforms/assets/lib/chart.min.js?ver=4.5.1",
+      "at": 1952.199999988079,
+      "end": 4414.699999988079
+    },
+    {
+      "url": "/wp-content/plugins/wpforms/assets/lib/chartjs-adapter-moment.min.js?ver=1.0.1",
+      "at": 4713.5,
+      "end": 4800.199999988079
+    },
+    {
+      "url": "/wp-includes/js/wp-emoji-release.min.js?ver=7.0.4",
+      "at": 4869.0999999940395,
+      "end": 4945.5
+    }
+  ],
+  "metrics": {
+    "Timestamp": 114143.646046,
+    "AudioHandlers": 0,
+    "AudioWorkletProcessors": 0,
+    "Documents": 9,
+    "Frames": 9,
+    "JSEventListeners": 688,
+    "LayoutObjects": 1272,
+    "MediaKeySessions": 0,
+    "MediaKeys": 0,
+    "Nodes": 2726,
+    "Resources": 156,
+    "ContextLifecycleStateObservers": 18,
+    "V8PerContextDatas": 4,
+    "WorkerGlobalScopes": 0,
+    "UACSSResources": 1,
+    "RTCPeerConnections": 0,
+    "ResourceFetchers": 9,
+    "AdSubframes": 0,
+    "DetachedScriptStates": 4,
+    "ArrayBufferContents": 2,
+    "LayoutCount": 25,
+    "RecalcStyleCount": 170,
+    "LayoutDuration": 0.042357,
+    "RecalcStyleDuration": 0.059489,
+    "DevToolsCommandDuration": 0.018353,
+    "ScriptDuration": 0.447815,
+    "V8CompileDuration": 0.00405,
+    "TaskDuration": 0.754956,
+    "TaskOtherDuration": 0.182892,
+    "ThreadTime": 0.7368,
+    "ProcessTime": 1.55649,
+    "JSHeapUsedSize": 25162696,
+    "JSHeapTotalSize": 64012288,
+    "FirstMeaningfulPaint": 114136.615161,
+    "DomContentLoaded": 114137.018058,
+    "NavigationStart": 114132.351492
+  }
+}

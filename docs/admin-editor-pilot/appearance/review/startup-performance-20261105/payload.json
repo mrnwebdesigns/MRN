@@ -1,0 +1,10 @@
+{
+  "modern-admin.js": {
+    "uncompressed_bytes_removed_on_qualified_forms": 9580,
+    "gzip_bytes_removed_on_qualified_forms": 3174
+  },
+  "row-actions.css": {
+    "uncompressed_bytes_removed_on_qualified_forms": 4094,
+    "gzip_bytes_removed_on_qualified_forms": 1209
+  }
+}

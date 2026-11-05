@@ -1,0 +1,465 @@
+[
+  {
+    "name": "chromium light mrn-business-information",
+    "pass": true,
+    "visibleTitles": 1,
+    "bar": {
+      "top": 32,
+      "bottom": 96,
+      "borderLeft": "0px",
+      "borderTop": "0px",
+      "shadow": "none",
+      "background": "rgb(255, 255, 255)"
+    },
+    "nativeBottom": 32,
+    "h1": {
+      "text": "Business Information",
+      "clip": "inset(50%)"
+    },
+    "bodyWidth": 1487,
+    "viewport": 1487,
+    "axeViolations": 0,
+    "nativeTabFormValuesUnchanged": true
+  },
+  {
+    "name": "chromium light mrn-theme-header-footer",
+    "pass": true,
+    "visibleTitles": 1,
+    "bar": {
+      "top": 32,
+      "bottom": 96,
+      "borderLeft": "0px",
+      "borderTop": "0px",
+      "shadow": "none",
+      "background": "rgb(255, 255, 255)"
+    },
+    "nativeBottom": 32,
+    "h1": {
+      "text": "Theme Header/Footer",
+      "clip": "inset(50%)"
+    },
+    "bodyWidth": 1487,
+    "viewport": 1487,
+    "axeViolations": 0,
+    "nativeTabFormValuesUnchanged": true
+  },
+  {
+    "name": "chromium light mrn-header-utility-message",
+    "pass": true,
+    "visibleTitles": 1,
+    "bar": {
+      "top": 32,
+      "bottom": 96,
+      "borderLeft": "0px",
+      "borderTop": "0px",
+      "shadow": "none",
+      "background": "rgb(255, 255, 255)"
+    },
+    "nativeBottom": 32,
+    "h1": {
+      "text": "Header Utility Message",
+      "clip": "inset(50%)"
+    },
+    "bodyWidth": 1487,
+    "viewport": 1487,
+    "axeViolations": 0,
+    "nativeTabFormValuesUnchanged": true
+  },
+  {
+    "name": "chromium light mrn-config-helper",
+    "pass": true,
+    "visibleTitles": 1,
+    "bar": {
+      "top": 32,
+      "bottom": 101,
+      "borderLeft": "0px",
+      "borderTop": "0px",
+      "shadow": "none",
+      "background": "rgb(255, 255, 255)"
+    },
+    "nativeBottom": 32,
+    "h1": {
+      "text": "Site Configurations",
+      "clip": "inset(50%)"
+    },
+    "bodyWidth": 1487,
+    "viewport": 1487,
+    "axeViolations": 0,
+    "nativeTabFormValuesUnchanged": true
+  },
+  {
+    "name": "chromium dark mrn-business-information",
+    "pass": true,
+    "visibleTitles": 1,
+    "bar": {
+      "top": 32,
+      "bottom": 96,
+      "borderLeft": "0px",
+      "borderTop": "0px",
+      "shadow": "none",
+      "background": "rgb(27, 40, 57)"
+    },
+    "nativeBottom": 32,
+    "h1": {
+      "text": "Business Information",
+      "clip": "inset(50%)"
+    },
+    "bodyWidth": 1487,
+    "viewport": 1487,
+    "axeViolations": 0,
+    "nativeTabFormValuesUnchanged": true
+  },
+  {
+    "name": "chromium dark mrn-theme-header-footer",
+    "pass": true,
+    "visibleTitles": 1,
+    "bar": {
+      "top": 32,
+      "bottom": 96,
+      "borderLeft": "0px",
+      "borderTop": "0px",
+      "shadow": "none",
+      "background": "rgb(27, 40, 57)"
+    },
+    "nativeBottom": 32,
+    "h1": {
+      "text": "Theme Header/Footer",
+      "clip": "inset(50%)"
+    },
+    "bodyWidth": 1487,
+    "viewport": 1487,
+    "axeViolations": 0,
+    "nativeTabFormValuesUnchanged": true
+  },
+  {
+    "name": "chromium dark mrn-header-utility-message",
+    "pass": true,
+    "visibleTitles": 1,
+    "bar": {
+      "top": 32,
+      "bottom": 96,
+      "borderLeft": "0px",
+      "borderTop": "0px",
+      "shadow": "none",
+      "background": "rgb(27, 40, 57)"
+    },
+    "nativeBottom": 32,
+    "h1": {
+      "text": "Header Utility Message",
+      "clip": "inset(50%)"
+    },
+    "bodyWidth": 1487,
+    "viewport": 1487,
+    "axeViolations": 0,
+    "nativeTabFormValuesUnchanged": true
+  },
+  {
+    "name": "chromium dark mrn-config-helper",
+    "pass": true,
+    "visibleTitles": 1,
+    "bar": {
+      "top": 32,
+      "bottom": 101,
+      "borderLeft": "0px",
+      "borderTop": "0px",
+      "shadow": "none",
+      "background": "rgb(27, 40, 57)"
+    },
+    "nativeBottom": 32,
+    "h1": {
+      "text": "Site Configurations",
+      "clip": "inset(50%)"
+    },
+    "bodyWidth": 1487,
+    "viewport": 1487,
+    "axeViolations": 0,
+    "nativeTabFormValuesUnchanged": true
+  },
+  {
+    "name": "responsive 980 mrn-business-information",
+    "pass": true,
+    "bounds": {
+      "x": 225,
+      "y": 32,
+      "width": 755,
+      "height": 64
+    },
+    "save": {
+      "x": 838.28125,
+      "y": 45.5,
+      "width": 113.71875,
+      "height": 36
+    }
+  },
+  {
+    "name": "responsive 980 mrn-config-helper",
+    "pass": true,
+    "bounds": {
+      "x": 225,
+      "y": 32,
+      "width": 755,
+      "height": 202.1875
+    },
+    "save": {
+      "x": 797.875,
+      "y": 185.1875,
+      "width": 154.125,
+      "height": 36
+    }
+  },
+  {
+    "name": "responsive 900 mrn-business-information",
+    "pass": true,
+    "bounds": {
+      "x": 36,
+      "y": 32,
+      "width": 864,
+      "height": 64
+    },
+    "save": {
+      "x": 758.28125,
+      "y": 45.5,
+      "width": 113.71875,
+      "height": 36
+    }
+  },
+  {
+    "name": "responsive 900 mrn-config-helper",
+    "pass": true,
+    "bounds": {
+      "x": 36,
+      "y": 32,
+      "width": 864,
+      "height": 154.1875
+    },
+    "save": {
+      "x": 717.875,
+      "y": 137.1875,
+      "width": 154.125,
+      "height": 36
+    }
+  },
+  {
+    "name": "responsive 390 mrn-business-information",
+    "pass": true,
+    "bounds": {
+      "x": 0,
+      "y": 46,
+      "width": 390,
+      "height": 65
+    },
+    "save": {
+      "x": 258.578125,
+      "y": 54,
+      "width": 119.421875,
+      "height": 44
+    }
+  },
+  {
+    "name": "responsive 390 mrn-config-helper",
+    "pass": true,
+    "bounds": {
+      "x": 0,
+      "y": 46,
+      "width": 390,
+      "height": 250.1875
+    },
+    "save": {
+      "x": 215.46875,
+      "y": 239.1875,
+      "width": 162.53125,
+      "height": 44
+    }
+  },
+  {
+    "name": "native save button form association and keyboard",
+    "pass": true,
+    "nativeForm": "post",
+    "submitEvents": 1,
+    "persistedSettings": false
+  },
+  {
+    "name": "fallback without toolbar and unaffected core settings",
+    "pass": true
+  },
+  {
+    "name": "editor toolbar remains unchanged",
+    "pass": true
+  },
+  {
+    "name": "webkit light mrn-business-information",
+    "pass": true,
+    "visibleTitles": 1,
+    "bar": {
+      "top": 32,
+      "bottom": 96,
+      "borderLeft": "0px",
+      "borderTop": "0px",
+      "shadow": "none",
+      "background": "rgb(255, 255, 255)"
+    },
+    "nativeBottom": 32,
+    "h1": {
+      "text": "Business Information",
+      "clip": "inset(50%)"
+    },
+    "bodyWidth": 1487,
+    "viewport": 1487,
+    "axeViolations": 0,
+    "nativeTabFormValuesUnchanged": true
+  },
+  {
+    "name": "webkit light mrn-theme-header-footer",
+    "pass": true,
+    "visibleTitles": 1,
+    "bar": {
+      "top": 32,
+      "bottom": 96,
+      "borderLeft": "0px",
+      "borderTop": "0px",
+      "shadow": "none",
+      "background": "rgb(255, 255, 255)"
+    },
+    "nativeBottom": 32,
+    "h1": {
+      "text": "Theme Header/Footer",
+      "clip": "inset(50%)"
+    },
+    "bodyWidth": 1487,
+    "viewport": 1487,
+    "axeViolations": 0,
+    "nativeTabFormValuesUnchanged": true
+  },
+  {
+    "name": "webkit light mrn-header-utility-message",
+    "pass": true,
+    "visibleTitles": 1,
+    "bar": {
+      "top": 32,
+      "bottom": 96,
+      "borderLeft": "0px",
+      "borderTop": "0px",
+      "shadow": "none",
+      "background": "rgb(255, 255, 255)"
+    },
+    "nativeBottom": 32,
+    "h1": {
+      "text": "Header Utility Message",
+      "clip": "inset(50%)"
+    },
+    "bodyWidth": 1487,
+    "viewport": 1487,
+    "axeViolations": 0,
+    "nativeTabFormValuesUnchanged": true
+  },
+  {
+    "name": "webkit light mrn-config-helper",
+    "pass": true,
+    "visibleTitles": 1,
+    "bar": {
+      "top": 32,
+      "bottom": 101,
+      "borderLeft": "0px",
+      "borderTop": "0px",
+      "shadow": "none",
+      "background": "rgb(255, 255, 255)"
+    },
+    "nativeBottom": 32,
+    "h1": {
+      "text": "Site Configurations",
+      "clip": "inset(50%)"
+    },
+    "bodyWidth": 1487,
+    "viewport": 1487,
+    "axeViolations": 0,
+    "nativeTabFormValuesUnchanged": true
+  },
+  {
+    "name": "webkit dark mrn-business-information",
+    "pass": true,
+    "visibleTitles": 1,
+    "bar": {
+      "top": 32,
+      "bottom": 96,
+      "borderLeft": "0px",
+      "borderTop": "0px",
+      "shadow": "none",
+      "background": "rgb(27, 40, 57)"
+    },
+    "nativeBottom": 32,
+    "h1": {
+      "text": "Business Information",
+      "clip": "inset(50%)"
+    },
+    "bodyWidth": 1487,
+    "viewport": 1487,
+    "axeViolations": 0,
+    "nativeTabFormValuesUnchanged": true
+  },
+  {
+    "name": "webkit dark mrn-theme-header-footer",
+    "pass": true,
+    "visibleTitles": 1,
+    "bar": {
+      "top": 32,
+      "bottom": 96,
+      "borderLeft": "0px",
+      "borderTop": "0px",
+      "shadow": "none",
+      "background": "rgb(27, 40, 57)"
+    },
+    "nativeBottom": 32,
+    "h1": {
+      "text": "Theme Header/Footer",
+      "clip": "inset(50%)"
+    },
+    "bodyWidth": 1487,
+    "viewport": 1487,
+    "axeViolations": 0,
+    "nativeTabFormValuesUnchanged": true
+  },
+  {
+    "name": "webkit dark mrn-header-utility-message",
+    "pass": true,
+    "visibleTitles": 1,
+    "bar": {
+      "top": 32,
+      "bottom": 96,
+      "borderLeft": "0px",
+      "borderTop": "0px",
+      "shadow": "none",
+      "background": "rgb(27, 40, 57)"
+    },
+    "nativeBottom": 32,
+    "h1": {
+      "text": "Header Utility Message",
+      "clip": "inset(50%)"
+    },
+    "bodyWidth": 1487,
+    "viewport": 1487,
+    "axeViolations": 0,
+    "nativeTabFormValuesUnchanged": true
+  },
+  {
+    "name": "webkit dark mrn-config-helper",
+    "pass": true,
+    "visibleTitles": 1,
+    "bar": {
+      "top": 32,
+      "bottom": 101,
+      "borderLeft": "0px",
+      "borderTop": "0px",
+      "shadow": "none",
+      "background": "rgb(27, 40, 57)"
+    },
+    "nativeBottom": 32,
+    "h1": {
+      "text": "Site Configurations",
+      "clip": "inset(50%)"
+    },
+    "bodyWidth": 1487,
+    "viewport": 1487,
+    "axeViolations": 0,
+    "nativeTabFormValuesUnchanged": true
+  }
+]

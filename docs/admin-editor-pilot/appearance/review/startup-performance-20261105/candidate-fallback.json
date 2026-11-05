@@ -1,0 +1,14 @@
+[
+  {
+    "type": "no-js",
+    "pass": true,
+    "formAccessible": true,
+    "navigationVisible": true
+  },
+  {
+    "type": "acf-failed",
+    "pass": true,
+    "formAccessible": true,
+    "navigationVisible": true
+  }
+]

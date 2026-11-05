@@ -167,3 +167,16 @@ $contract = function_exists( 'mrn_admin_ui_contract_get' )
 ```
 
 Plugins must not require these functions to render or operate.
+
+
+### Stable startup on settings screens
+
+The themed shared settings bar uses in-flow sticky positioning, with no measured
+spacer contributing layout height. Keep original form/save ownership. Config
+Helper's existing nested wrapper retains its content gutters through scoped CSS.
+Known forms do not enqueue list Actions assets; unknown MRN table consumers do.
+ACF settings panels may wait for the native `ready` action, retaining measurement
+geometry and an eight-second fail-open path. Do not manually trigger ACF lifecycle
+actions, hide the whole admin, or add a second initialization system. No-JavaScript
+content remains visible. Render supplemental help with its native description
+before paint whenever a server-side render hook is available.

@@ -1,0 +1,164 @@
+[
+  {
+    "phase": "installed",
+    "name": "business",
+    "cls": 8.093286854148191e-7,
+    "shifts": [
+      {
+        "at": 2434.1000000089407,
+        "value": 8.093286854148191e-7,
+        "nodes": []
+      }
+    ],
+    "longtasks": [
+      70,
+      56,
+      1363
+    ],
+    "paints": [
+      {
+        "name": "first-paint",
+        "at": 2336
+      },
+      {
+        "name": "first-contentful-paint",
+        "at": 2372
+      }
+    ],
+    "readyClass": "wp-toolbar",
+    "scriptMs": 1597.806,
+    "styleMs": 45.078,
+    "layoutMs": 34.29900000000001,
+    "heapMB": 35.03775405883789,
+    "requests": 186,
+    "actionAssets": 0
+  },
+  {
+    "phase": "installed",
+    "name": "general",
+    "cls": 0.0004153692289010926,
+    "shifts": [
+      {
+        "at": 2052.7999999970198,
+        "value": 0.0004153692289010926,
+        "nodes": [
+          "wp-admin-bar-top-secondary",
+          "wp-admin-bar-seopress",
+          "wp-admin-bar-new-content",
+          "ame-mh-title",
+          "ame-mh-title"
+        ]
+      }
+    ],
+    "longtasks": [
+      168,
+      57
+    ],
+    "paints": [
+      {
+        "name": "first-paint",
+        "at": 1888
+      },
+      {
+        "name": "first-contentful-paint",
+        "at": 1888
+      }
+    ],
+    "readyClass": "wp-toolbar",
+    "scriptMs": 215.115,
+    "styleMs": 34.092,
+    "layoutMs": 175.728,
+    "heapMB": 21.653656005859375,
+    "requests": 124,
+    "actionAssets": 0
+  },
+  {
+    "phase": "installed",
+    "name": "config",
+    "cls": 0.0007860362832963016,
+    "shifts": [
+      {
+        "at": 1805.2000000029802,
+        "value": 0.0004153692289010926,
+        "nodes": [
+          "wp-admin-bar-top-secondary",
+          "wp-admin-bar-seopress",
+          "wp-admin-bar-new-content",
+          "ame-mh-title",
+          "ame-mh-title"
+        ]
+      },
+      {
+        "at": 2084.2000000029802,
+        "value": 0.000370667054395209,
+        "nodes": [
+          "wp-admin-bar-top-secondary"
+        ]
+      }
+    ],
+    "longtasks": [],
+    "paints": [
+      {
+        "name": "first-paint",
+        "at": 1792
+      },
+      {
+        "name": "first-contentful-paint",
+        "at": 1792
+      }
+    ],
+    "readyClass": "wp-toolbar",
+    "scriptMs": 184.581,
+    "styleMs": 21.682,
+    "layoutMs": 20.643,
+    "heapMB": 22.226634979248047,
+    "requests": 126,
+    "actionAssets": 0
+  },
+  {
+    "phase": "installed",
+    "name": "pages",
+    "cls": 0.00042034278587480196,
+    "shifts": [
+      {
+        "at": 2159.2999999970198,
+        "value": 0.00041953345718938713,
+        "nodes": [
+          "wp-admin-bar-top-secondary",
+          "wp-admin-bar-seopress",
+          "wp-admin-bar-new-content",
+          "ame-mh-title",
+          "ame-mh-title"
+        ]
+      },
+      {
+        "at": 2214.2000000029802,
+        "value": 8.093286854148191e-7,
+        "nodes": []
+      }
+    ],
+    "longtasks": [
+      80,
+      119,
+      65,
+      59
+    ],
+    "paints": [
+      {
+        "name": "first-paint",
+        "at": 2124
+      },
+      {
+        "name": "first-contentful-paint",
+        "at": 2124
+      }
+    ],
+    "readyClass": "wp-toolbar",
+    "scriptMs": 451.472,
+    "styleMs": 73.936,
+    "layoutMs": 73.464,
+    "heapMB": 21.074562072753906,
+    "requests": 137,
+    "actionAssets": 2
+  }
+]

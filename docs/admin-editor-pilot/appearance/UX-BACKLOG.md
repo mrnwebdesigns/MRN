@@ -215,3 +215,16 @@ native behavior and vendor ownership remain intact. [Screenshots and evidence](r
 Next annotation UX-050: review density/wrapping, especially the mobile settings
 bar. Existing Header/Footer collapse, CPU/memory and Local Hub OOM items remain
 separate; release and Fleet gates remain closed.
+
+
+**P1 UX-050 — visible page construction / startup shifts:** implemented and
+installed for review. Settings bars occupy real layout space immediately, ACF
+settings panels reveal after native readiness, unused Actions assets leave known
+forms, and General Settings help renders on the server. Median CLS improves from
+0.04193→0.00000 (Business), 0.01062→0.00042 (General), and 0.02334→0.00079 (Config).
+[Evidence, video and qualification](review/startup-performance-20261105/REVIEW.md).
+CPU/memory remain mixed; one large baseline CPU outlier is attributed to a
+Cloudflare challenge script. No security/infrastructure changes. P1 follow-up:
+profile native/vendor dependency owners and editor CPU/heap; retain the separate
+Local Hub OOM blocker. P2: tiny toolbar/font settling. Next annotation UX-051.
+Visual refinements stay paused until this performance pass is reviewed.

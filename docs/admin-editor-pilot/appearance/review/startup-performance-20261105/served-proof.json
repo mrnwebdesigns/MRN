@@ -1,0 +1,11 @@
+{
+  "files": {
+    "mu-plugins/mrn-admin-ui-css/appearance.js": "db32cb75084ff7214d91f30ca421b1d4fa1d25ff22b0332c4a536438f5055b56",
+    "mu-plugins/mrn-admin-ui-css/modern-admin.js": "6590b01acbfaec0e55db473c653b19d82662ac55f845c2e46f6916eadaccc37b",
+    "mu-plugins/mrn-admin-ui-css/mrn-admin-shell.css": "80e75c4bc3b35c8aa72c921a72346802182b3f49e83578931d9a2a725e470463"
+  },
+  "restStatus": 200,
+  "nativeACFReady": true,
+  "helpRenderedWithNativeDescription": true,
+  "editorUnaffected": true
+}

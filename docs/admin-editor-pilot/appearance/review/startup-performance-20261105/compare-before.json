@@ -1,0 +1,1234 @@
+[
+  {
+    "phase": "before",
+    "name": "business",
+    "cls": 0.0419283358712066,
+    "shifts": [
+      {
+        "at": 2537.1000000089407,
+        "value": 0.0004153692289010926,
+        "nodes": [
+          "wp-admin-bar-top-secondary",
+          "wp-admin-bar-seopress",
+          "wp-admin-bar-new-content",
+          "ame-mh-title",
+          "ame-mh-title"
+        ]
+      },
+      {
+        "at": 2564.6000000089407,
+        "value": 0.009983754294673994,
+        "nodes": [
+          "inside acf-fields -top",
+          "acf-field acf-field-image acf-field-mrn-business-logo",
+          "acf-field acf-field-image acf-field-mrn-business-logo-inverted",
+          "acf-field acf-field-select acf-field-mrn-business-schema-author-policy",
+          "acf-field acf-field-text acf-field-mrn-business-schema-alternate-name"
+        ]
+      },
+      {
+        "at": 3146.5,
+        "value": 8.093286854148191e-7,
+        "nodes": []
+      },
+      {
+        "at": 3177.9000000059605,
+        "value": 0.01996750858934799,
+        "nodes": [
+          "acf-field acf-field-select acf-field-mrn-business-schema-author-policy",
+          "acf-field acf-field-image acf-field-mrn-business-logo -c0",
+          "acf-field acf-field-image acf-field-mrn-business-logo-inverted",
+          "acf-field acf-field-text acf-field-mrn-business-schema-alternate-name",
+          "acf-field acf-field-email acf-field-mrn-business-schema-email -c0"
+        ]
+      },
+      {
+        "at": 3212,
+        "value": 0.0011925111219449984,
+        "nodes": [
+          "acf-field acf-field-image acf-field-mrn-business-logo -c0",
+          "acf-field acf-field-image acf-field-mrn-business-logo-inverted",
+          "acf-field acf-field-number acf-field-mrn-business-years-in-business",
+          "acf-field acf-field-text acf-field-mrn-business-profile -c0",
+          "acf-field acf-field-true-false acf-field-mrn-business-schema-ai-training-crawlers"
+        ]
+      },
+      {
+        "at": 3248.7000000029802,
+        "value": 0.010320862855801615,
+        "nodes": [
+          "acf-group_mrn_business_information"
+        ]
+      },
+      {
+        "at": 3325.6000000089407,
+        "value": 0.00004752045185148669,
+        "nodes": [
+          "postbox-header"
+        ]
+      }
+    ],
+    "longtasks": [
+      52,
+      82,
+      148,
+      152,
+      2313
+    ],
+    "paints": [
+      {
+        "name": "first-paint",
+        "at": 2412
+      },
+      {
+        "name": "first-contentful-paint",
+        "at": 2532
+      }
+    ],
+    "readyClass": "wp-toolbar",
+    "scriptMs": 2879.169,
+    "styleMs": 134.24099999999999,
+    "layoutMs": 81.259,
+    "heapMB": 37.18868637084961,
+    "requests": 187,
+    "actionAssets": 2
+  },
+  {
+    "phase": "before",
+    "name": "general",
+    "cls": 0.010615405372113123,
+    "shifts": [
+      {
+        "at": 2400.800000011921,
+        "value": 0.0004153692289010926,
+        "nodes": [
+          "wp-admin-bar-top-secondary",
+          "wp-admin-bar-seopress",
+          "wp-admin-bar-new-content",
+          "ame-mh-title",
+          "ame-mh-title"
+        ]
+      },
+      {
+        "at": 2420.5,
+        "value": 8.093286854148191e-7,
+        "nodes": []
+      },
+      {
+        "at": 2752,
+        "value": 0.010199226814526615,
+        "nodes": [
+          "hide-if-no-js site-icon-section",
+          "",
+          "",
+          "",
+          ""
+        ]
+      }
+    ],
+    "longtasks": [
+      59,
+      230,
+      95,
+      53
+    ],
+    "paints": [
+      {
+        "name": "first-paint",
+        "at": 2176
+      },
+      {
+        "name": "first-contentful-paint",
+        "at": 2176
+      }
+    ],
+    "readyClass": "wp-toolbar",
+    "scriptMs": 365.341,
+    "styleMs": 60.969,
+    "layoutMs": 241.71200000000002,
+    "heapMB": 21.695785522460938,
+    "requests": 125,
+    "actionAssets": 2
+  },
+  {
+    "phase": "before",
+    "name": "config",
+    "cls": 0.023342581712433558,
+    "shifts": [
+      {
+        "at": 1945.5,
+        "value": 0.0004153692289010926,
+        "nodes": [
+          "wp-admin-bar-top-secondary",
+          "wp-admin-bar-seopress",
+          "wp-admin-bar-new-content",
+          "ame-mh-title",
+          "ame-mh-title"
+        ]
+      },
+      {
+        "at": 2318.5,
+        "value": 0.000370667054395209,
+        "nodes": [
+          "wp-admin-bar-top-secondary"
+        ]
+      },
+      {
+        "at": 2352.4000000059605,
+        "value": 0.022556545429137258,
+        "nodes": [
+          "wrap"
+        ]
+      }
+    ],
+    "longtasks": [
+      68,
+      96,
+      61,
+      51
+    ],
+    "paints": [
+      {
+        "name": "first-paint",
+        "at": 1944
+      },
+      {
+        "name": "first-contentful-paint",
+        "at": 1944
+      }
+    ],
+    "readyClass": "wp-toolbar",
+    "scriptMs": 382.247,
+    "styleMs": 49.341,
+    "layoutMs": 42.272999999999996,
+    "heapMB": 22.2550048828125,
+    "requests": 127,
+    "actionAssets": 2
+  },
+  {
+    "phase": "before",
+    "name": "pages",
+    "cls": 0.000019131933153910893,
+    "shifts": [
+      {
+        "at": 2468.7000000029802,
+        "value": 0.000018322604468496075,
+        "nodes": [
+          "ame-mh-title",
+          "ame-mh-title",
+          "ame-mh-title"
+        ]
+      },
+      {
+        "at": 2546,
+        "value": 8.093286854148191e-7,
+        "nodes": []
+      }
+    ],
+    "longtasks": [
+      134,
+      114,
+      50,
+      59
+    ],
+    "paints": [
+      {
+        "name": "first-paint",
+        "at": 2456
+      },
+      {
+        "name": "first-contentful-paint",
+        "at": 2456
+      }
+    ],
+    "readyClass": "wp-toolbar",
+    "scriptMs": 559.884,
+    "styleMs": 76.15299999999999,
+    "layoutMs": 62.023,
+    "heapMB": 21.17605972290039,
+    "requests": 136,
+    "actionAssets": 2
+  },
+  {
+    "phase": "candidate",
+    "name": "business",
+    "cls": 0,
+    "shifts": [],
+    "longtasks": [
+      63
+    ],
+    "paints": [
+      {
+        "name": "first-paint",
+        "at": 1748
+      },
+      {
+        "name": "first-contentful-paint",
+        "at": 1788
+      }
+    ],
+    "readyClass": "wp-toolbar",
+    "scriptMs": 361.65000000000003,
+    "styleMs": 79.693,
+    "layoutMs": 32.410000000000004,
+    "heapMB": 32.04779052734375,
+    "requests": 185,
+    "actionAssets": 0
+  },
+  {
+    "phase": "candidate",
+    "name": "general",
+    "cls": 0.0004153692289010926,
+    "shifts": [
+      {
+        "at": 1959.1000000089407,
+        "value": 0.0004153692289010926,
+        "nodes": [
+          "wp-admin-bar-top-secondary",
+          "wp-admin-bar-seopress",
+          "wp-admin-bar-new-content",
+          "ame-mh-title",
+          "ame-mh-title"
+        ]
+      }
+    ],
+    "longtasks": [
+      73,
+      81,
+      94,
+      88,
+      57
+    ],
+    "paints": [
+      {
+        "name": "first-paint",
+        "at": 1892
+      },
+      {
+        "name": "first-contentful-paint",
+        "at": 1892
+      }
+    ],
+    "readyClass": "wp-toolbar",
+    "scriptMs": 424.813,
+    "styleMs": 71.831,
+    "layoutMs": 110.703,
+    "heapMB": 21.69489288330078,
+    "requests": 123,
+    "actionAssets": 0
+  },
+  {
+    "phase": "candidate",
+    "name": "config",
+    "cls": 0.0004619088081915041,
+    "shifts": [
+      {
+        "at": 2289.7999999970198,
+        "value": 0.00009124175379629508,
+        "nodes": [
+          "ame-mh-title",
+          "ame-mh-title",
+          "ame-mh-title",
+          "wp-admin-bar-command-palette",
+          "wp-admin-bar-updates"
+        ]
+      },
+      {
+        "at": 2897.2000000029802,
+        "value": 0.000370667054395209,
+        "nodes": [
+          "wp-admin-bar-top-secondary"
+        ]
+      }
+    ],
+    "longtasks": [
+      51,
+      130,
+      116,
+      66,
+      102
+    ],
+    "paints": [
+      {
+        "name": "first-paint",
+        "at": 2280
+      },
+      {
+        "name": "first-contentful-paint",
+        "at": 2280
+      }
+    ],
+    "readyClass": "wp-toolbar",
+    "scriptMs": 662.221,
+    "styleMs": 60.413000000000004,
+    "layoutMs": 50.71,
+    "heapMB": 22.176456451416016,
+    "requests": 125,
+    "actionAssets": 0
+  },
+  {
+    "phase": "candidate",
+    "name": "pages",
+    "cls": 0.00042034278587480196,
+    "shifts": [
+      {
+        "at": 4089.2999999970198,
+        "value": 0.00041953345718938713,
+        "nodes": [
+          "wp-admin-bar-top-secondary",
+          "wp-admin-bar-seopress",
+          "wp-admin-bar-new-content",
+          "ame-mh-title",
+          "ame-mh-title"
+        ]
+      },
+      {
+        "at": 4818.5999999940395,
+        "value": 8.093286854148191e-7,
+        "nodes": []
+      }
+    ],
+    "longtasks": [
+      142,
+      88,
+      50,
+      136,
+      90,
+      90
+    ],
+    "paints": [
+      {
+        "name": "first-paint",
+        "at": 4080
+      },
+      {
+        "name": "first-contentful-paint",
+        "at": 4080
+      }
+    ],
+    "readyClass": "wp-toolbar",
+    "scriptMs": 585.97,
+    "styleMs": 129.836,
+    "layoutMs": 146.501,
+    "heapMB": 21.112926483154297,
+    "requests": 136,
+    "actionAssets": 2
+  },
+  {
+    "phase": "before",
+    "name": "business",
+    "cls": 0.04588300311961682,
+    "shifts": [
+      {
+        "at": 2101.2000000029802,
+        "value": 0.0004153692289010926,
+        "nodes": [
+          "wp-admin-bar-top-secondary",
+          "wp-admin-bar-seopress",
+          "wp-admin-bar-new-content",
+          "ame-mh-title",
+          "ame-mh-title"
+        ]
+      },
+      {
+        "at": 2282.5999999940395,
+        "value": 8.093286854148191e-7,
+        "nodes": []
+      },
+      {
+        "at": 2429.3999999910593,
+        "value": 0.01996750858934799,
+        "nodes": [
+          "acf-field acf-field-select acf-field-mrn-business-schema-author-policy",
+          "acf-field acf-field-image acf-field-mrn-business-logo -c0",
+          "acf-field acf-field-image acf-field-mrn-business-logo-inverted",
+          "acf-field acf-field-text acf-field-mrn-business-schema-alternate-name",
+          "acf-field acf-field-email acf-field-mrn-business-schema-email -c0"
+        ]
+      },
+      {
+        "at": 2446.8999999910593,
+        "value": 0.0011925111219449984,
+        "nodes": [
+          "acf-field acf-field-image acf-field-mrn-business-logo -c0",
+          "acf-field acf-field-image acf-field-mrn-business-logo-inverted",
+          "acf-field acf-field-number acf-field-mrn-business-years-in-business",
+          "acf-field acf-field-text acf-field-mrn-business-profile -c0",
+          "acf-field acf-field-true-false acf-field-mrn-business-schema-ai-training-crawlers"
+        ]
+      },
+      {
+        "at": 2511.2000000029802,
+        "value": 0.024306804850737326,
+        "nodes": [
+          "acf-group_mrn_business_information"
+        ]
+      }
+    ],
+    "longtasks": [
+      65
+    ],
+    "paints": [
+      {
+        "name": "first-paint",
+        "at": 2092
+      },
+      {
+        "name": "first-contentful-paint",
+        "at": 2092
+      }
+    ],
+    "readyClass": "wp-toolbar",
+    "scriptMs": 392.149,
+    "styleMs": 70.43900000000001,
+    "layoutMs": 40.19,
+    "heapMB": 27.346553802490234,
+    "requests": 187,
+    "actionAssets": 2
+  },
+  {
+    "phase": "before",
+    "name": "general",
+    "cls": 0.010615405372113123,
+    "shifts": [
+      {
+        "at": 2385.9000000059605,
+        "value": 0.0004153692289010926,
+        "nodes": [
+          "wp-admin-bar-top-secondary",
+          "wp-admin-bar-seopress",
+          "wp-admin-bar-new-content",
+          "ame-mh-title",
+          "ame-mh-title"
+        ]
+      },
+      {
+        "at": 2417.5,
+        "value": 8.093286854148191e-7,
+        "nodes": []
+      },
+      {
+        "at": 2892.0999999940395,
+        "value": 0.010199226814526615,
+        "nodes": [
+          "hide-if-no-js site-icon-section",
+          "",
+          "",
+          "",
+          ""
+        ]
+      }
+    ],
+    "longtasks": [
+      89,
+      117,
+      139,
+      96,
+      87
+    ],
+    "paints": [
+      {
+        "name": "first-paint",
+        "at": 2292
+      },
+      {
+        "name": "first-contentful-paint",
+        "at": 2292
+      }
+    ],
+    "readyClass": "wp-toolbar",
+    "scriptMs": 563.7529999999999,
+    "styleMs": 94.164,
+    "layoutMs": 142.067,
+    "heapMB": 21.704975128173828,
+    "requests": 125,
+    "actionAssets": 2
+  },
+  {
+    "phase": "before",
+    "name": "config",
+    "cls": 0.023342581712433558,
+    "shifts": [
+      {
+        "at": 2222.1000000089407,
+        "value": 0.0004153692289010926,
+        "nodes": [
+          "wp-admin-bar-top-secondary",
+          "wp-admin-bar-seopress",
+          "wp-admin-bar-new-content",
+          "ame-mh-title",
+          "ame-mh-title"
+        ]
+      },
+      {
+        "at": 2591.5,
+        "value": 0.000370667054395209,
+        "nodes": [
+          "wp-admin-bar-top-secondary"
+        ]
+      },
+      {
+        "at": 2641.2000000029802,
+        "value": 0.022556545429137258,
+        "nodes": [
+          "wrap"
+        ]
+      }
+    ],
+    "longtasks": [
+      71,
+      102,
+      56,
+      76
+    ],
+    "paints": [
+      {
+        "name": "first-paint",
+        "at": 2212
+      },
+      {
+        "name": "first-contentful-paint",
+        "at": 2212
+      }
+    ],
+    "readyClass": "wp-toolbar",
+    "scriptMs": 442.61,
+    "styleMs": 51.682,
+    "layoutMs": 44.471999999999994,
+    "heapMB": 22.256797790527344,
+    "requests": 127,
+    "actionAssets": 2
+  },
+  {
+    "phase": "before",
+    "name": "pages",
+    "cls": 0.00042034278587480196,
+    "shifts": [
+      {
+        "at": 3051.2000000029802,
+        "value": 0.00041953345718938713,
+        "nodes": [
+          "wp-admin-bar-top-secondary",
+          "wp-admin-bar-seopress",
+          "wp-admin-bar-new-content",
+          "ame-mh-title",
+          "ame-mh-title"
+        ]
+      },
+      {
+        "at": 3190.4000000059605,
+        "value": 8.093286854148191e-7,
+        "nodes": []
+      }
+    ],
+    "longtasks": [
+      92,
+      57,
+      128,
+      133,
+      73
+    ],
+    "paints": [
+      {
+        "name": "first-paint",
+        "at": 3028
+      },
+      {
+        "name": "first-contentful-paint",
+        "at": 3028
+      }
+    ],
+    "readyClass": "wp-toolbar",
+    "scriptMs": 555.819,
+    "styleMs": 90.43299999999999,
+    "layoutMs": 95.386,
+    "heapMB": 21.137126922607422,
+    "requests": 136,
+    "actionAssets": 2
+  },
+  {
+    "phase": "candidate",
+    "name": "business",
+    "cls": 0.0004161785575865074,
+    "shifts": [
+      {
+        "at": 4047.1000000089407,
+        "value": 0.0004153692289010926,
+        "nodes": [
+          "wp-admin-bar-top-secondary",
+          "wp-admin-bar-seopress",
+          "wp-admin-bar-new-content",
+          "ame-mh-title",
+          "ame-mh-title"
+        ]
+      },
+      {
+        "at": 4489.100000008941,
+        "value": 8.093286854148191e-7,
+        "nodes": []
+      }
+    ],
+    "longtasks": [
+      52,
+      94,
+      132,
+      80,
+      51,
+      70
+    ],
+    "paints": [
+      {
+        "name": "first-paint",
+        "at": 4048
+      },
+      {
+        "name": "first-contentful-paint",
+        "at": 4048
+      }
+    ],
+    "readyClass": "wp-toolbar",
+    "scriptMs": 718.294,
+    "styleMs": 146.892,
+    "layoutMs": 90.334,
+    "heapMB": 27.280738830566406,
+    "requests": 185,
+    "actionAssets": 0
+  },
+  {
+    "phase": "candidate",
+    "name": "general",
+    "cls": 0.0004161785575865074,
+    "shifts": [
+      {
+        "at": 2016.5,
+        "value": 0.0004153692289010926,
+        "nodes": [
+          "wp-admin-bar-top-secondary",
+          "wp-admin-bar-seopress",
+          "wp-admin-bar-new-content",
+          "ame-mh-title",
+          "ame-mh-title"
+        ]
+      },
+      {
+        "at": 2215,
+        "value": 8.093286854148191e-7,
+        "nodes": []
+      }
+    ],
+    "longtasks": [
+      82,
+      114,
+      124,
+      144,
+      84
+    ],
+    "paints": [
+      {
+        "name": "first-paint",
+        "at": 1804
+      },
+      {
+        "name": "first-contentful-paint",
+        "at": 1932
+      }
+    ],
+    "readyClass": "wp-toolbar",
+    "scriptMs": 550.2909999999999,
+    "styleMs": 93.237,
+    "layoutMs": 145.38799999999998,
+    "heapMB": 28.680461883544922,
+    "requests": 123,
+    "actionAssets": 0
+  },
+  {
+    "phase": "candidate",
+    "name": "config",
+    "cls": 0.0007860362832963016,
+    "shifts": [
+      {
+        "at": 1987,
+        "value": 0.0004153692289010926,
+        "nodes": [
+          "wp-admin-bar-top-secondary",
+          "wp-admin-bar-seopress",
+          "wp-admin-bar-new-content",
+          "ame-mh-title",
+          "ame-mh-title"
+        ]
+      },
+      {
+        "at": 2380.6000000089407,
+        "value": 0.000370667054395209,
+        "nodes": [
+          "wp-admin-bar-top-secondary"
+        ]
+      }
+    ],
+    "longtasks": [
+      73,
+      94,
+      76,
+      59
+    ],
+    "paints": [
+      {
+        "name": "first-paint",
+        "at": 1988
+      },
+      {
+        "name": "first-contentful-paint",
+        "at": 1988
+      }
+    ],
+    "readyClass": "wp-toolbar",
+    "scriptMs": 447.729,
+    "styleMs": 53.274,
+    "layoutMs": 48.025,
+    "heapMB": 22.220130920410156,
+    "requests": 125,
+    "actionAssets": 0
+  },
+  {
+    "phase": "candidate",
+    "name": "pages",
+    "cls": 0.00042034278587480196,
+    "shifts": [
+      {
+        "at": 2675.8999999910593,
+        "value": 0.00041953345718938713,
+        "nodes": [
+          "wp-admin-bar-top-secondary",
+          "wp-admin-bar-seopress",
+          "wp-admin-bar-new-content",
+          "ame-mh-title",
+          "ame-mh-title"
+        ]
+      },
+      {
+        "at": 2712,
+        "value": 8.093286854148191e-7,
+        "nodes": []
+      }
+    ],
+    "longtasks": [
+      68,
+      103,
+      70,
+      60
+    ],
+    "paints": [
+      {
+        "name": "first-paint",
+        "at": 2668
+      },
+      {
+        "name": "first-contentful-paint",
+        "at": 2668
+      }
+    ],
+    "readyClass": "wp-toolbar",
+    "scriptMs": 426.716,
+    "styleMs": 64.613,
+    "layoutMs": 55.758,
+    "heapMB": 21.112728118896484,
+    "requests": 136,
+    "actionAssets": 2
+  },
+  {
+    "phase": "before",
+    "name": "business",
+    "cls": 0.03194377224784718,
+    "shifts": [
+      {
+        "at": 1829.6000000089407,
+        "value": 0.0004153692289010926,
+        "nodes": [
+          "wp-admin-bar-top-secondary",
+          "wp-admin-bar-seopress",
+          "wp-admin-bar-new-content",
+          "ame-mh-title",
+          "ame-mh-title"
+        ]
+      },
+      {
+        "at": 2297,
+        "value": 0.01996750858934799,
+        "nodes": [
+          "acf-field acf-field-select acf-field-mrn-business-schema-author-policy",
+          "acf-field acf-field-image acf-field-mrn-business-logo -c0",
+          "acf-field acf-field-image acf-field-mrn-business-logo-inverted",
+          "acf-field acf-field-text acf-field-mrn-business-schema-alternate-name",
+          "acf-field acf-field-email acf-field-mrn-business-schema-email -c0"
+        ]
+      },
+      {
+        "at": 2327.4000000059605,
+        "value": 0.0011925111219449984,
+        "nodes": [
+          "acf-field acf-field-image acf-field-mrn-business-logo -c0",
+          "acf-field acf-field-image acf-field-mrn-business-logo-inverted",
+          "acf-field acf-field-number acf-field-mrn-business-years-in-business",
+          "acf-field acf-field-text acf-field-mrn-business-profile -c0",
+          "acf-field acf-field-true-false acf-field-mrn-business-schema-ai-training-crawlers"
+        ]
+      },
+      {
+        "at": 2360.800000011921,
+        "value": 0.010320862855801615,
+        "nodes": [
+          "acf-group_mrn_business_information"
+        ]
+      },
+      {
+        "at": 2428.9000000059605,
+        "value": 0.00004752045185148669,
+        "nodes": [
+          "postbox-header"
+        ]
+      }
+    ],
+    "longtasks": [
+      54,
+      94,
+      76,
+      63,
+      51
+    ],
+    "paints": [
+      {
+        "name": "first-paint",
+        "at": 1824
+      },
+      {
+        "name": "first-contentful-paint",
+        "at": 1824
+      }
+    ],
+    "readyClass": "wp-toolbar",
+    "scriptMs": 572.226,
+    "styleMs": 111.579,
+    "layoutMs": 53.248999999999995,
+    "heapMB": 27.320011138916016,
+    "requests": 187,
+    "actionAssets": 2
+  },
+  {
+    "phase": "before",
+    "name": "general",
+    "cls": 0.010614596043427708,
+    "shifts": [
+      {
+        "at": 1805.2000000029802,
+        "value": 0.0004153692289010926,
+        "nodes": [
+          "wp-admin-bar-top-secondary",
+          "wp-admin-bar-seopress",
+          "wp-admin-bar-new-content",
+          "ame-mh-title",
+          "ame-mh-title"
+        ]
+      },
+      {
+        "at": 2052.7000000029802,
+        "value": 0.010199226814526615,
+        "nodes": [
+          "hide-if-no-js site-icon-section",
+          "",
+          "",
+          "",
+          ""
+        ]
+      }
+    ],
+    "longtasks": [
+      61
+    ],
+    "paints": [
+      {
+        "name": "first-paint",
+        "at": 1756
+      },
+      {
+        "name": "first-contentful-paint",
+        "at": 1756
+      }
+    ],
+    "readyClass": "wp-toolbar",
+    "scriptMs": 232.72899999999998,
+    "styleMs": 39.101,
+    "layoutMs": 57.181999999999995,
+    "heapMB": 21.700233459472656,
+    "requests": 125,
+    "actionAssets": 2
+  },
+  {
+    "phase": "before",
+    "name": "config",
+    "cls": 0.023342581712433558,
+    "shifts": [
+      {
+        "at": 2373.5,
+        "value": 0.0004153692289010926,
+        "nodes": [
+          "wp-admin-bar-top-secondary",
+          "wp-admin-bar-seopress",
+          "wp-admin-bar-new-content",
+          "ame-mh-title",
+          "ame-mh-title"
+        ]
+      },
+      {
+        "at": 2793.6000000089407,
+        "value": 0.000370667054395209,
+        "nodes": [
+          "wp-admin-bar-top-secondary"
+        ]
+      },
+      {
+        "at": 2843.9000000059605,
+        "value": 0.022556545429137258,
+        "nodes": [
+          "wrap"
+        ]
+      }
+    ],
+    "longtasks": [
+      72,
+      104,
+      105,
+      51
+    ],
+    "paints": [
+      {
+        "name": "first-paint",
+        "at": 2264
+      },
+      {
+        "name": "first-contentful-paint",
+        "at": 2368
+      }
+    ],
+    "readyClass": "wp-toolbar",
+    "scriptMs": 470.529,
+    "styleMs": 58.817,
+    "layoutMs": 53.268,
+    "heapMB": 26.323516845703125,
+    "requests": 127,
+    "actionAssets": 2
+  },
+  {
+    "phase": "before",
+    "name": "pages",
+    "cls": 0.00042034278587480196,
+    "shifts": [
+      {
+        "at": 2048,
+        "value": 0.00041953345718938713,
+        "nodes": [
+          "wp-admin-bar-top-secondary",
+          "wp-admin-bar-seopress",
+          "wp-admin-bar-new-content",
+          "ame-mh-title",
+          "ame-mh-title"
+        ]
+      },
+      {
+        "at": 2091.2000000029802,
+        "value": 8.093286854148191e-7,
+        "nodes": []
+      }
+    ],
+    "longtasks": [
+      50,
+      71
+    ],
+    "paints": [
+      {
+        "name": "first-paint",
+        "at": 2028
+      },
+      {
+        "name": "first-contentful-paint",
+        "at": 2028
+      }
+    ],
+    "readyClass": "wp-toolbar",
+    "scriptMs": 264.952,
+    "styleMs": 38.693,
+    "layoutMs": 35.79,
+    "heapMB": 21.115245819091797,
+    "requests": 136,
+    "actionAssets": 2
+  },
+  {
+    "phase": "candidate",
+    "name": "business",
+    "cls": 0,
+    "shifts": [],
+    "longtasks": [
+      62,
+      108,
+      71,
+      55
+    ],
+    "paints": [
+      {
+        "name": "first-paint",
+        "at": 1768
+      },
+      {
+        "name": "first-contentful-paint",
+        "at": 1860
+      }
+    ],
+    "readyClass": "wp-toolbar",
+    "scriptMs": 520.297,
+    "styleMs": 107.354,
+    "layoutMs": 55.510999999999996,
+    "heapMB": 33.70100402832031,
+    "requests": 185,
+    "actionAssets": 0
+  },
+  {
+    "phase": "candidate",
+    "name": "general",
+    "cls": 0.0004161785575865074,
+    "shifts": [
+      {
+        "at": 7773.20000000298,
+        "value": 0.0004153692289010926,
+        "nodes": [
+          "wp-admin-bar-top-secondary",
+          "wp-admin-bar-seopress",
+          "wp-admin-bar-new-content",
+          "ame-mh-title",
+          "ame-mh-title"
+        ]
+      },
+      {
+        "at": 7845.70000000298,
+        "value": 8.093286854148191e-7,
+        "nodes": []
+      }
+    ],
+    "longtasks": [
+      737,
+      60,
+      50,
+      753,
+      303
+    ],
+    "paints": [
+      {
+        "name": "first-paint",
+        "at": 7716
+      },
+      {
+        "name": "first-contentful-paint",
+        "at": 7716
+      }
+    ],
+    "readyClass": "wp-toolbar",
+    "scriptMs": 1947.128,
+    "styleMs": 42.75,
+    "layoutMs": 74.866,
+    "heapMB": 21.730369567871094,
+    "requests": 123,
+    "actionAssets": 0
+  },
+  {
+    "phase": "candidate",
+    "name": "config",
+    "cls": 0.0007860362832963016,
+    "shifts": [
+      {
+        "at": 3762.7999999970198,
+        "value": 0.0004153692289010926,
+        "nodes": [
+          "wp-admin-bar-top-secondary",
+          "wp-admin-bar-seopress",
+          "wp-admin-bar-new-content",
+          "ame-mh-title",
+          "ame-mh-title"
+        ]
+      },
+      {
+        "at": 4697.79999999702,
+        "value": 0.000370667054395209,
+        "nodes": [
+          "wp-admin-bar-top-secondary"
+        ]
+      }
+    ],
+    "longtasks": [
+      78,
+      127,
+      73,
+      69
+    ],
+    "paints": [
+      {
+        "name": "first-paint",
+        "at": 3760
+      },
+      {
+        "name": "first-contentful-paint",
+        "at": 3760
+      }
+    ],
+    "readyClass": "wp-toolbar",
+    "scriptMs": 523.015,
+    "styleMs": 62.43,
+    "layoutMs": 54.092,
+    "heapMB": 22.192981719970703,
+    "requests": 125,
+    "actionAssets": 0
+  },
+  {
+    "phase": "candidate",
+    "name": "pages",
+    "cls": 0.00042034278587480196,
+    "shifts": [
+      {
+        "at": 3929.5999999940395,
+        "value": 0.00041953345718938713,
+        "nodes": [
+          "wp-admin-bar-top-secondary",
+          "wp-admin-bar-seopress",
+          "wp-admin-bar-new-content",
+          "ame-mh-title",
+          "ame-mh-title"
+        ]
+      },
+      {
+        "at": 4094.7999999970198,
+        "value": 8.093286854148191e-7,
+        "nodes": []
+      }
+    ],
+    "longtasks": [
+      74,
+      95,
+      78,
+      52
+    ],
+    "paints": [
+      {
+        "name": "first-paint",
+        "at": 3900
+      },
+      {
+        "name": "first-contentful-paint",
+        "at": 3900
+      }
+    ],
+    "readyClass": "wp-toolbar",
+    "scriptMs": 425.628,
+    "styleMs": 71.94399999999999,
+    "layoutMs": 69.952,
+    "heapMB": 21.138671875,
+    "requests": 136,
+    "actionAssets": 2
+  }
+]

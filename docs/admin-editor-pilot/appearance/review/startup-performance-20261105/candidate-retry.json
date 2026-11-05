@@ -1,0 +1,24 @@
+[
+  {
+    "name": "webkit dark mrn-config-helper",
+    "pass": true,
+    "visibleTitles": 1,
+    "bar": {
+      "top": 32,
+      "bottom": 101,
+      "borderLeft": "0px",
+      "borderTop": "0px",
+      "shadow": "none",
+      "background": "rgb(27, 40, 57)"
+    },
+    "nativeBottom": 32,
+    "h1": {
+      "text": "Site Configurations",
+      "clip": "inset(50%)"
+    },
+    "bodyWidth": 1487,
+    "viewport": 1487,
+    "axeViolations": 0,
+    "nativeTabFormValuesUnchanged": true
+  }
+]
