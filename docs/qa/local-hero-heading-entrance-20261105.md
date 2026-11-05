@@ -34,3 +34,11 @@ held before page admission. Evidence: site migration branch,
 docs/stack-migration-2026-11-05/LOCAL_CONFIRMATION_MOTION.md. No merge, release, Fleet
 promotion, case-study-model change or remote deployment. Exact source gates are
 recorded separately; remote parity/deploy checks stay deferred by local-only scope.
+
+
+Exact staged source gates pass for Stack **9ead19ac** and site **bb93ba8** with
+PHPStan advisories. Stack's isolated snapshot lacks the WP-CLI stub; the site's
+partial-symbol scan reports 58 diagnostics including unknown WP_CLI symbols.
+These are not cleared. Lint/security/WPCS/compatibility/diff checks pass; Stack
+Semgrep has no blocking findings. Separate full-theme PHPStan has zero errors.
+Source gates skip runtime rows; the actual timing/CWV failure remains held.
