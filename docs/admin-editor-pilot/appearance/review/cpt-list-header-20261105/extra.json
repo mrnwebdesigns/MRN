@@ -1,0 +1,30 @@
+[
+  {
+    "name": "Mega Menu existing custom-workspace redirect",
+    "pass": true,
+    "url": "https://admin-editor-pilot.mrndev.io/wp-admin/themes.php?page=mrn-mega-menus&view=layouts",
+    "nativeList": false
+  },
+  {
+    "name": "Mega Menu native Trash list uses shared header",
+    "pass": true
+  },
+  {
+    "name": "Native resource category filter and Published view",
+    "pass": true,
+    "queryPreserved": true
+  },
+  {
+    "name": "REST health",
+    "pass": true,
+    "status": 200
+  },
+  {
+    "name": "light no-JavaScript header and native Actions fallback",
+    "pass": true
+  },
+  {
+    "name": "dark no-JavaScript header and native Actions fallback",
+    "pass": true
+  }
+]

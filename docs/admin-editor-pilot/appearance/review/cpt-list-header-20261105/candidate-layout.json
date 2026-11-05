@@ -1,0 +1,242 @@
+[
+  {
+    "type": "resource",
+    "width": 1487,
+    "mode": "light",
+    "pass": true,
+    "checkboxWidth": 62,
+    "titleWidth": 619.75,
+    "titleX": 320,
+    "checkboxRight": 320
+  },
+  {
+    "type": "resource",
+    "width": 1487,
+    "mode": "dark",
+    "pass": true,
+    "checkboxWidth": 62,
+    "titleWidth": 619.75,
+    "titleX": 320,
+    "checkboxRight": 320
+  },
+  {
+    "type": "page",
+    "width": 1487,
+    "mode": "light",
+    "pass": true,
+    "checkboxWidth": 62,
+    "titleWidth": 290.578125,
+    "titleX": 320,
+    "checkboxRight": 320
+  },
+  {
+    "type": "page",
+    "width": 1487,
+    "mode": "dark",
+    "pass": true,
+    "checkboxWidth": 62,
+    "titleWidth": 290.578125,
+    "titleX": 320,
+    "checkboxRight": 320
+  },
+  {
+    "type": "job_posting",
+    "width": 1487,
+    "mode": "light",
+    "pass": true,
+    "checkboxWidth": 62,
+    "titleWidth": 264,
+    "titleX": 320,
+    "checkboxRight": 320
+  },
+  {
+    "type": "job_posting",
+    "width": 1487,
+    "mode": "dark",
+    "pass": true,
+    "checkboxWidth": 62,
+    "titleWidth": 264,
+    "titleX": 320,
+    "checkboxRight": 320
+  },
+  {
+    "type": "mrn_reusable_basic",
+    "width": 1487,
+    "mode": "light",
+    "pass": true,
+    "checkboxWidth": 62,
+    "titleWidth": 303.125,
+    "titleX": 320,
+    "checkboxRight": 320
+  },
+  {
+    "type": "mrn_reusable_basic",
+    "width": 1487,
+    "mode": "dark",
+    "pass": true,
+    "checkboxWidth": 62,
+    "titleWidth": 303.125,
+    "titleX": 320,
+    "checkboxRight": 320
+  },
+  {
+    "type": "resource",
+    "width": 980,
+    "mode": "light",
+    "pass": true,
+    "checkboxWidth": 62,
+    "titleWidth": 324.390625,
+    "titleX": 320,
+    "checkboxRight": 320
+  },
+  {
+    "type": "resource",
+    "width": 980,
+    "mode": "dark",
+    "pass": true,
+    "checkboxWidth": 62,
+    "titleWidth": 324.390625,
+    "titleX": 320,
+    "checkboxRight": 320
+  },
+  {
+    "type": "page",
+    "width": 980,
+    "mode": "light",
+    "pass": true,
+    "checkboxWidth": 62,
+    "titleWidth": 264,
+    "titleX": 320,
+    "checkboxRight": 320
+  },
+  {
+    "type": "page",
+    "width": 980,
+    "mode": "dark",
+    "pass": true,
+    "checkboxWidth": 62,
+    "titleWidth": 264,
+    "titleX": 320,
+    "checkboxRight": 320
+  },
+  {
+    "type": "job_posting",
+    "width": 980,
+    "mode": "light",
+    "pass": true,
+    "checkboxWidth": 62,
+    "titleWidth": 264,
+    "titleX": 320,
+    "checkboxRight": 320
+  },
+  {
+    "type": "job_posting",
+    "width": 980,
+    "mode": "dark",
+    "pass": true,
+    "checkboxWidth": 62,
+    "titleWidth": 264,
+    "titleX": 320,
+    "checkboxRight": 320
+  },
+  {
+    "type": "mrn_reusable_basic",
+    "width": 980,
+    "mode": "light",
+    "pass": true,
+    "checkboxWidth": 62,
+    "titleWidth": 264,
+    "titleX": 320,
+    "checkboxRight": 320
+  },
+  {
+    "type": "mrn_reusable_basic",
+    "width": 980,
+    "mode": "dark",
+    "pass": true,
+    "checkboxWidth": 62,
+    "titleWidth": 264,
+    "titleX": 320,
+    "checkboxRight": 320
+  },
+  {
+    "type": "resource",
+    "width": 390,
+    "mode": "light",
+    "pass": true,
+    "checkboxWidth": 71,
+    "titleWidth": 285,
+    "titleX": 88,
+    "checkboxRight": 88
+  },
+  {
+    "type": "resource",
+    "width": 390,
+    "mode": "dark",
+    "pass": true,
+    "checkboxWidth": 71,
+    "titleWidth": 285,
+    "titleX": 88,
+    "checkboxRight": 88
+  },
+  {
+    "type": "page",
+    "width": 390,
+    "mode": "light",
+    "pass": true,
+    "checkboxWidth": 71,
+    "titleWidth": 285,
+    "titleX": 88,
+    "checkboxRight": 88
+  },
+  {
+    "type": "page",
+    "width": 390,
+    "mode": "dark",
+    "pass": true,
+    "checkboxWidth": 71,
+    "titleWidth": 285,
+    "titleX": 88,
+    "checkboxRight": 88
+  },
+  {
+    "type": "job_posting",
+    "width": 390,
+    "mode": "light",
+    "pass": true,
+    "checkboxWidth": 71,
+    "titleWidth": 285,
+    "titleX": 88,
+    "checkboxRight": 88
+  },
+  {
+    "type": "job_posting",
+    "width": 390,
+    "mode": "dark",
+    "pass": true,
+    "checkboxWidth": 71,
+    "titleWidth": 285,
+    "titleX": 88,
+    "checkboxRight": 88
+  },
+  {
+    "type": "mrn_reusable_basic",
+    "width": 390,
+    "mode": "light",
+    "pass": true,
+    "checkboxWidth": 71,
+    "titleWidth": 285,
+    "titleX": 88,
+    "checkboxRight": 88
+  },
+  {
+    "type": "mrn_reusable_basic",
+    "width": 390,
+    "mode": "dark",
+    "pass": true,
+    "checkboxWidth": 71,
+    "titleWidth": 285,
+    "titleX": 88,
+    "checkboxRight": 88
+  }
+]

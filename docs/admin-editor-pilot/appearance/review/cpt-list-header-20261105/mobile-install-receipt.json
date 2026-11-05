@@ -1,0 +1,22 @@
+{
+  "host": "admin-editor-pilot.mrndev.io",
+  "commit": "02ca9bbe39fb3ddf44d72f81076787548fdf045c",
+  "files": {
+    "mu-plugins/mrn-admin-ui-css/mrn-modern-admin.css": {
+      "before": "90101639c3ac733af4f78cc017a1d2c8c7f99fca847c4903ba7a1be5688394bd",
+      "after": "d551834287004afc8a7f02248cb8ee2dbf2979d7532e186ebf6a5ffd5f3cb165"
+    }
+  },
+  "backup": {
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1793897603,
+    "label": "pre-admin-pilot-cpt-mobile-install-20261105",
+    "nonce": "6a6427c05275",
+    "key": "sites/admin-editor-pilot-mrndev-io/backup_2026-11-05-1653_Trilliant_6a6427c05275-db.gz",
+    "size": 6317433,
+    "sha256": "6446505f8b9684fe6b7582a6d37c4cbd96682d7cbd449350a94ed08ac88ee82f"
+  },
+  "rollback": "/home/mrndev-admin-editor/review-private/before-cpt-mobile-02ca9bbe39fb",
+  "status": "installed"
+}

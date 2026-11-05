@@ -228,3 +228,13 @@ Cloudflare challenge script. No security/infrastructure changes. P1 follow-up:
 profile native/vendor dependency owners and editor CPU/heap; retain the separate
 Local Hub OOM blocker. P2: tiny toolbar/font settling. Next annotation UX-051.
 Visual refinements stay paused until this performance pass is reviewed.
+
+
+**P2 UX-051 — common header across content CPT lists:** implemented and installed
+for review. Native content lists reuse the Careers heading/Add/status/search/filter
+layout, resolved through existing public-content and MRN data registries. Native
+controls and application-owned workspaces remain intact. A shared title-width
+correction prevents sparse tables from inflating the checkbox gutter.
+[Evidence and Light/Dark screenshots](review/cpt-list-header-20261105/REVIEW.md).
+Next annotation UX-052. Existing CPU/heap and Local Hub OOM qualification remain
+P1 release blockers; no Fleet or release preparation is authorized.

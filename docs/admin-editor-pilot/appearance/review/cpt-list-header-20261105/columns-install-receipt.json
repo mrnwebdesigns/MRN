@@ -1,0 +1,22 @@
+{
+  "host": "admin-editor-pilot.mrndev.io",
+  "commit": "f24dd81efea2aaca76f95c3b028f845424dd8b72",
+  "files": {
+    "mu-plugins/mrn-admin-ui-css/mrn-modern-admin.css": {
+      "before": "4463be2d962619efe5d3ce2a24f4ddb0b058cedb74d790f7d4d11efa24c6bb51",
+      "after": "90101639c3ac733af4f78cc017a1d2c8c7f99fca847c4903ba7a1be5688394bd"
+    }
+  },
+  "backup": {
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1793897217,
+    "label": "pre-admin-pilot-cpt-columns-install-20261105",
+    "nonce": "6cac411d7442",
+    "key": "sites/admin-editor-pilot-mrndev-io/backup_2026-11-05-1646_Trilliant_6cac411d7442-db.gz",
+    "size": 6317336,
+    "sha256": "d572debb64c56e79f4682737cdfdfb90ddbb7c58a705dc0a62370043b4865f58"
+  },
+  "rollback": "/home/mrndev-admin-editor/review-private/before-cpt-columns-f24dd81efea2",
+  "status": "installed"
+}

@@ -35,6 +35,23 @@ Do not label a recoverable trash operation `Delete`. Whole-record trash actions 
 - POST every state-changing action with an explicit capability check and nonce.
 - Trash is preferred over permanent deletion when WordPress supports it.
 
+### Shared native content-list header
+
+Native Posts, Pages and content CPT lists reuse the Careers layout: the original
+heading and Add action, status views, search, and the bulk/filter/count toolbar.
+Keep WordPress's `.wrap > h1`, `.page-title-action`, `.subsubsub`, `.search-box`
+and `.tablenav` markup and native forms. `mrn-modern-admin.css` supplies the shared
+Light/Dark presentation; do not rebuild or move the header with JavaScript.
+
+`mrn_admin_ui_modern_screen()` resolves eligible lists once per request from
+existing editor-shell types, public types with an admin UI, and the existing MRN
+admin-data registry. Only registered `show_ui` types qualify. Application types
+(ACF, SEOPress, WPForms, WooCommerce and Tutor) remain excluded even if selected
+as data. Custom application workspaces and redirected screens keep their owners;
+this classification applies only to native `edit` list screens. Taxonomy and
+editor eligibility are unchanged. The existing emergency switch restores native
+presentation. No additional consumer setting or registration contract is needed.
+
 ### Reusable row-actions component
 
 **Actions** is the shared row-action disclosure for supported MRN administration
@@ -77,9 +94,10 @@ actions and native fallback. Grid, Add Media, Dashboard widget tables, other
 custom disclosures and vendor applications are not enhanced. Media loads only
 the shared component styles, not the broader modern-admin stylesheet.
 
-A new MRN screen must first be qualified and added to the existing screen
-allowlist; do not broaden it through prefix matching or force the component onto
-vendor applications.
+Native content lists follow the registry-based eligibility above. Other new MRN
+screens must first be qualified and added to the existing screen allowlist; do
+not broaden it through prefix matching or force the component onto vendor
+applications.
 
 Reuse acceptance checks: native links/nonces and form ancestry, Quick Edit where
 present, keyboard/focus, Light/Dark hover and destructive states, narrow viewports,

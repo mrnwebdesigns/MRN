@@ -1,0 +1,55 @@
+{
+  "cssHash": "d551834287004afc8a7f02248cb8ee2dbf2979d7532e186ebf6a5ffd5f3cb165",
+  "rows": [
+    {
+      "type": "job_posting",
+      "serverScope": true,
+      "headingStableAfterDOMContentLoaded": true,
+      "cls": 0.0003807826171360036,
+      "shifts": [
+        {
+          "at": 2044.2999999970198,
+          "value": 0.0003799732884505888,
+          "nodes": [
+            "wp-admin-bar-top-secondary",
+            "wp-admin-bar-seopress",
+            "wp-admin-bar-new-content",
+            "ame-mh-title",
+            "wp-admin-bar-command-palette"
+          ]
+        },
+        {
+          "at": 2082.2000000029802,
+          "value": 8.093286854148191e-7,
+          "nodes": []
+        }
+      ]
+    },
+    {
+      "type": "resource",
+      "serverScope": true,
+      "headingStableAfterDOMContentLoaded": true,
+      "cls": 0,
+      "shifts": []
+    },
+    {
+      "type": "mrn_reusable_basic",
+      "serverScope": true,
+      "headingStableAfterDOMContentLoaded": true,
+      "cls": 0.000273501482699875,
+      "shifts": [
+        {
+          "at": 1009.0999999940395,
+          "value": 0.000273501482699875,
+          "nodes": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        }
+      ]
+    }
+  ]
+}

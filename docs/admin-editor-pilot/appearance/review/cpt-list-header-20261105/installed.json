@@ -1,0 +1,634 @@
+[
+  {
+    "name": "native inventory post",
+    "pass": true,
+    "type": "post",
+    "scope": true,
+    "title": "Posts",
+    "recordCount": 50,
+    "nativeControlsPreserved": true,
+    "serverRenderedScope": true,
+    "cls": 0.0013065105988619595,
+    "shifts": [
+      {
+        "at": 3603.7000000029802,
+        "value": 0.0004124843719543825,
+        "nodes": [
+          "wp-admin-bar-top-secondary",
+          "wp-admin-bar-seopress",
+          "wp-admin-bar-archive",
+          "wp-admin-bar-new-content",
+          "ame-mh-title"
+        ]
+      },
+      {
+        "at": 3667.3999999910593,
+        "value": 0.0008940262269075768,
+        "nodes": [
+          "date column-date",
+          "date column-date",
+          "date column-date",
+          "tags column-tags",
+          "seopress_title column-seopress_title"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "native inventory page",
+    "pass": true,
+    "type": "page",
+    "scope": true,
+    "title": "Pages",
+    "recordCount": 20,
+    "nativeControlsPreserved": true,
+    "serverRenderedScope": true,
+    "cls": 0,
+    "shifts": []
+  },
+  {
+    "name": "native inventory job_posting",
+    "pass": true,
+    "type": "job_posting",
+    "scope": true,
+    "title": "Careers",
+    "recordCount": 7,
+    "nativeControlsPreserved": true,
+    "serverRenderedScope": true,
+    "cls": 0,
+    "shifts": []
+  },
+  {
+    "name": "native inventory service",
+    "pass": true,
+    "type": "service",
+    "scope": true,
+    "title": "Services",
+    "recordCount": 1,
+    "nativeControlsPreserved": true,
+    "serverRenderedScope": true,
+    "cls": 0,
+    "shifts": []
+  },
+  {
+    "name": "native inventory press_release",
+    "pass": true,
+    "type": "press_release",
+    "scope": true,
+    "title": "Press Releases",
+    "recordCount": 20,
+    "nativeControlsPreserved": true,
+    "serverRenderedScope": true,
+    "cls": 0,
+    "shifts": []
+  },
+  {
+    "name": "native inventory team_member",
+    "pass": true,
+    "type": "team_member",
+    "scope": true,
+    "title": "Team Members",
+    "recordCount": 18,
+    "nativeControlsPreserved": true,
+    "serverRenderedScope": true,
+    "cls": 0,
+    "shifts": []
+  },
+  {
+    "name": "native inventory resource",
+    "pass": true,
+    "type": "resource",
+    "scope": true,
+    "title": "Resources",
+    "recordCount": 20,
+    "nativeControlsPreserved": true,
+    "serverRenderedScope": true,
+    "cls": 0,
+    "shifts": []
+  },
+  {
+    "name": "native inventory event",
+    "pass": true,
+    "type": "event",
+    "scope": true,
+    "title": "Events",
+    "recordCount": 4,
+    "nativeControlsPreserved": true,
+    "serverRenderedScope": true,
+    "cls": 0,
+    "shifts": []
+  },
+  {
+    "name": "native inventory location",
+    "pass": true,
+    "type": "location",
+    "scope": true,
+    "title": "Locations",
+    "recordCount": 1,
+    "nativeControlsPreserved": true,
+    "serverRenderedScope": true,
+    "cls": 0,
+    "shifts": []
+  },
+  {
+    "name": "native inventory mrn_announcement",
+    "pass": true,
+    "type": "mrn_announcement",
+    "scope": true,
+    "title": "Announcements",
+    "recordCount": 3,
+    "nativeControlsPreserved": true,
+    "serverRenderedScope": true,
+    "cls": 0,
+    "shifts": []
+  },
+  {
+    "name": "native inventory mrn_mega_menu",
+    "pass": false,
+    "error": "Expected values to be strictly equal:\n\nfalse !== true\n"
+  },
+  {
+    "name": "native inventory mrn_reusable_cta",
+    "pass": true,
+    "type": "mrn_reusable_cta",
+    "scope": true,
+    "title": "CTAs",
+    "recordCount": 8,
+    "nativeControlsPreserved": true,
+    "serverRenderedScope": true,
+    "cls": 0.000273501482699875,
+    "shifts": [
+      {
+        "at": 1896.7000000029802,
+        "value": 0.000273501482699875,
+        "nodes": [
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      }
+    ]
+  },
+  {
+    "name": "native inventory mrn_reusable_basic",
+    "pass": true,
+    "type": "mrn_reusable_basic",
+    "scope": true,
+    "title": "Basic Blocks",
+    "recordCount": 4,
+    "nativeControlsPreserved": true,
+    "serverRenderedScope": true,
+    "cls": 0.000273501482699875,
+    "shifts": [
+      {
+        "at": 1167,
+        "value": 0.000273501482699875,
+        "nodes": [
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      }
+    ]
+  },
+  {
+    "name": "native inventory mrn_reusable_faq",
+    "pass": true,
+    "type": "mrn_reusable_faq",
+    "scope": true,
+    "title": "FAQs / Accordion",
+    "recordCount": 2,
+    "nativeControlsPreserved": true,
+    "serverRenderedScope": true,
+    "cls": 0.000273501482699875,
+    "shifts": [
+      {
+        "at": 1116.7999999970198,
+        "value": 0.000273501482699875,
+        "nodes": [
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      }
+    ]
+  },
+  {
+    "name": "native inventory mrn_reusable_grid",
+    "pass": true,
+    "type": "mrn_reusable_grid",
+    "scope": true,
+    "title": "Content Grids",
+    "recordCount": 2,
+    "nativeControlsPreserved": true,
+    "serverRenderedScope": true,
+    "cls": 0.000273501482699875,
+    "shifts": [
+      {
+        "at": 997.5,
+        "value": 0.000273501482699875,
+        "nodes": [
+          "",
+          "",
+          "",
+          "current",
+          ""
+        ]
+      }
+    ]
+  },
+  {
+    "name": "native inventory mrn_reusable_list",
+    "pass": true,
+    "type": "mrn_reusable_list",
+    "scope": true,
+    "title": "Content",
+    "recordCount": 3,
+    "nativeControlsPreserved": true,
+    "serverRenderedScope": true,
+    "cls": 0.000273501482699875,
+    "shifts": [
+      {
+        "at": 1100.2999999970198,
+        "value": 0.000273501482699875,
+        "nodes": [
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      }
+    ]
+  },
+  {
+    "name": "native inventory mrn_reusable_search",
+    "pass": true,
+    "type": "mrn_reusable_search",
+    "scope": true,
+    "title": "Search Forms",
+    "recordCount": 1,
+    "nativeControlsPreserved": true,
+    "serverRenderedScope": true,
+    "cls": 0.000273501482699875,
+    "shifts": [
+      {
+        "at": 923.1000000089407,
+        "value": 0.000273501482699875,
+        "nodes": [
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      }
+    ]
+  },
+  {
+    "name": "native inventory mrn_reusable_partner",
+    "pass": true,
+    "type": "mrn_reusable_partner",
+    "scope": true,
+    "title": "Partners",
+    "recordCount": 4,
+    "nativeControlsPreserved": true,
+    "serverRenderedScope": true,
+    "cls": 0.000273501482699875,
+    "shifts": [
+      {
+        "at": 1033.0999999940395,
+        "value": 0.000273501482699875,
+        "nodes": [
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      }
+    ]
+  },
+  {
+    "name": "native inventory acf-field-group",
+    "pass": true,
+    "type": "acf-field-group",
+    "scope": false,
+    "title": "Field Groups",
+    "recordCount": 1,
+    "nativeControlsPreserved": true,
+    "serverRenderedScope": null,
+    "cls": 0,
+    "shifts": []
+  },
+  {
+    "name": "native inventory seopress_404",
+    "pass": true,
+    "type": "seopress_404",
+    "scope": false,
+    "title": "Redirections",
+    "recordCount": 1,
+    "nativeControlsPreserved": true,
+    "serverRenderedScope": null,
+    "cls": 0,
+    "shifts": []
+  },
+  {
+    "name": "light header a11y job_posting",
+    "pass": true,
+    "axeViolations": 0,
+    "heading": {
+      "x": 257,
+      "y": 68.5,
+      "width": 101.578125,
+      "height": 39
+    },
+    "add": {
+      "x": 374.171875,
+      "y": 64,
+      "width": 164.625,
+      "height": 48
+    },
+    "views": {
+      "x": 257,
+      "y": 136,
+      "width": 1198,
+      "height": 44
+    },
+    "search": {
+      "x": 257,
+      "y": 142,
+      "width": 1198,
+      "height": 36
+    }
+  },
+  {
+    "name": "light header a11y resource",
+    "pass": true,
+    "axeViolations": 0,
+    "heading": {
+      "x": 257,
+      "y": 68.5,
+      "width": 136.46875,
+      "height": 39
+    },
+    "add": {
+      "x": 409.0625,
+      "y": 64,
+      "width": 149.203125,
+      "height": 48
+    },
+    "views": {
+      "x": 257,
+      "y": 136,
+      "width": 1198,
+      "height": 44
+    },
+    "search": {
+      "x": 257,
+      "y": 142,
+      "width": 1198,
+      "height": 36
+    }
+  },
+  {
+    "name": "light header a11y event",
+    "pass": true,
+    "axeViolations": 0,
+    "heading": {
+      "x": 257,
+      "y": 68.5,
+      "width": 87.265625,
+      "height": 39
+    },
+    "add": {
+      "x": 359.859375,
+      "y": 64,
+      "width": 125.484375,
+      "height": 48
+    },
+    "views": {
+      "x": 257,
+      "y": 136,
+      "width": 1198,
+      "height": 44
+    },
+    "search": {
+      "x": 257,
+      "y": 142,
+      "width": 1198,
+      "height": 36
+    }
+  },
+  {
+    "name": "light header a11y mrn_reusable_basic",
+    "pass": true,
+    "axeViolations": 0,
+    "heading": {
+      "x": 257,
+      "y": 68.5,
+      "width": 161.609375,
+      "height": 39
+    },
+    "add": {
+      "x": 434.203125,
+      "y": 64,
+      "width": 162.71875,
+      "height": 48
+    },
+    "views": {
+      "x": 257,
+      "y": 136,
+      "width": 1198,
+      "height": 44
+    },
+    "search": {
+      "x": 257,
+      "y": 142,
+      "width": 1198,
+      "height": 36
+    }
+  },
+  {
+    "name": "dark header a11y job_posting",
+    "pass": true,
+    "axeViolations": 0,
+    "heading": {
+      "x": 257,
+      "y": 68.5,
+      "width": 101.578125,
+      "height": 39
+    },
+    "add": {
+      "x": 374.171875,
+      "y": 64,
+      "width": 164.625,
+      "height": 48
+    },
+    "views": {
+      "x": 257,
+      "y": 136,
+      "width": 1198,
+      "height": 44
+    },
+    "search": {
+      "x": 257,
+      "y": 142,
+      "width": 1198,
+      "height": 36
+    }
+  },
+  {
+    "name": "dark header a11y resource",
+    "pass": true,
+    "axeViolations": 0,
+    "heading": {
+      "x": 257,
+      "y": 68.5,
+      "width": 136.46875,
+      "height": 39
+    },
+    "add": {
+      "x": 409.0625,
+      "y": 64,
+      "width": 149.203125,
+      "height": 48
+    },
+    "views": {
+      "x": 257,
+      "y": 136,
+      "width": 1198,
+      "height": 44
+    },
+    "search": {
+      "x": 257,
+      "y": 142,
+      "width": 1198,
+      "height": 36
+    }
+  },
+  {
+    "name": "dark header a11y event",
+    "pass": true,
+    "axeViolations": 0,
+    "heading": {
+      "x": 257,
+      "y": 68.5,
+      "width": 87.265625,
+      "height": 39
+    },
+    "add": {
+      "x": 359.859375,
+      "y": 64,
+      "width": 125.484375,
+      "height": 48
+    },
+    "views": {
+      "x": 257,
+      "y": 136,
+      "width": 1198,
+      "height": 44
+    },
+    "search": {
+      "x": 257,
+      "y": 142,
+      "width": 1198,
+      "height": 36
+    }
+  },
+  {
+    "name": "dark header a11y mrn_reusable_basic",
+    "pass": true,
+    "axeViolations": 0,
+    "heading": {
+      "x": 257,
+      "y": 68.5,
+      "width": 161.609375,
+      "height": 39
+    },
+    "add": {
+      "x": 434.203125,
+      "y": 64,
+      "width": 162.71875,
+      "height": 48
+    },
+    "views": {
+      "x": 257,
+      "y": 136,
+      "width": 1198,
+      "height": 44
+    },
+    "search": {
+      "x": 257,
+      "y": 142,
+      "width": 1198,
+      "height": 36
+    }
+  },
+  {
+    "name": "resource native keyboard actions/search",
+    "pass": true,
+    "keyboardMenu": true,
+    "selectionFeedback": true,
+    "nativeSearchGET": true,
+    "noRecordsWritten": true
+  },
+  {
+    "name": "responsive resource 980",
+    "pass": true,
+    "positions": [
+      {
+        "class": "page-title-action",
+        "x": 409.0625,
+        "right": 558.265625
+      },
+      {
+        "class": "search-box",
+        "x": 257,
+        "right": 948
+      },
+      {
+        "class": "tablenav top",
+        "x": 257,
+        "right": 948
+      }
+    ]
+  },
+  {
+    "name": "responsive resource 390",
+    "pass": true,
+    "positions": [
+      {
+        "class": "page-title-action",
+        "x": 149.8125,
+        "right": 307.09375
+      },
+      {
+        "class": "search-box",
+        "x": 16,
+        "right": 374
+      },
+      {
+        "class": "tablenav top",
+        "x": 16,
+        "right": 374
+      }
+    ]
+  },
+  {
+    "name": "WebKit light resource",
+    "pass": true,
+    "keyboardActions": true
+  },
+  {
+    "name": "WebKit dark resource",
+    "pass": true,
+    "keyboardActions": true
+  }
+]

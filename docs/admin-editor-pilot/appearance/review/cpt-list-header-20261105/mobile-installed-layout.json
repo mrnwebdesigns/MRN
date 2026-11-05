@@ -1,0 +1,82 @@
+[
+  {
+    "type": "resource",
+    "width": 390,
+    "mode": "light",
+    "pass": true,
+    "checkboxWidth": 71,
+    "titleWidth": 285,
+    "titleX": 88,
+    "checkboxRight": 88
+  },
+  {
+    "type": "resource",
+    "width": 390,
+    "mode": "dark",
+    "pass": true,
+    "checkboxWidth": 71,
+    "titleWidth": 285,
+    "titleX": 88,
+    "checkboxRight": 88
+  },
+  {
+    "type": "page",
+    "width": 390,
+    "mode": "light",
+    "pass": true,
+    "checkboxWidth": 71,
+    "titleWidth": 285,
+    "titleX": 88,
+    "checkboxRight": 88
+  },
+  {
+    "type": "page",
+    "width": 390,
+    "mode": "dark",
+    "pass": true,
+    "checkboxWidth": 71,
+    "titleWidth": 285,
+    "titleX": 88,
+    "checkboxRight": 88
+  },
+  {
+    "type": "job_posting",
+    "width": 390,
+    "mode": "light",
+    "pass": true,
+    "checkboxWidth": 71,
+    "titleWidth": 285,
+    "titleX": 88,
+    "checkboxRight": 88
+  },
+  {
+    "type": "job_posting",
+    "width": 390,
+    "mode": "dark",
+    "pass": true,
+    "checkboxWidth": 71,
+    "titleWidth": 285,
+    "titleX": 88,
+    "checkboxRight": 88
+  },
+  {
+    "type": "mrn_reusable_basic",
+    "width": 390,
+    "mode": "light",
+    "pass": true,
+    "checkboxWidth": 71,
+    "titleWidth": 285,
+    "titleX": 88,
+    "checkboxRight": 88
+  },
+  {
+    "type": "mrn_reusable_basic",
+    "width": 390,
+    "mode": "dark",
+    "pass": true,
+    "checkboxWidth": 71,
+    "titleWidth": 285,
+    "titleX": 88,
+    "checkboxRight": 88
+  }
+]

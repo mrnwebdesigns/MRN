@@ -1,0 +1,4658 @@
+[
+  {
+    "type": "post",
+    "scope": true,
+    "title": "Posts",
+    "add": "https://admin-editor-pilot.mrndev.io/wp-admin/post-new.php",
+    "views": [
+      {
+        "text": "All (50)",
+        "href": "edit.php?post_type=post"
+      },
+      {
+        "text": "Published (49)",
+        "href": "edit.php?post_status=publish&post_type=post"
+      },
+      {
+        "text": "Draft (1)",
+        "href": "edit.php?post_status=draft&post_type=post"
+      }
+    ],
+    "fields": [
+      {
+        "name": "s",
+        "id": "post-search-input",
+        "type": "search",
+        "options": null
+      },
+      {
+        "name": "",
+        "id": "search-submit",
+        "type": "submit",
+        "options": null
+      },
+      {
+        "name": "action",
+        "id": "bulk-action-selector-top",
+        "type": "select-one",
+        "options": [
+          "-1",
+          "edit",
+          "trash",
+          "seopress_ai_title",
+          "seopress_ai_desc",
+          "seopress_noindex",
+          "seopress_index",
+          "seopress_nofollow",
+          "seopress_follow",
+          "seopress_enable",
+          "seopress_disable",
+          "seopress_instant_indexing",
+          "m4c_bulk_duplicate"
+        ]
+      },
+      {
+        "name": "m",
+        "id": "filter-by-date",
+        "type": "select-one",
+        "options": [
+          "0",
+          "202611",
+          "202607",
+          "202606",
+          "202605",
+          "202601",
+          "202512",
+          "202511",
+          "202509",
+          "202507",
+          "202506",
+          "202505",
+          "202503",
+          "202502",
+          "202411",
+          "202402",
+          "202308",
+          "202306",
+          "202303",
+          "202301",
+          "202209",
+          "202205",
+          "202110",
+          "201905",
+          "201904",
+          "201903",
+          "201902",
+          "201901",
+          "201810",
+          "201801",
+          "201712",
+          "201711",
+          "201708"
+        ]
+      },
+      {
+        "name": "cat",
+        "id": "cat",
+        "type": "select-one",
+        "options": [
+          "0",
+          "72",
+          "73",
+          "68",
+          "69",
+          "64",
+          "70",
+          "71",
+          "1",
+          "67"
+        ]
+      }
+    ],
+    "rows": [
+      {
+        "id": "post-2619",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=2619&action=edit"
+          },
+          {
+            "label": "Preview",
+            "url": "/?p=2619&preview=true"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=2619"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=2619&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-985",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=985&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/one-grid-modernization-conversation-heard-around-the-world/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=985"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=985&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-988",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=988&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/local-innovation-lasting-impact-advancing-grid-modernization-in-canada/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=988"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=988&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-982",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=982&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/ami-for-electric-cooperatives-modernize-with-the-power-of-choice/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=982"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=982&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-979",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=979&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/grid-congestion-europes-new-energy-challenge-and-how-dsos-can-turn-the-tide/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=979"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=979&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-976",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=976&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/reflections-from-enlit-africa/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=976"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=976&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-966",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=966&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/resiliency-is-essential-as-grids-look-to-modernize/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=966"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=966&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-619",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=619&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/trilliant-and-crell-strengthen-partnership/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=619"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=619&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-617",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=617&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/latin-americas-energy-future-smart-meters-need-smart-grids/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=617"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=617&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-615",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=615&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/beyond-the-metering-gap-why-ami-is-the-key-to-modernizing-utilities-in-africa/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=615"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=615&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-613",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=613&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/empowering-utilities-and-smart-cities-with-scalable-innovation/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=613"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=613&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-606",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=606&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/trilliant-at-enlit-asia-2025/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=606"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=606&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-602",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=602&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/avoiding-vendor-lock-in-while-preparing-for-the-future-grid/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=602"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=602&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-596",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=596&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/the-realities-that-asean-utilities-face-as-they-future-proof-for-the-energy-transition/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=596"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=596&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-594",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=594&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/strengthening-thailands-smart-grid-through-partnership-and-support-2/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=594"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=594&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-592",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=592&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/how-iot-intelligent-infrastructure-are-powering-the-energy-transition/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=592"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=592&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-590",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=590&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/trilliant-highlights-smart-grid-innovation-at-enlit-asia-webinar/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=590"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=590&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-586",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=586&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/cyber-threats-are-moving-to-the-edge/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=586"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=586&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-578",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=578&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/join-us-at-distributech-2025-for-essential-solutions-for-utilities-smart-cities/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=578"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=578&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-576",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=576&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/heres-how-utilities-can-help-customers-win/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=576"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=576&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-571",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=571&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/municipal-and-cooperative-utilities-embrace-the-smart-metering-evolution/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=571"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=571&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-569",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=569&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/innovative-intersections-smart-cities-meet-smart-grids/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=569"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=569&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-529",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=529&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/detecting-energy-theft-or-loss-at-the-source-trilliants-non-technical-loss-analytics/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=529"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=529&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-480",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=480&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/the-evolution-of-technologies-empowering-submetering-in-canada/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=480"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=480&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-478",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=478&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/improving-demand-response-programs-and-power-loss-detection-to-minimize-disruptions-and-increase-reliability/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=478"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=478&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-472",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=472&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/trilliants-vision-for-a-sustainable-future-guided-by-the-uns-sustainable-development-goals/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=472"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=472&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-470",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=470&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/making-a-brighter-change-the-benefits-of-connected-streetlights/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=470"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=470&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-444",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=444&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/sustainable-business-practices-are-an-obligation-to-future-generations/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=444"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=444&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-420",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=420&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/beyond-ami-a-multi-technology-multi-tiered-communication-platform/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=420"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=420&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-411",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=411&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/its-great-to-be-back-at-distributech-2022/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=411"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=411&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-409",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=409&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/preparing-for-the-future-with-trilliant-technology/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=409"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=409&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-405",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=405&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/what-to-consider-when-choosing-a-communication-technology-the-five-cs/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=405"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=405&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-404",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=404&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/the-challenges-and-future-of-smart-grid-communications/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=404"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=404&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-403",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=403&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/the-evolution-of-smart-meters/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=403"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=403&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-402",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=402&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/the-role-of-data-during-the-development-of-networks-for-smart-cities/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=402"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=402&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-366",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=366&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/10-hurricane-preparedness-tips/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=366"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=366&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-365",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=365&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/considering-smart-city-tech-consider-this-first/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=365"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=365&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-363",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=363&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/iiot-delivering-on-your-smart-city/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=363"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=363&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-361",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=361&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/iiot-a-solid-connectivity-delivers-a-smarter-city/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=361"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=361&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-358",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=358&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/mission-critical-infrastructure-smart-grid-internet-of-things-enabling-future/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=358"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=358&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-359",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=359&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/industrial-iot-iiot-deserves-its-own-network/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=359"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=359&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-357",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=357&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/incorporating-led-streetlights-dont-miss-a-golden-opportunity/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=357"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=357&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-356",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=356&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/smart-cities-are-mission-critical/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=356"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=356&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-351",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=351&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/the-iiot-market-its-all-about-the-data-right/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=351"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=351&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-343",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=343&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/trilliant-networks-connecting-cary-smart-city-simulation/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=343"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=343&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-328",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=328&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/conversation-dave-kranzler-co-author-new-industry-reference-book/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=328"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=328&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-327",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=327&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/top-20-iot-acronyms-utilities-need-know-now/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=327"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=327&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-325",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=325&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/malaysias-tnb-making-progress-nationwide-digital-transformation/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=325"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=325&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-324",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=324&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/looking-killer-app-iot-start-unifying-communications/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=324"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=324&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-255",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=255&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/why-utilities-have-a-head-start-on-iot/"
+          },
+          {
+            "label": "Duplicate Post",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=255"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=255&action=trash"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "page",
+    "scope": true,
+    "title": "Pages",
+    "add": "https://admin-editor-pilot.mrndev.io/wp-admin/post-new.php?post_type=page",
+    "views": [
+      {
+        "text": "All (59)",
+        "href": "edit.php?post_type=page&all_posts=1"
+      },
+      {
+        "text": "Mine (13)",
+        "href": "edit.php?post_type=page&author=1"
+      },
+      {
+        "text": "Published (54)",
+        "href": "edit.php?post_status=publish&post_type=page"
+      },
+      {
+        "text": "Drafts (5)",
+        "href": "edit.php?post_status=draft&post_type=page"
+      },
+      {
+        "text": "Trash (1)",
+        "href": "edit.php?post_status=trash&post_type=page"
+      }
+    ],
+    "fields": [
+      {
+        "name": "s",
+        "id": "post-search-input",
+        "type": "search",
+        "options": null
+      },
+      {
+        "name": "",
+        "id": "search-submit",
+        "type": "submit",
+        "options": null
+      },
+      {
+        "name": "action",
+        "id": "bulk-action-selector-top",
+        "type": "select-one",
+        "options": [
+          "-1",
+          "edit",
+          "trash",
+          "seopress_ai_title",
+          "seopress_ai_desc",
+          "seopress_noindex",
+          "seopress_index",
+          "seopress_nofollow",
+          "seopress_follow",
+          "seopress_enable",
+          "seopress_disable",
+          "seopress_instant_indexing",
+          "m4c_bulk_duplicate"
+        ]
+      },
+      {
+        "name": "m",
+        "id": "filter-by-date",
+        "type": "select-one",
+        "options": [
+          "0",
+          "202611",
+          "202610",
+          "202609",
+          "202608"
+        ]
+      }
+    ],
+    "rows": [
+      {
+        "id": "post-2580",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=2580&action=edit"
+          },
+          {
+            "label": "Preview",
+            "url": "/?page_id=2580&preview=true"
+          },
+          {
+            "label": "Duplicate Page",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=2580"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=2580&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-2524",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=2524&action=edit"
+          },
+          {
+            "label": "Preview",
+            "url": "/?page_id=2524&preview=true"
+          },
+          {
+            "label": "Duplicate Page",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=2524"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=2524&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-2523",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=2523&action=edit"
+          },
+          {
+            "label": "Preview",
+            "url": "/?page_id=2523&preview=true"
+          },
+          {
+            "label": "Duplicate Page",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=2523"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=2523&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-2573",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=2573&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/local-pilot-publishing-regression-2/"
+          },
+          {
+            "label": "Duplicate Page",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=2573"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=2573&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-2540",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=2540&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/local-pilot-publishing-regression/"
+          },
+          {
+            "label": "Duplicate Page",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=2540"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=2540&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-2368",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=2368&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/responsibility/"
+          },
+          {
+            "label": "Duplicate Page",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=2368"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=2368&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-1917",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=1917&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/test-page-2/"
+          },
+          {
+            "label": "Duplicate Page",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=1917"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=1917&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-1564",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=1564&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/news-events/"
+          },
+          {
+            "label": "Duplicate Page",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=1564"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=1564&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-1563",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=1563&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/patent-summary/"
+          },
+          {
+            "label": "Duplicate Page",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=1563"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=1563&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-1561",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=1561&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/policies/"
+          },
+          {
+            "label": "Duplicate Page",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=1561"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=1561&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-1562",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=1562&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/policies/privacy-policy/"
+          },
+          {
+            "label": "Duplicate Page",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=1562"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=1562&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-2014",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=2014&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/policies/privacy-policy-spanish/"
+          },
+          {
+            "label": "Duplicate Page",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=2014"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=2014&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-2020",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=2020&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/policies/supplier-code-of-conduct/"
+          },
+          {
+            "label": "Duplicate Page",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=2020"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=2020&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-2021",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=2021&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/policies/supplier-code-of-conduct-spanish/"
+          },
+          {
+            "label": "Duplicate Page",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=2021"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=2021&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-2023",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=2023&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/policies/anti-corruption-policy/"
+          },
+          {
+            "label": "Duplicate Page",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=2023"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=2023&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-2022",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=2022&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/policies/business-conduct-ethics-policy/"
+          },
+          {
+            "label": "Duplicate Page",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=2022"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=2022&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-2024",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=2024&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/policies/conditions-of-service/"
+          },
+          {
+            "label": "Duplicate Page",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=2024"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=2024&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-2025",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=2025&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/policies/terms-of-use/"
+          },
+          {
+            "label": "Duplicate Page",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=2025"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=2025&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-2026",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=2026&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/policies/anti-slavery-human-trafficking-policy/"
+          },
+          {
+            "label": "Duplicate Page",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=2026"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=2026&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-1559",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=1559&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/connect/"
+          },
+          {
+            "label": "Duplicate Page",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=1559"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=1559&action=trash"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "job_posting",
+    "scope": true,
+    "title": "Careers",
+    "add": "https://admin-editor-pilot.mrndev.io/wp-admin/post-new.php?post_type=job_posting",
+    "views": [
+      {
+        "text": "All (7)",
+        "href": "edit.php?post_type=job_posting"
+      },
+      {
+        "text": "Published (7)",
+        "href": "edit.php?post_status=publish&post_type=job_posting"
+      },
+      {
+        "text": "Trash (3)",
+        "href": "edit.php?post_status=trash&post_type=job_posting"
+      }
+    ],
+    "fields": [
+      {
+        "name": "s",
+        "id": "post-search-input",
+        "type": "search",
+        "options": null
+      },
+      {
+        "name": "",
+        "id": "search-submit",
+        "type": "submit",
+        "options": null
+      },
+      {
+        "name": "action",
+        "id": "bulk-action-selector-top",
+        "type": "select-one",
+        "options": [
+          "-1",
+          "edit",
+          "trash",
+          "seopress_ai_title",
+          "seopress_ai_desc",
+          "seopress_noindex",
+          "seopress_index",
+          "seopress_nofollow",
+          "seopress_follow",
+          "seopress_enable",
+          "seopress_disable",
+          "seopress_instant_indexing",
+          "m4c_bulk_duplicate"
+        ]
+      },
+      {
+        "name": "m",
+        "id": "filter-by-date",
+        "type": "select-one",
+        "options": [
+          "0",
+          "202609",
+          "202608"
+        ]
+      },
+      {
+        "name": "cat",
+        "id": "cat",
+        "type": "select-one",
+        "options": [
+          "0",
+          "72",
+          "73",
+          "68",
+          "69",
+          "64",
+          "70",
+          "71",
+          "1",
+          "67"
+        ]
+      }
+    ],
+    "rows": [
+      {
+        "id": "post-1963",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=1963&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/careers/manufacturing-quality-engineer/"
+          },
+          {
+            "label": "Duplicate Job Posting",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=1963"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=1963&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-1961",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=1961&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/careers/inside-sales-representative/"
+          },
+          {
+            "label": "Duplicate Job Posting",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=1961"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=1961&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-1958",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=1958&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/careers/executive-assistant/"
+          },
+          {
+            "label": "Duplicate Job Posting",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=1958"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=1958&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-1135",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=1135&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/careers/product-manager-2/"
+          },
+          {
+            "label": "Duplicate Job Posting",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=1135"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=1135&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-1136",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=1136&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/careers/vp-sales/"
+          },
+          {
+            "label": "Duplicate Job Posting",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=1136"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=1136&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-1137",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=1137&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/careers/support-engineer-5/"
+          },
+          {
+            "label": "Duplicate Job Posting",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=1137"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=1137&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-1134",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=1134&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/careers/vp-of-global-customer-support-and-quality/"
+          },
+          {
+            "label": "Duplicate Job Posting",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=1134"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=1134&action=trash"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "service",
+    "scope": true,
+    "title": "Services",
+    "add": "https://admin-editor-pilot.mrndev.io/wp-admin/post-new.php?post_type=service",
+    "views": [
+      {
+        "text": "All (1)",
+        "href": "edit.php?post_type=service"
+      },
+      {
+        "text": "Draft (1)",
+        "href": "edit.php?post_status=draft&post_type=service"
+      }
+    ],
+    "fields": [
+      {
+        "name": "s",
+        "id": "post-search-input",
+        "type": "search",
+        "options": null
+      },
+      {
+        "name": "",
+        "id": "search-submit",
+        "type": "submit",
+        "options": null
+      },
+      {
+        "name": "action",
+        "id": "bulk-action-selector-top",
+        "type": "select-one",
+        "options": [
+          "-1",
+          "edit",
+          "trash",
+          "seopress_ai_title",
+          "seopress_ai_desc",
+          "seopress_noindex",
+          "seopress_index",
+          "seopress_nofollow",
+          "seopress_follow",
+          "seopress_enable",
+          "seopress_disable",
+          "seopress_instant_indexing",
+          "m4c_bulk_duplicate"
+        ]
+      },
+      {
+        "name": "m",
+        "id": "filter-by-date",
+        "type": "select-one",
+        "options": [
+          "0",
+          "202609"
+        ]
+      },
+      {
+        "name": "cat",
+        "id": "cat",
+        "type": "select-one",
+        "options": [
+          "0",
+          "72",
+          "73",
+          "68",
+          "69",
+          "64",
+          "70",
+          "71",
+          "1",
+          "67"
+        ]
+      }
+    ],
+    "rows": [
+      {
+        "id": "post-1182",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=1182&action=edit"
+          },
+          {
+            "label": "Preview",
+            "url": "/?post_type=service&p=1182&preview=true"
+          },
+          {
+            "label": "Duplicate Service",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=1182"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=1182&action=trash"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "press_release",
+    "scope": true,
+    "title": "Press Releases",
+    "add": "https://admin-editor-pilot.mrndev.io/wp-admin/post-new.php?post_type=press_release",
+    "views": [
+      {
+        "text": "All (268)",
+        "href": "edit.php?post_type=press_release"
+      },
+      {
+        "text": "Published (267)",
+        "href": "edit.php?post_status=publish&post_type=press_release"
+      },
+      {
+        "text": "Private (1)",
+        "href": "edit.php?post_status=private&post_type=press_release"
+      }
+    ],
+    "fields": [
+      {
+        "name": "s",
+        "id": "post-search-input",
+        "type": "search",
+        "options": null
+      },
+      {
+        "name": "",
+        "id": "search-submit",
+        "type": "submit",
+        "options": null
+      },
+      {
+        "name": "action",
+        "id": "bulk-action-selector-top",
+        "type": "select-one",
+        "options": [
+          "-1",
+          "edit",
+          "trash",
+          "seopress_ai_title",
+          "seopress_ai_desc",
+          "seopress_noindex",
+          "seopress_index",
+          "seopress_nofollow",
+          "seopress_follow",
+          "seopress_enable",
+          "seopress_disable",
+          "seopress_instant_indexing",
+          "m4c_bulk_duplicate"
+        ]
+      },
+      {
+        "name": "m",
+        "id": "filter-by-date",
+        "type": "select-one",
+        "options": [
+          "0",
+          "202605",
+          "202603",
+          "202602",
+          "202601",
+          "202511",
+          "202509",
+          "202508",
+          "202506",
+          "202505",
+          "202503",
+          "202410",
+          "202409",
+          "202408",
+          "202406",
+          "202402",
+          "202311",
+          "202308",
+          "202304",
+          "202302",
+          "202211",
+          "202209",
+          "202207",
+          "202205",
+          "202111",
+          "202109",
+          "202106",
+          "202104",
+          "202102",
+          "202012",
+          "202011",
+          "202010",
+          "202008",
+          "202007",
+          "202006",
+          "202005",
+          "202002",
+          "202001",
+          "201912",
+          "201911",
+          "201910",
+          "201909",
+          "201908",
+          "201905",
+          "201904",
+          "201903",
+          "201902",
+          "201901",
+          "201812",
+          "201811",
+          "201810",
+          "201809",
+          "201808",
+          "201806",
+          "201805",
+          "201804",
+          "201801",
+          "201712",
+          "201710",
+          "201709",
+          "201708",
+          "201705",
+          "201704",
+          "201702",
+          "201701",
+          "201611",
+          "201610",
+          "201606",
+          "201605",
+          "201602",
+          "201511",
+          "201506",
+          "201505",
+          "201504",
+          "201502",
+          "201501",
+          "201411",
+          "201410",
+          "201409",
+          "201408",
+          "201406",
+          "201404",
+          "201402",
+          "201401",
+          "201311",
+          "201310",
+          "201306",
+          "201305",
+          "201304",
+          "201301",
+          "201212",
+          "201211",
+          "201210",
+          "201209",
+          "201208",
+          "201206",
+          "201205",
+          "201203",
+          "201201",
+          "201112",
+          "201111",
+          "201110",
+          "201109",
+          "201108",
+          "201107",
+          "201106",
+          "201105",
+          "201102",
+          "201101",
+          "201012",
+          "201011",
+          "201010",
+          "201008",
+          "201007",
+          "201003",
+          "201002",
+          "200911",
+          "200910",
+          "200909",
+          "200908",
+          "200907",
+          "200906",
+          "200905",
+          "200903",
+          "200902",
+          "200901",
+          "200812",
+          "200808",
+          "200807",
+          "200806",
+          "200805",
+          "200804",
+          "200803",
+          "200802",
+          "200712",
+          "200710",
+          "200709",
+          "200707",
+          "200705",
+          "200702",
+          "200610",
+          "200508"
+        ]
+      },
+      {
+        "name": "cat",
+        "id": "cat",
+        "type": "select-one",
+        "options": [
+          "0",
+          "72",
+          "73",
+          "68",
+          "69",
+          "64",
+          "70",
+          "71",
+          "1",
+          "67"
+        ]
+      }
+    ],
+    "rows": [
+      {
+        "id": "post-969",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=969&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/press-releases/trilliant-showcases-ai-driven-grid-intelligence-at-energy-transition-conference-2026/"
+          },
+          {
+            "label": "Duplicate Press Release",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=969"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=969&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-962",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=962&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/press-releases/discover-whats-next-in-grid-modernization-at-techadvantage-2026/"
+          },
+          {
+            "label": "Duplicate Press Release",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=962"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=962&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-960",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=960&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/press-releases/powering-grid-intelligence-at-the-new-trilliant-video/"
+          },
+          {
+            "label": "Duplicate Press Release",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=960"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=960&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-897",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=897&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/press-releases/trilliant-is-powering-grid-intelligence-at-distributech-2026/"
+          },
+          {
+            "label": "Duplicate Press Release",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=897"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=897&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-608",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=608&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/press-releases/energy-transition-solutions-at-enlit-europe-2025/"
+          },
+          {
+            "label": "Duplicate Press Release",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=608"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=608&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-604",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=604&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/press-releases/celebrating-innovation-trilliant-congratulates-pea-and-tnb-on-enlit-asia-honors/"
+          },
+          {
+            "label": "Duplicate Press Release",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=604"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=604&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-600",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=600&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/press-releases/trilliant-accelerates-advanced-metering-infrastructure-deployments-across-the-asia-pacific-region/"
+          },
+          {
+            "label": "Duplicate Press Release",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=600"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=600&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-598",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=598&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/press-releases/trilliant-to-showcase-essential-flexible-energy-solutions-at-enlit-asia-2025/"
+          },
+          {
+            "label": "Duplicate Press Release",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=598"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=598&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-588",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=588&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/press-releases/trilliant-leader-joins-industry-experts-at-enlit-asia-discussion-on-smart-grid-innovation/"
+          },
+          {
+            "label": "Duplicate Press Release",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=588"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=588&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-584",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=584&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/press-releases/trilliant-and-ozz-electric-expand-next-generation-utility-services-in-british-columbia/"
+          },
+          {
+            "label": "Duplicate Press Release",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=584"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=584&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-582",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=582&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/press-releases/partnership-between-trilliant-and-samart-telcoms-reaches-first-milestone-with-the-successful-delivery-of-advanced-metering-infrastructure-for-provincial-electricity-authority-in-thailand/"
+          },
+          {
+            "label": "Duplicate Press Release",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=582"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=582&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-580",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=580&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/press-releases/trilliant-to-showcase-essential-flexible-solutions-for-utilities-and-cities-to-future-proof-their-business-at-distributech-2025/"
+          },
+          {
+            "label": "Duplicate Press Release",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=580"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=580&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-567",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=567&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/press-releases/trilliant-forms-agreement-with-oshawa-power-to-enable-its-suite-metering-program-with-scalable-technology-and-professional-services-expertise/"
+          },
+          {
+            "label": "Duplicate Press Release",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=567"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=567&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-565",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=565&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/press-releases/trilliant-to-showcase-innovative-solutions-to-support-the-energy-transition-at-enlit-europe-2024/"
+          },
+          {
+            "label": "Duplicate Press Release",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=565"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=565&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-563",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=563&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/press-releases/trilliant-announces-strategic-partnership-with-econis-labs-manufacturing-to-expand-ami-offerings-in-water-and-gas-sectors/"
+          },
+          {
+            "label": "Duplicate Press Release",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=563"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=563&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-558",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=558&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/press-releases/trilliant-announces-analytics-as-a-service-enabling-utilities-to-improve-data-analysis-and-forecasting/"
+          },
+          {
+            "label": "Duplicate Press Release",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=558"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=558&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-556",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=556&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/press-releases/trilliant-shines-spotlight-on-its-vision-for-the-future-of-energy-at-enlit-asia-2024/"
+          },
+          {
+            "label": "Duplicate Press Release",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=556"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=556&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-554",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=554&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/press-releases/trilliant-partners-with-milton-hydro-services-inc-to-deliver-advanced-metering-infrastructure-sub-metering-solutions-and-elevate-the-customer-experience/"
+          },
+          {
+            "label": "Duplicate Press Release",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=554"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=554&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-552",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=552&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/press-releases/trilliant-partners-with-sense-to-improve-energy-management-for-utilities-and-consumers/"
+          },
+          {
+            "label": "Duplicate Press Release",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=552"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=552&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-550",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=550&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/press-releases/trilliant-forms-partnership-with-kamstrup-to-become-an-elite-distributor-of-heatcool-metering-solutions-in-canada/"
+          },
+          {
+            "label": "Duplicate Press Release",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=550"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=550&action=trash"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "team_member",
+    "scope": true,
+    "title": "Team Members",
+    "add": "https://admin-editor-pilot.mrndev.io/wp-admin/post-new.php?post_type=team_member",
+    "views": [
+      {
+        "text": "All (18)",
+        "href": "edit.php?post_type=team_member&all_posts=1"
+      },
+      {
+        "text": "Mine (4)",
+        "href": "edit.php?post_type=team_member&author=1"
+      },
+      {
+        "text": "Published (15)",
+        "href": "edit.php?post_status=publish&post_type=team_member"
+      },
+      {
+        "text": "Drafts (3)",
+        "href": "edit.php?post_status=draft&post_type=team_member"
+      }
+    ],
+    "fields": [
+      {
+        "name": "s",
+        "id": "post-search-input",
+        "type": "search",
+        "options": null
+      },
+      {
+        "name": "",
+        "id": "search-submit",
+        "type": "submit",
+        "options": null
+      },
+      {
+        "name": "action",
+        "id": "bulk-action-selector-top",
+        "type": "select-one",
+        "options": [
+          "-1",
+          "edit",
+          "trash",
+          "seopress_ai_title",
+          "seopress_ai_desc",
+          "seopress_noindex",
+          "seopress_index",
+          "seopress_nofollow",
+          "seopress_follow",
+          "seopress_enable",
+          "seopress_disable",
+          "seopress_instant_indexing",
+          "m4c_bulk_duplicate"
+        ]
+      },
+      {
+        "name": "m",
+        "id": "filter-by-date",
+        "type": "select-one",
+        "options": [
+          "0",
+          "202611",
+          "202610",
+          "202608"
+        ]
+      }
+    ],
+    "rows": [
+      {
+        "id": "post-2618",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=2618&action=edit"
+          },
+          {
+            "label": "Preview",
+            "url": "/?post_type=team_member&p=2618&preview=true"
+          },
+          {
+            "label": "Duplicate Team Member",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=2618"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=2618&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-19",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=19&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/team/andy-white/"
+          },
+          {
+            "label": "Duplicate Team Member",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=19"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=19&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-21",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=21&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/team/jim-madej/"
+          },
+          {
+            "label": "Duplicate Team Member",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=21"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=21&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-23",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=23&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/team/aaron-westrick/"
+          },
+          {
+            "label": "Duplicate Team Member",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=23"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=23&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-2039",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=2039&action=edit"
+          },
+          {
+            "label": "Preview",
+            "url": "/?post_type=team_member&p=2039&preview=true"
+          },
+          {
+            "label": "Duplicate Team Member",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=2039"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=2039&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-25",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=25&action=edit"
+          },
+          {
+            "label": "Preview",
+            "url": "/?post_type=team_member&p=25&preview=true"
+          },
+          {
+            "label": "Duplicate Team Member",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=25"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=25&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-27",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=27&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/team/marius-chilom-ph-d/"
+          },
+          {
+            "label": "Duplicate Team Member",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=27"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=27&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-29",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=29&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/team/mike-mortimer/"
+          },
+          {
+            "label": "Duplicate Team Member",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=29"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=29&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-31",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=31&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/team/eugene-loke/"
+          },
+          {
+            "label": "Duplicate Team Member",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=31"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=31&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-33",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=33&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/team/steven-lupo/"
+          },
+          {
+            "label": "Duplicate Team Member",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=33"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=33&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-35",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=35&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/team/nick-matchett/"
+          },
+          {
+            "label": "Duplicate Team Member",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=35"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=35&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-37",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=37&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/team/niemesh-amin/"
+          },
+          {
+            "label": "Duplicate Team Member",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=37"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=37&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-39",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=39&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/team/nicole-corn-j-d/"
+          },
+          {
+            "label": "Duplicate Team Member",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=39"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=39&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-1447",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=1447&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/team/krish-shah/"
+          },
+          {
+            "label": "Duplicate Team Member",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=1447"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=1447&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-41",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=41&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/team/brad-condon/"
+          },
+          {
+            "label": "Duplicate Team Member",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=41"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=41&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-43",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=43&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/team/jeff-scheb/"
+          },
+          {
+            "label": "Duplicate Team Member",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=43"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=43&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-45",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=45&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/team/paul-saxenmeyer/"
+          },
+          {
+            "label": "Duplicate Team Member",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=45"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=45&action=trash"
+          }
+        ]
+      },
+      {
+        "id": "post-47",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=47&action=edit"
+          },
+          {
+            "label": "View",
+            "url": "/team/rafael-sulit/"
+          },
+          {
+            "label": "Duplicate Team Member",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=47"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=47&action=trash"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "resource",
+    "scope": false,
+    "title": "Resources",
+    "add": "https://admin-editor-pilot.mrndev.io/wp-admin/post-new.php?post_type=resource",
+    "views": [
+      {
+        "text": "All (36)",
+        "href": "edit.php?post_type=resource"
+      },
+      {
+        "text": "Published (33)",
+        "href": "edit.php?post_status=publish&post_type=resource"
+      },
+      {
+        "text": "Drafts (3)",
+        "href": "edit.php?post_status=draft&post_type=resource"
+      }
+    ],
+    "fields": [
+      {
+        "name": "s",
+        "id": "post-search-input",
+        "type": "search",
+        "options": null
+      },
+      {
+        "name": "",
+        "id": "search-submit",
+        "type": "submit",
+        "options": null
+      },
+      {
+        "name": "action",
+        "id": "bulk-action-selector-top",
+        "type": "select-one",
+        "options": [
+          "-1",
+          "edit",
+          "trash",
+          "m4c_bulk_duplicate"
+        ]
+      },
+      {
+        "name": "m",
+        "id": "filter-by-date",
+        "type": "select-one",
+        "options": [
+          "0",
+          "202610",
+          "202605",
+          "202511",
+          "202502",
+          "202404",
+          "202402",
+          "202311",
+          "202301",
+          "202208"
+        ]
+      },
+      {
+        "name": "cat",
+        "id": "cat",
+        "type": "select-one",
+        "options": [
+          "0",
+          "72",
+          "73",
+          "68",
+          "69",
+          "64",
+          "70",
+          "71",
+          "1",
+          "67"
+        ]
+      }
+    ],
+    "rows": [
+      {
+        "id": "post-2341",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=2341&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=2341&action=trash"
+          },
+          {
+            "label": "Duplicate Resource",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=2341"
+          }
+        ]
+      },
+      {
+        "id": "post-2338",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=2338&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=2338&action=trash"
+          },
+          {
+            "label": "Duplicate Resource",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=2338"
+          }
+        ]
+      },
+      {
+        "id": "post-2335",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=2335&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=2335&action=trash"
+          },
+          {
+            "label": "Duplicate Resource",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=2335"
+          }
+        ]
+      },
+      {
+        "id": "post-2331",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=2331&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=2331&action=trash"
+          },
+          {
+            "label": "Duplicate Resource",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=2331"
+          }
+        ]
+      },
+      {
+        "id": "post-2327",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=2327&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=2327&action=trash"
+          },
+          {
+            "label": "Duplicate Resource",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=2327"
+          }
+        ]
+      },
+      {
+        "id": "post-2324",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=2324&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=2324&action=trash"
+          },
+          {
+            "label": "Duplicate Resource",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=2324"
+          }
+        ]
+      },
+      {
+        "id": "post-972",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=972&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=972&action=trash"
+          },
+          {
+            "label": "Duplicate Resource",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=972"
+          }
+        ]
+      },
+      {
+        "id": "post-610",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=610&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=610&action=trash"
+          },
+          {
+            "label": "Duplicate Resource",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=610"
+          }
+        ]
+      },
+      {
+        "id": "post-573",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=573&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=573&action=trash"
+          },
+          {
+            "label": "Duplicate Resource",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=573"
+          }
+        ]
+      },
+      {
+        "id": "post-534",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=534&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=534&action=trash"
+          },
+          {
+            "label": "Duplicate Resource",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=534"
+          }
+        ]
+      },
+      {
+        "id": "post-432",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=432&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=432&action=trash"
+          },
+          {
+            "label": "Duplicate Resource",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=432"
+          }
+        ]
+      },
+      {
+        "id": "post-560",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=560&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=560&action=trash"
+          },
+          {
+            "label": "Duplicate Resource",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=560"
+          }
+        ]
+      },
+      {
+        "id": "post-545",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=545&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=545&action=trash"
+          },
+          {
+            "label": "Duplicate Resource",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=545"
+          }
+        ]
+      },
+      {
+        "id": "post-539",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=539&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=539&action=trash"
+          },
+          {
+            "label": "Duplicate Resource",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=539"
+          }
+        ]
+      },
+      {
+        "id": "post-531",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=531&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=531&action=trash"
+          },
+          {
+            "label": "Duplicate Resource",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=531"
+          }
+        ]
+      },
+      {
+        "id": "post-542",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=542&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=542&action=trash"
+          },
+          {
+            "label": "Duplicate Resource",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=542"
+          }
+        ]
+      },
+      {
+        "id": "post-524",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=524&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=524&action=trash"
+          },
+          {
+            "label": "Duplicate Resource",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=524"
+          }
+        ]
+      },
+      {
+        "id": "post-521",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=521&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=521&action=trash"
+          },
+          {
+            "label": "Duplicate Resource",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=521"
+          }
+        ]
+      },
+      {
+        "id": "post-461",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=461&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=461&action=trash"
+          },
+          {
+            "label": "Duplicate Resource",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=461"
+          }
+        ]
+      },
+      {
+        "id": "post-458",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=458&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=458&action=trash"
+          },
+          {
+            "label": "Duplicate Resource",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=458"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "scope": false,
+    "title": "Events",
+    "add": "https://admin-editor-pilot.mrndev.io/wp-admin/post-new.php?post_type=event",
+    "views": [
+      {
+        "text": "All (4)",
+        "href": "edit.php?post_type=event&all_posts=1"
+      },
+      {
+        "text": "Mine (2)",
+        "href": "edit.php?post_type=event&author=1"
+      },
+      {
+        "text": "Published (3)",
+        "href": "edit.php?post_status=publish&post_type=event"
+      },
+      {
+        "text": "Draft (1)",
+        "href": "edit.php?post_status=draft&post_type=event"
+      },
+      {
+        "text": "Trash (6)",
+        "href": "edit.php?post_status=trash&post_type=event"
+      }
+    ],
+    "fields": [
+      {
+        "name": "s",
+        "id": "post-search-input",
+        "type": "search",
+        "options": null
+      },
+      {
+        "name": "",
+        "id": "search-submit",
+        "type": "submit",
+        "options": null
+      },
+      {
+        "name": "action",
+        "id": "bulk-action-selector-top",
+        "type": "select-one",
+        "options": [
+          "-1",
+          "edit",
+          "trash",
+          "m4c_bulk_duplicate"
+        ]
+      },
+      {
+        "name": "m",
+        "id": "filter-by-date",
+        "type": "select-one",
+        "options": [
+          "0",
+          "202610",
+          "202609"
+        ]
+      },
+      {
+        "name": "cat",
+        "id": "cat",
+        "type": "select-one",
+        "options": [
+          "0",
+          "72",
+          "73",
+          "68",
+          "69",
+          "64",
+          "70",
+          "71",
+          "1",
+          "67"
+        ]
+      }
+    ],
+    "rows": [
+      {
+        "id": "post-1858",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=1858&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=1858&action=trash"
+          },
+          {
+            "label": "Duplicate Event",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=1858"
+          }
+        ]
+      },
+      {
+        "id": "post-1859",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=1859&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=1859&action=trash"
+          },
+          {
+            "label": "Duplicate Event",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=1859"
+          }
+        ]
+      },
+      {
+        "id": "post-2083",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=2083&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=2083&action=trash"
+          },
+          {
+            "label": "Duplicate Event",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=2083"
+          }
+        ]
+      },
+      {
+        "id": "post-2088",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=2088&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=2088&action=trash"
+          },
+          {
+            "label": "Duplicate Event",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=2088"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "location",
+    "scope": false,
+    "title": "Locations",
+    "add": "https://admin-editor-pilot.mrndev.io/wp-admin/post-new.php?post_type=location",
+    "views": [
+      {
+        "text": "All (0)",
+        "href": "edit.php?post_type=location"
+      }
+    ],
+    "fields": [],
+    "rows": [
+      {
+        "id": "",
+        "actions": []
+      }
+    ]
+  },
+  {
+    "type": "mrn_announcement",
+    "scope": false,
+    "title": "Announcements",
+    "add": "https://admin-editor-pilot.mrndev.io/wp-admin/post-new.php?post_type=mrn_announcement",
+    "views": [
+      {
+        "text": "All (3)",
+        "href": "edit.php?post_type=mrn_announcement"
+      },
+      {
+        "text": "Published (3)",
+        "href": "edit.php?post_status=publish&post_type=mrn_announcement"
+      }
+    ],
+    "fields": [
+      {
+        "name": "s",
+        "id": "post-search-input",
+        "type": "search",
+        "options": null
+      },
+      {
+        "name": "",
+        "id": "search-submit",
+        "type": "submit",
+        "options": null
+      },
+      {
+        "name": "action",
+        "id": "bulk-action-selector-top",
+        "type": "select-one",
+        "options": [
+          "-1",
+          "edit",
+          "trash",
+          "m4c_bulk_duplicate"
+        ]
+      },
+      {
+        "name": "m",
+        "id": "filter-by-date",
+        "type": "select-one",
+        "options": [
+          "0",
+          "202608"
+        ]
+      }
+    ],
+    "rows": [
+      {
+        "id": "post-12",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=12&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=12&action=trash"
+          },
+          {
+            "label": "Duplicate Announcement",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=12"
+          }
+        ]
+      },
+      {
+        "id": "post-13",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=13&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=13&action=trash"
+          },
+          {
+            "label": "Duplicate Announcement",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=13"
+          }
+        ]
+      },
+      {
+        "id": "post-14",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=14&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=14&action=trash"
+          },
+          {
+            "label": "Duplicate Announcement",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=14"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "mrn_mega_menu",
+    "scope": false,
+    "title": "Mega Menus",
+    "views": [],
+    "fields": [],
+    "rows": []
+  },
+  {
+    "type": "mrn_reusable_cta",
+    "scope": false,
+    "title": "CTAs",
+    "add": "https://admin-editor-pilot.mrndev.io/wp-admin/post-new.php?post_type=mrn_reusable_cta",
+    "views": [
+      {
+        "text": "All (8)",
+        "href": "edit.php?post_type=mrn_reusable_cta"
+      },
+      {
+        "text": "Published (8)",
+        "href": "edit.php?post_status=publish&post_type=mrn_reusable_cta"
+      }
+    ],
+    "fields": [
+      {
+        "name": "s",
+        "id": "post-search-input",
+        "type": "search",
+        "options": null
+      },
+      {
+        "name": "",
+        "id": "search-submit",
+        "type": "submit",
+        "options": null
+      },
+      {
+        "name": "action",
+        "id": "bulk-action-selector-top",
+        "type": "select-one",
+        "options": [
+          "-1",
+          "edit",
+          "trash",
+          "m4c_bulk_duplicate"
+        ]
+      },
+      {
+        "name": "m",
+        "id": "filter-by-date",
+        "type": "select-one",
+        "options": [
+          "0",
+          "202609",
+          "202608"
+        ]
+      }
+    ],
+    "rows": [
+      {
+        "id": "post-1877",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=1877&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=1877&action=trash"
+          },
+          {
+            "label": "Duplicate CTA",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=1877"
+          }
+        ]
+      },
+      {
+        "id": "post-4",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=4&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=4&action=trash"
+          },
+          {
+            "label": "Duplicate CTA",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=4"
+          }
+        ]
+      },
+      {
+        "id": "post-1473",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=1473&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=1473&action=trash"
+          },
+          {
+            "label": "Duplicate CTA",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=1473"
+          }
+        ]
+      },
+      {
+        "id": "post-1434",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=1434&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=1434&action=trash"
+          },
+          {
+            "label": "Duplicate CTA",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=1434"
+          }
+        ]
+      },
+      {
+        "id": "post-1286",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=1286&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=1286&action=trash"
+          },
+          {
+            "label": "Duplicate CTA",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=1286"
+          }
+        ]
+      },
+      {
+        "id": "post-155",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=155&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=155&action=trash"
+          },
+          {
+            "label": "Duplicate CTA",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=155"
+          }
+        ]
+      },
+      {
+        "id": "post-70",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=70&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=70&action=trash"
+          },
+          {
+            "label": "Duplicate CTA",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=70"
+          }
+        ]
+      },
+      {
+        "id": "post-65",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=65&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=65&action=trash"
+          },
+          {
+            "label": "Duplicate CTA",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=65"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "mrn_reusable_basic",
+    "scope": false,
+    "title": "Basic Blocks",
+    "add": "https://admin-editor-pilot.mrndev.io/wp-admin/post-new.php?post_type=mrn_reusable_basic",
+    "views": [
+      {
+        "text": "All (4)",
+        "href": "edit.php?post_type=mrn_reusable_basic"
+      },
+      {
+        "text": "Published (4)",
+        "href": "edit.php?post_status=publish&post_type=mrn_reusable_basic"
+      }
+    ],
+    "fields": [
+      {
+        "name": "s",
+        "id": "post-search-input",
+        "type": "search",
+        "options": null
+      },
+      {
+        "name": "",
+        "id": "search-submit",
+        "type": "submit",
+        "options": null
+      },
+      {
+        "name": "action",
+        "id": "bulk-action-selector-top",
+        "type": "select-one",
+        "options": [
+          "-1",
+          "edit",
+          "trash",
+          "m4c_bulk_duplicate"
+        ]
+      },
+      {
+        "name": "m",
+        "id": "filter-by-date",
+        "type": "select-one",
+        "options": [
+          "0",
+          "202609",
+          "202608"
+        ]
+      }
+    ],
+    "rows": [
+      {
+        "id": "post-5",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=5&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=5&action=trash"
+          },
+          {
+            "label": "Duplicate Basic Block",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=5"
+          }
+        ]
+      },
+      {
+        "id": "post-1180",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=1180&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=1180&action=trash"
+          },
+          {
+            "label": "Duplicate Basic Block",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=1180"
+          }
+        ]
+      },
+      {
+        "id": "post-1181",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=1181&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=1181&action=trash"
+          },
+          {
+            "label": "Duplicate Basic Block",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=1181"
+          }
+        ]
+      },
+      {
+        "id": "post-162",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=162&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=162&action=trash"
+          },
+          {
+            "label": "Duplicate Basic Block",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=162"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "mrn_reusable_faq",
+    "scope": false,
+    "title": "FAQs / Accordion",
+    "add": "https://admin-editor-pilot.mrndev.io/wp-admin/post-new.php?post_type=mrn_reusable_faq",
+    "views": [
+      {
+        "text": "All (2)",
+        "href": "edit.php?post_type=mrn_reusable_faq&all_posts=1"
+      },
+      {
+        "text": "Mine (1)",
+        "href": "edit.php?post_type=mrn_reusable_faq&author=1"
+      },
+      {
+        "text": "Published (2)",
+        "href": "edit.php?post_status=publish&post_type=mrn_reusable_faq"
+      }
+    ],
+    "fields": [
+      {
+        "name": "s",
+        "id": "post-search-input",
+        "type": "search",
+        "options": null
+      },
+      {
+        "name": "",
+        "id": "search-submit",
+        "type": "submit",
+        "options": null
+      },
+      {
+        "name": "action",
+        "id": "bulk-action-selector-top",
+        "type": "select-one",
+        "options": [
+          "-1",
+          "edit",
+          "trash",
+          "m4c_bulk_duplicate"
+        ]
+      },
+      {
+        "name": "m",
+        "id": "filter-by-date",
+        "type": "select-one",
+        "options": [
+          "0",
+          "202610",
+          "202609"
+        ]
+      }
+    ],
+    "rows": [
+      {
+        "id": "post-2218",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=2218&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=2218&action=trash"
+          },
+          {
+            "label": "Duplicate FAQs / Accordion",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=2218"
+          }
+        ]
+      },
+      {
+        "id": "post-6",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=6&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=6&action=trash"
+          },
+          {
+            "label": "Duplicate FAQs / Accordion",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=6"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "mrn_reusable_grid",
+    "scope": false,
+    "title": "Content Grids",
+    "add": "https://admin-editor-pilot.mrndev.io/wp-admin/post-new.php?post_type=mrn_reusable_grid",
+    "views": [
+      {
+        "text": "All (2)",
+        "href": "edit.php?post_type=mrn_reusable_grid"
+      },
+      {
+        "text": "Published (1)",
+        "href": "edit.php?post_status=publish&post_type=mrn_reusable_grid"
+      },
+      {
+        "text": "Draft (1)",
+        "href": "edit.php?post_status=draft&post_type=mrn_reusable_grid"
+      }
+    ],
+    "fields": [
+      {
+        "name": "s",
+        "id": "post-search-input",
+        "type": "search",
+        "options": null
+      },
+      {
+        "name": "",
+        "id": "search-submit",
+        "type": "submit",
+        "options": null
+      },
+      {
+        "name": "action",
+        "id": "bulk-action-selector-top",
+        "type": "select-one",
+        "options": [
+          "-1",
+          "edit",
+          "trash",
+          "m4c_bulk_duplicate"
+        ]
+      },
+      {
+        "name": "m",
+        "id": "filter-by-date",
+        "type": "select-one",
+        "options": [
+          "0",
+          "202609",
+          "202608"
+        ]
+      }
+    ],
+    "rows": [
+      {
+        "id": "post-1432",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=1432&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=1432&action=trash"
+          },
+          {
+            "label": "Duplicate Content Grid",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=1432"
+          }
+        ]
+      },
+      {
+        "id": "post-7",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=7&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=7&action=trash"
+          },
+          {
+            "label": "Duplicate Content Grid",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=7"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "mrn_reusable_list",
+    "scope": false,
+    "title": "Content",
+    "add": "https://admin-editor-pilot.mrndev.io/wp-admin/post-new.php?post_type=mrn_reusable_list",
+    "views": [
+      {
+        "text": "All (3)",
+        "href": "edit.php?post_type=mrn_reusable_list"
+      },
+      {
+        "text": "Published (3)",
+        "href": "edit.php?post_status=publish&post_type=mrn_reusable_list"
+      }
+    ],
+    "fields": [
+      {
+        "name": "s",
+        "id": "post-search-input",
+        "type": "search",
+        "options": null
+      },
+      {
+        "name": "",
+        "id": "search-submit",
+        "type": "submit",
+        "options": null
+      },
+      {
+        "name": "action",
+        "id": "bulk-action-selector-top",
+        "type": "select-one",
+        "options": [
+          "-1",
+          "edit",
+          "trash",
+          "m4c_bulk_duplicate"
+        ]
+      },
+      {
+        "name": "m",
+        "id": "filter-by-date",
+        "type": "select-one",
+        "options": [
+          "0",
+          "202609"
+        ]
+      }
+    ],
+    "rows": [
+      {
+        "id": "post-8",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=8&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=8&action=trash"
+          },
+          {
+            "label": "Duplicate Content",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=8"
+          }
+        ]
+      },
+      {
+        "id": "post-1424",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=1424&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=1424&action=trash"
+          },
+          {
+            "label": "Duplicate Content",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=1424"
+          }
+        ]
+      },
+      {
+        "id": "post-1423",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=1423&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=1423&action=trash"
+          },
+          {
+            "label": "Duplicate Content",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=1423"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "mrn_reusable_search",
+    "scope": false,
+    "title": "Search Forms",
+    "add": "https://admin-editor-pilot.mrndev.io/wp-admin/post-new.php?post_type=mrn_reusable_search",
+    "views": [
+      {
+        "text": "All (1)",
+        "href": "edit.php?post_type=mrn_reusable_search"
+      },
+      {
+        "text": "Draft (1)",
+        "href": "edit.php?post_status=draft&post_type=mrn_reusable_search"
+      }
+    ],
+    "fields": [
+      {
+        "name": "s",
+        "id": "post-search-input",
+        "type": "search",
+        "options": null
+      },
+      {
+        "name": "",
+        "id": "search-submit",
+        "type": "submit",
+        "options": null
+      },
+      {
+        "name": "action",
+        "id": "bulk-action-selector-top",
+        "type": "select-one",
+        "options": [
+          "-1",
+          "edit",
+          "trash",
+          "m4c_bulk_duplicate"
+        ]
+      },
+      {
+        "name": "m",
+        "id": "filter-by-date",
+        "type": "select-one",
+        "options": [
+          "0",
+          "202608"
+        ]
+      }
+    ],
+    "rows": [
+      {
+        "id": "post-9",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=9&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=9&action=trash"
+          },
+          {
+            "label": "Duplicate Search Form",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=9"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "mrn_reusable_partner",
+    "scope": false,
+    "title": "Partners",
+    "add": "https://admin-editor-pilot.mrndev.io/wp-admin/post-new.php?post_type=mrn_reusable_partner",
+    "views": [
+      {
+        "text": "All (4)",
+        "href": "edit.php?post_type=mrn_reusable_partner"
+      },
+      {
+        "text": "Published (3)",
+        "href": "edit.php?post_status=publish&post_type=mrn_reusable_partner"
+      },
+      {
+        "text": "Draft (1)",
+        "href": "edit.php?post_status=draft&post_type=mrn_reusable_partner"
+      }
+    ],
+    "fields": [
+      {
+        "name": "s",
+        "id": "post-search-input",
+        "type": "search",
+        "options": null
+      },
+      {
+        "name": "",
+        "id": "search-submit",
+        "type": "submit",
+        "options": null
+      },
+      {
+        "name": "action",
+        "id": "bulk-action-selector-top",
+        "type": "select-one",
+        "options": [
+          "-1",
+          "edit",
+          "trash",
+          "m4c_bulk_duplicate"
+        ]
+      },
+      {
+        "name": "m",
+        "id": "filter-by-date",
+        "type": "select-one",
+        "options": [
+          "0",
+          "202610",
+          "202609"
+        ]
+      }
+    ],
+    "rows": [
+      {
+        "id": "post-2369",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=2369&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=2369&action=trash"
+          },
+          {
+            "label": "Duplicate Partners",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=2369"
+          }
+        ]
+      },
+      {
+        "id": "post-2370",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=2370&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=2370&action=trash"
+          },
+          {
+            "label": "Duplicate Partners",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=2370"
+          }
+        ]
+      },
+      {
+        "id": "post-2365",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=2365&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=2365&action=trash"
+          },
+          {
+            "label": "Duplicate Partners",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=2365"
+          }
+        ]
+      },
+      {
+        "id": "post-10",
+        "actions": [
+          {
+            "label": "Edit",
+            "url": "/wp-admin/post.php?post=10&action=edit"
+          },
+          {
+            "label": "Trash",
+            "url": "/wp-admin/post.php?post=10&action=trash"
+          },
+          {
+            "label": "Duplicate Partners",
+            "url": "/wp-admin/admin-post.php?action=mtphr_quick_duplicate&post_id=10"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "acf-field-group",
+    "scope": false,
+    "title": "Field Groups",
+    "add": "https://admin-editor-pilot.mrndev.io/wp-admin/post-new.php?post_type=acf-field-group",
+    "views": [
+      {
+        "text": "All (0)",
+        "href": "edit.php?post_type=acf-field-group"
+      }
+    ],
+    "fields": [],
+    "rows": [
+      {
+        "id": "",
+        "actions": []
+      }
+    ]
+  },
+  {
+    "type": "seopress_404",
+    "scope": false,
+    "title": "Redirections",
+    "add": "https://admin-editor-pilot.mrndev.io/wp-admin/post-new.php?post_type=seopress_404",
+    "views": [
+      {
+        "text": "Redirects",
+        "href": "https://admin-editor-pilot.mrndev.io/wp-admin/edit.php?post_type=seopress_404&post_status=redirects"
+      },
+      {
+        "text": "404 errors",
+        "href": "https://admin-editor-pilot.mrndev.io/wp-admin/edit.php?post_type=seopress_404&action=-1&m=0&redirect-cat=0&redirection-type=404&redirection-enabled&filter_action=Filter&paged=1&action2=-1&post_status=404"
+      },
+      {
+        "text": "All",
+        "href": "https://admin-editor-pilot.mrndev.io/wp-admin/edit.php?post_type=seopress_404&post_status=all"
+      },
+      {
+        "text": "Pending",
+        "href": "https://admin-editor-pilot.mrndev.io/wp-admin/edit.php?post_status=pending&post_type=seopress_404"
+      },
+      {
+        "text": "Draft",
+        "href": "https://admin-editor-pilot.mrndev.io/wp-admin/edit.php?post_status=draft&post_type=seopress_404"
+      },
+      {
+        "text": "Trash",
+        "href": "https://admin-editor-pilot.mrndev.io/wp-admin/edit.php?post_status=trash&post_type=seopress_404"
+      },
+      {
+        "text": "Categories",
+        "href": "https://admin-editor-pilot.mrndev.io/wp-admin/edit-tags.php?taxonomy=seopress_404_cat&post_type=seopress_404"
+      }
+    ],
+    "fields": [
+      {
+        "name": "redirection-type",
+        "id": "redirection-type",
+        "type": "select-one",
+        "options": [
+          "",
+          "301",
+          "302",
+          "307",
+          "404",
+          "410",
+          "451"
+        ]
+      },
+      {
+        "name": "redirection-enabled",
+        "id": "redirection-enabled",
+        "type": "select-one",
+        "options": [
+          "",
+          "yes",
+          "no"
+        ]
+      }
+    ],
+    "rows": [
+      {
+        "id": "",
+        "actions": []
+      }
+    ]
+  }
+]
