@@ -455,12 +455,14 @@
 	}
 	function collectNotices() {
 		var wrap = document.querySelector( '#poststuff' ).closest( '.wrap' );
-		var notices = Array.from( wrap.querySelectorAll( ':scope > .notice, :scope > .updated, :scope > .error' ) );
+		// Only direct children can be page notices. A scoped descendant query
+		// still walks the entire ACF form (tens of thousands of nodes) per batch.
+		var notices = Array.from( wrap.children ).filter( function( node ) { return node.matches( '.notice,.updated,.error' ); } );
 		var body = document.getElementById( 'wpbody-content' );
-		notices = notices.concat( Array.from( body.querySelectorAll( ':scope > .notice, :scope > .updated, :scope > .error, :scope > .update-nag' ) ) ).filter( function( notice ) {
+		notices = notices.concat( Array.from( body.children ).filter( function( node ) { return node.matches( '.notice,.updated,.error,.update-nag' ); } ) ).filter( function( notice ) {
 			return ! notice.classList.contains( 'hidden' ) && getComputedStyle( notice ).display !== 'none';
 		} );
-		var alerts = wrap.querySelector( ':scope > .mrn-workspace-alerts' );
+		var alerts = Array.from( wrap.children ).find( function( node ) { return node.classList.contains( 'mrn-workspace-alerts' ); } );
 		if ( ! notices.length && ! alerts ) { return; }
 		if ( ! alerts ) {
 			alerts = element( 'details', 'mrn-workspace-alerts' ); alerts.appendChild( element( 'summary' ) );
