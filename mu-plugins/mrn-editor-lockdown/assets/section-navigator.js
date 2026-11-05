@@ -9,6 +9,7 @@
 	var observer, titleObserver, noticeObserver, frame = 0, refreshFrame = 0, dirtyRows = new Set(), moving = false, sorting = false, errorsOnly = false, mounted = false, lastInvoker, pendingInvalid = false;
 	var richEditors = new WeakSet(), nestedRows = new WeakSet(), addedNestedRows = new WeakSet(), bandFrame = 0;
 	var observed = new WeakSet(), captions = new WeakMap(), remembered = '';
+	var contentList, contentPanels = [], contentSignature = '';
 	function rememberSection() {
 		var item = rows.find( function( entry ) { return entry.row === activeRow; } ), id = document.getElementById( 'post_ID' );
 		if ( item && id ) { try { var value = JSON.stringify( { field: item.field, index: item.index } ); if ( remembered === value ) { return; } window.sessionStorage.setItem( 'mrn-editor-section:' + id.value, value ); remembered = value; } catch ( error ) { /* Storage is optional. */ } }
@@ -72,6 +73,40 @@
 				&& ! field.$el.parents( '.acf-clone, .acf-field[data-type="flexible_content"], .acf-field[data-type="repeater"]' ).length;
 		} );
 	}
+	function contentPreference( box ) {
+		var preference = document.getElementById( box.id + '-hide' );
+		if ( ! preference ) { return; }
+		// Restore only WordPress's optional panel preference. ACF visibility,
+		// hide_on_screen rules and conditional field classes remain authoritative.
+		if ( ! preference.checked ) { box.classList.remove( 'hide-if-js' ); box.style.removeProperty( 'display' ); preference.checked = true; }
+		var label = preference.closest( 'label' );
+		if ( label ) { label.classList.add( 'mrn-managed-region-toggle' ); }
+	}
+	function classifyContent() {
+		var config = labels.panels || { core: [], acfSettings: [] };
+		var nativeStyle = document.getElementById( 'acf-style' );
+		var hiddenRules = nativeStyle && nativeStyle.sheet ? Array.from( nativeStyle.sheet.cssRules ).filter( function( rule ) { return rule.selectorText && rule.style.display === 'none'; } ) : [];
+		var candidates = Array.from( document.querySelectorAll( '#poststuff .acf-postbox' ) ).filter( function( box ) { return config.acfSettings.indexOf( box.id ) === -1; } );
+		config.core.forEach( function( id ) { var node = document.getElementById( id ); if ( node ) { candidates.push( node ); } } );
+		candidates.forEach( function( node ) { node.classList.add( 'mrn-workspace-content' ); contentPreference( node ); } );
+		contentPanels = candidates.filter( function( node ) {
+			// Do not expose navigation to native controls suppressed by an ACF group.
+			return node.id !== 'titlediv' && ! node.classList.contains( 'mrn-workspace-region' ) && ! node.matches( '.acf-hidden,.acf-hidden-by-conditional-logic' )
+				&& ! hiddenRules.some( function( rule ) { return node.matches( rule.selectorText ); } );
+		} );
+		var signature = contentPanels.map( function( node ) { return node.id; } ).join( ',' );
+		if ( signature === contentSignature ) { return; } contentSignature = signature; contentList.replaceChildren();
+		if ( contentPanels.length ) { contentList.appendChild( element( 'h3', 'mrn-content-heading', labels.contentFields ) ); }
+		contentPanels.forEach( function( node ) {
+			var heading = node.querySelector( '.postbox-header h2' ), link = button( heading ? heading.textContent.trim() : labels.bodyContent, 'mrn-content-link mrn-section-link' );
+			link.addEventListener( 'click', function() {
+				mode = 'content'; applyView(); closePanel( false );
+				if ( node.classList.contains( 'closed' ) ) { node.querySelector( '.handlediv' )?.click(); }
+				var target = heading || node; target.setAttribute( 'tabindex', '-1' ); target.focus( { preventScroll: true } );
+				node.scrollIntoView( { block: 'start', behavior: 'instant' } );
+			} ); contentList.appendChild( link );
+		} );
+	}
 	function meaningfulTitle( row ) {
 		var nativeTitle = row.querySelector( '.acf-fc-layout-title' );
 		if ( row.getAttribute( 'data-renamed' ) === '1' && nativeTitle ) { return nativeTitle.textContent.trim(); }
@@ -90,7 +125,9 @@
 	function reveal( node ) {
 		if ( ! nativeReady ) { return; }
 		var ancestors = [], current = node;
-		while ( current && current.closest( '.mrn-workspace-field' ) ) { ancestors.unshift( current ); current = current.parentElement; }
+		var box = node.closest( '.acf-postbox' );
+		if ( box && box.classList.contains( 'closed' ) ) { box.querySelector( '.handlediv' )?.click(); }
+		while ( current && current.closest( '.acf-postbox' ) ) { ancestors.unshift( current ); current = current.parentElement; }
 		ancestors.forEach( function( parent ) {
 			var field;
 			if ( parent.matches( '.layout' ) ) {
@@ -216,7 +253,7 @@
 		if ( focus ) {
 			var heading = row.querySelector( '.acf-fc-layout-handle' );
 			heading.setAttribute( 'tabindex', '-1' ); heading.focus( { preventScroll: true } );
-			document.getElementById( 'mrn-editor-tools' ).scrollIntoView( { block: 'start', behavior: 'instant' } );
+			row.scrollIntoView( { block: 'start', behavior: 'instant' } );
 		}
 	}
 	function applyView() {
@@ -241,7 +278,13 @@
 		if ( moves.length ) { moves[ 0 ].disabled = moving || ! selected || ! rows[ active - 1 ] || rows[ active - 1 ].field !== selected.field; moves[ 1 ].disabled = moving || ! selected || ! rows[ active + 1 ] || rows[ active + 1 ].field !== selected.field; }
 		viewButton.textContent = overview ? labels.focus : labels.overview;
 		viewButton.setAttribute( 'aria-pressed', String( overview ) );
+		viewButton.hidden = ! rows.length;
+		position.parentElement.hidden = ! rows.length;
+		document.querySelector( '.mrn-section-arrangement' ).hidden = ! rows.length;
 		hint.textContent = mode === 'settings' ? labels.settingsHint : ( ! rows.length ? labels.startHint : ( overview ? labels.arrangeHint : labels.hint ) );
+		hint.hidden = mode === 'content' && ( ! fields.length || ( ! rows.length && contentPanels.length > 0 ) );
+		search.hidden = ! fields.length; status.hidden = ! fields.length;
+		panel.querySelector( '.mrn-outline-skip' ).hidden = ! rows.length;
 		queueFieldBands();
 	}
 	function filter() {
@@ -271,7 +314,7 @@
 		var statusText = count + ' / ' + rows.length + ' sections';
 		if ( status.textContent !== statusText ) { status.textContent = statusText; }
 		empty.textContent = rows.length ? labels.empty : labels.start;
-		empty.hidden = count !== 0;
+		empty.hidden = count !== 0 || ! fields.length || ( ! rows.length && contentPanels.length > 0 );
 		errorFilter.hidden = ! errors; errorFilter.textContent = errorsOnly ? labels.all : labels.errors + ' (' + errors + ')';
 		errorFilter.setAttribute( 'aria-pressed', String( errorsOnly ) );
 		mobileToggle.textContent = labels.title + ( errors ? ' · ' + errors + ' ' + labels.errors : '' );
@@ -337,7 +380,7 @@
 		}, 50 );
 	}
 	function reconcile() {
-		frame = 0; if ( sorting ) { return; } fields = eligibleFields(); if ( ! fields.length ) { document.documentElement.classList.remove( 'mrn-editor-starting' ); return; }
+		frame = 0; if ( sorting ) { return; } fields = eligibleFields();
 		if ( ! mounted ) { mount(); }
 		var focused = document.activeElement, oldRows = rows, outlineScroll = panel.scrollTop, oldIndex = oldRows.findIndex( function( item ) { return item.row === activeRow; } );
 		// Disconnect before re-indexing: removed layouts must not be retained by observers.
@@ -348,16 +391,11 @@
 			field.$el[ 0 ].classList.add( 'mrn-workspace-field' );
 			var box = field.$el[ 0 ].closest( '.postbox' );
 			if ( box ) {
-				box.classList.add( 'mrn-workspace-region' ); box.classList.remove( 'closed' );
+				box.classList.add( 'mrn-workspace-region', 'mrn-workspace-content' ); box.classList.remove( 'closed' );
 				// Content regions are managed by the workspace, not optional settings
 				// panels. Restore only native hidden-box preferences; preserve ACF's
 				// conditional field classes and keep every field in the original form.
-				var preference = document.getElementById( box.id + '-hide' );
-				if ( preference ) {
-					if ( ! preference.checked ) { box.classList.remove( 'hide-if-js' ); box.style.removeProperty( 'display' ); preference.checked = true; }
-					var preferenceLabel = preference.closest( 'label' );
-					if ( preferenceLabel ) { preferenceLabel.classList.add( 'mrn-managed-region-toggle' ); }
-				}
+				contentPreference( box );
 			}
 			var label = field.$el.children( '.acf-label' ).text().trim() || field.get( 'name' );
 			var group = element( 'li', 'mrn-section-group' ), header = element( 'div', 'mrn-group-heading' ), groupList = element( 'ol' );
@@ -379,6 +417,7 @@
 				refreshItem( entry ); groupList.appendChild( entry.item ); rows.push( entry );
 			} );
 		} );
+		classifyContent();
 		var added = rows.find( function( item ) { return ! oldRows.some( function( old ) { return old.row === item.row; } ); } );
 		// Initial hydration must retain the saved section; the first appended row
 		// on an already-mounted empty page should enter focused editing directly.
@@ -454,7 +493,8 @@
 		var skip = button( labels.editSelected, 'screen-reader-text mrn-outline-skip' ); skip.addEventListener( 'click', function() { select( activeRow, true ); } );
 		var outlineControls = element( 'div', 'mrn-outline-controls' ); outlineControls.append( outlineHeader, searchLabel, search, skip, status, errorFilter );
 		// New navigation precedes the native form in keyboard order. Existing fields stay put.
-		panel.append( outlineControls, empty, list ); header.after( panel );
+		contentList = element( 'div', 'mrn-content-links' );
+		panel.append( outlineControls, contentList, empty, list ); header.after( panel );
 		var tools = element( 'div', 'mrn-editor-tools' ); tools.id = 'mrn-editor-tools';
 		mobileToggle = button( labels.title, 'mrn-outline-toggle' ); mobileToggle.setAttribute( 'aria-controls', panel.id ); mobileToggle.setAttribute( 'aria-expanded', 'false' ); mobileToggle.addEventListener( 'click', function() { openPanel( mobileToggle ); } );
 		viewButton = button( labels.overview, 'mrn-view-mode' ); viewButton.addEventListener( 'click', function() {
@@ -469,7 +509,9 @@
 		[ { text: labels.moveUp, direction: -1 }, { text: labels.moveDown, direction: 1 } ].forEach( function( action ) { var move = button( action.text, 'mrn-section-move' ); move.addEventListener( 'click', function() { moveSection( action.direction ); } ); arrangement.appendChild( move ); } );
 		steps.append( previous, position, next ); tools.append( mobileToggle, viewButton, arrangement, steps );
 		hint = element( 'p', 'mrn-workspace-hint' ); var title = document.getElementById( 'titlediv' );
-		var titleLabel = element( 'label', 'mrn-page-title-label', labels.pageName ); titleLabel.htmlFor = 'title'; title.prepend( titleLabel ); title.after( tools, hint );
+		if ( title ) {
+			var titleLabel = element( 'label', 'mrn-page-title-label', labels.pageName ); titleLabel.htmlFor = 'title'; title.prepend( titleLabel ); title.after( tools, hint );
+		} else { document.getElementById( 'post-body-content' ).prepend( tools, hint ); }
 		noticeObserver = new MutationObserver( function( changes ) {
 			collectNotices();
 			// The toolbar can mount after ACF's ready callback. Measure it on
@@ -506,7 +548,7 @@
 		if ( ! pendingInvalid ) {
 			pendingInvalid = true; var item = rootRow( field.$el[ 0 ] );
 			if ( item ) { select( item.row, false ); reveal( field.$el[ 0 ] ); }
-			else { mode = 'settings'; applyView(); }
+			else { mode = field.$el[ 0 ].closest( '.mrn-workspace-content' ) ? 'content' : 'settings'; applyView(); reveal( field.$el[ 0 ] ); }
 			window.setTimeout( function() { pendingInvalid = false; }, 0 );
 		}
 		search.value = ''; refresh( field.$el[ 0 ] );

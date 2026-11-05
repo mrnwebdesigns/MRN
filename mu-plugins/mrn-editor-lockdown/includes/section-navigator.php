@@ -37,6 +37,38 @@ function mrn_editor_experience_screen() {
 	return $post_id ? current_user_can( 'edit_post', $post_id ) : ( $type && current_user_can( $type->cap->edit_posts ) );
 }
 
+/**
+ * Reuse native post-type support and ACF's existing group placement.
+ * Authored fields belong to Content even in a sidebar or a mixed group.
+ * Only sidebar groups made entirely of switches/presentation are settings.
+ * Unknown/custom field types default to Content rather than hiding authoring.
+ * This describes existing controls, never renders or relocates field inputs.
+ *
+ * @param string $post_type Registered post type.
+ * @return array
+ */
+function mrn_editor_experience_content_panels( $post_type ) {
+	$core = array();
+	foreach ( array( 'title' => 'titlediv', 'editor' => 'postdivrich', 'excerpt' => 'postexcerpt', 'thumbnail' => 'postimagediv' ) as $feature => $id ) {
+		if ( post_type_supports( $post_type, $feature ) ) {
+			$core[] = $id;
+		}
+	}
+	$settings = array();
+	foreach ( mrn_editor_lockdown_get_acf_field_group_metaboxes( $post_type ) as $group ) {
+		if ( 'side' === $group['position'] ) {
+			$fields = acf_get_fields( $group['field_group'] );
+			$content = array_filter( $fields ?: array(), static function ( $field ) {
+				return ! in_array( $field['type'] ?? '', array( 'true_false', 'message', 'tab', 'accordion' ), true );
+			} );
+			if ( $fields && ! $content ) {
+				$settings[] = $group['id'];
+			}
+		}
+	}
+	return array( 'core' => $core, 'acfSettings' => $settings );
+}
+
 /** Enqueue behavior separately from the cosmetic component. */
 function mrn_editor_experience_enqueue() {
 	if ( ! mrn_editor_experience_screen() ) {
@@ -48,6 +80,9 @@ function mrn_editor_experience_enqueue() {
 		'mrn-section-navigator',
 		'mrnSectionNavigator',
 		array(
+			'panels'   => mrn_editor_experience_content_panels( get_current_screen()->post_type ),
+			'contentFields' => __( 'Content fields', 'mrn-editor-lockdown' ),
+			'bodyContent' => __( 'Body content', 'mrn-editor-lockdown' ),
 			'title'    => __( 'Page structure', 'mrn-editor-lockdown' ),
 			'search'   => __( 'Search sections and content', 'mrn-editor-lockdown' ),
 			'collapseRows' => __( 'Collapse items', 'mrn-editor-lockdown' ),
@@ -79,7 +114,7 @@ function mrn_editor_experience_enqueue() {
 			'moveDown' => __( 'Move section down', 'mrn-editor-lockdown' ),
 			'moved' => __( 'Section moved to position', 'mrn-editor-lockdown' ),
 			'arrangeHint' => __( 'Drag the native section handles, or use Move section up / down for the selected section. Select a section in the outline to return to focused editing.', 'mrn-editor-lockdown' ),
-			'settingsHint' => __( 'Publishing, featured image, page attributes and other page options.', 'mrn-editor-lockdown' ),
+			'settingsHint' => __( 'Publishing, page attributes and other page options. Edit content in the Content tab.', 'mrn-editor-lockdown' ),
 		)
 	);
 }

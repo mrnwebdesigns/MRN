@@ -172,6 +172,10 @@ function acf_get_field_groups( $filter = array() ) {
 	return $GLOBALS['mrn_editor_lockdown_test_field_groups'][ $post_type ];
 }
 
+function post_type_supports( $post_type, $feature ) {
+	return in_array( $feature, "team_member" === $post_type ? array( "title", "thumbnail" ) : array( "title", "editor", "excerpt", "thumbnail" ), true );
+}
+
 function acf_get_fields( $field_group ) {
 	return isset( $field_group['fields'] ) && is_array( $field_group['fields'] ) ? $field_group['fields'] : array();
 }
@@ -291,3 +295,18 @@ mrn_editor_lockdown_test_assert(
 );
 
 echo "PASS: ACF layout discovery and visibility regression.\n";
+
+// ACF placement alone must not send authored fields into settings.
+$team_panels = mrn_editor_experience_content_panels( 'team_member' );
+mrn_editor_lockdown_test_assert( array( 'titlediv', 'postimagediv' ) === $team_panels['core'], 'Core controls follow registered post-type support; no invented body editor.' );
+mrn_editor_lockdown_test_assert( ! in_array( 'acf-group_mrn_team_member_settings', $team_panels['acfSettings'], true ), 'Mixed/custom ACF field groups default to Content, including fields supplied by a child theme.' );
+$GLOBALS['mrn_editor_lockdown_test_field_groups']['settings_only'] = array(
+ array( 'key' => 'group_switches', 'position' => 'side', 'title' => 'Settings', 'fields' => array( array( 'type' => 'true_false' ), array( 'type' => 'message' ) ) ),
+ array( 'key' => 'group_photo', 'position' => 'side', 'title' => 'Photo', 'fields' => array( array( 'type' => 'image' ) ) ),
+ array( 'key' => 'group_body', 'position' => 'normal', 'title' => 'Body', 'fields' => array( array( 'type' => 'wysiwyg' ) ) ),
+ array( 'key' => 'group_nested', 'position' => 'side', 'title' => 'Nested content', 'fields' => array( array( 'type' => 'group', 'sub_fields' => array( array( 'type' => 'text' ) ) ) ) ),
+);
+$panels = mrn_editor_experience_content_panels( 'settings_only' );
+mrn_editor_lockdown_test_assert( array( 'acf-group_switches' ) === $panels['acfSettings'], 'Only configuration-only sidebar groups enter Settings; images and nested authoring stay Content.' );
+mrn_editor_lockdown_test_assert( in_array( 'postdivrich', $panels['core'], true ) && in_array( 'postexcerpt', $panels['core'], true ), 'Supported native body and excerpt remain content.' );
+echo "PASS: Workspace content ownership regression.\n";

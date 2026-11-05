@@ -10,8 +10,8 @@ body.mrn-workspace { --mrn-site-menu-top: calc(var(--mrn-editor-offset, 110px) +
 .mrn-workspace #post-body { margin: 0 !important; }
 .mrn-workspace #post-body-content, .mrn-workspace #postbox-container-1, .mrn-workspace #postbox-container-2 { float: none !important; width: auto !important; margin: 0 !important; min-width: 0; }
 .mrn-workspace #post-body-content { max-width: 1200px; }
-.mrn-workspace:not(.mrn-workspace-settings) #poststuff .postbox:not(.mrn-workspace-region),
-.mrn-workspace.mrn-workspace-settings .mrn-workspace-region,
+.mrn-workspace:not(.mrn-workspace-settings) #poststuff .postbox:not(.mrn-workspace-content),
+.mrn-workspace.mrn-workspace-settings .mrn-workspace-content,
 .mrn-workspace:not(.mrn-workspace-overview) .mrn-region-parked,
 .mrn-workspace:not(.mrn-workspace-overview) .mrn-section-parked { display: none !important; }
 .mrn-workspace #titlediv { margin: 0 0 24px; }
@@ -73,8 +73,11 @@ body.mrn-workspace .mrn-workspace-header { top: var(--mrn-editor-offset, 110px);
 .mrn-workspace .mrn-editor-section.-collapsed > .mrn-section-return { display: none; }
 .mrn-workspace-overview .mrn-section-caption { font-size: 16px; }
 .mrn-workspace-overview .mrn-editor-section > .acf-fc-layout-actions-wrap .acf-fc-layout-handle { padding: 16px 20px !important; }
-.mrn-workspace-settings #poststuff .postbox:not(.mrn-workspace-region) { border: 1px solid var(--mrn-admin-line); border-radius: 10px; box-shadow: none; margin-bottom: 20px; }
-.mrn-workspace-settings #poststuff .postbox-header { border-bottom-color: var(--mrn-admin-line); }
+.mrn-workspace #poststuff .postbox:not(.mrn-workspace-region) { border: 1px solid var(--mrn-admin-line); border-radius: 10px; box-shadow: none; margin-bottom: 20px; }
+.mrn-workspace #poststuff .postbox-header { border-bottom-color: var(--mrn-admin-line); }
+.mrn-workspace .mrn-workspace-content { scroll-margin-top: calc(var(--mrn-editor-offset, 110px) + var(--mrn-workspace-header-height, 54px) + 16px); }
+.mrn-workspace .mrn-content-heading { font-size: 11px; text-transform: uppercase; letter-spacing: .09em; margin: 12px; color: var(--mrn-admin-muted); }
+.mrn-workspace .mrn-content-link { font-size: 13px; font-weight: 600; }
 .mrn-section-outline { position: fixed; top: calc(var(--mrn-editor-offset, 110px) + 54px); left: 0; bottom: 0; width: var(--mrn-outline-width); padding: 24px 16px; box-sizing: border-box; overflow: auto; z-index: 9890; background: var(--mrn-admin-surface); border-right: 1px solid var(--mrn-admin-line); }
 .mrn-outline-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
 .mrn-outline-header h2 { margin: 0; color: var(--mrn-admin-ink); font-size: 18px; letter-spacing: -.02em; }
