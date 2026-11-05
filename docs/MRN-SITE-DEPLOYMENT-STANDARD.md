@@ -462,7 +462,15 @@ blocks this v1 adapter. No object-cache flush, transient deletion, static-asset
 purge, or cache operation against another hostname is permitted.
 
 An edge that retains affected HTML must serve the released asset references
-within the bounded public verification window. The controller retries ordinary
+within the bounded public verification window. Public HTTP checks pace requests
+to each origin at one per second, retaining separate first/warm reads and exact
+manifest checksums. HTTP 429 alone receives up to four attempts and 120 seconds
+of total backoff: a valid numeric or HTTP-date `Retry-After` is honored in full,
+otherwise waits are 15, 30 and 60 seconds. A delay beyond the remaining budget
+fails closed rather than retrying early. Exhaustion is not restarted by the
+cache-propagation loop. Failure/recovery receipts retain safe URL, status and
+Cloudflare identifiers without response bodies, cookies or query secrets.
+The controller retries ordinary
 public requests for up to 120 seconds; it never treats cache-busting queries or a
 CAPTCHA/challenge response as release proof. A failed verification restores the
 previous code selection and refreshes the same HTML scope. Prior immutable asset
