@@ -56,3 +56,8 @@ Local editor W5 (3.2.7) adds scoped keyboard arrangement controls to the approve
 W6 Local Hub candidate (3.2.8) adds shared visual tokens and an explicit native/MRN screen allowlist. Dashboard, native content lists, core settings and named MRN pages share the approved workspace palette. AME retains menu configuration and branding; app-owned screens receive none of the new assets. No settings, content, endpoints or publishing handlers are replaced. The existing strict Local Hub switch disables both workstreams. See `docs/admin-editor-pilot/w5-w6/README.md` for evidence and limitations.
 
 Local appearance candidate (3.3.0) extends that same component with semantic Light/Dark tokens, a themed AME/WordPress shell, and a per-user Light/Dark/System preference. The server emits the preference before CSS; System uses a media query rather than a late initialization script. Existing MRN pickers, settings, notifications and the approved editor workspace consume the palette. Application-owned screens and native media/TinyMCE remain deliberate native light surfaces. No AME configuration or branding data is changed. The original Local Hub emergency switch still disables the candidate. See `docs/admin-editor-pilot/appearance/README.md` for local evidence and outstanding qualification issues; this candidate is not published or Fleet qualified.
+
+The embedded SEOPress editor metabox also retains its native light interior in
+either appearance mode. Shared field, link, button and notice colors exclude that
+interior; its MRN postbox heading remains themed. Keep this boundary at the
+metabox container rather than overriding vendor component internals.
