@@ -37,5 +37,6 @@ coordinator owns merged-source qualification and publication.
 
 SiteGround installation requires its exact-origin identity, a fresh labeled
 remote database backup, committed package provenance, installed checksum readback
-and site verification. MainWP's public-domain connection currently reaches the
-separate WPMUDev source and cannot identify the SiteGround copy.
+and site verification. During initial preflight the public domain still reached
+the separate WPMUDev source, so SiteGround was verified independently. Current
+public routing must be rechecked for every later operation.
