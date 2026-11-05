@@ -55,7 +55,8 @@ body.mrn-modern-admin { background: var(--mrn-admin-canvas); color: var(--mrn-ad
 .mrn-admin-list .wp-list-table tbody tr:not(.inline-edit-row) { background: var(--mrn-admin-surface); }
 .mrn-admin-list .wp-list-table tbody tr:not(.inline-edit-row):hover { background: var(--mrn-admin-surface-subtle); }
 .mrn-admin-list .wp-list-table .check-column { width: 30px; }
-.mrn-admin-list .wp-list-table .column-title { width: 34%; }
+/* Let content use remaining space; a fixed percentage can inflate the checkbox column. */
+.mrn-admin-list .wp-list-table .column-title { width: auto; min-width: 240px; }
 .mrn-admin-list .wp-list-table .row-title { font-size: 15px; line-height: 1.5; }
 .mrn-admin-list .wp-list-table .row-actions { position: static; color: var(--mrn-admin-muted); padding-top: 7px; line-height: 1.7; }
 /* Match the shared Actions control's footprint before its initializer runs. */
@@ -83,7 +84,7 @@ body.mrn-modern-admin { background: var(--mrn-admin-canvas); color: var(--mrn-ad
  .mrn-start-header { display: block; } .mrn-start-alerts { margin-top: 18px; }
  .mrn-start-tasks { grid-template-columns: minmax(0,1fr); }
  .mrn-admin-list .tablenav .actions { float: none; margin-bottom: 8px; }
- .mrn-admin-list .wp-list-table .column-title { width: auto; }
+ .mrn-admin-list .wp-list-table .column-title { width: 100%; min-width: 0; }
  .mrn-admin-list .wp-list-table :is(th,td) { padding: 12px 10px; }
  .mrn-admin-list .wp-list-table .row-actions { display: block; }
  .mrn-admin-settings .wrap > form > .form-table :is(th,td) { padding: 16px; width: auto; }
@@ -96,7 +97,6 @@ body.mrn-modern-admin { background: var(--mrn-admin-canvas); color: var(--mrn-ad
 .mrn-admin-dashboard #dashboard-widgets { align-items: start; }
 .mrn-modern-admin #adminmenu .wp-submenu { box-sizing: border-box; }
 .mrn-admin-list .wp-list-table.fixed { table-layout: auto; }
-.mrn-admin-list .wp-list-table .column-title { width: 30%; }
 .mrn-admin-list .wp-list-table .column-author { width: 10%; }
 .mrn-admin-list .wp-list-table .column-date { width: 13%; }
 .mrn-admin-settings .mrn-config-helper-card { border: 1px solid var(--mrn-admin-line); border-radius: 12px; box-shadow: none; padding: 28px; }
