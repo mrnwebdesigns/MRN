@@ -270,6 +270,51 @@ body.mrn-modern-admin:not(.mrn-admin-dashboard) #wpbody-content .nav-tab-wrapper
 .mrn-themed-content #wpbody-content .mrn-notifications-center__item--alert { border-left-color: var(--mrn-admin-warning-line); }
 .mrn-themed-content #wpbody-content :is(.mrn-notifications-center__meta,.mrn-config-helper-field-description) { color: var(--mrn-admin-muted); }
 .mrn-themed-content #wpbody-content :is(.mrn-notifications-center__tabs,.mrn-notifications-center__toolbar,.mrn-config-helper-section-header) { background: transparent; color: var(--mrn-admin-ink); }
+/* Shared MRN settings bar: use the editor's surfaces and controls. The existing
+   helper retains positioning, responsive spacer measurement and native saving. */
+body.mrn-appearance.mrn-admin-settings #wpbody-content .mrn-sticky-save-bar {
+ --mrn-toolbar-left: var(--ame-ms-menu-width, 160px); --mrn-toolbar-right: 0px;
+ top: var(--wp-admin--admin-bar--height, 32px); z-index: 9900; min-height: 64px;
+ padding: 12px 28px; gap: 12px 24px; flex-wrap: wrap;
+ border: 0; border-bottom: 1px solid var(--mrn-admin-line); box-shadow: none;
+ background: var(--mrn-admin-surface); color: var(--mrn-admin-ink);
+}
+body.mrn-appearance.mrn-admin-settings .mrn-settings-toolbar__meta { min-width: 0; flex: 1 1 auto; }
+body.mrn-appearance.mrn-admin-settings .mrn-settings-toolbar__title { font-size: 18px; font-weight: 650; line-height: 1.4; white-space: normal; color: var(--mrn-admin-ink); }
+body.mrn-appearance.mrn-admin-settings #wpbody-content .mrn-settings-toolbar__actions { min-width: 0; margin: 0; width: auto; flex: 1 1 auto; justify-content: flex-end; gap: 12px; }
+body.mrn-appearance.mrn-admin-settings #wpbody-content .mrn-settings-toolbar__actions:not(:has(.mrn-settings-tabs)) { flex: 0 0 auto; }
+body.mrn-appearance.mrn-admin-settings #wpbody-content .mrn-settings-tabs { width: auto; padding: 0; gap: 4px; background: transparent; }
+body.mrn-appearance.mrn-admin-settings #wpbody-content .mrn-settings-tab:not(.mrn-settings-tab--save) { min-height: 36px; padding: 8px 10px; color: var(--mrn-admin-muted); }
+body.mrn-appearance.mrn-admin-settings #wpbody-content .mrn-settings-tab:not(.mrn-settings-tab--save):is(:hover,:focus-visible,.is-active,[aria-selected=true]) { background: var(--mrn-admin-selected); color: var(--mrn-admin-selected-ink); }
+body.mrn-appearance.mrn-admin-settings #wpbody-content .mrn-sticky-save-bar .mrn-settings-tab--save.button-primary { border-radius: 6px; background: var(--mrn-admin-primary); border-color: var(--mrn-admin-primary); color: var(--mrn-admin-on-primary); box-shadow: none; }
+body.mrn-appearance.mrn-admin-settings #wpbody-content .mrn-sticky-save-bar .mrn-settings-tab--save.button-primary:hover { background: var(--mrn-admin-primary-hover); border-color: var(--mrn-admin-primary-hover); }
+body.mrn-appearance.mrn-admin-settings #wpbody-content .mrn-sticky-save-bar .mrn-settings-tab--save.button-primary:disabled { background: var(--mrn-admin-disabled); border-color: var(--mrn-admin-line); color: var(--mrn-admin-disabled-ink); }
+/* Only these qualified screens repeat the toolbar's title. Keep the original
+   H1 available to screen readers, and fail open if its native bar is absent. */
+body.mrn-appearance.mrn-admin-settings #wpbody-content:has(:is(#mrn-business-information-toolbar,#mrn-theme-header-footer-toolbar,#mrn-header-utility-message-toolbar,#mrn-site-config-toolbar)) > .wrap > h1,
+body.mrn-appearance.mrn-admin-settings #wpbody-content:has(.mrn-sticky-save-bar) :is(#acf-group_mrn_business_information,#acf-group_mrn_theme_header_footer,#acf-group_mrn_header_utility_message):not(.closed) > .postbox-header > h2 {
+ position: absolute !important; width: 1px !important; height: 1px !important;
+ padding: 0 !important; margin: -1px !important; overflow: hidden;
+ clip: rect(0,0,0,0); clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+/* Preserve the native collapse button beside the first tab/field. Distinct
+   panel headings and the closed panel's restore affordance remain intact. */
+body.mrn-appearance.mrn-admin-settings #wpbody-content:has(.mrn-sticky-save-bar) :is(#acf-group_mrn_business_information,#acf-group_mrn_theme_header_footer,#acf-group_mrn_header_utility_message) { position: relative; border: 1px solid var(--mrn-admin-line); border-radius: 12px; }
+body.mrn-appearance.mrn-admin-settings #wpbody-content:has(.mrn-sticky-save-bar) :is(#acf-group_mrn_business_information,#acf-group_mrn_theme_header_footer,#acf-group_mrn_header_utility_message):not(.closed) > .postbox-header { position: absolute; top: 8px; right: 8px; z-index: 3; border: 0; background: transparent; }
+body.mrn-appearance.mrn-admin-settings #wpbody-content:has(.mrn-sticky-save-bar) :is(#acf-group_mrn_business_information,#acf-group_mrn_theme_header_footer,#acf-group_mrn_header_utility_message) > .inside > .acf-tab-wrap > .acf-tab-group { padding-right: 44px; }
+body.mrn-appearance.mrn-admin-settings #wpbody-content:has(.mrn-sticky-save-bar) :is(#acf-group_mrn_business_information,#acf-group_mrn_theme_header_footer,#acf-group_mrn_header_utility_message) > .inside > .acf-field:first-child > .acf-label { padding-right: 44px; }
+@media (min-width: 783px) {
+ body.mrn-appearance.mrn-admin-settings.folded #wpbody-content .mrn-sticky-save-bar { --mrn-toolbar-left: 36px; }
+}
+@media (min-width: 783px) and (max-width: 960px) {
+ body.mrn-appearance.mrn-admin-settings.auto-fold #wpbody-content .mrn-sticky-save-bar { --mrn-toolbar-left: 36px; }
+}
+@media (max-width: 782px) {
+ body.mrn-appearance.mrn-admin-settings:has(.mrn-sticky-save-bar) #wpadminbar { position: fixed; }
+ body.mrn-appearance.mrn-admin-settings #wpbody-content .mrn-sticky-save-bar { --mrn-toolbar-left: 0px; padding: 8px 12px; gap: 8px 12px; }
+ body.mrn-appearance.mrn-admin-settings #wpbody-content .mrn-settings-toolbar__actions:has(.mrn-settings-tabs) { flex-basis: 100%; }
+ body.mrn-appearance.mrn-admin-settings #wpbody-content .mrn-sticky-save-bar :is(.button,.mrn-settings-tab) { min-height: 44px; }
+}
 .mrn-admin-list .inline-edit-row :is(td,fieldset,legend), .mrn-admin-list .inline-edit-row { background: var(--mrn-admin-surface-subtle); color: var(--mrn-admin-ink); }
 .mrn-admin-list .inline-edit-row :is(.title,.checkbox-title,.inline-edit-group label) { color: var(--mrn-admin-ink); }
 .mrn-admin-list .wp-list-table :is(td,th) { color: var(--mrn-admin-ink); border-color: var(--mrn-admin-line); }
