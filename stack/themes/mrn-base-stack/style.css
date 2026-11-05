@@ -8791,3 +8791,25 @@ a.mrn-social-links__link:focus-visible svg {
 @media (max-width: 1199px) {
  .has-cta-frame.has-cta-text-space-after-at-1199 .mrn-reusable-block__content--cta > .mrn-ui__text { padding-bottom: var(--mrn-cta-frame-text-space-after-narrow); }
 }
+
+/* Opt-in Body Text rich-paragraph and link presentation; content stays editable. */
+.has-body-frame.has-body-content-fit > .mrn-layout-section--text > .mrn-layout-container > .mrn-layout-grid--text-shell > .mrn-layout-content--text-shell { width: fit-content; max-width: 100%; min-width: 0; }
+.has-body-frame.has-body-lead-label .mrn-ui__text > p:first-child {
+ font-family: var(--site-font-heading, inherit);
+ font-size: var(--mrn-body-frame-label-size, inherit);
+ line-height: var(--mrn-body-frame-label-line-height, inherit);
+ font-weight: var(--mrn-body-frame-label-weight, inherit);
+ color: var(--mrn-body-frame-label-color, inherit);
+ text-transform: var(--mrn-body-frame-label-transform, none);
+ letter-spacing: var(--mrn-body-frame-label-letter-spacing, normal);
+ margin-bottom: var(--mrn-body-frame-label-space-after, 0px);
+}
+.has-body-frame.has-body-link-weight .mrn-ui__text a { font-weight: var(--mrn-body-frame-link-weight); }
+.has-body-frame.has-body-link-decoration .mrn-ui__text a { text-decoration-line: var(--mrn-body-frame-link-decoration); }
+.has-body-frame.has-body-link-color .mrn-ui__text a:where(:not(:hover):not(:focus-visible)) { color: var(--mrn-body-frame-link-color); }
+.has-body-frame.has-body-link-hover-color .mrn-ui__text a:is(:hover, :focus-visible) { color: var(--mrn-body-frame-link-hover-color); }
+
+/* Native row typography can replace a legacy page-wide letter-spacing reset. */
+.has-row-normal-tracking, .has-row-normal-tracking :where(*) { letter-spacing: normal; }
+
+.has-row-text-color { color: var(--mrn-row-text-color); }

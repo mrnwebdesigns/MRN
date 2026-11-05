@@ -8279,6 +8279,12 @@ function mrn_base_stack_ensure_builder_layout_display_style_fields( array $field
 		? mrn_base_stack_get_builder_display_styles_contract_fields( $layout_name, '' !== $key_seed ? $key_seed : 'field_mrn_' . $layout_name . '_display' )
 		: array();
 
+	if ( in_array( $layout_name, array( 'hero', 'basic_block', 'body_text', 'card', 'cta', 'cta_block', 'content_lists' ), true ) ) {
+		$display_contract_names = array_merge( $display_contract_names, array( 'row_text_tracking', 'row_text_color' ) );
+		$text_color = mrn_base_stack_get_background_color_field( sanitize_key( '' !== $key_seed ? $key_seed : 'field_mrn_' . $layout_name . '_display' ) . '_row_text_color' ); $text_color['name'] = 'row_text_color'; $text_color['label'] = 'Row Text Color'; $text_color['instructions'] = 'Optional inherited foreground color from Site Colors. Explicit component colors retain priority; blank preserves existing colors.'; $display_contract_fields[] = $text_color;
+		$display_contract_fields[] = array( 'key' => sanitize_key( '' !== $key_seed ? $key_seed : 'field_mrn_' . $layout_name . '_display' ) . '_row_text_tracking', 'name' => 'row_text_tracking', 'label' => 'Text Letter Spacing', 'type' => 'select', 'choices' => array( '' => 'Use Existing Typography', 'normal' => 'Normal Within This Row' ), 'default_value' => '', 'instructions' => 'Optional normal letter spacing for this row and its contents. Explicit component typography controls retain priority. Blank preserves existing heading and body tracking.' );
+	}
+
 	if ( empty( $mode_choices ) && empty( $style_choices ) && empty( $display_contract_fields ) ) {
 		return $fields;
 	}

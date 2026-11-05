@@ -406,6 +406,12 @@ function mrn_base_stack_get_builder_display_contract( array $row, $layout_name )
 	$display_style = mrn_base_stack_normalize_builder_layout_display_style( $row['display_style'] ?? '', $layout_name, $display_mode, 'default' );
 	$classes       = array();
 	$attributes    = array();
+	if ( in_array( $layout_name, array( 'hero', 'basic_block', 'body_text', 'card', 'cta', 'cta_block', 'content_lists' ), true ) && 'normal' === ( $row['row_text_tracking'] ?? '' ) ) { $classes[] = 'has-row-normal-tracking'; }
+
+	if ( in_array( $layout_name, array( 'hero', 'basic_block', 'body_text', 'card', 'cta', 'cta_block', 'content_lists' ), true ) && function_exists( 'mrn_base_stack_get_frame_palette_color' ) ) {
+		$text_color = mrn_base_stack_get_frame_palette_color( $row['row_text_color'] ?? '' );
+		if ( '' !== $text_color ) { $classes[] = 'has-row-text-color'; $attributes['style'] = '--mrn-row-text-color:' . $text_color; }
+	}
 
 	if ( '' !== $display_mode ) {
 		$classes[]                       = 'mrn-content-builder__row--display-mode-' . sanitize_html_class( $display_mode );
