@@ -46,6 +46,21 @@ Final installed hashes and candidate render continuity cover exactly content-fra
 builder/helpers.php, display-styles.php and style.css. Fresh private SQL is verified
 against its completion footer, all 70 runtime tables and matching host/VM checksum.
 Site evidence lives at docs/stack-migration-2026-11-05/LOCAL_CONFIRMATION_TEXT.md on the
-site migration branch. Explicit motion/page-shell/footer and final page review remain.
+site migration branch. Explicit motion and complete-page acceptance remain.
 No authored conversion, case-study-model change, merge, PR, release/Fleet promotion or
 remote deployment. The owner’s local-only boundary defers remote parity/deploy checks.
+
+The exact staged source gate for Stack **ade0c047** passes lint, PHPCS security,
+WordPress standards, compatibility, Semgrep and diff checks, with a PHPStan advisory
+for the isolated snapshot’s missing WP-CLI stub. Site **9092d0d** passes its source
+gate with 84 partial-analysis diagnostics including unknown WP_CLI symbols. Those
+advisories remain; separate configured full-theme PHPStan has zero errors. Runtime
+API/browser/WCAG/timing/Web Vitals pass separately on the local native fixture.
+
+A read-only source/native retained-shell audit has eight desktop/mobile and
+normal/reduced-motion samples: all have zero final-row-to-footer gap. The mobile
+Hero’s 7.765625px reduction matches its already documented intentional block-image
+baseline cleanup; subsequent row heights match. The remaining motion gap is exact:
+legacy heading uses a 700ms on-load fade/0.35em rise; existing native Subtle Text
+Reveal is 550ms and intersection-triggered. Both reduce to static text when motion
+is reduced. No new motion contract/default change or authored apply occurs here.
