@@ -236,7 +236,11 @@ def public_check(plan, store, pointer):
             else:
                 receipt['assets'] = legacy_assets(plan)
             break
-        except Exception:
+        except Exception as error:
+            # open_public already exhausted the bounded 429 policy. Restarting
+            # the entire page/asset batch would amplify the rate limit.
+            if isinstance(error, PublicHTTPError) and diagnostics(error).get('http_status') == 429:
+                raise
             if time.monotonic() >= deadline:
                 raise
             time.sleep(5)
@@ -350,7 +354,7 @@ def execute(plan, native_backup=None):
             receipt.update(status='public-verified', current=selected, previous=before,
                            legacy_asset_urls_preserved=sorted(old_assets), runtime_qa_required=True)
         except Exception as error:
-            receipt.update(status='failed', error=str(error))
+            receipt.update(status='failed', error=str(error), diagnostics=failure_receipt(error)['diagnostics'])
             if before is None and adopted:
                 before = store.pointer()
             if before is not None:
@@ -362,6 +366,7 @@ def execute(plan, native_backup=None):
                     receipt['recovery'] = public_check(plan, store, before)
                 except Exception as recovery_error:
                     receipt['recovery_error'] = str(recovery_error)
+                    receipt['recovery_diagnostics'] = failure_receipt(recovery_error)['diagnostics']
                     if adopted:
                         # First-adoption compatibility failure: restore the exact
                         # original public functions.php, without touching assets.
@@ -388,6 +393,7 @@ def execute(plan, native_backup=None):
                         http_check(page)
                 except Exception as recovery_error:
                     receipt['promotion_recovery_error'] = str(recovery_error)
+                    receipt['promotion_recovery_diagnostics'] = failure_receipt(recovery_error)['diagnostics']
             # The receipt must survive failure; the runner treats this status as
             # a failed operation and does not enable deployment readiness.
         receipt_path = store.state / ('receipt-' + str(int(time.time() * 1000000000)) + '.json')
