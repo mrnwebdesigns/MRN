@@ -39,6 +39,7 @@ $mrn_fixture_assert = static function ( $condition, $message ) {
 $mrn_fixture_post   = 0;
 $mrn_fixture_terms  = array();
 $mrn_fixture_query  = $GLOBALS['wp_query'];
+$mrn_fixture_get    = $_GET; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Preserve the CLI fixture's original request input.
 
 try {
 	foreach ( array( 'public-no-archives', 'public-archives', 'content-only', 'disabled', 'restored' ) as $mrn_fixture_state ) {
@@ -92,6 +93,15 @@ try {
 		$GLOBALS['wp_query']->set( 'post_type', 'landing_page' );
 		mrn_base_stack_guard_landing_page_archives();
 		$mrn_fixture_assert( ! $mrn_fixture_archives === $GLOBALS['wp_query']->is_404(), 'Query-string archive guard: ' . $mrn_fixture_state );
+		foreach ( array( array( 'landing_page' ), array( 'post', 'landing_page' ) ) as $mrn_fixture_requested_types ) {
+			$_GET['post_type']   = $mrn_fixture_requested_types;
+			$GLOBALS['wp_query'] = new WP_Query();
+			$GLOBALS['wp_query']->is_home = true;
+			$GLOBALS['wp_query']->set( 'post_type', $mrn_fixture_requested_types );
+			mrn_base_stack_guard_landing_page_archives();
+			$mrn_fixture_assert( ! $mrn_fixture_archives === $GLOBALS['wp_query']->is_404(), 'Array-form archive guard: ' . $mrn_fixture_state );
+		}
+		$_GET = $mrn_fixture_get;
 		WP_CLI::log( 'PASS: ' . $mrn_fixture_state );
 	}
 	$mrn_fixture_assert( in_array( 'landing_page', mrn_base_stack_get_builder_supported_post_types(), true ), 'Content builder registration.' );
@@ -100,6 +110,7 @@ try {
 	WP_CLI::success( 'Landing Page native CPT, taxonomy, exposure, REST, retention and builder checks passed.' );
 } finally {
 	$GLOBALS['wp_query'] = $mrn_fixture_query;
+	$_GET               = $mrn_fixture_get;
 	if ( is_int( $mrn_fixture_post ) && $mrn_fixture_post > 0 ) {
 		wp_delete_post( $mrn_fixture_post, true );
 	}

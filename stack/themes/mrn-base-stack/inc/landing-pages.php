@@ -207,7 +207,8 @@ add_action( 'wp_loaded', 'mrn_base_stack_flush_landing_page_rewrites', 100 );
  */
 function mrn_base_stack_guard_landing_page_archives() {
 	// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Read-only public route identification; no state changes.
-	$requested_type    = isset( $_GET['post_type'] ) && is_string( $_GET['post_type'] ) ? sanitize_key( wp_unslash( $_GET['post_type'] ) ) : '';
+	// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Every scalar entry is sanitized with sanitize_key; nested arrays are discarded before use.
+	$requested_types   = isset( $_GET['post_type'] ) ? array_map( 'sanitize_key', array_filter( (array) wp_unslash( $_GET['post_type'] ), 'is_string' ) ) : array();
 	$requested_tax     = isset( $_GET['taxonomy'] ) && is_string( $_GET['taxonomy'] ) ? sanitize_key( wp_unslash( $_GET['taxonomy'] ) ) : '';
 	$is_landing_single = is_singular( 'landing_page' ) || isset( $_GET['landing_page'] );
 	$is_landing_tax    = is_tax( array( 'landing_page_category', 'landing_page_tag' ) )
@@ -215,7 +216,7 @@ function mrn_base_stack_guard_landing_page_archives() {
 		|| isset( $_GET['landing_page_category'] ) || isset( $_GET['landing_page_tag'] );
 	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 	$is_landing_archive = is_post_type_archive( 'landing_page' )
-		|| ( ! is_singular() && ! is_search() && ( 'landing_page' === get_query_var( 'post_type' ) || 'landing_page' === $requested_type ) );
+		|| ( ! is_singular() && ! is_search() && ( in_array( 'landing_page', (array) get_query_var( 'post_type' ), true ) || in_array( 'landing_page', $requested_types, true ) ) );
 	if ( is_admin() || ( ! $is_landing_archive && ! $is_landing_tax && ! $is_landing_single ) ) {
 		return;
 	}

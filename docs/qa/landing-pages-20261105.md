@@ -10,10 +10,11 @@ Source baseline: MRN `9838e45b99ed8d7b6e918f8dc9fed811d1ec0d5c`.
   Content Only, Disabled and restored states. Record IDs, term relationships and
   explicit component queries survive every state; REST/UI flags follow the
   shared contract. Hero, Content and After Content include `landing_page`.
-- Seventy real HTTP assertions pass across two disposable local runtimes:
+- Ninety real HTTP assertions pass across two disposable local runtimes:
   canonical Stack and the older SiteGround-style parent/child with the site
   compatibility adapter. Coverage includes single pretty/query URLs, CPT pretty/
-  query archives, taxonomy pretty/query archives and REST collections.
+  query archives (including array-form and mixed post-type requests), taxonomy
+  pretty/query archives and REST collections.
 - Desktop/tablet/mobile browser checks pass at 1440/768/390 px: one H1/main
   landmark, no document overflow, all three builder areas, dedicated taxonomy
   editors, archive control persistence and no page JavaScript errors.
