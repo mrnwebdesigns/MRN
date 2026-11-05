@@ -266,3 +266,17 @@
 @media (max-width: 782px) {
 	.mrn-hero.has-hero-padding-bottom-mobile-source-desktop[data-mrn-row-spacing] { --mrn-row-padding-bottom: var(--mrn-row-padding-bottom-desktop); }
 }
+
+/* Optional native heading entrance; the default Hero has no entrance animation. */
+.mrn-hero.has-hero-heading-entrance-gentle-rise > .mrn-hero__inner > .mrn-hero__content > .mrn-hero__heading {
+	animation: mrn-hero-heading-gentle-rise 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes mrn-hero-heading-gentle-rise {
+	from { opacity: 0; transform: translateY(0.35em); }
+	to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.mrn-hero.has-hero-heading-entrance-gentle-rise > .mrn-hero__inner > .mrn-hero__content > .mrn-hero__heading { animation: none; }
+}

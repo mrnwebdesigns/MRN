@@ -58,6 +58,13 @@ function mrn_base_stack_get_hero_frame_fields() {
 		);
 	}
 	$fields[] = array(
+		'key' => 'field_mrn_hero_basic_block_frame_heading_entrance',
+		'name' => 'hero_heading_entrance', 'label' => 'Heading Entrance', 'type' => 'select',
+		'choices' => array( '' => 'None', 'gentle-rise' => 'Gentle Rise on Load' ),
+		'default_value' => '', 'wrapper' => array( 'width' => '50' ),
+		'instructions' => 'Optional 700ms fade and short rise on page load. Respects reduced motion and is inactive while Row Effects are enabled. Applies only to the main Hero heading.',
+	);
+	$fields[] = array(
 		'key' => 'field_mrn_hero_basic_block_frame_inner_gutter_mobile_breakpoint',
 		'name' => 'hero_inner_gutter_mobile_breakpoint', 'label' => 'Small-Screen Gutter Breakpoint', 'type' => 'select',
 		'choices' => array( '' => 'Use Existing Breakpoint (767px)', '767' => '767px', '960' => '960px', '1199' => '1199px' ),
@@ -137,6 +144,10 @@ function mrn_base_stack_get_hero_frame_contract( array $row ) {
 			if ( 'action_icon_height' === $name ) { $result['classes'][] = 'has-hero-action-icon-height'; }
 			if ( str_starts_with( $name, 'body_h2_space_' ) ) { $result['classes'][] = 'has-hero-' . str_replace( '_', '-', $name ); }
 		}
+	}
+	$motion = is_array( $row['motion_settings'] ?? null ) ? $row['motion_settings'] : array();
+	if ( 'gentle-rise' === ( $row['hero_heading_entrance'] ?? '' ) && empty( $motion['enabled'] ) ) {
+		$result['classes'][] = 'has-hero-heading-entrance-gentle-rise';
 	}
 	if ( '767' === ( $row['hero_row_spacing_mobile_breakpoint'] ?? '' ) ) { $result['classes'][] = 'has-hero-row-spacing-at-767'; }
 	$breakpoint = $row['hero_inner_gutter_mobile_breakpoint'] ?? '';

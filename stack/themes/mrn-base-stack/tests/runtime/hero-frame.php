@@ -33,7 +33,7 @@ try {
 	}
 	$expect( 'clamp(32px, 5vw, 64px)' === mrn_base_stack_validate_hero_frame_dimension( 'clamp(32px,5vw,64px)' ) && 'none' === mrn_base_stack_validate_hero_frame_dimension( 'none', true ) && '1.2' === mrn_base_stack_validate_hero_frame_dimension( '1.2', false, true ), 'Fluid lengths, unbounded widths and unitless line heights remain native values' );
 	$row = array(
-		'acf_fc_layout' => 'basic_block', 'hero_heading_mode' => 'custom_title', 'heading' => 'An editable native Hero',
+		'hero_heading_entrance' => 'gentle-rise', 'acf_fc_layout' => 'basic_block', 'hero_heading_mode' => 'custom_title', 'heading' => 'An editable native Hero',
 		'content' => '<p>Keep the first paragraph.</p><h2>Semantic second-level heading</h2><p>Keep the second paragraph.</p>',
 		'hero_inner_gutter' => '30px', 'hero_inner_max_width' => '1170px', 'hero_row_spacing_mobile_breakpoint' => '767', 'hero_content_width' => '750px', 'hero_content_width_mobile' => '750px',
 		'hero_heading_width' => 'none', 'hero_heading_width_mobile' => 'none', 'hero_text_width' => 'none',
@@ -62,6 +62,13 @@ try {
 	$expect( str_contains( $html, '--mrn-hero-inner-max-width:1170px' ) && str_contains( $html, 'has-hero-row-spacing-at-767' ), 'Saved inner canvas cap and independent row-spacing breakpoint render natively' );
 	$expect( 1 === substr_count( $html, '<h1 ' ) && str_contains( $html, 'second=2' ) && str_contains( $html, 'Keep the second paragraph.' ), 'Heading semantics, complete action and rich content survive rendering' );
 	$expect( str_contains( $html, 'has-hero-gutter-at-1199' ) && str_contains( $html, 'has-hero-body-h2-style-h3' ) && str_contains( $html, '--mrn-hero-body-h2-space-before:1em' ) && str_contains( $html, '<h2>Semantic second-level heading</h2>' ), 'Saved native breakpoint, H2 typography and heading spacing retain semantic heading markup' );
+	$expect( str_contains( $html, 'has-hero-heading-entrance-gentle-rise' ), 'Saved native heading entrance reaches the Hero class contract' );
+	foreach ( array( '', 'unknown', 'gentle-rise;display:none', array( 'gentle-rise' ) ) as $bad_entrance ) {
+		$expect( $empty === mrn_base_stack_get_hero_frame_contract( array( 'hero_heading_entrance' => $bad_entrance ) ), 'Unknown or malformed entrance stays inactive' );
+	}
+	$expect( $empty === mrn_base_stack_get_hero_frame_contract( array( 'hero_heading_entrance' => 'gentle-rise', 'motion_settings' => array( 'enabled' => 1, 'effect' => 'text-reveal' ) ) ), 'Existing Row Effects prevent competing heading entrance transforms' );
+	$needs = mrn_base_stack_get_front_end_component_needs_for_post( $id );
+	$expect( empty( $needs['motion'] ), 'CSS heading entrance requests no Motion library' );
 	$bad = mrn_base_stack_get_hero_frame_contract( array( 'hero_inner_max_width' => 'none', 'hero_row_spacing_mobile_breakpoint' => array( '767' ), 'hero_heading_size' => '1px;position:fixed', 'hero_text_size' => array(), 'hero_heading_weight' => '999', 'hero_heading_color' => 'unconfigured-color', 'hero_inner_gutter_mobile_breakpoint' => '1199;bad', 'hero_body_h2_style' => array( 'h3' ), 'hero_body_h2_space_before' => '-1em' ) );
 	$expect( $empty === $bad, 'Malformed optional data cannot inject CSS or invent Site Colors' );
 	$expect( $empty === mrn_base_stack_get_hero_frame_contract( array( 'hero_inner_gutter_mobile_breakpoint' => '767' ) ), 'Explicit existing 767px breakpoint keeps prior output' );
