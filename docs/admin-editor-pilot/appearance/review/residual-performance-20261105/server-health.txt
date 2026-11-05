@@ -1,0 +1,19 @@
+Thu Nov  5 08:06:20 PM UTC 2026
+ 20:06:20 up 97 days,  5:23,  5 users,  load average: 1.53, 0.96, 0.75
+4
+               total        used        free      shared  buff/cache   available
+Mem:            7941        4015         548        1111        4795        3925
+Swap:           2047        1989          58
+procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------
+ r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu
+ 1  0 2037140 561672 195840 4714904   13   13  3084  1461 1242    3  8  2 88  0  2  0
+ 0  0 2037140 561448 195840 4714940    0    0     0   704  496  703  0  0 99  0  0  0
+ 6  0 2037140 554220 195840 4714948    0    0     0     8 4701 3795 71  8 21  0  0  0
+    PID %CPU %MEM   RSS COMMAND
+ 933642 40.4  2.1 172820 php-fpm8.4
+ 933432 19.0  2.1 175812 php-fpm8.4
+ 933433 18.1  1.7 141776 php-fpm8.4
+ 933431 15.2  2.7 222804 php-fpm8.4
+ 933687  4.3  0.1 11356 systemd
+ 933688  0.0  0.0  3572 (sd-pam)
+ 933709  0.0  0.0  7140 sshd

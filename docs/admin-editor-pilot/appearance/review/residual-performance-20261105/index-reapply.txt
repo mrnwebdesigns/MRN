@@ -1,0 +1,145 @@
+{
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1793908153,
+    "label": "pre-admin-pilot-postmeta-index-reapply-20261105",
+    "nonce": "7b2bebf12413",
+    "key": "sites\/admin-editor-pilot-mrndev-io\/backup_2026-11-05-1949_Trilliant_7b2bebf12413-db.gz",
+    "size": 6925690,
+    "sha256": "799b356764b05c5f43419e85418f4d6bad3567a265e49700840cbf2ac58ea937"
+}
+{
+    "mode": "apply",
+    "changed": true,
+    "change_seconds": 3.342262029647827,
+    "host": "admin-editor-pilot.mrndev.io",
+    "indexes": [
+        {
+            "Table": "wp_postmeta",
+            "Non_unique": "0",
+            "Key_name": "PRIMARY",
+            "Seq_in_index": "1",
+            "Column_name": "meta_id",
+            "Collation": "A",
+            "Cardinality": "461336",
+            "Sub_part": null,
+            "Packed": null,
+            "Null": "",
+            "Index_type": "BTREE",
+            "Comment": "",
+            "Index_comment": "",
+            "Visible": "YES",
+            "Expression": null
+        },
+        {
+            "Table": "wp_postmeta",
+            "Non_unique": "1",
+            "Key_name": "post_id",
+            "Seq_in_index": "1",
+            "Column_name": "post_id",
+            "Collation": "A",
+            "Cardinality": "969",
+            "Sub_part": null,
+            "Packed": null,
+            "Null": "",
+            "Index_type": "BTREE",
+            "Comment": "",
+            "Index_comment": "",
+            "Visible": "YES",
+            "Expression": null
+        },
+        {
+            "Table": "wp_postmeta",
+            "Non_unique": "1",
+            "Key_name": "meta_key",
+            "Seq_in_index": "1",
+            "Column_name": "meta_key",
+            "Collation": "A",
+            "Cardinality": "15060",
+            "Sub_part": "191",
+            "Packed": null,
+            "Null": "YES",
+            "Index_type": "BTREE",
+            "Comment": "",
+            "Index_comment": "",
+            "Visible": "YES",
+            "Expression": null
+        },
+        {
+            "Table": "wp_postmeta",
+            "Non_unique": "1",
+            "Key_name": "mrn_pilot_post_id_meta_key",
+            "Seq_in_index": "1",
+            "Column_name": "post_id",
+            "Collation": "A",
+            "Cardinality": "1488",
+            "Sub_part": null,
+            "Packed": null,
+            "Null": "",
+            "Index_type": "BTREE",
+            "Comment": "",
+            "Index_comment": "",
+            "Visible": "YES",
+            "Expression": null
+        },
+        {
+            "Table": "wp_postmeta",
+            "Non_unique": "1",
+            "Key_name": "mrn_pilot_post_id_meta_key",
+            "Seq_in_index": "2",
+            "Column_name": "meta_key",
+            "Collation": "A",
+            "Cardinality": "446905",
+            "Sub_part": "191",
+            "Packed": null,
+            "Null": "YES",
+            "Index_type": "BTREE",
+            "Comment": "",
+            "Index_comment": "",
+            "Visible": "YES",
+            "Expression": null
+        }
+    ],
+    "fixtures": {
+        "2523": {
+            "lookups": 100,
+            "lookup_ms": 40.03596305847168,
+            "plan": [
+                {
+                    "id": "1",
+                    "select_type": "SIMPLE",
+                    "table": "wp_postmeta",
+                    "partitions": null,
+                    "type": "ref",
+                    "possible_keys": "post_id,meta_key,mrn_pilot_post_id_meta_key",
+                    "key": "mrn_pilot_post_id_meta_key",
+                    "key_len": "775",
+                    "ref": "const,const",
+                    "rows": "2",
+                    "filtered": "100.00",
+                    "Extra": "Using where"
+                }
+            ]
+        },
+        "2524": {
+            "lookups": 100,
+            "lookup_ms": 36.11397743225098,
+            "plan": [
+                {
+                    "id": "1",
+                    "select_type": "SIMPLE",
+                    "table": "wp_postmeta",
+                    "partitions": null,
+                    "type": "ref",
+                    "possible_keys": "post_id,meta_key,mrn_pilot_post_id_meta_key",
+                    "key": "mrn_pilot_post_id_meta_key",
+                    "key_len": "775",
+                    "ref": "const,const",
+                    "rows": "2",
+                    "filtered": "100.00",
+                    "Extra": "Using where"
+                }
+            ]
+        }
+    }
+}

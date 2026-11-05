@@ -1,0 +1,111 @@
+{
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1793908070,
+    "label": "pre-admin-pilot-postmeta-index-rollback-test-20261105",
+    "nonce": "ca20064d12a2",
+    "key": "sites\/admin-editor-pilot-mrndev-io\/backup_2026-11-05-1947_Trilliant_ca20064d12a2-db.gz",
+    "size": 6878048,
+    "sha256": "fc74afb4138dc0b1b1c7fd293a94349c920e904779536af8ee812998d01561d3"
+}
+{
+    "mode": "rollback",
+    "changed": true,
+    "change_seconds": 0.012015104293823242,
+    "host": "admin-editor-pilot.mrndev.io",
+    "indexes": [
+        {
+            "Table": "wp_postmeta",
+            "Non_unique": "0",
+            "Key_name": "PRIMARY",
+            "Seq_in_index": "1",
+            "Column_name": "meta_id",
+            "Collation": "A",
+            "Cardinality": "461336",
+            "Sub_part": null,
+            "Packed": null,
+            "Null": "",
+            "Index_type": "BTREE",
+            "Comment": "",
+            "Index_comment": "",
+            "Visible": "YES",
+            "Expression": null
+        },
+        {
+            "Table": "wp_postmeta",
+            "Non_unique": "1",
+            "Key_name": "post_id",
+            "Seq_in_index": "1",
+            "Column_name": "post_id",
+            "Collation": "A",
+            "Cardinality": "969",
+            "Sub_part": null,
+            "Packed": null,
+            "Null": "",
+            "Index_type": "BTREE",
+            "Comment": "",
+            "Index_comment": "",
+            "Visible": "YES",
+            "Expression": null
+        },
+        {
+            "Table": "wp_postmeta",
+            "Non_unique": "1",
+            "Key_name": "meta_key",
+            "Seq_in_index": "1",
+            "Column_name": "meta_key",
+            "Collation": "A",
+            "Cardinality": "15060",
+            "Sub_part": "191",
+            "Packed": null,
+            "Null": "YES",
+            "Index_type": "BTREE",
+            "Comment": "",
+            "Index_comment": "",
+            "Visible": "YES",
+            "Expression": null
+        }
+    ],
+    "fixtures": {
+        "2523": {
+            "lookups": 100,
+            "lookup_ms": 113.62004280090332,
+            "plan": [
+                {
+                    "id": "1",
+                    "select_type": "SIMPLE",
+                    "table": "wp_postmeta",
+                    "partitions": null,
+                    "type": "ref",
+                    "possible_keys": "post_id,meta_key",
+                    "key": "meta_key",
+                    "key_len": "767",
+                    "ref": "const",
+                    "rows": "299",
+                    "filtered": "1.13",
+                    "Extra": "Using where"
+                }
+            ]
+        },
+        "2524": {
+            "lookups": 100,
+            "lookup_ms": 114.90416526794434,
+            "plan": [
+                {
+                    "id": "1",
+                    "select_type": "SIMPLE",
+                    "table": "wp_postmeta",
+                    "partitions": null,
+                    "type": "ref",
+                    "possible_keys": "post_id,meta_key",
+                    "key": "meta_key",
+                    "key_len": "767",
+                    "ref": "const",
+                    "rows": "299",
+                    "filtered": "3.02",
+                    "Extra": "Using where"
+                }
+            ]
+        }
+    }
+}

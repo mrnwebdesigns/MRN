@@ -1,0 +1,51 @@
+{
+    "host": "admin-editor-pilot.mrndev.io",
+    "wp": "7.0.4",
+    "acf": "6.8.9",
+    "php": "8.4.27",
+    "stylesheet": "mrn-base-stack-child",
+    "template": "mrn-base-stack",
+    "pilot_enabled": true,
+    "save_guard": true,
+    "pages": {
+        "2523": {
+            "rows": 19,
+            "status": "draft",
+            "content_hash": "125c3120813340710c01d3d6602341cb3381d319d0080c23f09ea04bf3c36708",
+            "native_acf_hash": "185d28d432189696a1001536693a41e9b34fcfde21415438223ad3cf66d05d29",
+            "post_content_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "2524": {
+            "rows": 32,
+            "status": "draft",
+            "content_hash": "cf6090e3fcd269e5d9cff6576a3490e9bad5df858c1a23e7cdb31ee2a457a1ad",
+            "native_acf_hash": "b95006648facac964426ec5a354374580a354df78fb93210c5fb794008bcbbcf",
+            "post_content_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+    },
+    "cron_disabled": true,
+    "indexing": "0",
+    "backup_intervals": [
+        "manual",
+        "manual"
+    ]
+}
+{
+    "mode": "plan",
+    "changed_rows": 0,
+    "fixtures": {
+        "2523": {
+            "duplicate_keys": 0,
+            "redundant_rows": 0,
+            "logical_hash_before": "62d2207856619ce085d60bef879a83d1abee5aa8e81626d6b0f6d4f5db94954e",
+            "logical_hash_after": "62d2207856619ce085d60bef879a83d1abee5aa8e81626d6b0f6d4f5db94954e"
+        },
+        "2524": {
+            "duplicate_keys": 0,
+            "redundant_rows": 0,
+            "logical_hash_before": "7c4abdcd3e1c7d8cebd2a646284ace5b594a1c5916bbb33556579eb0bd79ba9d",
+            "logical_hash_after": "7c4abdcd3e1c7d8cebd2a646284ace5b594a1c5916bbb33556579eb0bd79ba9d"
+        }
+    }
+}
+d15f5703f14adec7bc0a628122b23f50a12fdc019eb1023163cca3e3007442f3  wp-content/themes/mrn-base-stack/inc/builder/performance.php

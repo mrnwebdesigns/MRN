@@ -1,0 +1,1177 @@
+{
+  "browser": "148.0.7778.96",
+  "records": [
+    {
+      "phase": "pass1",
+      "name": "empty",
+      "theme": "light",
+      "wallMs": 13760,
+      "startup": {
+        "cpuMs": 5605.123,
+        "scriptMs": 4721.484,
+        "layoutMs": 172.33200000000002,
+        "styleMs": 197.41500000000002,
+        "heapMiB": 26.045940399169922
+      },
+      "cpuMs": 5617.384,
+      "scriptMs": 4727.706,
+      "layoutMs": 172.33200000000002,
+      "styleMs": 197.41500000000002,
+      "heapMiB": 26.633590698242188,
+      "sections": 0,
+      "acfFields": 3,
+      "editors": [
+        {
+          "id": "acf_content",
+          "initialized": true
+        }
+      ],
+      "nativeControls": 153,
+      "nodes": 3087,
+      "cls": 0.013405621641765057,
+      "longTasks": [
+        96,
+        160,
+        73,
+        173,
+        74,
+        58,
+        3999
+      ],
+      "formHash": "5347001ed00083d8386a0a4d00cf56b0e8a9054e37b2f918024ef6030c738433",
+      "errors": [],
+      "idleCpuMs": 2.894000000000233,
+      "interactions": {
+        "cycles": 6,
+        "cpuMs": 455.8610000000008,
+        "wallMs": [
+          414,
+          184,
+          150,
+          150,
+          150,
+          183
+        ]
+      },
+      "formHashAfter": "5347001ed00083d8386a0a4d00cf56b0e8a9054e37b2f918024ef6030c738433",
+      "retainedHeapMiB": 18.972721099853516,
+      "securityScripts": []
+    },
+    {
+      "phase": "pass1",
+      "name": "empty",
+      "theme": "dark",
+      "wallMs": 5630,
+      "startup": {
+        "cpuMs": 1069.873,
+        "scriptMs": 613.56,
+        "layoutMs": 61.909,
+        "styleMs": 134.586,
+        "heapMiB": 22.75540542602539
+      },
+      "cpuMs": 1082.651,
+      "scriptMs": 621.1370000000001,
+      "layoutMs": 61.909,
+      "styleMs": 134.586,
+      "heapMiB": 23.331737518310547,
+      "sections": 0,
+      "acfFields": 3,
+      "editors": [
+        {
+          "id": "acf_content",
+          "initialized": true
+        }
+      ],
+      "nativeControls": 153,
+      "nodes": 3086,
+      "cls": 0.013405621641765057,
+      "longTasks": [
+        53,
+        110,
+        63,
+        55,
+        73
+      ],
+      "formHash": "5347001ed00083d8386a0a4d00cf56b0e8a9054e37b2f918024ef6030c738433",
+      "errors": [],
+      "idleCpuMs": 1.2579999999998108,
+      "interactions": {
+        "cycles": 6,
+        "cpuMs": 550.2719999999999,
+        "wallMs": [
+          388,
+          199,
+          287,
+          665,
+          149,
+          151
+        ]
+      },
+      "formHashAfter": "5347001ed00083d8386a0a4d00cf56b0e8a9054e37b2f918024ef6030c738433",
+      "retainedHeapMiB": 18.947750091552734,
+      "securityScripts": []
+    },
+    {
+      "phase": "pass1",
+      "name": "real19",
+      "theme": "light",
+      "wallMs": 15535,
+      "startup": {
+        "cpuMs": 4215.142,
+        "scriptMs": 3060.1639999999998,
+        "layoutMs": 153.048,
+        "styleMs": 273.657,
+        "heapMiB": 37.002017974853516
+      },
+      "cpuMs": 6694.561000000001,
+      "scriptMs": 3239.6569999999997,
+      "layoutMs": 164.95499999999998,
+      "styleMs": 391.769,
+      "heapMiB": 73.046142578125,
+      "sections": 19,
+      "acfFields": 1937,
+      "editors": [
+        {
+          "id": "acf_content",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2865",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2866",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2867",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2868",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2869",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2870",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2871",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2872",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2873",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2874",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2875",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2876",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2877",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2878",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2879",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2880",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2881",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2882",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2883",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2884",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2885",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2886",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2887",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2888",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2889",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2890",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2891",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2892",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2893",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2894",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2895",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2896",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2897",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2898",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2899",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2900",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2901",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2902",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2903",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2904",
+          "initialized": true
+        }
+      ],
+      "nativeControls": 4354,
+      "nodes": 41905,
+      "cls": 0.08768257556862456,
+      "longTasks": [
+        60,
+        92,
+        107,
+        56,
+        173,
+        92,
+        916,
+        99,
+        322,
+        220,
+        89,
+        359,
+        64,
+        68,
+        58,
+        54,
+        72,
+        59,
+        1710,
+        94
+      ],
+      "formHash": "a195d66ade5e58c48f8d45b9d402b4155730cef4a43bd56a7ad93ff1b1fecab7",
+      "errors": [],
+      "idleCpuMs": 13.760000000000218,
+      "interactions": {
+        "cycles": 6,
+        "cpuMs": 1636.8509999999997,
+        "wallMs": [
+          636,
+          383,
+          351,
+          382,
+          350,
+          334
+        ]
+      },
+      "formHashAfter": "a195d66ade5e58c48f8d45b9d402b4155730cef4a43bd56a7ad93ff1b1fecab7",
+      "retainedHeapMiB": 70.91005325317383,
+      "securityScripts": []
+    },
+    {
+      "phase": "pass1",
+      "name": "real19",
+      "theme": "dark",
+      "wallMs": 13445,
+      "startup": {
+        "cpuMs": 2663.312,
+        "scriptMs": 1790.781,
+        "layoutMs": 126.51899999999999,
+        "styleMs": 217.188,
+        "heapMiB": 39.10023880004883
+      },
+      "cpuMs": 4919.812,
+      "scriptMs": 1993.7350000000001,
+      "layoutMs": 137.316,
+      "styleMs": 334.052,
+      "heapMiB": 81.1331558227539,
+      "sections": 19,
+      "acfFields": 1937,
+      "editors": [
+        {
+          "id": "acf_content",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2865",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2866",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2867",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2868",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2869",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2870",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2871",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2872",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2873",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2874",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2875",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2876",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2877",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2878",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2879",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2880",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2881",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2882",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2883",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2884",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2885",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2886",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2887",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2888",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2889",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2890",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2891",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2892",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2893",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2894",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2895",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2896",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2897",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2898",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2899",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2900",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2901",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2902",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2903",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-2904",
+          "initialized": true
+        }
+      ],
+      "nativeControls": 4354,
+      "nodes": 41904,
+      "cls": 0.08768257556862456,
+      "longTasks": [
+        80,
+        85,
+        141,
+        464,
+        54,
+        199,
+        94,
+        157,
+        64,
+        66,
+        122,
+        74,
+        1584,
+        94
+      ],
+      "formHash": "a195d66ade5e58c48f8d45b9d402b4155730cef4a43bd56a7ad93ff1b1fecab7",
+      "errors": [],
+      "idleCpuMs": 1.970999999999549,
+      "interactions": {
+        "cycles": 6,
+        "cpuMs": 1124.469,
+        "wallMs": [
+          285,
+          300,
+          250,
+          300,
+          317,
+          283
+        ]
+      },
+      "formHashAfter": "a195d66ade5e58c48f8d45b9d402b4155730cef4a43bd56a7ad93ff1b1fecab7",
+      "retainedHeapMiB": 69.68960189819336,
+      "securityScripts": []
+    },
+    {
+      "phase": "pass1",
+      "name": "stress32",
+      "theme": "light",
+      "wallMs": 27695,
+      "startup": {
+        "cpuMs": 8904.836,
+        "scriptMs": 2906.363,
+        "layoutMs": 2751.367,
+        "styleMs": 271.157,
+        "heapMiB": 37.60680389404297
+      },
+      "cpuMs": 14687.768,
+      "scriptMs": 3801.679,
+      "layoutMs": 2773.9069999999997,
+      "styleMs": 634.946,
+      "heapMiB": 110.46843719482422,
+      "sections": 32,
+      "acfFields": 3263,
+      "editors": [
+        {
+          "id": "acf_content",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4786",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4787",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4788",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4789",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4790",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4791",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4792",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4793",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4794",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4795",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4796",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4797",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4798",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4799",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4800",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4801",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4802",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4803",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4804",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4805",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4806",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4807",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4808",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4809",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4810",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4811",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4812",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4813",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4814",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4815",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4816",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4817",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4818",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4819",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4820",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4821",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4822",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4823",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4824",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4825",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4826",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4827",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4828",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4829",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4830",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4831",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4832",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4833",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4834",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4835",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4836",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4837",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4838",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4839",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4840",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4841",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4842",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4843",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4844",
+          "initialized": true
+        }
+      ],
+      "nativeControls": 7104,
+      "nodes": 65656,
+      "cls": 0.08768257556862456,
+      "longTasks": [
+        67,
+        83,
+        86,
+        2598,
+        63,
+        483,
+        72,
+        247,
+        120,
+        57,
+        259,
+        67,
+        107,
+        107,
+        104,
+        61,
+        107,
+        91,
+        166,
+        341,
+        141,
+        3021,
+        165,
+        171,
+        221,
+        74
+      ],
+      "formHash": "e6045fd526734032ca46a4e23e3cce2c2d5bc2258138cba55ca7c90775a15144",
+      "errors": [],
+      "idleCpuMs": 4.883999999998196,
+      "interactions": {
+        "cycles": 6,
+        "cpuMs": 1479.17,
+        "wallMs": [
+          321,
+          500,
+          334,
+          349,
+          333,
+          284
+        ]
+      },
+      "formHashAfter": "e6045fd526734032ca46a4e23e3cce2c2d5bc2258138cba55ca7c90775a15144",
+      "retainedHeapMiB": 94.03818130493164,
+      "securityScripts": []
+    },
+    {
+      "phase": "pass1",
+      "name": "stress32",
+      "theme": "dark",
+      "wallMs": 19266,
+      "startup": {
+        "cpuMs": 5396.917,
+        "scriptMs": 4142.101000000001,
+        "layoutMs": 120.55499999999999,
+        "styleMs": 258.854,
+        "heapMiB": 35.755950927734375
+      },
+      "cpuMs": 10656.904,
+      "scriptMs": 4617.858,
+      "layoutMs": 137.409,
+      "styleMs": 459.19,
+      "heapMiB": 93.92061614990234,
+      "sections": 32,
+      "acfFields": 3263,
+      "editors": [
+        {
+          "id": "acf_content",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4786",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4787",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4788",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4789",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4790",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4791",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4792",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4793",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4794",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4795",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4796",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4797",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4798",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4799",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4800",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4801",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4802",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4803",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4804",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4805",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4806",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4807",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4808",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4809",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4810",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4811",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4812",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4813",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4814",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4815",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4816",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4817",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4818",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4819",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4820",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4821",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4822",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4823",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4824",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4825",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4826",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4827",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4828",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4829",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4830",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4831",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4832",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4833",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4834",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4835",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4836",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4837",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4838",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4839",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4840",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4841",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4842",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4843",
+          "initialized": true
+        },
+        {
+          "id": "acf-editor-4844",
+          "initialized": true
+        }
+      ],
+      "nativeControls": 7104,
+      "nodes": 65656,
+      "cls": 0.08768257556862456,
+      "longTasks": [
+        148,
+        1630,
+        150,
+        577,
+        234,
+        74,
+        360,
+        94,
+        78,
+        66,
+        208,
+        93,
+        3509,
+        151
+      ],
+      "formHash": "e6045fd526734032ca46a4e23e3cce2c2d5bc2258138cba55ca7c90775a15144",
+      "errors": [],
+      "idleCpuMs": 47.96700000000055,
+      "interactions": {
+        "cycles": 6,
+        "cpuMs": 1847.217999999999,
+        "wallMs": [
+          392,
+          365,
+          367,
+          465,
+          401,
+          667
+        ]
+      },
+      "formHashAfter": "e6045fd526734032ca46a4e23e3cce2c2d5bc2258138cba55ca7c90775a15144",
+      "retainedHeapMiB": 93.47673034667969,
+      "securityScripts": []
+    }
+  ]
+}

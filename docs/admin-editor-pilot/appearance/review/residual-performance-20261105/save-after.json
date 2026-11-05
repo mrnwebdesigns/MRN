@@ -1,0 +1,121 @@
+[
+  {
+    "id": 2523,
+    "initialLoadMs": 9516,
+    "saveAndReloadMs": 16105,
+    "requests": [
+      {
+        "path": "/wp-admin/admin-ajax.php",
+        "status": 200,
+        "timing": {
+          "startTime": 1793907583385.683,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.267,
+          "responseStart": 1983.845,
+          "responseEnd": 1987.499
+        }
+      },
+      {
+        "path": "/wp-admin/admin-ajax.php",
+        "status": 200,
+        "timing": {
+          "startTime": 1793907590605.0789,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.384,
+          "responseStart": 580.74,
+          "responseEnd": 582.641
+        }
+      },
+      {
+        "path": "/wp-admin/post.php",
+        "status": 302,
+        "timing": {
+          "startTime": 1793907583680.861,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.156,
+          "responseStart": 8417.434,
+          "responseEnd": 8421.925999995437
+        }
+      }
+    ]
+  },
+  {
+    "id": 2524,
+    "initialLoadMs": 22202,
+    "saveAndReloadMs": 28525,
+    "requests": [
+      {
+        "path": "/wp-admin/admin-ajax.php",
+        "status": 200,
+        "timing": {
+          "startTime": 1793907621667.989,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.189,
+          "responseStart": 3741.85,
+          "responseEnd": 3746.088
+        }
+      },
+      {
+        "path": "/wp-admin/admin-ajax.php",
+        "status": 200,
+        "timing": {
+          "startTime": 1793907624852.259,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 1.212,
+          "responseStart": 1075.832,
+          "responseEnd": 1081.102
+        }
+      },
+      {
+        "path": "/wp-admin/admin-ajax.php",
+        "status": 200,
+        "timing": {
+          "startTime": 1793907634848.899,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.621,
+          "responseStart": 842.829,
+          "responseEnd": 845.141
+        }
+      },
+      {
+        "path": "/wp-admin/post.php",
+        "status": 302,
+        "timing": {
+          "startTime": 1793907622028.221,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.164,
+          "responseStart": 15816.715,
+          "responseEnd": 15824.025000008987
+        }
+      }
+    ]
+  }
+]

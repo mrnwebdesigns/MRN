@@ -1,0 +1,18 @@
+{
+    "mode": "plan",
+    "changed_rows": 0,
+    "fixtures": {
+        "2523": {
+            "duplicate_keys": 2586,
+            "redundant_rows": 2586,
+            "logical_hash_before": "673a83c302e609906cf01cdb4bcdca38282cf82ca5e678b756960e85c5bfb747",
+            "logical_hash_after": "673a83c302e609906cf01cdb4bcdca38282cf82ca5e678b756960e85c5bfb747"
+        },
+        "2524": {
+            "duplicate_keys": 2766,
+            "redundant_rows": 2766,
+            "logical_hash_before": "9f12ac09879d5ec1ce53027457c68fdb33562a3fc67715852ce1f839bb1e711a",
+            "logical_hash_after": "9f12ac09879d5ec1ce53027457c68fdb33562a3fc67715852ce1f839bb1e711a"
+        }
+    }
+}

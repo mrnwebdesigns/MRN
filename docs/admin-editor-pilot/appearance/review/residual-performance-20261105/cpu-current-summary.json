@@ -1,0 +1,78 @@
+{
+  "method": "One serial Light/Dark sample per fixture. No GC in timed phases. Native TinyMCE initialization included. Heap collected only after timing. No historical baseline or causal theme comparison.",
+  "browser": "148.0.7778.96",
+  "records": [
+    {
+      "fixture": "empty",
+      "theme": "light",
+      "startup_cpu_ms": 5605.123,
+      "fully_initialized_cpu_ms": 5617.384,
+      "tinymce_instances": 1,
+      "retained_heap_mib": 18.972721099853516,
+      "idle_cpu_ms_over_1500ms": 2.894000000000233,
+      "navigation_cpu_ms_six_cycles": 455.8610000000008,
+      "unchanged_form": true,
+      "script_errors": []
+    },
+    {
+      "fixture": "empty",
+      "theme": "dark",
+      "startup_cpu_ms": 1069.873,
+      "fully_initialized_cpu_ms": 1082.651,
+      "tinymce_instances": 1,
+      "retained_heap_mib": 18.947750091552734,
+      "idle_cpu_ms_over_1500ms": 1.2579999999998108,
+      "navigation_cpu_ms_six_cycles": 550.2719999999999,
+      "unchanged_form": true,
+      "script_errors": []
+    },
+    {
+      "fixture": "real19",
+      "theme": "light",
+      "startup_cpu_ms": 4215.142,
+      "fully_initialized_cpu_ms": 6694.561000000001,
+      "tinymce_instances": 41,
+      "retained_heap_mib": 70.91005325317383,
+      "idle_cpu_ms_over_1500ms": 13.760000000000218,
+      "navigation_cpu_ms_six_cycles": 1636.8509999999997,
+      "unchanged_form": true,
+      "script_errors": []
+    },
+    {
+      "fixture": "real19",
+      "theme": "dark",
+      "startup_cpu_ms": 2663.312,
+      "fully_initialized_cpu_ms": 4919.812,
+      "tinymce_instances": 41,
+      "retained_heap_mib": 69.68960189819336,
+      "idle_cpu_ms_over_1500ms": 1.970999999999549,
+      "navigation_cpu_ms_six_cycles": 1124.469,
+      "unchanged_form": true,
+      "script_errors": []
+    },
+    {
+      "fixture": "stress32",
+      "theme": "light",
+      "startup_cpu_ms": 8904.836,
+      "fully_initialized_cpu_ms": 14687.768,
+      "tinymce_instances": 60,
+      "retained_heap_mib": 94.03818130493164,
+      "idle_cpu_ms_over_1500ms": 4.883999999998196,
+      "navigation_cpu_ms_six_cycles": 1479.17,
+      "unchanged_form": true,
+      "script_errors": []
+    },
+    {
+      "fixture": "stress32",
+      "theme": "dark",
+      "startup_cpu_ms": 5396.917,
+      "fully_initialized_cpu_ms": 10656.904,
+      "tinymce_instances": 60,
+      "retained_heap_mib": 93.47673034667969,
+      "idle_cpu_ms_over_1500ms": 47.96700000000055,
+      "navigation_cpu_ms_six_cycles": 1847.217999999999,
+      "unchanged_form": true,
+      "script_errors": []
+    }
+  ]
+}

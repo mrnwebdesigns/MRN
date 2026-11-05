@@ -1,0 +1,452 @@
+[
+  {
+    "variant": "sql",
+    "fixture": 2523,
+    "at": "2026-11-05T19:32:28+00:00",
+    "request_s": 12.263682842254639,
+    "save_s": 11.620564937591553,
+    "queries_after_admin_init": 10373,
+    "peak_bytes": 205725696,
+    "status": 302,
+    "sql_total_s": 8.08212161064148,
+    "sql_categories": {
+      "SELECT postmeta ids": {
+        "calls": 5139,
+        "seconds": 4.1121954917907715
+      },
+      "INSERT postmeta": {
+        "calls": 2796,
+        "seconds": 0.9010467529296875
+      },
+      "UPDATE postmeta": {
+        "calls": 2340,
+        "seconds": 2.5094127655029297
+      },
+      "SELECT postmeta full cache": {
+        "calls": 7,
+        "seconds": 0.5213296413421631
+      },
+      "SELECT posts": {
+        "calls": 62,
+        "seconds": 0.01982736587524414
+      },
+      "INSERT other": {
+        "calls": 8,
+        "seconds": 0.002702474594116211
+      },
+      "SHOW other": {
+        "calls": 2,
+        "seconds": 0.0034940242767333984
+      },
+      "SHOW postmeta": {
+        "calls": 1,
+        "seconds": 0.0017511844635009766
+      },
+      "SHOW posts": {
+        "calls": 1,
+        "seconds": 0.0017249584197998047
+      },
+      "DELETE other": {
+        "calls": 2,
+        "seconds": 0.001397848129272461
+      },
+      "UPDATE posts": {
+        "calls": 2,
+        "seconds": 0.0013339519500732422
+      },
+      "SELECT options": {
+        "calls": 11,
+        "seconds": 0.0047070980072021484
+      },
+      "SELECT postmeta": {
+        "calls": 1,
+        "seconds": 0.000637054443359375
+      },
+      "INSERT posts": {
+        "calls": 1,
+        "seconds": 0.0005609989166259766
+      }
+    },
+    "revision": {
+      "calls": 2,
+      "inclusive_s": 4.467495918273926,
+      "exclusive_s": 4.407461643218994,
+      "queries": 5602
+    }
+  },
+  {
+    "variant": "sql",
+    "fixture": 2524,
+    "at": "2026-11-05T19:33:03+00:00",
+    "request_s": 15.311441898345947,
+    "save_s": 14.545331954956055,
+    "queries_after_admin_init": 14803,
+    "peak_bytes": 121634816,
+    "status": 302,
+    "sql_total_s": 10.288105964660645,
+    "sql_categories": {
+      "SELECT postmeta ids": {
+        "calls": 7345,
+        "seconds": 5.370422601699829
+      },
+      "INSERT postmeta": {
+        "calls": 4822,
+        "seconds": 2.011641025543213
+      },
+      "UPDATE postmeta": {
+        "calls": 2520,
+        "seconds": 2.4342453479766846
+      },
+      "SELECT postmeta full cache": {
+        "calls": 7,
+        "seconds": 0.4333648681640625
+      },
+      "SELECT posts": {
+        "calls": 80,
+        "seconds": 0.020608186721801758
+      },
+      "INSERT other": {
+        "calls": 8,
+        "seconds": 0.0030095577239990234
+      },
+      "SHOW other": {
+        "calls": 2,
+        "seconds": 0.0032100677490234375
+      },
+      "SHOW posts": {
+        "calls": 1,
+        "seconds": 0.0016660690307617188
+      },
+      "SHOW postmeta": {
+        "calls": 1,
+        "seconds": 0.0014848709106445312
+      },
+      "SELECT options": {
+        "calls": 11,
+        "seconds": 0.005160331726074219
+      },
+      "UPDATE posts": {
+        "calls": 2,
+        "seconds": 0.0012030601501464844
+      },
+      "INSERT posts": {
+        "calls": 1,
+        "seconds": 0.0006229877471923828
+      },
+      "DELETE other": {
+        "calls": 2,
+        "seconds": 0.0010330677032470703
+      },
+      "SELECT postmeta": {
+        "calls": 1,
+        "seconds": 0.00043392181396484375
+      }
+    },
+    "revision": {
+      "calls": 2,
+      "inclusive_s": 7.407559871673584,
+      "exclusive_s": 7.28449010848999,
+      "queries": 9654
+    }
+  },
+  {
+    "variant": "index",
+    "fixture": 2523,
+    "at": "2026-11-05T19:39:52+00:00",
+    "request_s": 8.266570806503296,
+    "save_s": 7.470696210861206,
+    "queries_after_admin_init": 10373,
+    "peak_bytes": 209965056,
+    "status": 302,
+    "sql_total_s": 4.15605902671814,
+    "sql_categories": {
+      "SELECT postmeta ids": {
+        "calls": 5139,
+        "seconds": 1.714693307876587
+      },
+      "INSERT postmeta": {
+        "calls": 2796,
+        "seconds": 0.8803966045379639
+      },
+      "SELECT postmeta full cache": {
+        "calls": 7,
+        "seconds": 0.5015065670013428
+      },
+      "UPDATE postmeta": {
+        "calls": 2340,
+        "seconds": 1.0158097743988037
+      },
+      "SELECT posts": {
+        "calls": 62,
+        "seconds": 0.023950815200805664
+      },
+      "INSERT other": {
+        "calls": 8,
+        "seconds": 0.0032138824462890625
+      },
+      "SHOW posts": {
+        "calls": 1,
+        "seconds": 0.002167940139770508
+      },
+      "SHOW other": {
+        "calls": 2,
+        "seconds": 0.003145933151245117
+      },
+      "SHOW postmeta": {
+        "calls": 1,
+        "seconds": 0.0017359256744384766
+      },
+      "UPDATE posts": {
+        "calls": 2,
+        "seconds": 0.0016069412231445312
+      },
+      "INSERT posts": {
+        "calls": 1,
+        "seconds": 0.0007140636444091797
+      },
+      "DELETE other": {
+        "calls": 2,
+        "seconds": 0.0013730525970458984
+      },
+      "SELECT options": {
+        "calls": 11,
+        "seconds": 0.005377292633056641
+      },
+      "SELECT postmeta": {
+        "calls": 1,
+        "seconds": 0.0003669261932373047
+      }
+    },
+    "revision": {
+      "calls": 2,
+      "inclusive_s": 3.2672157287597656,
+      "exclusive_s": 3.207603931427002,
+      "queries": 5602
+    }
+  },
+  {
+    "variant": "index",
+    "fixture": 2524,
+    "at": "2026-11-05T19:40:37+00:00",
+    "request_s": 15.5432448387146,
+    "save_s": 14.330861806869507,
+    "queries_after_admin_init": 14803,
+    "peak_bytes": 127934464,
+    "status": 302,
+    "sql_total_s": 8.74428415298462,
+    "sql_categories": {
+      "SELECT postmeta ids": {
+        "calls": 7345,
+        "seconds": 3.796391725540161
+      },
+      "INSERT postmeta": {
+        "calls": 4822,
+        "seconds": 1.752000093460083
+      },
+      "UPDATE postmeta": {
+        "calls": 2520,
+        "seconds": 2.543311357498169
+      },
+      "SELECT postmeta full cache": {
+        "calls": 7,
+        "seconds": 0.5805642604827881
+      },
+      "SELECT posts": {
+        "calls": 80,
+        "seconds": 0.044722795486450195
+      },
+      "SELECT options": {
+        "calls": 11,
+        "seconds": 0.010740280151367188
+      },
+      "INSERT other": {
+        "calls": 8,
+        "seconds": 0.004081249237060547
+      },
+      "SHOW postmeta": {
+        "calls": 1,
+        "seconds": 0.002710103988647461
+      },
+      "SHOW posts": {
+        "calls": 1,
+        "seconds": 0.0024318695068359375
+      },
+      "SHOW other": {
+        "calls": 2,
+        "seconds": 0.0032722949981689453
+      },
+      "UPDATE posts": {
+        "calls": 2,
+        "seconds": 0.0014698505401611328
+      },
+      "DELETE other": {
+        "calls": 2,
+        "seconds": 0.0014011859893798828
+      },
+      "INSERT posts": {
+        "calls": 1,
+        "seconds": 0.0006279945373535156
+      },
+      "SELECT postmeta": {
+        "calls": 1,
+        "seconds": 0.0005590915679931641
+      }
+    },
+    "revision": {
+      "calls": 2,
+      "inclusive_s": 5.595776081085205,
+      "exclusive_s": 5.480363130569458,
+      "queries": 9654
+    }
+  },
+  {
+    "variant": "dedup",
+    "fixture": 2523,
+    "at": "2026-11-05T20:02:08+00:00",
+    "request_s": 6.86552882194519,
+    "save_s": 5.706608057022095,
+    "queries_after_admin_init": 5756,
+    "peak_bytes": 212107264,
+    "status": 302,
+    "sql_total_s": 2.5559639930725098,
+    "sql_categories": {
+      "SELECT postmeta ids": {
+        "calls": 2841,
+        "seconds": 1.044173240661621
+      },
+      "INSERT postmeta": {
+        "calls": 2796,
+        "seconds": 0.933326005935669
+      },
+      "SELECT postmeta full cache": {
+        "calls": 7,
+        "seconds": 0.5014569759368896
+      },
+      "UPDATE postmeta": {
+        "calls": 42,
+        "seconds": 0.029744625091552734
+      },
+      "SELECT posts": {
+        "calls": 41,
+        "seconds": 0.022815465927124023
+      },
+      "INSERT other": {
+        "calls": 8,
+        "seconds": 0.004189729690551758
+      },
+      "DELETE other": {
+        "calls": 2,
+        "seconds": 0.003637075424194336
+      },
+      "SHOW posts": {
+        "calls": 1,
+        "seconds": 0.003011941909790039
+      },
+      "SHOW postmeta": {
+        "calls": 1,
+        "seconds": 0.002287149429321289
+      },
+      "SHOW other": {
+        "calls": 2,
+        "seconds": 0.0032961368560791016
+      },
+      "UPDATE posts": {
+        "calls": 2,
+        "seconds": 0.001438140869140625
+      },
+      "SELECT options": {
+        "calls": 11,
+        "seconds": 0.00564265251159668
+      },
+      "INSERT posts": {
+        "calls": 1,
+        "seconds": 0.0005838871002197266
+      },
+      "SELECT postmeta": {
+        "calls": 1,
+        "seconds": 0.0003609657287597656
+      }
+    },
+    "revision": {
+      "calls": 2,
+      "inclusive_s": 3.627912998199463,
+      "exclusive_s": 3.562596082687378,
+      "queries": 5602
+    }
+  },
+  {
+    "variant": "dedup",
+    "fixture": 2524,
+    "at": "2026-11-05T20:02:39+00:00",
+    "request_s": 7.972048997879028,
+    "save_s": 7.3027708530426025,
+    "queries_after_admin_init": 9870,
+    "peak_bytes": 142614528,
+    "status": 302,
+    "sql_total_s": 3.9972496032714844,
+    "sql_categories": {
+      "SELECT postmeta ids": {
+        "calls": 4889,
+        "seconds": 1.755857229232788
+      },
+      "INSERT postmeta": {
+        "calls": 4822,
+        "seconds": 1.6422936916351318
+      },
+      "SELECT postmeta full cache": {
+        "calls": 7,
+        "seconds": 0.5242633819580078
+      },
+      "UPDATE postmeta": {
+        "calls": 64,
+        "seconds": 0.03355741500854492
+      },
+      "SELECT posts": {
+        "calls": 59,
+        "seconds": 0.020670652389526367
+      },
+      "INSERT other": {
+        "calls": 8,
+        "seconds": 0.0036318302154541016
+      },
+      "SHOW posts": {
+        "calls": 1,
+        "seconds": 0.0022690296173095703
+      },
+      "SHOW other": {
+        "calls": 2,
+        "seconds": 0.003856182098388672
+      },
+      "SHOW postmeta": {
+        "calls": 1,
+        "seconds": 0.0015270709991455078
+      },
+      "UPDATE posts": {
+        "calls": 2,
+        "seconds": 0.0012078285217285156
+      },
+      "SELECT options": {
+        "calls": 11,
+        "seconds": 0.0055294036865234375
+      },
+      "DELETE other": {
+        "calls": 2,
+        "seconds": 0.0013959407806396484
+      },
+      "INSERT posts": {
+        "calls": 1,
+        "seconds": 0.0006248950958251953
+      },
+      "SELECT postmeta": {
+        "calls": 1,
+        "seconds": 0.0005650520324707031
+      }
+    },
+    "revision": {
+      "calls": 2,
+      "inclusive_s": 5.2969138622283936,
+      "exclusive_s": 5.191417932510376,
+      "queries": 9654
+    }
+  }
+]

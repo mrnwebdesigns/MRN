@@ -1,0 +1,84 @@
+[
+  {
+    "id": 2524,
+    "initialLoadMs": 20164,
+    "saveAndReloadMs": 28892,
+    "requests": [
+      {
+        "path": "/wp-admin/admin-ajax.php",
+        "status": 200,
+        "timing": {
+          "startTime": 1793908216257.674,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.98,
+          "responseStart": 1081.642,
+          "responseEnd": 1085.109
+        }
+      },
+      {
+        "path": "/wp-admin/admin-ajax.php",
+        "status": 200,
+        "timing": {
+          "startTime": 1793908214099.414,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.366,
+          "responseStart": 3393.134,
+          "responseEnd": 3409.166
+        }
+      },
+      {
+        "path": "/wp-admin/admin-ajax.php",
+        "status": 200,
+        "timing": {
+          "startTime": 1793908226264.513,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.973,
+          "responseStart": 822.584,
+          "responseEnd": 826.369
+        }
+      },
+      {
+        "path": "/wp-admin/post.php",
+        "status": 302,
+        "timing": {
+          "startTime": 1793908215084.794,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 1.129,
+          "responseStart": 17491.832,
+          "responseEnd": 17503.298000010545
+        }
+      },
+      {
+        "path": "/wp-admin/admin-ajax.php",
+        "status": 200,
+        "timing": {
+          "startTime": 1793908236258.7878,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.65,
+          "responseStart": 641.626,
+          "responseEnd": 643.58
+        }
+      }
+    ]
+  }
+]

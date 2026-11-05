@@ -1,0 +1,68 @@
+{
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1793909059,
+    "label": "pre-admin-pilot-residual-integrity-20261105",
+    "nonce": "8679cda60501",
+    "key": "sites\/admin-editor-pilot-mrndev-io\/backup_2026-11-05-2004_Trilliant_8679cda60501-db.gz",
+    "size": 7018562,
+    "sha256": "eb06f3af1ef5ad3339f62a5339e6173b4595f895484eb234799f7daf36bcb788"
+}
+[
+    {
+        "phase": "native",
+        "seconds": 1.0299670696258545,
+        "queries": 1230,
+        "acf_keys": 400,
+        "native_hooks_cache_and_values": "pass"
+    },
+    {
+        "phase": "candidate",
+        "seconds": 0.31759214401245117,
+        "queries": 824,
+        "acf_keys": 400,
+        "native_hooks_cache_and_values": "pass"
+    },
+    {
+        "phase": "persistent-fallback",
+        "seconds": 0.9991011619567871,
+        "queries": 1230,
+        "acf_keys": 400,
+        "native_hooks_cache_and_values": "pass"
+    }
+]
+{
+    "status": "pass",
+    "checks": [
+        {
+            "post": 2523,
+            "revision": 2670,
+            "acf_keys": 2796,
+            "native_revision_matches_parent": true
+        },
+        {
+            "post": 2524,
+            "revision": 2671,
+            "acf_keys": 4822,
+            "native_revision_matches_parent": true
+        },
+        {
+            "native_restore": "pass",
+            "nested_repeater": "pass",
+            "unicode_and_quotes": "pass",
+            "core_content": "pass"
+        }
+    ],
+    "disposable_fixture_removed": true
+}
+{
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1793909079,
+    "label": "pre-admin-pilot-profile-remove-20261105",
+    "nonce": "aef69b625689",
+    "key": "sites\/admin-editor-pilot-mrndev-io\/backup_2026-11-05-2004_Trilliant_aef69b625689-db.gz",
+    "size": 7018692,
+    "sha256": "d420b3a692357def8b5347c57abd130cae039286bf5b516b814249af7bce4a22"
+}
+Temporary profiler removed after verified remote backup; native handlers remain.

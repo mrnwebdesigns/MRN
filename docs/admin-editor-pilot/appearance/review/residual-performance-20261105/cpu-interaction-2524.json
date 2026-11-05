@@ -1,0 +1,1807 @@
+{
+  "id": 2524,
+  "editors": 60,
+  "errors": [],
+  "security": [
+    "https://admin-editor-pilot.mrndev.io/cdn-cgi/challenge-platform/scripts/jsd/main.js",
+    "https://admin-editor-pilot.mrndev.io/cdn-cgi/challenge-platform/h/b/scripts/jsd/8340802ab0bb/main.js"
+  ],
+  "before": {
+    "metrics": [
+      {
+        "name": "Timestamp",
+        "value": 128456.575405
+      },
+      {
+        "name": "AudioHandlers",
+        "value": 0
+      },
+      {
+        "name": "AudioWorkletProcessors",
+        "value": 0
+      },
+      {
+        "name": "Documents",
+        "value": 86
+      },
+      {
+        "name": "Frames",
+        "value": 86
+      },
+      {
+        "name": "JSEventListeners",
+        "value": 19393
+      },
+      {
+        "name": "LayoutObjects",
+        "value": 1066
+      },
+      {
+        "name": "MediaKeySessions",
+        "value": 0
+      },
+      {
+        "name": "MediaKeys",
+        "value": 0
+      },
+      {
+        "name": "Nodes",
+        "value": 228069
+      },
+      {
+        "name": "Resources",
+        "value": 290
+      },
+      {
+        "name": "ContextLifecycleStateObservers",
+        "value": 428
+      },
+      {
+        "name": "V8PerContextDatas",
+        "value": 124
+      },
+      {
+        "name": "WorkerGlobalScopes",
+        "value": 0
+      },
+      {
+        "name": "UACSSResources",
+        "value": 0
+      },
+      {
+        "name": "RTCPeerConnections",
+        "value": 0
+      },
+      {
+        "name": "ResourceFetchers",
+        "value": 86
+      },
+      {
+        "name": "AdSubframes",
+        "value": 0
+      },
+      {
+        "name": "DetachedScriptStates",
+        "value": 4
+      },
+      {
+        "name": "ArrayBufferContents",
+        "value": 0
+      },
+      {
+        "name": "LayoutCount",
+        "value": 250
+      },
+      {
+        "name": "RecalcStyleCount",
+        "value": 850
+      },
+      {
+        "name": "LayoutDuration",
+        "value": 0.099808
+      },
+      {
+        "name": "RecalcStyleDuration",
+        "value": 0.275634
+      },
+      {
+        "name": "DevToolsCommandDuration",
+        "value": 1.94569
+      },
+      {
+        "name": "ScriptDuration",
+        "value": 4.643385
+      },
+      {
+        "name": "V8CompileDuration",
+        "value": 0.010374
+      },
+      {
+        "name": "TaskDuration",
+        "value": 7.941904
+      },
+      {
+        "name": "TaskOtherDuration",
+        "value": 0.967013
+      },
+      {
+        "name": "ThreadTime",
+        "value": 6.062871
+      },
+      {
+        "name": "ProcessTime",
+        "value": 8.794638
+      },
+      {
+        "name": "JSHeapUsedSize",
+        "value": 99447296
+      },
+      {
+        "name": "JSHeapTotalSize",
+        "value": 166658048
+      },
+      {
+        "name": "FirstMeaningfulPaint",
+        "value": 128446.16861
+      },
+      {
+        "name": "DomContentLoaded",
+        "value": 128447.575958
+      },
+      {
+        "name": "NavigationStart",
+        "value": 128439.77442
+      }
+    ]
+  },
+  "after": {
+    "metrics": [
+      {
+        "name": "Timestamp",
+        "value": 128462.609845
+      },
+      {
+        "name": "AudioHandlers",
+        "value": 0
+      },
+      {
+        "name": "AudioWorkletProcessors",
+        "value": 0
+      },
+      {
+        "name": "Documents",
+        "value": 86
+      },
+      {
+        "name": "Frames",
+        "value": 86
+      },
+      {
+        "name": "JSEventListeners",
+        "value": 19410
+      },
+      {
+        "name": "LayoutObjects",
+        "value": 10475
+      },
+      {
+        "name": "MediaKeySessions",
+        "value": 0
+      },
+      {
+        "name": "MediaKeys",
+        "value": 0
+      },
+      {
+        "name": "Nodes",
+        "value": 228969
+      },
+      {
+        "name": "Resources",
+        "value": 291
+      },
+      {
+        "name": "ContextLifecycleStateObservers",
+        "value": 430
+      },
+      {
+        "name": "V8PerContextDatas",
+        "value": 124
+      },
+      {
+        "name": "WorkerGlobalScopes",
+        "value": 0
+      },
+      {
+        "name": "UACSSResources",
+        "value": 0
+      },
+      {
+        "name": "RTCPeerConnections",
+        "value": 0
+      },
+      {
+        "name": "ResourceFetchers",
+        "value": 86
+      },
+      {
+        "name": "AdSubframes",
+        "value": 0
+      },
+      {
+        "name": "DetachedScriptStates",
+        "value": 4
+      },
+      {
+        "name": "ArrayBufferContents",
+        "value": 0
+      },
+      {
+        "name": "LayoutCount",
+        "value": 320
+      },
+      {
+        "name": "RecalcStyleCount",
+        "value": 1053
+      },
+      {
+        "name": "LayoutDuration",
+        "value": 0.237164
+      },
+      {
+        "name": "RecalcStyleDuration",
+        "value": 0.679459
+      },
+      {
+        "name": "DevToolsCommandDuration",
+        "value": 3.1978
+      },
+      {
+        "name": "ScriptDuration",
+        "value": 5.625344
+      },
+      {
+        "name": "V8CompileDuration",
+        "value": 0.010374
+      },
+      {
+        "name": "TaskDuration",
+        "value": 11.37181
+      },
+      {
+        "name": "TaskOtherDuration",
+        "value": 1.621669
+      },
+      {
+        "name": "ThreadTime",
+        "value": 9.18148
+      },
+      {
+        "name": "ProcessTime",
+        "value": 12.428486
+      },
+      {
+        "name": "JSHeapUsedSize",
+        "value": 101242656
+      },
+      {
+        "name": "JSHeapTotalSize",
+        "value": 174571520
+      },
+      {
+        "name": "FirstMeaningfulPaint",
+        "value": 128446.16861
+      },
+      {
+        "name": "DomContentLoaded",
+        "value": 128447.575958
+      },
+      {
+        "name": "NavigationStart",
+        "value": 128439.77442
+      }
+    ]
+  },
+  "interaction": [
+    [
+      "(program):-1 <- (root):-1",
+      902.529999999999
+    ],
+    [
+      "query:5332 <- anonymous:5330 <- _cached:5113 <- _queryCSS:5329 <- _querySimple:5208 <- anonymous:5151 <- _cached:5113 <- query:5147 <- query:5360 <- anonymous:5322 <- _cached:5113 <- _callQuery:5321 <- _queryEngine:5309 <- anonymous:5151 <- _cached:5113 <- query:5147 <- queryAll:6749 <- _queryEngineAll:6728 <- querySelectorAll:6680 <- anonymous:0 <- evaluate:295 <- anonymous:0 <- (root):-1",
+      721.6260000000003
+    ],
+    [
+      "scrollTo:-1 <- section-navigator.js:anonymous:484 <- (root):-1",
+      370.39500000000004
+    ],
+    [
+      "querySelectorAll:-1 <- query:5332 <- anonymous:5330 <- _cached:5113 <- _queryCSS:5329 <- _querySimple:5208 <- anonymous:5151 <- _cached:5113 <- query:5147 <- query:5360 <- anonymous:5322 <- _cached:5113 <- _callQuery:5321 <- _queryEngine:5309 <- anonymous:5151 <- _cached:5113 <- query:5147 <- queryAll:6749 <- _queryEngineAll:6728 <- querySelectorAll:6680 <- anonymous:0 <- evaluate:295 <- anonymous:0 <- (root):-1",
+      217.648
+    ],
+    [
+      "jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- jquery.min.js:ce.fn.init:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:ce:1 <- acf-pro-input.min.js:setActiveLayout:0 <- acf-pro-input.min.js:anonymous:0 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- (root):-1",
+      129.27499999999998
+    ],
+    [
+      "getClientRects:-1 <- section-navigator.js:scrollSelection:231 <- section-navigator.js:select:251 <- section-navigator.js:selectResult:174 <- section-navigator.js:anonymous:414 <- (root):-1",
+      113.11300000000003
+    ],
+    [
+      "anonymous:5330 <- _cached:5113 <- _queryCSS:5329 <- _querySimple:5208 <- anonymous:5151 <- _cached:5113 <- query:5147 <- query:5360 <- anonymous:5322 <- _cached:5113 <- _callQuery:5321 <- _queryEngine:5309 <- anonymous:5151 <- _cached:5113 <- query:5147 <- queryAll:6749 <- _queryEngineAll:6728 <- querySelectorAll:6680 <- anonymous:0 <- evaluate:295 <- anonymous:0 <- (root):-1",
+      93.23000000000002
+    ],
+    [
+      "querySelectorAll:-1 <- jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- jquery.min.js:ce.fn.init:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:ce:1 <- jquery.min.js:handlers:1 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- jquery.min.js:trigger:1 <- jquery.min.js:simulate:1 <- jquery.min.js:o:1 <- focus:-1 <- section-navigator.js:select:251 <- section-navigator.js:selectResult:174 <- section-navigator.js:anonymous:414 <- (root):-1",
+      77.30800000000002
+    ],
+    [
+      "querySelectorAll:-1 <- section-navigator.js:applyView:261 <- section-navigator.js:anonymous:484 <- (root):-1",
+      74.85900000000004
+    ],
+    [
+      "jquery.min.js:Tt:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- jquery.min.js:removeClass:1 <- acf-pro-input.min.js:setActiveLayout:0 <- acf-pro-input.min.js:anonymous:0 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- jquery.min.js:trigger:1 <- jquery.min.js:simulate:1 <- jquery.min.js:o:1 <- (root):-1",
+      67.96099999999998
+    ],
+    [
+      "(garbage collector):-1 <- (root):-1",
+      65.35200000000002
+    ],
+    [
+      "jquery.min.js:Tt:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- jquery.min.js:removeClass:1 <- acf-pro-input.min.js:setActiveLayout:0 <- acf-pro-input.min.js:anonymous:0 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- (root):-1",
+      47.605000000000004
+    ],
+    [
+      "querySelector:-1 <- command-palette-loader.js:request:52 <- (root):-1",
+      41.355
+    ],
+    [
+      "jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- jquery.min.js:ce.fn.init:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:ce:1 <- acf-input.min.js:findTabs:0 <- acf-input.min.js:getTabs:0 <- acf-input.min.js:render:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf.min.js:anonymous:0 <- acf.min.js:anonymous:0 <- (root):-1",
+      39.175
+    ],
+    [
+      "jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- jquery.min.js:ce.fn.init:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:ce:1 <- acf-pro-input.min.js:setActiveLayout:0 <- acf-pro-input.min.js:anonymous:0 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- jquery.min.js:trigger:1 <- jquery.min.js:simulate:1 <- jquery.min.js:o:1 <- focus:-1 <- section-navigator.js:select:251 <- section-navigator.js:selectResult:174 <- section-navigator.js:anonymous:414 <- (root):-1",
+      36.809000000000005
+    ],
+    [
+      "jquery.min.js:ce.expr.pseudos.visible:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:re:1 <- jquery.min.js:I:1 <- jquery.min.js:I.matchesSelector:1 <- jquery.min.js:ce.filter:1 <- jquery.min.js:T:1 <- jquery.min.js:is:1 <- admin-editor-startup.js:activateEditor:41 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf-input.min.js:anonymous:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf-input.min.js:anonymous:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf-pro-input.min.js:openLayout:0 <- section-navigator.js:anonymous:130 <- section-navigator.js:reveal:124 <- section-navigator.js:select:251 <- section-navigator.js:selectResult:174",
+      35.074
+    ],
+    [
+      "wp-tinymce.js:Ne:2 <- wp-tinymce.js:d:2 <- (root):-1",
+      28.095999999999997
+    ],
+    [
+      "jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- jquery.min.js:ce.fn.init:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:ce:1 <- acf-pro-input.min.js:setActiveLayout:0 <- acf-pro-input.min.js:anonymous:0 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- jquery.min.js:trigger:1 <- jquery.min.js:simulate:1 <- jquery.min.js:o:1 <- (root):-1",
+      23.93
+    ],
+    [
+      "jquery.min.js:anonymous:1 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- jquery.min.js:removeClass:1 <- acf-pro-input.min.js:setActiveLayout:0 <- acf-pro-input.min.js:anonymous:0 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- jquery.min.js:trigger:1 <- jquery.min.js:simulate:1 <- jquery.min.js:o:1 <- (root):-1",
+      23.487000000000002
+    ],
+    [
+      "querySelectorAll:-1 <- section-navigator.js:applyView:261 <- section-navigator.js:select:251 <- section-navigator.js:selectResult:174 <- section-navigator.js:anonymous:414 <- (root):-1",
+      19.799
+    ],
+    [
+      "jquery.min.js:each:1 <- jquery.min.js:each:1 <- jquery.min.js:removeClass:1 <- acf-pro-input.min.js:setActiveLayout:0 <- acf-pro-input.min.js:anonymous:0 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- jquery.min.js:trigger:1 <- jquery.min.js:simulate:1 <- jquery.min.js:o:1 <- (root):-1",
+      17.340999999999998
+    ],
+    [
+      "focus:-1 <- section-navigator.js:select:251 <- section-navigator.js:selectResult:174 <- section-navigator.js:anonymous:414 <- (root):-1",
+      16.893
+    ],
+    [
+      "jquery.min.js:anonymous:1 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- jquery.min.js:removeClass:1 <- acf-pro-input.min.js:setActiveLayout:0 <- acf-pro-input.min.js:anonymous:0 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- (root):-1",
+      16.232999999999997
+    ],
+    [
+      "elementsFromPoint:-1 <- expectHitTarget:7238 <- setupHitTargetInterceptor:7325 <- anonymous:0 <- evaluate:295 <- anonymous:0 <- (root):-1",
+      13.183000000000002
+    ],
+    [
+      "jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:re:1 <- jquery.min.js:I:1 <- jquery.min.js:I.matches:1 <- jquery.min.js:ce.filter:1 <- jquery.min.js:T:1 <- jquery.min.js:not:1 <- acf-input.min.js:acf.findFields:0 <- acf-input.min.js:acf.getFields:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf-pro-input.min.js:openLayout:0 <- section-navigator.js:anonymous:130 <- section-navigator.js:reveal:124 <- section-navigator.js:select:251 <- section-navigator.js:selectResult:174 <- section-navigator.js:anonymous:414 <- (root):-1",
+      12.933
+    ],
+    [
+      "previewNode:7453 <- anonymous:0 <- evaluate:295 <- anonymous:0 <- (root):-1",
+      9.940999999999999
+    ],
+    [
+      "jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- jquery.min.js:ce.fn.init:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:ce:1 <- acf-input.min.js:findTabs:0 <- acf-input.min.js:getTabs:0 <- acf-input.min.js:render:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf-pro-input.min.js:openLayout:0 <- section-navigator.js:anonymous:130 <- section-navigator.js:reveal:124 <- section-navigator.js:select:251 <- section-navigator.js:selectResult:174 <- section-navigator.js:anonymous:414 <- (root):-1",
+      8.238
+    ],
+    [
+      "jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:re:1 <- jquery.min.js:I:1 <- jquery.min.js:I.matches:1 <- jquery.min.js:ce.filter:1 <- jquery.min.js:T:1 <- jquery.min.js:not:1 <- acf-input.min.js:acf.findFields:0 <- acf-input.min.js:acf.getFields:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf-pro-input.min.js:collapse:0 <- section-navigator.js:anonymous:206 <- section-navigator.js:anonymous:188 <- section-navigator.js:nestedComponents:187 <- section-navigator.js:select:251 <- section-navigator.js:selectResult:174 <- section-navigator.js:anonymous:414 <- (root):-1",
+      7.819000000000001
+    ],
+    [
+      "wp-emoji-release.min.js:t.observe.childList:4 <- (root):-1",
+      6.884
+    ],
+    [
+      "jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- (root):-1",
+      6.527
+    ],
+    [
+      "jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- jquery.min.js:ce.fn.init:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:ce:1 <- common.min.js:U:1 <- common.min.js:anonymous:1 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- jquery.min.js:trigger:1 <- jquery.min.js:l:1 <- jquery.min.js:anonymous:1 <- (root):-1",
+      5.945
+    ],
+    [
+      "elementFromPoint:-1 <- expectHitTarget:7238 <- setupHitTargetInterceptor:7325 <- anonymous:0 <- evaluate:295 <- anonymous:0 <- (root):-1",
+      5.800999999999999
+    ],
+    [
+      "elementsFromPoint:-1 <- expectHitTarget:7238 <- listener:7342 <- listener:7663 <- (root):-1",
+      5.79
+    ],
+    [
+      "querySelectorAll:-1 <- jquery.min.js:I:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:re:1 <- jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- acf.min.js:$:0 <- acf-pro-input.min.js:$rows:0 <- section-navigator.js:anonymous:188 <- section-navigator.js:nestedComponents:187 <- section-navigator.js:select:251 <- section-navigator.js:selectResult:174 <- section-navigator.js:anonymous:414 <- (root):-1",
+      5.395
+    ],
+    [
+      "getAttribute:-1 <- jquery.min.js:Ct:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- jquery.min.js:removeClass:1 <- acf-pro-input.min.js:setActiveLayout:0 <- acf-pro-input.min.js:anonymous:0 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- jquery.min.js:trigger:1 <- jquery.min.js:simulate:1 <- jquery.min.js:o:1 <- (root):-1",
+      5.311
+    ],
+    [
+      "setTimeout:-1 <- core.min.js:_delay:115 <- menu.min.js:collapseAll:8 <- core.min.js:r.<computed>:115 <- menu.min.js:click:8 <- core.min.js:i:115 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- (root):-1",
+      5.259
+    ],
+    [
+      "jquery.min.js:each:1 <- jquery.min.js:each:1 <- jquery.min.js:removeClass:1 <- acf-pro-input.min.js:setActiveLayout:0 <- acf-pro-input.min.js:anonymous:0 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- (root):-1",
+      5.018
+    ],
+    [
+      "querySelectorAll:-1 <- jquery.min.js:I:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:re:1 <- jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- acf.min.js:$:0 <- acf-pro-input.min.js:$rows:0 <- section-navigator.js:update:201 <- section-navigator.js:state:218 <- section-navigator.js:anonymous:206 <- section-navigator.js:anonymous:188 <- section-navigator.js:nestedComponents:187 <- section-navigator.js:select:251 <- section-navigator.js:selectResult:174 <- section-navigator.js:anonymous:414 <- (root):-1",
+      4.664
+    ],
+    [
+      "wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:wN:2 <- wp-tinymce.js:C:2 <- wp-tinymce.js:d:2 <- (root):-1",
+      4.584
+    ],
+    [
+      "jquery.min.js:handlers:1 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- (root):-1",
+      4.423
+    ],
+    [
+      "jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:re:1 <- jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:handlers:1 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- (root):-1",
+      4.415
+    ],
+    [
+      "RegExp: (^|[\\x20\\t\\r\\n\\f])mrn-shared-image-select([\\x20\\t\\r\\n\\f]|$):-1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:re:1 <- jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:handlers:1 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- (root):-1",
+      4.307
+    ],
+    [
+      "jquery.min.js:ce.fn.init:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:ce:1 <- jquery.min.js:handlers:1 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- jquery.min.js:trigger:1 <- jquery.min.js:simulate:1 <- jquery.min.js:o:1 <- focus:-1 <- section-navigator.js:select:251 <- section-navigator.js:selectResult:174 <- section-navigator.js:anonymous:414 <- (root):-1",
+      4.206
+    ],
+    [
+      "jquery.min.js:each:1 <- jquery.min.js:removeClass:1 <- acf-pro-input.min.js:setActiveLayout:0 <- acf-pro-input.min.js:anonymous:0 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- jquery.min.js:trigger:1 <- jquery.min.js:simulate:1 <- jquery.min.js:o:1 <- (root):-1",
+      4.059
+    ],
+    [
+      "querySelectorAll:-1 <- section-navigator.js:anonymous:212 <- section-navigator.js:anonymous:206 <- section-navigator.js:anonymous:188 <- section-navigator.js:nestedComponents:187 <- section-navigator.js:select:251 <- section-navigator.js:selectResult:174 <- section-navigator.js:anonymous:414 <- (root):-1",
+      4.044
+    ],
+    [
+      "jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:handlers:1 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- (root):-1",
+      3.9290000000000003
+    ],
+    [
+      "anonymous:0 <- (root):-1",
+      3.8190000000000004
+    ],
+    [
+      "querySelectorAll:-1 <- section-navigator.js:nestedComponents:187 <- section-navigator.js:select:251 <- section-navigator.js:selectResult:174 <- section-navigator.js:anonymous:414 <- (root):-1",
+      3.81
+    ],
+    [
+      "wp-tinymce.js:get:2 <- wp-tinymce.js:C:2 <- wp-tinymce.js:d:2 <- (root):-1",
+      3.525
+    ],
+    [
+      "evaluate:295 <- anonymous:0 <- (root):-1",
+      3.4720000000000004
+    ],
+    [
+      "jquery.min.js:trigger:1 <- jquery.min.js:triggerHandler:1 <- acf.min.js:trigger:0 <- acf-input.min.js:trigger:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf-input.min.js:anonymous:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf-pro-input.min.js:openLayout:0 <- section-navigator.js:anonymous:130 <- section-navigator.js:reveal:124 <- section-navigator.js:select:251 <- section-navigator.js:selectResult:174 <- section-navigator.js:anonymous:414 <- (root):-1",
+      3.471
+    ],
+    [
+      "jquery.min.js:c:1 <- jquery.min.js:fireWith:1 <- jquery.min.js:l:1 <- jquery.min.js:anonymous:1 <- (root):-1",
+      3.164
+    ],
+    [
+      "jquery.min.js:trigger:1 <- jquery.min.js:simulate:1 <- jquery.min.js:o:1 <- (root):-1",
+      3.1109999999999998
+    ],
+    [
+      "jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- menu.min.js:_close:8 <- core.min.js:r.<computed>:115 <- menu.min.js:anonymous:8 <- core.min.js:anonymous:115 <- (root):-1",
+      2.916
+    ],
+    [
+      "wp-emoji-release.min.js:d:4 <- (root):-1",
+      2.871
+    ],
+    [
+      "jquery.min.js:x:1 <- jquery.min.js:c:1 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- jquery.min.js:removeClass:1 <- acf-pro-input.min.js:setActiveLayout:0 <- acf-pro-input.min.js:anonymous:0 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- (root):-1",
+      2.81
+    ],
+    [
+      "getAttribute:-1 <- jquery.min.js:Ct:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- jquery.min.js:removeClass:1 <- acf-pro-input.min.js:setActiveLayout:0 <- acf-pro-input.min.js:anonymous:0 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- (root):-1",
+      2.7670000000000003
+    ],
+    [
+      "wp-tinymce.js:d:2 <- (root):-1",
+      2.6689999999999996
+    ],
+    [
+      "wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:wN:2 <- wp-tinymce.js:C:2 <- wp-tinymce.js:d:2 <- (root):-1",
+      2.5949999999999998
+    ],
+    [
+      "jquery.min.js:ne:1 <- jquery.min.js:re:1 <- jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:handlers:1 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- (root):-1",
+      2.583
+    ],
+    [
+      "listener:7663 <- (root):-1",
+      2.567
+    ],
+    [
+      "jquery.min.js:anonymous:1 <- jquery.min.js:re:1 <- jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:handlers:1 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- (root):-1",
+      2.567
+    ],
+    [
+      "listener:7342 <- listener:7663 <- (root):-1",
+      2.527
+    ],
+    [
+      "jquery.min.js:Ct:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- jquery.min.js:removeClass:1 <- acf-pro-input.min.js:setActiveLayout:0 <- acf-pro-input.min.js:anonymous:0 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- (root):-1",
+      2.527
+    ],
+    [
+      "jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:handlers:1 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- (root):-1",
+      2.516
+    ],
+    [
+      "jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:handlers:1 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- jquery.min.js:trigger:1 <- jquery.min.js:simulate:1 <- jquery.min.js:o:1 <- focus:-1 <- section-navigator.js:select:251 <- section-navigator.js:selectResult:174 <- section-navigator.js:anonymous:414 <- (root):-1",
+      2.4859999999999998
+    ],
+    [
+      "menu.min.js:_close:8 <- core.min.js:r.<computed>:115 <- menu.min.js:anonymous:8 <- core.min.js:anonymous:115 <- (root):-1",
+      2.446
+    ],
+    [
+      "core.min.js:i:115 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- (root):-1",
+      2.262
+    ],
+    [
+      "acf.min.js:trigger:0 <- acf-input.min.js:trigger:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf-input.min.js:anonymous:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf-pro-input.min.js:openLayout:0 <- section-navigator.js:anonymous:130 <- section-navigator.js:reveal:124 <- section-navigator.js:select:251 <- section-navigator.js:selectResult:174 <- section-navigator.js:anonymous:414 <- (root):-1",
+      2.22
+    ],
+    [
+      "jquery.min.js:ce.Event:1 <- jquery.min.js:fix:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- (root):-1",
+      2.2
+    ],
+    [
+      "wp-tinymce.js:fire:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:wN:2 <- wp-tinymce.js:C:2 <- wp-tinymce.js:d:2 <- (root):-1",
+      2.115
+    ],
+    [
+      "toggle:-1 <- section-navigator.js:anonymous:54 <- section-navigator.js:anonymous:50 <- (root):-1",
+      2.085
+    ],
+    [
+      "jquery.min.js:removeClass:1 <- jquery.min.js:toggleClass:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- core.min.js:_toggleClass:115 <- core.min.js:_removeClass:115 <- menu.min.js:anonymous:8 <- core.min.js:anonymous:115 <- (root):-1",
+      1.873
+    ],
+    [
+      "jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:ce:1 <- jquery.min.js:pushStack:1 <- jquery.min.js:find:1 <- jquery.min.js:ce.fn.init:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:ce:1 <- acf-pro-input.min.js:setActiveLayout:0 <- acf-pro-input.min.js:anonymous:0 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- jquery.min.js:trigger:1 <- jquery.min.js:simulate:1 <- jquery.min.js:o:1 <- (root):-1",
+      1.802
+    ],
+    [
+      "querySelector:-1 <- section-navigator.js:anonymous:188 <- section-navigator.js:nestedComponents:187 <- section-navigator.js:select:251 <- section-navigator.js:selectResult:174 <- section-navigator.js:anonymous:414 <- (root):-1",
+      1.739
+    ],
+    [
+      "wp-tinymce.js:c:2 <- (root):-1",
+      1.713
+    ],
+    [
+      "jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:ce:1 <- core.min.js:i:115 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- (root):-1",
+      1.595
+    ],
+    [
+      "core.min.js:_classes:115 <- core.min.js:_toggleClass:115 <- core.min.js:_removeClass:115 <- menu.min.js:anonymous:8 <- core.min.js:anonymous:115 <- (root):-1",
+      1.543
+    ],
+    [
+      "section-navigator.js:rememberSection:12 <- section-navigator.js:select:251 <- section-navigator.js:selectResult:174 <- section-navigator.js:anonymous:414 <- (root):-1",
+      1.541
+    ],
+    [
+      "jquery.min.js:handlers:1 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- jquery.min.js:trigger:1 <- jquery.min.js:l:1 <- jquery.min.js:anonymous:1 <- (root):-1",
+      1.501
+    ],
+    [
+      "editor.min.js:anonymous:1 <- wp-tinymce.js:C:2 <- wp-tinymce.js:d:2 <- (root):-1",
+      1.487
+    ],
+    [
+      "querySelectorAll:6680 <- anonymous:0 <- evaluate:295 <- anonymous:0 <- (root):-1",
+      1.462
+    ],
+    [
+      "closest:-1 <- post.php:anonymous:48529 <- (root):-1",
+      1.447
+    ],
+    [
+      "jquery.min.js:simulate:1 <- jquery.min.js:o:1 <- focus:-1 <- section-navigator.js:select:251 <- section-navigator.js:selectResult:174 <- section-navigator.js:anonymous:414 <- (root):-1",
+      1.444
+    ],
+    [
+      "jquery.min.js:V:1 <- jquery.min.js:I.matchesSelector:1 <- jquery.min.js:closest:1 <- acf-pro-input.min.js:anonymous:0 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- jquery.min.js:trigger:1 <- jquery.min.js:simulate:1 <- jquery.min.js:o:1 <- (root):-1",
+      1.442
+    ],
+    [
+      "happyfiles.min.js:Ze:6 <- happyfiles.min.js:get:6 <- happyfiles.min.js:get:12 <- happyfiles.min.js:onMouseUp:36 <- happyfiles.min.js:anonymous:36 <- (root):-1",
+      1.403
+    ],
+    [
+      "happyfiles.min.js:anonymous:36 <- (root):-1",
+      1.399
+    ],
+    [
+      "innerSerialize:178 <- serialize:167 <- serializeAsCallArgument:164 <- jsonValue:312 <- safeJson:318 <- _promiseAwareJsonValueNoThrow:317 <- evaluate:295 <- anonymous:0 <- (root):-1",
+      1.384
+    ],
+    [
+      "InjectedScript:6480 <- anonymous:1 <- anonymous:0 <- (root):-1",
+      1.367
+    ],
+    [
+      "closest:-1 <- command-palette-loader.js:request:52 <- (root):-1",
+      1.365
+    ],
+    [
+      "dispatchEvent:-1 <- markTargetElements:7617 <- anonymous:0 <- evaluate:295 <- anonymous:0 <- (root):-1",
+      1.362
+    ],
+    [
+      "jquery.min.js:add:1 <- jquery.min.js:always:1 <- jquery.min.js:statusCode:1 <- jquery.min.js:l:1 <- jquery.min.js:anonymous:1 <- (root):-1",
+      1.353
+    ],
+    [
+      "querySelector:-1 <- section-navigator.js:applyView:261 <- section-navigator.js:anonymous:484 <- (root):-1",
+      1.337
+    ],
+    [
+      "check:6972 <- raf:6998 <- (root):-1",
+      1.337
+    ],
+    [
+      "getExplicitAriaRole:3090 <- getAriaRole:3097 <- hasExplicitAriaDisabled:3693 <- getAriaDisabled:3676 <- elementState:7020 <- checkElementStates:6949 <- (root):-1",
+      1.328
+    ],
+    [
+      "jquery.min.js:Tt:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- jquery.min.js:removeClass:1 <- acf-pro-input.min.js:setActiveLayout:0 <- acf-pro-input.min.js:anonymous:0 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- jquery.min.js:trigger:1 <- jquery.min.js:simulate:1 <- jquery.min.js:o:1 <- focus:-1 <- section-navigator.js:select:251 <- section-navigator.js:selectResult:174 <- section-navigator.js:anonymous:414 <- (root):-1",
+      1.321
+    ],
+    [
+      "parseEvaluationResultValue:102 <- evaluate:295 <- anonymous:0 <- (root):-1",
+      1.319
+    ],
+    [
+      "_matchesSimple:5195 <- anonymous:5246 <- _cached:5113 <- _matchesParents:5243 <- anonymous:5159 <- anonymous:5151 <- _cached:5113 <- query:5147 <- query:5360 <- anonymous:5322 <- _cached:5113 <- _callQuery:5321 <- _queryEngine:5309 <- anonymous:5151 <- _cached:5113 <- query:5147 <- queryAll:6749 <- _queryEngineAll:6728 <- querySelectorAll:6680 <- anonymous:0 <- evaluate:295 <- anonymous:0 <- (root):-1",
+      1.315
+    ],
+    [
+      "section-navigator.js:update:201 <- section-navigator.js:state:218 <- section-navigator.js:anonymous:206 <- section-navigator.js:anonymous:188 <- section-navigator.js:nestedComponents:187 <- section-navigator.js:select:251 <- section-navigator.js:selectResult:174 <- section-navigator.js:anonymous:414 <- (root):-1",
+      1.312
+    ],
+    [
+      "jquery.min.js:ce.fn.init:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:ce:1 <- acf-pro-input.min.js:anonymous:0 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- (root):-1",
+      1.305
+    ]
+  ],
+  "startup": {
+    "metrics": [
+      {
+        "name": "Timestamp",
+        "value": 128452.541506
+      },
+      {
+        "name": "AudioHandlers",
+        "value": 0
+      },
+      {
+        "name": "AudioWorkletProcessors",
+        "value": 0
+      },
+      {
+        "name": "Documents",
+        "value": 45
+      },
+      {
+        "name": "Frames",
+        "value": 30
+      },
+      {
+        "name": "JSEventListeners",
+        "value": 12997
+      },
+      {
+        "name": "LayoutObjects",
+        "value": 2827
+      },
+      {
+        "name": "MediaKeySessions",
+        "value": 0
+      },
+      {
+        "name": "MediaKeys",
+        "value": 0
+      },
+      {
+        "name": "Nodes",
+        "value": 265097
+      },
+      {
+        "name": "Resources",
+        "value": 292
+      },
+      {
+        "name": "ContextLifecycleStateObservers",
+        "value": 328
+      },
+      {
+        "name": "V8PerContextDatas",
+        "value": 8
+      },
+      {
+        "name": "WorkerGlobalScopes",
+        "value": 0
+      },
+      {
+        "name": "UACSSResources",
+        "value": 0
+      },
+      {
+        "name": "RTCPeerConnections",
+        "value": 0
+      },
+      {
+        "name": "ResourceFetchers",
+        "value": 45
+      },
+      {
+        "name": "AdSubframes",
+        "value": 0
+      },
+      {
+        "name": "DetachedScriptStates",
+        "value": 4
+      },
+      {
+        "name": "ArrayBufferContents",
+        "value": 0
+      },
+      {
+        "name": "LayoutCount",
+        "value": 73
+      },
+      {
+        "name": "RecalcStyleCount",
+        "value": 318
+      },
+      {
+        "name": "LayoutDuration",
+        "value": 0.088698
+      },
+      {
+        "name": "RecalcStyleDuration",
+        "value": 0.189023
+      },
+      {
+        "name": "DevToolsCommandDuration",
+        "value": 0.037772
+      },
+      {
+        "name": "ScriptDuration",
+        "value": 4.379613
+      },
+      {
+        "name": "V8CompileDuration",
+        "value": 0.010374
+      },
+      {
+        "name": "TaskDuration",
+        "value": 5.240434
+      },
+      {
+        "name": "TaskOtherDuration",
+        "value": 0.534954
+      },
+      {
+        "name": "ThreadTime",
+        "value": 3.396225
+      },
+      {
+        "name": "ProcessTime",
+        "value": 5.120848
+      },
+      {
+        "name": "JSHeapUsedSize",
+        "value": 36938512
+      },
+      {
+        "name": "JSHeapTotalSize",
+        "value": 68829184
+      },
+      {
+        "name": "FirstMeaningfulPaint",
+        "value": 128446.16861
+      },
+      {
+        "name": "DomContentLoaded",
+        "value": 128447.575958
+      },
+      {
+        "name": "NavigationStart",
+        "value": 128439.77442
+      }
+    ]
+  },
+  "full": {
+    "metrics": [
+      {
+        "name": "Timestamp",
+        "value": 128455.270726
+      },
+      {
+        "name": "AudioHandlers",
+        "value": 0
+      },
+      {
+        "name": "AudioWorkletProcessors",
+        "value": 0
+      },
+      {
+        "name": "Documents",
+        "value": 86
+      },
+      {
+        "name": "Frames",
+        "value": 86
+      },
+      {
+        "name": "JSEventListeners",
+        "value": 19393
+      },
+      {
+        "name": "LayoutObjects",
+        "value": 1066
+      },
+      {
+        "name": "MediaKeySessions",
+        "value": 0
+      },
+      {
+        "name": "MediaKeys",
+        "value": 0
+      },
+      {
+        "name": "Nodes",
+        "value": 228066
+      },
+      {
+        "name": "Resources",
+        "value": 290
+      },
+      {
+        "name": "ContextLifecycleStateObservers",
+        "value": 428
+      },
+      {
+        "name": "V8PerContextDatas",
+        "value": 124
+      },
+      {
+        "name": "WorkerGlobalScopes",
+        "value": 0
+      },
+      {
+        "name": "UACSSResources",
+        "value": 0
+      },
+      {
+        "name": "RTCPeerConnections",
+        "value": 0
+      },
+      {
+        "name": "ResourceFetchers",
+        "value": 86
+      },
+      {
+        "name": "AdSubframes",
+        "value": 0
+      },
+      {
+        "name": "DetachedScriptStates",
+        "value": 4
+      },
+      {
+        "name": "ArrayBufferContents",
+        "value": 0
+      },
+      {
+        "name": "LayoutCount",
+        "value": 250
+      },
+      {
+        "name": "RecalcStyleCount",
+        "value": 850
+      },
+      {
+        "name": "LayoutDuration",
+        "value": 0.099808
+      },
+      {
+        "name": "RecalcStyleDuration",
+        "value": 0.275634
+      },
+      {
+        "name": "DevToolsCommandDuration",
+        "value": 1.650967
+      },
+      {
+        "name": "ScriptDuration",
+        "value": 4.63706
+      },
+      {
+        "name": "V8CompileDuration",
+        "value": 0.010374
+      },
+      {
+        "name": "TaskDuration",
+        "value": 7.634418
+      },
+      {
+        "name": "TaskOtherDuration",
+        "value": 0.960575
+      },
+      {
+        "name": "ThreadTime",
+        "value": 5.768687
+      },
+      {
+        "name": "ProcessTime",
+        "value": 8.492635
+      },
+      {
+        "name": "JSHeapUsedSize",
+        "value": 98744940
+      },
+      {
+        "name": "JSHeapTotalSize",
+        "value": 166658048
+      },
+      {
+        "name": "FirstMeaningfulPaint",
+        "value": 128446.16861
+      },
+      {
+        "name": "DomContentLoaded",
+        "value": 128447.575958
+      },
+      {
+        "name": "NavigationStart",
+        "value": 128439.77442
+      }
+    ]
+  },
+  "startStacks": [
+    [
+      "main.js:EN.<computed>._d9765e5cefb89ae8e03c58ef:0 <- main.js:Xe:0 <- main.js:a6:0 <- main.js:C:0 <- main.js:aP:0 <- main.js:a:0 <- main.js:Eg.<computed>:0 <- main.js:am:0 <- main.js:Ex:0 <- main.js:anonymous:0 <- main.js:anonymous:0 <- main.js:anonymous:0 <- (root):-1",
+      1903.3710000000005
+    ],
+    [
+      "(program):-1 <- (root):-1",
+      684.8869999999998
+    ],
+    [
+      "jquery.min.js:d:1 <- jquery.min.js:parents:1 <- jquery.min.js:map:1 <- jquery.min.js:ce.fn.<computed>:1 <- acf-input.min.js:setFieldSettingsLastVisible:0 <- acf-input.min.js:hide:0 <- acf-input.min.js:hideDisable:0 <- acf-input.min.js:hide:0 <- acf-input.min.js:render:0 <- acf-input.min.js:onNewField:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf-input.min.js:acf.newField:0 <- acf-input.min.js:acf.getField:0 <- acf-input.min.js:anonymous:0 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- acf-input.min.js:acf.getFields:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- post.php:anonymous:48556 <- (root):-1",
+      276.9849999999999
+    ],
+    [
+      "jquery.min.js:ce.expr.pseudos.visible:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:re:1 <- jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- jquery.min.js:ce.fn.init:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:ce:1 <- postbox.min.js:_mark_area:1 <- postbox.min.js:init:1 <- postbox.min.js:add_postbox_toggles:1 <- post.min.js:anonymous:1 <- jquery.min.js:e:1 <- jquery.min.js:t:1 <- (root):-1",
+      162.374
+    ],
+    [
+      "jquery.min.js:d:1 <- jquery.min.js:parents:1 <- jquery.min.js:map:1 <- jquery.min.js:ce.fn.<computed>:1 <- acf-input.min.js:parents:0 <- acf-input.min.js:acf.Field.getField:0 <- acf-input.min.js:acf.newCondition:0 <- acf-input.min.js:addRule:0 <- acf-input.min.js:anonymous:0 <- acf-input.min.js:addRules:0 <- acf-input.min.js:anonymous:0 <- acf-input.min.js:setup:0 <- acf.min.js:acf.Model:0 <- acf.min.js:n:0 <- acf-input.min.js:acf.Field.getConditions:0 <- acf-input.min.js:onNewField:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf-input.min.js:acf.newField:0 <- acf-input.min.js:acf.getField:0 <- acf-input.min.js:anonymous:0 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- acf-input.min.js:acf.getFields:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- post.php:anonymous:48556 <- (root):-1",
+      77.35600000000002
+    ],
+    [
+      "jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- admin-row-flex-layout.js:getRows:95 <- admin-row-flex-layout.js:getRowIndex:105 <- admin-row-flex-layout.js:ensureLayoutTabForRow:292 <- admin-row-flex-layout.js:anonymous:342 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- admin-row-flex-layout.js:anonymous:334 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- admin-row-flex-layout.js:ensureLayoutTabs:333 <- admin-row-flex-layout.js:ensureLayoutTabsOnce:350 <- admin-row-flex-layout.js:anonymous:408 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf.min.js:anonymous:0 <- jquery.min.js:e:1 <- jquery.min.js:t:1 <- (root):-1",
+      71.72700000000005
+    ],
+    [
+      "(garbage collector):-1 <- (root):-1",
+      64.691
+    ],
+    [
+      "querySelectorAll:-1 <- jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- jquery.min.js:ce.fn.init:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:ce:1 <- acf-pro-input.min.js:anonymous:0 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- acf-pro-input.min.js:maybeDisableAddLayout:0 <- acf-pro-input.min.js:render:0 <- acf-pro-input.min.js:initialize:0 <- acf.min.js:e:0 <- acf.min.js:acf.Model:0 <- acf.min.js:n:0 <- acf.min.js:n:0 <- acf-input.min.js:acf.newField:0 <- acf-input.min.js:acf.getField:0 <- acf-input.min.js:anonymous:0 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- acf-input.min.js:acf.getFields:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- post.php:anonymous:48556 <- (root):-1",
+      52.512000000000015
+    ],
+    [
+      "jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- acf-input.min.js:acf.findFields:0 <- acf-input.min.js:acf.getFields:0 <- acf-input.min.js:i:0 <- acf-input.min.js:acf.Field.getField:0 <- acf-input.min.js:acf.newCondition:0 <- acf-input.min.js:addRule:0 <- acf-input.min.js:anonymous:0 <- acf-input.min.js:addRules:0 <- acf-input.min.js:anonymous:0 <- acf-input.min.js:setup:0 <- acf.min.js:acf.Model:0 <- acf.min.js:n:0 <- acf-input.min.js:acf.Field.getConditions:0 <- acf-input.min.js:onNewField:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf-input.min.js:acf.newField:0 <- acf-input.min.js:acf.getField:0 <- acf-input.min.js:anonymous:0 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- acf-input.min.js:acf.getFields:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- post.php:anonymous:48556",
+      52.468
+    ],
+    [
+      "jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:re:1 <- jquery.min.js:I:1 <- jquery.min.js:I.matches:1 <- jquery.min.js:ce.filter:1 <- jquery.min.js:T:1 <- jquery.min.js:not:1 <- acf-input.min.js:acf.findFields:0 <- acf-input.min.js:acf.getFields:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf-pro-input.min.js:collapse:0 <- section-navigator.js:anonymous:206 <- section-navigator.js:anonymous:188 <- section-navigator.js:nestedComponents:187 <- section-navigator.js:reconcile:384 <- (root):-1",
+      38.185
+    ],
+    [
+      "querySelectorAll:-1 <- post.php:anonymous:48489 <- post.php:initPhoneInputs:48475 <- post.php:anonymous:48547 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf.min.js:anonymous:0 <- jquery.min.js:e:1 <- jquery.min.js:t:1 <- (root):-1",
+      35.34499999999999
+    ],
+    [
+      "jquery.min.js:Ge:1 <- jquery.min.js:css:1 <- jquery.min.js:get:1 <- jquery.min.js:css:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:M:1 <- jquery.min.js:ce.fn.<computed>:1 <- acf-input.min.js:render:0 <- acf-input.min.js:initialize:0 <- acf.min.js:e:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf.min.js:anonymous:0 <- jquery.min.js:e:1 <- jquery.min.js:t:1 <- (root):-1",
+      33.850000000000016
+    ],
+    [
+      "jquery.min.js:e:1 <- jquery.min.js:pixelBoxStyles:1 <- jquery.min.js:Ge:1 <- jquery.min.js:css:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:M:1 <- jquery.min.js:css:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- third-level-menus.js:init:9 <- jquery.min.js:i:1 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- jquery.min.js:trigger:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- jquery.min.js:trigger:1 <- post.php:anonymous:817 <- (root):-1",
+      23.876999999999995
+    ],
+    [
+      "section-navigator.js:anonymous:461 <- section-navigator.js:collectNotices:455 <- section-navigator.js:mount:477 <- section-navigator.js:reconcile:384 <- (root):-1",
+      22.999000000000002
+    ],
+    [
+      "querySelectorAll:-1 <- post.php:anonymous:48489 <- post.php:initPhoneInputs:48475 <- post.php:anonymous:48494 <- (root):-1",
+      22.997999999999998
+    ],
+    [
+      "components.min.js:anonymous:1 <- components.min.js:anonymous:0 <- (root):-1",
+      21.528
+    ],
+    [
+      "jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- jquery.min.js:ce.fn.init:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:ce:1 <- acf-input.min.js:i:0 <- acf-input.min.js:acf.Field.getField:0 <- acf-input.min.js:acf.newCondition:0 <- acf-input.min.js:addRule:0 <- acf-input.min.js:anonymous:0 <- acf-input.min.js:addRules:0 <- acf-input.min.js:anonymous:0 <- acf-input.min.js:setup:0 <- acf.min.js:acf.Model:0 <- acf.min.js:n:0 <- acf-input.min.js:acf.Field.getConditions:0 <- acf-input.min.js:onNewField:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf-input.min.js:acf.newField:0 <- acf-input.min.js:acf.getField:0 <- acf-input.min.js:anonymous:0 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- acf-input.min.js:acf.getFields:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0",
+      19.416999999999998
+    ],
+    [
+      "jquery.min.js:ce.extend.ce.fn.extend:1 <- acf.min.js:inherit:0 <- acf-input.min.js:setup:0 <- acf.min.js:acf.Model:0 <- acf.min.js:n:0 <- acf.min.js:n:0 <- acf-input.min.js:acf.newField:0 <- acf-input.min.js:acf.getField:0 <- acf-input.min.js:anonymous:0 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- acf-input.min.js:acf.getFields:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- post.php:anonymous:48556 <- (root):-1",
+      17.196000000000005
+    ],
+    [
+      "jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:re:1 <- jquery.min.js:I:1 <- jquery.min.js:I.matches:1 <- jquery.min.js:ce.filter:1 <- jquery.min.js:T:1 <- jquery.min.js:not:1 <- acf-input.min.js:acf.findFields:0 <- acf-input.min.js:acf.getFields:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf.min.js:anonymous:0 <- jquery.min.js:e:1 <- jquery.min.js:t:1 <- (root):-1",
+      16.703
+    ],
+    [
+      "main.js:EN.<computed>._d9765e5cefb89ae8e03c58ef:0 <- main.js:EJ:0 <- main.js:Xe:0 <- main.js:a6:0 <- main.js:C:0 <- main.js:aP:0 <- main.js:a:0 <- main.js:Eg.<computed>:0 <- main.js:am:0 <- main.js:Ex:0 <- main.js:anonymous:0 <- main.js:anonymous:0 <- main.js:anonymous:0 <- (root):-1",
+      16.628
+    ],
+    [
+      "jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:re:1 <- jquery.min.js:I:1 <- jquery.min.js:I.matches:1 <- jquery.min.js:ce.filter:1 <- jquery.min.js:T:1 <- jquery.min.js:not:1 <- acf-input.min.js:acf.findFields:0 <- acf-input.min.js:acf.getFields:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf.min.js:anonymous:0 <- (root):-1",
+      14.880999999999997
+    ],
+    [
+      "fetch:-1 <- metaboxe.js:i:1 <- metaboxe.js:anonymous:1 <- (root):-1",
+      14.323999999999998
+    ],
+    [
+      "wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:C:2 <- wp-tinymce.js:d:2 <- wp-tinymce.js:a:2 <- (root):-1",
+      14.273
+    ],
+    [
+      "querySelectorAll:-1 <- jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- jquery.min.js:ce.fn.init:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:ce:1 <- common.min.js:anonymous:1 <- jquery.min.js:e:1 <- jquery.min.js:t:1 <- (root):-1",
+      14.116999999999999
+    ],
+    [
+      "react-dom.min.js:Gc:163 <- react-dom.min.js:Fi:170 <- react-dom.min.js:Aa:169 <- react-dom.min.js:Fi:170 <- react-dom.min.js:Aa:169 <- react-dom.min.js:Fi:170 <- react-dom.min.js:Aa:169 <- react-dom.min.js:Fi:170 <- react-dom.min.js:Aa:169 <- react-dom.min.js:Fi:170 <- react-dom.min.js:Aa:169 <- react-dom.min.js:Fi:170 <- react-dom.min.js:Aa:169 <- react-dom.min.js:Fi:170 <- react-dom.min.js:Aa:169 <- react-dom.min.js:Fi:170 <- react-dom.min.js:Aa:169 <- react-dom.min.js:Fi:170 <- react-dom.min.js:Aa:169 <- react-dom.min.js:Fi:170 <- react-dom.min.js:Aa:169 <- react-dom.min.js:Fi:170 <- react-dom.min.js:Aa:169 <- react-dom.min.js:Fi:170 <- react-dom.min.js:Aa:169 <- react-dom.min.js:Fi:170 <- react-dom.min.js:Aa:169 <- react-dom.min.js:Fi:170 <- react-dom.min.js:Aa:169 <- react-dom.min.js:Fi:170 <- react-dom.min.js:Aa:169 <- react-dom.min.js:Fi:170",
+      13.965
+    ],
+    [
+      "jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:re:1 <- jquery.min.js:I:1 <- jquery.min.js:I.matches:1 <- jquery.min.js:ce.filter:1 <- jquery.min.js:T:1 <- jquery.min.js:not:1 <- acf-input.min.js:acf.findFields:0 <- acf-input.min.js:acf.getFields:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- post.php:anonymous:48556 <- (root):-1",
+      13.322000000000001
+    ],
+    [
+      "section-navigator.js:reconcile:384 <- (root):-1",
+      13.000999999999996
+    ],
+    [
+      "jquery.min.js:Ge:1 <- jquery.min.js:css:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:M:1 <- jquery.min.js:css:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- third-level-menus.js:init:9 <- jquery.min.js:i:1 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- jquery.min.js:trigger:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- jquery.min.js:trigger:1 <- post.php:anonymous:817 <- (root):-1",
+      11.530000000000001
+    ],
+    [
+      "wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2",
+      11.388000000000002
+    ],
+    [
+      "section-navigator.js:updateChromeOffset:435 <- section-navigator.js:mount:477 <- section-navigator.js:reconcile:384 <- (root):-1",
+      11.343
+    ],
+    [
+      "jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- admin-row-flex-layout.js:ensurePayloadInputs:126 <- admin-row-flex-layout.js:syncLayoutPayload:394 <- admin-row-flex-layout.js:ensureLayoutTabs:333 <- admin-row-flex-layout.js:ensureLayoutTabsOnce:350 <- admin-row-flex-layout.js:anonymous:408 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf.min.js:anonymous:0 <- jquery.min.js:e:1 <- jquery.min.js:t:1 <- (root):-1",
+      11.265999999999998
+    ],
+    [
+      "jquery.min.js:ce.expr.pseudos.visible:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:re:1 <- jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- acf-input.min.js:acf.findFields:0 <- acf-input.min.js:acf.getFields:0 <- acf-pro-input.min.js:onShow:0 <- acf.min.js:anonymous:0 <- jquery.min.js:i:1 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- jquery.min.js:trigger:1 <- jquery.min.js:triggerHandler:1 <- acf.min.js:trigger:0 <- acf-input.min.js:trigger:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf-input.min.js:anonymous:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0",
+      11.228
+    ],
+    [
+      "jquery.min.js:data:1 <- acf.min.js:inherit:0 <- acf-input.min.js:setup:0 <- acf.min.js:acf.Model:0 <- acf.min.js:n:0 <- acf.min.js:n:0 <- acf-input.min.js:acf.newField:0 <- acf-input.min.js:acf.getField:0 <- acf-input.min.js:anonymous:0 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- acf-input.min.js:acf.getFields:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- post.php:anonymous:48556 <- (root):-1",
+      10.193
+    ],
+    [
+      "querySelectorAll:-1 <- jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- jquery.min.js:ce.fn.init:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:ce:1 <- postbox.min.js:add_postbox_toggles:1 <- post.min.js:anonymous:1 <- jquery.min.js:e:1 <- jquery.min.js:t:1 <- (root):-1",
+      9.797
+    ],
+    [
+      "jquery.min.js:re:1 <- jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- jquery.min.js:ce.fn.init:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:ce:1 <- acf-input.min.js:renderGroups:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf.min.js:anonymous:0 <- acf.min.js:anonymous:0 <- (root):-1",
+      9.584
+    ],
+    [
+      "jquery.min.js:r:1 <- jquery.min.js:re:1 <- jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- jquery.min.js:ce.fn.init:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:ce:1 <- postbox.min.js:_mark_area:1 <- postbox.min.js:init:1 <- postbox.min.js:add_postbox_toggles:1 <- post.min.js:anonymous:1 <- jquery.min.js:e:1 <- jquery.min.js:t:1 <- (root):-1",
+      9.228
+    ],
+    [
+      "jquery.min.js:data:1 <- acf.min.js:inherit:0 <- admin-editor-startup.js:deferredInitialize:19 <- acf.min.js:e:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf.min.js:anonymous:0 <- (root):-1",
+      8.966000000000001
+    ],
+    [
+      "appearance.js:anonymous:1 <- appearance.js:anonymous:0 <- (root):-1",
+      8.871
+    ],
+    [
+      "jquery.min.js:Ge:1 <- jquery.min.js:css:1 <- jquery.min.js:ee:1 <- jquery.min.js:re:1 <- jquery.min.js:show:1 <- jquery.min.js:ce.fn.<computed>:1 <- jquery.min.js:toggle:1 <- jquery.min.js:ce.fn.<computed>:1 <- content-builder-admin.js:anonymous:469 <- jquery.min.js:each:1 <- content-builder-admin.js:anonymous:441 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- content-builder-admin.js:syncContentListFilters:440 <- content-builder-admin.js:anonymous:589 <- (root):-1",
+      8.847
+    ],
+    [
+      "jquery.min.js:Ge:1 <- jquery.min.js:css:1 <- jquery.min.js:ee:1 <- jquery.min.js:re:1 <- jquery.min.js:show:1 <- jquery.min.js:ce.fn.<computed>:1 <- acf-input.min.js:show:0 <- acf-input.min.js:initialize:0 <- acf.min.js:e:0 <- acf.min.js:acf.Model:0 <- acf.min.js:n:0 <- acf-input.min.js:acf.newPostbox:0 <- acf-input.min.js:initialize:0 <- acf.min.js:e:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- post.php:anonymous:48556 <- (root):-1",
+      8.818
+    ],
+    [
+      "querySelectorAll:-1 <- post.php:initPhoneInputs:48475 <- post.php:anonymous:48547 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf.min.js:anonymous:0 <- jquery.min.js:e:1 <- jquery.min.js:t:1 <- (root):-1",
+      8.769
+    ],
+    [
+      "metaboxe.js:o:1 <- metaboxe.js:anonymous:1 <- (root):-1",
+      8.727
+    ],
+    [
+      "acf.min.js:i.doAction:0 <- acf-input.min.js:anonymous:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf-input.min.js:acf.newField:0 <- acf-input.min.js:acf.getField:0 <- acf-input.min.js:anonymous:0 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- acf-input.min.js:acf.getFields:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- post.php:anonymous:48556 <- (root):-1",
+      8.26
+    ],
+    [
+      "jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- jquery.min.js:ce.fn.init:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:ce:1 <- common.min.js:anonymous:1 <- jquery.min.js:e:1 <- jquery.min.js:t:1 <- (root):-1",
+      8.187
+    ],
+    [
+      "jquery.min.js:M:1 <- jquery.min.js:attr:1 <- acf-input.min.js:initialize:0 <- acf.min.js:e:0 <- acf.min.js:acf.Model:0 <- acf.min.js:n:0 <- acf.min.js:n:0 <- acf-input.min.js:acf.newField:0 <- acf-input.min.js:acf.getField:0 <- acf-input.min.js:anonymous:0 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- acf-input.min.js:acf.getFields:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- post.php:anonymous:48556 <- (root):-1",
+      8.085
+    ],
+    [
+      "element.min.js:get:1 <- compose.min.js:get:1 <- compose.min.js:Vr:1 <- components.min.js:CGc:9 <- react-dom.min.js:mf:104 <- react-dom.min.js:mi:122 <- react-dom.min.js:Qk:248 <- react-dom.min.js:Ri:194 <- react-dom.min.js:Ok:194 <- react-dom.min.js:Nd:193 <- react-dom.min.js:Ni:183 <- react.min.js:S:15 <- react.min.js:U:20 <- (root):-1",
+      7.916
+    ],
+    [
+      "removeChild:-1 <- metaboxe.js:o:1 <- metaboxe.js:anonymous:1 <- (root):-1",
+      7.766
+    ],
+    [
+      "section-navigator.js:anonymous:459 <- section-navigator.js:collectNotices:455 <- section-navigator.js:anonymous:519 <- (root):-1",
+      7.554
+    ],
+    [
+      "jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:re:1 <- jquery.min.js:I:1 <- jquery.min.js:I.matches:1 <- jquery.min.js:ce.filter:1 <- jquery.min.js:T:1 <- jquery.min.js:not:1 <- acf-input.min.js:acf.findFields:0 <- acf-input.min.js:acf.getFields:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf.min.js:anonymous:0 <- (root):-1",
+      7.438
+    ],
+    [
+      "jquery.min.js:handlers:1 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- jquery.min.js:trigger:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- jquery.min.js:trigger:1 <- content-builder-admin.js:updateSelectUi:394 <- content-builder-admin.js:anonymous:441 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- content-builder-admin.js:syncContentListFilters:440 <- content-builder-admin.js:anonymous:589 <- (root):-1",
+      7.319
+    ],
+    [
+      "wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:l.<computed>.l.<computed>.l.<computed>.o.onload:2 <- (root):-1",
+      7.057
+    ],
+    [
+      "jquery.min.js:ce.extend.ce.fn.extend:1 <- acf.min.js:inherit:0 <- acf-input.min.js:setup:0 <- acf.min.js:acf.Model:0 <- acf.min.js:n:0 <- acf-input.min.js:acf.newField:0 <- acf-input.min.js:acf.getField:0 <- acf-input.min.js:anonymous:0 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- acf-input.min.js:acf.getFields:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- post.php:anonymous:48556 <- (root):-1",
+      6.964
+    ],
+    [
+      "jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- jquery.min.js:ce.fn.init:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:ce:1 <- acf-input.min.js:findTabs:0 <- acf-input.min.js:getTabs:0 <- acf-input.min.js:render:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf.min.js:anonymous:0 <- acf.min.js:anonymous:0 <- (root):-1",
+      6.607
+    ],
+    [
+      "jquery.min.js:V:1 <- jquery.min.js:data:1 <- acf.min.js:inherit:0 <- acf-input.min.js:setup:0 <- acf.min.js:acf.Model:0 <- acf.min.js:n:0 <- acf.min.js:n:0 <- acf-input.min.js:acf.newField:0 <- acf-input.min.js:acf.getField:0 <- acf-input.min.js:anonymous:0 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- acf-input.min.js:acf.getFields:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- post.php:anonymous:48556 <- (root):-1",
+      6.603
+    ],
+    [
+      "jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:re:1 <- jquery.min.js:I:1 <- jquery.min.js:I.matches:1 <- jquery.min.js:ce.filter:1 <- jquery.min.js:T:1 <- jquery.min.js:not:1 <- acf-input.min.js:acf.findFields:0 <- acf-input.min.js:acf.getFields:0 <- admin-editor-startup.js:anonymous:54 <- admin-editor-startup.js:anonymous:50 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf.min.js:anonymous:0 <- (root):-1",
+      6.453
+    ],
+    [
+      "querySelectorAll:-1 <- jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- jquery.min.js:ce.fn.init:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:ce:1 <- seopress-pro-ai.min.js:anonymous:0 <- jquery.min.js:e:1 <- jquery.min.js:t:1 <- (root):-1",
+      6.331
+    ],
+    [
+      "wp-emoji-release.min.js:callback:2 <- wp-emoji-release.min.js:parse:2 <- wp-emoji-release.min.js:f:4 <- wp-emoji-release.min.js:u:4 <- wp-emoji-release.min.js:anonymous:4 <- wp-emoji-release.min.js:anonymous:4 <- wp-emoji-release.min.js:anonymous:0 <- (root):-1",
+      6.329
+    ],
+    [
+      "RegExp: (^|[\\x20\\t\\r\\n\\f])acf-clone([\\x20\\t\\r\\n\\f]|$):-1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:re:1 <- jquery.min.js:I:1 <- jquery.min.js:I.matches:1 <- jquery.min.js:ce.filter:1 <- jquery.min.js:T:1 <- jquery.min.js:not:1 <- acf-input.min.js:acf.findFields:0 <- acf-input.min.js:acf.getFields:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf.min.js:anonymous:0 <- (root):-1",
+      6.327000000000001
+    ],
+    [
+      "jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:re:1 <- jquery.min.js:I:1 <- jquery.min.js:I.matches:1 <- jquery.min.js:ce.filter:1 <- jquery.min.js:T:1 <- jquery.min.js:not:1 <- acf-input.min.js:acf.findFields:0 <- acf-input.min.js:acf.getFields:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- post.php:anonymous:48556 <- (root):-1",
+      6.284
+    ],
+    [
+      "acf.min.js:anonymous:0 <- acf.min.js:i:0 <- acf.min.js:addAction:0 <- acf.min.js:i.addAction:0 <- acf.min.js:addAction:0 <- acf.min.js:acf.Model:0 <- acf.min.js:n:0 <- acf.min.js:n:0 <- acf-input.min.js:acf.newField:0 <- acf-input.min.js:acf.getField:0 <- acf-input.min.js:anonymous:0 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- acf-input.min.js:acf.getFields:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- post.php:anonymous:48556 <- (root):-1",
+      6.2509999999999994
+    ],
+    [
+      "jquery.min.js:V:1 <- jquery.min.js:data:1 <- acf.min.js:inherit:0 <- acf-input.min.js:setup:0 <- acf.min.js:acf.Model:0 <- acf.min.js:n:0 <- acf-input.min.js:acf.newField:0 <- acf-input.min.js:acf.getField:0 <- acf-input.min.js:anonymous:0 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- acf-input.min.js:acf.getFields:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- post.php:anonymous:48556 <- (root):-1",
+      6.25
+    ],
+    [
+      "jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- jquery.min.js:ce.fn.init:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:ce:1 <- sortable.min.js:_refreshItems:8 <- core.min.js:r.<computed>:115 <- sortable.min.js:refresh:8 <- core.min.js:r.<computed>:115 <- core.min.js:anonymous:115 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- core.min.js:x.fn.<computed>:115 <- post.php:anonymous:48008 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- post.php:lockMetaboxSorting:48003 <- (root):-1",
+      6.095000000000001
+    ],
+    [
+      "jquery.min.js:Ae:1 <- jquery.min.js:ce.parseHTML:1 <- jquery.min.js:ce.fn.init:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:ce:1 <- admin-row-flex-layout.js:buildPanelContents:187 <- admin-row-flex-layout.js:ensurePanelContents:252 <- admin-row-flex-layout.js:ensureLayoutTabForRow:292 <- admin-row-flex-layout.js:anonymous:342 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- admin-row-flex-layout.js:anonymous:334 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- admin-row-flex-layout.js:ensureLayoutTabs:333 <- admin-row-flex-layout.js:ensureLayoutTabsOnce:350 <- admin-row-flex-layout.js:anonymous:408 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf.min.js:anonymous:0 <- jquery.min.js:e:1 <- jquery.min.js:t:1 <- (root):-1",
+      5.9830000000000005
+    ],
+    [
+      "querySelectorAll:-1 <- jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- jquery.min.js:ce.fn.init:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:ce:1 <- acf-input.min.js:acf.findFields:0 <- acf-input.min.js:acf.getFields:0 <- admin-editor-startup.js:anonymous:54 <- admin-editor-startup.js:anonymous:50 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf.min.js:anonymous:0 <- (root):-1",
+      5.8100000000000005
+    ],
+    [
+      "jquery.min.js:I:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:re:1 <- jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- acf.min.js:$:0 <- acf-pro-input.min.js:$layoutsWrap:0 <- section-navigator.js:anonymous:390 <- section-navigator.js:reconcile:384 <- (root):-1",
+      5.772
+    ],
+    [
+      "jquery.min.js:trigger:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- jquery.min.js:trigger:1 <- content-builder-admin.js:anonymous:441 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- content-builder-admin.js:syncContentListFilters:440 <- content-builder-admin.js:anonymous:589 <- (root):-1",
+      5.644
+    ],
+    [
+      "RegExp: (^|[\\x20\\t\\r\\n\\f])acf-clone([\\x20\\t\\r\\n\\f]|$):-1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:re:1 <- jquery.min.js:I:1 <- jquery.min.js:I.matches:1 <- jquery.min.js:ce.filter:1 <- jquery.min.js:T:1 <- jquery.min.js:not:1 <- acf-input.min.js:acf.findFields:0 <- acf-input.min.js:acf.getFields:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf.min.js:anonymous:0 <- jquery.min.js:e:1 <- jquery.min.js:t:1 <- (root):-1",
+      5.484
+    ],
+    [
+      "section-navigator.js:anonymous:459 <- section-navigator.js:collectNotices:455 <- section-navigator.js:mount:477 <- section-navigator.js:reconcile:384 <- (root):-1",
+      5.429
+    ],
+    [
+      "react-dom.min.js:ob:74 <- react-dom.min.js:ye:46 <- react-dom.min.js:Be:46 <- react-dom.min.js:zj:45 <- (root):-1",
+      5.337
+    ],
+    [
+      "jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:re:1 <- jquery.min.js:I:1 <- jquery.min.js:I.matches:1 <- jquery.min.js:ce.filter:1 <- jquery.min.js:T:1 <- jquery.min.js:not:1 <- acf-input.min.js:acf.findFields:0 <- acf-input.min.js:acf.getFields:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf-pro-input.min.js:openLayout:0 <- section-navigator.js:anonymous:130 <- section-navigator.js:reveal:124 <- section-navigator.js:reconcile:384 <- (root):-1",
+      5.167
+    ],
+    [
+      "metaboxe.js:anonymous:1 <- (root):-1",
+      5.127000000000001
+    ],
+    [
+      "jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:re:1 <- jquery.min.js:I:1 <- jquery.min.js:I.matches:1 <- jquery.min.js:ce.filter:1 <- jquery.min.js:T:1 <- jquery.min.js:not:1 <- acf-input.min.js:acf.findFields:0 <- acf-input.min.js:acf.getFields:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf.min.js:anonymous:0 <- (root):-1",
+      5.099
+    ],
+    [
+      "wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:callback:2 <- wp-emoji-release.min.js:parse:2 <- wp-emoji-release.min.js:f:4 <- wp-emoji-release.min.js:u:4 <- wp-emoji-release.min.js:anonymous:4 <- wp-emoji-release.min.js:anonymous:4 <- wp-emoji-release.min.js:anonymous:0 <- (root):-1",
+      5.0969999999999995
+    ],
+    [
+      "wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:d:2 <- wp-emoji-release.min.js:callback:2 <- wp-emoji-release.min.js:parse:2 <- wp-emoji-release.min.js:f:4 <- wp-emoji-release.min.js:u:4 <- wp-emoji-release.min.js:anonymous:4 <- wp-emoji-release.min.js:anonymous:4 <- wp-emoji-release.min.js:anonymous:0 <- (root):-1",
+      5.093999999999999
+    ],
+    [
+      "acf.min.js:acf.Model:0 <- acf.min.js:n:0 <- acf.min.js:n:0 <- acf-input.min.js:acf.newField:0 <- acf-input.min.js:acf.getField:0 <- acf-input.min.js:anonymous:0 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- acf-input.min.js:acf.getFields:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- post.php:anonymous:48556 <- (root):-1",
+      5.077
+    ],
+    [
+      "jquery.min.js:ce.extend.ce.fn.extend:1 <- acf.min.js:inherit:0 <- admin-editor-startup.js:deferredInitialize:19 <- acf.min.js:e:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf.min.js:anonymous:0 <- (root):-1",
+      5.075
+    ],
+    [
+      "jquery.min.js:c:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:re:1 <- jquery.min.js:I:1 <- jquery.min.js:I.matches:1 <- jquery.min.js:ce.filter:1 <- jquery.min.js:T:1 <- jquery.min.js:not:1 <- acf-input.min.js:acf.findFields:0 <- acf-input.min.js:acf.getFields:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- post.php:anonymous:48556 <- (root):-1",
+      5.039
+    ],
+    [
+      "section-navigator.js:meaningfulTitle:109 <- section-navigator.js:refreshItem:348 <- section-navigator.js:anonymous:407 <- section-navigator.js:anonymous:390 <- section-navigator.js:reconcile:384 <- (root):-1",
+      5.019
+    ],
+    [
+      "jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:re:1 <- jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- jquery.min.js:ce.fn.init:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:ce:1 <- common.min.js:anonymous:1 <- common.min.js:anonymous:0 <- (root):-1",
+      4.992999999999999
+    ],
+    [
+      "querySelectorAll:-1 <- jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- jquery.min.js:ce.fn.init:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:ce:1 <- wplink.min.js:t:1 <- wplink.min.js:init:1 <- jquery.min.js:e:1 <- jquery.min.js:t:1 <- (root):-1",
+      4.9399999999999995
+    ],
+    [
+      "jquery.min.js:add:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- jquery.min.js:Le:1 <- jquery.min.js:on:1 <- acf.min.js:on:0 <- acf.min.js:addEvents:0 <- acf.min.js:e:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf.min.js:anonymous:0 <- jquery.min.js:e:1 <- jquery.min.js:t:1 <- (root):-1",
+      4.933
+    ],
+    [
+      "jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:re:1 <- jquery.min.js:I:1 <- jquery.min.js:I.matches:1 <- jquery.min.js:ce.filter:1 <- jquery.min.js:T:1 <- jquery.min.js:not:1 <- acf-input.min.js:acf.findFields:0 <- acf-input.min.js:acf.getFields:0 <- section-navigator.js:eligibleFields:69 <- section-navigator.js:reconcile:384 <- (root):-1",
+      4.891
+    ],
+    [
+      "jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- admin-row-flex-layout.js:getRows:95 <- admin-row-flex-layout.js:anonymous:334 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- admin-row-flex-layout.js:ensureLayoutTabs:333 <- admin-row-flex-layout.js:ensureLayoutTabsOnce:350 <- admin-row-flex-layout.js:anonymous:408 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf.min.js:anonymous:0 <- jquery.min.js:e:1 <- jquery.min.js:t:1 <- (root):-1",
+      4.885
+    ],
+    [
+      "jquery.min.js:anonymous:1 <- jquery.min.js:$e:1 <- jquery.min.js:append:1 <- jquery.min.js:ce.fn.<computed>:1 <- universal-sticky-bar.js:anonymous:0 <- jquery.min.js:e:1 <- jquery.min.js:t:1 <- (root):-1",
+      4.869999999999999
+    ],
+    [
+      "wp-tinymce.js:St:2 <- wp-tinymce.js:find:2 <- wp-tinymce.js:init:2 <- wp-tinymce.js:gn:2 <- wp-tinymce.js:anonymous:32 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:l.<computed>.l.<computed>.l.<computed>.o.onload:2 <- (root):-1",
+      4.829000000000001
+    ],
+    [
+      "jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:Z:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:re:1 <- jquery.min.js:I:1 <- jquery.min.js:I.matches:1 <- jquery.min.js:ce.filter:1 <- jquery.min.js:ce.fn.<computed>:1 <- acf-input.min.js:findTabs:0 <- acf-input.min.js:initialize:0 <- acf.min.js:e:0 <- acf.min.js:acf.Model:0 <- acf.min.js:n:0 <- acf.min.js:n:0 <- acf-input.min.js:acf.newField:0 <- acf-input.min.js:acf.getField:0 <- acf-input.min.js:anonymous:0 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- acf-input.min.js:acf.getFields:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- post.php:anonymous:48556 <- (root):-1",
+      4.8260000000000005
+    ],
+    [
+      "metaboxe.js:s.l:1 <- metaboxe.js:s.f.j:1 <- metaboxe.js:anonymous:1 <- metaboxe.js:s.e:1 <- metaboxe.js:anonymous:1 <- react.min.js:ra:13 <- react-dom.min.js:Qk:248 <- react-dom.min.js:Ri:194 <- react-dom.min.js:Ok:194 <- react-dom.min.js:Nd:193 <- react-dom.min.js:Ni:183 <- react.min.js:S:15 <- react.min.js:U:20 <- (root):-1",
+      4.811
+    ],
+    [
+      "jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- acf.min.js:$:0 <- acf-input.min.js:$input:0 <- admin-editor-startup.js:deferredInitialize:19 <- acf.min.js:e:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf.min.js:anonymous:0 <- (root):-1",
+      4.753
+    ],
+    [
+      "jquery.min.js:I:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:re:1 <- jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- acf.min.js:$:0 <- acf-pro-input.min.js:$control:0 <- acf-input.min.js:setup:0 <- acf.min.js:acf.Model:0 <- acf.min.js:n:0 <- acf.min.js:n:0 <- acf-input.min.js:acf.newField:0 <- acf-input.min.js:acf.getField:0 <- acf-input.min.js:anonymous:0 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- acf-input.min.js:acf.getFields:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- post.php:anonymous:48556 <- (root):-1",
+      4.470000000000001
+    ],
+    [
+      "jquery.min.js:prop:1 <- jquery.min.js:M:1 <- jquery.min.js:prop:1 <- acf.min.js:p:0 <- acf.min.js:anonymous:0 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- acf.min.js:i.disable:0 <- acf-pro-input.min.js:initialize:0 <- acf.min.js:e:0 <- acf.min.js:acf.Model:0 <- acf.min.js:n:0 <- acf.min.js:n:0 <- acf-input.min.js:acf.newField:0 <- acf-input.min.js:acf.getField:0 <- acf-input.min.js:anonymous:0 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- acf-input.min.js:acf.getFields:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- post.php:anonymous:48556 <- (root):-1",
+      4.398
+    ],
+    [
+      "jquery.min.js:I.matchesSelector:1 <- jquery.min.js:closest:1 <- admin-editor-startup.js:isClosedBuilderField:6 <- admin-editor-startup.js:deferredInitialize:19 <- acf.min.js:e:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf.min.js:anonymous:0 <- (root):-1",
+      4.232
+    ],
+    [
+      "jquery.min.js:r:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:re:1 <- jquery.min.js:I:1 <- jquery.min.js:I.matches:1 <- jquery.min.js:ce.filter:1 <- jquery.min.js:T:1 <- jquery.min.js:not:1 <- acf-input.min.js:acf.findFields:0 <- acf-input.min.js:acf.getFields:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf.min.js:anonymous:0 <- jquery.min.js:e:1 <- jquery.min.js:t:1 <- (root):-1",
+      4.087
+    ],
+    [
+      "jquery.min.js:Ge:1 <- jquery.min.js:css:1 <- jquery.min.js:position:1 <- core.min.js:x.fn.position:79 <- acf-input.min.js:anonymous:0 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- acf-input.min.js:renderGroup:0 <- acf-input.min.js:anonymous:0 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- acf-input.min.js:renderGroups:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf.min.js:anonymous:0 <- acf.min.js:anonymous:0 <- (root):-1",
+      4.022
+    ],
+    [
+      "jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:0 <- (root):-1",
+      3.9640000000000004
+    ],
+    [
+      "jquery.min.js:anonymous:1 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- jquery.min.js:addClass:1 <- acf.min.js:i.hide:0 <- acf-input.min.js:hide:0 <- acf-input.min.js:anonymous:0 <- acf-input.min.js:hideFields:0 <- acf-input.min.js:close:0 <- acf-input.min.js:closeTab:0 <- acf-input.min.js:anonymous:0 <- acf-input.min.js:selectTab:0 <- acf-input.min.js:initializeTabs:0 <- acf-input.min.js:anonymous:0 <- acf-input.min.js:render:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- post.php:anonymous:48556 <- (root):-1",
+      3.913
+    ],
+    [
+      "querySelectorAll:-1 <- jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- jquery.min.js:ce.fn.init:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:ce:1 <- acf-input.min.js:addInputEvents:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf.min.js:anonymous:0 <- jquery.min.js:e:1 <- jquery.min.js:t:1 <- (root):-1",
+      3.912
+    ],
+    [
+      "jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- jquery.min.js:ce.fn.init:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:ce:1 <- postbox.min.js:add_postbox_toggles:1 <- post.min.js:anonymous:1 <- jquery.min.js:e:1 <- jquery.min.js:t:1 <- (root):-1",
+      3.912
+    ],
+    [
+      "jquery.min.js:anonymous:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:r:1 <- jquery.min.js:re:1 <- jquery.min.js:I:1 <- jquery.min.js:I.matches:1 <- jquery.min.js:ce.filter:1 <- jquery.min.js:ce.fn.<computed>:1 <- acf-input.min.js:setFieldSettingsLastVisible:0 <- acf-input.min.js:hide:0 <- acf-input.min.js:hideDisable:0 <- acf-input.min.js:hide:0 <- acf-input.min.js:render:0 <- acf-input.min.js:onNewField:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- acf-input.min.js:acf.newField:0 <- acf-input.min.js:acf.getField:0 <- acf-input.min.js:anonymous:0 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- acf-input.min.js:acf.getFields:0 <- acf-input.min.js:anonymous:0 <- acf.min.js:o:0 <- acf.min.js:doAction:0 <- acf.min.js:i.doAction:0 <- post.php:anonymous:48556 <- (root):-1",
+      3.8840000000000003
+    ],
+    [
+      "jquery.min.js:e:1 <- jquery.min.js:t:1 <- (root):-1",
+      3.8629999999999995
+    ],
+    [
+      "react-dom.min.js:mf:104 <- react-dom.min.js:Qk:248 <- react-dom.min.js:Ri:194 <- react-dom.min.js:Ok:194 <- react-dom.min.js:Nd:193 <- react-dom.min.js:Ni:183 <- react.min.js:S:15 <- react.min.js:U:20 <- (root):-1",
+      3.84
+    ]
+  ],
+  "richStacks": [
+    [
+      "(program):-1 <- (root):-1",
+      292.4449999999997
+    ],
+    [
+      "wp-tinymce.js:Se.y.bind:2 <- wp-tinymce.js:M:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:Se.y.bind:2 <- wp-tinymce.js:M:2 <- wp-tinymce.js:init:2 <- acf-input.min.js:initializeTinymce:0 <- acf-input.min.js:initialize:0 <- acf-input.min.js:initializeEditor:0 <- acf-input.min.js:onMousedown:0 <- anonymous:0 <- anonymous:0 <- evaluate:295 <- anonymous:0 <- (root):-1",
+      270.16199999999975
+    ],
+    [
+      "(garbage collector):-1 <- (root):-1",
+      210.22400000000002
+    ],
+    [
+      "quicktags.min.js:e:1 <- quicktags.min.js:r._buttonsInit:1 <- quicktags.min.js:anonymous:1 <- jquery.min.js:e:1 <- jquery.min.js:t:1 <- (root):-1",
+      189.35500000000008
+    ],
+    [
+      "wp-tinymce.js:St:2 <- wp-tinymce.js:find:2 <- wp-tinymce.js:init:2 <- wp-tinymce.js:gn:2 <- wp-tinymce.js:anonymous:32 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2",
+      157.47400000000007
+    ],
+    [
+      "acf-input.min.js:buildQuicktags:0 <- acf-input.min.js:initializeQuicktags:0 <- acf-input.min.js:initialize:0 <- acf-input.min.js:initializeEditor:0 <- acf-input.min.js:onMousedown:0 <- anonymous:0 <- anonymous:0 <- evaluate:295 <- anonymous:0 <- (root):-1",
+      105.816
+    ],
+    [
+      "appendChild:-1 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:k:2 <- wp-tinymce.js:R:2 <- wp-tinymce.js:xw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:Se.y.bind:2 <- wp-tinymce.js:M:2 <- wp-tinymce.js:init:2",
+      102.88699999999999
+    ],
+    [
+      "jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- jquery.min.js:ce.fn.init:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:ce:1 <- editor.min.js:a:1 <- wp-tinymce.js:anonymous:32 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:$w:2 <- wp-tinymce.js:setContent:2 <- wp-tinymce.js:load:2 <- wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2",
+      91.94899999999997
+    ],
+    [
+      "wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:z:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:loadAll:2 <- wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2",
+      76.75100000000002
+    ],
+    [
+      "wp-tinymce.js:anonymous:2 <- wp-tinymce.js:k:2 <- wp-tinymce.js:R:2 <- wp-tinymce.js:xw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:Se.y.bind:2 <- wp-tinymce.js:M:2 <- wp-tinymce.js:init:2 <- acf-input.min.js:initializeTinymce:0",
+      65.153
+    ],
+    [
+      "getPropertyValue:-1 <- wp-tinymce.js:anonymous:4 <- wp-tinymce.js:t:4 <- wp-tinymce.js:Ne:4 <- wp-tinymce.js:initLayoutRect:4 <- wp-tinymce.js:initLayoutRect:4 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:layoutRect:4 <- wp-tinymce.js:recalc:4 <- wp-tinymce.js:anonymous:4 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:each:4 <- wp-tinymce.js:recalc:4 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:recalc:4 <- wp-tinymce.js:reflow:4 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:be:4 <- wp-tinymce.js:Tt:4 <- wp-tinymce.js:renderUI:4 <- wp-tinymce.js:_w:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2",
+      25.183
+    ],
+    [
+      "wp-tinymce.js:m:2 <- wp-tinymce.js:getNode:2 <- wp-tinymce.js:anonymous:40 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:fold:2 <- wp-tinymce.js:$w:2 <- wp-tinymce.js:setContent:2 <- wp-tinymce.js:load:2 <- wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2",
+      17.631
+    ],
+    [
+      "wp-tinymce.js:a:2 <- wp-tinymce.js:a:2 <- wp-tinymce.js:li:2 <- wp-tinymce.js:di:2 <- wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:Se.y.bind:2 <- wp-tinymce.js:M:2 <- wp-tinymce.js:init:2",
+      17.584
+    ],
+    [
+      "wp-tinymce.js:$t:2 <- wp-tinymce.js:ci:2 <- wp-tinymce.js:a:2 <- wp-tinymce.js:li:2 <- wp-tinymce.js:di:2 <- wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:Se.y.bind:2 <- wp-tinymce.js:M:2",
+      15.939000000000002
+    ],
+    [
+      "wp-tinymce.js:rn:2 <- wp-tinymce.js:on:2 <- wp-tinymce.js:on:2 <- wp-tinymce.js:before:2 <- wp-tinymce.js:renderBefore:4 <- wp-tinymce.js:be:4 <- wp-tinymce.js:Tt:4 <- wp-tinymce.js:renderUI:4 <- wp-tinymce.js:_w:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2",
+      15.274000000000001
+    ],
+    [
+      "jquery.min.js:Ae:1 <- jquery.min.js:$e:1 <- jquery.min.js:replaceWith:1 <- acf.min.js:i.rename:0 <- acf-input.min.js:initializeEditor:0 <- acf-input.min.js:onMousedown:0 <- anonymous:0 <- anonymous:0 <- evaluate:295 <- anonymous:0 <- (root):-1",
+      14.919
+    ],
+    [
+      "wp-tinymce.js:anonymous:34 <- wp-tinymce.js:Ew:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:Se.y.bind:2 <- wp-tinymce.js:M:2 <- wp-tinymce.js:init:2 <- acf-input.min.js:initializeTinymce:0 <- acf-input.min.js:initialize:0",
+      13.635
+    ],
+    [
+      "wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:r:2 <- wp-tinymce.js:St.select:2 <- wp-tinymce.js:St:2 <- wp-tinymce.js:select:2 <- plugin.min.js:R:0 <- plugin.min.js:V:0 <- plugin.min.js:anonymous:0 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:yw:2 <- wp-tinymce.js:f.content_style.a:2 <- wp-tinymce.js:anonymous:2 <- (root):-1",
+      11.439
+    ],
+    [
+      "wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:Se.y.bind:2 <- wp-tinymce.js:M:2 <- wp-tinymce.js:init:2 <- acf-input.min.js:initializeTinymce:0 <- acf-input.min.js:initialize:0 <- acf-input.min.js:initializeEditor:0 <- acf-input.min.js:onMousedown:0",
+      11.07
+    ],
+    [
+      "getPropertyValue:-1 <- wp-tinymce.js:css:2 <- wp-tinymce.js:isHidden:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:Se.y.bind:2 <- wp-tinymce.js:M:2 <- wp-tinymce.js:init:2 <- acf-input.min.js:initializeTinymce:0 <- acf-input.min.js:initialize:0",
+      10.926000000000002
+    ],
+    [
+      "appendChild:-1 <- wp-tinymce.js:addStyle:2 <- wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:Se.y.bind:2 <- wp-tinymce.js:M:2 <- wp-tinymce.js:init:2 <- acf-input.min.js:initializeTinymce:0 <- acf-input.min.js:initialize:0",
+      10.021999999999998
+    ],
+    [
+      "wp-tinymce.js:ci:2 <- wp-tinymce.js:a:2 <- wp-tinymce.js:li:2 <- wp-tinymce.js:di:2 <- wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:Se.y.bind:2 <- wp-tinymce.js:M:2 <- wp-tinymce.js:init:2",
+      9.934000000000001
+    ],
+    [
+      "wp-tinymce.js:a:2 <- wp-tinymce.js:a:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:li:2 <- wp-tinymce.js:di:2 <- wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:Se.y.bind:2",
+      9.675
+    ],
+    [
+      "wp-tinymce.js:St.select:2 <- wp-tinymce.js:St:2 <- wp-tinymce.js:select:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:nodeChanged:2 <- wp-tinymce.js:nodeChanged:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:Pp:2 <- wp-tinymce.js:t:2 <- wp-tinymce.js:C:2 <- wp-tinymce.js:d:2 <- (root):-1",
+      9.612
+    ],
+    [
+      "wp-tinymce.js:makeArray:2 <- wp-tinymce.js:add:2 <- wp-tinymce.js:a:4 <- wp-tinymce.js:anonymous:4 <- (root):-1",
+      9.519
+    ],
+    [
+      "wp-tinymce.js:Wt:2 <- wp-tinymce.js:translate:2 <- wp-tinymce.js:translate:2 <- wp-tinymce.js:s:2 <- wp-tinymce.js:Qp.remove:2 <- plugin.min.js:anonymous:35 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:yw:2 <- wp-tinymce.js:f.content_style.a:2 <- wp-tinymce.js:anonymous:2 <- (root):-1",
+      8.267
+    ],
+    [
+      "editor.min.js:r:1 <- editor.min.js:a:1 <- wp-tinymce.js:anonymous:32 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:$w:2 <- wp-tinymce.js:setContent:2 <- wp-tinymce.js:load:2 <- wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2",
+      7.5360000000000005
+    ],
+    [
+      "wp-tinymce.js:f:2 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:W:2 <- wp-tinymce.js:Pb:2 <- wp-tinymce.js:m:2 <- wp-tinymce.js:getStart:2 <- plugin.min.js:anonymous:0 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:nodeChanged:2 <- wp-tinymce.js:nodeChanged:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:Pp:2 <- wp-tinymce.js:t:2 <- wp-tinymce.js:C:2 <- wp-tinymce.js:d:2 <- (root):-1",
+      7.237
+    ],
+    [
+      "wp-tinymce.js:html:2 <- wp-tinymce.js:innerHtml:4 <- wp-tinymce.js:anonymous:4 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:set:4 <- wp-tinymce.js:row:4 <- wp-tinymce.js:anonymous:4 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:nodeChanged:2 <- wp-tinymce.js:nodeChanged:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:add:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:yw:2 <- wp-tinymce.js:f.content_style.a:2 <- wp-tinymce.js:anonymous:2 <- (root):-1",
+      6.4399999999999995
+    ],
+    [
+      "execCommand:-1 <- wp-tinymce.js:z:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:yw:2 <- wp-tinymce.js:f.content_style.a:2 <- wp-tinymce.js:anonymous:2 <- (root):-1",
+      5.856
+    ],
+    [
+      "getPropertyValue:-1 <- wp-tinymce.js:css:2 <- wp-tinymce.js:w:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:r:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:map:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:fold:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:c.value.<computed>:2 <- wp-tinymce.js:queryCommandValue:2 <- wp-tinymce.js:queryCommandValue:2 <- wp-tinymce.js:anonymous:4 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:yw:2 <- wp-tinymce.js:f.content_style.a:2 <- wp-tinymce.js:anonymous:2 <- (root):-1",
+      5.808
+    ],
+    [
+      "wp-tinymce.js:tinymce.WPWindowManager.tinymce.InlineWindowManager:36 <- wp-tinymce.js:anonymous:36 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:yw:2 <- wp-tinymce.js:f.content_style.a:2 <- wp-tinymce.js:anonymous:2 <- (root):-1",
+      5.355
+    ],
+    [
+      "wp-tinymce.js:zw:2 <- wp-tinymce.js:toAbsolute:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:Se.y.bind:2 <- wp-tinymce.js:M:2 <- wp-tinymce.js:init:2 <- acf-input.min.js:initializeTinymce:0 <- acf-input.min.js:initialize:0",
+      5.276
+    ],
+    [
+      "wp-tinymce.js:html:2 <- wp-tinymce.js:s:4 <- wp-tinymce.js:anonymous:4 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:set:4 <- wp-tinymce.js:tt.<computed>:4 <- wp-tinymce.js:anonymous:4 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:set:4 <- wp-tinymce.js:value:4 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:4 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:yw:2 <- wp-tinymce.js:f.content_style.a:2 <- wp-tinymce.js:anonymous:2 <- (root):-1",
+      5.186
+    ],
+    [
+      "wp-tinymce.js:getBody:2 <- wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:Se.y.bind:2 <- wp-tinymce.js:M:2 <- wp-tinymce.js:init:2 <- acf-input.min.js:initializeTinymce:0 <- acf-input.min.js:initialize:0 <- acf-input.min.js:initializeEditor:0",
+      5.124
+    ],
+    [
+      "wp-tinymce.js:html:2 <- wp-tinymce.js:A:2 <- wp-tinymce.js:qw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:fold:2 <- wp-tinymce.js:$w:2 <- wp-tinymce.js:setContent:2 <- wp-tinymce.js:load:2 <- wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2",
+      5.102
+    ],
+    [
+      "wp-tinymce.js:anonymous:10 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:10 <- wp-tinymce.js:n:10 <- wp-tinymce.js:anonymous:10 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:tN:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:Se.y.bind:2 <- wp-tinymce.js:M:2 <- wp-tinymce.js:init:2 <- acf-input.min.js:initializeTinymce:0 <- acf-input.min.js:initialize:0 <- acf-input.min.js:initializeEditor:0 <- acf-input.min.js:onMousedown:0 <- anonymous:0 <- anonymous:0 <- evaluate:295 <- anonymous:0 <- (root):-1",
+      4.831
+    ],
+    [
+      "jquery.min.js:trigger:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- jquery.min.js:trigger:1 <- editor.min.js:a:1 <- wp-tinymce.js:anonymous:32 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:$w:2 <- wp-tinymce.js:setContent:2 <- wp-tinymce.js:load:2 <- wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2",
+      4.259
+    ],
+    [
+      "wp-tinymce.js:c:2 <- wp-tinymce.js:li:2 <- wp-tinymce.js:di:2 <- wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:Se.y.bind:2 <- wp-tinymce.js:M:2 <- wp-tinymce.js:init:2 <- acf-input.min.js:initializeTinymce:0",
+      4.256
+    ],
+    [
+      "wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:yw:2 <- wp-tinymce.js:f.content_style.a:2 <- wp-tinymce.js:anonymous:2 <- (root):-1",
+      4.185
+    ],
+    [
+      "core.min.js:anonymous:106 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- core.min.js:x.fn.extend.uniqueId:106 <- menu.min.js:_create:8 <- core.min.js:r.<computed>:115 <- core.min.js:_createWidget:115 <- core.min.js:x.<computed>.<computed>:115 <- core.min.js:anonymous:115 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- core.min.js:x.fn.<computed>:115 <- autocomplete.min.js:_create:8 <- core.min.js:r.<computed>:115 <- core.min.js:_createWidget:115 <- core.min.js:x.<computed>.<computed>:115 <- core.min.js:anonymous:115 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- core.min.js:x.fn.<computed>:115 <- wp-tinymce.js:onPostRender:44 <- wp-tinymce.js:a:10 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:4 <- wp-tinymce.js:postRender:4 <- wp-tinymce.js:anonymous:4 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:each:4 <- wp-tinymce.js:exec:4 <- wp-tinymce.js:postRender:4 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:4",
+      4.178
+    ],
+    [
+      "wp-tinymce.js:addStyle:2 <- wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:Se.y.bind:2 <- wp-tinymce.js:M:2 <- wp-tinymce.js:init:2 <- acf-input.min.js:initializeTinymce:0 <- acf-input.min.js:initialize:0 <- acf-input.min.js:initializeEditor:0",
+      4.088
+    ],
+    [
+      "jquery.min.js:ce:1 <- quicktags.min.js:e:1 <- quicktags.min.js:r._buttonsInit:1 <- quicktags.min.js:anonymous:1 <- jquery.min.js:e:1 <- jquery.min.js:t:1 <- (root):-1",
+      4.08
+    ],
+    [
+      "wp-tinymce.js:parse:2 <- wp-tinymce.js:parse:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:fold:2 <- wp-tinymce.js:$w:2 <- wp-tinymce.js:setContent:2 <- wp-tinymce.js:load:2 <- wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2",
+      3.8209999999999997
+    ],
+    [
+      "wp-tinymce.js:init:4 <- wp-tinymce.js:init:4 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:init:4 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:i:2 <- wp-tinymce.js:create:2 <- wp-tinymce.js:anonymous:4 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:D:4 <- wp-tinymce.js:anonymous:4 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:A:4 <- wp-tinymce.js:be:4 <- wp-tinymce.js:Tt:4 <- wp-tinymce.js:renderUI:4 <- wp-tinymce.js:_w:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2",
+      3.818
+    ],
+    [
+      "insertBefore:-1 <- wp-tinymce.js:addStyle:2 <- wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:Se.y.bind:2 <- wp-tinymce.js:M:2 <- wp-tinymce.js:init:2 <- acf-input.min.js:initializeTinymce:0 <- acf-input.min.js:initialize:0",
+      3.8
+    ],
+    [
+      "wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:di:2 <- wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:Se.y.bind:2 <- wp-tinymce.js:M:2 <- wp-tinymce.js:init:2 <- acf-input.min.js:initializeTinymce:0",
+      3.7829999999999995
+    ],
+    [
+      "querySelectorAll:-1 <- jquery.min.js:I:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:find:1 <- jquery.min.js:ce.fn.init:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:ce:1 <- acf-input.min.js:acf.findFields:0 <- acf-input.min.js:acf.getFields:0 <- anonymous:0 <- evaluate:295 <- anonymous:0 <- (root):-1",
+      3.763
+    ],
+    [
+      "write:-1 <- wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:Se.y.bind:2 <- wp-tinymce.js:M:2 <- wp-tinymce.js:init:2 <- acf-input.min.js:initializeTinymce:0 <- acf-input.min.js:initialize:0 <- acf-input.min.js:initializeEditor:0",
+      3.592
+    ],
+    [
+      "open:-1 <- wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:Se.y.bind:2 <- wp-tinymce.js:M:2 <- wp-tinymce.js:init:2 <- acf-input.min.js:initializeTinymce:0 <- acf-input.min.js:initialize:0 <- acf-input.min.js:initializeEditor:0",
+      3.311
+    ],
+    [
+      "wp-tinymce.js:a:2 <- wp-tinymce.js:li:2 <- wp-tinymce.js:di:2 <- wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:Se.y.bind:2 <- wp-tinymce.js:M:2 <- wp-tinymce.js:init:2 <- acf-input.min.js:initializeTinymce:0",
+      3.145
+    ],
+    [
+      "wp-tinymce.js:init:2 <- wp-tinymce.js:o:2 <- wp-tinymce.js:L:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- (root):-1",
+      3.112
+    ],
+    [
+      "wp-tinymce.js:anonymous:2 <- (root):-1",
+      3.034
+    ],
+    [
+      "wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Cr:2 <- wp-tinymce.js:_r:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Zi:2 <- wp-tinymce.js:na:2 <- wp-tinymce.js:yg:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:r:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:map:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:fold:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:c.value.<computed>:2 <- wp-tinymce.js:queryCommandValue:2 <- wp-tinymce.js:queryCommandValue:2 <- wp-tinymce.js:anonymous:4 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:yw:2 <- wp-tinymce.js:f.content_style.a:2 <- wp-tinymce.js:anonymous:2 <- (root):-1",
+      2.92
+    ],
+    [
+      "wp-tinymce.js:anonymous:32 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:d:32 <- wp-tinymce.js:anonymous:32 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:anonymous:32 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:anonymous:32 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:x:4 <- wp-tinymce.js:be:4 <- wp-tinymce.js:Tt:4 <- wp-tinymce.js:renderUI:4 <- wp-tinymce.js:_w:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2",
+      2.892
+    ],
+    [
+      "wp-tinymce.js:St.attr:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:r:2 <- wp-tinymce.js:St.select:2 <- wp-tinymce.js:St:2 <- wp-tinymce.js:select:2 <- wp-tinymce.js:L:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- (root):-1",
+      2.8899999999999997
+    ],
+    [
+      "wp-tinymce.js:Xu:2 <- wp-tinymce.js:getBookmark:2 <- wp-tinymce.js:hc:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:getBookmark:2 <- plugin.min.js:V:0 <- plugin.min.js:anonymous:0 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:yw:2 <- wp-tinymce.js:f.content_style.a:2 <- wp-tinymce.js:anonymous:2 <- (root):-1",
+      2.662
+    ],
+    [
+      "wp-tinymce.js:fire:2 <- wp-tinymce.js:add:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:yw:2 <- wp-tinymce.js:f.content_style.a:2 <- wp-tinymce.js:anonymous:2 <- (root):-1",
+      2.602
+    ],
+    [
+      "wp-tinymce.js:extend:2 <- wp-tinymce.js:parse:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:fold:2 <- wp-tinymce.js:$w:2 <- wp-tinymce.js:setContent:2 <- wp-tinymce.js:load:2 <- wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2",
+      2.5949999999999998
+    ],
+    [
+      "wp-tinymce.js:anonymous:4 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:ie:4 <- wp-tinymce.js:re:4 <- wp-tinymce.js:be:4 <- wp-tinymce.js:Tt:4 <- wp-tinymce.js:renderUI:4 <- wp-tinymce.js:_w:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:Se.y.bind:2",
+      2.591
+    ],
+    [
+      "wp-tinymce.js:li:2 <- wp-tinymce.js:di:2 <- wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:Se.y.bind:2 <- wp-tinymce.js:M:2 <- wp-tinymce.js:init:2 <- acf-input.min.js:initializeTinymce:0 <- acf-input.min.js:initialize:0",
+      2.577
+    ],
+    [
+      "wp-tinymce.js:extend:2 <- wp-tinymce.js:$p:2 <- wp-tinymce.js:tN:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:Se.y.bind:2 <- wp-tinymce.js:M:2 <- wp-tinymce.js:init:2 <- acf-input.min.js:initializeTinymce:0 <- acf-input.min.js:initialize:0 <- acf-input.min.js:initializeEditor:0 <- acf-input.min.js:onMousedown:0 <- anonymous:0 <- anonymous:0 <- evaluate:295 <- anonymous:0 <- (root):-1",
+      2.565
+    ],
+    [
+      "wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:zw:2 <- wp-tinymce.js:tN:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:Se.y.bind:2 <- wp-tinymce.js:M:2 <- wp-tinymce.js:init:2 <- acf-input.min.js:initializeTinymce:0 <- acf-input.min.js:initialize:0 <- acf-input.min.js:initializeEditor:0 <- acf-input.min.js:onMousedown:0 <- anonymous:0 <- anonymous:0 <- evaluate:295 <- anonymous:0 <- (root):-1",
+      2.5460000000000003
+    ],
+    [
+      "wp-tinymce.js:Kv:2 <- wp-tinymce.js:ey:2 <- wp-tinymce.js:add:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:yw:2 <- wp-tinymce.js:f.content_style.a:2 <- wp-tinymce.js:anonymous:2 <- (root):-1",
+      2.5460000000000003
+    ],
+    [
+      "addEventListener:-1 <- wp-tinymce.js:xe:2 <- wp-tinymce.js:Se.y.bind:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:vn:2 <- wp-tinymce.js:each:2 <- wp-tinymce.js:on:2 <- wp-tinymce.js:it:4 <- wp-tinymce.js:postRender:4 <- wp-tinymce.js:postRender:4 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:postRender:4 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:4 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:each:4 <- wp-tinymce.js:exec:4 <- wp-tinymce.js:postRender:4 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:postRender:4 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:4 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:each:4 <- wp-tinymce.js:exec:4 <- wp-tinymce.js:postRender:4 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:4 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:each:4 <- wp-tinymce.js:exec:4 <- wp-tinymce.js:postRender:4",
+      2.543
+    ],
+    [
+      "wp-tinymce.js:addCommand:2 <- wp-tinymce.js:addCommand:2 <- plugin.min.js:anonymous:0 <- wp-tinymce.js:jt:2 <- plugin.min.js:Ba:0 <- plugin.min.js:anonymous:0 <- wp-tinymce.js:Ew:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2",
+      2.538
+    ],
+    [
+      "shortcode.min.js:next:1 <- mce-view.min.js:match:1 <- mce-view.min.js:anonymous:1 <- underscore.min.js:N:1 <- mce-view.min.js:anonymous:1 <- underscore.min.js:N:1 <- mce-view.min.js:setMarkers:1 <- wp-tinymce.js:anonymous:48 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:$w:2 <- wp-tinymce.js:setContent:2 <- wp-tinymce.js:load:2 <- wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2",
+      2.525
+    ],
+    [
+      "wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:Se.y.bind:2 <- wp-tinymce.js:M:2 <- wp-tinymce.js:init:2 <- acf-input.min.js:initializeTinymce:0 <- acf-input.min.js:initialize:0 <- acf-input.min.js:initializeEditor:0 <- acf-input.min.js:onMousedown:0 <- anonymous:0 <- anonymous:0 <- evaluate:295 <- anonymous:0 <- (root):-1",
+      2.5149999999999997
+    ],
+    [
+      "wp-tinymce.js:getEl:4 <- wp-tinymce.js:aria:4 <- wp-tinymce.js:init:4 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:init:4 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:i:2 <- wp-tinymce.js:create:2 <- wp-tinymce.js:anonymous:4 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:D:4 <- wp-tinymce.js:anonymous:4 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:A:4 <- wp-tinymce.js:be:4 <- wp-tinymce.js:Tt:4 <- wp-tinymce.js:renderUI:4 <- wp-tinymce.js:_w:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2",
+      2.5149999999999997
+    ],
+    [
+      "wp-tinymce.js:rn:2 <- wp-tinymce.js:on:2 <- wp-tinymce.js:on:2 <- wp-tinymce.js:append:2 <- wp-tinymce.js:renderTo:4 <- wp-tinymce.js:p.wp._createToolbar:32 <- wp-tinymce.js:anonymous:44 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2",
+      2.512
+    ],
+    [
+      "wp-tinymce.js:getEl:4 <- wp-tinymce.js:postRender:4 <- wp-tinymce.js:postRender:4 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:postRender:4 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:4 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:each:4 <- wp-tinymce.js:exec:4 <- wp-tinymce.js:postRender:4 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:renderTo:4 <- wp-tinymce.js:p.wp._createToolbar:32 <- wp-tinymce.js:anonymous:44 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2",
+      2.511
+    ],
+    [
+      "wp-tinymce.js:getSize:4 <- wp-tinymce.js:initLayoutRect:4 <- wp-tinymce.js:initLayoutRect:4 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:layoutRect:4 <- wp-tinymce.js:recalc:4 <- wp-tinymce.js:anonymous:4 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:each:4 <- wp-tinymce.js:recalc:4 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:recalc:4 <- wp-tinymce.js:reflow:4 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:be:4 <- wp-tinymce.js:Tt:4 <- wp-tinymce.js:renderUI:4 <- wp-tinymce.js:_w:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2",
+      2.511
+    ],
+    [
+      "wp-tinymce.js:makeMap:2 <- wp-tinymce.js:init:2 <- acf-input.min.js:initializeTinymce:0 <- acf-input.min.js:initialize:0 <- acf-input.min.js:initializeEditor:0 <- acf-input.min.js:onMousedown:0 <- anonymous:0 <- anonymous:0 <- evaluate:295 <- anonymous:0 <- (root):-1",
+      2.505
+    ],
+    [
+      "wp-tinymce.js:jt:2 <- wp-tinymce.js:di:2 <- wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:Se.y.bind:2 <- wp-tinymce.js:M:2 <- wp-tinymce.js:init:2 <- acf-input.min.js:initializeTinymce:0 <- acf-input.min.js:initialize:0",
+      2.505
+    ],
+    [
+      "get cookie:-1 <- utils.min.js:get:1 <- utils.min.js:getHash:1 <- utils.min.js:window.getAllUserSettings:1 <- utils.min.js:window.getUserSetting:1 <- wp-tinymce.js:anonymous:32 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2",
+      2.4939999999999998
+    ],
+    [
+      "wp-tinymce.js:ie:4 <- wp-tinymce.js:re:4 <- wp-tinymce.js:be:4 <- wp-tinymce.js:Tt:4 <- wp-tinymce.js:renderUI:4 <- wp-tinymce.js:_w:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:Se.y.bind:2 <- wp-tinymce.js:M:2 <- wp-tinymce.js:init:2",
+      2.481
+    ],
+    [
+      "wp-tinymce.js:anonymous:2 <- wp-tinymce.js:z:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:loadAll:2 <- wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:Se.y.bind:2",
+      2.4800000000000004
+    ],
+    [
+      "close:-1 <- wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:Se.y.bind:2 <- wp-tinymce.js:M:2 <- wp-tinymce.js:init:2 <- acf-input.min.js:initializeTinymce:0 <- acf-input.min.js:initialize:0 <- acf-input.min.js:initializeEditor:0",
+      2.458
+    ],
+    [
+      "wp-tinymce.js:translate:2 <- wp-tinymce.js:anonymous:32 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:d:32 <- wp-tinymce.js:anonymous:32 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:anonymous:32 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:anonymous:32 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:x:4 <- wp-tinymce.js:be:4 <- wp-tinymce.js:Tt:4 <- wp-tinymce.js:renderUI:4 <- wp-tinymce.js:_w:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2",
+      2.456
+    ],
+    [
+      "wp-tinymce.js:_w:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:Se.y.bind:2 <- wp-tinymce.js:M:2 <- wp-tinymce.js:init:2 <- acf-input.min.js:initializeTinymce:0 <- acf-input.min.js:initialize:0 <- acf-input.min.js:initializeEditor:0 <- acf-input.min.js:onMousedown:0 <- anonymous:0",
+      2.3659999999999997
+    ],
+    [
+      "jquery.min.js:add:1 <- jquery-migrate.min.js:anonymous:1 <- jquery-migrate.min.js:e.<computed>:1 <- jquery.min.js:anonymous:1 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- jquery.min.js:Le:1 <- jquery.min.js:on:1 <- core.min.js:anonymous:115 <- jquery.min.js:each:1 <- core.min.js:_on:115 <- menu.min.js:_create:8 <- core.min.js:r.<computed>:115 <- core.min.js:_createWidget:115 <- core.min.js:x.<computed>.<computed>:115 <- core.min.js:anonymous:115 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- core.min.js:x.fn.<computed>:115 <- autocomplete.min.js:_create:8 <- core.min.js:r.<computed>:115 <- core.min.js:_createWidget:115 <- core.min.js:x.<computed>.<computed>:115 <- core.min.js:anonymous:115 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- core.min.js:x.fn.<computed>:115 <- wp-tinymce.js:onPostRender:44 <- wp-tinymce.js:a:10 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:4 <- wp-tinymce.js:postRender:4",
+      2.347
+    ],
+    [
+      "wp-tinymce.js:getEl:4 <- wp-tinymce.js:aria:4 <- wp-tinymce.js:init:4 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:init:4 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:init:4 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:i:2 <- wp-tinymce.js:create:2 <- wp-tinymce.js:anonymous:4 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:create:4 <- wp-tinymce.js:add:4 <- wp-tinymce.js:init:4 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:init:4 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:i:2 <- wp-tinymce.js:create:2 <- wp-tinymce.js:anonymous:4 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:create:4 <- wp-tinymce.js:add:4 <- wp-tinymce.js:init:4 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:i:2 <- wp-tinymce.js:create:2 <- wp-tinymce.js:anonymous:4 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:create:4 <- wp-tinymce.js:add:4",
+      2.318
+    ],
+    [
+      "insertBefore:-1 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:on:2 <- wp-tinymce.js:on:2 <- wp-tinymce.js:before:2 <- wp-tinymce.js:renderBefore:4 <- wp-tinymce.js:be:4 <- wp-tinymce.js:Tt:4 <- wp-tinymce.js:renderUI:4 <- wp-tinymce.js:_w:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2",
+      2.301
+    ],
+    [
+      "wp-tinymce.js:anonymous:2 <- wp-tinymce.js:St.setDocument:2 <- wp-tinymce.js:St:2 <- wp-tinymce.js:find:2 <- wp-tinymce.js:init:2 <- wp-tinymce.js:gn:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:l:2 <- wp-tinymce.js:C:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:i:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:each:2 <- wp-tinymce.js:vc:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:moveToBookmark:2 <- wp-tinymce.js:Xu:2 <- wp-tinymce.js:getBookmark:2 <- wp-tinymce.js:hc:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:getBookmark:2 <- plugin.min.js:V:0 <- plugin.min.js:anonymous:0 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:yw:2 <- wp-tinymce.js:f.content_style.a:2 <- wp-tinymce.js:anonymous:2 <- (root):-1",
+      2.035
+    ],
+    [
+      "wp-tinymce.js:anonymous:28 <- wp-tinymce.js:yw:2 <- wp-tinymce.js:f.content_style.a:2 <- wp-tinymce.js:anonymous:2 <- (root):-1",
+      1.763
+    ],
+    [
+      "createElement:-1 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:z:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:loadAll:2 <- wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2",
+      1.75
+    ],
+    [
+      "wp-tinymce.js:init:4 <- wp-tinymce.js:i:2 <- wp-tinymce.js:create:2 <- wp-tinymce.js:anonymous:32 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:p.wp._createToolbar:32 <- wp-tinymce.js:anonymous:44 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2",
+      1.743
+    ],
+    [
+      "appendChild:-1 <- wp-tinymce.js:rn:2 <- wp-tinymce.js:on:2 <- wp-tinymce.js:on:2 <- wp-tinymce.js:append:2 <- wp-tinymce.js:renderTo:4 <- wp-tinymce.js:p.wp._createToolbar:32 <- wp-tinymce.js:anonymous:38 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:bw:2 <- wp-tinymce.js:ww:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2",
+      1.716
+    ],
+    [
+      "wp-tinymce.js:r:2 <- wp-tinymce.js:on:4 <- wp-tinymce.js:init:4 <- wp-tinymce.js:init:4 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:init:4 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:init:4 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:i:2 <- wp-tinymce.js:create:2 <- wp-tinymce.js:anonymous:4 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:D:4 <- wp-tinymce.js:anonymous:4 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:A:4 <- wp-tinymce.js:be:4 <- wp-tinymce.js:Tt:4 <- wp-tinymce.js:renderUI:4 <- wp-tinymce.js:_w:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2",
+      1.712
+    ],
+    [
+      "getElementById:-1 <- wp-tinymce.js:p:2 <- wp-tinymce.js:gc:2 <- wp-tinymce.js:pc:2 <- wp-tinymce.js:vc:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:moveToBookmark:2 <- wp-tinymce.js:Xu:2 <- wp-tinymce.js:getBookmark:2 <- wp-tinymce.js:hc:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:getBookmark:2 <- plugin.min.js:V:0 <- plugin.min.js:anonymous:0 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:yw:2 <- wp-tinymce.js:f.content_style.a:2 <- wp-tinymce.js:anonymous:2 <- (root):-1",
+      1.585
+    ],
+    [
+      "wp-tinymce.js:be:4 <- wp-tinymce.js:Tt:4 <- wp-tinymce.js:renderUI:4 <- wp-tinymce.js:_w:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:Se.y.bind:2 <- wp-tinymce.js:M:2 <- wp-tinymce.js:init:2 <- acf-input.min.js:initializeTinymce:0 <- acf-input.min.js:initialize:0",
+      1.553
+    ],
+    [
+      "jquery.min.js:ce.extend.ce.fn.extend:1 <- acf.min.js:i.parseArgs:0 <- acf.min.js:i.rename:0 <- acf-input.min.js:initializeEditor:0 <- acf-input.min.js:onMousedown:0 <- anonymous:0 <- anonymous:0 <- evaluate:295 <- anonymous:0 <- (root):-1",
+      1.548
+    ],
+    [
+      "insertNode:-1 <- wp-tinymce.js:zu:2 <- wp-tinymce.js:Xu:2 <- wp-tinymce.js:getBookmark:2 <- wp-tinymce.js:hc:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:getBookmark:2 <- plugin.min.js:V:0 <- plugin.min.js:anonymous:0 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:yw:2 <- wp-tinymce.js:f.content_style.a:2 <- wp-tinymce.js:anonymous:2 <- (root):-1",
+      1.531
+    ],
+    [
+      "wp-tinymce.js:getNode:2 <- wp-tinymce.js:Xu:2 <- wp-tinymce.js:getBookmark:2 <- wp-tinymce.js:hc:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:getBookmark:2 <- plugin.min.js:V:0 <- plugin.min.js:anonymous:0 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:yw:2 <- wp-tinymce.js:f.content_style.a:2 <- wp-tinymce.js:anonymous:2 <- (root):-1",
+      1.505
+    ],
+    [
+      "wp-tinymce.js:St.setDocument:2 <- wp-tinymce.js:St:2 <- wp-tinymce.js:find:2 <- wp-tinymce.js:init:2 <- wp-tinymce.js:o:2 <- editor.min.js:anonymous:1 <- jquery.min.js:dispatch:1 <- jquery.min.js:v.handle:1 <- jquery.min.js:trigger:1 <- jquery.min.js:triggerHandler:1 <- wp-tinymce.js:anonymous:32 <- jquery.min.js:e:1 <- jquery.min.js:t:1 <- (root):-1",
+      1.496
+    ],
+    [
+      "wp-tinymce.js:queryCommandValue:2 <- wp-tinymce.js:queryCommandValue:2 <- wp-tinymce.js:anonymous:4 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:yw:2 <- wp-tinymce.js:f.content_style.a:2 <- wp-tinymce.js:anonymous:2 <- (root):-1",
+      1.494
+    ],
+    [
+      "wp-tinymce.js:st:4 <- wp-tinymce.js:postRender:4 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:renderBefore:4 <- wp-tinymce.js:be:4 <- wp-tinymce.js:Tt:4 <- wp-tinymce.js:renderUI:4 <- wp-tinymce.js:_w:2 <- wp-tinymce.js:Aw:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:waitFor:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:u:2 <- wp-tinymce.js:Ri.loadScripts:2 <- wp-tinymce.js:Ri.loadQueue:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:Ow:2 <- wp-tinymce.js:Bw:2 <- wp-tinymce.js:render:2 <- wp-tinymce.js:n:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:e:2 <- wp-tinymce.js:Se.y.bind:2",
+      1.478
+    ],
+    [
+      "wp-tinymce.js:d:2 <- wp-tinymce.js:m:2 <- wp-tinymce.js:Xu:2 <- wp-tinymce.js:getBookmark:2 <- wp-tinymce.js:hc:2 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:getBookmark:2 <- plugin.min.js:V:0 <- plugin.min.js:anonymous:0 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:2 <- wp-tinymce.js:yw:2 <- wp-tinymce.js:f.content_style.a:2 <- wp-tinymce.js:anonymous:2 <- (root):-1",
+      1.471
+    ],
+    [
+      "jquery.min.js:ce.extend.ce.fn.extend:1 <- core.min.js:_classes:115 <- core.min.js:_toggleClass:115 <- core.min.js:_addClass:115 <- autocomplete.min.js:_create:8 <- core.min.js:r.<computed>:115 <- core.min.js:_createWidget:115 <- core.min.js:x.<computed>.<computed>:115 <- core.min.js:anonymous:115 <- jquery.min.js:each:1 <- jquery.min.js:each:1 <- core.min.js:x.fn.<computed>:115 <- wp-tinymce.js:onPostRender:44 <- wp-tinymce.js:a:10 <- wp-tinymce.js:c.fire:2 <- wp-tinymce.js:fire:4 <- wp-tinymce.js:postRender:4 <- wp-tinymce.js:anonymous:4 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:each:4 <- wp-tinymce.js:exec:4 <- wp-tinymce.js:postRender:4 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:4 <- wp-tinymce.js:jt:2 <- wp-tinymce.js:each:4 <- wp-tinymce.js:exec:4 <- wp-tinymce.js:postRender:4 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:postRender:4 <- wp-tinymce.js:anonymous:2 <- wp-tinymce.js:anonymous:4",
+      1.455
+    ],
+    [
+      "wp-tinymce.js:uh:2 <- wp-tinymce.js:yw:2 <- wp-tinymce.js:f.content_style.a:2 <- wp-tinymce.js:anonymous:2 <- (root):-1",
+      1.437
+    ]
+  ]
+}

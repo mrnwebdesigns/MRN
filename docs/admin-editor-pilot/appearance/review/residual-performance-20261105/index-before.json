@@ -1,0 +1,101 @@
+{
+    "mode": "plan",
+    "changed": false,
+    "change_seconds": 1.1920928955078125e-6,
+    "host": "admin-editor-pilot.mrndev.io",
+    "indexes": [
+        {
+            "Table": "wp_postmeta",
+            "Non_unique": "0",
+            "Key_name": "PRIMARY",
+            "Seq_in_index": "1",
+            "Column_name": "meta_id",
+            "Collation": "A",
+            "Cardinality": "461336",
+            "Sub_part": null,
+            "Packed": null,
+            "Null": "",
+            "Index_type": "BTREE",
+            "Comment": "",
+            "Index_comment": "",
+            "Visible": "YES",
+            "Expression": null
+        },
+        {
+            "Table": "wp_postmeta",
+            "Non_unique": "1",
+            "Key_name": "post_id",
+            "Seq_in_index": "1",
+            "Column_name": "post_id",
+            "Collation": "A",
+            "Cardinality": "969",
+            "Sub_part": null,
+            "Packed": null,
+            "Null": "",
+            "Index_type": "BTREE",
+            "Comment": "",
+            "Index_comment": "",
+            "Visible": "YES",
+            "Expression": null
+        },
+        {
+            "Table": "wp_postmeta",
+            "Non_unique": "1",
+            "Key_name": "meta_key",
+            "Seq_in_index": "1",
+            "Column_name": "meta_key",
+            "Collation": "A",
+            "Cardinality": "15060",
+            "Sub_part": "191",
+            "Packed": null,
+            "Null": "YES",
+            "Index_type": "BTREE",
+            "Comment": "",
+            "Index_comment": "",
+            "Visible": "YES",
+            "Expression": null
+        }
+    ],
+    "fixtures": {
+        "2523": {
+            "lookups": 100,
+            "lookup_ms": 109.55309867858887,
+            "plan": [
+                {
+                    "id": "1",
+                    "select_type": "SIMPLE",
+                    "table": "wp_postmeta",
+                    "partitions": null,
+                    "type": "ref",
+                    "possible_keys": "post_id,meta_key",
+                    "key": "meta_key",
+                    "key_len": "767",
+                    "ref": "const",
+                    "rows": "297",
+                    "filtered": "1.13",
+                    "Extra": "Using where"
+                }
+            ]
+        },
+        "2524": {
+            "lookups": 100,
+            "lookup_ms": 109.4970703125,
+            "plan": [
+                {
+                    "id": "1",
+                    "select_type": "SIMPLE",
+                    "table": "wp_postmeta",
+                    "partitions": null,
+                    "type": "ref",
+                    "possible_keys": "post_id,meta_key",
+                    "key": "meta_key",
+                    "key_len": "767",
+                    "ref": "const",
+                    "rows": "297",
+                    "filtered": "3.02",
+                    "Extra": "Using where"
+                }
+            ]
+        }
+    }
+}

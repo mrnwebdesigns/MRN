@@ -1,0 +1,11 @@
+{
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1793909343,
+    "label": "pre-admin-pilot-qa-session-cleanup-20261105",
+    "nonce": "8b2d685b84fa",
+    "key": "sites\/admin-editor-pilot-mrndev-io\/backup_2026-11-05-2008_Trilliant_8b2d685b84fa-db.gz",
+    "size": 7094713,
+    "sha256": "dba80307950c4724a6ab274a06ec33f0f0da7c49cca89200a1ba776aaa6b4c5c"
+}
+Only this isolated QA session revoked; private auth file removed.

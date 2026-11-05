@@ -2,7 +2,7 @@
 
 ## Performance blocker pass — 5 November 2026
 
-[Current evidence](review/blockers-20261105/REVIEW.md): native save/reload improved from 54s/105s to final 21s/33s on the 19/32-section fixtures. Native revision, restore and truncation tests pass. Whole-editor CPU remains open; the row-flex CPU candidate was withdrawn. Hub restart/provisioning source repairs pass 16s/12s runtime trials, but the installed app still needs qualification. No release/Fleet gate is opened.
+[Latest evidence](review/residual-performance-20261105/REVIEW.md): review-only metadata indexing and repair of identical duplicate builder rows reduce native save queries by 44.5% / 33.3% on the 19/32-section drafts. All content hashes and native revision/restore/save-guard tests pass. Final unprofiled save/reload remains 32.7s / 24.0s, so residual latency is still P1. Corrected whole-editor CPU observations remain variable and unqualified; the JavaScript candidate stays withdrawn. [Previous Hub evidence](review/blockers-20261105/REVIEW.md) remains separate, with installed-app qualification outstanding. Release/Fleet gates stay closed.
 
 **Round 1 approved — 2 November 2026.** All ten annotations / seven clusters were approved by the owner's “Let's make these changes for now” instruction. Source changes are implemented in the existing task worktree; native Light/Dark visual and save/reload checks are complete for the selected fixtures; full automated/performance qualification remains open. See [the implementation and verification record](review/REFINEMENTS-ROUND1.md). No cluster is visually accepted or closed. [Round 2 paired annotations](review/round-2.html) are ready without WordPress login; this is not release sign-off.
 

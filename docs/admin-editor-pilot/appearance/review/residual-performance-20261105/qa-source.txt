@@ -1,0 +1,17 @@
+MRN_QA_PROOF_SCHEMA=1
+MRN_QA_PROOF_RESULT=pass
+MRN_QA_PROOF_REPO_ROOT=/Users/khofmeyer/Development/MRN/.worktrees/admin-editor-pilot-20261029
+MRN_QA_PROOF_INDEX_TREE=283ffab014718a2b238b0616c46f960e44fc9bd0
+MRN_QA_PROOF_CHANGED_FILES=scripts/performance/admin-editor-pilot-postmeta-index.php
+MRN_QA_PROOF_QA_SCOPE=commit-code
+MRN_QA_PROOF_QA_MODE=standard
+MRN_QA_PROOF_QA_COMMAND=MRN_QA_COMMIT_GATE=1\ MRN_QA_CODE_ANALYSIS_SCOPE=changed\ MRN_QA_RUN_SECRETS=auto\ MRN_QA_RUN_DEBUG_ARTIFACTS=auto\ MRN_QA_RUN_PHP_COMPAT=auto\ MRN_QA_RUN_README_VERSION=auto\ MRN_QA_RUN_API=static\ MRN_QA_RUN_CWV=never\ MRN_QA_PARITY_STRICT=0\ MRN_QA_ROLLOUT_STRICT=0\ /Users/khofmeyer/Development/MRN-qa-engine/bin/mrn-qa\ run\ --project-root\ \<snapshot\>\ --scope\ site-only\ --mode\ standard\ --run-smoke\ never\ --run-accessibility\ never\ --run-performance\ never\ --run-phpcbf\ never
+MRN_QA_PROOF_QA_ENGINE_VERSION=0.2.0
+MRN_QA_PROOF_QA_ENGINE_REVISION=9617fba
+MRN_QA_PROOF_ROOTS_FILE=/Users/khofmeyer/Development/MRN-qa-engine/config/mrn-roots.txt
+MRN_QA_PROOF_ROOTS_SHA256=cb470403b0f9d5e4d9561ced7c4d84b8f5a778366332246e5e850d12f0932ac9
+MRN_QA_PROOF_TIMESTAMP_UTC=2026-11-05T19:37:03Z
+MRN_QA_PROOF_RUNTIME_TARGET=''
+MRN_QA_PROOF_SNAPSHOT_COMMIT=d2ba0e8dfd4202f31864b370055c801536d4159d
+MRN_QA_PROOF_SNAPSHOT_WORKTREE=/var/folders/4z/p5jhz5f57wl23ffpy3nwyjvr0000gn/T//mrn-qa-commit.IGI7ot
+MRN_QA_PROOF_WORKTREE_MODE=index-snapshot

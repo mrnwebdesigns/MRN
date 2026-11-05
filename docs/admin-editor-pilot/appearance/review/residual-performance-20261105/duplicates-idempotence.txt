@@ -1,0 +1,28 @@
+{
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1793908894,
+    "label": "pre-admin-pilot-postmeta-duplicates-saves-20261105",
+    "nonce": "c16ea8dca038",
+    "key": "sites\/admin-editor-pilot-mrndev-io\/backup_2026-11-05-2001_Trilliant_c16ea8dca038-db.gz",
+    "size": 6942581,
+    "sha256": "1b6fefe1b3e3f0723158d57cb89b648237893dada440fd2093f67fb6a5a1b279"
+}
+{
+    "mode": "apply",
+    "changed_rows": 0,
+    "fixtures": {
+        "2523": {
+            "duplicate_keys": 0,
+            "redundant_rows": 0,
+            "logical_hash_before": "673a83c302e609906cf01cdb4bcdca38282cf82ca5e678b756960e85c5bfb747",
+            "logical_hash_after": "673a83c302e609906cf01cdb4bcdca38282cf82ca5e678b756960e85c5bfb747"
+        },
+        "2524": {
+            "duplicate_keys": 0,
+            "redundant_rows": 0,
+            "logical_hash_before": "9f12ac09879d5ec1ce53027457c68fdb33562a3fc67715852ce1f839bb1e711a",
+            "logical_hash_after": "9f12ac09879d5ec1ce53027457c68fdb33562a3fc67715852ce1f839bb1e711a"
+        }
+    }
+}

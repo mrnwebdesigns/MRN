@@ -1,0 +1,78 @@
+{
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1793908854,
+    "label": "pre-admin-pilot-postmeta-duplicates-apply-20261105",
+    "nonce": "268bba8edc52",
+    "key": "sites\/admin-editor-pilot-mrndev-io\/backup_2026-11-05-2000_Trilliant_268bba8edc52-db.gz",
+    "size": 6973441,
+    "sha256": "31dd4304a07a5c50c7b4b701575f6c5afe91b85d428faf591ededd0c4301c6d9"
+}
+{
+    "mode": "apply",
+    "changed_rows": 5352,
+    "fixtures": {
+        "2523": {
+            "duplicate_keys": 2586,
+            "redundant_rows": 2586,
+            "logical_hash_before": "673a83c302e609906cf01cdb4bcdca38282cf82ca5e678b756960e85c5bfb747",
+            "logical_hash_after": "673a83c302e609906cf01cdb4bcdca38282cf82ca5e678b756960e85c5bfb747"
+        },
+        "2524": {
+            "duplicate_keys": 2766,
+            "redundant_rows": 2766,
+            "logical_hash_before": "9f12ac09879d5ec1ce53027457c68fdb33562a3fc67715852ce1f839bb1e711a",
+            "logical_hash_after": "9f12ac09879d5ec1ce53027457c68fdb33562a3fc67715852ce1f839bb1e711a"
+        }
+    }
+}
+{
+    "mode": "plan",
+    "changed_rows": 0,
+    "fixtures": {
+        "2523": {
+            "duplicate_keys": 0,
+            "redundant_rows": 0,
+            "logical_hash_before": "673a83c302e609906cf01cdb4bcdca38282cf82ca5e678b756960e85c5bfb747",
+            "logical_hash_after": "673a83c302e609906cf01cdb4bcdca38282cf82ca5e678b756960e85c5bfb747"
+        },
+        "2524": {
+            "duplicate_keys": 0,
+            "redundant_rows": 0,
+            "logical_hash_before": "9f12ac09879d5ec1ce53027457c68fdb33562a3fc67715852ce1f839bb1e711a",
+            "logical_hash_after": "9f12ac09879d5ec1ce53027457c68fdb33562a3fc67715852ce1f839bb1e711a"
+        }
+    }
+}
+{
+    "host": "admin-editor-pilot.mrndev.io",
+    "wp": "7.0.4",
+    "acf": "6.8.9",
+    "php": "8.4.27",
+    "stylesheet": "mrn-base-stack-child",
+    "template": "mrn-base-stack",
+    "pilot_enabled": true,
+    "save_guard": true,
+    "pages": {
+        "2523": {
+            "rows": 19,
+            "status": "draft",
+            "content_hash": "125c3120813340710c01d3d6602341cb3381d319d0080c23f09ea04bf3c36708",
+            "native_acf_hash": "185d28d432189696a1001536693a41e9b34fcfde21415438223ad3cf66d05d29",
+            "post_content_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "2524": {
+            "rows": 32,
+            "status": "draft",
+            "content_hash": "cf6090e3fcd269e5d9cff6576a3490e9bad5df858c1a23e7cdb31ee2a457a1ad",
+            "native_acf_hash": "b95006648facac964426ec5a354374580a354df78fb93210c5fb794008bcbbcf",
+            "post_content_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+    },
+    "cron_disabled": true,
+    "indexing": "0",
+    "backup_intervals": [
+        "manual",
+        "manual"
+    ]
+}
