@@ -86,6 +86,8 @@ body.mrn-modern-admin { background: var(--mrn-admin-canvas); color: var(--mrn-ad
  .mrn-admin-list .tablenav .actions { float: none; margin-bottom: 8px; }
  .mrn-admin-list .wp-list-table .column-title { width: 100%; min-width: 0; }
  .mrn-admin-list .wp-list-table :is(th,td) { padding: 12px 10px; }
+ /* Preserve core's space for the mobile row-details disclosure. */
+ .mrn-admin-list .wp-list-table td.column-primary { padding-right: 50px; }
  .mrn-admin-list .wp-list-table .row-actions { display: block; }
  .mrn-admin-settings .wrap > form > .form-table :is(th,td) { padding: 16px; width: auto; }
  .mrn-admin-settings .wrap > form > .form-table td { padding-top: 0; }
