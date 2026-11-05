@@ -87,6 +87,27 @@ class HostControllerContract(unittest.TestCase):
         self.assertIn('recovery', receipt)
         self.fixture.store.verify_public_snapshot()
 
+    def test_exhausted_rate_limit_is_not_restarted_by_cache_propagation_loop(self):
+        error = host.PublicHTTPError({'url': 'https://test.mrndev.io/asset.js', 'http_status': 429, 'attempts': 4})
+        with patch.object(host, 'html_cache', return_value={}), patch.object(
+                host, 'verify_cached_public', side_effect=error) as verify, patch.object(host.time, 'sleep') as sleep:
+            with self.assertRaises(host.PublicHTTPError):
+                host.public_check(dict(self.plan, host_provider='wpengine'), self.fixture.store,
+                                  {'release_id': 'a' * 64, 'public_path': None})
+        self.assertEqual(1, verify.call_count)
+        sleep.assert_not_called()
+
+    def test_rate_limited_activation_retains_diagnostics_and_backup_gated_recovery(self):
+        error = host.PublicHTTPError({'url': 'https://test.mrndev.io/asset.js', 'http_status': 429, 'attempts': 4})
+        with patch.object(host, 'backup', return_value={'valid': True}) as backup, patch.object(
+                host, 'public_check', side_effect=[{}, error, {}]):
+            receipt = host.execute(self.plan)
+        self.assertEqual('failed', receipt['status'])
+        self.assertEqual(429, receipt['diagnostics'][0]['http']['http_status'])
+        self.assertEqual(['adopt', 'stage', 'activate', 'recover'], [call.args[1] for call in backup.call_args_list])
+        self.assertIn('recovery', receipt)
+        self.assertIsNone(self.fixture.store.pointer()['public_path'])
+
     def test_initial_loader_incompatibility_restores_original_public_functions(self):
         with patch.object(host, 'backup', return_value={'valid': True}), patch.object(host, 'public_check', side_effect=ValueError('FPM cannot load private code')):
             receipt = host.execute(self.plan)
