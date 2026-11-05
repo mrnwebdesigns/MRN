@@ -20,8 +20,25 @@ function mrn_admin_ui_modern_screen() {
 	$types = function_exists( 'mrn_base_stack_get_singular_shell_post_types' ) ? mrn_base_stack_get_singular_shell_post_types() : array( 'post', 'page' );
 	// Application-owned tables remain excluded even if a site opts them into the MRN shell.
 	$types = array_diff( $types, array( 'product', 'product_variation', 'shop_order', 'shop_coupon', 'courses', 'lesson', 'tutor_quiz', 'tutor_assignments', 'wpforms', 'acf-field-group' ) );
-	if ( 'edit' === $screen->base && in_array( $screen->post_type, $types, true ) ) {
-		return 'list';
+	if ( 'edit' === $screen->base ) {
+		// List presentation is independent of the singular/editor shell. Reuse
+		// native public CPTs and MRN's existing content/data registry so private
+		// resources, locations and reusable blocks receive the same list header.
+		// Row-action rendering asks again for every record; resolve this once.
+		static $list_types = null;
+		if ( null === $list_types ) {
+			$data_types = function_exists( 'mrn_admin_data_post_types_get_config' ) ? array_keys( mrn_admin_data_post_types_get_config() ) : array();
+			$list_types = array_intersect(
+				array_merge( $types, get_post_types( array( 'public' => true, 'show_ui' => true ) ), $data_types ),
+				get_post_types( array( 'show_ui' => true ) )
+			);
+		}
+		// Even an administrator selecting one as data must not claim an app's UI.
+		$app_type = in_array( $screen->post_type, array( 'product', 'product_variation', 'shop_order', 'shop_coupon', 'courses', 'lesson', 'tutor_quiz', 'tutor_assignments', 'wpforms' ), true )
+			|| preg_match( '/^(?:acf[-_]|seopress_|wpforms_|shop_|product_|tutor_)/', $screen->post_type );
+		if ( ! $app_type && in_array( $screen->post_type, $list_types, true ) ) {
+			return 'list';
+		}
 	}
 	if ( in_array( $screen->base, array( 'edit-tags', 'term' ), true ) && in_array( $screen->taxonomy, get_object_taxonomies( $types ), true ) ) {
 		return 'settings';
