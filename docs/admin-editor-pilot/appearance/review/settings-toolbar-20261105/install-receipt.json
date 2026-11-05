@@ -1,0 +1,22 @@
+{
+  "host": "admin-editor-pilot.mrndev.io",
+  "commit": "dded613f2137f317fbf9dc93435afb7d448b5191",
+  "files": {
+    "mrn-admin-ui-css/mrn-admin-shell.css": {
+      "before": "cca9f10358a614ad76ffc961c10441302ac9c88de11e85dde8a8d05141b78b1e",
+      "after": "169ea81aea5cba6ed8a8d0c884d23088c9bfd7bfed96c54275be19cd4c97416e"
+    }
+  },
+  "backup": {
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1793888373,
+    "label": "pre-admin-pilot-settings-toolbar-install-20261105",
+    "nonce": "e719e23906cb",
+    "key": "sites/admin-editor-pilot-mrndev-io/backup_2026-11-05-1419_Trilliant_e719e23906cb-db.gz",
+    "size": 6316645,
+    "sha256": "36f1cb5cf8da48269760bc3e361585f0b7ee2d6e9e03fbf4a29586c50e69567c"
+  },
+  "rollback": "/home/mrndev-admin-editor/review-private/before-settings-toolbar-dded613f2137",
+  "status": "installed"
+}

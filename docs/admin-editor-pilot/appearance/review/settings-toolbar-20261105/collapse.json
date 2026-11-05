@@ -1,0 +1,86 @@
+[
+  {
+    "phase": "baseline",
+    "slug": "mrn-business-information",
+    "before": {
+      "cls": "postbox acf-postbox",
+      "expanded": "true",
+      "inside": "block"
+    },
+    "after": {
+      "cls": "postbox acf-postbox closed",
+      "expanded": "false",
+      "inside": "none"
+    }
+  },
+  {
+    "phase": "baseline",
+    "slug": "mrn-theme-header-footer",
+    "before": {
+      "cls": "postbox ",
+      "expanded": "true",
+      "inside": "block"
+    },
+    "after": {
+      "cls": "postbox ",
+      "expanded": "true",
+      "inside": "block"
+    }
+  },
+  {
+    "phase": "baseline",
+    "slug": "mrn-header-utility-message",
+    "before": {
+      "cls": "postbox acf-postbox",
+      "expanded": "true",
+      "inside": "block"
+    },
+    "after": {
+      "cls": "postbox acf-postbox closed",
+      "expanded": "false",
+      "inside": "none"
+    }
+  },
+  {
+    "phase": "candidate",
+    "slug": "mrn-business-information",
+    "before": {
+      "cls": "postbox acf-postbox",
+      "expanded": "true",
+      "inside": "block"
+    },
+    "after": {
+      "cls": "postbox acf-postbox closed",
+      "expanded": "false",
+      "inside": "none"
+    }
+  },
+  {
+    "phase": "candidate",
+    "slug": "mrn-theme-header-footer",
+    "before": {
+      "cls": "postbox ",
+      "expanded": "true",
+      "inside": "block"
+    },
+    "after": {
+      "cls": "postbox ",
+      "expanded": "true",
+      "inside": "block"
+    }
+  },
+  {
+    "phase": "candidate",
+    "slug": "mrn-header-utility-message",
+    "before": {
+      "cls": "postbox acf-postbox",
+      "expanded": "true",
+      "inside": "block"
+    },
+    "after": {
+      "cls": "postbox acf-postbox closed",
+      "expanded": "false",
+      "inside": "none"
+    }
+  }
+]

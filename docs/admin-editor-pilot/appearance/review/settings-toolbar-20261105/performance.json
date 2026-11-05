@@ -1,0 +1,42 @@
+[
+  {
+    "phase": "before",
+    "requests": 187,
+    "cls": 0.04649788598813569,
+    "scriptMs": 1568.252,
+    "layoutMs": 42.479000000000006,
+    "recalcStyleMs": 62.446,
+    "taskMs": 1830.9089999999999,
+    "heapMB": 35.973533630371094
+  },
+  {
+    "phase": "installed",
+    "requests": 188,
+    "cls": 0.029681769518747774,
+    "scriptMs": 241.94899999999998,
+    "layoutMs": 20.990000000000002,
+    "recalcStyleMs": 41.507000000000005,
+    "taskMs": 375.08000000000004,
+    "heapMB": 42.053279876708984
+  },
+  {
+    "phase": "before",
+    "requests": 187,
+    "cls": 0.04518311874849909,
+    "scriptMs": 374.69,
+    "layoutMs": 37.363,
+    "recalcStyleMs": 64.161,
+    "taskMs": 595.2579999999999,
+    "heapMB": 34.27352523803711
+  },
+  {
+    "phase": "installed",
+    "requests": 188,
+    "cls": 0.030097138747648865,
+    "scriptMs": 310.558,
+    "layoutMs": 25.564,
+    "recalcStyleMs": 59.827999999999996,
+    "taskMs": 502.884,
+    "heapMB": 35.592323303222656
+  }
+]

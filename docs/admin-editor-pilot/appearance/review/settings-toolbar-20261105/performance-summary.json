@@ -1,0 +1,21 @@
+{
+  "before": {
+    "requests": 187.0,
+    "cls": 0.04584050236831739,
+    "scriptMs": 971.471,
+    "layoutMs": 39.92100000000001,
+    "recalcStyleMs": 63.3035,
+    "taskMs": 1213.0835,
+    "heapMB": 35.1235294342041
+  },
+  "installed": {
+    "requests": 188.0,
+    "cls": 0.02988945413319832,
+    "scriptMs": 276.2535,
+    "layoutMs": 23.277,
+    "recalcStyleMs": 50.667500000000004,
+    "taskMs": 438.982,
+    "heapMB": 38.82280158996582
+  },
+  "qualification": "Two alternating samples per version; browser/runtime variance remains. No CPU or memory improvement qualification."
+}

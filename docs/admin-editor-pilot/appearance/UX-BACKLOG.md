@@ -196,3 +196,12 @@ Profile; the existing per-user Light/Dark/System AJAX save remains in place.
 Chromium/WebKit, touch, keyboard, persistence, failure rollback and unsaved editor
 values pass. [Evidence](review/appearance-stay-20261105/REVIEW.md). Await visual
 acceptance; next annotation UX-048. Existing CPU/OOM release gates remain open.
+
+**P2 UX-048 — settings toolbar theme and repeated titles:** implemented and installed
+for review. Four qualified MRN screens retain one visible toolbar title, with the
+original accessible heading and native controls preserved. Shared semantic colors,
+AME-aligned positioning and responsive sizing now match the editor. [Evidence and
+screenshots](review/settings-toolbar-20261105/REVIEW.md). Await visual acceptance;
+next annotation UX-049. Separate refinement: Header/Footer's existing collapse
+chevron does not close its panel in either baseline or candidate. CPU/memory/OOM
+qualification remains open; this CSS-only patch does not close those release gates.

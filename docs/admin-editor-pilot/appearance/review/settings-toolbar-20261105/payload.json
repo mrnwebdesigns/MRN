@@ -1,0 +1,10 @@
+{
+  "file": "mu-plugins/mrn-admin-ui-css/mrn-admin-shell.css",
+  "before_sha256": "cca9f10358a614ad76ffc961c10441302ac9c88de11e85dde8a8d05141b78b1e",
+  "after_sha256": "169ea81aea5cba6ed8a8d0c884d23088c9bfd7bfed96c54275be19cd4c97416e",
+  "before_bytes": 53756,
+  "after_bytes": 59192,
+  "gzip_delta": 918,
+  "added_javascript_bytes": 0,
+  "added_asset_requests": 0
+}
