@@ -90,3 +90,55 @@ function mrn_base_stack_builder_field_is_empty( $name, $post_id ) {
 
 	return in_array( get_post_meta( $post_id, $name, true ), array( '', false, null, array(), 0, '0' ), true );
 }
+
+/**
+ * Keep the request-local revision cache warm across native metadata inserts.
+ *
+ * ACF copies every value/reference through update_metadata(). Each new key
+ * invalidates the entire revision cache, so the next key reloads all preceding
+ * keys. Large builders otherwise transfer a quadratically growing result set.
+ * We retain the cache observed immediately before an insert and append only the
+ * successfully inserted value. Native writes, sanitization and hooks still run.
+ * Persistent caches and other post types retain their normal behavior.
+ *
+ * @param int $revision_id New revision ID.
+ * @param int $post_id Parent post ID.
+ * @return void
+ */
+function mrn_base_stack_prime_revision_insert_cache( $revision_id, $post_id ) {
+	if ( wp_using_ext_object_cache() || ! function_exists( 'acf_copy_metadata' )
+		|| ! in_array( get_post_type( $post_id ), mrn_base_stack_get_singular_shell_post_types(), true )
+		|| (int) wp_is_post_revision( $revision_id ) !== (int) $post_id ) {
+		return;
+	}
+	$pending = array();
+	$before  = static function ( $object_id, $key ) use ( $revision_id, &$pending ) {
+		if ( (int) $object_id === (int) $revision_id ) {
+			$pending[ $key ] = wp_cache_get( $object_id, 'post_meta' );
+		}
+	};
+	$after   = static function ( $meta_id, $object_id, $key, $value ) use ( $revision_id, &$pending ) {
+		if ( (int) $object_id !== (int) $revision_id || ! isset( $pending[ $key ] ) ) {
+			return;
+		}
+		$cache = $pending[ $key ];
+		unset( $pending[ $key ] );
+		if ( is_array( $cache ) ) {
+			$cache[ $key ][] = maybe_serialize( $value );
+			// Do not replace a cache populated by another callback.
+			wp_cache_add( $object_id, $cache, 'post_meta' );
+		}
+	};
+	$finish  = null;
+	$finish  = static function ( $finished_id ) use ( $revision_id, $before, $after, &$finish ) {
+		if ( (int) $finished_id === (int) $revision_id ) {
+			remove_action( 'add_post_meta', $before, PHP_INT_MAX );
+			remove_action( 'added_post_meta', $after, PHP_INT_MIN );
+			remove_action( '_wp_put_post_revision', $finish, PHP_INT_MAX );
+		}
+	};
+	add_action( 'add_post_meta', $before, PHP_INT_MAX, 2 );
+	add_action( 'added_post_meta', $after, PHP_INT_MIN, 4 );
+	add_action( '_wp_put_post_revision', $finish, PHP_INT_MAX );
+}
+add_action( '_wp_put_post_revision', 'mrn_base_stack_prime_revision_insert_cache', 1, 2 );
