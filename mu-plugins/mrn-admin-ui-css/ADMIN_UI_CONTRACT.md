@@ -129,6 +129,16 @@ Header/footer checkboxes align with the row checkboxes; do not add per-list copi
 ## Navigation and feedback
 
 - Use `.nav-tab-wrapper`, `.nav-tab`, and `.nav-tab-active` for page-level fallback navigation.
+- `mrn-admin-shell.css` owns the shared tab presentation on approved MRN screens:
+  ACF field tabs, native `.nav-tab` navigation, `.mrn-settings-tabs`,
+  `.mrn-workspace-modes`, and Classic Editor Visual/Text controls. All use 44px
+  minimum targets, 14px labels, semantic theme colors, a single active underline,
+  a neutral hover surface and an inset keyboard focus ring. Do not add per-screen
+  pill backgrounds, competing borders, typography or control padding overrides.
+- Keep each tab family's native markup and behavior. Navigation links stay links;
+  ACF owns conditional visibility and field order; Classic Editor owns mode
+  switching. Vertical ACF tabs retain their layout. Save buttons are actions, not
+  tabs. Application-owned interfaces remain outside this component's scope.
 - The Universal Sticky Bar may enhance navigation and primary actions when available, but the native controls remain the standalone contract.
 - Use `.notice.notice-success.is-dismissible`, `.notice.notice-error`, `.notice-warning`, or `.notice-info` for feedback.
 - Keep the action label stable between the control, confirmation, and resulting notice.

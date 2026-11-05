@@ -22,9 +22,6 @@ body.mrn-workspace { --mrn-site-menu-top: calc(var(--mrn-editor-offset, 110px) +
 .mrn-workspace:not(.mrn-workspace-settings) #titlediv > .inside { display: none; }
 body.mrn-workspace .mrn-workspace-header { top: var(--mrn-editor-offset, 110px); }
 .mrn-workspace-modes { display: flex; align-self: stretch; gap: 20px; margin-left: auto; }
-.mrn-workspace-modes button { border: 0; background: transparent; color: var(--mrn-admin-muted); cursor: pointer; font-size: 14px; font-weight: 600; }
-.mrn-workspace-modes button { border-bottom: 3px solid transparent; padding: 0 8px; }
-.mrn-workspace-modes button[aria-pressed="true"] { border-bottom-color: var(--mrn-admin-accent); color: var(--mrn-admin-accent); }
 .mrn-workspace-alerts { padding: 10px 14px; margin: 0 0 22px; border: 1px solid var(--mrn-admin-line); border-radius: 8px; background: var(--mrn-admin-surface); }
 .mrn-workspace-alerts summary { cursor: pointer; color: var(--mrn-admin-warning); font-weight: 600; }
 .mrn-workspace-alerts .notice { margin: 12px 0; }
@@ -173,11 +170,9 @@ body.mrn-workspace #mrn-universal-sticky-toolbar { position: fixed; top: var(--m
 body.mrn-workspace .mrn-workspace-header { position: fixed; left: 0; right: 0; }
 body.mrn-workspace #wpbody-content { padding-top: calc(var(--mrn-editor-offset, 103px) + var(--mrn-workspace-header-height, 54px) - var(--mrn-adminbar-height, 32px)); }
 body.mrn-workspace .mrn-editor-section .acf-field { scroll-margin-top: calc(var(--mrn-editor-offset, 103px) + var(--mrn-workspace-header-height, 54px) + 16px); }
-/* Shared tab appearance lives in the admin shell; keep workspace density here. */
+/* Shared tab controls live in the admin shell; only field-group insets live here. */
 body.mrn-workspace .mrn-editor-section .acf-tab-wrap.-top { padding: 8px 16px; }
-body.mrn-workspace #wpbody-content .mrn-editor-section .acf-tab-wrap.-top .acf-tab-button { padding: 9px 12px; font-size: 12px; }
 body.mrn-workspace .mrn-editor-section .acf-row .acf-tab-wrap.-top { padding: 6px 12px; }
-body.mrn-workspace #wpbody-content .mrn-editor-section .acf-row .acf-tab-wrap.-top .acf-tab-button { padding: 7px 10px; }
 /* A nested component has a named header and native collapse/expand lifecycle. */
 body.mrn-workspace .mrn-nested-component > .acf-label { position: relative; padding-right: 140px; min-height: 32px; }
 .mrn-nested-all { position: absolute; right: 0; top: 0; border: 1px solid var(--mrn-admin-control-line); border-radius: 6px; background: var(--mrn-admin-surface); color: var(--mrn-admin-accent); cursor: pointer; padding: 6px 10px; min-height: 32px; }
@@ -194,7 +189,6 @@ body.mrn-workspace .mrn-nested-header:hover { background: var(--mrn-admin-surfac
 @media (max-width: 782px) { body.mrn-workspace { --mrn-adminbar-height: 46px; } }
 @media (max-width: 600px) {
  body.mrn-workspace .mrn-editor-section .acf-tab-wrap.-top { padding: 6px; }
- body.mrn-workspace #wpbody-content .mrn-editor-section .acf-tab-wrap.-top .acf-tab-button { min-height: 44px; }
  .mrn-nested-all, body.mrn-workspace .mrn-nested-header { min-height: 44px; }
 }
 

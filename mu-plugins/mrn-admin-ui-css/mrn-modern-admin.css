@@ -111,14 +111,11 @@ body.mrn-modern-admin { background: var(--mrn-admin-canvas); color: var(--mrn-ad
 .mrn-admin-settings .mrn-config-helper-panels { grid-template-columns: minmax(0,1fr); }
 .mrn-admin-settings :is(.mrn-config-helper-panel,.mrn-config-helper-card,.mrn-config-helper-fields) { min-width: 0; }
 .mrn-admin-settings #wpbody-content .mrn-sticky-save-bar { background: var(--mrn-admin-surface); color: var(--mrn-admin-ink); border-bottom: 1px solid var(--mrn-admin-line); box-shadow: var(--mrn-admin-shadow); }
-.mrn-admin-settings .mrn-settings-tabs { background: var(--mrn-admin-canvas); max-width: 100%; box-sizing: border-box; }
-.mrn-admin-settings .mrn-settings-tab { color: var(--mrn-admin-muted); }
-.mrn-admin-settings .mrn-settings-tab[aria-selected=true], .mrn-admin-settings .mrn-settings-tab.is-active { background: var(--mrn-admin-selected); color: var(--mrn-admin-selected-ink); }
+.mrn-admin-settings .mrn-settings-tabs { max-width: 100%; box-sizing: border-box; }
 .mrn-admin-settings .mrn-settings-tab--save { color: var(--mrn-admin-on-primary); }
 @media (max-width:782px) { .mrn-admin-settings .mrn-settings-tabs { min-width: 0; flex-wrap: wrap; } .mrn-admin-settings .mrn-config-helper-card { padding: 20px; } }
 
 .mrn-admin-settings .mrn-settings-toolbar__title { color: var(--mrn-admin-ink); }
-.mrn-admin-settings .mrn-settings-tab:hover, .mrn-admin-settings .mrn-settings-tab:focus { background: var(--mrn-admin-selected); color: var(--mrn-admin-selected-ink); }
 body.mrn-modern-admin #wpbody-content :is(a,button,input,select,textarea,summary):focus-visible:not(:where(#dashboard-widgets .postbox:not(#mrn_support_widget) *)) { outline: 3px solid var(--mrn-admin-accent); outline-offset: 3px; }
 .mrn-admin-settings .mrn-config-helper-fields { grid-template-columns: minmax(0,1fr); }
 .mrn-admin-settings .mrn-config-helper-field { min-width: 0; }
