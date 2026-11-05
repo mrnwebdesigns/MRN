@@ -368,3 +368,13 @@ next annotation `UX-038`. Existing editor CPU and Local Hub OOM gates remain ope
 ### UX-043 — Drag indicator beside the checkbox
 
 **P2, implemented for review.** Shared row-control styling places the original drag glyph left of its checkbox on the same horizontal centerline. Post Types Order and HappyFiles retain the original handles and persistence. The server reserves the gutter before initialization; no new JavaScript. Source `95fd44183318`; [evidence](drag-alignment-20261104/REVIEW.md). Installed checks pass; await visual review. Next annotation `UX-044`.
+
+### UX-044 — Shared pagination alignment
+
+“Component and should be center aligned.” **P2, implemented and installed for review.**
+Native count, page input, total and arrows share one centerline and consistent heights
+through the shared admin shell, reused by supported lists and Media. Desktop toolbar
+placement is preserved; narrow-screen groups center. Source `9228dae6eabc`; 31 installed
+checks cover both themes, mobile, scoped accessibility and native paging. No added JS
+or requests. [Evidence](pagination-20261105/REVIEW.md). Await visual review; next
+annotation `UX-045`.

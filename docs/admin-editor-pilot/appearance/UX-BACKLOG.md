@@ -167,3 +167,9 @@ Only the dedicated mrndev.io review deployment is authorized. No release prepara
 **P1 UX-042:** Removed the visible inline-actions-to-button transition on Posts/Pages/CPT lists. The initial native disclosure is immediately usable and matches the shared enhanced control. Installed Light/Dark delayed-load measurements show zero geometry change; early interaction, keyboard, Quick Edit, fallback, mobile and Media regression checks pass. [Evidence](review/actions-first-paint-20261104/REVIEW.md). Await visual review; next annotation `UX-043`. This does not qualify whole-page startup CPU or resolve Local Hub OOM.
 
 **P2 UX-043:** Native drag indicators now sit left of the checkbox on the same centerline through shared shell styling, including Media's HappyFiles indicator. Gutter space is reserved in the server response. [Evidence](review/drag-alignment-20261104/REVIEW.md). Installed checks pass; await visual review. Next annotation `UX-044`. CPU/OOM and release gates remain open.
+
+**P2 UX-044 — shared pagination:** implemented and installed on the review site.
+Count, input and arrow centerlines now match across supported lists and Media,
+with semantic Light/Dark states and 44px narrow-screen controls. Native paging,
+keyboard and scoped accessibility pass. Await human acceptance;
+[evidence](review/pagination-20261105/REVIEW.md). Next annotation: UX-045.

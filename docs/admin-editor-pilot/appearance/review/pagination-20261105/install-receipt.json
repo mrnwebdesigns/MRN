@@ -1,0 +1,22 @@
+{
+  "host": "admin-editor-pilot.mrndev.io",
+  "commit": "9228dae6eabc70ff7323126cea64fa9b4e00ebfd",
+  "files": {
+    "mrn-admin-ui-css/mrn-admin-shell.css": {
+      "before": "31628d006faa30c2afb00aaabd33cb930efcb3bd569f76d43f7b9f687c5d873f",
+      "after": "9b0668244dc44d790cb3aa0156e68595b1b507c8844ffc2b8868c8c1f24556f8"
+    }
+  },
+  "backup": {
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1793881291,
+    "label": "pre-admin-pilot-pagination-install-20261105",
+    "nonce": "ffe0f035deef",
+    "key": "sites/admin-editor-pilot-mrndev-io/backup_2026-11-05-1221_Trilliant_ffe0f035deef-db.gz",
+    "size": 6313526,
+    "sha256": "ec465d48f7d51cb52c7050352c6aa93b7f95fa3bce0b3ea8629e4f8513a89741"
+  },
+  "rollback": "/home/mrndev-admin-editor/review-private/before-pagination-9228dae6eabc",
+  "status": "installed"
+}

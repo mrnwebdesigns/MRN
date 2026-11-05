@@ -1,0 +1,1469 @@
+{
+  "phase": "candidate",
+  "checks": [
+    {
+      "name": "Pages light 1487 alignment",
+      "data": [
+        {
+          "class": "tablenav-pages",
+          "visible": true,
+          "coords": [
+            {
+              "class": "displaying-num",
+              "text": "59 items",
+              "y": 237,
+              "h": 19.5,
+              "left": 1147.359375,
+              "right": 1200.109375,
+              "color": "rgb(82, 100, 119)",
+              "bg": "rgba(0, 0, 0, 0)"
+            },
+            {
+              "class": "tablenav-pages-navspan button disabled",
+              "text": "\u00ab",
+              "y": 237,
+              "h": 36,
+              "left": 1212.109375,
+              "right": 1248.109375,
+              "color": "rgb(83, 100, 119)",
+              "bg": "rgb(228, 233, 240)"
+            },
+            {
+              "class": "tablenav-pages-navspan button disabled",
+              "text": "\u2039",
+              "y": 237,
+              "h": 36,
+              "left": 1252.109375,
+              "right": 1288.109375,
+              "color": "rgb(83, 100, 119)",
+              "bg": "rgb(228, 233, 240)"
+            },
+            {
+              "class": "paging-input",
+              "text": "Current Page of 3",
+              "y": 237,
+              "h": 36,
+              "left": 1292.109375,
+              "right": 1358,
+              "color": "rgb(82, 100, 119)",
+              "bg": "rgba(0, 0, 0, 0)"
+            },
+            {
+              "class": "current-page",
+              "text": "",
+              "y": 237,
+              "h": 36,
+              "left": 1292.109375,
+              "right": 1328.109375,
+              "color": "rgb(28, 46, 66)",
+              "bg": "rgb(255, 255, 255)"
+            },
+            {
+              "class": "next-page button",
+              "text": "Next page\u203a",
+              "y": 237,
+              "h": 36,
+              "left": 1362,
+              "right": 1398,
+              "color": "rgb(36, 75, 215)",
+              "bg": "rgb(255, 255, 255)"
+            },
+            {
+              "class": "last-page button",
+              "text": "Last page\u00bb",
+              "y": 237,
+              "h": 36,
+              "left": 1402,
+              "right": 1438,
+              "color": "rgb(36, 75, 215)",
+              "bg": "rgb(255, 255, 255)"
+            }
+          ],
+          "delta": 0
+        },
+        {
+          "class": "tablenav-pages",
+          "visible": true,
+          "coords": [
+            {
+              "class": "displaying-num",
+              "text": "59 items",
+              "y": 2519.125,
+              "h": 19.5,
+              "left": 1194.8125,
+              "right": 1247.5625,
+              "color": "rgb(82, 100, 119)",
+              "bg": "rgba(0, 0, 0, 0)"
+            },
+            {
+              "class": "tablenav-pages-navspan button disabled",
+              "text": "\u00ab",
+              "y": 2519.125,
+              "h": 36,
+              "left": 1259.5625,
+              "right": 1295.5625,
+              "color": "rgb(83, 100, 119)",
+              "bg": "rgb(228, 233, 240)"
+            },
+            {
+              "class": "tablenav-pages-navspan button disabled",
+              "text": "\u2039",
+              "y": 2519.125,
+              "h": 36,
+              "left": 1299.5625,
+              "right": 1335.5625,
+              "color": "rgb(83, 100, 119)",
+              "bg": "rgb(228, 233, 240)"
+            },
+            {
+              "class": "paging-input",
+              "text": "1 of 3",
+              "y": 2519.1171875,
+              "h": 18.203125,
+              "left": 1339.5625,
+              "right": 1375,
+              "color": "rgb(82, 100, 119)",
+              "bg": "rgba(0, 0, 0, 0)"
+            },
+            {
+              "class": "next-page button",
+              "text": "Next page\u203a",
+              "y": 2519.125,
+              "h": 36,
+              "left": 1379,
+              "right": 1415,
+              "color": "rgb(36, 75, 215)",
+              "bg": "rgb(255, 255, 255)"
+            },
+            {
+              "class": "last-page button",
+              "text": "Last page\u00bb",
+              "y": 2519.125,
+              "h": 36,
+              "left": 1419,
+              "right": 1455,
+              "color": "rgb(36, 75, 215)",
+              "bg": "rgb(255, 255, 255)"
+            }
+          ],
+          "delta": 0.0078125
+        }
+      ]
+    },
+    {
+      "name": "Pages light 390 alignment",
+      "data": [
+        {
+          "class": "tablenav-pages",
+          "visible": true,
+          "coords": [
+            {
+              "class": "tablenav-pages-navspan button disabled",
+              "text": "\u00ab",
+              "y": 508.984375,
+              "h": 44,
+              "left": 59.734375,
+              "right": 103.734375,
+              "color": "rgb(83, 100, 119)",
+              "bg": "rgb(228, 233, 240)"
+            },
+            {
+              "class": "tablenav-pages-navspan button disabled",
+              "text": "\u2039",
+              "y": 508.984375,
+              "h": 44,
+              "left": 107.734375,
+              "right": 151.734375,
+              "color": "rgb(83, 100, 119)",
+              "bg": "rgb(228, 233, 240)"
+            },
+            {
+              "class": "paging-input",
+              "text": "Current Page of 3",
+              "y": 508.984375,
+              "h": 44,
+              "left": 155.734375,
+              "right": 234.265625,
+              "color": "rgb(82, 100, 119)",
+              "bg": "rgba(0, 0, 0, 0)"
+            },
+            {
+              "class": "current-page",
+              "text": "",
+              "y": 508.984375,
+              "h": 44,
+              "left": 155.734375,
+              "right": 199.734375,
+              "color": "rgb(28, 46, 66)",
+              "bg": "rgb(255, 255, 255)"
+            },
+            {
+              "class": "next-page button",
+              "text": "Next page\u203a",
+              "y": 508.984375,
+              "h": 44,
+              "left": 238.265625,
+              "right": 282.265625,
+              "color": "rgb(36, 75, 215)",
+              "bg": "rgb(255, 255, 255)"
+            },
+            {
+              "class": "last-page button",
+              "text": "Last page\u00bb",
+              "y": 508.984375,
+              "h": 44,
+              "left": 286.265625,
+              "right": 330.265625,
+              "color": "rgb(36, 75, 215)",
+              "bg": "rgb(255, 255, 255)"
+            }
+          ],
+          "delta": 0
+        },
+        {
+          "class": "tablenav-pages",
+          "visible": true,
+          "coords": [
+            {
+              "class": "displaying-num",
+              "text": "59 items",
+              "y": 3462.609375,
+              "h": 28,
+              "left": 43.953125,
+              "right": 100.21875,
+              "color": "rgb(82, 100, 119)",
+              "bg": "rgba(0, 0, 0, 0)"
+            },
+            {
+              "class": "tablenav-pages-navspan button disabled",
+              "text": "\u00ab",
+              "y": 3462.609375,
+              "h": 44,
+              "left": 112.21875,
+              "right": 156.21875,
+              "color": "rgb(83, 100, 119)",
+              "bg": "rgb(228, 233, 240)"
+            },
+            {
+              "class": "tablenav-pages-navspan button disabled",
+              "text": "\u2039",
+              "y": 3462.609375,
+              "h": 44,
+              "left": 160.21875,
+              "right": 204.21875,
+              "color": "rgb(83, 100, 119)",
+              "bg": "rgb(228, 233, 240)"
+            },
+            {
+              "class": "paging-input",
+              "text": "1 of 3",
+              "y": 3462.6015625,
+              "h": 26.203125,
+              "left": 208.21875,
+              "right": 250.046875,
+              "color": "rgb(82, 100, 119)",
+              "bg": "rgba(0, 0, 0, 0)"
+            },
+            {
+              "class": "next-page button",
+              "text": "Next page\u203a",
+              "y": 3462.609375,
+              "h": 44,
+              "left": 254.046875,
+              "right": 298.046875,
+              "color": "rgb(36, 75, 215)",
+              "bg": "rgb(255, 255, 255)"
+            },
+            {
+              "class": "last-page button",
+              "text": "Last page\u00bb",
+              "y": 3462.609375,
+              "h": 44,
+              "left": 302.046875,
+              "right": 346.046875,
+              "color": "rgb(36, 75, 215)",
+              "bg": "rgb(255, 255, 255)"
+            }
+          ],
+          "delta": 0.0078125
+        }
+      ]
+    },
+    {
+      "name": "Pages dark 1487 alignment",
+      "data": [
+        {
+          "class": "tablenav-pages",
+          "visible": true,
+          "coords": [
+            {
+              "class": "displaying-num",
+              "text": "59 items",
+              "y": 237,
+              "h": 19.5,
+              "left": 1147.359375,
+              "right": 1200.109375,
+              "color": "rgb(172, 190, 210)",
+              "bg": "rgba(0, 0, 0, 0)"
+            },
+            {
+              "class": "tablenav-pages-navspan button disabled",
+              "text": "\u00ab",
+              "y": 237,
+              "h": 36,
+              "left": 1212.109375,
+              "right": 1248.109375,
+              "color": "rgb(174, 191, 210)",
+              "bg": "rgb(44, 60, 81)"
+            },
+            {
+              "class": "tablenav-pages-navspan button disabled",
+              "text": "\u2039",
+              "y": 237,
+              "h": 36,
+              "left": 1252.109375,
+              "right": 1288.109375,
+              "color": "rgb(174, 191, 210)",
+              "bg": "rgb(44, 60, 81)"
+            },
+            {
+              "class": "paging-input",
+              "text": "Current Page of 3",
+              "y": 237,
+              "h": 36,
+              "left": 1292.109375,
+              "right": 1358,
+              "color": "rgb(172, 190, 210)",
+              "bg": "rgba(0, 0, 0, 0)"
+            },
+            {
+              "class": "current-page",
+              "text": "",
+              "y": 237,
+              "h": 36,
+              "left": 1292.109375,
+              "right": 1328.109375,
+              "color": "rgb(229, 237, 247)",
+              "bg": "rgb(27, 40, 57)"
+            },
+            {
+              "class": "next-page button",
+              "text": "Next page\u203a",
+              "y": 237,
+              "h": 36,
+              "left": 1362,
+              "right": 1398,
+              "color": "rgb(36, 75, 215)",
+              "bg": "rgb(255, 255, 255)"
+            },
+            {
+              "class": "last-page button",
+              "text": "Last page\u00bb",
+              "y": 237,
+              "h": 36,
+              "left": 1402,
+              "right": 1438,
+              "color": "rgb(36, 75, 215)",
+              "bg": "rgb(255, 255, 255)"
+            }
+          ],
+          "delta": 0
+        },
+        {
+          "class": "tablenav-pages",
+          "visible": true,
+          "coords": [
+            {
+              "class": "displaying-num",
+              "text": "59 items",
+              "y": 2519.125,
+              "h": 19.5,
+              "left": 1194.8125,
+              "right": 1247.5625,
+              "color": "rgb(172, 190, 210)",
+              "bg": "rgba(0, 0, 0, 0)"
+            },
+            {
+              "class": "tablenav-pages-navspan button disabled",
+              "text": "\u00ab",
+              "y": 2519.125,
+              "h": 36,
+              "left": 1259.5625,
+              "right": 1295.5625,
+              "color": "rgb(174, 191, 210)",
+              "bg": "rgb(44, 60, 81)"
+            },
+            {
+              "class": "tablenav-pages-navspan button disabled",
+              "text": "\u2039",
+              "y": 2519.125,
+              "h": 36,
+              "left": 1299.5625,
+              "right": 1335.5625,
+              "color": "rgb(174, 191, 210)",
+              "bg": "rgb(44, 60, 81)"
+            },
+            {
+              "class": "paging-input",
+              "text": "1 of 3",
+              "y": 2519.1171875,
+              "h": 18.203125,
+              "left": 1339.5625,
+              "right": 1375,
+              "color": "rgb(172, 190, 210)",
+              "bg": "rgba(0, 0, 0, 0)"
+            },
+            {
+              "class": "next-page button",
+              "text": "Next page\u203a",
+              "y": 2519.125,
+              "h": 36,
+              "left": 1379,
+              "right": 1415,
+              "color": "rgb(36, 75, 215)",
+              "bg": "rgb(255, 255, 255)"
+            },
+            {
+              "class": "last-page button",
+              "text": "Last page\u00bb",
+              "y": 2519.125,
+              "h": 36,
+              "left": 1419,
+              "right": 1455,
+              "color": "rgb(36, 75, 215)",
+              "bg": "rgb(255, 255, 255)"
+            }
+          ],
+          "delta": 0.0078125
+        }
+      ]
+    },
+    {
+      "name": "Pages dark 390 alignment",
+      "data": [
+        {
+          "class": "tablenav-pages",
+          "visible": true,
+          "coords": [
+            {
+              "class": "tablenav-pages-navspan button disabled",
+              "text": "\u00ab",
+              "y": 508.984375,
+              "h": 44,
+              "left": 59.734375,
+              "right": 103.734375,
+              "color": "rgb(174, 191, 210)",
+              "bg": "rgb(44, 60, 81)"
+            },
+            {
+              "class": "tablenav-pages-navspan button disabled",
+              "text": "\u2039",
+              "y": 508.984375,
+              "h": 44,
+              "left": 107.734375,
+              "right": 151.734375,
+              "color": "rgb(174, 191, 210)",
+              "bg": "rgb(44, 60, 81)"
+            },
+            {
+              "class": "paging-input",
+              "text": "Current Page of 3",
+              "y": 508.984375,
+              "h": 44,
+              "left": 155.734375,
+              "right": 234.265625,
+              "color": "rgb(172, 190, 210)",
+              "bg": "rgba(0, 0, 0, 0)"
+            },
+            {
+              "class": "current-page",
+              "text": "",
+              "y": 508.984375,
+              "h": 44,
+              "left": 155.734375,
+              "right": 199.734375,
+              "color": "rgb(229, 237, 247)",
+              "bg": "rgb(27, 40, 57)"
+            },
+            {
+              "class": "next-page button",
+              "text": "Next page\u203a",
+              "y": 508.984375,
+              "h": 44,
+              "left": 238.265625,
+              "right": 282.265625,
+              "color": "rgb(171, 198, 255)",
+              "bg": "rgb(27, 40, 57)"
+            },
+            {
+              "class": "last-page button",
+              "text": "Last page\u00bb",
+              "y": 508.984375,
+              "h": 44,
+              "left": 286.265625,
+              "right": 330.265625,
+              "color": "rgb(171, 198, 255)",
+              "bg": "rgb(27, 40, 57)"
+            }
+          ],
+          "delta": 0
+        },
+        {
+          "class": "tablenav-pages",
+          "visible": true,
+          "coords": [
+            {
+              "class": "displaying-num",
+              "text": "59 items",
+              "y": 3462.609375,
+              "h": 28,
+              "left": 43.953125,
+              "right": 100.21875,
+              "color": "rgb(172, 190, 210)",
+              "bg": "rgba(0, 0, 0, 0)"
+            },
+            {
+              "class": "tablenav-pages-navspan button disabled",
+              "text": "\u00ab",
+              "y": 3462.609375,
+              "h": 44,
+              "left": 112.21875,
+              "right": 156.21875,
+              "color": "rgb(174, 191, 210)",
+              "bg": "rgb(44, 60, 81)"
+            },
+            {
+              "class": "tablenav-pages-navspan button disabled",
+              "text": "\u2039",
+              "y": 3462.609375,
+              "h": 44,
+              "left": 160.21875,
+              "right": 204.21875,
+              "color": "rgb(174, 191, 210)",
+              "bg": "rgb(44, 60, 81)"
+            },
+            {
+              "class": "paging-input",
+              "text": "1 of 3",
+              "y": 3462.6015625,
+              "h": 26.203125,
+              "left": 208.21875,
+              "right": 250.046875,
+              "color": "rgb(172, 190, 210)",
+              "bg": "rgba(0, 0, 0, 0)"
+            },
+            {
+              "class": "next-page button",
+              "text": "Next page\u203a",
+              "y": 3462.609375,
+              "h": 44,
+              "left": 254.046875,
+              "right": 298.046875,
+              "color": "rgb(171, 198, 255)",
+              "bg": "rgb(27, 40, 57)"
+            },
+            {
+              "class": "last-page button",
+              "text": "Last page\u00bb",
+              "y": 3462.609375,
+              "h": 44,
+              "left": 302.046875,
+              "right": 346.046875,
+              "color": "rgb(171, 198, 255)",
+              "bg": "rgb(27, 40, 57)"
+            }
+          ],
+          "delta": 0.0078125
+        }
+      ]
+    },
+    {
+      "name": "Pages scoped axe",
+      "data": true
+    },
+    {
+      "name": "Posts light 1487 alignment",
+      "data": [
+        {
+          "class": "tablenav-pages one-page",
+          "visible": true,
+          "coords": [
+            {
+              "class": "displaying-num",
+              "text": "49 items",
+              "y": 237,
+              "h": 19.5,
+              "left": 1384.921875,
+              "right": 1438,
+              "color": "rgb(82, 100, 119)",
+              "bg": "rgba(0, 0, 0, 0)"
+            }
+          ],
+          "delta": 0
+        },
+        {
+          "class": "tablenav-pages one-page",
+          "visible": true,
+          "coords": [
+            {
+              "class": "displaying-num",
+              "text": "49 items",
+              "y": 7184.90625,
+              "h": 19.5,
+              "left": 1401.921875,
+              "right": 1455,
+              "color": "rgb(82, 100, 119)",
+              "bg": "rgba(0, 0, 0, 0)"
+            }
+          ],
+          "delta": 0
+        }
+      ]
+    },
+    {
+      "name": "Posts light 390 alignment",
+      "data": [
+        {
+          "class": "tablenav-pages one-page",
+          "visible": true,
+          "coords": [],
+          "delta": 0
+        },
+        {
+          "class": "tablenav-pages one-page",
+          "visible": true,
+          "coords": [
+            {
+              "class": "displaying-num",
+              "text": "49 items",
+              "y": 9495.5,
+              "h": 28,
+              "left": 166.6875,
+              "right": 223.296875,
+              "color": "rgb(82, 100, 119)",
+              "bg": "rgba(0, 0, 0, 0)"
+            }
+          ],
+          "delta": 0
+        }
+      ]
+    },
+    {
+      "name": "Posts dark 1487 alignment",
+      "data": [
+        {
+          "class": "tablenav-pages one-page",
+          "visible": true,
+          "coords": [
+            {
+              "class": "displaying-num",
+              "text": "49 items",
+              "y": 237,
+              "h": 19.5,
+              "left": 1384.921875,
+              "right": 1438,
+              "color": "rgb(172, 190, 210)",
+              "bg": "rgba(0, 0, 0, 0)"
+            }
+          ],
+          "delta": 0
+        },
+        {
+          "class": "tablenav-pages one-page",
+          "visible": true,
+          "coords": [
+            {
+              "class": "displaying-num",
+              "text": "49 items",
+              "y": 7184.90625,
+              "h": 19.5,
+              "left": 1401.921875,
+              "right": 1455,
+              "color": "rgb(172, 190, 210)",
+              "bg": "rgba(0, 0, 0, 0)"
+            }
+          ],
+          "delta": 0
+        }
+      ]
+    },
+    {
+      "name": "Posts dark 390 alignment",
+      "data": [
+        {
+          "class": "tablenav-pages one-page",
+          "visible": true,
+          "coords": [],
+          "delta": 0
+        },
+        {
+          "class": "tablenav-pages one-page",
+          "visible": true,
+          "coords": [
+            {
+              "class": "displaying-num",
+              "text": "49 items",
+              "y": 9495.5,
+              "h": 28,
+              "left": 166.6875,
+              "right": 223.296875,
+              "color": "rgb(172, 190, 210)",
+              "bg": "rgba(0, 0, 0, 0)"
+            }
+          ],
+          "delta": 0
+        }
+      ]
+    },
+    {
+      "name": "Posts scoped axe",
+      "data": true
+    },
+    {
+      "name": "CPT light 1487 alignment",
+      "data": [
+        {
+          "class": "tablenav-pages one-page",
+          "visible": true,
+          "coords": [
+            {
+              "class": "displaying-num",
+              "text": "17 items",
+              "y": 237,
+              "h": 19.5,
+              "left": 1388.125,
+              "right": 1438,
+              "color": "rgb(82, 100, 119)",
+              "bg": "rgba(0, 0, 0, 0)"
+            }
+          ],
+          "delta": 0
+        },
+        {
+          "class": "tablenav-pages one-page",
+          "visible": true,
+          "coords": [
+            {
+              "class": "displaying-num",
+              "text": "17 items",
+              "y": 2170.734375,
+              "h": 19.5,
+              "left": 1405.125,
+              "right": 1455,
+              "color": "rgb(82, 100, 119)",
+              "bg": "rgba(0, 0, 0, 0)"
+            }
+          ],
+          "delta": 0
+        }
+      ]
+    },
+    {
+      "name": "CPT light 390 alignment",
+      "data": [
+        {
+          "class": "tablenav-pages one-page",
+          "visible": true,
+          "coords": [],
+          "delta": 0
+        },
+        {
+          "class": "tablenav-pages one-page",
+          "visible": true,
+          "coords": [
+            {
+              "class": "displaying-num",
+              "text": "17 items",
+              "y": 2782.515625,
+              "h": 28,
+              "left": 168.421875,
+              "right": 221.578125,
+              "color": "rgb(82, 100, 119)",
+              "bg": "rgba(0, 0, 0, 0)"
+            }
+          ],
+          "delta": 0
+        }
+      ]
+    },
+    {
+      "name": "CPT dark 1487 alignment",
+      "data": [
+        {
+          "class": "tablenav-pages one-page",
+          "visible": true,
+          "coords": [
+            {
+              "class": "displaying-num",
+              "text": "17 items",
+              "y": 237,
+              "h": 19.5,
+              "left": 1388.125,
+              "right": 1438,
+              "color": "rgb(172, 190, 210)",
+              "bg": "rgba(0, 0, 0, 0)"
+            }
+          ],
+          "delta": 0
+        },
+        {
+          "class": "tablenav-pages one-page",
+          "visible": true,
+          "coords": [
+            {
+              "class": "displaying-num",
+              "text": "17 items",
+              "y": 2170.734375,
+              "h": 19.5,
+              "left": 1405.125,
+              "right": 1455,
+              "color": "rgb(172, 190, 210)",
+              "bg": "rgba(0, 0, 0, 0)"
+            }
+          ],
+          "delta": 0
+        }
+      ]
+    },
+    {
+      "name": "CPT dark 390 alignment",
+      "data": [
+        {
+          "class": "tablenav-pages one-page",
+          "visible": true,
+          "coords": [],
+          "delta": 0
+        },
+        {
+          "class": "tablenav-pages one-page",
+          "visible": true,
+          "coords": [
+            {
+              "class": "displaying-num",
+              "text": "17 items",
+              "y": 2782.515625,
+              "h": 28,
+              "left": 168.421875,
+              "right": 221.578125,
+              "color": "rgb(172, 190, 210)",
+              "bg": "rgba(0, 0, 0, 0)"
+            }
+          ],
+          "delta": 0
+        }
+      ]
+    },
+    {
+      "name": "CPT scoped axe",
+      "data": true
+    },
+    {
+      "name": "Media light 1487 alignment",
+      "data": [
+        {
+          "class": "tablenav-pages",
+          "visible": true,
+          "coords": [
+            {
+              "class": "displaying-num",
+              "text": "597 items",
+              "y": 315,
+              "h": 19.5,
+              "left": 1159.171875,
+              "right": 1219,
+              "color": "rgb(60, 67, 74)",
+              "bg": "rgba(0, 0, 0, 0)"
+            },
+            {
+              "class": "tablenav-pages-navspan button disabled",
+              "text": "\u00ab",
+              "y": 315,
+              "h": 36,
+              "left": 1231,
+              "right": 1267,
+              "color": "rgb(83, 100, 119)",
+              "bg": "rgb(228, 233, 240)"
+            },
+            {
+              "class": "tablenav-pages-navspan button disabled",
+              "text": "\u2039",
+              "y": 315,
+              "h": 36,
+              "left": 1271,
+              "right": 1307,
+              "color": "rgb(83, 100, 119)",
+              "bg": "rgb(228, 233, 240)"
+            },
+            {
+              "class": "paging-input",
+              "text": "Current Page of 30",
+              "y": 315,
+              "h": 36,
+              "left": 1311,
+              "right": 1387,
+              "color": "rgb(60, 67, 74)",
+              "bg": "rgba(0, 0, 0, 0)"
+            },
+            {
+              "class": "current-page",
+              "text": "",
+              "y": 315,
+              "h": 36,
+              "left": 1311,
+              "right": 1349,
+              "color": "rgb(28, 46, 66)",
+              "bg": "rgb(255, 255, 255)"
+            },
+            {
+              "class": "next-page button",
+              "text": "Next page\u203a",
+              "y": 315,
+              "h": 36,
+              "left": 1391,
+              "right": 1427,
+              "color": "rgb(36, 75, 215)",
+              "bg": "rgb(255, 255, 255)"
+            },
+            {
+              "class": "last-page button",
+              "text": "Last page\u00bb",
+              "y": 315,
+              "h": 36,
+              "left": 1431,
+              "right": 1467,
+              "color": "rgb(36, 75, 215)",
+              "bg": "rgb(255, 255, 255)"
+            }
+          ],
+          "delta": 0
+        },
+        {
+          "class": "tablenav-pages",
+          "visible": true,
+          "coords": [
+            {
+              "class": "displaying-num",
+              "text": "597 items",
+              "y": 3618.75,
+              "h": 19.5,
+              "left": 1191.625,
+              "right": 1251.453125,
+              "color": "rgb(60, 67, 74)",
+              "bg": "rgba(0, 0, 0, 0)"
+            },
+            {
+              "class": "tablenav-pages-navspan button disabled",
+              "text": "\u00ab",
+              "y": 3618.75,
+              "h": 36,
+              "left": 1263.453125,
+              "right": 1299.453125,
+              "color": "rgb(83, 100, 119)",
+              "bg": "rgb(228, 233, 240)"
+            },
+            {
+              "class": "tablenav-pages-navspan button disabled",
+              "text": "\u2039",
+              "y": 3618.75,
+              "h": 36,
+              "left": 1303.453125,
+              "right": 1339.453125,
+              "color": "rgb(83, 100, 119)",
+              "bg": "rgb(228, 233, 240)"
+            },
+            {
+              "class": "paging-input",
+              "text": "1 of 30",
+              "y": 3618.7421875,
+              "h": 18.203125,
+              "left": 1343.453125,
+              "right": 1387,
+              "color": "rgb(60, 67, 74)",
+              "bg": "rgba(0, 0, 0, 0)"
+            },
+            {
+              "class": "next-page button",
+              "text": "Next page\u203a",
+              "y": 3618.75,
+              "h": 36,
+              "left": 1391,
+              "right": 1427,
+              "color": "rgb(36, 75, 215)",
+              "bg": "rgb(255, 255, 255)"
+            },
+            {
+              "class": "last-page button",
+              "text": "Last page\u00bb",
+              "y": 3618.75,
+              "h": 36,
+              "left": 1431,
+              "right": 1467,
+              "color": "rgb(36, 75, 215)",
+              "bg": "rgb(255, 255, 255)"
+            }
+          ],
+          "delta": 0.0078125
+        }
+      ]
+    },
+    {
+      "name": "Media light 390 alignment",
+      "data": [
+        {
+          "class": "tablenav-pages",
+          "visible": true,
+          "coords": [
+            {
+              "class": "tablenav-pages-navspan button disabled",
+              "text": "\u00ab",
+              "y": 741.390625,
+              "h": 44,
+              "left": 48.84375,
+              "right": 92.84375,
+              "color": "rgb(83, 100, 119)",
+              "bg": "rgb(228, 233, 240)"
+            },
+            {
+              "class": "tablenav-pages-navspan button disabled",
+              "text": "\u2039",
+              "y": 741.390625,
+              "h": 44,
+              "left": 96.84375,
+              "right": 140.84375,
+              "color": "rgb(83, 100, 119)",
+              "bg": "rgb(228, 233, 240)"
+            },
+            {
+              "class": "paging-input",
+              "text": "Current Page of 30",
+              "y": 741.390625,
+              "h": 44,
+              "left": 144.84375,
+              "right": 233.140625,
+              "color": "rgb(60, 67, 74)",
+              "bg": "rgba(0, 0, 0, 0)"
+            },
+            {
+              "class": "current-page",
+              "text": "",
+              "y": 741.390625,
+              "h": 44,
+              "left": 144.84375,
+              "right": 188.84375,
+              "color": "rgb(28, 46, 66)",
+              "bg": "rgb(255, 255, 255)"
+            },
+            {
+              "class": "next-page button",
+              "text": "Next page\u203a",
+              "y": 741.390625,
+              "h": 44,
+              "left": 237.140625,
+              "right": 281.140625,
+              "color": "rgb(36, 75, 215)",
+              "bg": "rgb(255, 255, 255)"
+            },
+            {
+              "class": "last-page button",
+              "text": "Last page\u00bb",
+              "y": 741.390625,
+              "h": 44,
+              "left": 285.140625,
+              "right": 329.140625,
+              "color": "rgb(36, 75, 215)",
+              "bg": "rgb(255, 255, 255)"
+            }
+          ],
+          "delta": 0
+        },
+        {
+          "class": "tablenav-pages",
+          "visible": true,
+          "coords": [
+            {
+              "class": "displaying-num",
+              "text": "597 items",
+              "y": 3164.265625,
+              "h": 28,
+              "left": 29.296875,
+              "right": 93.109375,
+              "color": "rgb(60, 67, 74)",
+              "bg": "rgba(0, 0, 0, 0)"
+            },
+            {
+              "class": "tablenav-pages-navspan button disabled",
+              "text": "\u00ab",
+              "y": 3164.265625,
+              "h": 44,
+              "left": 105.109375,
+              "right": 149.109375,
+              "color": "rgb(83, 100, 119)",
+              "bg": "rgb(228, 233, 240)"
+            },
+            {
+              "class": "tablenav-pages-navspan button disabled",
+              "text": "\u2039",
+              "y": 3164.265625,
+              "h": 44,
+              "left": 153.109375,
+              "right": 197.109375,
+              "color": "rgb(83, 100, 119)",
+              "bg": "rgb(228, 233, 240)"
+            },
+            {
+              "class": "paging-input",
+              "text": "1 of 30",
+              "y": 3164.2578125,
+              "h": 26.203125,
+              "left": 201.109375,
+              "right": 252.703125,
+              "color": "rgb(60, 67, 74)",
+              "bg": "rgba(0, 0, 0, 0)"
+            },
+            {
+              "class": "next-page button",
+              "text": "Next page\u203a",
+              "y": 3164.265625,
+              "h": 44,
+              "left": 256.703125,
+              "right": 300.703125,
+              "color": "rgb(36, 75, 215)",
+              "bg": "rgb(255, 255, 255)"
+            },
+            {
+              "class": "last-page button",
+              "text": "Last page\u00bb",
+              "y": 3164.265625,
+              "h": 44,
+              "left": 304.703125,
+              "right": 348.703125,
+              "color": "rgb(36, 75, 215)",
+              "bg": "rgb(255, 255, 255)"
+            }
+          ],
+          "delta": 0.0078125
+        }
+      ]
+    },
+    {
+      "name": "Media dark 1487 alignment",
+      "data": [
+        {
+          "class": "tablenav-pages",
+          "visible": true,
+          "coords": [
+            {
+              "class": "displaying-num",
+              "text": "597 items",
+              "y": 315,
+              "h": 19.5,
+              "left": 1159.171875,
+              "right": 1219,
+              "color": "rgb(60, 67, 74)",
+              "bg": "rgba(0, 0, 0, 0)"
+            },
+            {
+              "class": "tablenav-pages-navspan button disabled",
+              "text": "\u00ab",
+              "y": 315,
+              "h": 36,
+              "left": 1231,
+              "right": 1267,
+              "color": "rgb(174, 191, 210)",
+              "bg": "rgb(44, 60, 81)"
+            },
+            {
+              "class": "tablenav-pages-navspan button disabled",
+              "text": "\u2039",
+              "y": 315,
+              "h": 36,
+              "left": 1271,
+              "right": 1307,
+              "color": "rgb(174, 191, 210)",
+              "bg": "rgb(44, 60, 81)"
+            },
+            {
+              "class": "paging-input",
+              "text": "Current Page of 30",
+              "y": 315,
+              "h": 36,
+              "left": 1311,
+              "right": 1387,
+              "color": "rgb(60, 67, 74)",
+              "bg": "rgba(0, 0, 0, 0)"
+            },
+            {
+              "class": "current-page",
+              "text": "",
+              "y": 315,
+              "h": 36,
+              "left": 1311,
+              "right": 1349,
+              "color": "rgb(229, 237, 247)",
+              "bg": "rgb(27, 40, 57)"
+            },
+            {
+              "class": "next-page button",
+              "text": "Next page\u203a",
+              "y": 315,
+              "h": 36,
+              "left": 1391,
+              "right": 1427,
+              "color": "rgb(36, 75, 215)",
+              "bg": "rgb(255, 255, 255)"
+            },
+            {
+              "class": "last-page button",
+              "text": "Last page\u00bb",
+              "y": 315,
+              "h": 36,
+              "left": 1431,
+              "right": 1467,
+              "color": "rgb(36, 75, 215)",
+              "bg": "rgb(255, 255, 255)"
+            }
+          ],
+          "delta": 0
+        },
+        {
+          "class": "tablenav-pages",
+          "visible": true,
+          "coords": [
+            {
+              "class": "displaying-num",
+              "text": "597 items",
+              "y": 3618.75,
+              "h": 19.5,
+              "left": 1191.625,
+              "right": 1251.453125,
+              "color": "rgb(60, 67, 74)",
+              "bg": "rgba(0, 0, 0, 0)"
+            },
+            {
+              "class": "tablenav-pages-navspan button disabled",
+              "text": "\u00ab",
+              "y": 3618.75,
+              "h": 36,
+              "left": 1263.453125,
+              "right": 1299.453125,
+              "color": "rgb(174, 191, 210)",
+              "bg": "rgb(44, 60, 81)"
+            },
+            {
+              "class": "tablenav-pages-navspan button disabled",
+              "text": "\u2039",
+              "y": 3618.75,
+              "h": 36,
+              "left": 1303.453125,
+              "right": 1339.453125,
+              "color": "rgb(174, 191, 210)",
+              "bg": "rgb(44, 60, 81)"
+            },
+            {
+              "class": "paging-input",
+              "text": "1 of 30",
+              "y": 3618.7421875,
+              "h": 18.203125,
+              "left": 1343.453125,
+              "right": 1387,
+              "color": "rgb(60, 67, 74)",
+              "bg": "rgba(0, 0, 0, 0)"
+            },
+            {
+              "class": "next-page button",
+              "text": "Next page\u203a",
+              "y": 3618.75,
+              "h": 36,
+              "left": 1391,
+              "right": 1427,
+              "color": "rgb(36, 75, 215)",
+              "bg": "rgb(255, 255, 255)"
+            },
+            {
+              "class": "last-page button",
+              "text": "Last page\u00bb",
+              "y": 3618.75,
+              "h": 36,
+              "left": 1431,
+              "right": 1467,
+              "color": "rgb(36, 75, 215)",
+              "bg": "rgb(255, 255, 255)"
+            }
+          ],
+          "delta": 0.0078125
+        }
+      ]
+    },
+    {
+      "name": "Media dark 390 alignment",
+      "data": [
+        {
+          "class": "tablenav-pages",
+          "visible": true,
+          "coords": [
+            {
+              "class": "tablenav-pages-navspan button disabled",
+              "text": "\u00ab",
+              "y": 741.390625,
+              "h": 44,
+              "left": 48.84375,
+              "right": 92.84375,
+              "color": "rgb(174, 191, 210)",
+              "bg": "rgb(44, 60, 81)"
+            },
+            {
+              "class": "tablenav-pages-navspan button disabled",
+              "text": "\u2039",
+              "y": 741.390625,
+              "h": 44,
+              "left": 96.84375,
+              "right": 140.84375,
+              "color": "rgb(174, 191, 210)",
+              "bg": "rgb(44, 60, 81)"
+            },
+            {
+              "class": "paging-input",
+              "text": "Current Page of 30",
+              "y": 741.390625,
+              "h": 44,
+              "left": 144.84375,
+              "right": 233.140625,
+              "color": "rgb(60, 67, 74)",
+              "bg": "rgba(0, 0, 0, 0)"
+            },
+            {
+              "class": "current-page",
+              "text": "",
+              "y": 741.390625,
+              "h": 44,
+              "left": 144.84375,
+              "right": 188.84375,
+              "color": "rgb(229, 237, 247)",
+              "bg": "rgb(27, 40, 57)"
+            },
+            {
+              "class": "next-page button",
+              "text": "Next page\u203a",
+              "y": 741.390625,
+              "h": 44,
+              "left": 237.140625,
+              "right": 281.140625,
+              "color": "rgb(36, 75, 215)",
+              "bg": "rgb(255, 255, 255)"
+            },
+            {
+              "class": "last-page button",
+              "text": "Last page\u00bb",
+              "y": 741.390625,
+              "h": 44,
+              "left": 285.140625,
+              "right": 329.140625,
+              "color": "rgb(36, 75, 215)",
+              "bg": "rgb(255, 255, 255)"
+            }
+          ],
+          "delta": 0
+        },
+        {
+          "class": "tablenav-pages",
+          "visible": true,
+          "coords": [
+            {
+              "class": "displaying-num",
+              "text": "597 items",
+              "y": 3164.265625,
+              "h": 28,
+              "left": 29.296875,
+              "right": 93.109375,
+              "color": "rgb(60, 67, 74)",
+              "bg": "rgba(0, 0, 0, 0)"
+            },
+            {
+              "class": "tablenav-pages-navspan button disabled",
+              "text": "\u00ab",
+              "y": 3164.265625,
+              "h": 44,
+              "left": 105.109375,
+              "right": 149.109375,
+              "color": "rgb(174, 191, 210)",
+              "bg": "rgb(44, 60, 81)"
+            },
+            {
+              "class": "tablenav-pages-navspan button disabled",
+              "text": "\u2039",
+              "y": 3164.265625,
+              "h": 44,
+              "left": 153.109375,
+              "right": 197.109375,
+              "color": "rgb(174, 191, 210)",
+              "bg": "rgb(44, 60, 81)"
+            },
+            {
+              "class": "paging-input",
+              "text": "1 of 30",
+              "y": 3164.2578125,
+              "h": 26.203125,
+              "left": 201.109375,
+              "right": 252.703125,
+              "color": "rgb(60, 67, 74)",
+              "bg": "rgba(0, 0, 0, 0)"
+            },
+            {
+              "class": "next-page button",
+              "text": "Next page\u203a",
+              "y": 3164.265625,
+              "h": 44,
+              "left": 256.703125,
+              "right": 300.703125,
+              "color": "rgb(36, 75, 215)",
+              "bg": "rgb(255, 255, 255)"
+            },
+            {
+              "class": "last-page button",
+              "text": "Last page\u00bb",
+              "y": 3164.265625,
+              "h": 44,
+              "left": 304.703125,
+              "right": 348.703125,
+              "color": "rgb(36, 75, 215)",
+              "bg": "rgb(255, 255, 255)"
+            }
+          ],
+          "delta": 0.0078125
+        }
+      ]
+    },
+    {
+      "name": "Media scoped axe",
+      "data": true
+    },
+    {
+      "name": "Keyboard next page preserves sort",
+      "data": true
+    },
+    {
+      "name": "Native current-page submission and last-page bounds",
+      "data": true
+    },
+    {
+      "name": "Native first page",
+      "data": true
+    },
+    {
+      "name": "Single page retains native hidden navigation",
+      "data": true
+    },
+    {
+      "name": "Zero results retains native no-pages state",
+      "data": true
+    },
+    {
+      "name": "REST health",
+      "data": true
+    },
+    {
+      "name": "No-JavaScript native pagination",
+      "data": true
+    }
+  ]
+}
