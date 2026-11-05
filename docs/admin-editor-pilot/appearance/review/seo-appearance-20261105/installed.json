@@ -1,0 +1,403 @@
+{
+  "phase": "installed",
+  "checks": [
+    {
+      "name": "light 1487 palette",
+      "data": {
+        "title": {
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(30, 30, 30)",
+          "scheme": "light",
+          "border": "rgb(148, 148, 148)",
+          "width": 422,
+          "height": 40,
+          "form": "post"
+        },
+        "placeholder": {
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "color(srgb 0.117647 0.117647 0.117647 / 0.62)",
+          "scheme": "light",
+          "border": "color(srgb 0.117647 0.117647 0.117647 / 0.62)",
+          "width": 422,
+          "height": 40,
+          "form": "post"
+        },
+        "description": {
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(30, 30, 30)",
+          "scheme": "light",
+          "border": "rgb(148, 148, 148)",
+          "width": 422,
+          "height": 100,
+          "form": "post"
+        },
+        "inside": {
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(60, 67, 74)",
+          "scheme": "light",
+          "border": "rgb(60, 67, 74)",
+          "width": 1121,
+          "height": 627.59375,
+          "form": "post"
+        },
+        "parent": {
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(28, 46, 66)",
+          "scheme": "light",
+          "border": "rgb(113, 131, 152)",
+          "width": 405,
+          "height": 40,
+          "form": "post"
+        },
+        "header": {
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(28, 46, 66)",
+          "scheme": "light",
+          "border": "rgb(28, 46, 66) rgb(28, 46, 66) rgb(212, 222, 234)",
+          "width": 1121,
+          "height": 36.59375,
+          "form": "post"
+        }
+      }
+    },
+    {
+      "name": "light 390 palette",
+      "data": {
+        "title": {
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(30, 30, 30)",
+          "scheme": "light",
+          "border": "rgb(148, 148, 148)",
+          "width": 310,
+          "height": 40,
+          "form": "post"
+        },
+        "placeholder": {
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "color(srgb 0.117647 0.117647 0.117647 / 0.62)",
+          "scheme": "light",
+          "border": "color(srgb 0.117647 0.117647 0.117647 / 0.62)",
+          "width": 310,
+          "height": 40,
+          "form": "post"
+        },
+        "description": {
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(30, 30, 30)",
+          "scheme": "light",
+          "border": "rgb(148, 148, 148)",
+          "width": 310,
+          "height": 100,
+          "form": "post"
+        },
+        "inside": {
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(60, 67, 74)",
+          "scheme": "light",
+          "border": "rgb(60, 67, 74)",
+          "width": 364,
+          "height": 1009.359375,
+          "form": "post"
+        },
+        "parent": {
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(28, 46, 66)",
+          "scheme": "light",
+          "border": "rgb(113, 131, 152)",
+          "width": 340,
+          "height": 42,
+          "form": "post"
+        },
+        "header": {
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(28, 46, 66)",
+          "scheme": "light",
+          "border": "rgb(28, 46, 66) rgb(28, 46, 66) rgb(212, 222, 234)",
+          "width": 364,
+          "height": 44.59375,
+          "form": "post"
+        }
+      }
+    },
+    {
+      "name": "light scoped axe",
+      "data": []
+    },
+    {
+      "name": "dark 1487 palette",
+      "data": {
+        "title": {
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(30, 30, 30)",
+          "scheme": "light",
+          "border": "rgb(148, 148, 148)",
+          "width": 422,
+          "height": 40,
+          "form": "post"
+        },
+        "placeholder": {
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "color(srgb 0.117647 0.117647 0.117647 / 0.62)",
+          "scheme": "light",
+          "border": "color(srgb 0.117647 0.117647 0.117647 / 0.62)",
+          "width": 422,
+          "height": 40,
+          "form": "post"
+        },
+        "description": {
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(30, 30, 30)",
+          "scheme": "light",
+          "border": "rgb(148, 148, 148)",
+          "width": 422,
+          "height": 100,
+          "form": "post"
+        },
+        "inside": {
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(60, 67, 74)",
+          "scheme": "light",
+          "border": "rgb(60, 67, 74)",
+          "width": 1121,
+          "height": 627.59375,
+          "form": "post"
+        },
+        "parent": {
+          "background": "rgb(27, 40, 57)",
+          "color": "rgb(229, 237, 247)",
+          "scheme": "dark",
+          "border": "rgb(125, 148, 174)",
+          "width": 405,
+          "height": 40,
+          "form": "post"
+        },
+        "header": {
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(229, 237, 247)",
+          "scheme": "dark",
+          "border": "rgb(229, 237, 247) rgb(229, 237, 247) rgb(58, 78, 103)",
+          "width": 1121,
+          "height": 36.59375,
+          "form": "post"
+        }
+      }
+    },
+    {
+      "name": "dark 390 palette",
+      "data": {
+        "title": {
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(30, 30, 30)",
+          "scheme": "light",
+          "border": "rgb(148, 148, 148)",
+          "width": 310,
+          "height": 40,
+          "form": "post"
+        },
+        "placeholder": {
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "color(srgb 0.117647 0.117647 0.117647 / 0.62)",
+          "scheme": "light",
+          "border": "color(srgb 0.117647 0.117647 0.117647 / 0.62)",
+          "width": 310,
+          "height": 40,
+          "form": "post"
+        },
+        "description": {
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(30, 30, 30)",
+          "scheme": "light",
+          "border": "rgb(148, 148, 148)",
+          "width": 310,
+          "height": 100,
+          "form": "post"
+        },
+        "inside": {
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(60, 67, 74)",
+          "scheme": "light",
+          "border": "rgb(60, 67, 74)",
+          "width": 364,
+          "height": 1095.15625,
+          "form": "post"
+        },
+        "parent": {
+          "background": "rgb(27, 40, 57)",
+          "color": "rgb(229, 237, 247)",
+          "scheme": "dark",
+          "border": "rgb(125, 148, 174)",
+          "width": 340,
+          "height": 42,
+          "form": "post"
+        },
+        "header": {
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(229, 237, 247)",
+          "scheme": "dark",
+          "border": "rgb(229, 237, 247) rgb(229, 237, 247) rgb(58, 78, 103)",
+          "width": 364,
+          "height": 44.59375,
+          "form": "post"
+        }
+      }
+    },
+    {
+      "name": "dark scoped axe",
+      "data": []
+    },
+    {
+      "name": "system 1487 palette",
+      "data": {
+        "title": {
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(30, 30, 30)",
+          "scheme": "light",
+          "border": "rgb(148, 148, 148)",
+          "width": 422,
+          "height": 40,
+          "form": "post"
+        },
+        "placeholder": {
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "color(srgb 0.117647 0.117647 0.117647 / 0.62)",
+          "scheme": "light",
+          "border": "color(srgb 0.117647 0.117647 0.117647 / 0.62)",
+          "width": 422,
+          "height": 40,
+          "form": "post"
+        },
+        "description": {
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(30, 30, 30)",
+          "scheme": "light",
+          "border": "rgb(148, 148, 148)",
+          "width": 422,
+          "height": 100,
+          "form": "post"
+        },
+        "inside": {
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(60, 67, 74)",
+          "scheme": "light",
+          "border": "rgb(60, 67, 74)",
+          "width": 1121,
+          "height": 627.59375,
+          "form": "post"
+        },
+        "parent": {
+          "background": "rgb(27, 40, 57)",
+          "color": "rgb(229, 237, 247)",
+          "scheme": "dark",
+          "border": "rgb(125, 148, 174)",
+          "width": 405,
+          "height": 40,
+          "form": "post"
+        },
+        "header": {
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(229, 237, 247)",
+          "scheme": "dark",
+          "border": "rgb(229, 237, 247) rgb(229, 237, 247) rgb(58, 78, 103)",
+          "width": 1121,
+          "height": 36.59375,
+          "form": "post"
+        }
+      }
+    },
+    {
+      "name": "system 390 palette",
+      "data": {
+        "title": {
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(30, 30, 30)",
+          "scheme": "light",
+          "border": "rgb(148, 148, 148)",
+          "width": 310,
+          "height": 40,
+          "form": "post"
+        },
+        "placeholder": {
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "color(srgb 0.117647 0.117647 0.117647 / 0.62)",
+          "scheme": "light",
+          "border": "color(srgb 0.117647 0.117647 0.117647 / 0.62)",
+          "width": 310,
+          "height": 40,
+          "form": "post"
+        },
+        "description": {
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(30, 30, 30)",
+          "scheme": "light",
+          "border": "rgb(148, 148, 148)",
+          "width": 310,
+          "height": 100,
+          "form": "post"
+        },
+        "inside": {
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(60, 67, 74)",
+          "scheme": "light",
+          "border": "rgb(60, 67, 74)",
+          "width": 364,
+          "height": 1095.15625,
+          "form": "post"
+        },
+        "parent": {
+          "background": "rgb(27, 40, 57)",
+          "color": "rgb(229, 237, 247)",
+          "scheme": "dark",
+          "border": "rgb(125, 148, 174)",
+          "width": 340,
+          "height": 42,
+          "form": "post"
+        },
+        "header": {
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(229, 237, 247)",
+          "scheme": "dark",
+          "border": "rgb(229, 237, 247) rgb(229, 237, 247) rgb(58, 78, 103)",
+          "width": 364,
+          "height": 44.59375,
+          "form": "post"
+        }
+      }
+    },
+    {
+      "name": "system scoped axe",
+      "data": []
+    },
+    {
+      "name": "Native keyboard focus",
+      "data": true
+    },
+    {
+      "name": "Social tab accessibility",
+      "data": []
+    },
+    {
+      "name": "Advanced tab accessibility",
+      "data": []
+    },
+    {
+      "name": "Title settings tab accessibility",
+      "data": []
+    },
+    {
+      "name": "Native tabs and unchanged SEO values",
+      "data": true
+    },
+    {
+      "name": "Content and Page Settings navigation",
+      "data": true
+    },
+    {
+      "name": "Adjacent native controls accessibility",
+      "data": true
+    },
+    {
+      "name": "REST health",
+      "data": true
+    }
+  ]
+}

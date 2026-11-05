@@ -378,3 +378,13 @@ placement is preserved; narrow-screen groups center. Source `9228dae6eabc`; 31 i
 checks cover both themes, mobile, scoped accessibility and native paging. No added JS
 or requests. [Evidence](pagination-20261105/REVIEW.md). Await visual review; next
 annotation `UX-045`.
+
+### UX-045 — Dark Mode mixes native SEO and MRN field colors
+
+“Dark mode needs work.” **P1 readability, implemented and installed for review.**
+The embedded SEOPress panel now retains a consistent native light interior within
+its themed MRN shell. General field/link/button/notice styles stop at that boundary.
+Generated-title placeholder contrast improves from 1.08:1 to 4.71:1. Light/Dark/System,
+narrow layouts, native tabs, keyboard and adjacent controls pass. Source `68bf806a964c`;
+[evidence](seo-appearance-20261105/REVIEW.md). No added JS. Await visual review;
+next annotation `UX-046`.

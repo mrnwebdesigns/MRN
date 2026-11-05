@@ -173,3 +173,9 @@ Count, input and arrow centerlines now match across supported lists and Media,
 with semantic Light/Dark states and 44px narrow-screen controls. Native paging,
 keyboard and scoped accessibility pass. Await human acceptance;
 [evidence](review/pagination-20261105/REVIEW.md). Next annotation: UX-045.
+
+**P1 UX-045 — native SEO readability in Dark Mode:** implemented and installed for
+review. Embedded SEOPress is a consistent native light surface inside the themed
+MRN shell; its title placeholder now exceeds 4.5:1 contrast. Native tabs and adjacent
+controls pass in Light/Dark/System. [Evidence](review/seo-appearance-20261105/REVIEW.md).
+Human visual acceptance remains pending. Next annotation: UX-046.
