@@ -85,6 +85,48 @@
  var account = document.getElementById('wp-admin-bar-my-account');
  var accountTrigger = account && account.querySelector(':scope > a');
  if (form) {
+  // Appearance lives in this menu. Activating its parent must open the menu,
+  // not follow WordPress's profile URL and discard the current editing context.
+  // The original Edit Profile link inside the menu remains a normal link.
+  function closeAccountMenu(restore) {
+   if (!accountTrigger) { return; }
+   if (!restore && !account.matches('.hover, .mrn-account-open') && accountTrigger.getAttribute('aria-expanded') === 'false') { return; }
+   if (restore) { accountTrigger.focus({preventScroll: true}); }
+   account.classList.remove('hover', 'mrn-account-open');
+   accountTrigger.setAttribute('aria-expanded', 'false');
+  }
+  function openAccountMenu() {
+   account.classList.add('hover', 'mrn-account-open');
+   accountTrigger.setAttribute('aria-expanded', 'true');
+  }
+  if (accountTrigger) {
+   accountTrigger.setAttribute('aria-controls', 'wp-admin-bar-user-actions');
+   accountTrigger.setAttribute('aria-expanded', 'false');
+   accountTrigger.addEventListener('click', function (event) {
+    event.preventDefault(); event.stopPropagation();
+    if (account.classList.contains('mrn-account-open')) { closeAccountMenu(false); }
+    else { openAccountMenu(); }
+   });
+   accountTrigger.addEventListener('keydown', function (event) {
+    if (['Enter', ' ', 'ArrowDown'].includes(event.key)) {
+     event.preventDefault(); event.stopPropagation(); openAccountMenu();
+     var first = account.querySelector('#wp-admin-bar-user-actions a, .mrn-appearance-choices button');
+     if (event.key === 'ArrowDown' && first) { first.focus(); }
+    }
+   });
+   account.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeAccountMenu(true); }
+   });
+   account.addEventListener('mouseenter', function () { accountTrigger.setAttribute('aria-expanded', 'true'); });
+   account.addEventListener('mouseleave', function () {
+    if (!account.classList.contains('mrn-account-open')) { accountTrigger.setAttribute('aria-expanded', 'false'); }
+   });
+   account.addEventListener('focusin', function () { accountTrigger.setAttribute('aria-expanded', 'true'); });
+   account.addEventListener('focusout', function (event) {
+    if (event.relatedTarget && !account.contains(event.relatedTarget)) { closeAccountMenu(false); }
+   });
+   document.addEventListener('click', function (event) { if (!account.contains(event.target)) { closeAccountMenu(false); } });
+  }
   var choices = Array.from(form.querySelectorAll('button[name="appearance"]'));
   var status = form.querySelector('[role="status"]');
   var saved = document.documentElement.dataset.mrnAppearance, saving = false;
@@ -106,13 +148,13 @@
     .catch(function () { document.documentElement.dataset.mrnAppearance = saved; selected(saved); status.textContent = labels.failed; })
     .finally(function () {
      saving = false; choices.forEach(function (button) { button.disabled = false; });
-     if (document.activeElement === document.body && account && account.classList.contains('hover')) { submitter.focus(); }
+     if (document.activeElement === document.body && account && account.matches('.hover, .mrn-account-open')) { submitter.focus(); }
     });
   });
   // Native toolbar link navigation must not consume button activation or arrows.
   form.addEventListener('keydown', function (event) {
    event.stopPropagation();
-   if (event.key === 'Escape' && accountTrigger) { event.preventDefault(); accountTrigger.focus(); account.classList.remove('hover'); }
+   if (event.key === 'Escape' && accountTrigger) { event.preventDefault(); closeAccountMenu(true); }
   });
   form.addEventListener('click', function (event) { event.stopPropagation(); });
  }
