@@ -1,0 +1,12 @@
+{
+  "appearance.js": {
+    "before_bytes": 13904,
+    "after_bytes": 16310,
+    "gzip_delta": 390
+  },
+  "mrn-admin-shell.css": {
+    "before_bytes": 53644,
+    "after_bytes": 53756,
+    "gzip_delta": 7
+  }
+}

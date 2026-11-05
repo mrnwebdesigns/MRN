@@ -189,3 +189,10 @@ child theme (such as “Team Member Settings”) may need content-oriented label
 review; no fields were split or renamed. Existing native TinyMCE button/textarea
 accessibility findings require owner/vendor qualification before release, alongside
 open CPU/OOM gates.
+
+**P1 UX-047 — appearance must stay on the current screen:** implemented and installed
+for review. Account-menu activation now opens the menu instead of navigating to
+Profile; the existing per-user Light/Dark/System AJAX save remains in place.
+Chromium/WebKit, touch, keyboard, persistence, failure rollback and unsaved editor
+values pass. [Evidence](review/appearance-stay-20261105/REVIEW.md). Await visual
+acceptance; next annotation UX-048. Existing CPU/OOM release gates remain open.

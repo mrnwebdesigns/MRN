@@ -1,0 +1,23 @@
+{
+  "assets": [
+    {
+      "file": "mrn-admin-ui-css/appearance.js",
+      "url": "https://admin-editor-pilot.mrndev.io/wp-content/mu-plugins/mrn-admin-ui-css/appearance.js?ver=1793886849",
+      "sha256": "acbd0fdf0c8e2d3a1c5f4d267e6df379b9d14fae97dfe9d5c5f9dc524ca44d05"
+    },
+    {
+      "file": "mrn-admin-ui-css/mrn-admin-shell.css",
+      "url": "https://admin-editor-pilot.mrndev.io/wp-content/mu-plugins/mrn-admin-ui-css/mrn-admin-shell.css?ver=1793886849",
+      "sha256": "cca9f10358a614ad76ffc961c10441302ac9c88de11e85dde8a8d05141b78b1e"
+    }
+  ],
+  "restStatus": 200,
+  "menuInteraction": {
+    "events": 50,
+    "median_ms": 0,
+    "p95_ms": 0.09999999403953552,
+    "max_ms": 0.29999999701976776,
+    "networkRequests": 0
+  },
+  "preference": "light"
+}

@@ -1,0 +1,2 @@
+chromium {"before":"https://admin-editor-pilot.mrndev.io/wp-admin/edit.php?post_type=page","after":"https://admin-editor-pilot.mrndev.io/wp-admin/profile.php","profileNavigation":true}
+webkit {"before":"https://admin-editor-pilot.mrndev.io/wp-admin/edit.php?post_type=page","after":"https://admin-editor-pilot.mrndev.io/wp-admin/profile.php","profileNavigation":true}
