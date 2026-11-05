@@ -1,0 +1,30 @@
+[
+  {
+    "sourceCommit": "8d0ce21",
+    "installedAppChanged": false,
+    "elapsedMs": 16082,
+    "code": 0,
+    "status": "provisioned",
+    "updatedAt": "2026-11-05T19:01:02.771Z",
+    "dbUrls": {
+      "code": 0,
+      "skipped": true,
+      "stdout": "Local home and siteurl already match; provisioning skipped database URL replacement scans.",
+      "durationMs": 1188
+    }
+  },
+  {
+    "sourceCommit": "8d0ce21",
+    "installedAppChanged": false,
+    "elapsedMs": 11501,
+    "code": 0,
+    "status": "provisioned",
+    "updatedAt": "2026-11-05T19:02:17.604Z",
+    "dbUrls": {
+      "code": 0,
+      "skipped": true,
+      "stdout": "Local home and siteurl already match; provisioning skipped database URL replacement scans.",
+      "durationMs": 1228
+    }
+  }
+]

@@ -1,5 +1,7 @@
 # CPU and Local Hub OOM follow-up — 5 November 2026
 
+**Later follow-up:** [native save and Hub restart repairs](../blockers-20261105/REVIEW.md). The changing manifest timestamp below was read-time normalization, not evidence of repeated provisioning. Whole-editor CPU remains open.
+
 **The reproduced Lima socket leak is repaired. Whole-editor CPU remains a release
 blocker.** A measured editor notice optimization is installed on the isolated
 review host, commit `b8a6624a1322`. No release, promotion, production/Fleet rollout,
@@ -156,7 +158,7 @@ source/release change. No other repository was edited or committed.
    discard native controls to make a benchmark pass.
 2. **P1 native save latency:** the previous slow 19/32-section save measurements
    remain open; this notice-only change does not address their server-side cost.
-3. **P1 Local Hub provisioning/latency:** identify the recurring provisioning job
+3. **P1 Local Hub provisioning/latency:** resolve the provisioning hang
    and `provision-error` state separately from the repaired Lima socket leak.
    Do not restart other VMs, kill unknown jobs or change unrelated sites.
 

@@ -1,0 +1,16 @@
+{
+  "observedAt": "2026-11-05T19:04:00Z",
+  "guestAgentPid": 1802,
+  "guestAgentDescriptors": 16,
+  "guestAgentRssKiB": 112724,
+  "availableMemoryMiB": 4985,
+  "swapUsedMiB": 0,
+  "memoryPressureAvg10": 0,
+  "memoryPressureAvg60": 0,
+  "memoryPressureAvg300": 0,
+  "oomEventsThisBoot": 0,
+  "webserverDescriptor3": "unlinked regular file; no SSH pipe",
+  "pilotStaticHttp": 200,
+  "pilotStaticSeconds": 0.18618,
+  "phpSecurityGate": "safe: configured handlers 8.4.27 / 8.2.35"
+}

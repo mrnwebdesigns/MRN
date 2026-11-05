@@ -1,0 +1,81 @@
+[
+  {
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1793905624,
+    "label": "pre-admin-pilot-revision-scalar-install-20261105",
+    "nonce": "d3d41bb4d3c9",
+    "key": "sites/admin-editor-pilot-mrndev-io/backup_2026-11-05-1906_Trilliant_d3d41bb4d3c9-db.gz",
+    "size": 6573854,
+    "sha256": "b35183945d472a1eb1e3ebc3dcc7342a4b45ef7710e0e51e903a549d16e32ec5"
+  },
+  {
+    "host": "admin-editor-pilot.mrndev.io",
+    "commit": "cdd0d7815817ee050649d658a134d399f0adcdb5",
+    "files": {
+      "themes/mrn-base-stack/inc/builder/performance.php": {
+        "before": "e3d2dbbd439ca33d5ddc1f823044f5cbc5834b288ed4919f663ac94fbcf24159",
+        "after": "d15f5703f14adec7bc0a628122b23f50a12fdc019eb1023163cca3e3007442f3"
+      }
+    },
+    "backup": {
+      "valid": true,
+      "host": "admin-editor-pilot.mrndev.io",
+      "checked_at": 1793905624,
+      "label": "pre-admin-pilot-revision-scalar-install-20261105",
+      "nonce": "d3d41bb4d3c9",
+      "key": "sites/admin-editor-pilot-mrndev-io/backup_2026-11-05-1906_Trilliant_d3d41bb4d3c9-db.gz",
+      "size": 6573854,
+      "sha256": "b35183945d472a1eb1e3ebc3dcc7342a4b45ef7710e0e51e903a549d16e32ec5"
+    },
+    "rollback": "/home/mrndev-admin-editor/review-private/before-revision-scalar-cdd0d7815817",
+    "status": "installed"
+  },
+  [
+    {
+      "phase": "native",
+      "seconds": 0.8722479343414307,
+      "queries": 1230,
+      "acf_keys": 400,
+      "native_hooks_cache_and_values": "pass"
+    },
+    {
+      "phase": "candidate",
+      "seconds": 0.4183638095855713,
+      "queries": 824,
+      "acf_keys": 400,
+      "native_hooks_cache_and_values": "pass"
+    },
+    {
+      "phase": "persistent-fallback",
+      "seconds": 1.0561769008636475,
+      "queries": 1230,
+      "acf_keys": 400,
+      "native_hooks_cache_and_values": "pass"
+    }
+  ],
+  {
+    "status": "pass",
+    "checks": [
+      {
+        "post": 2523,
+        "revision": 2643,
+        "acf_keys": 2796,
+        "native_revision_matches_parent": true
+      },
+      {
+        "post": 2524,
+        "revision": 2644,
+        "acf_keys": 4822,
+        "native_revision_matches_parent": true
+      },
+      {
+        "native_restore": "pass",
+        "nested_repeater": "pass",
+        "unicode_and_quotes": "pass",
+        "core_content": "pass"
+      }
+    ],
+    "disposable_fixture_removed": true
+  }
+]

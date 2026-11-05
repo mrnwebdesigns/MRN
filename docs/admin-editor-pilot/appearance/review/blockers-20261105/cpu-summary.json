@@ -1,0 +1,22 @@
+[
+  {
+    "fixture": "real19",
+    "cpuMedianMs": {
+      "before": 4079.8399999999997,
+      "candidate": 3945.7535000000003
+    },
+    "editors": 41,
+    "formHashesMatch": true,
+    "decision": "Candidate withdrawn; whole-editor non-regression not demonstrated."
+  },
+  {
+    "fixture": "stress32",
+    "cpuMedianMs": {
+      "before": 6170.2955,
+      "candidate": 7380.296
+    },
+    "editors": 60,
+    "formHashesMatch": true,
+    "decision": "Candidate withdrawn; whole-editor non-regression not demonstrated."
+  }
+]

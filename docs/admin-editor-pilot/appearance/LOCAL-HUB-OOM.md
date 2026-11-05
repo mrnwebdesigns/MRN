@@ -1,6 +1,6 @@
 # Local Hub OOM investigation — 31 October 2026
 
-**Historical investigation; superseded by the [5 November repair and qualification](review/cpu-oom-20261105/REVIEW.md).** The reproduced Lima socket leak is now repaired on host/guest 2.2.1. Separate Hub provisioning/latency and editor CPU gates remain open.
+**Historical investigation; superseded by the [5 November repair and qualification](review/cpu-oom-20261105/REVIEW.md).** The reproduced Lima socket leak is now repaired on host/guest 2.2.1. The [later save/provisioning follow-up](review/blockers-20261105/REVIEW.md) isolates and tests the restart-pipe fix; installed-Hub qualification, residual save latency and editor CPU gates remain open.
 
 **Status as of 31 October: release blocker remains open.** A guest-agent socket leak now reproduces independently of WordPress. The evidence strongly matches an upstream Lima defect. No upgrade, restart, service/configuration change, memory tuning, release, deployment or Fleet action was performed.
 
