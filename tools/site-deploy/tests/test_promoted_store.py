@@ -235,7 +235,8 @@ class PromotedLiveStore(unittest.TestCase):
         adapter=Mock()
         adapter.verify_transaction_backup.return_value={'valid':True}
         observed=[]
-        def public(plan,store,pointer):
+        def public(plan,store,pointer,native):
+            self.assertIs(adapter,native)
             store.verify_public_snapshot();observed.append(pointer);return {'release_id':pointer['release_id']}
         with patch.object(host,'identity',return_value=({'content':str(self.f.content),'environment_type':'production'},self.binding,{})), \
                 patch.object(promoted,'native_source'), patch.object(host,'public_check',side_effect=public):

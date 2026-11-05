@@ -63,3 +63,21 @@ Only installed/public asset checks, distinct-pointer rollback/reactivation and
 applicable hosted QA establish qualification. Then routine Live deployments use
 `DEPLOY_READY=1` and the separate Live store, without these one-time import flags.
 Source acceptance, Fleet publication and site qualification are separate proofs.
+
+## Native HTML cache completion
+
+Routine native releases retain the MU plugin's exact-URL origin purge. Before
+public acceptance, the controller also clears each reviewed verification page
+through Kinsta's [Edge Cache API](https://api-docs.kinsta.com/api-reference/wordpress-edge-caching/clear-site-edge-cache),
+with the exact native environment ID, canonical URL, and
+`clear_subdirectories: false`. Each returned operation must complete; pending,
+missing or failed operations block acceptance. No full-environment, descendant,
+CDN asset or object-cache purge is submitted.
+
+This closes the gap where an origin purge returns HTTP 200 while Edge Cache
+still serves the preceding generation. The same cache step runs after recovery
+and qualification rollback. Canonical first/warm HTML, immutable asset checksums,
+unchanged public files and the selected private release remain blocking checks;
+an API acknowledgement is not deployment success. Retain failed receipts and
+their fresh snapshots. A later deployment still requires a new verified native
+backup and separate approval before deleting any restore point to make space.
