@@ -1,0 +1,1788 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "schema": 2,
+  "adapter": "content-management-existing-evidence-v2",
+  "status": "closed-wire-proposal-unregistered",
+  "production_enabled": false,
+  "consumer_binding_enabled": false,
+  "$defs": {
+    "hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "minLength": 64,
+      "maxLength": 64
+    },
+    "uuid": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$",
+      "minLength": 36,
+      "maxLength": 36
+    },
+    "site_id": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "site_url": {
+      "type": "string",
+      "format": "uri",
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "^https://[^/?#@]+(?:/[^?#]*)?$"
+    },
+    "target": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "wordpress-content"
+          ]
+        },
+        "post_type": {
+          "type": "string",
+          "maxLength": 4,
+          "enum": [
+            "post",
+            "page"
+          ]
+        },
+        "post_id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "kind",
+        "post_type",
+        "post_id"
+      ],
+      "additionalProperties": false
+    },
+    "source_sha": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$",
+      "minLength": 40,
+      "maxLength": 40
+    },
+    "timestamp": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "binding": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 2
+        },
+        "adapter": {
+          "type": "string",
+          "enum": [
+            "content-management-v1"
+          ]
+        },
+        "qualification_job_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "operation_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "reviewed_digest": {
+          "$ref": "#/$defs/hash"
+        },
+        "requester_binding_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "authorization_policy_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "site_id": {
+          "$ref": "#/$defs/site_id"
+        },
+        "site_url": {
+          "$ref": "#/$defs/site_url"
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        },
+        "expected_target_revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "before_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "candidate_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "request_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "migration_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "profile_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "runtime_context_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "acf_schema_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "management_contract_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "provider_source_sha": {
+          "$ref": "#/$defs/source_sha"
+        },
+        "installed_manifest_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "source_binding_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "created_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "expires_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "before_paths_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "job_intent_ttl_seconds": {
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 900
+        },
+        "qualification_protocol": {
+          "type": "string",
+          "enum": [
+            "content-management-existing-v2"
+          ]
+        },
+        "protocol_contracts_sha256": {
+          "$ref": "#/$defs/protocol_contracts"
+        }
+      },
+      "required": [
+        "schema",
+        "adapter",
+        "qualification_job_id",
+        "operation_id",
+        "reviewed_digest",
+        "requester_binding_sha256",
+        "authorization_policy_sha256",
+        "site_id",
+        "site_url",
+        "target",
+        "expected_target_revision",
+        "before_sha256",
+        "candidate_sha256",
+        "request_sha256",
+        "migration_sha256",
+        "profile_sha256",
+        "runtime_context_sha256",
+        "acf_schema_sha256",
+        "management_contract_sha256",
+        "provider_source_sha",
+        "installed_manifest_sha256",
+        "source_binding_sha256",
+        "created_at",
+        "expires_at",
+        "before_paths_sha256",
+        "job_intent_ttl_seconds",
+        "qualification_protocol",
+        "protocol_contracts_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20,
+      "pattern": "^[1-9][0-9]{0,19}$"
+    },
+    "envelope": {
+      "type": "object",
+      "properties": {
+        "key_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "payload_base64": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 131072,
+          "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+        },
+        "signature_base64": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 88,
+          "pattern": "^[A-Za-z0-9+/]{86}==$"
+        }
+      },
+      "required": [
+        "key_id",
+        "payload_base64",
+        "signature_base64"
+      ],
+      "additionalProperties": false
+    },
+    "context": {
+      "type": "object",
+      "properties": {
+        "binding": {
+          "$ref": "#/$defs/binding"
+        },
+        "management_context_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "capture_artifact_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "measurement_record_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "parity_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "evidence_policy_epoch": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "evidence_policy_sha256": {
+          "$ref": "#/$defs/hash"
+        }
+      },
+      "required": [
+        "binding",
+        "management_context_sha256",
+        "capture_artifact_sha256",
+        "measurement_record_sha256",
+        "parity_sha256",
+        "evidence_policy_epoch",
+        "evidence_policy_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "dispatch_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "dispatch_request_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "dispatch_record_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "repository": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 191,
+          "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+        },
+        "repository_id": {
+          "$ref": "#/$defs/id"
+        },
+        "ref": {
+          "type": "string",
+          "enum": [
+            "refs/heads/main"
+          ]
+        },
+        "workflow_id": {
+          "$ref": "#/$defs/id"
+        },
+        "workflow_path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 191,
+          "pattern": "^\\.github/workflows/[a-z0-9._-]+\\.ya?ml$"
+        },
+        "workflow_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "run_id": {
+          "$ref": "#/$defs/id"
+        },
+        "run_attempt": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1
+        },
+        "runner_source_sha": {
+          "$ref": "#/$defs/source_sha"
+        },
+        "engine_commit": {
+          "$ref": "#/$defs/source_sha"
+        },
+        "engine_configuration_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "runtime_sha256": {
+          "$ref": "#/$defs/hash"
+        }
+      },
+      "required": [
+        "dispatch_id",
+        "dispatch_request_sha256",
+        "dispatch_record_sha256",
+        "repository",
+        "repository_id",
+        "ref",
+        "workflow_id",
+        "workflow_path",
+        "workflow_sha256",
+        "run_id",
+        "run_attempt",
+        "runner_source_sha",
+        "engine_commit",
+        "engine_configuration_sha256",
+        "runtime_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "evidence_reference": {
+      "type": "object",
+      "properties": {
+        "archive_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "manifest_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "measurement_sha256": {
+          "$ref": "#/$defs/hash"
+        }
+      },
+      "required": [
+        "archive_sha256",
+        "manifest_sha256",
+        "measurement_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "worker_claims": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 2
+        },
+        "issuer": {
+          "type": "string",
+          "enum": [
+            "mrn-content-qualification"
+          ]
+        },
+        "audience": {
+          "type": "string",
+          "enum": [
+            "https://wpcontrol.mrndev.io"
+          ]
+        },
+        "issued_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "expires_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "request_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "nonce": {
+          "$ref": "#/$defs/hash"
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "context",
+            "capture",
+            "read-capture",
+            "read-measurements"
+          ]
+        },
+        "binding": {
+          "$ref": "#/$defs/binding"
+        },
+        "binding_sha256": {
+          "$ref": "#/$defs/hash"
+        }
+      },
+      "required": [
+        "schema",
+        "issuer",
+        "audience",
+        "issued_at",
+        "expires_at",
+        "request_id",
+        "nonce",
+        "action",
+        "binding",
+        "binding_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "record_state": {
+      "type": "object",
+      "properties": {
+        "snapshot_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "semantic_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "core_fields_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "acf_values_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "post_record_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "post_meta_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "untouched_post_fields_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "untouched_meta_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "unrelated_data_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "row_order_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "layout_metadata_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "rendered_html_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "hook_observations_sha256": {
+          "$ref": "#/$defs/hash"
+        }
+      },
+      "required": [
+        "snapshot_sha256",
+        "semantic_sha256",
+        "core_fields_sha256",
+        "acf_values_sha256",
+        "post_record_sha256",
+        "post_meta_sha256",
+        "untouched_post_fields_sha256",
+        "untouched_meta_sha256",
+        "unrelated_data_sha256",
+        "row_order_sha256",
+        "layout_metadata_sha256",
+        "rendered_html_sha256",
+        "hook_observations_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "api_observation": {
+      "type": "object",
+      "properties": {
+        "ability": {
+          "type": "string",
+          "enum": [
+            "mrn-mainwp/read-content-edit-qualification-capture-existing-v2",
+            "mrn-mainwp/read-content-edit-qualification-measurements-existing-v2"
+          ]
+        },
+        "request_body_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "response_body_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "started_at_ms": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "completed_at_ms": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "http_status": {
+          "type": "integer",
+          "minimum": 200,
+          "maximum": 599
+        },
+        "outcome_code": {
+          "type": "string",
+          "enum": [
+            "ok",
+            "mrn_management_qualification",
+            "mrn_delegation_required",
+            "rest_forbidden",
+            "rest_not_logged_in",
+            "rest_ability_cannot_execute"
+          ]
+        }
+      },
+      "required": [
+        "ability",
+        "request_body_sha256",
+        "response_body_sha256",
+        "started_at_ms",
+        "completed_at_ms",
+        "http_status",
+        "outcome_code"
+      ],
+      "additionalProperties": false
+    },
+    "wordpress_api": {
+      "type": "object",
+      "properties": {
+        "capture_read_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "measurement_read_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "acquisition_transcript_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "authorized_capture_status": {
+          "type": "integer",
+          "minimum": 200,
+          "maximum": 200
+        },
+        "authorized_measurements_status": {
+          "type": "integer",
+          "minimum": 200,
+          "maximum": 200
+        },
+        "anonymous_status": {
+          "type": "integer",
+          "enum": [
+            401,
+            403
+          ]
+        },
+        "wrong_purpose_status": {
+          "type": "integer",
+          "enum": [
+            403,
+            500
+          ]
+        }
+      },
+      "required": [
+        "capture_read_sha256",
+        "measurement_read_sha256",
+        "acquisition_transcript_sha256",
+        "authorized_capture_status",
+        "authorized_measurements_status",
+        "anonymous_status",
+        "wrong_purpose_status"
+      ],
+      "additionalProperties": false
+    },
+    "axe_result": {
+      "type": "object",
+      "properties": {
+        "scanned_nodes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "violations": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 0
+        },
+        "result_sha256": {
+          "$ref": "#/$defs/hash"
+        }
+      },
+      "required": [
+        "scanned_nodes",
+        "violations",
+        "result_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "accessibility": {
+      "type": "object",
+      "properties": {
+        "standard": {
+          "type": "string",
+          "enum": [
+            "WCAG2.1AA"
+          ]
+        },
+        "axe_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32,
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "before": {
+          "$ref": "#/$defs/axe_result"
+        },
+        "candidate": {
+          "$ref": "#/$defs/axe_result"
+        },
+        "restored": {
+          "$ref": "#/$defs/axe_result"
+        }
+      },
+      "required": [
+        "standard",
+        "axe_version",
+        "before",
+        "candidate",
+        "restored"
+      ],
+      "additionalProperties": false
+    },
+    "timing_result": {
+      "type": "object",
+      "properties": {
+        "samples": {
+          "type": "integer",
+          "minimum": 3,
+          "maximum": 20
+        },
+        "median_ttfb_ms": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 120000
+        },
+        "median_lcp_ms": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 120000
+        },
+        "max_cls_milli": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "result_sha256": {
+          "$ref": "#/$defs/hash"
+        }
+      },
+      "required": [
+        "samples",
+        "median_ttfb_ms",
+        "median_lcp_ms",
+        "max_cls_milli",
+        "result_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "performance": {
+      "type": "object",
+      "properties": {
+        "budget_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "before": {
+          "$ref": "#/$defs/timing_result"
+        },
+        "candidate": {
+          "$ref": "#/$defs/timing_result"
+        },
+        "restored": {
+          "$ref": "#/$defs/timing_result"
+        }
+      },
+      "required": [
+        "budget_sha256",
+        "before",
+        "candidate",
+        "restored"
+      ],
+      "additionalProperties": false
+    },
+    "native_content_lifecycle": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "existing-record-full-core-acf"
+          ]
+        },
+        "before": {
+          "$ref": "#/$defs/record_state"
+        },
+        "candidate": {
+          "$ref": "#/$defs/record_state"
+        },
+        "restored": {
+          "$ref": "#/$defs/record_state"
+        },
+        "edited_paths_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "native_run_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "independent_readbacks": {
+          "type": "integer",
+          "minimum": 3,
+          "maximum": 100
+        },
+        "mutation_dispatches": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 2
+        },
+        "stale_rejections": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "authorization_rejections": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "retry_checks": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "duplicate_mutations": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 0
+        }
+      },
+      "required": [
+        "mode",
+        "before",
+        "candidate",
+        "restored",
+        "edited_paths_sha256",
+        "native_run_sha256",
+        "independent_readbacks",
+        "mutation_dispatches",
+        "stale_rejections",
+        "authorization_rejections",
+        "retry_checks",
+        "duplicate_mutations"
+      ],
+      "additionalProperties": false
+    },
+    "capture_integrity": {
+      "type": "object",
+      "properties": {
+        "capture_artifact_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "capture_artifact_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5000000
+        },
+        "dataset_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "dataset_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4400000
+        },
+        "chunks_received": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 135
+        },
+        "readback_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "readback_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 524288
+        },
+        "readback_chunks": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16
+        },
+        "native_calls": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 151
+        },
+        "measurement_record_sha256": {
+          "$ref": "#/$defs/hash"
+        }
+      },
+      "required": [
+        "capture_artifact_sha256",
+        "capture_artifact_bytes",
+        "dataset_sha256",
+        "dataset_bytes",
+        "chunks_received",
+        "readback_sha256",
+        "readback_bytes",
+        "readback_chunks",
+        "native_calls",
+        "measurement_record_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "scope_ownership": {
+      "type": "object",
+      "properties": {
+        "management_context_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "site_id": {
+          "$ref": "#/$defs/site_id"
+        },
+        "site_url": {
+          "$ref": "#/$defs/site_url"
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        },
+        "requester_binding_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "expected_target_revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "acf_schema_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "edited_paths_sha256": {
+          "$ref": "#/$defs/hash"
+        }
+      },
+      "required": [
+        "management_context_sha256",
+        "site_id",
+        "site_url",
+        "target",
+        "requester_binding_sha256",
+        "expected_target_revision",
+        "acf_schema_sha256",
+        "edited_paths_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "parity_consistency": {
+      "type": "object",
+      "properties": {
+        "captured_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "current_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "isolated_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "restored_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "render_assertions_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "hook_policy_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "manifest_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4194304
+        }
+      },
+      "required": [
+        "captured_sha256",
+        "current_sha256",
+        "isolated_sha256",
+        "restored_sha256",
+        "render_assertions_sha256",
+        "hook_policy_sha256",
+        "manifest_bytes"
+      ],
+      "additionalProperties": false
+    },
+    "source_integrity": {
+      "type": "object",
+      "properties": {
+        "provider_source_sha": {
+          "$ref": "#/$defs/source_sha"
+        },
+        "installed_manifest_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "source_binding_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "captured_child_inventory_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "acquired_child_inventory_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "child_source_archive_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "child_source_acquisition_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "child_source_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1073741824
+        },
+        "child_source_files": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        },
+        "runner_source_sha": {
+          "$ref": "#/$defs/source_sha"
+        },
+        "workflow_sha256": {
+          "$ref": "#/$defs/hash"
+        }
+      },
+      "required": [
+        "provider_source_sha",
+        "installed_manifest_sha256",
+        "source_binding_sha256",
+        "captured_child_inventory_sha256",
+        "acquired_child_inventory_sha256",
+        "child_source_archive_sha256",
+        "child_source_acquisition_sha256",
+        "child_source_bytes",
+        "child_source_files",
+        "runner_source_sha",
+        "workflow_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "measurements": {
+      "type": "object",
+      "properties": {
+        "wordpress_api": {
+          "$ref": "#/$defs/wordpress_api"
+        },
+        "accessibility": {
+          "$ref": "#/$defs/accessibility"
+        },
+        "performance": {
+          "$ref": "#/$defs/performance"
+        },
+        "native_content_lifecycle": {
+          "$ref": "#/$defs/native_content_lifecycle"
+        },
+        "capture_integrity": {
+          "$ref": "#/$defs/capture_integrity"
+        },
+        "scope_ownership": {
+          "$ref": "#/$defs/scope_ownership"
+        },
+        "parity_consistency": {
+          "$ref": "#/$defs/parity_consistency"
+        },
+        "source_integrity": {
+          "$ref": "#/$defs/source_integrity"
+        }
+      },
+      "required": [
+        "wordpress_api",
+        "accessibility",
+        "performance",
+        "native_content_lifecycle",
+        "capture_integrity",
+        "scope_ownership",
+        "parity_consistency",
+        "source_integrity"
+      ],
+      "additionalProperties": false
+    },
+    "manifest_claims": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 2
+        },
+        "issuer": {
+          "type": "string",
+          "enum": [
+            "mrn-code-qa-runner"
+          ]
+        },
+        "audience": {
+          "type": "string",
+          "enum": [
+            "https://wpcontrol.mrndev.io"
+          ]
+        },
+        "issued_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "expires_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "request_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "nonce": {
+          "$ref": "#/$defs/hash"
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "attest-management-measurements"
+          ]
+        },
+        "context": {
+          "$ref": "#/$defs/context"
+        },
+        "run_provenance": {
+          "$ref": "#/$defs/provenance"
+        },
+        "measurements_sha256": {
+          "$ref": "#/$defs/hash"
+        }
+      },
+      "required": [
+        "schema",
+        "issuer",
+        "audience",
+        "issued_at",
+        "expires_at",
+        "request_id",
+        "nonce",
+        "action",
+        "context",
+        "run_provenance",
+        "measurements_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "policy": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1
+        },
+        "enabled": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "policy_epoch": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "qa_key_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$"
+          },
+          "minItems": 1,
+          "maxItems": 20,
+          "uniqueItems": true
+        },
+        "repository": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 191,
+          "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+        },
+        "repository_id": {
+          "$ref": "#/$defs/id"
+        },
+        "ref": {
+          "type": "string",
+          "enum": [
+            "refs/heads/main"
+          ]
+        },
+        "workflow_id": {
+          "$ref": "#/$defs/id"
+        },
+        "workflow_path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 191,
+          "pattern": "^\\.github/workflows/[a-z0-9._-]+\\.ya?ml$"
+        },
+        "workflow_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "runner_source_sha": {
+          "$ref": "#/$defs/source_sha"
+        },
+        "engine_commit": {
+          "$ref": "#/$defs/source_sha"
+        },
+        "engine_configuration_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "runtime_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "performance_budget_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "render_assertions_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "hook_policy_sha256": {
+          "$ref": "#/$defs/hash"
+        }
+      },
+      "required": [
+        "schema",
+        "enabled",
+        "policy_epoch",
+        "qa_key_ids",
+        "repository",
+        "repository_id",
+        "ref",
+        "workflow_id",
+        "workflow_path",
+        "workflow_sha256",
+        "runner_source_sha",
+        "engine_commit",
+        "engine_configuration_sha256",
+        "runtime_sha256",
+        "performance_budget_sha256",
+        "render_assertions_sha256",
+        "hook_policy_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "query": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 2
+        },
+        "query_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "provider_query_nonce": {
+          "$ref": "#/$defs/hash"
+        },
+        "context": {
+          "$ref": "#/$defs/context"
+        },
+        "created_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "expires_at": {
+          "$ref": "#/$defs/timestamp"
+        }
+      },
+      "required": [
+        "schema",
+        "query_id",
+        "provider_query_nonce",
+        "context",
+        "created_at",
+        "expires_at"
+      ],
+      "additionalProperties": false
+    },
+    "query_pointer": {
+      "type": "object",
+      "properties": {
+        "query_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "provider_query_nonce": {
+          "$ref": "#/$defs/hash"
+        }
+      },
+      "required": [
+        "query_id",
+        "provider_query_nonce"
+      ],
+      "additionalProperties": false
+    },
+    "query_readback_claims": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 2
+        },
+        "issuer": {
+          "type": "string",
+          "enum": [
+            "https://operations.mrnwebdesigns.com"
+          ]
+        },
+        "audience": {
+          "type": "string",
+          "enum": [
+            "https://wpcontrol.mrndev.io"
+          ]
+        },
+        "issued_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "expires_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "request_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "nonce": {
+          "$ref": "#/$defs/hash"
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "read-management-evidence-query"
+          ]
+        },
+        "query_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "provider_query_nonce": {
+          "$ref": "#/$defs/hash"
+        }
+      },
+      "required": [
+        "schema",
+        "issuer",
+        "audience",
+        "issued_at",
+        "expires_at",
+        "request_id",
+        "nonce",
+        "action",
+        "query_id",
+        "provider_query_nonce"
+      ],
+      "additionalProperties": false
+    },
+    "query_readback_input": {
+      "type": "object",
+      "properties": {
+        "signed_request": {
+          "$ref": "#/$defs/envelope"
+        }
+      },
+      "required": [
+        "signed_request"
+      ],
+      "additionalProperties": false
+    },
+    "query_readback_output": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "$ref": "#/$defs/query"
+        },
+        "query_sha256": {
+          "$ref": "#/$defs/hash"
+        }
+      },
+      "required": [
+        "query",
+        "query_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "artifact_observation": {
+      "type": "object",
+      "properties": {
+        "artifact_id": {
+          "$ref": "#/$defs/id"
+        },
+        "workflow_run": {
+          "type": "object",
+          "properties": {
+            "repository_id": {
+              "$ref": "#/$defs/id"
+            },
+            "run_id": {
+              "$ref": "#/$defs/id"
+            },
+            "head_sha": {
+              "$ref": "#/$defs/source_sha"
+            }
+          },
+          "required": [
+            "repository_id",
+            "run_id",
+            "head_sha"
+          ],
+          "additionalProperties": false
+        },
+        "expired": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "reported_digest": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 71,
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "name": {
+          "type": "string",
+          "enum": [
+            "management-existing-qualification-evidence-v2",
+            "management-existing-acquisition-evidence-v2"
+          ]
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 262144
+        },
+        "sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "created_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "expires_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "download_completed_at": {
+          "$ref": "#/$defs/timestamp"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "workflow_run",
+        "expired",
+        "reported_digest",
+        "name",
+        "bytes",
+        "sha256",
+        "created_at",
+        "expires_at",
+        "download_completed_at"
+      ],
+      "additionalProperties": false
+    },
+    "run_observation": {
+      "type": "object",
+      "properties": {
+        "repository_id": {
+          "$ref": "#/$defs/id"
+        },
+        "workflow_id": {
+          "$ref": "#/$defs/id"
+        },
+        "run_id": {
+          "$ref": "#/$defs/id"
+        },
+        "run_attempt": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1
+        },
+        "head_sha": {
+          "$ref": "#/$defs/source_sha"
+        },
+        "head_branch": {
+          "type": "string",
+          "enum": [
+            "main"
+          ]
+        },
+        "event": {
+          "type": "string",
+          "enum": [
+            "workflow_dispatch"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "completed"
+          ]
+        },
+        "conclusion": {
+          "type": "string",
+          "enum": [
+            "success"
+          ]
+        },
+        "actor_id": {
+          "$ref": "#/$defs/id"
+        },
+        "triggering_actor_id": {
+          "$ref": "#/$defs/id"
+        },
+        "created_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "updated_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "metadata_response_sha256": {
+          "$ref": "#/$defs/hash"
+        }
+      },
+      "required": [
+        "repository_id",
+        "workflow_id",
+        "run_id",
+        "run_attempt",
+        "head_sha",
+        "head_branch",
+        "event",
+        "status",
+        "conclusion",
+        "actor_id",
+        "triggering_actor_id",
+        "created_at",
+        "updated_at",
+        "metadata_response_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "acquisition_claims": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 2
+        },
+        "issuer": {
+          "type": "string",
+          "enum": [
+            "https://operations.mrnwebdesigns.com"
+          ]
+        },
+        "audience": {
+          "type": "string",
+          "enum": [
+            "https://wpcontrol.mrndev.io"
+          ]
+        },
+        "issued_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "expires_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "request_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "nonce": {
+          "$ref": "#/$defs/hash"
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "observe-management-evidence-acquisition"
+          ]
+        },
+        "query_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "provider_query_nonce": {
+          "$ref": "#/$defs/hash"
+        },
+        "query_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "context_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "recorded_dispatch": {
+          "$ref": "#/$defs/provenance"
+        },
+        "observed_run": {
+          "$ref": "#/$defs/run_observation"
+        },
+        "qualification_artifact": {
+          "$ref": "#/$defs/artifact_observation"
+        },
+        "acquisition_artifact": {
+          "$ref": "#/$defs/artifact_observation"
+        },
+        "started_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "completed_at": {
+          "$ref": "#/$defs/timestamp"
+        }
+      },
+      "required": [
+        "schema",
+        "issuer",
+        "audience",
+        "issued_at",
+        "expires_at",
+        "request_id",
+        "nonce",
+        "action",
+        "query_id",
+        "provider_query_nonce",
+        "query_sha256",
+        "context_sha256",
+        "recorded_dispatch",
+        "observed_run",
+        "qualification_artifact",
+        "acquisition_artifact",
+        "started_at",
+        "completed_at"
+      ],
+      "additionalProperties": false
+    },
+    "acquisition_response": {
+      "type": "object",
+      "properties": {
+        "signed_acquisition": {
+          "$ref": "#/$defs/envelope"
+        },
+        "qualification_zip_base64": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 349528,
+          "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+        },
+        "acquisition_zip_base64": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 262144,
+          "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+        }
+      },
+      "required": [
+        "signed_acquisition",
+        "qualification_zip_base64",
+        "acquisition_zip_base64"
+      ],
+      "additionalProperties": false
+    },
+    "request_context": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 2
+        },
+        "adapter": {
+          "type": "string",
+          "enum": [
+            "content-management-existing-acquisition-v2"
+          ]
+        },
+        "context": {
+          "$ref": "#/$defs/context"
+        },
+        "capture_read_request": {
+          "$ref": "#/$defs/envelope"
+        },
+        "measurement_read_request": {
+          "$ref": "#/$defs/envelope"
+        },
+        "capture_read_claims_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "measurement_read_claims_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "protected_request_sha256": {
+          "$ref": "#/$defs/hash"
+        }
+      },
+      "required": [
+        "schema",
+        "adapter",
+        "context",
+        "capture_read_request",
+        "measurement_read_request",
+        "capture_read_claims_sha256",
+        "measurement_read_claims_sha256",
+        "protected_request_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "acquisition_transcript": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 2
+        },
+        "adapter": {
+          "type": "string",
+          "enum": [
+            "content-management-existing-acquisition-v2"
+          ]
+        },
+        "management_context_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "capture_artifact_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "measurement_record_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "request_context_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "observations": {
+          "type": "object",
+          "properties": {
+            "authorized_capture": {
+              "$ref": "#/$defs/api_observation"
+            },
+            "authorized_measurements": {
+              "$ref": "#/$defs/api_observation"
+            },
+            "anonymous_probe": {
+              "$ref": "#/$defs/api_observation"
+            },
+            "wrong_purpose_probe": {
+              "$ref": "#/$defs/api_observation"
+            }
+          },
+          "required": [
+            "authorized_capture",
+            "authorized_measurements",
+            "anonymous_probe",
+            "wrong_purpose_probe"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema",
+        "adapter",
+        "management_context_sha256",
+        "capture_artifact_sha256",
+        "measurement_record_sha256",
+        "request_context_sha256",
+        "observations"
+      ],
+      "additionalProperties": false
+    },
+    "protocol_contracts": {
+      "type": "object",
+      "properties": {
+        "qualification": {
+          "$ref": "#/$defs/hash"
+        },
+        "report": {
+          "$ref": "#/$defs/hash"
+        },
+        "evidence": {
+          "$ref": "#/$defs/hash"
+        },
+        "source_transfer": {
+          "$ref": "#/$defs/hash"
+        },
+        "source_context": {
+          "$ref": "#/$defs/hash"
+        },
+        "wire_registry": {
+          "$ref": "#/$defs/hash"
+        }
+      },
+      "required": [
+        "qualification",
+        "report",
+        "evidence",
+        "source_transfer",
+        "source_context",
+        "wire_registry"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "purposes": {
+    "qa_manifest": "mrn-content-management-existing-evidence-qa-manifest-v2:",
+    "acquisition": "mrn-content-management-existing-evidence-acquisition-v2:",
+    "query_readback": "mrn-content-management-existing-evidence-query-readback-v2:"
+  },
+  "callback_url": "https://operations.mrnwebdesigns.com/internal/mainwp/management-existing-evidence-v2",
+  "limits": {
+    "qualification_compressed_bytes": 262144,
+    "qualification_expanded_bytes": 196608,
+    "qualification_member_bytes": 98304,
+    "qualification_members": 2,
+    "companion_compressed_bytes": 196608,
+    "companion_expanded_bytes": 114688,
+    "companion_acquisition_bytes": 16384,
+    "companion_context_bytes": 98304,
+    "companion_members": 2,
+    "http_response_bytes": 1048576,
+    "acquisition_observation_decoded_bytes": 98304,
+    "acquisition_seconds": 60,
+    "total_retention_seconds": 90,
+    "archive_verification_seconds": 5,
+    "query_use_count": 1,
+    "automatic_retries": 0
+  },
+  "abilities": {
+    "read-management-evidence-query-existing-v2": {
+      "http_method": "POST",
+      "registered": false,
+      "input": "query_readback_input",
+      "output": "query_readback_output"
+    }
+  },
+  "invariants": [
+    "Provider-owned query and authenticated readback are the only lookup input. Service selects repository/run/artifacts from immutable original job mapping PLUS separately service-recorded protected dispatch identity, never signed report fields.",
+    "Do not repurpose the CI read-only source App as production Actions authority. No production credential or dispatch policy is configured here. Use the existing central App abstraction only under separately approved owner policy.",
+    "Qualification ZIP has exactly manifest.json and measurements.json; companion has exactly acquisition.json and request-context.json. Canonical member bytes, signatures, original binary hashes and observed selected closed metadata must independently agree.",
+    "Every measured group binds the same original context and exact acquired manifest/archive; core-only lifecycle cannot qualify ACF, and creation ID0 is unsupported. Actual independently acquired Child renderer/source bytes are required; hash inventory does not supply source bytes.",
+    "Full snapshots/record/meta hashes are measured independently at all stages. Original full snapshot equals the capture; candidate semantic digest equals the immutable reviewed candidate, and restored semantic digest equals the original semantic preimage. WordPress timestamps and native ACF storage legitimately change raw record/meta hashes; they are retained as observed evidence, not silently replaced or required equal to a preview precondition. Untouched post/meta, unrelated fields/rows/layouts and raw core/ACF restore relations are exact. The semantic projection excludes only post_id, unrelated_meta_sha256 and post_record_sha256, matching the existing native adapter.",
+    "All timing observations share original protected request and original intent expiry. Expiry is rechecked after parsing and under final CAS; acquisition total60s/overall90s monotonic deadlines cannot restart on retry, callbacks or recovery.",
+    "Original production/MCP/default limits and existing access-veto2.5s path are unchanged. This separate bounded source interface remains unregistered and non-admitting pending independent authenticated acquisition and retention/readback proof."
+  ],
+  "qualification_protocol": "content-management-existing-v2",
+  "runtime_registered": false,
+  "compatibility_baseline_sha256": {
+    "content-management-qualification-v1.json": "7c0cd9e6f431f47580f9926e8d228728034f20b71d581c8dfb00b32dcb4f4f91",
+    "content-management-report-v1.json": "312b7fb7d7179e419686bed93d51f27adfbbe432c75f1f52db909b4d9f6728e6"
+  },
+  "native_adapter": "content-management-v1"
+}

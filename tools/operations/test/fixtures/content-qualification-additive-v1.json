@@ -1,0 +1,405 @@
+{
+  "description": "Unsigned structural/canonical vectors only; synthetic run/artifact references are unverified and confer no admission.",
+  "cases": [
+    {
+      "contract": "content-capture-read-v1.json",
+      "definition": "claims",
+      "value": {
+        "schema": 1,
+        "issuer": "mrn-content-qualification",
+        "audience": "https://wpcontrol.mrndev.io",
+        "issued_at": 1700000000,
+        "expires_at": 1700000300,
+        "request_id": "12345678-1234-4123-8123-123456789abc",
+        "nonce": "3333333333333333333333333333333333333333333333333333333333333333",
+        "authorization_policy_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+        "catalog_epoch": 1,
+        "qualification_job_id": "23456789-1234-4123-8123-123456789abc",
+        "expected_snapshot_sha256": "92e8ccfc7b9b30edca1bc851ceaa26966627b6648a2fc62582c806acd080fa95",
+        "requester_binding_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+        "site_id": 73,
+        "site_url": "https://pages.fixture.example.invalid",
+        "target": {
+          "kind": "post",
+          "post_type": "page",
+          "post_id": 900,
+          "field": "post_title"
+        },
+        "recipe_catalog_sha256": "7777777777777777777777777777777777777777777777777777777777777777",
+        "recipe_id": "fixture-title",
+        "recipe_sha256": "8888888888888888888888888888888888888888888888888888888888888888",
+        "action": "read-capture",
+        "expected_target_revision": 0,
+        "capture_artifact_sha256": "a23b1d63d030aebb0b477b48a25c5359ac3691f4e55090ba9ec5825d38af0271"
+      },
+      "canonical": "{\"action\":\"read-capture\",\"audience\":\"https://wpcontrol.mrndev.io\",\"authorization_policy_sha256\":\"4444444444444444444444444444444444444444444444444444444444444444\",\"capture_artifact_sha256\":\"a23b1d63d030aebb0b477b48a25c5359ac3691f4e55090ba9ec5825d38af0271\",\"catalog_epoch\":1,\"expected_snapshot_sha256\":\"92e8ccfc7b9b30edca1bc851ceaa26966627b6648a2fc62582c806acd080fa95\",\"expected_target_revision\":0,\"expires_at\":1700000300,\"issued_at\":1700000000,\"issuer\":\"mrn-content-qualification\",\"nonce\":\"3333333333333333333333333333333333333333333333333333333333333333\",\"qualification_job_id\":\"23456789-1234-4123-8123-123456789abc\",\"recipe_catalog_sha256\":\"7777777777777777777777777777777777777777777777777777777777777777\",\"recipe_id\":\"fixture-title\",\"recipe_sha256\":\"8888888888888888888888888888888888888888888888888888888888888888\",\"request_id\":\"12345678-1234-4123-8123-123456789abc\",\"requester_binding_sha256\":\"6666666666666666666666666666666666666666666666666666666666666666\",\"schema\":1,\"site_id\":73,\"site_url\":\"https://pages.fixture.example.invalid\",\"target\":{\"field\":\"post_title\",\"kind\":\"post\",\"post_id\":900,\"post_type\":\"page\"}}",
+      "sha256": "8d10d9c50d72f2968fd48532d695ed0705d69a9acb9c3bdf32289f537a5fa30c"
+    },
+    {
+      "contract": "content-capture-read-v1.json",
+      "definition": "output",
+      "value": {
+        "qualification_job_id": "23456789-1234-4123-8123-123456789abc",
+        "capture_artifact_sha256": "a23b1d63d030aebb0b477b48a25c5359ac3691f4e55090ba9ec5825d38af0271",
+        "capture_artifact": {
+          "schema": 1,
+          "authorization_policy_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+          "catalog_epoch": 1,
+          "qualification_job_id": "23456789-1234-4123-8123-123456789abc",
+          "expected_snapshot_sha256": "92e8ccfc7b9b30edca1bc851ceaa26966627b6648a2fc62582c806acd080fa95",
+          "requester_binding_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+          "site_id": 73,
+          "site_url": "https://pages.fixture.example.invalid",
+          "target": {
+            "kind": "post",
+            "post_type": "page",
+            "post_id": 900,
+            "field": "post_title"
+          },
+          "recipe_catalog_sha256": "7777777777777777777777777777777777777777777777777777777777777777",
+          "recipe_id": "fixture-title",
+          "recipe_sha256": "8888888888888888888888888888888888888888888888888888888888888888",
+          "expected_target_revision": 0,
+          "snapshot": {
+            "schema": 1,
+            "site_id": 73,
+            "site_url": "https://pages.fixture.example.invalid",
+            "target": {
+              "kind": "post",
+              "post_type": "page",
+              "post_id": 900,
+              "field": "post_title"
+            },
+            "post_status": "publish",
+            "post_name": "about",
+            "post_title": "About MRN",
+            "post_excerpt": "",
+            "post_content": "<p>Fixture content only.</p>"
+          },
+          "snapshot_sha256": "92e8ccfc7b9b30edca1bc851ceaa26966627b6648a2fc62582c806acd080fa95",
+          "stable_selector": {
+            "post_type": "page",
+            "post_path": "about"
+          },
+          "affected_paths": [
+            "/about/"
+          ],
+          "parity_manifest": {
+            "schema": 1,
+            "wordpress_version": "6.9.4",
+            "php_version": "8.3.99-fixture",
+            "php_extensions": [
+              {
+                "name": "Core",
+                "version": "8.3.99-fixture"
+              },
+              {
+                "name": "json",
+                "version": "8.3.99-fixture"
+              }
+            ],
+            "stylesheet": "fixture-child",
+            "template": "fixture-parent",
+            "active_plugins": [
+              "fixture/fixture.php"
+            ],
+            "mu_plugins": [
+              "fixture.php"
+            ],
+            "core_php": [
+              {
+                "path": "index.php",
+                "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+              },
+              {
+                "path": "wp-includes/post.php",
+                "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+              }
+            ],
+            "roots": [
+              {
+                "path": "wp-content/mu-plugins/",
+                "kind": "directory",
+                "present": true,
+                "files": [
+                  {
+                    "path": "wp-content/mu-plugins/fixture.php",
+                    "sha256": "3333333333333333333333333333333333333333333333333333333333333333"
+                  }
+                ]
+              },
+              {
+                "path": "wp-content/plugins/fixture/",
+                "kind": "directory",
+                "present": true,
+                "files": [
+                  {
+                    "path": "wp-content/plugins/fixture/fixture.php",
+                    "sha256": "4444444444444444444444444444444444444444444444444444444444444444"
+                  }
+                ]
+              },
+              {
+                "path": "wp-content/themes/fixture-child/",
+                "kind": "directory",
+                "present": true,
+                "files": [
+                  {
+                    "path": "wp-content/themes/fixture-child/style.css",
+                    "sha256": "5555555555555555555555555555555555555555555555555555555555555555"
+                  }
+                ]
+              },
+              {
+                "path": "wp-content/themes/fixture-parent/",
+                "kind": "directory",
+                "present": true,
+                "files": [
+                  {
+                    "path": "wp-content/themes/fixture-parent/index.php",
+                    "sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+                  }
+                ]
+              }
+            ],
+            "render_options": [
+              {
+                "key": "blogdescription",
+                "present": false,
+                "value": null
+              },
+              {
+                "key": "blogname",
+                "present": true,
+                "value": {
+                  "type": "string",
+                  "sha256": "0ac604fdb44557009ba96e6db60606dff9c809dc016c7e092e0e9f64c31faab8"
+                }
+              }
+            ],
+            "target_meta": [
+              {
+                "key": "fixture_label",
+                "values": [
+                  {
+                    "type": "string",
+                    "sha256": "285d633852c4526725165aef74db0215371e04037d6b1f99d30aa99152400202"
+                  }
+                ]
+              }
+            ],
+            "render_dependencies": "owner-qualified-native-post"
+          },
+          "parity_sha256": "a684c17801b336318c3e763132c0ab5b8c2b8861ce661e89ff6127a703aeade9"
+        }
+      },
+      "canonical": "{\"capture_artifact\":{\"affected_paths\":[\"/about/\"],\"authorization_policy_sha256\":\"4444444444444444444444444444444444444444444444444444444444444444\",\"catalog_epoch\":1,\"expected_snapshot_sha256\":\"92e8ccfc7b9b30edca1bc851ceaa26966627b6648a2fc62582c806acd080fa95\",\"expected_target_revision\":0,\"parity_manifest\":{\"active_plugins\":[\"fixture/fixture.php\"],\"core_php\":[{\"path\":\"index.php\",\"sha256\":\"1111111111111111111111111111111111111111111111111111111111111111\"},{\"path\":\"wp-includes/post.php\",\"sha256\":\"2222222222222222222222222222222222222222222222222222222222222222\"}],\"mu_plugins\":[\"fixture.php\"],\"php_extensions\":[{\"name\":\"Core\",\"version\":\"8.3.99-fixture\"},{\"name\":\"json\",\"version\":\"8.3.99-fixture\"}],\"php_version\":\"8.3.99-fixture\",\"render_dependencies\":\"owner-qualified-native-post\",\"render_options\":[{\"key\":\"blogdescription\",\"present\":false,\"value\":null},{\"key\":\"blogname\",\"present\":true,\"value\":{\"sha256\":\"0ac604fdb44557009ba96e6db60606dff9c809dc016c7e092e0e9f64c31faab8\",\"type\":\"string\"}}],\"roots\":[{\"files\":[{\"path\":\"wp-content/mu-plugins/fixture.php\",\"sha256\":\"3333333333333333333333333333333333333333333333333333333333333333\"}],\"kind\":\"directory\",\"path\":\"wp-content/mu-plugins/\",\"present\":true},{\"files\":[{\"path\":\"wp-content/plugins/fixture/fixture.php\",\"sha256\":\"4444444444444444444444444444444444444444444444444444444444444444\"}],\"kind\":\"directory\",\"path\":\"wp-content/plugins/fixture/\",\"present\":true},{\"files\":[{\"path\":\"wp-content/themes/fixture-child/style.css\",\"sha256\":\"5555555555555555555555555555555555555555555555555555555555555555\"}],\"kind\":\"directory\",\"path\":\"wp-content/themes/fixture-child/\",\"present\":true},{\"files\":[{\"path\":\"wp-content/themes/fixture-parent/index.php\",\"sha256\":\"6666666666666666666666666666666666666666666666666666666666666666\"}],\"kind\":\"directory\",\"path\":\"wp-content/themes/fixture-parent/\",\"present\":true}],\"schema\":1,\"stylesheet\":\"fixture-child\",\"target_meta\":[{\"key\":\"fixture_label\",\"values\":[{\"sha256\":\"285d633852c4526725165aef74db0215371e04037d6b1f99d30aa99152400202\",\"type\":\"string\"}]}],\"template\":\"fixture-parent\",\"wordpress_version\":\"6.9.4\"},\"parity_sha256\":\"a684c17801b336318c3e763132c0ab5b8c2b8861ce661e89ff6127a703aeade9\",\"qualification_job_id\":\"23456789-1234-4123-8123-123456789abc\",\"recipe_catalog_sha256\":\"7777777777777777777777777777777777777777777777777777777777777777\",\"recipe_id\":\"fixture-title\",\"recipe_sha256\":\"8888888888888888888888888888888888888888888888888888888888888888\",\"requester_binding_sha256\":\"6666666666666666666666666666666666666666666666666666666666666666\",\"schema\":1,\"site_id\":73,\"site_url\":\"https://pages.fixture.example.invalid\",\"snapshot\":{\"post_content\":\"<p>Fixture content only.</p>\",\"post_excerpt\":\"\",\"post_name\":\"about\",\"post_status\":\"publish\",\"post_title\":\"About MRN\",\"schema\":1,\"site_id\":73,\"site_url\":\"https://pages.fixture.example.invalid\",\"target\":{\"field\":\"post_title\",\"kind\":\"post\",\"post_id\":900,\"post_type\":\"page\"}},\"snapshot_sha256\":\"92e8ccfc7b9b30edca1bc851ceaa26966627b6648a2fc62582c806acd080fa95\",\"stable_selector\":{\"post_path\":\"about\",\"post_type\":\"page\"},\"target\":{\"field\":\"post_title\",\"kind\":\"post\",\"post_id\":900,\"post_type\":\"page\"}},\"capture_artifact_sha256\":\"a23b1d63d030aebb0b477b48a25c5359ac3691f4e55090ba9ec5825d38af0271\",\"qualification_job_id\":\"23456789-1234-4123-8123-123456789abc\"}",
+      "sha256": "a6e7b8183ab4b08330fa03bc3e7a7baf47a31aa0002bf25a9940bf812e7fd40a"
+    },
+    {
+      "contract": "content-qualification-report-v1.json",
+      "definition": "registrar_claims",
+      "value": {
+        "schema": 1,
+        "issuer": "mrn-content-qualification",
+        "audience": "https://wpcontrol.mrndev.io",
+        "issued_at": 1700000000,
+        "expires_at": 1700000300,
+        "request_id": "12345678-1234-4123-8123-123456789abc",
+        "nonce": "3333333333333333333333333333333333333333333333333333333333333333",
+        "authorization_policy_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+        "catalog_epoch": 1,
+        "qualification_job_id": "23456789-1234-4123-8123-123456789abc",
+        "expected_snapshot_sha256": "92e8ccfc7b9b30edca1bc851ceaa26966627b6648a2fc62582c806acd080fa95",
+        "requester_binding_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+        "site_id": 73,
+        "site_url": "https://pages.fixture.example.invalid",
+        "target": {
+          "kind": "post",
+          "post_type": "page",
+          "post_id": 900,
+          "field": "post_title"
+        },
+        "recipe_catalog_sha256": "7777777777777777777777777777777777777777777777777777777777777777",
+        "recipe_id": "fixture-title",
+        "recipe_sha256": "8888888888888888888888888888888888888888888888888888888888888888",
+        "action": "retain-report",
+        "expected_target_revision": 0,
+        "capture_artifact_sha256": "a23b1d63d030aebb0b477b48a25c5359ac3691f4e55090ba9ec5825d38af0271",
+        "qualification_report_sha256": "c46bfc49f05887f31174d3f3a277dd68838cf82f87948f4748fc45f804cd0f22",
+        "profile_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "parity_sha256": "a684c17801b336318c3e763132c0ab5b8c2b8861ce661e89ff6127a703aeade9",
+        "provider_source_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      "canonical": "{\"action\":\"retain-report\",\"audience\":\"https://wpcontrol.mrndev.io\",\"authorization_policy_sha256\":\"4444444444444444444444444444444444444444444444444444444444444444\",\"capture_artifact_sha256\":\"a23b1d63d030aebb0b477b48a25c5359ac3691f4e55090ba9ec5825d38af0271\",\"catalog_epoch\":1,\"expected_snapshot_sha256\":\"92e8ccfc7b9b30edca1bc851ceaa26966627b6648a2fc62582c806acd080fa95\",\"expected_target_revision\":0,\"expires_at\":1700000300,\"issued_at\":1700000000,\"issuer\":\"mrn-content-qualification\",\"nonce\":\"3333333333333333333333333333333333333333333333333333333333333333\",\"parity_sha256\":\"a684c17801b336318c3e763132c0ab5b8c2b8861ce661e89ff6127a703aeade9\",\"profile_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"provider_source_sha\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"qualification_job_id\":\"23456789-1234-4123-8123-123456789abc\",\"qualification_report_sha256\":\"c46bfc49f05887f31174d3f3a277dd68838cf82f87948f4748fc45f804cd0f22\",\"recipe_catalog_sha256\":\"7777777777777777777777777777777777777777777777777777777777777777\",\"recipe_id\":\"fixture-title\",\"recipe_sha256\":\"8888888888888888888888888888888888888888888888888888888888888888\",\"request_id\":\"12345678-1234-4123-8123-123456789abc\",\"requester_binding_sha256\":\"6666666666666666666666666666666666666666666666666666666666666666\",\"schema\":1,\"site_id\":73,\"site_url\":\"https://pages.fixture.example.invalid\",\"target\":{\"field\":\"post_title\",\"kind\":\"post\",\"post_id\":900,\"post_type\":\"page\"}}",
+      "sha256": "15bc421950e70f83bb0fa9aa2ee53bc3b19fef2f1aae7c1434868b71198dde4b"
+    },
+    {
+      "contract": "content-qualification-report-v1.json",
+      "definition": "qa_report_claims",
+      "value": {
+        "schema": 1,
+        "issuer": "mrn-qa-engine",
+        "audience": "https://wpcontrol.mrndev.io",
+        "issued_at": 1700000000,
+        "expires_at": 1700000300,
+        "request_id": "12345678-1234-4123-8123-123456789abc",
+        "nonce": "3333333333333333333333333333333333333333333333333333333333333333",
+        "authorization_policy_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+        "catalog_epoch": 1,
+        "qualification_job_id": "23456789-1234-4123-8123-123456789abc",
+        "expected_snapshot_sha256": "92e8ccfc7b9b30edca1bc851ceaa26966627b6648a2fc62582c806acd080fa95",
+        "requester_binding_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+        "site_id": 73,
+        "site_url": "https://pages.fixture.example.invalid",
+        "target": {
+          "kind": "post",
+          "post_type": "page",
+          "post_id": 900,
+          "field": "post_title"
+        },
+        "recipe_catalog_sha256": "7777777777777777777777777777777777777777777777777777777777777777",
+        "recipe_id": "fixture-title",
+        "recipe_sha256": "8888888888888888888888888888888888888888888888888888888888888888",
+        "action": "qualify-profile",
+        "expected_target_revision": 0,
+        "purpose": "profile-qualification",
+        "result": "Pass",
+        "capture_artifact_sha256": "a23b1d63d030aebb0b477b48a25c5359ac3691f4e55090ba9ec5825d38af0271",
+        "profile_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "parity_sha256": "a684c17801b336318c3e763132c0ab5b8c2b8861ce661e89ff6127a703aeade9",
+        "provider_source_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "capture_template_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "mutation_template_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "parity_helper_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "run_provenance": {
+          "repository": "mrnwebdesigns/mrn-code-qa-runner",
+          "ref": "refs/heads/main",
+          "run_id": 123,
+          "run_attempt": 1,
+          "workflow_path": ".github/workflows/qualification.yml",
+          "workflow_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "runner_source_sha": "cccccccccccccccccccccccccccccccccccccccc",
+          "engine_commit": "dddddddddddddddddddddddddddddddddddddddd",
+          "engine_configuration_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+          "runtime_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+          "runtime_url": "https://qa.fixture.example.invalid"
+        },
+        "mandatory_evidence": {
+          "wordpress_api": {
+            "artifact_id": 100,
+            "artifact_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "manifest_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "measurement_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          "accessibility": {
+            "artifact_id": 101,
+            "artifact_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "manifest_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "measurement_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          "performance": {
+            "artifact_id": 102,
+            "artifact_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "manifest_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "measurement_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          "native_content_lifecycle": {
+            "artifact_id": 103,
+            "artifact_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "manifest_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "measurement_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          "capture_integrity": {
+            "artifact_id": 104,
+            "artifact_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "manifest_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "measurement_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          "scope_ownership": {
+            "artifact_id": 105,
+            "artifact_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "manifest_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "measurement_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          "parity_consistency": {
+            "artifact_id": 106,
+            "artifact_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "manifest_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "measurement_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          "source_integrity": {
+            "artifact_id": 107,
+            "artifact_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "manifest_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "measurement_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          }
+        }
+      },
+      "canonical": "{\"action\":\"qualify-profile\",\"audience\":\"https://wpcontrol.mrndev.io\",\"authorization_policy_sha256\":\"4444444444444444444444444444444444444444444444444444444444444444\",\"capture_artifact_sha256\":\"a23b1d63d030aebb0b477b48a25c5359ac3691f4e55090ba9ec5825d38af0271\",\"capture_template_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"catalog_epoch\":1,\"expected_snapshot_sha256\":\"92e8ccfc7b9b30edca1bc851ceaa26966627b6648a2fc62582c806acd080fa95\",\"expected_target_revision\":0,\"expires_at\":1700000300,\"issued_at\":1700000000,\"issuer\":\"mrn-qa-engine\",\"mandatory_evidence\":{\"accessibility\":{\"artifact_id\":101,\"artifact_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"manifest_sha256\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"measurement_sha256\":\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\"},\"capture_integrity\":{\"artifact_id\":104,\"artifact_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"manifest_sha256\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"measurement_sha256\":\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\"},\"native_content_lifecycle\":{\"artifact_id\":103,\"artifact_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"manifest_sha256\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"measurement_sha256\":\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\"},\"parity_consistency\":{\"artifact_id\":106,\"artifact_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"manifest_sha256\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"measurement_sha256\":\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\"},\"performance\":{\"artifact_id\":102,\"artifact_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"manifest_sha256\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"measurement_sha256\":\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\"},\"scope_ownership\":{\"artifact_id\":105,\"artifact_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"manifest_sha256\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"measurement_sha256\":\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\"},\"source_integrity\":{\"artifact_id\":107,\"artifact_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"manifest_sha256\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"measurement_sha256\":\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\"},\"wordpress_api\":{\"artifact_id\":100,\"artifact_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"manifest_sha256\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"measurement_sha256\":\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\"}},\"mutation_template_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"nonce\":\"3333333333333333333333333333333333333333333333333333333333333333\",\"parity_helper_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"parity_sha256\":\"a684c17801b336318c3e763132c0ab5b8c2b8861ce661e89ff6127a703aeade9\",\"profile_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"provider_source_sha\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"purpose\":\"profile-qualification\",\"qualification_job_id\":\"23456789-1234-4123-8123-123456789abc\",\"recipe_catalog_sha256\":\"7777777777777777777777777777777777777777777777777777777777777777\",\"recipe_id\":\"fixture-title\",\"recipe_sha256\":\"8888888888888888888888888888888888888888888888888888888888888888\",\"request_id\":\"12345678-1234-4123-8123-123456789abc\",\"requester_binding_sha256\":\"6666666666666666666666666666666666666666666666666666666666666666\",\"result\":\"Pass\",\"run_provenance\":{\"engine_commit\":\"dddddddddddddddddddddddddddddddddddddddd\",\"engine_configuration_sha256\":\"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"ref\":\"refs/heads/main\",\"repository\":\"mrnwebdesigns/mrn-code-qa-runner\",\"run_attempt\":1,\"run_id\":123,\"runner_source_sha\":\"cccccccccccccccccccccccccccccccccccccccc\",\"runtime_sha256\":\"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff\",\"runtime_url\":\"https://qa.fixture.example.invalid\",\"workflow_path\":\".github/workflows/qualification.yml\",\"workflow_sha256\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"},\"schema\":1,\"site_id\":73,\"site_url\":\"https://pages.fixture.example.invalid\",\"target\":{\"field\":\"post_title\",\"kind\":\"post\",\"post_id\":900,\"post_type\":\"page\"}}",
+      "sha256": "c46bfc49f05887f31174d3f3a277dd68838cf82f87948f4748fc45f804cd0f22"
+    }
+  ],
+  "binding_mismatches": [
+    {
+      "case_index": 0,
+      "field": "expected_snapshot_sha256",
+      "value": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "case_index": 0,
+      "field": "requester_binding_sha256",
+      "value": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "case_index": 0,
+      "field": "recipe_sha256",
+      "value": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "case_index": 0,
+      "field": "capture_artifact_sha256",
+      "value": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "case_index": 2,
+      "field": "expected_snapshot_sha256",
+      "value": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "case_index": 2,
+      "field": "requester_binding_sha256",
+      "value": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "case_index": 2,
+      "field": "recipe_sha256",
+      "value": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "case_index": 2,
+      "field": "capture_artifact_sha256",
+      "value": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "case_index": 3,
+      "field": "expected_snapshot_sha256",
+      "value": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "case_index": 3,
+      "field": "requester_binding_sha256",
+      "value": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "case_index": 3,
+      "field": "recipe_sha256",
+      "value": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "case_index": 3,
+      "field": "capture_artifact_sha256",
+      "value": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  ]
+}

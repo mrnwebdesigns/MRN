@@ -1,0 +1,118 @@
+name: MRN hosted email audit source composition
+on:
+  pull_request:
+    paths:
+      - tools/operations/**
+      - .github/workflows/operations-email-audit-ci.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit-composition:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: zip, sodium
+          coverage: none
+      - name: Read separate immutable audit inputs
+        id: sources
+        run: |
+          node --input-type=module <<'JS'
+          import { readFileSync, appendFileSync } from 'node:fs';
+          import assert from 'node:assert/strict';
+          const lock = JSON.parse(readFileSync('tools/operations/test/runtime/email-audit-sources.json', 'utf8'));
+          assert.equal(lock.schema, 1);
+          assert.equal(lock.scope, 'hosted-email-audit-source-composition');
+          for (const [name, repository] of [['provider', 'mrnwebdesigns/mrn-mainwp-operations-api'], ['transport', 'mrnwebdesigns/mainwp-mcp']]) {
+            assert.equal(lock[name].repository, repository);
+            assert.match(lock[name].commit, /^[a-f0-9]{40}$/);
+            appendFileSync(process.env.GITHUB_OUTPUT, `${name}=${lock[name].commit}\n`);
+          }
+          JS
+      - name: Use existing read-only provider repository access
+        id: provider-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.MRN_CI_STANDALONE_REPOS_APP_ID }}
+          private-key: ${{ secrets.MRN_CI_STANDALONE_REPOS_PRIVATE_KEY }}
+          owner: mrnwebdesigns
+          repositories: mrn-mainwp-operations-api
+          permission-contents: read
+      - uses: actions/checkout@v4
+        with:
+          repository: mrnwebdesigns/mrn-mainwp-operations-api
+          ref: ${{ steps.sources.outputs.provider }}
+          token: ${{ steps.provider-token.outputs.token }}
+          path: .audit/provider
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: mrnwebdesigns/mainwp-mcp
+          ref: ${{ steps.sources.outputs.transport }}
+          path: .audit/transport
+          persist-credentials: false
+      - name: Verify inputs and build shared engine
+        run: |
+          node --input-type=module <<'JS'
+          import { readFileSync } from 'node:fs';
+          import { createHash } from 'node:crypto';
+          import { execFileSync } from 'node:child_process';
+          import assert from 'node:assert/strict';
+          const lock = JSON.parse(readFileSync('tools/operations/test/runtime/email-audit-sources.json', 'utf8'));
+          const sha = path => createHash('sha256').update(readFileSync(path)).digest('hex');
+          for (const name of ['provider', 'transport']) {
+            assert.equal(execFileSync('git', ['-C', `.audit/${name}`, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), lock[name].commit);
+          }
+          assert.equal(sha('.audit/provider/includes/class-mrn-mainwp-email-audit.php'), lock.provider.nativeAuditSha256);
+          assert.equal(sha('.audit/transport/package-lock.json'), lock.transport.packageLockSha256);
+          JS
+          npm ci --ignore-scripts --prefix .audit/transport
+          npm run build --prefix .audit/transport
+          npm ci --ignore-scripts --prefix tools/operations
+          node --input-type=module <<'JS'
+          import { readFileSync } from 'node:fs';
+          import { createHash } from 'node:crypto';
+          import assert from 'node:assert/strict';
+          const lock = JSON.parse(readFileSync('tools/operations/test/runtime/email-audit-sources.json', 'utf8'));
+          assert.equal(createHash('sha256').update(readFileSync('.audit/transport/dist/mrn-email-audit.js')).digest('hex'), lock.transport.engineSha256);
+          JS
+      - name: Native provider callbacks and Google delegation regressions
+        working-directory: .audit/provider
+        run: |
+          php tests/delegation-regression.php
+          php tests/email-audit-regression.php
+          php tests/operations-regression.php
+          php tests/kinsta-backups-regression.php
+          php tests/optional-plugin-updates-regression.php
+      - name: Existing engine custody and bounded scan regressions
+        working-directory: .audit/transport
+        run: npx vitest run src/mrn-email-audit.test.ts --testTimeout=15000
+      - name: Hosted source, signed transport and MCP resource custody
+        run: |
+          npm run lint --prefix tools/operations
+          node --test tools/operations/test/email-audit.test.mjs tools/operations/test/email-audit-deadline.test.mjs tools/operations/test/capabilities.test.mjs
+          MRN_EMAIL_AUDIT_ENGINE="$GITHUB_WORKSPACE/.audit/transport/dist/mrn-email-audit.js" node --test tools/operations/test/runtime/email-audit-hosted.mjs
+      - name: Preserve acceptance boundaries
+        run: |
+          node --input-type=module <<'JS'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          import assert from 'node:assert/strict';
+          const lock = JSON.parse(readFileSync('tools/operations/test/runtime/email-audit-sources.json', 'utf8'));
+          for (const field of ['nativeWordPressCompositionVerified', 'liveGoogleVerified', 'chatgptAcceptanceVerified', 'deploymentAuthorized']) assert.equal(lock[field], false);
+          writeFileSync('email-audit-source-result.json', JSON.stringify({ ...lock, result: 'PASS', verified: 'source-engine-signed-fixture-and-http-resources-only', gateway: process.env.GITHUB_SHA }, null, 2));
+          JS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hosted-email-audit-source-result
+          path: email-audit-source-result.json
+          if-no-files-found: error
+          retention-days: 7

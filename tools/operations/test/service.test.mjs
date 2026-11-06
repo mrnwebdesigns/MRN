@@ -7,6 +7,20 @@ import { Store } from '../src/store.mjs';
 import { MainwpSession, toolNames } from '../src/mainwp.mjs';
 import { publicAddress } from '../src/probe.mjs';
 
+test('registry permissions never upgrade legacy OAuth consent into write authority', async t => {
+  const f = setup(); t.after(() => f.close());
+  f.policy.members[0].grants[0].actions.push('code', 'content');
+  const target = f.registry.resolve(actor, 'example');
+  for (const scopes of [undefined, ['mrn:operations'], ['mrn:operations:write'], ['mrn:operations', 'mrn:operations:write:extra']]) {
+    const legacy = { ...actor, scopes };
+    assert.doesNotThrow(() => f.registry.authorize(legacy, target, 'read'));
+    for (const action of ['repair', 'code', 'content', 'deploy_development', 'release_production']) {
+      assert.throws(() => f.registry.authorize(legacy, target, action), { code: 'INSUFFICIENT_SCOPE' });
+    }
+  }
+  assert.equal(f.state.calls.length, 0);
+});
+
 test('discover -> evidence -> revalidate -> concrete plan -> approve -> existing Fleet -> verify -> code rollback', async t => {
   const f = setup(); t.after(() => f.close());
   assert.equal((await f.service.list(actor))[0].websiteId, 'example');
@@ -80,6 +94,35 @@ test('sync timeout uses one exact readback; stale state does not become current'
   assert.equal(report.type, 'inspection'); assert.equal(f.state.calls.filter(n => n === toolNames.sync).length, 1);
   f.state.stale = true; f.state.lastSync = '2000-01-01T00:00:00Z';
   await assert.rejects(() => f.service.inspect(actor, { website: 'example' }), { code: 'STALE_INVENTORY' });
+});
+
+test('native sync failure, queues and malformed target evidence stop before fresh readback even with a current timestamp', async t => {
+  const f = setup(); t.after(() => f.close());
+  const valid = { queued: false, synced: [{ id: f.state.id, url: f.state.url }], errors: [], total_synced: 1, total_errors: 0 };
+  for (const result of [
+    { ...valid, errors: [{ code: 'mainwp_sync_exception', message: 'private-sync-sentinel' }], total_errors: 1 },
+    { ...valid, queued: true }, { ...valid, synced: [], total_synced: 0 },
+    { ...valid, synced: [{ id: f.state.id + 1, url: f.state.url }] },
+    { ...valid, synced: [{ id: f.state.id, url: 'https://other.test' }] },
+    { ...valid, synced: [{ id: f.state.id, url: 'https://private-sync-sentinel@other.test' }] },
+    { ...valid, synced: [...valid.synced, ...valid.synced], total_synced: 2 },
+    { ...valid, total_errors: 1 }, { ...valid, total_synced: '1' }, { success: true }, {},
+  ]) {
+    f.state.syncResult = result; f.state.calls.length = 0;
+    await assert.rejects(() => f.service.inspect(actor, { website: 'example' }), error => {
+      assert.equal(error.code, 'SYNC_UNVERIFIED'); assert.ok(!error.message.includes('sentinel')); return true;
+    });
+    assert.deepEqual(f.state.calls, [toolNames.site, toolNames.sync]);
+    assert.equal(f.state.backups, 0); assert.equal(f.state.mutations, 0);
+  }
+});
+
+test('native one-site sync confirmation permits canonical trailing slash then requires fresh readback', async t => {
+  const f = setup(); t.after(() => f.close());
+  f.state.syncResult = { queued: false, synced: [{ id: f.state.id, url: `${f.state.url}/` }], errors: [], total_synced: 1, total_errors: 0 };
+  const session = new MainwpSession(f.client, f.registry, f.store, actor, f.registry.resolve(actor, 'example'));
+  assert.equal((await session.fresh()).id, f.state.id);
+  assert.deepEqual(f.state.calls, [toolNames.site, toolNames.sync, toolNames.site]);
 });
 
 test('partial and absent components remain qualification cases without automatic installation', async t => {

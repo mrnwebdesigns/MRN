@@ -1,0 +1,792 @@
+{
+  "schema": 2,
+  "status": "reviewed source-only dispatch proposal; no controller registration or activation",
+  "runtime_registered": false,
+  "production_enabled": false,
+  "consumer_binding_enabled": false,
+  "source_dependencies": {
+    "content-management-v1.json": "e164d4bc265096493e6650c0beed42e7d8acbbd013d261a70b63513f591500de",
+    "content-management-original-authorization-v2.json": "3a77cf8ad2131fd1e2255e74d2a3dcd9ca1d18051e5acc1d51bdb6b7d6fa73c2"
+  },
+  "public_preview": {
+    "ability": "mrn-mainwp/preview-content-edit-v1",
+    "input": "content-management-v1.json#/abilities/preview-content-edit-v1/input",
+    "output": "content-management-v1.json#/abilities/preview-content-edit-v1/output",
+    "delegation": "unchanged exact existing v1 envelope; no widened ability regex or claim set",
+    "selection": "server-owned coherent readiness + delegated existing post_id >=1 selects original-resource-authorization-v2; disabled/default retains existing legacy behavior; no caller selector; ID0 remains separately gated"
+  },
+  "machine_abilities": {
+    "readiness": {
+      "name": "mrn-mainwp/get-content-edit-binding-readiness-v2",
+      "input": "#/$defs/readiness_input",
+      "output": "#/$defs/readiness_output",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true
+      }
+    },
+    "bind": {
+      "name": "mrn-mainwp/bind-content-edit-authorization-v2",
+      "input": "#/$defs/authorization_input",
+      "output": "#/$defs/authorization_projection",
+      "purpose": "mrn-content-management-existing-resource-authorization-bind-v2:",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false
+      }
+    },
+    "read": {
+      "name": "mrn-mainwp/read-content-edit-authorization-v2",
+      "input": "#/$defs/authorization_input",
+      "output": "#/$defs/authorization_projection",
+      "purpose": "mrn-content-management-existing-resource-authorization-read-v2:",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false
+      }
+    }
+  },
+  "receiver_rules": [
+    "Every machine surface requires existing pinned backend, manage_options, exact Dashboard and no delegated staff scope. Readiness is global metadata, never individual access or execution permission.",
+    "Readiness is acquired fresh over authenticated existing connection: observed_at <= now, expires_at > now and expires_at <= observed_at+30; exact provider source/policy/dependency/map pinned. ready requires current internally consistent approved coherence epoch. Disabled/blocked never source-select or bind. Coherent but owner-disabled status may report coherence_ready:true with a verified epoch while both preview/binding flags remain false; it still cannot source-select or bind.",
+    "The public v1 preview schema and v1 delegation remain byte-compatible. Only server source selects the new private original lifetime after coherent readiness. A review shape cannot prove private protocol; exact successful bind/read projection must independently match original local mapping and provider retained state.",
+    "Bind/read use unchanged exact original-authorization-v2 claims, role/purposes and 60-second control ceiling. A new original-source context includes the coherence epoch; old originals cannot be upgraded or rebound.",
+    "Successful bind projection remains bound-blocked with production/admission flags false. It is not a fresh current-access veto, QA report, backup, approval, source provenance or execution grant.",
+    "Read consumes request/nonce history, so it is not marked idempotent or read-only. Lost bind responses recover with a new signed read and the immutable original anchor; never automatically retry a bind.",
+    "No controller registration, service startup, allowlist expansion or production activation before provider coherence, source qualification, reviewed configuration and existing deployment gates. Later site writes retain exact preview/QA/backup/approval/CAS/readback/rollback.",
+    "Enforce fixed per-call input/output byte, freshness and monotonic deadline limits independently of schemas; a failed, expired or unknown outcome is not retried. Existing content/package/capture/source limits are unchanged."
+  ],
+  "$defs": {
+    "authorization_envelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key_id",
+        "payload_base64",
+        "signature_base64"
+      ],
+      "properties": {
+        "key_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{1,64}$",
+          "maxLength": 64
+        },
+        "payload_base64": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 16384
+        },
+        "signature_base64": {
+          "type": "string",
+          "minLength": 88,
+          "maxLength": 88
+        }
+      }
+    },
+    "authorization_input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "signed_request"
+      ],
+      "properties": {
+        "signed_request": {
+          "$ref": "#/$defs/authorization_envelope"
+        }
+      }
+    },
+    "authorization_projection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "operation_id",
+        "reviewed_digest",
+        "qualification_protocol",
+        "protocol_contracts_sha256",
+        "original_delegation_request_id",
+        "original_resource_authorization_sha256",
+        "original_resource_authorization_expires_at",
+        "state",
+        "authorization_binding_sha256",
+        "production_qualified",
+        "consumer_binding_issued"
+      ],
+      "properties": {
+        "schema": {
+          "type": "integer",
+          "enum": [
+            2
+          ]
+        },
+        "operation_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$",
+          "maxLength": 36
+        },
+        "reviewed_digest": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "qualification_protocol": {
+          "type": "string",
+          "enum": [
+            "content-management-existing-v2"
+          ]
+        },
+        "protocol_contracts_sha256": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "qualification",
+            "report",
+            "evidence",
+            "source_transfer",
+            "source_context",
+            "wire_registry"
+          ],
+          "properties": {
+            "qualification": {
+              "type": "string",
+              "enum": [
+                "1e652a77e369a341c4fa1d179ff6c69379b84661bdcd787850708adc6c01630e"
+              ]
+            },
+            "report": {
+              "type": "string",
+              "enum": [
+                "dd20dc082d006e4e53d02eddb5cdfc1543e3056281ef304dd750687856030114"
+              ]
+            },
+            "evidence": {
+              "type": "string",
+              "enum": [
+                "e511e4c9bc62eb839c68b59e64996e6b0d013f61ad8961520486ad821d4de6ff"
+              ]
+            },
+            "source_transfer": {
+              "type": "string",
+              "enum": [
+                "c99c352961aaf7f289352e6aeacd4ad914747fdff69072cf54151c4d1e2f64d5"
+              ]
+            },
+            "source_context": {
+              "type": "string",
+              "enum": [
+                "3996f36dc37181d1952b31ad32a2a231823954b4c058be1d3cb18e927a78b6c1"
+              ]
+            },
+            "wire_registry": {
+              "type": "string",
+              "enum": [
+                "dd375ecdc7e33b8e8e8f80ed0846ab76a5f3ad038be83d349b2902f8ae8fcef6"
+              ]
+            }
+          }
+        },
+        "original_delegation_request_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$",
+          "maxLength": 36
+        },
+        "original_resource_authorization_sha256": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "original_resource_authorization_expires_at": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "bound-blocked"
+          ]
+        },
+        "authorization_binding_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "production_qualified": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "consumer_binding_issued": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        }
+      }
+    },
+    "readiness_input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "action"
+      ],
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "status"
+          ]
+        }
+      }
+    },
+    "readiness_output": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema",
+            "dashboard_origin",
+            "qualification_protocol",
+            "lifetime_domain",
+            "protocol_contracts_sha256",
+            "original_authorization_contract_sha256",
+            "dispatch_contract_sha256",
+            "provider_source_sha",
+            "authorization_policy_sha256",
+            "observed_at",
+            "expires_at",
+            "production_qualified",
+            "consumer_binding_issued",
+            "binding_readiness",
+            "coherence_ready",
+            "coherence_epoch_sha256",
+            "source_selected_preview_enabled",
+            "machine_binding_enabled"
+          ],
+          "properties": {
+            "schema": {
+              "type": "integer",
+              "enum": [
+                2
+              ]
+            },
+            "dashboard_origin": {
+              "type": "string",
+              "enum": [
+                "https://wpcontrol.mrndev.io"
+              ]
+            },
+            "qualification_protocol": {
+              "type": "string",
+              "enum": [
+                "content-management-existing-v2"
+              ]
+            },
+            "lifetime_domain": {
+              "type": "string",
+              "enum": [
+                "original-resource-authorization-v2"
+              ]
+            },
+            "protocol_contracts_sha256": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "qualification",
+                "report",
+                "evidence",
+                "source_transfer",
+                "source_context",
+                "wire_registry"
+              ],
+              "properties": {
+                "qualification": {
+                  "type": "string",
+                  "enum": [
+                    "1e652a77e369a341c4fa1d179ff6c69379b84661bdcd787850708adc6c01630e"
+                  ]
+                },
+                "report": {
+                  "type": "string",
+                  "enum": [
+                    "dd20dc082d006e4e53d02eddb5cdfc1543e3056281ef304dd750687856030114"
+                  ]
+                },
+                "evidence": {
+                  "type": "string",
+                  "enum": [
+                    "e511e4c9bc62eb839c68b59e64996e6b0d013f61ad8961520486ad821d4de6ff"
+                  ]
+                },
+                "source_transfer": {
+                  "type": "string",
+                  "enum": [
+                    "c99c352961aaf7f289352e6aeacd4ad914747fdff69072cf54151c4d1e2f64d5"
+                  ]
+                },
+                "source_context": {
+                  "type": "string",
+                  "enum": [
+                    "3996f36dc37181d1952b31ad32a2a231823954b4c058be1d3cb18e927a78b6c1"
+                  ]
+                },
+                "wire_registry": {
+                  "type": "string",
+                  "enum": [
+                    "dd375ecdc7e33b8e8e8f80ed0846ab76a5f3ad038be83d349b2902f8ae8fcef6"
+                  ]
+                }
+              }
+            },
+            "original_authorization_contract_sha256": {
+              "type": "string",
+              "enum": [
+                "3a77cf8ad2131fd1e2255e74d2a3dcd9ca1d18051e5acc1d51bdb6b7d6fa73c2"
+              ]
+            },
+            "dispatch_contract_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$",
+              "minLength": 64,
+              "maxLength": 64
+            },
+            "provider_source_sha": {
+              "type": "string",
+              "minLength": 40,
+              "maxLength": 40,
+              "pattern": "^[a-f0-9]{40}$"
+            },
+            "authorization_policy_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$",
+              "minLength": 64,
+              "maxLength": 64
+            },
+            "observed_at": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "expires_at": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "production_qualified": {
+              "type": "boolean",
+              "enum": [
+                false
+              ]
+            },
+            "consumer_binding_issued": {
+              "type": "boolean",
+              "enum": [
+                false
+              ]
+            },
+            "binding_readiness": {
+              "type": "string",
+              "enum": [
+                "ready"
+              ]
+            },
+            "coherence_ready": {
+              "type": "boolean",
+              "enum": [
+                true
+              ]
+            },
+            "coherence_epoch_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$",
+              "minLength": 64,
+              "maxLength": 64
+            },
+            "source_selected_preview_enabled": {
+              "type": "boolean",
+              "enum": [
+                true
+              ]
+            },
+            "machine_binding_enabled": {
+              "type": "boolean",
+              "enum": [
+                true
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema",
+            "dashboard_origin",
+            "qualification_protocol",
+            "lifetime_domain",
+            "protocol_contracts_sha256",
+            "original_authorization_contract_sha256",
+            "dispatch_contract_sha256",
+            "provider_source_sha",
+            "authorization_policy_sha256",
+            "observed_at",
+            "expires_at",
+            "production_qualified",
+            "consumer_binding_issued",
+            "binding_readiness",
+            "coherence_ready",
+            "coherence_epoch_sha256",
+            "source_selected_preview_enabled",
+            "machine_binding_enabled"
+          ],
+          "properties": {
+            "schema": {
+              "type": "integer",
+              "enum": [
+                2
+              ]
+            },
+            "dashboard_origin": {
+              "type": "string",
+              "enum": [
+                "https://wpcontrol.mrndev.io"
+              ]
+            },
+            "qualification_protocol": {
+              "type": "string",
+              "enum": [
+                "content-management-existing-v2"
+              ]
+            },
+            "lifetime_domain": {
+              "type": "string",
+              "enum": [
+                "original-resource-authorization-v2"
+              ]
+            },
+            "protocol_contracts_sha256": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "qualification",
+                "report",
+                "evidence",
+                "source_transfer",
+                "source_context",
+                "wire_registry"
+              ],
+              "properties": {
+                "qualification": {
+                  "type": "string",
+                  "enum": [
+                    "1e652a77e369a341c4fa1d179ff6c69379b84661bdcd787850708adc6c01630e"
+                  ]
+                },
+                "report": {
+                  "type": "string",
+                  "enum": [
+                    "dd20dc082d006e4e53d02eddb5cdfc1543e3056281ef304dd750687856030114"
+                  ]
+                },
+                "evidence": {
+                  "type": "string",
+                  "enum": [
+                    "e511e4c9bc62eb839c68b59e64996e6b0d013f61ad8961520486ad821d4de6ff"
+                  ]
+                },
+                "source_transfer": {
+                  "type": "string",
+                  "enum": [
+                    "c99c352961aaf7f289352e6aeacd4ad914747fdff69072cf54151c4d1e2f64d5"
+                  ]
+                },
+                "source_context": {
+                  "type": "string",
+                  "enum": [
+                    "3996f36dc37181d1952b31ad32a2a231823954b4c058be1d3cb18e927a78b6c1"
+                  ]
+                },
+                "wire_registry": {
+                  "type": "string",
+                  "enum": [
+                    "dd375ecdc7e33b8e8e8f80ed0846ab76a5f3ad038be83d349b2902f8ae8fcef6"
+                  ]
+                }
+              }
+            },
+            "original_authorization_contract_sha256": {
+              "type": "string",
+              "enum": [
+                "3a77cf8ad2131fd1e2255e74d2a3dcd9ca1d18051e5acc1d51bdb6b7d6fa73c2"
+              ]
+            },
+            "dispatch_contract_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$",
+              "minLength": 64,
+              "maxLength": 64
+            },
+            "provider_source_sha": {
+              "type": "string",
+              "minLength": 40,
+              "maxLength": 40,
+              "pattern": "^[a-f0-9]{40}$"
+            },
+            "authorization_policy_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$",
+              "minLength": 64,
+              "maxLength": 64
+            },
+            "observed_at": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "expires_at": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "production_qualified": {
+              "type": "boolean",
+              "enum": [
+                false
+              ]
+            },
+            "consumer_binding_issued": {
+              "type": "boolean",
+              "enum": [
+                false
+              ]
+            },
+            "binding_readiness": {
+              "type": "string",
+              "enum": [
+                "disabled"
+              ]
+            },
+            "coherence_ready": {
+              "type": "boolean",
+              "enum": [
+                true
+              ]
+            },
+            "coherence_epoch_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$",
+              "minLength": 64,
+              "maxLength": 64
+            },
+            "source_selected_preview_enabled": {
+              "type": "boolean",
+              "enum": [
+                false
+              ]
+            },
+            "machine_binding_enabled": {
+              "type": "boolean",
+              "enum": [
+                false
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema",
+            "dashboard_origin",
+            "qualification_protocol",
+            "lifetime_domain",
+            "protocol_contracts_sha256",
+            "original_authorization_contract_sha256",
+            "dispatch_contract_sha256",
+            "provider_source_sha",
+            "authorization_policy_sha256",
+            "observed_at",
+            "expires_at",
+            "production_qualified",
+            "consumer_binding_issued",
+            "binding_readiness",
+            "coherence_ready",
+            "coherence_epoch_sha256",
+            "source_selected_preview_enabled",
+            "machine_binding_enabled"
+          ],
+          "properties": {
+            "schema": {
+              "type": "integer",
+              "enum": [
+                2
+              ]
+            },
+            "dashboard_origin": {
+              "type": "string",
+              "enum": [
+                "https://wpcontrol.mrndev.io"
+              ]
+            },
+            "qualification_protocol": {
+              "type": "string",
+              "enum": [
+                "content-management-existing-v2"
+              ]
+            },
+            "lifetime_domain": {
+              "type": "string",
+              "enum": [
+                "original-resource-authorization-v2"
+              ]
+            },
+            "protocol_contracts_sha256": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "qualification",
+                "report",
+                "evidence",
+                "source_transfer",
+                "source_context",
+                "wire_registry"
+              ],
+              "properties": {
+                "qualification": {
+                  "type": "string",
+                  "enum": [
+                    "1e652a77e369a341c4fa1d179ff6c69379b84661bdcd787850708adc6c01630e"
+                  ]
+                },
+                "report": {
+                  "type": "string",
+                  "enum": [
+                    "dd20dc082d006e4e53d02eddb5cdfc1543e3056281ef304dd750687856030114"
+                  ]
+                },
+                "evidence": {
+                  "type": "string",
+                  "enum": [
+                    "e511e4c9bc62eb839c68b59e64996e6b0d013f61ad8961520486ad821d4de6ff"
+                  ]
+                },
+                "source_transfer": {
+                  "type": "string",
+                  "enum": [
+                    "c99c352961aaf7f289352e6aeacd4ad914747fdff69072cf54151c4d1e2f64d5"
+                  ]
+                },
+                "source_context": {
+                  "type": "string",
+                  "enum": [
+                    "3996f36dc37181d1952b31ad32a2a231823954b4c058be1d3cb18e927a78b6c1"
+                  ]
+                },
+                "wire_registry": {
+                  "type": "string",
+                  "enum": [
+                    "dd375ecdc7e33b8e8e8f80ed0846ab76a5f3ad038be83d349b2902f8ae8fcef6"
+                  ]
+                }
+              }
+            },
+            "original_authorization_contract_sha256": {
+              "type": "string",
+              "enum": [
+                "3a77cf8ad2131fd1e2255e74d2a3dcd9ca1d18051e5acc1d51bdb6b7d6fa73c2"
+              ]
+            },
+            "dispatch_contract_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$",
+              "minLength": 64,
+              "maxLength": 64
+            },
+            "provider_source_sha": {
+              "type": "string",
+              "minLength": 40,
+              "maxLength": 40,
+              "pattern": "^[a-f0-9]{40}$"
+            },
+            "authorization_policy_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$",
+              "minLength": 64,
+              "maxLength": 64
+            },
+            "observed_at": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "expires_at": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "production_qualified": {
+              "type": "boolean",
+              "enum": [
+                false
+              ]
+            },
+            "consumer_binding_issued": {
+              "type": "boolean",
+              "enum": [
+                false
+              ]
+            },
+            "binding_readiness": {
+              "type": "string",
+              "enum": [
+                "disabled",
+                "blocked"
+              ]
+            },
+            "coherence_ready": {
+              "type": "boolean",
+              "enum": [
+                false
+              ]
+            },
+            "coherence_epoch_sha256": {
+              "type": "null"
+            },
+            "source_selected_preview_enabled": {
+              "type": "boolean",
+              "enum": [
+                false
+              ]
+            },
+            "machine_binding_enabled": {
+              "type": "boolean",
+              "enum": [
+                false
+              ]
+            }
+          }
+        }
+      ]
+    }
+  },
+  "limits": {
+    "readiness_input_bytes": 256,
+    "readiness_output_bytes": 8192,
+    "readiness_call_seconds": 5,
+    "readiness_freshness_seconds": 30,
+    "authorization_input_bytes": 24576,
+    "authorization_decoded_claims_bytes": 12288,
+    "authorization_output_bytes": 4096,
+    "authorization_call_seconds": 20,
+    "control_transport_seconds": 60,
+    "automatic_retries": 0
+  }
+}

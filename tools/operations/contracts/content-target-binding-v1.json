@@ -1,0 +1,246 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "schema": 1,
+  "status": "frozen separate binding contract for review; issuance/consumer trust not implemented in initial registrar slice",
+  "purpose_prefix": "mrn-content-target-binding-v1:",
+  "definitions": {
+    "hash": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64,
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "uuid": {
+      "type": "string",
+      "minLength": 36,
+      "maxLength": 36,
+      "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+    },
+    "site_id": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "site_url": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "^https://[a-z0-9.-]+\\.example\\.invalid(?:/[A-Za-z0-9._~%/@:+-]+)*$"
+    },
+    "target": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "post"
+          ]
+        },
+        "post_type": {
+          "type": "string",
+          "enum": [
+            "post",
+            "page"
+          ]
+        },
+        "post_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "field": {
+          "type": "string",
+          "enum": [
+            "post_title",
+            "post_excerpt",
+            "post_content"
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "post_type",
+        "post_id",
+        "field"
+      ],
+      "additionalProperties": false
+    },
+    "signed_envelope": {
+      "type": "object",
+      "properties": {
+        "key_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "payload_base64": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 131072,
+          "pattern": "^[A-Za-z0-9+/]+={0,2}$"
+        },
+        "signature_base64": {
+          "type": "string",
+          "minLength": 88,
+          "maxLength": 88,
+          "pattern": "^[A-Za-z0-9+/]{86}==$"
+        }
+      },
+      "required": [
+        "key_id",
+        "payload_base64",
+        "signature_base64"
+      ],
+      "additionalProperties": false
+    },
+    "schema_one": {
+      "type": "integer",
+      "enum": [
+        1
+      ]
+    },
+    "claims": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "$ref": "#/definitions/schema_one"
+        },
+        "issuer": {
+          "type": "string",
+          "enum": [
+            "mrn-content-qualification"
+          ]
+        },
+        "audiences": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "mrn-mainwp-provider",
+              "mrn-operations-gateway",
+              "mrn-code-qa-runner"
+            ]
+          },
+          "minItems": 3,
+          "maxItems": 3,
+          "uniqueItems": true
+        },
+        "binding_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "qualification_job_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "requester_binding_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "site_id": {
+          "$ref": "#/definitions/site_id"
+        },
+        "site_url": {
+          "$ref": "#/definitions/site_url"
+        },
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "qualification_snapshot_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "capture_artifact_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "profile_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "parity_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "qualification_report_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "recipe_catalog_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "recipe_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{1,64}$"
+        },
+        "recipe_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "provider_source_sha": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "target_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "authorization_policy_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "catalog_epoch": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "issued_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "expires_at": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "schema",
+        "issuer",
+        "audiences",
+        "binding_id",
+        "qualification_job_id",
+        "requester_binding_sha256",
+        "site_id",
+        "site_url",
+        "target",
+        "qualification_snapshot_sha256",
+        "capture_artifact_sha256",
+        "profile_sha256",
+        "parity_sha256",
+        "qualification_report_sha256",
+        "recipe_catalog_sha256",
+        "recipe_id",
+        "recipe_sha256",
+        "provider_source_sha",
+        "target_revision",
+        "authorization_policy_sha256",
+        "catalog_epoch",
+        "issued_at",
+        "expires_at"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "envelope_schema": {
+    "$ref": "#/definitions/signed_envelope"
+  },
+  "payload_schema": {
+    "$ref": "#/definitions/claims"
+  },
+  "maximum_ttl_seconds": 3600,
+  "maximum_payload_utf8_bytes": 16384,
+  "invariants": [
+    "Separate signature purpose and consumer audiences; never reuse the consumed Dashboard publication request.",
+    "Actual committed positive target_revision, not expected_revision. Binding issuance requires the published exact job/profile/capture/report and current requester authorization.",
+    "Every consumer verifies its audience, current owner-pinned registrar/recipe trust and current source/runtime/recipe/catalog/authorization epoch and hash.",
+    "Fetch current authoritative provider target revision/profile/binding hash and revocation state before preparation/signing/execution; a signed orphan, stale/replaced target or revoked epoch cannot enable use.",
+    "Expiry cannot exceed issuance+3600 or stored job expiry; no expired/unknown binding fallback.",
+    "qualification_snapshot_sha256 is immutable qualification provenance, never a substitute for fresh operation before-snapshot or current dependency parity.",
+    "Bind exact retained requester/job/site/target/snapshot/capture/profile/parity/report/recipe/catalog/source; no worker-supplied actor or caller-selected substitutions.",
+    "Initial registrar/job runtime must emit qualification_binding=null until binding issuance and separately reviewed gateway/runner trust transition are accepted.",
+    "No production eligibility, profile/site/user enrollment, code-policy expansion or edit approval."
+  ]
+}

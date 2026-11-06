@@ -1,0 +1,2074 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "schema": 1,
+  "status": "frozen contract checkpoint for consumer review; endpoints and catalog runtime not implemented",
+  "namespace": "mrn-mainwp/",
+  "definitions": {
+    "hash": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64,
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "uuid": {
+      "type": "string",
+      "minLength": 36,
+      "maxLength": 36,
+      "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+    },
+    "site_id": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "site_url": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "^https://[a-z0-9.-]+\\.example\\.invalid(?:/[A-Za-z0-9._~%/@:+-]+)*$"
+    },
+    "target": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "post"
+          ]
+        },
+        "post_type": {
+          "type": "string",
+          "enum": [
+            "post",
+            "page"
+          ]
+        },
+        "post_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "field": {
+          "type": "string",
+          "enum": [
+            "post_title",
+            "post_excerpt",
+            "post_content"
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "post_type",
+        "post_id",
+        "field"
+      ],
+      "additionalProperties": false
+    },
+    "profile": {
+      "type": "object",
+      "properties": {
+        "site_id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "site_url": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "pattern": "^https://[a-z0-9.-]+\\.example\\.invalid(?:/[A-Za-z0-9._~%/@:+-]+)*$"
+        },
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "descriptor": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "runtime_url": {
+              "type": "string",
+              "maxLength": 512
+            },
+            "runtime_context_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "ownership": {
+              "type": "string",
+              "enum": [
+                "wordpress-post",
+                "unknown",
+                "builder"
+              ]
+            },
+            "covered_fields": {
+              "type": "array",
+              "maxItems": 3,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "post_title",
+                  "post_excerpt",
+                  "post_content"
+                ]
+              }
+            },
+            "requires_render_assertions": {
+              "type": "boolean",
+              "enum": [
+                true
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "sha256",
+            "runtime_url",
+            "runtime_context_sha256",
+            "ownership",
+            "covered_fields",
+            "requires_render_assertions"
+          ],
+          "additionalProperties": false
+        },
+        "stable_selector": {
+          "type": "object",
+          "properties": {
+            "post_type": {
+              "type": "string",
+              "enum": [
+                "post",
+                "page"
+              ]
+            },
+            "post_path": {
+              "type": "string",
+              "maxLength": 512
+            }
+          },
+          "required": [
+            "post_type",
+            "post_path"
+          ],
+          "additionalProperties": false
+        },
+        "affected_paths": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "pattern": "^/(?!/)"
+          }
+        },
+        "runtime_profile": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "pattern": "^profiles/[A-Za-z0-9_./-]+$"
+        },
+        "runtime_profile_sha256": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "qa_path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "pattern": "^wp-content/themes/[A-Za-z0-9_./-]+$"
+        },
+        "selector": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "wordpress_version": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 32,
+          "pattern": "^[0-9]+\\.[0-9]+(?:\\.[0-9]+)?$"
+        },
+        "php_minor": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 16,
+          "pattern": "^[0-9]+\\.[0-9]+$"
+        },
+        "parity_sha256": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "render_options": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 191,
+            "pattern": "^[A-Za-z0-9_-]+$"
+          },
+          "maxItems": 100,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "site_id",
+        "site_url",
+        "target",
+        "descriptor",
+        "stable_selector",
+        "affected_paths",
+        "runtime_profile",
+        "runtime_profile_sha256",
+        "qa_path",
+        "selector",
+        "wordpress_version",
+        "php_minor",
+        "parity_sha256",
+        "render_options"
+      ],
+      "additionalProperties": false
+    },
+    "signed_envelope": {
+      "type": "object",
+      "properties": {
+        "key_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "payload_base64": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 131072,
+          "pattern": "^[A-Za-z0-9+/]+={0,2}$"
+        },
+        "signature_base64": {
+          "type": "string",
+          "minLength": 88,
+          "maxLength": 88,
+          "pattern": "^[A-Za-z0-9+/]{86}==$"
+        }
+      },
+      "required": [
+        "key_id",
+        "payload_base64",
+        "signature_base64"
+      ],
+      "additionalProperties": false
+    },
+    "key": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "public_key_base64": {
+          "type": "string",
+          "minLength": 44,
+          "maxLength": 44,
+          "pattern": "^[A-Za-z0-9+/]{43}=$"
+        }
+      },
+      "required": [
+        "id",
+        "public_key_base64"
+      ],
+      "additionalProperties": false
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "unqualified",
+        "queued",
+        "running",
+        "published",
+        "unsupported",
+        "blocked",
+        "failed",
+        "expired",
+        "revoked",
+        "superseded"
+      ]
+    },
+    "reason_code": {
+      "type": "string",
+      "enum": [
+        "none",
+        "missing_profile",
+        "unknown_recipe",
+        "requester_revoked",
+        "snapshot_drift",
+        "source_drift",
+        "runtime_unqualified",
+        "stale_authorization",
+        "stale_revision",
+        "worker_failure",
+        "job_expired",
+        "target_revoked",
+        "consumer_untrusted",
+        "worker_unavailable",
+        "stale_snapshot",
+        "target_superseded"
+      ]
+    },
+    "consumer_scope": {
+      "type": "string",
+      "enum": [
+        "provider-only"
+      ]
+    },
+    "schema_one": {
+      "type": "integer",
+      "enum": [
+        1
+      ]
+    },
+    "capture_claims": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "$ref": "#/definitions/schema_one"
+        },
+        "issuer": {
+          "type": "string",
+          "enum": [
+            "mrn-content-qualification"
+          ]
+        },
+        "audience": {
+          "type": "string",
+          "enum": [
+            "https://wpcontrol.mrndev.io"
+          ]
+        },
+        "issued_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "expires_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "request_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "nonce": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "authorization_policy_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "catalog_epoch": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "qualification_job_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "expected_snapshot_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "requester_binding_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "site_id": {
+          "$ref": "#/definitions/site_id"
+        },
+        "site_url": {
+          "$ref": "#/definitions/site_url"
+        },
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "recipe_catalog_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "recipe_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "recipe_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "capture"
+          ]
+        },
+        "expected_target_revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "schema",
+        "issuer",
+        "audience",
+        "issued_at",
+        "expires_at",
+        "request_id",
+        "nonce",
+        "authorization_policy_sha256",
+        "catalog_epoch",
+        "qualification_job_id",
+        "expected_snapshot_sha256",
+        "requester_binding_sha256",
+        "site_id",
+        "site_url",
+        "target",
+        "recipe_catalog_sha256",
+        "recipe_id",
+        "recipe_sha256",
+        "action",
+        "expected_target_revision"
+      ],
+      "additionalProperties": false
+    },
+    "publication_claims": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "$ref": "#/definitions/schema_one"
+        },
+        "issuer": {
+          "type": "string",
+          "enum": [
+            "mrn-content-qualification"
+          ]
+        },
+        "audience": {
+          "type": "string",
+          "enum": [
+            "https://wpcontrol.mrndev.io"
+          ]
+        },
+        "issued_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "expires_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "request_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "nonce": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "authorization_policy_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "catalog_epoch": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "qualification_job_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "expected_snapshot_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "requester_binding_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "site_id": {
+          "$ref": "#/definitions/site_id"
+        },
+        "site_url": {
+          "$ref": "#/definitions/site_url"
+        },
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "recipe_catalog_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "recipe_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "recipe_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "publish"
+          ]
+        },
+        "capture_artifact_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "expected_target_revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "profile": {
+          "$ref": "#/definitions/profile"
+        },
+        "profile_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "parity_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "qualification_report_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "provider_source_sha": {
+          "type": "string",
+          "minLength": 40,
+          "maxLength": 40,
+          "pattern": "^[a-f0-9]{40}$"
+        }
+      },
+      "required": [
+        "schema",
+        "issuer",
+        "audience",
+        "issued_at",
+        "expires_at",
+        "request_id",
+        "nonce",
+        "authorization_policy_sha256",
+        "catalog_epoch",
+        "qualification_job_id",
+        "expected_snapshot_sha256",
+        "requester_binding_sha256",
+        "site_id",
+        "site_url",
+        "target",
+        "recipe_catalog_sha256",
+        "recipe_id",
+        "recipe_sha256",
+        "action",
+        "capture_artifact_sha256",
+        "expected_target_revision",
+        "profile",
+        "profile_sha256",
+        "parity_sha256",
+        "qualification_report_sha256",
+        "provider_source_sha"
+      ],
+      "additionalProperties": false
+    },
+    "worker_failure_claims": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "$ref": "#/definitions/schema_one"
+        },
+        "issuer": {
+          "type": "string",
+          "enum": [
+            "mrn-content-qualification"
+          ]
+        },
+        "audience": {
+          "type": "string",
+          "enum": [
+            "https://wpcontrol.mrndev.io"
+          ]
+        },
+        "issued_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "expires_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "request_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "nonce": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "authorization_policy_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "catalog_epoch": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "qualification_job_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "expected_snapshot_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "requester_binding_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "site_id": {
+          "$ref": "#/definitions/site_id"
+        },
+        "site_url": {
+          "$ref": "#/definitions/site_url"
+        },
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "recipe_catalog_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "recipe_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "recipe_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "fail"
+          ]
+        },
+        "reason_code": {
+          "type": "string",
+          "enum": [
+            "unknown_recipe",
+            "snapshot_drift",
+            "source_drift",
+            "runtime_unqualified",
+            "worker_failure"
+          ]
+        }
+      },
+      "required": [
+        "schema",
+        "issuer",
+        "audience",
+        "issued_at",
+        "expires_at",
+        "request_id",
+        "nonce",
+        "authorization_policy_sha256",
+        "catalog_epoch",
+        "qualification_job_id",
+        "expected_snapshot_sha256",
+        "requester_binding_sha256",
+        "site_id",
+        "site_url",
+        "target",
+        "recipe_catalog_sha256",
+        "recipe_id",
+        "recipe_sha256",
+        "action",
+        "reason_code"
+      ],
+      "additionalProperties": false
+    },
+    "parity_manifest": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "integer",
+          "enum": [
+            1
+          ]
+        },
+        "wordpress_version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+(?:\\.[0-9]+)?$"
+        },
+        "php_version": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 128
+        },
+        "php_extensions": {
+          "type": "array",
+          "maxItems": 128,
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_ -]{1,80}$"
+              },
+              "version": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 128
+              }
+            },
+            "required": [
+              "name",
+              "version"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "stylesheet": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{1,128}$"
+        },
+        "template": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{1,128}$"
+        },
+        "active_plugins": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*\\.php$",
+            "maxLength": 256
+          }
+        },
+        "mu_plugins": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.-]+\\.php$",
+            "maxLength": 128
+          }
+        },
+        "core_php": {
+          "type": "array",
+          "maxItems": 4096,
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "path",
+              "sha256"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "roots": {
+          "type": "array",
+          "maxItems": 103,
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "directory",
+                  "file"
+                ]
+              },
+              "present": {
+                "type": "boolean"
+              },
+              "files": {
+                "type": "array",
+                "maxItems": 16384,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 512
+                    },
+                    "sha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "required": [
+                    "path",
+                    "sha256"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "path",
+              "kind",
+              "present",
+              "files"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "render_options": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 191
+              },
+              "present": {
+                "type": "boolean"
+              },
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "null",
+                          "boolean",
+                          "integer",
+                          "string",
+                          "array",
+                          "object"
+                        ]
+                      },
+                      "sha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "sha256"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "key",
+              "present",
+              "value"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "target_meta": {
+          "type": "array",
+          "maxItems": 512,
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 255
+              },
+              "values": {
+                "type": "array",
+                "maxItems": 100,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "null",
+                        "boolean",
+                        "integer",
+                        "string",
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "sha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "sha256"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "key",
+              "values"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "render_dependencies": {
+          "type": "string",
+          "enum": [
+            "owner-qualified-native-post"
+          ]
+        }
+      },
+      "required": [
+        "schema",
+        "wordpress_version",
+        "php_version",
+        "php_extensions",
+        "stylesheet",
+        "template",
+        "active_plugins",
+        "mu_plugins",
+        "core_php",
+        "roots",
+        "render_options",
+        "target_meta",
+        "render_dependencies"
+      ],
+      "additionalProperties": false
+    },
+    "capture_artifact": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "$ref": "#/definitions/schema_one"
+        },
+        "authorization_policy_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "catalog_epoch": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "qualification_job_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "expected_snapshot_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "requester_binding_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "site_id": {
+          "$ref": "#/definitions/site_id"
+        },
+        "site_url": {
+          "$ref": "#/definitions/site_url"
+        },
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "recipe_catalog_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "recipe_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "recipe_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "snapshot": {
+          "type": "object",
+          "properties": {
+            "site_id": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "site_url": {
+              "type": "string",
+              "maxLength": 512
+            },
+            "schema": {
+              "type": "integer",
+              "enum": [
+                1
+              ]
+            },
+            "target": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "post"
+                  ]
+                },
+                "post_type": {
+                  "type": "string",
+                  "enum": [
+                    "post",
+                    "page"
+                  ]
+                },
+                "post_id": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "field": {
+                  "type": "string",
+                  "enum": [
+                    "post_title",
+                    "post_excerpt",
+                    "post_content"
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "post_type",
+                "post_id",
+                "field"
+              ],
+              "additionalProperties": false
+            },
+            "post_status": {
+              "type": "string",
+              "enum": [
+                "publish"
+              ]
+            },
+            "post_name": {
+              "type": "string",
+              "maxLength": 512
+            },
+            "post_title": {
+              "type": "string",
+              "maxLength": 8192
+            },
+            "post_excerpt": {
+              "type": "string",
+              "maxLength": 8192
+            },
+            "post_content": {
+              "type": "string",
+              "maxLength": 8192
+            }
+          },
+          "required": [
+            "site_id",
+            "site_url",
+            "schema",
+            "target",
+            "post_status",
+            "post_name",
+            "post_title",
+            "post_excerpt",
+            "post_content"
+          ],
+          "additionalProperties": false
+        },
+        "snapshot_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "stable_selector": {
+          "type": "object",
+          "properties": {
+            "post_type": {
+              "type": "string",
+              "enum": [
+                "post",
+                "page"
+              ]
+            },
+            "post_path": {
+              "type": "string",
+              "maxLength": 512
+            }
+          },
+          "required": [
+            "post_type",
+            "post_path"
+          ],
+          "additionalProperties": false
+        },
+        "affected_paths": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "pattern": "^/(?!/)"
+          }
+        },
+        "parity_manifest": {
+          "$ref": "#/definitions/parity_manifest"
+        },
+        "parity_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "expected_target_revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "schema",
+        "authorization_policy_sha256",
+        "catalog_epoch",
+        "qualification_job_id",
+        "expected_snapshot_sha256",
+        "requester_binding_sha256",
+        "site_id",
+        "site_url",
+        "target",
+        "recipe_catalog_sha256",
+        "recipe_id",
+        "recipe_sha256",
+        "snapshot",
+        "snapshot_sha256",
+        "stable_selector",
+        "affected_paths",
+        "parity_manifest",
+        "parity_sha256",
+        "expected_target_revision"
+      ],
+      "additionalProperties": false
+    },
+    "capture_output": {
+      "type": "object",
+      "properties": {
+        "qualification_job_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "running"
+          ]
+        },
+        "capture_artifact": {
+          "$ref": "#/definitions/capture_artifact"
+        },
+        "capture_artifact_sha256": {
+          "$ref": "#/definitions/hash"
+        }
+      },
+      "required": [
+        "qualification_job_id",
+        "state",
+        "capture_artifact",
+        "capture_artifact_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "stored_requester": {
+      "type": "object",
+      "properties": {
+        "provenance": {
+          "type": "string",
+          "enum": [
+            "verified-delegation"
+          ]
+        },
+        "oauth_subject": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 96,
+          "pattern": "^google-oauth2\\|[0-9]+$"
+        },
+        "google_sub": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[0-9]+$"
+        },
+        "email": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 254,
+          "pattern": "^[^@\\s]+@mrnwebdesigns\\.com$"
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "preparer"
+          ]
+        }
+      },
+      "required": [
+        "provenance",
+        "oauth_subject",
+        "google_sub",
+        "email",
+        "role"
+      ],
+      "additionalProperties": false
+    },
+    "request_input": {
+      "type": "object",
+      "properties": {
+        "site_id": {
+          "$ref": "#/definitions/site_id"
+        },
+        "site_url": {
+          "$ref": "#/definitions/site_url"
+        },
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "expected_snapshot_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "idempotency_key": {
+          "$ref": "#/definitions/uuid"
+        }
+      },
+      "required": [
+        "site_id",
+        "site_url",
+        "target",
+        "expected_snapshot_sha256",
+        "reason",
+        "idempotency_key"
+      ],
+      "additionalProperties": false
+    },
+    "status_input": {
+      "type": "object",
+      "properties": {
+        "site_id": {
+          "$ref": "#/definitions/site_id"
+        },
+        "site_url": {
+          "$ref": "#/definitions/site_url"
+        },
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "qualification_job_id": {
+          "$ref": "#/definitions/uuid"
+        }
+      },
+      "required": [
+        "site_id",
+        "site_url",
+        "target",
+        "qualification_job_id"
+      ],
+      "additionalProperties": false
+    },
+    "job_output": {
+      "type": "object",
+      "properties": {
+        "site_id": {
+          "$ref": "#/definitions/site_id"
+        },
+        "site_url": {
+          "$ref": "#/definitions/site_url"
+        },
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "qualification_job_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "state": {
+          "$ref": "#/definitions/state"
+        },
+        "reason_code": {
+          "$ref": "#/definitions/reason_code"
+        },
+        "acceptance_scope": {
+          "$ref": "#/definitions/consumer_scope"
+        },
+        "authorization_policy_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "expected_snapshot_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "capture_artifact_sha256": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/hash"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "profile_sha256": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/hash"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "target_revision": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "qualification_report_sha256": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/hash"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "recipe_catalog_sha256": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/hash"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "recipe_sha256": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/hash"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "qualification_binding": {
+          "type": "null"
+        },
+        "expires_at": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "is_current": {
+          "type": "boolean"
+        },
+        "current_target_revision": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "current_profile_sha256": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/hash"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "current_binding_sha256": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/hash"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "site_id",
+        "site_url",
+        "target",
+        "qualification_job_id",
+        "state",
+        "reason_code",
+        "acceptance_scope",
+        "authorization_policy_sha256",
+        "expected_snapshot_sha256",
+        "capture_artifact_sha256",
+        "profile_sha256",
+        "target_revision",
+        "qualification_report_sha256",
+        "recipe_catalog_sha256",
+        "recipe_sha256",
+        "qualification_binding",
+        "expires_at",
+        "is_current",
+        "current_target_revision",
+        "current_profile_sha256",
+        "current_binding_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "wrapper_input": {
+      "type": "object",
+      "properties": {
+        "ability": {
+          "type": "string",
+          "enum": [
+            "mrn-mainwp/request-content-qualification-v1"
+          ]
+        },
+        "arguments_json": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 98304
+        },
+        "delegation": {
+          "$ref": "#/definitions/signed_envelope"
+        }
+      },
+      "required": [
+        "ability",
+        "arguments_json",
+        "delegation"
+      ],
+      "additionalProperties": false
+    },
+    "policy": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "catalog_epoch": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "registrar_keys": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/key"
+          },
+          "maxItems": 10,
+          "uniqueItems": true
+        },
+        "recipe_root_keys": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/key"
+          },
+          "maxItems": 10,
+          "uniqueItems": true
+        },
+        "trusted_recipe_catalog_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "maximum_jobs_per_requester": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "maximum_catalog_targets": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "job_ttl_seconds": {
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 3600
+        }
+      },
+      "required": [
+        "enabled",
+        "catalog_epoch",
+        "registrar_keys",
+        "recipe_root_keys",
+        "trusted_recipe_catalog_sha256",
+        "maximum_jobs_per_requester",
+        "maximum_catalog_targets",
+        "job_ttl_seconds"
+      ],
+      "additionalProperties": false
+    },
+    "context_claims": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "$ref": "#/definitions/schema_one"
+        },
+        "issuer": {
+          "type": "string",
+          "enum": [
+            "mrn-content-qualification"
+          ]
+        },
+        "audience": {
+          "type": "string",
+          "enum": [
+            "https://wpcontrol.mrndev.io"
+          ]
+        },
+        "issued_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "expires_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "request_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "nonce": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "authorization_policy_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "qualification_job_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "site_id": {
+          "$ref": "#/definitions/site_id"
+        },
+        "site_url": {
+          "$ref": "#/definitions/site_url"
+        },
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "job-context"
+          ]
+        }
+      },
+      "required": [
+        "schema",
+        "issuer",
+        "audience",
+        "issued_at",
+        "expires_at",
+        "request_id",
+        "nonce",
+        "authorization_policy_sha256",
+        "qualification_job_id",
+        "site_id",
+        "site_url",
+        "target",
+        "action"
+      ],
+      "additionalProperties": false
+    },
+    "job_context": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "$ref": "#/definitions/schema_one"
+        },
+        "qualification_job_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "site_id": {
+          "$ref": "#/definitions/site_id"
+        },
+        "site_url": {
+          "$ref": "#/definitions/site_url"
+        },
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "requester_binding_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "authorization_policy_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "catalog_epoch": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "expected_target_revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "expected_snapshot_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "expires_at": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "recipe_catalog_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "state": {
+          "$ref": "#/definitions/state"
+        },
+        "capture_artifact_sha256": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/hash"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "schema",
+        "qualification_job_id",
+        "site_id",
+        "site_url",
+        "target",
+        "requester_binding_sha256",
+        "authorization_policy_sha256",
+        "catalog_epoch",
+        "expected_target_revision",
+        "expected_snapshot_sha256",
+        "expires_at",
+        "recipe_catalog_sha256",
+        "state",
+        "capture_artifact_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "context_output": {
+      "type": "object",
+      "properties": {
+        "job_context": {
+          "$ref": "#/definitions/job_context"
+        },
+        "job_context_sha256": {
+          "$ref": "#/definitions/hash"
+        }
+      },
+      "required": [
+        "job_context",
+        "job_context_sha256"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "canonicalization": "delegation-v1 strict canonical UTF8 JSON; safe integers; reject duplicate keys, floats, invalid UTF8 and prototype keys; resolve only these local definitions",
+  "signature_prefixes": {
+    "capture": "mrn-content-qualification-capture-v1:",
+    "publication": "mrn-content-catalog-v1:",
+    "worker_failure": "mrn-content-qualification-failure-v1:",
+    "job_context": "mrn-content-job-context-v1:"
+  },
+  "frozen_dependencies": {
+    "content-v1.json": "d3a48f26df4a603af8cb6362674e773e98fe0284ddbcf9a3a4820a7701f8db1d",
+    "content-policy-v2-proposal.json": "82fb9cf0804228d4f9b97901391ea09c99bbe4b521475ef578ce5123f3d7c58f",
+    "content-parity-v1.json": "d7d8f9c85832822335daeba2c6d50a729bdb65b20247fb81646d501c5c370397"
+  },
+  "limits": {
+    "assertion_ttl_seconds": 300,
+    "payload_utf8_bytes": 98304,
+    "envelope_utf8_bytes": 131072,
+    "job_ttl_seconds": 3600,
+    "maximum_jobs_per_requester": 20,
+    "maximum_catalog_targets": 1000,
+    "profile_utf8_bytes": 32768,
+    "capture_artifact_utf8_bytes": 4400000,
+    "parity_manifest_utf8_bytes": 4194304
+  },
+  "abilities": {
+    "request-content-qualification-v1": {
+      "role": "preparer",
+      "wrapper": "queue-delegated-qualification-v1",
+      "input": {
+        "$ref": "#/definitions/request_input"
+      },
+      "output": {
+        "$ref": "#/definitions/job_output"
+      },
+      "annotations": {
+        "readonly": false,
+        "destructive": false,
+        "idempotent": true
+      }
+    },
+    "get-content-qualification-v1": {
+      "role": "reader",
+      "wrapper": "read-delegated-operation-v1",
+      "input": {
+        "$ref": "#/definitions/status_input"
+      },
+      "output": {
+        "$ref": "#/definitions/job_output"
+      },
+      "annotations": {
+        "readonly": true,
+        "destructive": false,
+        "idempotent": true
+      }
+    },
+    "queue-delegated-qualification-v1": {
+      "role": "preparer",
+      "wrapper": "standalone closed qualification route",
+      "input": {
+        "$ref": "#/definitions/wrapper_input"
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "schema": {
+            "$ref": "#/definitions/schema_one"
+          },
+          "request_id": {
+            "$ref": "#/definitions/uuid"
+          },
+          "ability": {
+            "type": "string",
+            "enum": [
+              "mrn-mainwp/request-content-qualification-v1"
+            ]
+          },
+          "actor": {
+            "type": "object",
+            "properties": {
+              "oauth_subject": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 96,
+                "pattern": "^google-oauth2\\|[0-9]+$"
+              },
+              "google_sub": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[0-9]+$"
+              },
+              "email": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 254,
+                "pattern": "^[^@\\s]+@mrnwebdesigns\\.com$"
+              }
+            },
+            "required": [
+              "oauth_subject",
+              "google_sub",
+              "email"
+            ],
+            "additionalProperties": false
+          },
+          "result": {
+            "$ref": "#/definitions/job_output"
+          },
+          "policy_sha256": {
+            "$ref": "#/definitions/hash"
+          }
+        },
+        "required": [
+          "schema",
+          "request_id",
+          "ability",
+          "actor",
+          "result",
+          "policy_sha256"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readonly": false,
+        "destructive": false,
+        "idempotent": true
+      },
+      "mode": "qualification only; original signed args preserved; no additional enrollment/access-approval prompt"
+    },
+    "capture-content-qualification-v1": {
+      "role": "protected-registrar",
+      "wrapper": null,
+      "input": {
+        "type": "object",
+        "properties": {
+          "signed_request": {
+            "$ref": "#/definitions/signed_envelope"
+          }
+        },
+        "required": [
+          "signed_request"
+        ],
+        "additionalProperties": false
+      },
+      "signed_payload": {
+        "$ref": "#/definitions/capture_claims"
+      },
+      "output": {
+        "$ref": "#/definitions/capture_output"
+      },
+      "workspace_exposed": false,
+      "delegated_staff_allowed": false,
+      "annotations": {
+        "readonly": false,
+        "destructive": false,
+        "idempotent": false
+      }
+    },
+    "register-content-profile-v1": {
+      "role": "protected-registrar",
+      "wrapper": null,
+      "input": {
+        "type": "object",
+        "properties": {
+          "signed_request": {
+            "$ref": "#/definitions/signed_envelope"
+          }
+        },
+        "required": [
+          "signed_request"
+        ],
+        "additionalProperties": false
+      },
+      "signed_payload": {
+        "$ref": "#/definitions/publication_claims"
+      },
+      "output": {
+        "$ref": "#/definitions/job_output"
+      },
+      "workspace_exposed": false,
+      "delegated_staff_allowed": false,
+      "annotations": {
+        "readonly": false,
+        "destructive": false,
+        "idempotent": false
+      }
+    },
+    "fail-content-qualification-v1": {
+      "role": "protected-registrar",
+      "wrapper": null,
+      "input": {
+        "type": "object",
+        "properties": {
+          "signed_request": {
+            "$ref": "#/definitions/signed_envelope"
+          }
+        },
+        "required": [
+          "signed_request"
+        ],
+        "additionalProperties": false
+      },
+      "signed_payload": {
+        "$ref": "#/definitions/worker_failure_claims"
+      },
+      "output": {
+        "$ref": "#/definitions/job_output"
+      },
+      "workspace_exposed": false,
+      "delegated_staff_allowed": false,
+      "annotations": {
+        "readonly": false,
+        "destructive": false,
+        "idempotent": false
+      }
+    },
+    "configure-content-catalog-policy-v1": {
+      "role": "owner with fresh MRN verification",
+      "wrapper": null,
+      "input": {
+        "type": "object",
+        "properties": {
+          "confirm": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "policy": {
+            "$ref": "#/definitions/policy"
+          }
+        },
+        "required": [
+          "confirm",
+          "policy"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "configured": {
+            "type": "boolean"
+          },
+          "authorization_policy_sha256": {
+            "$ref": "#/definitions/hash"
+          }
+        },
+        "required": [
+          "configured",
+          "authorization_policy_sha256"
+        ],
+        "additionalProperties": false
+      },
+      "workspace_exposed": false,
+      "delegated_staff_allowed": false
+    },
+    "get-content-qualification-job-context-v1": {
+      "role": "protected-registrar",
+      "wrapper": null,
+      "input": {
+        "type": "object",
+        "properties": {
+          "signed_request": {
+            "$ref": "#/definitions/signed_envelope"
+          }
+        },
+        "required": [
+          "signed_request"
+        ],
+        "additionalProperties": false
+      },
+      "signed_payload": {
+        "$ref": "#/definitions/context_claims"
+      },
+      "output": {
+        "$ref": "#/definitions/context_output"
+      },
+      "workspace_exposed": false,
+      "delegated_staff_allowed": false,
+      "annotations": {
+        "readonly": false,
+        "destructive": false,
+        "idempotent": false
+      }
+    }
+  },
+  "state_transitions": {
+    "unqualified": [
+      "queued"
+    ],
+    "queued": [
+      "running",
+      "unsupported",
+      "blocked",
+      "failed",
+      "expired"
+    ],
+    "running": [
+      "published",
+      "unsupported",
+      "blocked",
+      "failed",
+      "expired"
+    ],
+    "published": [
+      "revoked",
+      "superseded"
+    ],
+    "unsupported": [],
+    "blocked": [],
+    "failed": [],
+    "expired": [],
+    "revoked": [],
+    "superseded": []
+  },
+  "invariants": [
+    "Only reserved .example.invalid origins and current existing published post/page fields; production compile block and company code pilot unchanged.",
+    "Inspect semantic snapshot before qualification; missing profile is bounded unqualified/pending status, never staff enrollment.",
+    "Requester is taken only from verified delegation and stored immutably; worker claims bind stored job/requester/snapshot. Recheck current requester role, Workspace state and authorization before request/capture/publication.",
+    "Fresh exact URL resolution and verified one-site native sync then authoritative snapshot comparison before request/capture/publication. Drift needs new request, not silent adoption.",
+    "Owner policy configuration excludes backend self-configuration and all delegated staff routes. Registrar/recipe-root keys must differ from identity/QA keys and each other.",
+    "Enabled catalog policy requires nonempty registrar/recipe keys and explicit owner-pinned recipe trust; absent or disabled policy cannot queue/capture/publish.",
+    "Capture transitions one queued job to running and stores one immutable encrypted capture artifact. Its exact hash is required at publication; no overwrite/auto-recapture under a stale job.",
+    "Protected machine requests need pinned backend connection plus purpose-specific signature, exact stored job, current policy/epoch and one-use durable nonce/request claims.",
+    "Capture uses only fixed read-only post/parity templates with a private exact-packet signing permit that cannot authorize arbitrary PHP, paths, selectors, URLs, callables or mutations.",
+    "Profile publication uses per-target revision CAS and encrypted immutable records. Target replacement/revocation invalidates affected plans; tombstone prevents legacy fallback. Unrelated publication does not alter authorization digest or invalidate another target plan.",
+    "Provider publication is provider-only readiness. Gateway and QA runner must independently accept same signed recipe/catalog/binding; current static inventories remain authoritative until separately reviewed transition.",
+    "Successful qualification does not approve an edit. Preserve frozen v1/v2 schemas and existing QA, exact approval, backup, CAS, site lock, no-retry uncertainty and separate rollback.",
+    "Closed worker failures contain only symbolic reason enums and no raw logs, source, record values, credentials or private keys.",
+    "No staff actor/email input to control requests; no manual user allowlist, record/site enrollment, credential creation or production access changes.",
+    "Capture artifact hash is the canonical digest of the closed capture_artifact object only; job/profile publication must bind that immutable retained hash.",
+    "Initial registrar runtime does not issue durable consumer bindings: qualification_binding must be null. A later separately accepted target-binding contract and consumer trust transition are mandatory for new-target gateway/runner use.",
+    "Protected job context exposes immutable requester hash, policy/epoch, expected revision/snapshot/expiry without person/email. Context requests are signature/pinned-service authenticated and scope/job-bound; no raw staff context reconstruction.",
+    "Capture retains the original stored expected target revision; concurrent publication blocks stale capture/publication and cannot silently rebase.",
+    "qualification_binding is null-only in this frozen initial schema; separate binding lookup/issuance and reviewed consumer migration are future contracts.",
+    "Status derives current target revision/profile/binding hash and revocation from authoritative catalog, not historical job. Replaced job returns superseded/target_superseded; revocation returns revoked/target_revoked. is_current requires matching live revision/profile, current authorization/epoch and unexpired job. Old published metadata cannot enable consumer trust."
+  ],
+  "target_binding_contract": "content-target-binding-v1.json",
+  "binding_issuance_in_initial_slice": false,
+  "dispatch_handoff": {
+    "mode": "gateway-owned protected dispatch after receiving exact queued job ID/scope; never a public worker/admin route",
+    "request_to_worker": "job ID + exact site/target + current authorization digest only; no actor reconstruction, selectors, paths, profile or source overrides",
+    "worker_bootstrap": "Authenticate to the pinned Dashboard with service transport and purpose-signed context request; retrieve immutable job_context over verified HTTPS. Verify canonical context hash and retain expected target revision/requester hash/snapshot/epoch exactly. Never rebase to a later context.",
+    "start": "Purpose-signed capture transitions that exact queued job to running; no second job or repeated capture overwrite. Publication binds same expected revision and retained capture.",
+    "unavailable": "If protected dispatch is absent/rejected, expose bounded blocked/worker_unavailable. Do not leave an apparently progressing orphan queue or promise a worker run.",
+    "recovery": "No automatic mutation retry; explicit source-safe job failure/expiry, idempotent duplicate job request returns same immutable context."
+  }
+}

@@ -1,0 +1,2109 @@
+{
+  "schema": 1,
+  "fixture_only": true,
+  "clock": 1700000000,
+  "cases": [
+    {
+      "name": "existing",
+      "read": {
+        "success": true,
+        "snapshot": {
+          "site_id": 73,
+          "site_url": "https://fixture.example.invalid",
+          "post_type": "page",
+          "post_id": 7,
+          "core": {
+            "post_title": "Privacy",
+            "post_name": "privacy",
+            "post_content": "Native original",
+            "post_excerpt": "Excerpt",
+            "post_status": "publish"
+          },
+          "acf_definitions": [
+            {
+              "key": "field_rows",
+              "name": "content_rows",
+              "type": "flexible_content",
+              "layouts": [
+                {
+                  "key": "layout_body",
+                  "name": "body_text",
+                  "sub_fields": [
+                    {
+                      "key": "field_body",
+                      "name": "body_text",
+                      "label": "Body",
+                      "type": "wysiwyg"
+                    },
+                    {
+                      "key": "field_other",
+                      "name": "other",
+                      "label": "Other",
+                      "type": "text"
+                    },
+                    {
+                      "key": "field_nested",
+                      "name": "nested",
+                      "type": "repeater",
+                      "sub_fields": [
+                        {
+                          "key": "field_body",
+                          "name": "body_text",
+                          "label": "Body",
+                          "type": "wysiwyg"
+                        },
+                        {
+                          "key": "field_other",
+                          "name": "other",
+                          "label": "Other",
+                          "type": "text"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "key": "field_untouched",
+              "name": "untouched",
+              "type": "text"
+            }
+          ],
+          "acf_values": {
+            "field_rows": [
+              {
+                "acf_fc_layout": "body_text",
+                "field_body": "<p>Original &amp; policy</p>\n",
+                "field_other": "Keep formatting",
+                "field_nested": [
+                  {
+                    "field_body": "Nested original",
+                    "field_other": "Nested keep"
+                  }
+                ]
+              },
+              {
+                "acf_fc_layout": "body_text",
+                "field_body": "Second row",
+                "field_other": "Second keep",
+                "field_nested": []
+              }
+            ],
+            "field_untouched": "Outside builder"
+          },
+          "unrelated_meta_sha256": "d7ec0c72fcaee107810c56fc81bc29f83ac952f06054d6b65f5f58b1524bc106",
+          "post_record_sha256": "4e6c88575ef8880c787708714d1c62b180a9b4cd17e6768bffb67e3e47badf3d",
+          "runtime": {
+            "wordpress": "6.9.4",
+            "php_minor": "8.5",
+            "acf": null,
+            "stylesheet": "fixture-child",
+            "template": "fixture-parent",
+            "plugins_sha256": "2f9b7065ab123734ceb5468024ed36bf114310f10fb8e11511af387531ca3c73"
+          }
+        },
+        "snapshot_sha256": "3163c0b54124e69ba78ab55560f696799964fc58d6307d8d3495e37c4d62ad5c",
+        "affected_paths": [
+          "/parent/privacy/"
+        ]
+      },
+      "review": {
+        "site_id": 73,
+        "site_url": "https://fixture.example.invalid",
+        "operation_id": "11111111-1111-4111-8111-111111111111",
+        "target": {
+          "kind": "wordpress-content",
+          "post_type": "page",
+          "post_id": 7
+        },
+        "before_snapshot": {
+          "site_id": 73,
+          "site_url": "https://fixture.example.invalid",
+          "post_type": "page",
+          "post_id": 7,
+          "core": {
+            "post_title": "Privacy",
+            "post_name": "privacy",
+            "post_content": "Native original",
+            "post_excerpt": "Excerpt",
+            "post_status": "publish"
+          },
+          "acf_definitions": [
+            {
+              "key": "field_rows",
+              "name": "content_rows",
+              "type": "flexible_content",
+              "layouts": [
+                {
+                  "key": "layout_body",
+                  "name": "body_text",
+                  "sub_fields": [
+                    {
+                      "key": "field_body",
+                      "name": "body_text",
+                      "label": "Body",
+                      "type": "wysiwyg"
+                    },
+                    {
+                      "key": "field_other",
+                      "name": "other",
+                      "label": "Other",
+                      "type": "text"
+                    },
+                    {
+                      "key": "field_nested",
+                      "name": "nested",
+                      "type": "repeater",
+                      "sub_fields": [
+                        {
+                          "key": "field_body",
+                          "name": "body_text",
+                          "label": "Body",
+                          "type": "wysiwyg"
+                        },
+                        {
+                          "key": "field_other",
+                          "name": "other",
+                          "label": "Other",
+                          "type": "text"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "key": "field_untouched",
+              "name": "untouched",
+              "type": "text"
+            }
+          ],
+          "acf_values": {
+            "field_rows": [
+              {
+                "acf_fc_layout": "body_text",
+                "field_body": "<p>Original &amp; policy</p>\n",
+                "field_other": "Keep formatting",
+                "field_nested": [
+                  {
+                    "field_body": "Nested original",
+                    "field_other": "Nested keep"
+                  }
+                ]
+              },
+              {
+                "acf_fc_layout": "body_text",
+                "field_body": "Second row",
+                "field_other": "Second keep",
+                "field_nested": []
+              }
+            ],
+            "field_untouched": "Outside builder"
+          },
+          "unrelated_meta_sha256": "d7ec0c72fcaee107810c56fc81bc29f83ac952f06054d6b65f5f58b1524bc106",
+          "post_record_sha256": "4e6c88575ef8880c787708714d1c62b180a9b4cd17e6768bffb67e3e47badf3d",
+          "runtime": {
+            "wordpress": "6.9.4",
+            "php_minor": "8.5",
+            "acf": null,
+            "stylesheet": "fixture-child",
+            "template": "fixture-parent",
+            "plugins_sha256": "2f9b7065ab123734ceb5468024ed36bf114310f10fb8e11511af387531ca3c73"
+          }
+        },
+        "candidate_snapshot": {
+          "site_id": 73,
+          "site_url": "https://fixture.example.invalid",
+          "post_type": "page",
+          "post_id": 7,
+          "core": {
+            "post_title": "Reviewed title",
+            "post_name": "privacy",
+            "post_content": "Native original",
+            "post_excerpt": "Excerpt",
+            "post_status": "publish"
+          },
+          "acf_definitions": [
+            {
+              "key": "field_rows",
+              "name": "content_rows",
+              "type": "flexible_content",
+              "layouts": [
+                {
+                  "key": "layout_body",
+                  "name": "body_text",
+                  "sub_fields": [
+                    {
+                      "key": "field_body",
+                      "name": "body_text",
+                      "label": "Body",
+                      "type": "wysiwyg"
+                    },
+                    {
+                      "key": "field_other",
+                      "name": "other",
+                      "label": "Other",
+                      "type": "text"
+                    },
+                    {
+                      "key": "field_nested",
+                      "name": "nested",
+                      "type": "repeater",
+                      "sub_fields": [
+                        {
+                          "key": "field_body",
+                          "name": "body_text",
+                          "label": "Body",
+                          "type": "wysiwyg"
+                        },
+                        {
+                          "key": "field_other",
+                          "name": "other",
+                          "label": "Other",
+                          "type": "text"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "key": "field_untouched",
+              "name": "untouched",
+              "type": "text"
+            }
+          ],
+          "acf_values": {
+            "field_rows": [
+              {
+                "acf_fc_layout": "body_text",
+                "field_body": "<p>Reviewed policy</p>",
+                "field_other": "Keep formatting",
+                "field_nested": [
+                  {
+                    "field_body": "Nested original",
+                    "field_other": "Nested keep"
+                  }
+                ]
+              },
+              {
+                "acf_fc_layout": "body_text",
+                "field_body": "Second row",
+                "field_other": "Second keep",
+                "field_nested": []
+              }
+            ],
+            "field_untouched": "Outside builder"
+          },
+          "unrelated_meta_sha256": "d7ec0c72fcaee107810c56fc81bc29f83ac952f06054d6b65f5f58b1524bc106",
+          "post_record_sha256": "4e6c88575ef8880c787708714d1c62b180a9b4cd17e6768bffb67e3e47badf3d",
+          "runtime": {
+            "wordpress": "6.9.4",
+            "php_minor": "8.5",
+            "acf": null,
+            "stylesheet": "fixture-child",
+            "template": "fixture-parent",
+            "plugins_sha256": "2f9b7065ab123734ceb5468024ed36bf114310f10fb8e11511af387531ca3c73"
+          }
+        },
+        "before_sha256": "3163c0b54124e69ba78ab55560f696799964fc58d6307d8d3495e37c4d62ad5c",
+        "candidate_sha256": "141f8b36d1206786aa9c5b70b81ff560737f6815f65ec4bff58ca4bf4a643577",
+        "affected_paths": [
+          "/parent/privacy/"
+        ],
+        "rollback_operation_id": "",
+        "migration_artifact": {
+          "ref": "mrn-content://management/11111111-1111-4111-8111-111111111111",
+          "sha256": "47a8e6e131e61db90e27f8f3493deac3605d2829a22cc932d4ab05b9a71542a1"
+        },
+        "profile": {
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "runtime_url": "https://mrn-qa.internal:9443",
+          "runtime_context_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        },
+        "expires_at": 1700000900,
+        "digest": "94a40da5266454c31b3f3c5874615b2d7e0136025be87bb2841d26238c6c27a5"
+      },
+      "migration": {
+        "reason": "Canonical synthetic fixture",
+        "schema": 1,
+        "adapter": "content-management-v1",
+        "operation_id": "11111111-1111-4111-8111-111111111111",
+        "request": {
+          "site_id": 73,
+          "site_url": "https://fixture.example.invalid",
+          "post_type": "page",
+          "post_id": 7,
+          "changes": {
+            "post_title": "Reviewed title"
+          },
+          "before_sha256": "3163c0b54124e69ba78ab55560f696799964fc58d6307d8d3495e37c4d62ad5c",
+          "acf_patches": [
+            {
+              "path": [
+                "field_rows",
+                0,
+                "field_body"
+              ],
+              "value": "<p>Reviewed policy</p>"
+            }
+          ]
+        },
+        "candidate_snapshot": {
+          "site_id": 73,
+          "site_url": "https://fixture.example.invalid",
+          "post_type": "page",
+          "post_id": 7,
+          "core": {
+            "post_title": "Reviewed title",
+            "post_name": "privacy",
+            "post_content": "Native original",
+            "post_excerpt": "Excerpt",
+            "post_status": "publish"
+          },
+          "acf_definitions": [
+            {
+              "key": "field_rows",
+              "name": "content_rows",
+              "type": "flexible_content",
+              "layouts": [
+                {
+                  "key": "layout_body",
+                  "name": "body_text",
+                  "sub_fields": [
+                    {
+                      "key": "field_body",
+                      "name": "body_text",
+                      "label": "Body",
+                      "type": "wysiwyg"
+                    },
+                    {
+                      "key": "field_other",
+                      "name": "other",
+                      "label": "Other",
+                      "type": "text"
+                    },
+                    {
+                      "key": "field_nested",
+                      "name": "nested",
+                      "type": "repeater",
+                      "sub_fields": [
+                        {
+                          "key": "field_body",
+                          "name": "body_text",
+                          "label": "Body",
+                          "type": "wysiwyg"
+                        },
+                        {
+                          "key": "field_other",
+                          "name": "other",
+                          "label": "Other",
+                          "type": "text"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "key": "field_untouched",
+              "name": "untouched",
+              "type": "text"
+            }
+          ],
+          "acf_values": {
+            "field_rows": [
+              {
+                "acf_fc_layout": "body_text",
+                "field_body": "<p>Reviewed policy</p>",
+                "field_other": "Keep formatting",
+                "field_nested": [
+                  {
+                    "field_body": "Nested original",
+                    "field_other": "Nested keep"
+                  }
+                ]
+              },
+              {
+                "acf_fc_layout": "body_text",
+                "field_body": "Second row",
+                "field_other": "Second keep",
+                "field_nested": []
+              }
+            ],
+            "field_untouched": "Outside builder"
+          },
+          "unrelated_meta_sha256": "d7ec0c72fcaee107810c56fc81bc29f83ac952f06054d6b65f5f58b1524bc106",
+          "post_record_sha256": "4e6c88575ef8880c787708714d1c62b180a9b4cd17e6768bffb67e3e47badf3d",
+          "runtime": {
+            "wordpress": "6.9.4",
+            "php_minor": "8.5",
+            "acf": null,
+            "stylesheet": "fixture-child",
+            "template": "fixture-parent",
+            "plugins_sha256": "2f9b7065ab123734ceb5468024ed36bf114310f10fb8e11511af387531ca3c73"
+          }
+        },
+        "candidate_sha256": "141f8b36d1206786aa9c5b70b81ff560737f6815f65ec4bff58ca4bf4a643577",
+        "rollback_snapshot": {
+          "site_id": 73,
+          "site_url": "https://fixture.example.invalid",
+          "post_type": "page",
+          "post_id": 7,
+          "core": {
+            "post_title": "Privacy",
+            "post_name": "privacy",
+            "post_content": "Native original",
+            "post_excerpt": "Excerpt",
+            "post_status": "publish"
+          },
+          "acf_definitions": [
+            {
+              "key": "field_rows",
+              "name": "content_rows",
+              "type": "flexible_content",
+              "layouts": [
+                {
+                  "key": "layout_body",
+                  "name": "body_text",
+                  "sub_fields": [
+                    {
+                      "key": "field_body",
+                      "name": "body_text",
+                      "label": "Body",
+                      "type": "wysiwyg"
+                    },
+                    {
+                      "key": "field_other",
+                      "name": "other",
+                      "label": "Other",
+                      "type": "text"
+                    },
+                    {
+                      "key": "field_nested",
+                      "name": "nested",
+                      "type": "repeater",
+                      "sub_fields": [
+                        {
+                          "key": "field_body",
+                          "name": "body_text",
+                          "label": "Body",
+                          "type": "wysiwyg"
+                        },
+                        {
+                          "key": "field_other",
+                          "name": "other",
+                          "label": "Other",
+                          "type": "text"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "key": "field_untouched",
+              "name": "untouched",
+              "type": "text"
+            }
+          ],
+          "acf_values": {
+            "field_rows": [
+              {
+                "acf_fc_layout": "body_text",
+                "field_body": "<p>Original &amp; policy</p>\n",
+                "field_other": "Keep formatting",
+                "field_nested": [
+                  {
+                    "field_body": "Nested original",
+                    "field_other": "Nested keep"
+                  }
+                ]
+              },
+              {
+                "acf_fc_layout": "body_text",
+                "field_body": "Second row",
+                "field_other": "Second keep",
+                "field_nested": []
+              }
+            ],
+            "field_untouched": "Outside builder"
+          },
+          "unrelated_meta_sha256": "d7ec0c72fcaee107810c56fc81bc29f83ac952f06054d6b65f5f58b1524bc106",
+          "post_record_sha256": "4e6c88575ef8880c787708714d1c62b180a9b4cd17e6768bffb67e3e47badf3d",
+          "runtime": {
+            "wordpress": "6.9.4",
+            "php_minor": "8.5",
+            "acf": null,
+            "stylesheet": "fixture-child",
+            "template": "fixture-parent",
+            "plugins_sha256": "2f9b7065ab123734ceb5468024ed36bf114310f10fb8e11511af387531ca3c73"
+          }
+        }
+      },
+      "installed_read": {
+        "success": true,
+        "snapshot": {
+          "site_id": 73,
+          "site_url": "https://fixture.example.invalid",
+          "post_type": "page",
+          "post_id": 7,
+          "core": {
+            "post_title": "Reviewed title",
+            "post_name": "privacy",
+            "post_content": "Native original",
+            "post_excerpt": "Excerpt",
+            "post_status": "publish"
+          },
+          "acf_definitions": [
+            {
+              "key": "field_rows",
+              "name": "content_rows",
+              "type": "flexible_content",
+              "layouts": [
+                {
+                  "key": "layout_body",
+                  "name": "body_text",
+                  "sub_fields": [
+                    {
+                      "key": "field_body",
+                      "name": "body_text",
+                      "label": "Body",
+                      "type": "wysiwyg"
+                    },
+                    {
+                      "key": "field_other",
+                      "name": "other",
+                      "label": "Other",
+                      "type": "text"
+                    },
+                    {
+                      "key": "field_nested",
+                      "name": "nested",
+                      "type": "repeater",
+                      "sub_fields": [
+                        {
+                          "key": "field_body",
+                          "name": "body_text",
+                          "label": "Body",
+                          "type": "wysiwyg"
+                        },
+                        {
+                          "key": "field_other",
+                          "name": "other",
+                          "label": "Other",
+                          "type": "text"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "key": "field_untouched",
+              "name": "untouched",
+              "type": "text"
+            }
+          ],
+          "acf_values": {
+            "field_rows": [
+              {
+                "acf_fc_layout": "body_text",
+                "field_body": "<p>Reviewed policy</p>",
+                "field_other": "Keep formatting",
+                "field_nested": [
+                  {
+                    "field_body": "Nested original",
+                    "field_other": "Nested keep"
+                  }
+                ]
+              },
+              {
+                "acf_fc_layout": "body_text",
+                "field_body": "Second row",
+                "field_other": "Second keep",
+                "field_nested": []
+              }
+            ],
+            "field_untouched": "Outside builder"
+          },
+          "unrelated_meta_sha256": "0987611287248eb8191bf4f1fc8b83d858111d217fcfcc3428b2fa923a4fca95",
+          "post_record_sha256": "d0423e4bc51d243148e652ae4433f46d4c3eb6e6bd75240b4b28398cc837f2ff",
+          "runtime": {
+            "wordpress": "6.9.4",
+            "php_minor": "8.5",
+            "acf": null,
+            "stylesheet": "fixture-child",
+            "template": "fixture-parent",
+            "plugins_sha256": "2f9b7065ab123734ceb5468024ed36bf114310f10fb8e11511af387531ca3c73"
+          }
+        },
+        "snapshot_sha256": "3cb5750eb1aee15bc8b921c5f6ad9ff724f6cb75a673ca7b2c7c42f607ba91fd",
+        "affected_paths": [
+          "/parent/privacy/"
+        ]
+      },
+      "state": {
+        "site_id": 73,
+        "site_url": "https://fixture.example.invalid",
+        "state": "completed",
+        "operation_id": "11111111-1111-4111-8111-111111111111",
+        "changed": true,
+        "rollback_available": true,
+        "error_code": "",
+        "post_id": 7,
+        "installed_sha256": "3cb5750eb1aee15bc8b921c5f6ad9ff724f6cb75a673ca7b2c7c42f607ba91fd"
+      },
+      "qa_claims": {
+        "schema": 1,
+        "issuer": "mrn-qa-engine",
+        "audience": "https://wpcontrol.mrndev.io",
+        "kind": "content",
+        "result": "Pass",
+        "mode": "release",
+        "smoke_strict": true,
+        "issued_at": 1700000000,
+        "expires_at": 1700000600,
+        "receipt_id": "11111111111111111111111111111111",
+        "qa_report_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "engine_commit": "dddddddddddddddddddddddddddddddddddddddd",
+        "runtime_url": "https://mrn-qa.internal:9443",
+        "runtime_context_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "profile_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "plan_digest": "94a40da5266454c31b3f3c5874615b2d7e0136025be87bb2841d26238c6c27a5",
+        "migration_artifact_sha256": "47a8e6e131e61db90e27f8f3493deac3605d2829a22cc932d4ab05b9a71542a1",
+        "site_id": 73,
+        "site_url": "https://fixture.example.invalid",
+        "target": {
+          "kind": "wordpress-content",
+          "post_type": "page",
+          "post_id": 7
+        },
+        "before_sha256": "3163c0b54124e69ba78ab55560f696799964fc58d6307d8d3495e37c4d62ad5c",
+        "candidate_sha256": "141f8b36d1206786aa9c5b70b81ff560737f6815f65ec4bff58ca4bf4a643577",
+        "affected_paths": [
+          "/parent/privacy/"
+        ],
+        "rollback_operation_id": ""
+      },
+      "qa_envelope": {
+        "key_id": "synthetic-management-fixture",
+        "payload_base64": "eyJhZmZlY3RlZF9wYXRocyI6WyIvcGFyZW50L3ByaXZhY3kvIl0sImF1ZGllbmNlIjoiaHR0cHM6Ly93cGNvbnRyb2wubXJuZGV2LmlvIiwiYmVmb3JlX3NoYTI1NiI6IjMxNjNjMGI1NDEyNGU2OWJhNzhhYjU1NTYwZjY5Njc5OTk2NGZjNThkNjMwN2Q4ZDM0OTVlMzdjNGQ2MmFkNWMiLCJjYW5kaWRhdGVfc2hhMjU2IjoiMTQxZjhiMzZkMTIwNjc4NmFhOWM1YjcwYjgxZmY1NjA3MzdmNjgxNWY2NWVjNGJmZjU4Y2E0YmY0YTY0MzU3NyIsImVuZ2luZV9jb21taXQiOiJkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkIiwiZXhwaXJlc19hdCI6MTcwMDAwMDYwMCwiaXNzdWVkX2F0IjoxNzAwMDAwMDAwLCJpc3N1ZXIiOiJtcm4tcWEtZW5naW5lIiwia2luZCI6ImNvbnRlbnQiLCJtaWdyYXRpb25fYXJ0aWZhY3Rfc2hhMjU2IjoiNDdhOGU2ZTEzMWU2MWRiOTBlMjdmOGYzNDkzZGVhYzM2MDVkMjgyOWEyMmNjOTMyZDRhYjA1YjlhNzE1NDJhMSIsIm1vZGUiOiJyZWxlYXNlIiwicGxhbl9kaWdlc3QiOiI5NGE0MGRhNTI2NjQ1NGMzMWIzZjNjNTg3NDYxNWIyZDdlMDEzNjAyNWJlODdiYjI4NDFkMjYyMzhjNmMyN2E1IiwicHJvZmlsZV9zaGEyNTYiOiJhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhIiwicWFfcmVwb3J0X3NoYTI1NiI6ImNjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2MiLCJyZWNlaXB0X2lkIjoiMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTEiLCJyZXN1bHQiOiJQYXNzIiwicm9sbGJhY2tfb3BlcmF0aW9uX2lkIjoiIiwicnVudGltZV9jb250ZXh0X3NoYTI1NiI6ImJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmIiLCJydW50aW1lX3VybCI6Imh0dHBzOi8vbXJuLXFhLmludGVybmFsOjk0NDMiLCJzY2hlbWEiOjEsInNpdGVfaWQiOjczLCJzaXRlX3VybCI6Imh0dHBzOi8vZml4dHVyZS5leGFtcGxlLmludmFsaWQiLCJzbW9rZV9zdHJpY3QiOnRydWUsInRhcmdldCI6eyJraW5kIjoid29yZHByZXNzLWNvbnRlbnQiLCJwb3N0X2lkIjo3LCJwb3N0X3R5cGUiOiJwYWdlIn19",
+        "signature_base64": "HuJhXNBVwUg0MWVVcepf1MsseiuqM6vmSnRBQplK5HYp/QnvjA0lLpADAC+W/l2zVqHlgSlPL6KmYNt+HW80CA=="
+      },
+      "qa_public_key_base64": "GX9rI+FshTLGq8g4+s1ep4m+DHaykgM0A5v6iz02jWE=",
+      "qa_payload_canonical": "{\"affected_paths\":[\"/parent/privacy/\"],\"audience\":\"https://wpcontrol.mrndev.io\",\"before_sha256\":\"3163c0b54124e69ba78ab55560f696799964fc58d6307d8d3495e37c4d62ad5c\",\"candidate_sha256\":\"141f8b36d1206786aa9c5b70b81ff560737f6815f65ec4bff58ca4bf4a643577\",\"engine_commit\":\"dddddddddddddddddddddddddddddddddddddddd\",\"expires_at\":1700000600,\"issued_at\":1700000000,\"issuer\":\"mrn-qa-engine\",\"kind\":\"content\",\"migration_artifact_sha256\":\"47a8e6e131e61db90e27f8f3493deac3605d2829a22cc932d4ab05b9a71542a1\",\"mode\":\"release\",\"plan_digest\":\"94a40da5266454c31b3f3c5874615b2d7e0136025be87bb2841d26238c6c27a5\",\"profile_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"qa_report_sha256\":\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\",\"receipt_id\":\"11111111111111111111111111111111\",\"result\":\"Pass\",\"rollback_operation_id\":\"\",\"runtime_context_sha256\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"runtime_url\":\"https://mrn-qa.internal:9443\",\"schema\":1,\"site_id\":73,\"site_url\":\"https://fixture.example.invalid\",\"smoke_strict\":true,\"target\":{\"kind\":\"wordpress-content\",\"post_id\":7,\"post_type\":\"page\"}}",
+      "review_canonical_sha256": "d33d8dccddbb759a00a2fd7050a8be3ef18eb831ddad301979645fadf09e36ad",
+      "installed_id_known_only_after_creation": false
+    },
+    {
+      "name": "creation",
+      "read": {
+        "success": true,
+        "snapshot": {
+          "site_id": 73,
+          "site_url": "https://fixture.example.invalid",
+          "post_type": "page",
+          "post_id": 0,
+          "core": [],
+          "acf_definitions": [],
+          "acf_values": [],
+          "unrelated_meta_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "post_record_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "runtime": {
+            "wordpress": "6.9.4",
+            "php_minor": "8.5",
+            "acf": null,
+            "stylesheet": "fixture-child",
+            "template": "fixture-parent",
+            "plugins_sha256": "2f9b7065ab123734ceb5468024ed36bf114310f10fb8e11511af387531ca3c73"
+          }
+        },
+        "snapshot_sha256": "613b6199e76e2daa5ddc1b323b9b75fbd37502a060e6acfc1bf20d9e3e3a3720",
+        "affected_paths": []
+      },
+      "review": {
+        "site_id": 73,
+        "site_url": "https://fixture.example.invalid",
+        "operation_id": "44444444-4444-4444-8444-444444444444",
+        "target": {
+          "kind": "wordpress-content",
+          "post_type": "page",
+          "post_id": 0
+        },
+        "before_snapshot": {
+          "site_id": 73,
+          "site_url": "https://fixture.example.invalid",
+          "post_type": "page",
+          "post_id": 0,
+          "core": [],
+          "acf_definitions": [],
+          "acf_values": [],
+          "unrelated_meta_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "post_record_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "runtime": {
+            "wordpress": "6.9.4",
+            "php_minor": "8.5",
+            "acf": null,
+            "stylesheet": "fixture-child",
+            "template": "fixture-parent",
+            "plugins_sha256": "2f9b7065ab123734ceb5468024ed36bf114310f10fb8e11511af387531ca3c73"
+          }
+        },
+        "candidate_snapshot": {
+          "site_id": 73,
+          "site_url": "https://fixture.example.invalid",
+          "post_type": "page",
+          "post_id": 0,
+          "core": {
+            "post_title": "Draft",
+            "post_name": "unique-draft",
+            "post_content": "",
+            "post_excerpt": "",
+            "post_status": "draft"
+          },
+          "acf_definitions": [],
+          "acf_values": [],
+          "unrelated_meta_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "post_record_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "runtime": {
+            "wordpress": "6.9.4",
+            "php_minor": "8.5",
+            "acf": null,
+            "stylesheet": "fixture-child",
+            "template": "fixture-parent",
+            "plugins_sha256": "2f9b7065ab123734ceb5468024ed36bf114310f10fb8e11511af387531ca3c73"
+          }
+        },
+        "before_sha256": "613b6199e76e2daa5ddc1b323b9b75fbd37502a060e6acfc1bf20d9e3e3a3720",
+        "candidate_sha256": "e82b07549c68f6ec4abe52e78464c928436b8eed5de61fbc467b9f300e8a2d20",
+        "affected_paths": [],
+        "rollback_operation_id": "",
+        "migration_artifact": {
+          "ref": "mrn-content://management/44444444-4444-4444-8444-444444444444",
+          "sha256": "d64311b87eb783390c87fb1a98da6d30707bf2a6bcd3a7d36d0e952c39d8e1f2"
+        },
+        "profile": {
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "runtime_url": "https://mrn-qa.internal:9443",
+          "runtime_context_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        },
+        "expires_at": 1700000900,
+        "digest": "1181c6178cd872543e10ad6bbf220d1345c9579432eb0b6896db03ac8bd952cc"
+      },
+      "migration": {
+        "reason": "Canonical synthetic fixture",
+        "schema": 1,
+        "adapter": "content-management-v1",
+        "operation_id": "44444444-4444-4444-8444-444444444444",
+        "request": {
+          "site_id": 73,
+          "site_url": "https://fixture.example.invalid",
+          "post_type": "page",
+          "post_id": 0,
+          "changes": {
+            "post_title": "Draft",
+            "post_name": "unique-draft",
+            "post_status": "draft"
+          },
+          "before_sha256": "613b6199e76e2daa5ddc1b323b9b75fbd37502a060e6acfc1bf20d9e3e3a3720"
+        },
+        "candidate_snapshot": {
+          "site_id": 73,
+          "site_url": "https://fixture.example.invalid",
+          "post_type": "page",
+          "post_id": 0,
+          "core": {
+            "post_title": "Draft",
+            "post_name": "unique-draft",
+            "post_content": "",
+            "post_excerpt": "",
+            "post_status": "draft"
+          },
+          "acf_definitions": [],
+          "acf_values": [],
+          "unrelated_meta_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "post_record_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "runtime": {
+            "wordpress": "6.9.4",
+            "php_minor": "8.5",
+            "acf": null,
+            "stylesheet": "fixture-child",
+            "template": "fixture-parent",
+            "plugins_sha256": "2f9b7065ab123734ceb5468024ed36bf114310f10fb8e11511af387531ca3c73"
+          }
+        },
+        "candidate_sha256": "e82b07549c68f6ec4abe52e78464c928436b8eed5de61fbc467b9f300e8a2d20",
+        "rollback_snapshot": {
+          "site_id": 73,
+          "site_url": "https://fixture.example.invalid",
+          "post_type": "page",
+          "post_id": 0,
+          "core": [],
+          "acf_definitions": [],
+          "acf_values": [],
+          "unrelated_meta_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "post_record_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "runtime": {
+            "wordpress": "6.9.4",
+            "php_minor": "8.5",
+            "acf": null,
+            "stylesheet": "fixture-child",
+            "template": "fixture-parent",
+            "plugins_sha256": "2f9b7065ab123734ceb5468024ed36bf114310f10fb8e11511af387531ca3c73"
+          }
+        }
+      },
+      "installed_read": {
+        "success": true,
+        "snapshot": {
+          "site_id": 73,
+          "site_url": "https://fixture.example.invalid",
+          "post_type": "page",
+          "post_id": 11,
+          "core": {
+            "post_title": "Draft",
+            "post_name": "unique-draft",
+            "post_content": "",
+            "post_excerpt": "",
+            "post_status": "draft"
+          },
+          "acf_definitions": [
+            {
+              "key": "field_rows",
+              "name": "content_rows",
+              "type": "flexible_content",
+              "layouts": [
+                {
+                  "key": "layout_body",
+                  "name": "body_text",
+                  "sub_fields": [
+                    {
+                      "key": "field_body",
+                      "name": "body_text",
+                      "label": "Body",
+                      "type": "wysiwyg"
+                    },
+                    {
+                      "key": "field_other",
+                      "name": "other",
+                      "label": "Other",
+                      "type": "text"
+                    },
+                    {
+                      "key": "field_nested",
+                      "name": "nested",
+                      "type": "repeater",
+                      "sub_fields": [
+                        {
+                          "key": "field_body",
+                          "name": "body_text",
+                          "label": "Body",
+                          "type": "wysiwyg"
+                        },
+                        {
+                          "key": "field_other",
+                          "name": "other",
+                          "label": "Other",
+                          "type": "text"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "key": "field_untouched",
+              "name": "untouched",
+              "type": "text"
+            },
+            {
+              "key": "field_decimal",
+              "name": "decimal",
+              "type": "number",
+              "min": "1.5",
+              "max": "10.5",
+              "step": "0.5",
+              "default_value": "2.5"
+            },
+            {
+              "key": "field_choice",
+              "name": "choice",
+              "type": "select",
+              "choices": [
+                {
+                  "key": "é",
+                  "label": "Étiquette"
+                }
+              ]
+            }
+          ],
+          "acf_values": {
+            "field_rows": null,
+            "field_untouched": null,
+            "field_decimal": null,
+            "field_choice": null
+          },
+          "unrelated_meta_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "post_record_sha256": "de3ffb683beb2dc5ce44238b582498354cc130990682af0063e99dce16b344e6",
+          "runtime": {
+            "wordpress": "6.9.4",
+            "php_minor": "8.5",
+            "acf": null,
+            "stylesheet": "fixture-child",
+            "template": "fixture-parent",
+            "plugins_sha256": "2f9b7065ab123734ceb5468024ed36bf114310f10fb8e11511af387531ca3c73"
+          }
+        },
+        "snapshot_sha256": "04c3f23ab59b283915b0902b02061e7123ee8de28e66e924d295437d2f04273e",
+        "affected_paths": [
+          "/parent/unique-draft/"
+        ]
+      },
+      "state": {
+        "site_id": 73,
+        "site_url": "https://fixture.example.invalid",
+        "state": "completed",
+        "operation_id": "44444444-4444-4444-8444-444444444444",
+        "changed": true,
+        "rollback_available": false,
+        "error_code": "",
+        "post_id": 11,
+        "installed_sha256": "04c3f23ab59b283915b0902b02061e7123ee8de28e66e924d295437d2f04273e"
+      },
+      "qa_claims": {
+        "schema": 1,
+        "issuer": "mrn-qa-engine",
+        "audience": "https://wpcontrol.mrndev.io",
+        "kind": "content",
+        "result": "Pass",
+        "mode": "release",
+        "smoke_strict": true,
+        "issued_at": 1700000000,
+        "expires_at": 1700000600,
+        "receipt_id": "22222222222222222222222222222222",
+        "qa_report_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "engine_commit": "dddddddddddddddddddddddddddddddddddddddd",
+        "runtime_url": "https://mrn-qa.internal:9443",
+        "runtime_context_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "profile_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "plan_digest": "1181c6178cd872543e10ad6bbf220d1345c9579432eb0b6896db03ac8bd952cc",
+        "migration_artifact_sha256": "d64311b87eb783390c87fb1a98da6d30707bf2a6bcd3a7d36d0e952c39d8e1f2",
+        "site_id": 73,
+        "site_url": "https://fixture.example.invalid",
+        "target": {
+          "kind": "wordpress-content",
+          "post_type": "page",
+          "post_id": 0
+        },
+        "before_sha256": "613b6199e76e2daa5ddc1b323b9b75fbd37502a060e6acfc1bf20d9e3e3a3720",
+        "candidate_sha256": "e82b07549c68f6ec4abe52e78464c928436b8eed5de61fbc467b9f300e8a2d20",
+        "affected_paths": [],
+        "rollback_operation_id": ""
+      },
+      "qa_envelope": {
+        "key_id": "synthetic-management-fixture",
+        "payload_base64": "eyJhZmZlY3RlZF9wYXRocyI6W10sImF1ZGllbmNlIjoiaHR0cHM6Ly93cGNvbnRyb2wubXJuZGV2LmlvIiwiYmVmb3JlX3NoYTI1NiI6IjYxM2I2MTk5ZTc2ZTJkYWE1ZGRjMWIzMjNiOWI3NWZiZDM3NTAyYTA2MGU2YWNmYzFiZjIwZDllM2UzYTM3MjAiLCJjYW5kaWRhdGVfc2hhMjU2IjoiZTgyYjA3NTQ5YzY4ZjZlYzRhYmU1MmU3ODQ2NGM5Mjg0MzZiOGVlZDVkZTYxZmJjNDY3YjlmMzAwZThhMmQyMCIsImVuZ2luZV9jb21taXQiOiJkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkIiwiZXhwaXJlc19hdCI6MTcwMDAwMDYwMCwiaXNzdWVkX2F0IjoxNzAwMDAwMDAwLCJpc3N1ZXIiOiJtcm4tcWEtZW5naW5lIiwia2luZCI6ImNvbnRlbnQiLCJtaWdyYXRpb25fYXJ0aWZhY3Rfc2hhMjU2IjoiZDY0MzExYjg3ZWI3ODMzOTBjODdmYjFhOThkYTZkMzA3MDdiZjJhNmJjZDNhN2QzNmQwZTk1MmMzOWQ4ZTFmMiIsIm1vZGUiOiJyZWxlYXNlIiwicGxhbl9kaWdlc3QiOiIxMTgxYzYxNzhjZDg3MjU0M2UxMGFkNmJiZjIyMGQxMzQ1Yzk1Nzk0MzJlYjBiNjg5NmRiMDNhYzhiZDk1MmNjIiwicHJvZmlsZV9zaGEyNTYiOiJhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhIiwicWFfcmVwb3J0X3NoYTI1NiI6ImNjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2MiLCJyZWNlaXB0X2lkIjoiMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIiLCJyZXN1bHQiOiJQYXNzIiwicm9sbGJhY2tfb3BlcmF0aW9uX2lkIjoiIiwicnVudGltZV9jb250ZXh0X3NoYTI1NiI6ImJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmIiLCJydW50aW1lX3VybCI6Imh0dHBzOi8vbXJuLXFhLmludGVybmFsOjk0NDMiLCJzY2hlbWEiOjEsInNpdGVfaWQiOjczLCJzaXRlX3VybCI6Imh0dHBzOi8vZml4dHVyZS5leGFtcGxlLmludmFsaWQiLCJzbW9rZV9zdHJpY3QiOnRydWUsInRhcmdldCI6eyJraW5kIjoid29yZHByZXNzLWNvbnRlbnQiLCJwb3N0X2lkIjowLCJwb3N0X3R5cGUiOiJwYWdlIn19",
+        "signature_base64": "xbC2+F158IAdvpWfvHd9H0YDzfWAbqPF0kNHVHND5PU6VRsM/k8pLNYI7PwN+3PqbftK4oBtut9tVBawx0jVBg=="
+      },
+      "qa_public_key_base64": "GX9rI+FshTLGq8g4+s1ep4m+DHaykgM0A5v6iz02jWE=",
+      "qa_payload_canonical": "{\"affected_paths\":[],\"audience\":\"https://wpcontrol.mrndev.io\",\"before_sha256\":\"613b6199e76e2daa5ddc1b323b9b75fbd37502a060e6acfc1bf20d9e3e3a3720\",\"candidate_sha256\":\"e82b07549c68f6ec4abe52e78464c928436b8eed5de61fbc467b9f300e8a2d20\",\"engine_commit\":\"dddddddddddddddddddddddddddddddddddddddd\",\"expires_at\":1700000600,\"issued_at\":1700000000,\"issuer\":\"mrn-qa-engine\",\"kind\":\"content\",\"migration_artifact_sha256\":\"d64311b87eb783390c87fb1a98da6d30707bf2a6bcd3a7d36d0e952c39d8e1f2\",\"mode\":\"release\",\"plan_digest\":\"1181c6178cd872543e10ad6bbf220d1345c9579432eb0b6896db03ac8bd952cc\",\"profile_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"qa_report_sha256\":\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\",\"receipt_id\":\"22222222222222222222222222222222\",\"result\":\"Pass\",\"rollback_operation_id\":\"\",\"runtime_context_sha256\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"runtime_url\":\"https://mrn-qa.internal:9443\",\"schema\":1,\"site_id\":73,\"site_url\":\"https://fixture.example.invalid\",\"smoke_strict\":true,\"target\":{\"kind\":\"wordpress-content\",\"post_id\":0,\"post_type\":\"page\"}}",
+      "review_canonical_sha256": "2a3530c562f74bc7afea8191d2aaa89f601daa43fe5e84829c320b1de07edbba",
+      "installed_id_known_only_after_creation": true
+    }
+  ],
+  "decimal_read": {
+    "success": true,
+    "snapshot": {
+      "site_id": 73,
+      "site_url": "https://fixture.example.invalid",
+      "post_type": "page",
+      "post_id": 7,
+      "core": {
+        "post_title": "Reviewed title",
+        "post_name": "privacy",
+        "post_content": "<h2>Native page</h2>\n<p>Exact native copy.</p>",
+        "post_excerpt": "Excerpt",
+        "post_status": "publish"
+      },
+      "acf_definitions": [
+        {
+          "key": "field_rows",
+          "name": "content_rows",
+          "type": "flexible_content",
+          "layouts": [
+            {
+              "key": "layout_body",
+              "name": "body_text",
+              "sub_fields": [
+                {
+                  "key": "field_body",
+                  "name": "body_text",
+                  "label": "Body",
+                  "type": "wysiwyg"
+                },
+                {
+                  "key": "field_other",
+                  "name": "other",
+                  "label": "Other",
+                  "type": "text"
+                },
+                {
+                  "key": "field_nested",
+                  "name": "nested",
+                  "type": "repeater",
+                  "sub_fields": [
+                    {
+                      "key": "field_body",
+                      "name": "body_text",
+                      "label": "Body",
+                      "type": "wysiwyg"
+                    },
+                    {
+                      "key": "field_other",
+                      "name": "other",
+                      "label": "Other",
+                      "type": "text"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "field_untouched",
+          "name": "untouched",
+          "type": "text"
+        },
+        {
+          "key": "field_decimal",
+          "name": "decimal",
+          "type": "number",
+          "min": "1.5",
+          "max": "10.5",
+          "step": "0.5",
+          "default_value": "2.5"
+        },
+        {
+          "key": "field_choice",
+          "name": "choice",
+          "type": "select",
+          "choices": [
+            {
+              "key": "é",
+              "label": "Étiquette"
+            }
+          ]
+        }
+      ],
+      "acf_values": {
+        "field_rows": [
+          {
+            "acf_fc_layout": "body_text",
+            "field_body": "<p>Metadata preserved.</p>",
+            "field_other": "Keep formatting",
+            "field_nested": [
+              {
+                "field_body": "Nested original",
+                "field_other": "Nested keep"
+              }
+            ]
+          },
+          {
+            "acf_fc_layout": "body_text",
+            "acf_fc_layout_disabled": true,
+            "acf_fc_layout_custom_label": "Kept custom label",
+            "field_body": "Second row",
+            "field_other": "Second keep",
+            "field_nested": []
+          }
+        ],
+        "field_untouched": "Outside builder",
+        "field_decimal": "2.5",
+        "field_choice": "é"
+      },
+      "unrelated_meta_sha256": "96d738b3b1973f2ceb48fd3e65ea4fbdff3af6ae80f2a375b2f768ce7018c448",
+      "post_record_sha256": "306dc81741457e28ad353d24e2fd80093fcc0b2cf5cc1d4d0c3d1d98fb6aef28",
+      "runtime": {
+        "wordpress": "6.9.4",
+        "php_minor": "8.5",
+        "acf": null,
+        "stylesheet": "fixture-child",
+        "template": "fixture-parent",
+        "plugins_sha256": "2f9b7065ab123734ceb5468024ed36bf114310f10fb8e11511af387531ca3c73"
+      }
+    },
+    "snapshot_sha256": "66ce59e26e8238885390d307aad58c15d1ad84a23a04e88b005b2c767847ebef",
+    "affected_paths": [
+      "/parent/privacy/"
+    ]
+  },
+  "layout_metadata": {
+    "before": {
+      "success": true,
+      "snapshot": {
+        "site_id": 73,
+        "site_url": "https://fixture.example.invalid",
+        "post_type": "page",
+        "post_id": 7,
+        "core": {
+          "post_title": "Reviewed title",
+          "post_name": "privacy",
+          "post_content": "<h2>Native page</h2>\n<p>Exact native copy.</p>",
+          "post_excerpt": "Excerpt",
+          "post_status": "publish"
+        },
+        "acf_definitions": [
+          {
+            "key": "field_rows",
+            "name": "content_rows",
+            "type": "flexible_content",
+            "layouts": [
+              {
+                "key": "layout_body",
+                "name": "body_text",
+                "sub_fields": [
+                  {
+                    "key": "field_body",
+                    "name": "body_text",
+                    "label": "Body",
+                    "type": "wysiwyg"
+                  },
+                  {
+                    "key": "field_other",
+                    "name": "other",
+                    "label": "Other",
+                    "type": "text"
+                  },
+                  {
+                    "key": "field_nested",
+                    "name": "nested",
+                    "type": "repeater",
+                    "sub_fields": [
+                      {
+                        "key": "field_body",
+                        "name": "body_text",
+                        "label": "Body",
+                        "type": "wysiwyg"
+                      },
+                      {
+                        "key": "field_other",
+                        "name": "other",
+                        "label": "Other",
+                        "type": "text"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "key": "field_untouched",
+            "name": "untouched",
+            "type": "text"
+          }
+        ],
+        "acf_values": {
+          "field_rows": [
+            {
+              "acf_fc_layout": "body_text",
+              "field_body": "<p>Reviewed policy</p>",
+              "field_other": "Keep formatting",
+              "field_nested": [
+                {
+                  "field_body": "Nested original",
+                  "field_other": "Nested keep"
+                }
+              ]
+            },
+            {
+              "acf_fc_layout": "body_text",
+              "acf_fc_layout_disabled": true,
+              "acf_fc_layout_custom_label": "Kept custom label",
+              "field_body": "Second row",
+              "field_other": "Second keep",
+              "field_nested": []
+            }
+          ],
+          "field_untouched": "Outside builder"
+        },
+        "unrelated_meta_sha256": "9113ebef5ec3ef304890bef951c3537ce739248bf60cc3ab2ed5095fb8a695c9",
+        "post_record_sha256": "306dc81741457e28ad353d24e2fd80093fcc0b2cf5cc1d4d0c3d1d98fb6aef28",
+        "runtime": {
+          "wordpress": "6.9.4",
+          "php_minor": "8.5",
+          "acf": null,
+          "stylesheet": "fixture-child",
+          "template": "fixture-parent",
+          "plugins_sha256": "2f9b7065ab123734ceb5468024ed36bf114310f10fb8e11511af387531ca3c73"
+        }
+      },
+      "snapshot_sha256": "d1fd5f657213bd6218008f4673bfc907e211dc0a0406f933dca0e73b5cfce120",
+      "affected_paths": [
+        "/parent/privacy/"
+      ]
+    },
+    "preview": {
+      "success": true,
+      "snapshot": {
+        "site_id": 73,
+        "site_url": "https://fixture.example.invalid",
+        "post_type": "page",
+        "post_id": 7,
+        "core": {
+          "post_title": "Reviewed title",
+          "post_name": "privacy",
+          "post_content": "<h2>Native page</h2>\n<p>Exact native copy.</p>",
+          "post_excerpt": "Excerpt",
+          "post_status": "publish"
+        },
+        "acf_definitions": [
+          {
+            "key": "field_rows",
+            "name": "content_rows",
+            "type": "flexible_content",
+            "layouts": [
+              {
+                "key": "layout_body",
+                "name": "body_text",
+                "sub_fields": [
+                  {
+                    "key": "field_body",
+                    "name": "body_text",
+                    "label": "Body",
+                    "type": "wysiwyg"
+                  },
+                  {
+                    "key": "field_other",
+                    "name": "other",
+                    "label": "Other",
+                    "type": "text"
+                  },
+                  {
+                    "key": "field_nested",
+                    "name": "nested",
+                    "type": "repeater",
+                    "sub_fields": [
+                      {
+                        "key": "field_body",
+                        "name": "body_text",
+                        "label": "Body",
+                        "type": "wysiwyg"
+                      },
+                      {
+                        "key": "field_other",
+                        "name": "other",
+                        "label": "Other",
+                        "type": "text"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "key": "field_untouched",
+            "name": "untouched",
+            "type": "text"
+          }
+        ],
+        "acf_values": {
+          "field_rows": [
+            {
+              "acf_fc_layout": "body_text",
+              "field_body": "<p>Reviewed policy</p>",
+              "field_other": "Keep formatting",
+              "field_nested": [
+                {
+                  "field_body": "Nested original",
+                  "field_other": "Nested keep"
+                }
+              ]
+            },
+            {
+              "acf_fc_layout": "body_text",
+              "acf_fc_layout_disabled": true,
+              "acf_fc_layout_custom_label": "Kept custom label",
+              "field_body": "Second row",
+              "field_other": "Second keep",
+              "field_nested": []
+            }
+          ],
+          "field_untouched": "Outside builder"
+        },
+        "unrelated_meta_sha256": "9113ebef5ec3ef304890bef951c3537ce739248bf60cc3ab2ed5095fb8a695c9",
+        "post_record_sha256": "306dc81741457e28ad353d24e2fd80093fcc0b2cf5cc1d4d0c3d1d98fb6aef28",
+        "runtime": {
+          "wordpress": "6.9.4",
+          "php_minor": "8.5",
+          "acf": null,
+          "stylesheet": "fixture-child",
+          "template": "fixture-parent",
+          "plugins_sha256": "2f9b7065ab123734ceb5468024ed36bf114310f10fb8e11511af387531ca3c73"
+        }
+      },
+      "snapshot_sha256": "d1fd5f657213bd6218008f4673bfc907e211dc0a0406f933dca0e73b5cfce120",
+      "affected_paths": [
+        "/parent/privacy/"
+      ],
+      "candidate_snapshot": {
+        "site_id": 73,
+        "site_url": "https://fixture.example.invalid",
+        "post_type": "page",
+        "post_id": 7,
+        "core": {
+          "post_title": "Reviewed title",
+          "post_name": "privacy",
+          "post_content": "<h2>Native page</h2>\n<p>Exact native copy.</p>",
+          "post_excerpt": "Excerpt",
+          "post_status": "publish"
+        },
+        "acf_definitions": [
+          {
+            "key": "field_rows",
+            "name": "content_rows",
+            "type": "flexible_content",
+            "layouts": [
+              {
+                "key": "layout_body",
+                "name": "body_text",
+                "sub_fields": [
+                  {
+                    "key": "field_body",
+                    "name": "body_text",
+                    "label": "Body",
+                    "type": "wysiwyg"
+                  },
+                  {
+                    "key": "field_other",
+                    "name": "other",
+                    "label": "Other",
+                    "type": "text"
+                  },
+                  {
+                    "key": "field_nested",
+                    "name": "nested",
+                    "type": "repeater",
+                    "sub_fields": [
+                      {
+                        "key": "field_body",
+                        "name": "body_text",
+                        "label": "Body",
+                        "type": "wysiwyg"
+                      },
+                      {
+                        "key": "field_other",
+                        "name": "other",
+                        "label": "Other",
+                        "type": "text"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "key": "field_untouched",
+            "name": "untouched",
+            "type": "text"
+          }
+        ],
+        "acf_values": {
+          "field_rows": [
+            {
+              "acf_fc_layout": "body_text",
+              "field_body": "<p>Metadata preserved.</p>",
+              "field_other": "Keep formatting",
+              "field_nested": [
+                {
+                  "field_body": "Nested original",
+                  "field_other": "Nested keep"
+                }
+              ]
+            },
+            {
+              "acf_fc_layout": "body_text",
+              "acf_fc_layout_disabled": true,
+              "acf_fc_layout_custom_label": "Kept custom label",
+              "field_body": "Second row",
+              "field_other": "Second keep",
+              "field_nested": []
+            }
+          ],
+          "field_untouched": "Outside builder"
+        },
+        "unrelated_meta_sha256": "9113ebef5ec3ef304890bef951c3537ce739248bf60cc3ab2ed5095fb8a695c9",
+        "post_record_sha256": "306dc81741457e28ad353d24e2fd80093fcc0b2cf5cc1d4d0c3d1d98fb6aef28",
+        "runtime": {
+          "wordpress": "6.9.4",
+          "php_minor": "8.5",
+          "acf": null,
+          "stylesheet": "fixture-child",
+          "template": "fixture-parent",
+          "plugins_sha256": "2f9b7065ab123734ceb5468024ed36bf114310f10fb8e11511af387531ca3c73"
+        }
+      },
+      "candidate_sha256": "546b3fa020dc6cae07518abfbdfc408591c0284d74c224b0bdd3b7dbc23145b4"
+    },
+    "installed": {
+      "success": true,
+      "snapshot": {
+        "site_id": 73,
+        "site_url": "https://fixture.example.invalid",
+        "post_type": "page",
+        "post_id": 7,
+        "core": {
+          "post_title": "Reviewed title",
+          "post_name": "privacy",
+          "post_content": "<h2>Native page</h2>\n<p>Exact native copy.</p>",
+          "post_excerpt": "Excerpt",
+          "post_status": "publish"
+        },
+        "acf_definitions": [
+          {
+            "key": "field_rows",
+            "name": "content_rows",
+            "type": "flexible_content",
+            "layouts": [
+              {
+                "key": "layout_body",
+                "name": "body_text",
+                "sub_fields": [
+                  {
+                    "key": "field_body",
+                    "name": "body_text",
+                    "label": "Body",
+                    "type": "wysiwyg"
+                  },
+                  {
+                    "key": "field_other",
+                    "name": "other",
+                    "label": "Other",
+                    "type": "text"
+                  },
+                  {
+                    "key": "field_nested",
+                    "name": "nested",
+                    "type": "repeater",
+                    "sub_fields": [
+                      {
+                        "key": "field_body",
+                        "name": "body_text",
+                        "label": "Body",
+                        "type": "wysiwyg"
+                      },
+                      {
+                        "key": "field_other",
+                        "name": "other",
+                        "label": "Other",
+                        "type": "text"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "key": "field_untouched",
+            "name": "untouched",
+            "type": "text"
+          }
+        ],
+        "acf_values": {
+          "field_rows": [
+            {
+              "acf_fc_layout": "body_text",
+              "field_body": "<p>Metadata preserved.</p>",
+              "field_other": "Keep formatting",
+              "field_nested": [
+                {
+                  "field_body": "Nested original",
+                  "field_other": "Nested keep"
+                }
+              ]
+            },
+            {
+              "acf_fc_layout": "body_text",
+              "acf_fc_layout_disabled": true,
+              "acf_fc_layout_custom_label": "Kept custom label",
+              "field_body": "Second row",
+              "field_other": "Second keep",
+              "field_nested": []
+            }
+          ],
+          "field_untouched": "Outside builder"
+        },
+        "unrelated_meta_sha256": "96d738b3b1973f2ceb48fd3e65ea4fbdff3af6ae80f2a375b2f768ce7018c448",
+        "post_record_sha256": "306dc81741457e28ad353d24e2fd80093fcc0b2cf5cc1d4d0c3d1d98fb6aef28",
+        "runtime": {
+          "wordpress": "6.9.4",
+          "php_minor": "8.5",
+          "acf": null,
+          "stylesheet": "fixture-child",
+          "template": "fixture-parent",
+          "plugins_sha256": "2f9b7065ab123734ceb5468024ed36bf114310f10fb8e11511af387531ca3c73"
+        }
+      },
+      "snapshot_sha256": "3aa8c13bc3dd505a90bac4acd9409703e6cc1c52eacdbddc7c4e128ebf83c827",
+      "affected_paths": [
+        "/parent/privacy/"
+      ]
+    }
+  },
+  "negative_cases": [
+    {
+      "name": "float-input",
+      "category": "schema",
+      "ability": "preview-content-edit-v1",
+      "mutation": "acf_patches[0].value=1.5"
+    },
+    {
+      "name": "extra-control-key",
+      "category": "schema",
+      "type": "review",
+      "mutation": "unrestricted_php=true"
+    },
+    {
+      "name": "wrong-before-hash",
+      "category": "semantic",
+      "expected_error": "mrn_content_stale"
+    },
+    {
+      "name": "missing-google-delegation",
+      "category": "authorization",
+      "expected_error": "mrn_delegation_required"
+    },
+    {
+      "name": "wrong-qa-purpose",
+      "category": "authorization",
+      "expected_error": "mrn_content_qa"
+    },
+    {
+      "name": "same-key-different-request",
+      "category": "retry",
+      "expected_error": "mrn_content_retry"
+    },
+    {
+      "name": "duplicate-dispatch",
+      "category": "retry",
+      "expected_behavior": "retained result without second write"
+    }
+  ],
+  "negative_schema_vectors": [
+    {
+      "name": "extra-review-control",
+      "schema": "preview-content-edit-v1",
+      "surface": "output",
+      "value": {
+        "site_id": 73,
+        "site_url": "https://fixture.example.invalid",
+        "operation_id": "11111111-1111-4111-8111-111111111111",
+        "target": {
+          "kind": "wordpress-content",
+          "post_type": "page",
+          "post_id": 7
+        },
+        "before_snapshot": {
+          "site_id": 73,
+          "site_url": "https://fixture.example.invalid",
+          "post_type": "page",
+          "post_id": 7,
+          "core": {
+            "post_title": "Privacy",
+            "post_name": "privacy",
+            "post_content": "Native original",
+            "post_excerpt": "Excerpt",
+            "post_status": "publish"
+          },
+          "acf_definitions": [
+            {
+              "key": "field_rows",
+              "name": "content_rows",
+              "type": "flexible_content",
+              "layouts": [
+                {
+                  "key": "layout_body",
+                  "name": "body_text",
+                  "sub_fields": [
+                    {
+                      "key": "field_body",
+                      "name": "body_text",
+                      "label": "Body",
+                      "type": "wysiwyg"
+                    },
+                    {
+                      "key": "field_other",
+                      "name": "other",
+                      "label": "Other",
+                      "type": "text"
+                    },
+                    {
+                      "key": "field_nested",
+                      "name": "nested",
+                      "type": "repeater",
+                      "sub_fields": [
+                        {
+                          "key": "field_body",
+                          "name": "body_text",
+                          "label": "Body",
+                          "type": "wysiwyg"
+                        },
+                        {
+                          "key": "field_other",
+                          "name": "other",
+                          "label": "Other",
+                          "type": "text"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "key": "field_untouched",
+              "name": "untouched",
+              "type": "text"
+            }
+          ],
+          "acf_values": {
+            "field_rows": [
+              {
+                "acf_fc_layout": "body_text",
+                "field_body": "<p>Original &amp; policy</p>\n",
+                "field_other": "Keep formatting",
+                "field_nested": [
+                  {
+                    "field_body": "Nested original",
+                    "field_other": "Nested keep"
+                  }
+                ]
+              },
+              {
+                "acf_fc_layout": "body_text",
+                "field_body": "Second row",
+                "field_other": "Second keep",
+                "field_nested": []
+              }
+            ],
+            "field_untouched": "Outside builder"
+          },
+          "unrelated_meta_sha256": "d7ec0c72fcaee107810c56fc81bc29f83ac952f06054d6b65f5f58b1524bc106",
+          "post_record_sha256": "4e6c88575ef8880c787708714d1c62b180a9b4cd17e6768bffb67e3e47badf3d",
+          "runtime": {
+            "wordpress": "6.9.4",
+            "php_minor": "8.5",
+            "acf": null,
+            "stylesheet": "fixture-child",
+            "template": "fixture-parent",
+            "plugins_sha256": "2f9b7065ab123734ceb5468024ed36bf114310f10fb8e11511af387531ca3c73"
+          }
+        },
+        "candidate_snapshot": {
+          "site_id": 73,
+          "site_url": "https://fixture.example.invalid",
+          "post_type": "page",
+          "post_id": 7,
+          "core": {
+            "post_title": "Reviewed title",
+            "post_name": "privacy",
+            "post_content": "Native original",
+            "post_excerpt": "Excerpt",
+            "post_status": "publish"
+          },
+          "acf_definitions": [
+            {
+              "key": "field_rows",
+              "name": "content_rows",
+              "type": "flexible_content",
+              "layouts": [
+                {
+                  "key": "layout_body",
+                  "name": "body_text",
+                  "sub_fields": [
+                    {
+                      "key": "field_body",
+                      "name": "body_text",
+                      "label": "Body",
+                      "type": "wysiwyg"
+                    },
+                    {
+                      "key": "field_other",
+                      "name": "other",
+                      "label": "Other",
+                      "type": "text"
+                    },
+                    {
+                      "key": "field_nested",
+                      "name": "nested",
+                      "type": "repeater",
+                      "sub_fields": [
+                        {
+                          "key": "field_body",
+                          "name": "body_text",
+                          "label": "Body",
+                          "type": "wysiwyg"
+                        },
+                        {
+                          "key": "field_other",
+                          "name": "other",
+                          "label": "Other",
+                          "type": "text"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "key": "field_untouched",
+              "name": "untouched",
+              "type": "text"
+            }
+          ],
+          "acf_values": {
+            "field_rows": [
+              {
+                "acf_fc_layout": "body_text",
+                "field_body": "<p>Reviewed policy</p>",
+                "field_other": "Keep formatting",
+                "field_nested": [
+                  {
+                    "field_body": "Nested original",
+                    "field_other": "Nested keep"
+                  }
+                ]
+              },
+              {
+                "acf_fc_layout": "body_text",
+                "field_body": "Second row",
+                "field_other": "Second keep",
+                "field_nested": []
+              }
+            ],
+            "field_untouched": "Outside builder"
+          },
+          "unrelated_meta_sha256": "d7ec0c72fcaee107810c56fc81bc29f83ac952f06054d6b65f5f58b1524bc106",
+          "post_record_sha256": "4e6c88575ef8880c787708714d1c62b180a9b4cd17e6768bffb67e3e47badf3d",
+          "runtime": {
+            "wordpress": "6.9.4",
+            "php_minor": "8.5",
+            "acf": null,
+            "stylesheet": "fixture-child",
+            "template": "fixture-parent",
+            "plugins_sha256": "2f9b7065ab123734ceb5468024ed36bf114310f10fb8e11511af387531ca3c73"
+          }
+        },
+        "before_sha256": "3163c0b54124e69ba78ab55560f696799964fc58d6307d8d3495e37c4d62ad5c",
+        "candidate_sha256": "141f8b36d1206786aa9c5b70b81ff560737f6815f65ec4bff58ca4bf4a643577",
+        "affected_paths": [
+          "/parent/privacy/"
+        ],
+        "rollback_operation_id": "",
+        "migration_artifact": {
+          "ref": "mrn-content://management/11111111-1111-4111-8111-111111111111",
+          "sha256": "47a8e6e131e61db90e27f8f3493deac3605d2829a22cc932d4ab05b9a71542a1"
+        },
+        "profile": {
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "runtime_url": "https://mrn-qa.internal:9443",
+          "runtime_context_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        },
+        "expires_at": 1700000900,
+        "digest": "94a40da5266454c31b3f3c5874615b2d7e0136025be87bb2841d26238c6c27a5",
+        "unrestricted_php": true
+      }
+    },
+    {
+      "name": "incomplete-success",
+      "schema": "execute-content-edit-v1",
+      "surface": "output",
+      "value": {
+        "site_id": 73,
+        "site_url": "https://fixture.example.invalid",
+        "state": "completed",
+        "operation_id": "11111111-1111-4111-8111-111111111111",
+        "changed": true,
+        "rollback_available": true,
+        "error_code": "",
+        "post_id": 7
+      }
+    },
+    {
+      "name": "float-definition",
+      "schema": "read-content-record-v1",
+      "surface": "output",
+      "value": {
+        "success": true,
+        "snapshot": {
+          "site_id": 73,
+          "site_url": "https://fixture.example.invalid",
+          "post_type": "page",
+          "post_id": 7,
+          "core": {
+            "post_title": "Reviewed title",
+            "post_name": "privacy",
+            "post_content": "<h2>Native page</h2>\n<p>Exact native copy.</p>",
+            "post_excerpt": "Excerpt",
+            "post_status": "publish"
+          },
+          "acf_definitions": [
+            {
+              "key": "field_rows",
+              "name": "content_rows",
+              "type": "flexible_content",
+              "layouts": [
+                {
+                  "key": "layout_body",
+                  "name": "body_text",
+                  "sub_fields": [
+                    {
+                      "key": "field_body",
+                      "name": "body_text",
+                      "label": "Body",
+                      "type": "wysiwyg"
+                    },
+                    {
+                      "key": "field_other",
+                      "name": "other",
+                      "label": "Other",
+                      "type": "text"
+                    },
+                    {
+                      "key": "field_nested",
+                      "name": "nested",
+                      "type": "repeater",
+                      "sub_fields": [
+                        {
+                          "key": "field_body",
+                          "name": "body_text",
+                          "label": "Body",
+                          "type": "wysiwyg"
+                        },
+                        {
+                          "key": "field_other",
+                          "name": "other",
+                          "label": "Other",
+                          "type": "text"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "key": "field_untouched",
+              "name": "untouched",
+              "type": "text"
+            },
+            {
+              "key": "field_decimal",
+              "name": "decimal",
+              "type": "number",
+              "min": 1.5,
+              "max": "10.5",
+              "step": "0.5",
+              "default_value": "2.5"
+            },
+            {
+              "key": "field_choice",
+              "name": "choice",
+              "type": "select",
+              "choices": [
+                {
+                  "key": "é",
+                  "label": "Étiquette"
+                }
+              ]
+            }
+          ],
+          "acf_values": {
+            "field_rows": [
+              {
+                "acf_fc_layout": "body_text",
+                "field_body": "<p>Metadata preserved.</p>",
+                "field_other": "Keep formatting",
+                "field_nested": [
+                  {
+                    "field_body": "Nested original",
+                    "field_other": "Nested keep"
+                  }
+                ]
+              },
+              {
+                "acf_fc_layout": "body_text",
+                "acf_fc_layout_disabled": true,
+                "acf_fc_layout_custom_label": "Kept custom label",
+                "field_body": "Second row",
+                "field_other": "Second keep",
+                "field_nested": []
+              }
+            ],
+            "field_untouched": "Outside builder",
+            "field_decimal": "2.5",
+            "field_choice": "é"
+          },
+          "unrelated_meta_sha256": "96d738b3b1973f2ceb48fd3e65ea4fbdff3af6ae80f2a375b2f768ce7018c448",
+          "post_record_sha256": "306dc81741457e28ad353d24e2fd80093fcc0b2cf5cc1d4d0c3d1d98fb6aef28",
+          "runtime": {
+            "wordpress": "6.9.4",
+            "php_minor": "8.5",
+            "acf": null,
+            "stylesheet": "fixture-child",
+            "template": "fixture-parent",
+            "plugins_sha256": "2f9b7065ab123734ceb5468024ed36bf114310f10fb8e11511af387531ca3c73"
+          }
+        },
+        "snapshot_sha256": "66ce59e26e8238885390d307aad58c15d1ad84a23a04e88b005b2c767847ebef",
+        "affected_paths": [
+          "/parent/privacy/"
+        ]
+      }
+    },
+    {
+      "name": "unqualified-map-key",
+      "schema": "read-content-record-v1",
+      "surface": "output",
+      "value": {
+        "success": true,
+        "snapshot": {
+          "site_id": 73,
+          "site_url": "https://fixture.example.invalid",
+          "post_type": "page",
+          "post_id": 7,
+          "core": {
+            "post_title": "Privacy",
+            "post_name": "privacy",
+            "post_content": "Native original",
+            "post_excerpt": "Excerpt",
+            "post_status": "publish"
+          },
+          "acf_definitions": [
+            {
+              "key": "field_rows",
+              "name": "content_rows",
+              "type": "flexible_content",
+              "layouts": [
+                {
+                  "key": "layout_body",
+                  "name": "body_text",
+                  "sub_fields": [
+                    {
+                      "key": "field_body",
+                      "name": "body_text",
+                      "label": "Body",
+                      "type": "wysiwyg"
+                    },
+                    {
+                      "key": "field_other",
+                      "name": "other",
+                      "label": "Other",
+                      "type": "text"
+                    },
+                    {
+                      "key": "field_nested",
+                      "name": "nested",
+                      "type": "repeater",
+                      "sub_fields": [
+                        {
+                          "key": "field_body",
+                          "name": "body_text",
+                          "label": "Body",
+                          "type": "wysiwyg"
+                        },
+                        {
+                          "key": "field_other",
+                          "name": "other",
+                          "label": "Other",
+                          "type": "text"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "key": "field_untouched",
+              "name": "untouched",
+              "type": "text"
+            }
+          ],
+          "acf_values": {
+            "field_rows": [
+              {
+                "acf_fc_layout": "body_text",
+                "field_body": "<p>Original &amp; policy</p>\n",
+                "field_other": "Keep formatting",
+                "field_nested": [
+                  {
+                    "field_body": "Nested original",
+                    "field_other": "Nested keep"
+                  }
+                ]
+              },
+              {
+                "acf_fc_layout": "body_text",
+                "field_body": "Second row",
+                "field_other": "Second keep",
+                "field_nested": []
+              }
+            ],
+            "field_untouched": "Outside builder",
+            "privé": "Unsupported raw object key"
+          },
+          "unrelated_meta_sha256": "d7ec0c72fcaee107810c56fc81bc29f83ac952f06054d6b65f5f58b1524bc106",
+          "post_record_sha256": "4e6c88575ef8880c787708714d1c62b180a9b4cd17e6768bffb67e3e47badf3d",
+          "runtime": {
+            "wordpress": "6.9.4",
+            "php_minor": "8.5",
+            "acf": null,
+            "stylesheet": "fixture-child",
+            "template": "fixture-parent",
+            "plugins_sha256": "2f9b7065ab123734ceb5468024ed36bf114310f10fb8e11511af387531ca3c73"
+          }
+        },
+        "snapshot_sha256": "3163c0b54124e69ba78ab55560f696799964fc58d6307d8d3495e37c4d62ad5c",
+        "affected_paths": [
+          "/parent/privacy/"
+        ]
+      }
+    },
+    {
+      "name": "float-patch-input",
+      "schema": "preview-content-edit-v1",
+      "surface": "input",
+      "value": {
+        "site_id": 73,
+        "site_url": "https://fixture.example.invalid",
+        "post_type": "page",
+        "post_id": 7,
+        "expected_snapshot_sha256": "3163c0b54124e69ba78ab55560f696799964fc58d6307d8d3495e37c4d62ad5c",
+        "idempotency_key": "77777777-7777-4777-8777-777777777777",
+        "reason": "Synthetic",
+        "acf_patches": [
+          {
+            "path": [
+              "field_decimal"
+            ],
+            "value": 1.5
+          }
+        ]
+      }
+    }
+  ]
+}

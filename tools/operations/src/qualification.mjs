@@ -1,17 +1,17 @@
 import { z } from 'zod';
-import { sha, commit, requireThat } from './contracts.mjs';
+import { absoluteUrl, sha, commit, requireThat } from './contracts.mjs';
 
 // Written through reviewed MRN QA/release enrollment, never accepted from MCP
 // arguments. Each record attests one immutable artifact on one environment.
 export const qualificationSchema = z.object({ version: z.literal(1), records: z.array(z.object({
-  siteUrl: z.string().url(), environment: z.enum(['local', 'development', 'staging', 'production']),
+  siteUrl: absoluteUrl, environment: z.enum(['local', 'development', 'staging', 'production']),
   sourceCommit: commit, artifactSha256: sha, verifiedBy: z.string().min(1),
   verifiedAt: z.string().datetime(), validUntil: z.string().datetime(),
   sourceQa: z.object({ status: z.literal('passed'), reportRef: z.string().min(1), reportSha256: sha }).strict(),
   runtimeQa: z.object({ status: z.literal('passed'), reportRef: z.string().min(1), reportSha256: sha }).strict(),
   // No frontend payload is a reviewed fact, not a default inferred from no files.
   frontend: z.enum(['none', 'immutable-assets']),
-  assets: z.array(z.object({ url: z.string().url(), sha256: sha, generationSha256: sha.optional() }).strict()),
+  assets: z.array(z.object({ url: absoluteUrl, sha256: sha, generationSha256: sha.optional() }).strict()),
 }).strict()) }).strict();
 
 export class Qualifications {
