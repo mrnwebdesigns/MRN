@@ -1,0 +1,171 @@
+{
+  "method": "Isolated Local Hub, serial ABBA, equal navigation interception/cache policy, native variant removes only the two new login styles and scoped body class. No forced GC. Current observation, not whole-editor qualification.",
+  "rows": [
+    {
+      "mode": "native",
+      "wallMs": 7368,
+      "cpuMs": 156.45000000000002,
+      "scriptMs": 57.915,
+      "heapMiB": 8.683700561523438,
+      "cls": 0.0006454885223765432,
+      "longTasks": [],
+      "resources": [],
+      "nativeInputs": [
+        {
+          "name": "log",
+          "type": "text"
+        },
+        {
+          "name": "pwd",
+          "type": "password"
+        },
+        {
+          "name": "rememberme",
+          "type": "checkbox"
+        },
+        {
+          "name": "wp-submit",
+          "type": "submit"
+        },
+        {
+          "name": "redirect_to",
+          "type": "hidden"
+        },
+        {
+          "name": "testcookie",
+          "type": "hidden"
+        }
+      ],
+      "formAction": "https://admin-editor-pilot.localhost/site-login/"
+    },
+    {
+      "mode": "themed",
+      "wallMs": 1446,
+      "cpuMs": 56.654,
+      "scriptMs": 31.690999999999995,
+      "heapMiB": 9.49679183959961,
+      "cls": 0.0018128255208333334,
+      "longTasks": [],
+      "resources": [
+        {
+          "file": "mrn-admin-tokens.css",
+          "bytes": 4696
+        },
+        {
+          "file": "login.css",
+          "bytes": 6166
+        }
+      ],
+      "nativeInputs": [
+        {
+          "name": "log",
+          "type": "text"
+        },
+        {
+          "name": "pwd",
+          "type": "password"
+        },
+        {
+          "name": "rememberme",
+          "type": "checkbox"
+        },
+        {
+          "name": "wp-submit",
+          "type": "submit"
+        },
+        {
+          "name": "redirect_to",
+          "type": "hidden"
+        },
+        {
+          "name": "testcookie",
+          "type": "hidden"
+        }
+      ],
+      "formAction": "https://admin-editor-pilot.localhost/site-login/"
+    },
+    {
+      "mode": "themed",
+      "wallMs": 1053,
+      "cpuMs": 51.772,
+      "scriptMs": 30.317,
+      "heapMiB": 8.685039520263672,
+      "cls": 0.0018128255208333334,
+      "longTasks": [],
+      "resources": [
+        {
+          "file": "mrn-admin-tokens.css",
+          "bytes": 4696
+        },
+        {
+          "file": "login.css",
+          "bytes": 6166
+        }
+      ],
+      "nativeInputs": [
+        {
+          "name": "log",
+          "type": "text"
+        },
+        {
+          "name": "pwd",
+          "type": "password"
+        },
+        {
+          "name": "rememberme",
+          "type": "checkbox"
+        },
+        {
+          "name": "wp-submit",
+          "type": "submit"
+        },
+        {
+          "name": "redirect_to",
+          "type": "hidden"
+        },
+        {
+          "name": "testcookie",
+          "type": "hidden"
+        }
+      ],
+      "formAction": "https://admin-editor-pilot.localhost/site-login/"
+    },
+    {
+      "mode": "native",
+      "wallMs": 1589,
+      "cpuMs": 62.059999999999995,
+      "scriptMs": 33.667,
+      "heapMiB": 8.685035705566406,
+      "cls": 0.0006454885223765432,
+      "longTasks": [],
+      "resources": [],
+      "nativeInputs": [
+        {
+          "name": "log",
+          "type": "text"
+        },
+        {
+          "name": "pwd",
+          "type": "password"
+        },
+        {
+          "name": "rememberme",
+          "type": "checkbox"
+        },
+        {
+          "name": "wp-submit",
+          "type": "submit"
+        },
+        {
+          "name": "redirect_to",
+          "type": "hidden"
+        },
+        {
+          "name": "testcookie",
+          "type": "hidden"
+        }
+      ],
+      "formAction": "https://admin-editor-pilot.localhost/site-login/"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1794003603,
+    "label": "pre-admin-pilot-login-cleanup-20261106",
+    "nonce": "cb699bc385ad",
+    "key": "sites\/admin-editor-pilot-mrndev-io\/backup_2026-11-06-2219_Trilliant_cb699bc385ad-db.gz",
+    "size": 7094740,
+    "sha256": "839f3c7613d8c2493b5bc4bd4e458ad7a0874b7148ae79a53babd2c94d28767c"
+}
+Only the owned subscriber fixture and private credentials removed.
+d02faa25ce24c3515db0ebdcaa90ccaf82de280d889ed53559e4f97fceb083e0  wp-content/mu-plugins/mrn-admin-ui-css/login.php
+525d0726ff6ca371e782f542e25acc7340587bf31c6289b0bd8735744f5cbbaa  wp-content/mu-plugins/mrn-admin-ui-css/login.css
+22cc320afd735627c18a4a3053c68da915eb48a92e2e86e6a683686373142bf6  wp-content/mu-plugins/mrn-admin-ui-css/mrn-admin-ui-css.php

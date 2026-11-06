@@ -1,0 +1,14 @@
+{
+  "checks": [
+    "Valid native password-reset form renders; no password changed or reset email sent",
+    "Native password login succeeds and retains requested profile destination",
+    "Account preference initializes Secure HttpOnly SameSite=Lax browser hint",
+    "Existing appearance control switches in place and synchronizes login hint",
+    "Invalid preference nonce still rejected without changing hint",
+    "Account initialization and preference update in one request retain the final selected palette",
+    "Native logout retains Dark login appearance without retaining authentication",
+    "Appearance hint cannot grant admin access after logout"
+  ],
+  "errors": [],
+  "resetViolations": []
+}

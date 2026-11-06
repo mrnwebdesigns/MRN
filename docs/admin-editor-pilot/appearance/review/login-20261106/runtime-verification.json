@@ -1,0 +1,16 @@
+{
+  "rest": {
+    "status": 200,
+    "url": "https://admin-editor-pilot.mrndev.io",
+    "namespaceCount": 12
+  },
+  "sourceCommit": "deb63185",
+  "sourceVersion": "3.3.6",
+  "remoteInstalledHashes": {
+    "login.php": "d02faa25ce24c3515db0ebdcaa90ccaf82de280d889ed53559e4f97fceb083e0",
+    "login.css": "525d0726ff6ca371e782f542e25acc7340587bf31c6289b0bd8735744f5cbbaa",
+    "mrn-admin-ui-css.php": "22cc320afd735627c18a4a3053c68da915eb48a92e2e86e6a683686373142bf6"
+  },
+  "fixture": "Deleted through native WordPress after fresh verified remote backup; exact username absent from final lookup.",
+  "localInstall": "Additive login module only on existing 3.3.1 runtime; previous bootstrap retained privately."
+}

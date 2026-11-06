@@ -1,0 +1,14 @@
+No syntax errors detected in /home/mrndev-admin-editor/review-private/login-20261106/login.php
+No syntax errors detected in /home/mrndev-admin-editor/review-private/login-20261106/mrn-admin-ui-css.php
+{
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1794003299,
+    "label": "pre-admin-pilot-login-install-20261106",
+    "nonce": "cf52213b9ed6",
+    "key": "sites\/admin-editor-pilot-mrndev-io\/backup_2026-11-06-2214_Trilliant_cf52213b9ed6-db.gz",
+    "size": 7094746,
+    "sha256": "089d41ed351f928c75dc8a28b6adb7df9c9bae092ab24f27f29de5f7de3fc531"
+}
+Disposable subscriber login fixture prepared privately; mail suppressed for creation.
+Verified login-only files installed; prior loader retained. No other component changed.

@@ -244,3 +244,12 @@ Next annotation UX-052. Existing CPU/heap and Local Hub OOM qualification remain
 P1 release blockers; no Fleet or release preparation is authorized.
 
 **Performance follow-up — 5 November:** The known Lima socket leak is repaired and the bounded editor notice optimization is deployed after source/runtime QA and a verified remote backup. [Report](review/cpu-oom-20261105/REVIEW.md). CPU qualification, native save latency and separate Hub provisioning health remain open. Annotation numbering remains UX-052; release/Fleet gates remain closed.
+
+**P2 UX-052 — login shares the admin appearance:** implemented and installed on
+Local Hub and the isolated review site. Native login/recovery/reset surfaces reuse
+semantic Light/Dark/System tokens, with AME branding intact and no new JavaScript.
+A display-only browser hint retains the account palette after sign-out. Native
+sign-in/out, preference persistence, invalid-nonce handling, mobile and scoped axe
+checks pass. [Screenshots and qualification](review/login-20261106/REVIEW.md).
+Await visual acceptance; next annotation UX-053. Whole-editor CPU, residual save
+latency and separate Hub health remain open; release/Fleet gates remain closed.
