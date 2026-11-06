@@ -47,7 +47,7 @@ The Stack profile selects **36 standard plugins**. The plain profile selects **3
 
 ## Environment and ownership
 
-- Activate the MRN Base Stack Child 1.1.0 over parent 1.6.13. Child content remains site-owned.
+- Activate the MRN Base Stack Child 1.1.0 over parent 1.6.14. Child content remains site-owned.
 - Keep SEOPress Free/PRO 10.3 active for native editing. Development disables indexing, tracking and external jobs.
 - FluentSMTP 2.4.1 is installed and remains inactive throughout development bootstrap. Provider configuration and verified delivery belong to launch. Post SMTP is excluded from new defaults; existing mail settings and logs are retained for a separately approved cutover.
 - Converter for Media uses its native WebP/new-upload defaults and preserves originals. Host rewrite/codec support and real HTTP image delivery require verification before bulk conversion. AVIF is a separately licensed option.
