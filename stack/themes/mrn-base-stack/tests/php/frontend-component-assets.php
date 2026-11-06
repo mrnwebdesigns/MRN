@@ -103,9 +103,12 @@ $GLOBALS['mrn_component_test_meta'] = array(
 	33 => array( 'rotating_phrases_one' => array( '2' ) ),
 	34 => array( 'page_content_rows' => array( array( 'card' ) ), 'page_content_rows_0_card_presentation' => array( 'pricing' ) ),
 	35 => array( 'page_content_rows' => array( array( 'showcase' ) ), 'page_content_rows_0_showcase_presentation' => array( 'split-records' ) ),
+	36 => array( 'page_content_rows' => array( array( 'card' ) ), 'page_content_rows_0_card_presentation' => array( 'process' ) ),
+	37 => array( 'page_content_rows' => array( array( 'two_column_split' ) ), 'page_content_rows_0_left_column_rows_0_card_presentation' => array( 'process' ) ),
 );
 $GLOBALS['mrn_component_test_content'] = array(
 	20 => '<div data-gallery-root></div>',
+	38 => '<details class="mrn-process__item" open></details>',
 );
 $GLOBALS['mrn_component_test_registered_styles']  = array();
 $GLOBALS['mrn_component_test_registered_scripts'] = array();
@@ -258,6 +261,7 @@ mrn_component_test_assert_only_need( 25, 'slider' );
 mrn_component_test_assert_only_need( 26, 'video_modal' );
 mrn_component_test_assert( empty( array_filter( mrn_base_stack_get_front_end_component_needs_for_post( 27 ) ) ), 'Unlinked Resource rows do not load video modal assets.' );
 mrn_component_test_assert_only_need( 28, 'faq' );
+foreach ( array( 36, 37, 38 ) as $process_id ) { mrn_component_test_assert_only_need( $process_id, 'faq' ); }
 mrn_component_test_assert( empty( array_filter( mrn_base_stack_get_front_end_component_needs_for_post( 29 ) ) ), 'Standard presentations do not request additional assets.' );
 mrn_component_test_assert( empty( $legacy_needs['presentation'] ), 'Legacy fallback does not add presentation assets.' );
 foreach ( array( 34, 35 ) as $static_post_id ) {

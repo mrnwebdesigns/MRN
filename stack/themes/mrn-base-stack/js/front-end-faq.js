@@ -129,7 +129,7 @@
 		var mobile = window.matchMedia( '(max-width: 767px)' );
 		document.querySelectorAll( '[data-mrn-faq-scroll]' ).forEach( function( root ) {
 			if ( root.dataset.mrnFaqScrollMounted ) { return; }
-			var items = Array.from( root.querySelectorAll( '.mrn-faq__item' ) );
+			var items = Array.from( root.querySelectorAll( '.mrn-faq__item, .mrn-process__item' ) );
 			if ( ! items.length ) { return; }
 			root.dataset.mrnFaqScrollMounted = 'true';
 			var ratio = Number( root.dataset.mrnFaqScroll );

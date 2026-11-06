@@ -1,0 +1,25 @@
+{
+  "scope": "Source and isolated component qualification only; not installed runtime/full-page/editor acceptance",
+  "php82_assertions": 95,
+  "php85_assertions": 95,
+  "browser_assertions": 44,
+  "browser_widths": 17,
+  "existing_faq_contract_assertions": 70,
+  "existing_faq_browser_assertions": 16,
+  "authored_converted_records": 17,
+  "source_records": 63,
+  "installed_changes": 0,
+  "content_writes": 0,
+  "network_requests_in_component_test": 0,
+  "runtime_cohorts": "paused for coordinated Contact adoption",
+  "proof_files": {
+    "faq-contract-regression.json": "477ce547961b624902f052efe64bbc8c038a4f539629d2bffa8463ffdac90145",
+    "faq-browser-regression.json": "044f63e270edd570874f454ec1caf4749ab9246717b546dfd745d226742d98e0",
+    "README.md": "84342f0d145c6f892117984026e9f5200f464645be8d872b983557a1da715551",
+    "process-desktop.png": "0d05961517f5d0169189bd3a31b6c68feeec7ee1c3df208af6f0a0eefb2d6d37",
+    "php82.json": "1fb2689c923559b90c804e21bc818a5dc10792c4116de31a8c5905394b9d8914",
+    "php85.json": "1fb2689c923559b90c804e21bc818a5dc10792c4116de31a8c5905394b9d8914",
+    "process-mobile.png": "8f47481be525225f0af7cda746d5f56716cf5f7ce1d477272ea09ff86184610e",
+    "browser.json": "481c1220e7928fbc8c97fc6ada187f0965e558be7909f287ce227924f73832a5"
+  }
+}

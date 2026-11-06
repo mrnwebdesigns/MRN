@@ -7,6 +7,10 @@
 
 $context              = is_array( $args ?? null ) ? $args : array();
 $row                  = isset( $context['row'] ) && is_array( $context['row'] ) ? $context['row'] : array();
+if ( 'process' === ( $row['card_presentation'] ?? '' ) ) {
+	get_template_part( 'template-parts/builder/process-cards', null, $context );
+	return;
+}
 if ( 'pricing' === ( $row['card_presentation'] ?? '' ) ) {
 	get_template_part( 'template-parts/builder/pricing-cards', null, $context );
 	return;

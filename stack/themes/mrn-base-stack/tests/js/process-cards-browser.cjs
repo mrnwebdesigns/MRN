@@ -1,0 +1,48 @@
+/* Isolated native process behavior proof; registered ACF/editor/full-page qualification is separate. */
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{execFileSync}=require('node:child_process');
+const {chromium}=require(process.env.MRN_PLAYWRIGHT_MODULE||'playwright'),axe=require(process.env.MRN_AXE_MODULE||'axe-core');
+const root=path.resolve(__dirname,'../..'),css=fs.readFileSync(root+'/style.css','utf8'),script=fs.readFileSync(root+'/js/front-end-faq.js','utf8');
+const fragment=execFileSync(process.env.MRN_PHP_BINARY||'php',[root+'/tests/php/process-cards.php','--render'],{encoding:'utf8'});
+const html=`<!doctype html><html lang="en"><head><title>Native process component regression</title><style>${css}</style><style>body{margin:0;background:#fff;color:#112233;font:18px/1.5 sans-serif}main{padding:500px 20px 0}.mrn-layout-section{padding:0}.mrn-layout-container{max-width:1160px;margin-inline:auto}.mrn-process__details{padding-bottom:20px}.has-process-cards{--site-color-ink:#112233;--site-color-mist:#eee;--site-text-body-1-size:18px}.has-process-cards+section{margin-top:600px}#after{height:1200px}*{box-sizing:border-box}</style></head><body><main><h1>Process component test</h1>${fragment}<div id="after"></div></main></body></html>`;
+const checks=[],samples=[],writes=[];function ok(value,label){assert(value,label);checks.push(label);}
+(async()=>{const browser=await chromium.launch({headless:true});try{
+ const page=await browser.newPage({viewport:{width:1440,height:900}});await page.route('**/*',route=>{writes.push(route.request().method());return route.abort();});await page.setContent(html);
+ const roots=page.locator('.has-process-cards'),first=roots.nth(0),second=roots.nth(1),items=first.locator('.mrn-process__item');
+ ok(await first.locator('.mrn-process__step-label').count()===6&&await items.count()===5,'Six overview labels and five details reach actual template output');
+ ok(await first.locator('details[open]').count()===5&&await second.locator('details[open]').count()===2,'No-script source markup exposes every real detail in independent groups');
+ ok(await first.locator('.mrn-process__step-label').allTextContents().then(x=>x.join('|')==='Example step 0|Example step 1|Example step 2|Example step 3|Example step 4|Example step 5'),'All overview labels retain order including the overview-only final step');
+ ok(await first.locator('summary h3').allTextContents().then(x=>x.join('|')==='Example step 0|Example step 1|Example step 2|Example step 3|Example step 4'),'Detail heading order preserves the selected five panels');
+ const scan=async(label)=>{await page.addScriptTag({content:axe.source});const result=await page.evaluate(async()=>axe.run(document.querySelector('main'),{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa']},rules:{'color-contrast':{enabled:false}}}));ok(result.violations.length===0,label+': axe WCAG A/AA excluding owner-accepted contrast only: '+result.violations.map(v=>v.id).join(','));};
+ await scan('All-open source');await page.addScriptTag({content:script});await page.waitForFunction(()=>document.querySelectorAll('.has-process-cards')[0].querySelectorAll('details[open]').length===1);
+ ok(await first.locator('details[open]').count()===1&&await second.locator('details[open]').count()===1,'Desktop initializes each process independently with one open detail');
+ ok(await items.nth(0).locator('summary').evaluate(e=>getComputedStyle(e,'::after').content)==='none','No Icon native selection hides the toggle in an open detail');
+ ok(await first.locator('.mrn-process__aside').evaluate(e=>getComputedStyle(e).position)==='sticky','Desktop introduction uses the native sticky frame');
+ await page.evaluate(()=>{const e=document.querySelectorAll('.mrn-process__item')[2];scrollTo(0,e.getBoundingClientRect().top+scrollY-innerHeight*.45+2);});await page.waitForTimeout(100);
+ ok(await items.nth(2).getAttribute('open')!==null&&await first.locator('details[open]').count()===1,'Scrolling activates the expected detail at the shared 45 percent threshold');
+ await items.nth(2).locator('a').focus();await page.evaluate(()=>scrollTo(0,0));await page.waitForTimeout(100);
+ ok(await items.nth(2).getAttribute('open')!==null,'Scrolling cannot close content around a focused detail link');
+ const summary=items.nth(1).locator('summary');await summary.focus();await page.keyboard.press('Enter');await page.waitForTimeout(80);
+ ok(await items.nth(1).getAttribute('open')!==null&&await first.locator('details[open]').count()===1,'Enter opens a chosen native summary without losing focus');
+ ok(await summary.evaluate(e=>{const s=getComputedStyle(e);return document.activeElement===e&&e.matches(':focus-visible')&&s.outlineStyle!=='none'&&parseFloat(s.outlineWidth)>=2;}),'Keyboard summary has a visible external focus outline');
+ ok(await second.locator('details[open]').count()===1,'Manual disclosure never closes another process instance');
+ await page.keyboard.press('Space');await page.waitForTimeout(80);ok(await items.nth(1).getAttribute('open')===null,'Space preserves the native manual collapse behavior');
+ ok(await summary.evaluate(e=>getComputedStyle(e,'::after').content)==='none','No Icon native selection also hides the toggle in a closed detail');
+ await page.evaluate(()=>document.activeElement.blur());await page.setViewportSize({width:767,height:900});await page.waitForTimeout(100);
+ ok(await first.locator('details[open]').count()===5&&await second.locator('details[open]').count()===2,'Mobile starts with every detail open while retaining six overview labels');
+ ok(await first.locator('.mrn-process__aside').evaluate(e=>getComputedStyle(e).position)==='static','Small-screen introduction no longer sticks');
+ ok(await first.locator('.mrn-process__step-label').first().evaluate(e=>getComputedStyle(e).fontSize)==='12px','Native mobile label-size field reaches the rendered overview');
+ ok(await first.locator('.mrn-process__answer ul').first().evaluate(e=>getComputedStyle(e).columnCount)==='1','Editable two-column detail lists collapse to one on mobile');
+ await items.nth(3).locator('summary').click();await page.evaluate(()=>dispatchEvent(new Event('scroll')));await page.waitForTimeout(80);
+ ok(await items.nth(3).getAttribute('open')===null,'Mobile manual collapse survives subsequent scrolling');
+ await scan('Mobile keyboard disclosures');
+ for(const width of [1440,1200,1199,1101,1100,1024,991,900,783,782,768,767,641,640,480,390,320]){await page.setViewportSize({width,height:900});await page.waitForTimeout(30);const sample=await first.evaluate(e=>({width:innerWidth,overflow:document.documentElement.scrollWidth>innerWidth,overview:e.querySelectorAll('.mrn-process__step-label').length,details:e.querySelectorAll('details').length,stepSize:getComputedStyle(e.querySelector('.mrn-process__step')).width}));samples.push(sample);ok(!sample.overflow&&sample.overview===6&&sample.details===5,`Responsive ${width}px retains all overview/detail content without horizontal overflow`);}
+ await page.evaluate(()=>document.activeElement.blur());await page.setViewportSize({width:1440,height:900});await page.emulateMedia({reducedMotion:'reduce'});await page.waitForTimeout(100);
+ ok(await first.locator('details[open]').count()===5,'Reduced motion starts with all detail copy expanded');
+ ok(await first.locator('.mrn-process__aside').evaluate(e=>getComputedStyle(e).position)==='static','Reduced motion removes sticky introduction movement');
+ await page.evaluate(()=>scrollTo(0,0));await page.waitForTimeout(80);ok(await first.locator('details[open]').count()===5,'Reduced-motion scrolling does not conceal a detail');
+ await scan('Reduced motion');
+ if(process.env.MRN_PROCESS_PROOF_DIR){fs.mkdirSync(process.env.MRN_PROCESS_PROOF_DIR,{recursive:true});await page.setViewportSize({width:1440,height:900});await first.screenshot({path:path.join(process.env.MRN_PROCESS_PROOF_DIR,'process-desktop.png')});await page.setViewportSize({width:390,height:900});await first.screenshot({path:path.join(process.env.MRN_PROCESS_PROOF_DIR,'process-mobile.png')});}
+ const noScript=await browser.newContext({javaScriptEnabled:false,viewport:{width:390,height:900}}),plain=await noScript.newPage();await plain.setContent(html);ok(await plain.locator('.has-process-cards').first().locator('details[open]').count()===5,'Real script-disabled browser retains every native detail');await noScript.close();
+ ok(writes.length===0,'Isolated proof makes no network requests or writes');
+ const report={result:'passed',count:checks.length,checks,samples,writes,scope:'Actual PHP template with boundary stubs and current component CSS/controller; no WordPress installation, authored conversion or full-page/editor acceptance.'};if(process.env.MRN_PROCESS_PROOF_DIR)fs.writeFileSync(path.join(process.env.MRN_PROCESS_PROOF_DIR,'browser.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));
+}finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

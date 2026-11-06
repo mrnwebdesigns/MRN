@@ -441,7 +441,7 @@ function mrn_base_stack_collect_front_end_component_needs_from_content( $content
 	$content = (string) $content;
 	$markers = array(
 		'deferred_media' => array( 'data-video-src' ),
-		'faq'            => array( 'mrn-faq__item' ),
+		'faq'            => array( 'mrn-faq__item', 'mrn-process__item' ),
 		'gallery'        => array( 'data-gallery-root' ),
 		'image_action'   => array( 'data-mrn-image-action-follow' ),
 		'articles' => array( 'data-mrn-articles' ),
@@ -566,6 +566,7 @@ function mrn_base_stack_collect_front_end_component_needs_for_post( $post_id, ar
 			foreach ( $meta_values as $presentation_value ) {
 				if ( 'articles' === $presentation_value && preg_match( '/(?:^|_)record_presentation$/', $meta_key ) ) { $needs['articles'] = true; continue; }
 				if ( in_array( $presentation_value, array( 'bento', 'split-records' ), true ) && preg_match( '/(?:^|_)showcase_presentation$/', $meta_key ) ) { continue; }
+				if ( 'process' === $presentation_value && preg_match( '/(?:^|_)card_presentation$/', $meta_key ) ) { $needs['faq'] = true; continue; }
 				if ( 'pricing' === $presentation_value && preg_match( '/(?:^|_)card_presentation$/', $meta_key ) ) { continue; }
 				if ( ! in_array( (string) $presentation_value, array( '', '0', 'standard' ), true ) ) {
 					$needs['presentation'] = true;
