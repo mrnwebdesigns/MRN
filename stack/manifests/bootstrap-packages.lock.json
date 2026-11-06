@@ -270,15 +270,15 @@
       "name": "MRN reCAPTCHA Enterprise Manager",
       "package": "mrn-recaptcha-enterprise-manager.zip",
       "profile": "all",
-      "sha256": "a31c33740ac80e06fc08fdca556c7aa3019b5531c7b27f7e417bf60c1d0d44fb",
-      "size_bytes": 60382,
+      "sha256": "63b97fc39b3350858c89ab79e77059736a19045749ca004c4dae368afb5ac22e",
+      "size_bytes": 64280,
       "slug": "mrn-recaptcha-enterprise-manager",
       "source": {
-        "commit": "1bc4e4424b1736ec85743b4f67a8b8add0f26220",
+        "commit": "f7af7f6cb820b1649a7f6e36113dc49e079ade66",
         "repository": "mrn-recaptcha-enterprise-manager",
         "type": "git"
       },
-      "version": "0.2.3"
+      "version": "0.2.4"
     },
     {
       "main_file": "mrn-stack-deployment-agent/mrn-stack-deployment-agent.php",
@@ -559,7 +559,7 @@
       "version": "0.1.2"
     }
   ],
-  "release_id": "2026.11.06-fleet-auto-6ee0e5a826d9",
+  "release_id": "2026.11.06-fleet-auto-91cab98ff8c5",
   "schema_version": 1,
   "scope": "new-site-bootstrap-inputs",
   "stack_plugin_count": 36
