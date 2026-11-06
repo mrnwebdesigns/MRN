@@ -38,9 +38,11 @@ function mrn_base_stack_get_hero_frame_fields() {
 		'media_column_gap' => 'Space Between Media Columns',
 		'media_row_gap' => 'Space Between Stacked Media Rows',
 		'media_radius' => 'Media Corner Radius',
-		'heading_size_narrow' => 'Heading Font Size at 900px',
-		'heading_line_height_narrow' => 'Heading Line Height at 900px',
-		'heading_space_after_narrow' => 'Space After Heading at 900px',
+		'heading_size_narrow' => 'Narrow-Screen Heading Font Size',
+		'heading_size_mobile' => 'Small-Screen Heading Font Size',
+		'heading_line_height_mobile' => 'Small-Screen Heading Line Height',
+		'heading_line_height_narrow' => 'Narrow-Screen Heading Line Height',
+		'heading_space_after_narrow' => 'Narrow-Screen Space After Heading',
 		'actions_space_before_narrow' => 'Space Before Actions at 900px',
 		'actions_gap_narrow' => 'Space Between Actions at 900px',
 		'paragraph_space_before' => 'Space Between Consecutive Paragraphs',
@@ -54,7 +56,7 @@ function mrn_base_stack_get_hero_frame_fields() {
 			'key' => 'field_mrn_hero_basic_block_frame_' . $suffix,
 			'name' => 'hero_' . $suffix, 'label' => $label, 'type' => 'text',
 			'default_value' => '', 'wrapper' => array( 'width' => '50' ),
-			'instructions' => 'inner_max_width' === $suffix ? 'Optional cap for the inner canvas of Wide/Full Heroes. Use a non-negative CSS length or clamp; blank retains 78rem. Content-width Heroes keep their existing separate cap.' : 'Optional; blank retains existing formatting. Use a non-negative CSS length or clamp(minimum, preferred, maximum). Widths accept none; line heights accept unitless numbers. Small-screen widths apply at the selected media breakpoint (default 960px); mobile heading spacing at 767px. Narrow fields apply at 900px; small gutters/actions at 480px. Other gutters have their own breakpoint selector.',
+			'instructions' => 'inner_max_width' === $suffix ? 'Optional cap for the inner canvas of Wide/Full Heroes. Use a non-negative CSS length or clamp; blank retains 78rem. Content-width Heroes keep their existing separate cap.' : 'Optional; blank retains existing formatting. Use a non-negative CSS length or clamp(minimum, preferred, maximum). Widths accept none; line heights accept unitless numbers. Small-screen widths apply at the selected media breakpoint (default 960px); mobile heading spacing follows the typography selector. Narrow heading fields use the selected heading breakpoint (default 900px); mobile heading/body typography and heading spacing use the selected typography breakpoint (default 767px). Narrow gutters/actions remain at 900px; small gutters/actions at 480px. Other gutters have their own breakpoint selector.',
 		);
 	}
 	$fields[] = array(
@@ -79,7 +81,9 @@ function mrn_base_stack_get_hero_frame_fields() {
 		'instructions' => 'Select when this Hero should keep desktop row margins and padding through 768px. All dimensions still come from the selected native spacing presets.',
 	);
 	foreach ( array(
-		'padding_mobile_breakpoint' => array( 'Row Padding Breakpoint', array( '' => 'Use Existing Row Breakpoint', '900' => '900px' ) ),
+		'padding_mobile_breakpoint' => array( 'Row Padding Breakpoint', array( '' => 'Use Existing Row Breakpoint', '900' => '900px', '640' => '640px (Vertical Padding Only)' ) ),
+		'heading_narrow_breakpoint' => array( 'Narrow-Screen Heading Breakpoint', array( '' => 'Use Existing (900px)', '1100' => '1100px' ) ),
+		'typography_mobile_breakpoint' => array( 'Small-Screen Typography Breakpoint', array( '' => 'Use Existing (767px)', '640' => '640px' ) ),
 		'padding_bottom_mobile_source' => array( 'Small-Screen Bottom Padding', array( '' => 'Use Preset Mobile Dimension', 'desktop' => 'Keep Preset Desktop Dimension' ) ),
 		'media_stack_breakpoint' => array( 'Media Stacking Breakpoint', array( '' => 'Use Existing (960px)', '900' => '900px' ) ),
 		'media_max_share' => array( 'Media Maximum Share of Inner Canvas', array( '' => 'Use Existing Grid', '40' => '40%', '50' => '50%' ) ),
@@ -187,7 +191,7 @@ function mrn_base_stack_add_hero_media_frame_contract( array $row, array $result
 		$value = mrn_base_stack_validate_hero_frame_dimension( $row[ 'hero_' . $name ] ?? '', false, 'lead_line_height' === $name );
 		if ( '' !== $value ) { $result['styles'][] = '--mrn-hero-' . str_replace( '_', '-', $name ) . ':' . $value; $result['classes'][] = 'has-hero-' . str_replace( '_', '-', $name ); }
 	}
-	foreach ( array( 'padding_mobile_breakpoint' => array( '900' ), 'padding_bottom_mobile_source' => array( 'desktop' ), 'media_stack_breakpoint' => array( '900' ), 'media_shadow' => array( 'none' ), 'actions_small_layout' => array( 'full-column' ) ) as $name => $choices ) {
+	foreach ( array( 'padding_mobile_breakpoint' => array( '900', '640' ), 'heading_narrow_breakpoint' => array( '1100' ), 'typography_mobile_breakpoint' => array( '640' ), 'padding_bottom_mobile_source' => array( 'desktop' ), 'media_stack_breakpoint' => array( '900' ), 'media_shadow' => array( 'none' ), 'actions_small_layout' => array( 'full-column' ) ) as $name => $choices ) {
 		$value = $row[ 'hero_' . $name ] ?? '';
 		if ( is_string( $value ) && in_array( $value, $choices, true ) ) { $result['classes'][] = 'has-hero-' . str_replace( '_', '-', $name ) . '-' . $value; }
 	}
@@ -203,6 +207,14 @@ function mrn_base_stack_add_hero_media_frame_contract( array $row, array $result
 		$result['classes'][] = 'has-hero-' . str_replace( '_', '-', $name ) . '-narrow';
 		// Preserve literal inline output for all Heroes without a narrow override.
 		foreach ( $result['heading_styles'] as &$style ) { if ( str_starts_with( $style, $property . ':' ) ) { $style = $property . ':var(' . $variable . ', ' . substr( $style, strlen( $property ) + 1 ) . ')'; } } unset( $style );
+	}
+	foreach ( array( 'heading_size' => 'font-size', 'heading_line_height' => 'line-height' ) as $name => $property ) {
+		$value = mrn_base_stack_validate_hero_frame_dimension( $row[ 'hero_' . $name . '_mobile' ] ?? '', false, 'line-height' === $property );
+		if ( '' === $value ) { continue; }
+		$variable = '--mrn-hero-current-' . str_replace( '_', '-', $name );
+		$result['styles'][] = '--mrn-hero-' . str_replace( '_', '-', $name ) . '-mobile:' . $value;
+		$result['classes'][] = 'has-hero-' . str_replace( '_', '-', $name ) . '-mobile';
+		foreach ( $result['heading_styles'] as &$style ) { if ( str_starts_with( $style, $property . ':' ) && ! str_contains( $style, ':var(' . $variable . ',' ) ) { $style = $property . ':var(' . $variable . ', ' . substr( $style, strlen( $property ) + 1 ) . ')'; } } unset( $style );
 	}
 	$weight = $row['hero_lead_weight'] ?? '';
 	if ( is_scalar( $weight ) && in_array( (string) $weight, array_map( 'strval', range( 100, 900, 100 ) ), true ) ) { $result['classes'][] = 'has-hero-lead-weight'; $result['styles'][] = '--mrn-hero-lead-weight:' . (string) $weight; }

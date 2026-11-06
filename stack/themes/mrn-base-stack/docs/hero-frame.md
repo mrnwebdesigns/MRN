@@ -52,3 +52,21 @@ It uses the existing Hero stylesheet and adds no JavaScript or Motion dependency
 Reduced motion disables the animation. Enabling the existing Row Effects suppresses
 this entrance, preventing competing transforms. Unknown and malformed values do
 not activate it. It changes no row-spacing preset or unselected Hero output.
+
+
+## Optional narrow and small-screen type views
+
+A Basic Hero may select a **Narrow-Screen Heading Breakpoint** of 1100px; blank
+retains 900px. This moves only its narrow heading size, line height and following
+space. Narrow media, gutter and action controls keep their existing breakpoints.
+
+**Small-Screen Typography Breakpoint** may select 640px; blank retains 767px.
+It moves body size/line height and heading following space together. Two new
+optional small-screen heading size/line-height fields apply at the same selected
+breakpoint and override the narrow heading values. Values use the existing safe
+length validator. Unknown, array and injected settings add no output.
+
+The Row Padding Breakpoint additionally offers **640px (Vertical Padding Only)**.
+Top/bottom values come exclusively from the selected native spacing presets;
+side padding and all margins retain their independent row breakpoints. There is
+no site-specific selector, script, timer, CSS request or unselected default change.

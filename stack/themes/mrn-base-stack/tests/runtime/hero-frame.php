@@ -92,6 +92,16 @@ try {
 	$attributes = mrn_base_stack_get_hero_media_image_attributes( $media );
 	$expect( 'eager' === $attributes['loading'] && 'high' === $attributes['fetchpriority'] && 'async' === $attributes['decoding'] && '(max-width: 900px) 100vw, min(422px, 40vw)' === $attributes['sizes'], 'Bounded responsive image hints retain native Hero priority' );
 	$expect( mrn_base_stack_get_hero_image_attributes() === mrn_base_stack_get_hero_media_image_attributes( array( 'hero_media_width' => '422px;bad', 'hero_media_max_share' => '40' ) ) && mrn_base_stack_get_hero_image_attributes() === mrn_base_stack_get_hero_media_image_attributes( array() ), 'Default and malformed media hints retain original priority attributes' );
+	$views = array_merge( $row, array( 'hero_heading_size' => '64px', 'hero_heading_line_height' => '80px', 'hero_heading_size_narrow' => '54px', 'hero_heading_line_height_narrow' => '66px', 'hero_heading_narrow_breakpoint' => '1100', 'hero_heading_size_mobile' => '38px', 'hero_heading_line_height_mobile' => '46px', 'hero_typography_mobile_breakpoint' => '640', 'hero_padding_mobile_breakpoint' => '640' ) );
+	update_field( 'field_mrn_page_hero_rows', array( $views ), $id ); $saved_views = get_field( 'page_hero_rows', $id )[0];
+	foreach ( $views as $name => $value ) { if ( str_starts_with( $name, 'hero_' ) ) { $expect( $value === $saved_views[ $name ], 'Responsive type view persists ' . $name ); } }
+	$views_html = $render( $saved_views );
+	$expect( str_contains( $views_html, 'has-hero-heading-narrow-breakpoint-1100' ) && str_contains( $views_html, 'has-hero-typography-mobile-breakpoint-640' ) && str_contains( $views_html, 'has-hero-padding-mobile-breakpoint-640' ), 'Independent type and vertical-padding choices render only on the selected Hero' );
+	$expect( str_contains( $views_html, '--mrn-hero-heading-size-mobile:38px' ) && str_contains( $views_html, '--mrn-hero-heading-line-height-mobile:46px' ) && str_contains( $views_html, 'font-size:var(--mrn-hero-current-heading-size, 64px)' ) && ! str_contains( $views_html, 'var(--mrn-hero-current-heading-size, var(' ), 'Mobile and narrow overrides share one desktop inline fallback' );
+	foreach ( array( '', 'unknown', '640;position:fixed', array( '640' ) ) as $bad_view ) {
+		$expect( $empty === mrn_base_stack_get_hero_frame_contract( array( 'hero_heading_narrow_breakpoint' => $bad_view, 'hero_typography_mobile_breakpoint' => $bad_view ) ), 'Unsupported responsive type breakpoints retain original output' );
+	}
+	$expect( $empty === mrn_base_stack_get_hero_frame_contract( array( 'hero_heading_size_mobile' => '-2px', 'hero_heading_line_height_mobile' => array( '1.2' ) ) ), 'Malformed mobile heading lengths add no declaration' );
 	$proof = getenv( 'MRN_HERO_FRAME_PROOF_PATH' );
 	if ( $proof ) {
 		$expect( str_ends_with( $proof, '.html' ) && is_dir( dirname( $proof ) ), 'Explicit source proof directory exists' );
