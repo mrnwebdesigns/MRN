@@ -8815,6 +8815,8 @@ a.mrn-social-links__link:focus-visible svg {
 .has-row-text-color { color: var(--mrn-row-text-color); }
 
 /* Opt-in process Cards: geometry belongs to native controls and outer row presets. */
+.has-process-cards { min-width: 0; }
+.has-process-cards .mrn-card-row__head { min-width: 0; overflow-wrap: anywhere; }
 .has-process-cards .mrn-process { min-width: 0; }
 .has-process-cards .mrn-process__overview { display: flex; flex-wrap: wrap; justify-content: center; gap: 0; list-style: none; padding: 0; margin: 0 0 var(--mrn-process-overview-space-after, 3rem); }
 .has-process-cards .mrn-process__step { box-sizing: border-box; position: relative; isolation: isolate; overflow: hidden; display: flex; align-items: center; justify-content: center; flex: 0 0 var(--mrn-process-step-diameter-current, var(--mrn-process-step-diameter, 10rem)); width: var(--mrn-process-step-diameter-current, var(--mrn-process-step-diameter, 10rem)); height: var(--mrn-process-step-diameter-current, var(--mrn-process-step-diameter, 10rem)); max-width: 100%; border-radius: 50%; border: 1px solid currentColor; padding: 10px; margin: 0 calc(-1 * var(--mrn-process-step-overlap, 0px)) 0 0; text-align: center; background: var(--mrn-process-step-background-color, transparent); color: var(--mrn-process-step-text-color, inherit); }
