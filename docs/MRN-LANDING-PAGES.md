@@ -1,5 +1,23 @@
 # Landing Pages
 
+Landing Pages are paid-ad destinations. Their SEO policy is `noindex`, with
+normal crawling allowed so search engines can read the directive and AdsBot can
+verify destinations. Do not add a robots.txt disallow for these URLs.
+
+`inc/landing-page-seo.php` supplies SEOPress defaults for singles, the optional
+archive and dedicated categories/tags, excludes them from XML/HTML and core
+sitemaps, and sends an `X-Robots-Tag: noindex` fallback. SEOPress automatic
+IndexNow submissions skip this CPT while its normal SEO editor remains available.
+The CPT is excluded from default site search and the menu chooser. Explicitly
+configured third-party search engines can override a WordPress CPT exclusion;
+check those engines when adopting this policy. Archive exposure remains an
+independent control and does not enable organic indexing.
+
+Campaign UTM/click parameters must survive the landing request. Retain the
+site's consent controls and implement campaign-specific conversion tracking only
+after the actual measurement IDs and success event are agreed. `noindex` is not
+access control: unpublished review content must remain draft/private.
+
 `landing_page` is a theme-owned CPT. It uses the existing Hero, Content and After
 Content builders and the shared page presentation. The separate Landing Page
 template for ordinary WordPress Pages remains available.

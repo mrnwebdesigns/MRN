@@ -5,6 +5,8 @@
  * @package mrn-base-stack
  */
 
+require_once __DIR__ . '/landing-page-seo.php';
+
 /**
  * Add Landing Pages to the existing builder and editorial contracts.
  *
@@ -134,6 +136,7 @@ function mrn_base_stack_render_landing_page_archive_settings() {
 			<?php esc_html_e( 'Enable Landing Page, category and tag archives', 'mrn-base-stack' ); ?>
 		</label>
 		<p id="mrn-landing-page-archives-help" class="description"><?php esc_html_e( 'Standalone Landing Pages remain available when archives are off. Content Only removes standalone pages and archives; Disabled also removes the editing interface. Those settings above take priority. Existing content and terms are retained.', 'mrn-base-stack' ); ?></p>
+		<p class="description"><?php esc_html_e( 'Landing Pages are paid-ad destinations: pages and archives use noindex, are excluded from sitemaps and site search, and remain crawlable for advertising checks. Enabling archives does not enable search indexing.', 'mrn-base-stack' ); ?></p>
 	</div>
 	<?php
 }
