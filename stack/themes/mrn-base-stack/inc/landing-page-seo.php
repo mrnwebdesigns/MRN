@@ -6,6 +6,22 @@
  */
 
 /**
+ * Apply discovery defaults to native registrations and older parent adapters.
+ *
+ * @param array  $args Post type registration arguments.
+ * @param string $post_type Post type key.
+ * @return array
+ */
+function mrn_base_stack_landing_page_discovery_args( $args, $post_type ) {
+	if ( 'landing_page' === $post_type ) {
+		$args['exclude_from_search'] = true;
+		$args['show_in_nav_menus']   = false;
+	}
+	return $args;
+}
+add_filter( 'register_post_type_args', 'mrn_base_stack_landing_page_discovery_args', 20, 2 );
+
+/**
  * Apply the paid-page policy in SEOPress's own settings and editor UI.
  *
  * @param mixed $options SEOPress title settings.

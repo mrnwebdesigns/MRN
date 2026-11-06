@@ -67,9 +67,9 @@ function mrn_base_stack_register_landing_page_post_type() {
 			'show_ui'             => $show_ui,
 			'show_in_menu'        => $show_ui,
 			'show_in_admin_bar'   => $show_ui,
-			'show_in_nav_menus'   => false,
+			'show_in_nav_menus'   => true,
 			'show_in_rest'        => true,
-			'exclude_from_search' => true,
+			'exclude_from_search' => false,
 			'has_archive'         => mrn_base_stack_landing_page_archives_enabled() ? 'landing-pages' : false,
 			'rewrite'             => array(
 				'slug'       => 'landing-pages',
