@@ -2091,6 +2091,35 @@
         "preserve_active_state": true
       },
       "version": "0.13.14"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-recaptcha-enterprise-manager-0.2.4-f7af7f6cb820.zip",
+        "main_file": "mrn-recaptcha-enterprise-manager/mrn-recaptcha-enterprise-manager.php",
+        "path": "releases/stack-plugins/mrn-recaptcha-enterprise-manager-0.2.4-f7af7f6cb820.zip",
+        "sha256": "63b97fc39b3350858c89ab79e77059736a19045749ca004c4dae368afb5ac22e",
+        "size_bytes": 64280
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-recaptcha-enterprise-manager",
+      "source": {
+        "git_commit": "f7af7f6cb820b1649a7f6e36113dc49e079ade66",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-recaptcha-enterprise-manager",
+        "repository": "mrnwebdesigns/mrn-recaptcha-enterprise-manager"
+      },
+      "target_tier": "optional-integration",
+      "tree": {
+        "file_count": 20,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "038dfb10e2e32571902806d2cc67f3f1e8b50b3a9804b1fd98c707463d3a37b6"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.2.4"
     }
   ],
   "schema_version": 1

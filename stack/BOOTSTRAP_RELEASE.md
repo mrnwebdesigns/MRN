@@ -25,7 +25,7 @@ The Stack profile selects **36 standard plugins**. The plain profile selects **3
 | MRN Config Helper (`mrn-config-helper`) | 0.1.75 | all |
 | MRN Media Tools (`mrn-media-bulk-tools`) | 0.13.1 | all |
 | MRN Mega Menu (`mrn-mega-menu`) | 0.17.3 | all |
-| MRN reCAPTCHA Enterprise Manager (`mrn-recaptcha-enterprise-manager`) | 0.2.3 | all |
+| MRN reCAPTCHA Enterprise Manager (`mrn-recaptcha-enterprise-manager`) | 0.2.4 | all |
 | MRN Stack Deployment Agent (`mrn-stack-deployment-agent`) | 0.3.7 | all |
 | MRN Template Inspector (`mrn-template-inspector`) | 0.2.7 | all |
 | MRN Reusable Block Library (`mrn-reusable-block-library`) | 0.2.3 | stack |
