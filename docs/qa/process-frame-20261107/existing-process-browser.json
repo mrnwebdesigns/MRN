@@ -1,0 +1,173 @@
+{
+  "result": "passed",
+  "count": 44,
+  "checks": [
+    "Six overview labels and five details reach actual template output",
+    "No-script source markup exposes every real detail in independent groups",
+    "All overview labels retain order including the overview-only final step",
+    "Detail heading order preserves the selected five panels",
+    "All-open source: axe WCAG A/AA excluding owner-accepted contrast only: ",
+    "Desktop initializes each process independently with one open detail",
+    "No Icon native selection hides the toggle in an open detail",
+    "Desktop introduction uses the native sticky frame",
+    "Scrolling activates the expected detail at the shared 45 percent threshold",
+    "Scrolling cannot close content around a focused detail link",
+    "Enter opens a chosen native summary without losing focus",
+    "Keyboard summary has a visible external focus outline",
+    "Manual disclosure never closes another process instance",
+    "Space preserves the native manual collapse behavior",
+    "No Icon native selection also hides the toggle in a closed detail",
+    "Mobile starts with every detail open while retaining six overview labels",
+    "Small-screen introduction no longer sticks",
+    "Native mobile label-size field reaches the rendered overview",
+    "Editable two-column detail lists collapse to one on mobile",
+    "Mobile manual collapse survives subsequent scrolling",
+    "Mobile keyboard disclosures: axe WCAG A/AA excluding owner-accepted contrast only: ",
+    "Responsive 1440px retains all overview/detail content without horizontal overflow",
+    "Responsive 1200px retains all overview/detail content without horizontal overflow",
+    "Responsive 1199px retains all overview/detail content without horizontal overflow",
+    "Responsive 1101px retains all overview/detail content without horizontal overflow",
+    "Responsive 1100px retains all overview/detail content without horizontal overflow",
+    "Responsive 1024px retains all overview/detail content without horizontal overflow",
+    "Responsive 991px retains all overview/detail content without horizontal overflow",
+    "Responsive 900px retains all overview/detail content without horizontal overflow",
+    "Responsive 783px retains all overview/detail content without horizontal overflow",
+    "Responsive 782px retains all overview/detail content without horizontal overflow",
+    "Responsive 768px retains all overview/detail content without horizontal overflow",
+    "Responsive 767px retains all overview/detail content without horizontal overflow",
+    "Responsive 641px retains all overview/detail content without horizontal overflow",
+    "Responsive 640px retains all overview/detail content without horizontal overflow",
+    "Responsive 480px retains all overview/detail content without horizontal overflow",
+    "Responsive 390px retains all overview/detail content without horizontal overflow",
+    "Responsive 320px retains all overview/detail content without horizontal overflow",
+    "Reduced motion starts with all detail copy expanded",
+    "Reduced motion removes sticky introduction movement",
+    "Reduced-motion scrolling does not conceal a detail",
+    "Reduced motion: axe WCAG A/AA excluding owner-accepted contrast only: ",
+    "Real script-disabled browser retains every native detail",
+    "Isolated proof makes no network requests or writes"
+  ],
+  "samples": [
+    {
+      "width": 1440,
+      "overflow": false,
+      "overview": 6,
+      "details": 5,
+      "stepSize": "193px"
+    },
+    {
+      "width": 1200,
+      "overflow": false,
+      "overview": 6,
+      "details": 5,
+      "stepSize": "193px"
+    },
+    {
+      "width": 1199,
+      "overflow": false,
+      "overview": 6,
+      "details": 5,
+      "stepSize": "193px"
+    },
+    {
+      "width": 1101,
+      "overflow": false,
+      "overview": 6,
+      "details": 5,
+      "stepSize": "193px"
+    },
+    {
+      "width": 1100,
+      "overflow": false,
+      "overview": 6,
+      "details": 5,
+      "stepSize": "193px"
+    },
+    {
+      "width": 1024,
+      "overflow": false,
+      "overview": 6,
+      "details": 5,
+      "stepSize": "193px"
+    },
+    {
+      "width": 991,
+      "overflow": false,
+      "overview": 6,
+      "details": 5,
+      "stepSize": "193px"
+    },
+    {
+      "width": 900,
+      "overflow": false,
+      "overview": 6,
+      "details": 5,
+      "stepSize": "193px"
+    },
+    {
+      "width": 783,
+      "overflow": false,
+      "overview": 6,
+      "details": 5,
+      "stepSize": "193px"
+    },
+    {
+      "width": 782,
+      "overflow": false,
+      "overview": 6,
+      "details": 5,
+      "stepSize": "193px"
+    },
+    {
+      "width": 768,
+      "overflow": false,
+      "overview": 6,
+      "details": 5,
+      "stepSize": "193px"
+    },
+    {
+      "width": 767,
+      "overflow": false,
+      "overview": 6,
+      "details": 5,
+      "stepSize": "90px"
+    },
+    {
+      "width": 641,
+      "overflow": false,
+      "overview": 6,
+      "details": 5,
+      "stepSize": "90px"
+    },
+    {
+      "width": 640,
+      "overflow": false,
+      "overview": 6,
+      "details": 5,
+      "stepSize": "90px"
+    },
+    {
+      "width": 480,
+      "overflow": false,
+      "overview": 6,
+      "details": 5,
+      "stepSize": "90px"
+    },
+    {
+      "width": 390,
+      "overflow": false,
+      "overview": 6,
+      "details": 5,
+      "stepSize": "90px"
+    },
+    {
+      "width": 320,
+      "overflow": false,
+      "overview": 6,
+      "details": 5,
+      "stepSize": "90px"
+    }
+  ],
+  "writes": [],
+  "scope": "Actual PHP template with boundary stubs and current component CSS/controller; no WordPress installation, authored conversion or full-page/editor acceptance."
+}
