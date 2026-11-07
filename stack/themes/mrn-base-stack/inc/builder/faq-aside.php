@@ -70,13 +70,14 @@ function mrn_base_stack_get_split_aside_fields( $seed ) {
 		$fields[] = array( 'key' => $seed . '_split_' . $name, 'name' => 'split_' . $name, 'label' => $label, 'type' => 'text', 'default_value' => '', 'instructions' => 'Optional non-negative length or clamp(). Column bounds also accept calc(45% - 40px), with 0–100% and 0–200px. Only applies to Bounded Columns; outer spacing remains in row presets.', 'wrapper' => array( 'width' => '50' ) );
 	}
 	$fields[] = array( 'key' => $seed . '_split_stack_breakpoint', 'name' => 'split_stack_breakpoint', 'label' => 'Columns Stack Below', 'type' => 'select', 'choices' => array( '767' => '768px', '900' => '901px', '991' => '992px' ), 'default_value' => '991' );
+	$fields[] = array( 'key' => $seed . '_split_column_order', 'name' => 'split_column_order', 'label' => 'Desktop Column Order', 'type' => 'select', 'choices' => array( '' => 'Authored Order', 'reverse' => 'Reverse Above Stack Breakpoint' ), 'default_value' => '', 'instructions' => 'Use for media and text when the first authored column should remain first on small screens. Avoid changing the visual order of keyboard-interactive columns.' );
 	$fields[] = array( 'key' => $seed . '_split_heading_alignment', 'name' => 'split_heading_alignment', 'label' => 'Section Heading Alignment', 'type' => 'select', 'choices' => array( '' => 'Use Existing Alignment', 'start' => 'Start', 'center' => 'Center', 'end' => 'End' ), 'default_value' => '' );
 	$fields[] = array( 'key' => $seed . '_split_heading_space_after_mobile', 'name' => 'split_heading_space_after_mobile', 'label' => 'Small-Screen Space After Section Heading', 'type' => 'text', 'instructions' => 'Optional non-negative CSS length at 767px and below.' );
 	$field = mrn_base_stack_get_background_color_field( $seed . '_split_heading_color' ); $field['name'] = 'split_heading_color'; $field['label'] = 'Section Heading Color'; $fields[] = $field;
 	foreach ( $fields as &$field ) {
 		if ( 'split_frame' === $field['name'] ) { continue; }
 		if ( in_array( $field['name'], array( 'split_first_column_min', 'split_first_column_max', 'split_second_column_max', 'split_column_gap_tablet', 'split_first_column_max_tablet', 'split_second_column_max_tablet' ), true ) ) { $modes = array( 'bounded' ); }
-		elseif ( 'split_stack_breakpoint' === $field['name'] ) { $modes = array( 'columns', 'bounded' ); }
+		elseif ( in_array( $field['name'], array( 'split_stack_breakpoint', 'split_column_order' ), true ) ) { $modes = array( 'columns', 'bounded' ); }
 		elseif ( in_array( $field['name'], array( 'split_aside_width', 'split_aside_sticky_top' ), true ) ) { $modes = array( 'aside' ); }
 		else { $modes = array( 'aside', 'columns', 'bounded' ); }
 		$field['conditional_logic'] = array();
@@ -93,6 +94,7 @@ function mrn_base_stack_get_split_aside_contract( array $row ) {
 	$result['classes'][] = 'aside' === $row['split_frame'] ? 'has-split-aside-frame' : 'has-split-columns-frame';
 	if ( 'aside' !== $row['split_frame'] ) { $result['classes'][] = 'split-stack-' . ( in_array( $row['split_stack_breakpoint'] ?? '', array( '767', '900' ), true ) ? $row['split_stack_breakpoint'] : '991' ); }
 	if ( 'bounded' === $row['split_frame'] ) { $result['classes'][] = 'has-split-bounded-columns'; }
+	if ( 'aside' !== $row['split_frame'] && 'reverse' === ( $row['split_column_order'] ?? '' ) ) { $result['classes'][] = 'has-split-reverse-columns'; }
 	$styles = array();
 	foreach ( array( 'content_width', 'inner_gutter', 'inner_gutter_mobile', 'aside_width', 'column_gap', 'column_gap_mobile', 'aside_sticky_top', 'heading_space_after', 'heading_space_after_mobile', 'heading_size', 'heading_line_height' ) as $name ) {
 		$value = mrn_base_stack_validate_hero_frame_dimension( $row[ 'split_' . $name ] ?? '', 'content_width' === $name, 'heading_line_height' === $name );
