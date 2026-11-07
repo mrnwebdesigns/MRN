@@ -8854,6 +8854,14 @@ a.mrn-social-links__link:focus-visible svg {
 .has-process-cards.has-process-detail-heading-font-heading .mrn-process__question > h3 { font-family: var(--site-font-heading, inherit); }
 .has-process-cards.has-process-detail-heading-font-body .mrn-process__question > h3 { font-family: var(--site-font-body, inherit); }
 .has-process-cards.has-process-detail-heading-weight .mrn-process__question > h3 { font-weight: var(--mrn-process-detail-heading-weight); }
+/* Selected paragraph controls must also reach rich paragraphs with site-level type rules. */
+.has-process-cards.has-process-intro-size .mrn-process__intro p { font-size: var(--mrn-process-intro-size-current, var(--mrn-process-intro-size)); }
+.has-process-cards.has-process-intro-line-height .mrn-process__intro p { line-height: var(--mrn-process-intro-line-height); }
+.has-process-cards.has-process-intro-color .mrn-process__intro p { color: var(--mrn-process-intro-color); }
+.has-process-cards.has-process-answer-size .mrn-process__answer p { font-size: var(--mrn-process-answer-size-current, var(--mrn-process-answer-size)); }
+.has-process-cards.has-process-answer-line-height .mrn-process__answer p { line-height: var(--mrn-process-answer-line-height); }
+.has-process-cards.has-process-answer-color .mrn-process__answer p { color: var(--mrn-process-answer-color); }
+.has-process-cards.has-process-list-margin-inline-start .mrn-process__answer ul { margin-inline-start: var(--mrn-process-list-margin-inline-start); }
 .has-process-cards.has-process-paragraph-max-width .mrn-process__answer p { max-width: var(--mrn-process-paragraph-max-width); }
 .has-process-cards.has-process-paragraph-space-before .mrn-process__answer p { margin-block-start: var(--mrn-process-paragraph-space-before); }
 .has-process-cards.has-process-paragraph-space-after .mrn-process__answer p { margin-block-end: var(--mrn-process-paragraph-space-after); }
@@ -8877,6 +8885,8 @@ a.mrn-social-links__link:focus-visible svg {
  .has-process-cards:not(.has-process-columns-767).has-process-aside-divider .mrn-process__aside::after { display: none; }
 }
 @media (max-width: 767px) {
+ .has-process-cards.has-process-intro-size-mobile .mrn-process__intro p { font-size: var(--mrn-process-intro-size-mobile); }
+ .has-process-cards.has-process-answer-size-mobile .mrn-process__answer p { font-size: var(--mrn-process-answer-size-mobile); }
  .has-process-cards.has-process-list-size-mobile .mrn-process__answer li { font-size: var(--mrn-process-list-size-mobile); }
  .has-process-cards.has-process-detail-heading-line-height-mobile .mrn-process__question { line-height: var(--mrn-process-detail-heading-line-height-mobile); }
  .has-process-cards { --mrn-process-detail-number-offset-current: var(--mrn-process-detail-number-offset-mobile, var(--mrn-process-detail-number-offset, auto)); --mrn-process-step-padding-inline-current: var(--mrn-process-step-padding-inline-mobile, var(--mrn-process-step-padding-inline, 10px)); }
