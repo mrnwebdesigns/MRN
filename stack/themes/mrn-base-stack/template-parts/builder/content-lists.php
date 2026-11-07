@@ -111,6 +111,7 @@ if ( ! empty( $tax_query ) ) {
 
 $query_args = mrn_base_stack_get_content_list_collection_query( $row, $query_args );
 $query_args = mrn_base_stack_get_article_collection_query( $row, $query_args );
+$query_args = mrn_base_stack_get_project_collection_query( $row, $query_args );
 $query = new WP_Query( $query_args );
 if ( $is_article_list && $show_featured_image ) { update_post_thumbnail_cache( $query ); }
 
@@ -152,6 +153,8 @@ $people_contract = function_exists( 'mrn_base_stack_get_people_frame_contract' )
 $section_classes = mrn_base_stack_merge_builder_section_classes( $section_classes, $people_contract );
 $article_contract = mrn_base_stack_get_article_list_contract( $row );
 $section_classes = mrn_base_stack_merge_builder_section_classes( $section_classes, $article_contract );
+$project_contract = mrn_base_stack_get_project_list_contract( $row );
+$section_classes = mrn_base_stack_merge_builder_section_classes( $section_classes, $project_contract );
 $section_styles = array();
 
 if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' ) ) {
@@ -179,6 +182,7 @@ $section_classes   = mrn_base_stack_merge_builder_section_classes( $section_clas
 $section_attrs     = mrn_base_stack_merge_builder_attributes( $display_contract['attributes'], $career_contract['attributes'] );
 $section_attrs     = mrn_base_stack_merge_builder_attributes( $section_attrs, $people_contract['attributes'] );
 $section_attrs     = mrn_base_stack_merge_builder_attributes( $section_attrs, $article_contract['attributes'] );
+$section_attrs     = mrn_base_stack_merge_builder_attributes( $section_attrs, $project_contract['attributes'] );
 $section_attrs     = mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array() );
 $section_attrs     = mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
 $section_attr_html = mrn_base_stack_get_html_attributes( $section_attrs );
@@ -277,6 +281,7 @@ echo mrn_base_stack_get_builder_anchor_markup( $row ); // phpcs:ignore WordPress
 										'career_settings' => $row,
 										'people_settings' => $row,
 										'article_settings' => $row,
+										'project_settings' => $row,
 										'display_style'   => $display_style,
 										'show_featured_image' => $show_featured_image,
 										'show_publish_date' => $show_publish_date,
@@ -298,7 +303,8 @@ echo mrn_base_stack_get_builder_anchor_markup( $row ); // phpcs:ignore WordPress
 					<?php endif; ?>
 					<?php if ( $is_article_list && $has_posts ) : ?><li class="mrn-article__empty" data-article-empty hidden><?php echo esc_html( $empty_message ); ?></li><?php endif; ?>
 				</<?php echo esc_html( $list_tag ); ?>>
-				<?php echo mrn_base_stack_get_article_controls( $row, true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Shared helper escapes all controls. ?>
+				<?php echo mrn_base_stack_get_project_actions( $row ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Native helper escapes links and labels. ?>
+					<?php echo mrn_base_stack_get_article_controls( $row, true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Shared helper escapes all controls. ?>
 
 				<?php if ( '' !== $pagination_html ) : ?>
 					<nav class="mrn-content-list-row__pagination" aria-label="<?php echo esc_attr( $pagination_label ); ?>">

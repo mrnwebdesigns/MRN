@@ -251,12 +251,13 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 						'comparisons' => 'Before / After Comparison Stack',
 						'careers'     => 'Careers with Application Links and Tags',
 						'articles'    => 'Articles with Categories and Reading Time',
+						'projects'    => 'Project Cards with Features and Optional Hover Video',
 					),
 					'default_value' => 'standard',
 					'instructions'  => 'People use designation and hover_video. Comparisons use before_image, after_image and tags. Sources, selection, order and pagination remain controlled by Content Lists.',
 				)
 			),
-		), mrn_base_stack_get_career_list_fields( $seed ), function_exists( 'mrn_base_stack_get_people_frame_fields' ) ? mrn_base_stack_get_people_frame_fields( $seed ) : array(), mrn_base_stack_get_article_list_fields( $seed ) );
+		), mrn_base_stack_get_career_list_fields( $seed ), function_exists( 'mrn_base_stack_get_people_frame_fields' ) ? mrn_base_stack_get_people_frame_fields( $seed ) : array(), mrn_base_stack_get_article_list_fields( $seed ), function_exists( 'mrn_base_stack_get_project_list_fields' ) ? mrn_base_stack_get_project_list_fields( $seed ) : array() );
 	}
 	if ( 'video' === $layout ) {
 		return array(
