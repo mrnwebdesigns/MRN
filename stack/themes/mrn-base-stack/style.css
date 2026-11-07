@@ -8710,11 +8710,11 @@ a.mrn-social-links__link:focus-visible svg {
 @media (prefers-reduced-motion: no-preference) { .mrn-image-action--marker-only .mrn-image-action__marker { transition: background .25s ease; } }
 
 /* Contained-frame responsive row presets: dimensions stay in Site Styles. */
-.mrn-content-builder__row:is(.has-card-frame, .has-body-frame).frame-padding-at-900[data-mrn-row-spacing] {
+.mrn-content-builder__row:is(.has-card-frame, .has-body-frame):is(.frame-padding-at-900, .frame-padding-at-767)[data-mrn-row-spacing] {
  padding: var(--mrn-row-padding-top, 0px) var(--mrn-row-padding-right, 0px) var(--mrn-row-padding-bottom, 0px) var(--mrn-row-padding-left, 0px);
 }
-.mrn-content-builder__row:is(.has-card-frame, .has-body-frame).frame-padding-at-900 > .mrn-layout-section.mrn-layout-surface { padding: 0; }
-.mrn-content-builder__row.has-card-frame.frame-padding-at-900 { background: var(--mrn-card-row-bg, transparent); }
+.mrn-content-builder__row:is(.has-card-frame, .has-body-frame):is(.frame-padding-at-900, .frame-padding-at-767) > .mrn-layout-section.mrn-layout-surface { padding: 0; }
+.mrn-content-builder__row.has-card-frame:is(.frame-padding-at-900, .frame-padding-at-767) { background: var(--mrn-card-row-bg, transparent); }
 
 @media (min-width: 768px) and (max-width: 782px) {
  .mrn-content-builder__row:is(.has-card-frame, .has-body-frame).frame-row-spacing-at-767[data-mrn-row-spacing] {
@@ -8930,4 +8930,8 @@ a.mrn-social-links__link:focus-visible svg {
 @media (min-width:992px) {
  .has-split-reverse-columns.split-stack-991 > .mrn-layout-section--two-column-split > .mrn-layout-container > .mrn-layout-grid--two-column-split > .mrn-two-column-split__column--left { order:2; }
  .has-split-reverse-columns.split-stack-991 > .mrn-layout-section--two-column-split > .mrn-layout-container > .mrn-layout-grid--two-column-split > .mrn-two-column-split__column--right { order:1; }
+}
+
+@media (max-width:767px) {
+ .has-card-frame.has-card-grid-767-single.has-card-header-space-after-mobile { --mrn-card-frame-header-space-after-current: var(--mrn-card-frame-header-space-after-mobile); }
 }

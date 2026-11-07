@@ -177,8 +177,8 @@
 
 /* Optional project collection. Section gaps remain in native row presets. */
 .has-project-collection > .mrn-layout-section--content-lists > .mrn-layout-container { box-sizing: border-box; width: 100%; max-width: var(--mrn-project-content-width, 1160px); margin-inline: auto; padding-block: 0; padding-inline: var(--mrn-project-inner-gutter, 30px); }
-.has-project-collection .mrn-content-list-row__head { gap: 0; margin-bottom: var(--mrn-project-heading-space-after, 3rem); }
-.has-project-collection .mrn-content-list-row__head > .mrn-ui__heading { margin: 0; color: var(--mrn-project-heading-color, inherit); font-family: var(--site-font-heading, inherit); font-size: var(--mrn-project-heading-size, 2rem); line-height: var(--mrn-project-heading-line-height, 1.2); font-weight: var(--mrn-project-heading-weight, 700); }
+.has-project-collection .mrn-content-list-row__header { gap: 0; margin-bottom: var(--mrn-project-heading-space-after, 3rem); }
+.has-project-collection .mrn-content-list-row__header > .mrn-ui__heading { margin: 0; color: var(--mrn-project-heading-color, inherit); font-family: var(--site-font-heading, inherit); font-size: var(--mrn-project-heading-size, 2rem); line-height: var(--mrn-project-heading-line-height, 1.2); font-weight: var(--mrn-project-heading-weight, 700); }
 .has-project-collection .mrn-content-list-row__items { display: grid; grid-template-columns: repeat(var(--mrn-project-columns, 3), minmax(0, 1fr)); gap: var(--mrn-project-row-gap, 30px) var(--mrn-project-column-gap, 30px); list-style: none; padding: 0; margin: 0; }
 .has-project-collection .mrn-project { min-width: 0; padding: 0; margin: 0; background: transparent; border: 0; box-shadow: none; }
 .has-project-collection .mrn-project article { margin: 0; padding: 0; border-radius: 0; background: transparent; }
