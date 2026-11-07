@@ -8935,3 +8935,7 @@ a.mrn-social-links__link:focus-visible svg {
 @media (max-width:767px) {
  .has-card-frame.has-card-grid-767-single.has-card-header-space-after-mobile { --mrn-card-frame-header-space-after-current: var(--mrn-card-frame-header-space-after-mobile); }
 }
+
+/* Selected Body Text lists retain their content treatment inside card decks. */
+.mrn-card-row__content .mrn-ui__text--list-layout.has-list-text-items > :is(ul, ol) { gap:0; }
+.mrn-card-row__content .mrn-ui__text--list-layout.has-list-text-items > :is(ul, ol) > li { display:list-item; padding:0; border:0; border-radius:0; background:transparent; }

@@ -42,6 +42,7 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 			$make( 'list_columns_mobile', 'List Columns on Small Screens', 'select', array( 'choices' => array( '1' => 'One', '2' => 'Two', '3' => 'Three' ), 'default_value' => '1' ) ),
 			$make( 'list_flow', 'List Reading Flow', 'select', array( 'choices' => array( 'rows' => 'Across Rows', 'columns' => 'Down Columns' ), 'default_value' => 'rows', 'instructions' => 'Down Columns keeps the authored order flowing down the first column, then the next.' ) ),
 			$make( 'list_markers', 'List Markers', 'select', array( 'choices' => array( 'default' => 'Use Existing Markers', 'plain' => 'Hide Markers' ), 'default_value' => 'default' ) ),
+			$make( 'list_item_style', 'List Item Presentation', 'select', array( 'choices' => array( '' => 'Use Existing Treatment', 'text' => 'Plain Text Items' ), 'default_value' => '', 'instructions' => 'Plain Text Items removes inherited card-chip padding, borders and surfaces while preserving the selected list typography and item spacing.' ) ),
 			$make( 'list_alignment', 'List Alignment', 'select', array( 'choices' => array( 'start' => 'Start', 'end' => 'End', 'end-start' => 'End, Start on Small Screens' ), 'default_value' => 'start' ) ),
 			$make( 'list_gap', 'Space Between List Columns', 'text', array( 'instructions' => 'Optional non-negative CSS length, for example 30px. Does not change row margin or padding.' ) ),
 		);
@@ -436,6 +437,7 @@ function mrn_base_stack_get_body_list_contract( array $row ) {
 	if ( 'plain' === ( $row['list_markers'] ?? '' ) ) {
 		$classes[] = 'mrn-ui__text--list-plain';
 	}
+	if ( 'text' === ( $row['list_item_style'] ?? '' ) ) { $classes[] = 'has-list-text-items'; }
 	$styles = array( '--mrn-list-columns:' . $columns, '--mrn-list-columns-mobile:' . $mobile );
 	$gap = mrn_base_stack_validate_media_height( (string) ( $row['list_gap'] ?? '' ) );
 	if ( '' !== $gap ) {

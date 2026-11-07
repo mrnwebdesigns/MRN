@@ -6,12 +6,13 @@ function mrn_base_stack_is_project_list( array $row ) {
 }
 
 function mrn_base_stack_get_project_frame_dimensions() {
-	return explode( ' ', 'content_width inner_gutter inner_gutter_compact inner_gutter_mobile column_gap row_gap heading_size heading_line_height heading_space_after media_height media_height_mobile media_radius media_space_after media_space_after_mobile subtitle_size subtitle_line_height subtitle_space_after title_size title_line_height tags_space_before tags_gap tag_padding_inline tag_padding_block tag_radius tag_size tag_line_height actions_space_before' );
+	return explode( ' ', 'content_width inner_gutter inner_gutter_compact inner_gutter_mobile column_gap row_gap heading_size heading_line_height heading_space_after media_height media_height_mobile media_radius media_space_after media_space_after_mobile subtitle_size subtitle_line_height subtitle_space_after title_size title_line_height tags_space_before tags_gap tag_padding_inline tag_padding_block tag_radius tag_size tag_line_height actions_space_before action_size action_line_height action_padding_inline action_padding_block action_radius action_icon_width action_icon_height' );
 }
 
 function mrn_base_stack_get_project_list_fields( $seed ) {
 	$make = static function ( $name, $type, array $extra = array() ) use ( $seed ) { return array_merge( array( 'key' => $seed . '_project_' . $name, 'name' => 'project_' . $name, 'label' => 'Project ' . ucwords( str_replace( '_', ' ', $name ) ), 'type' => $type, 'default_value' => '' ), $extra ); };
 	$fields = array(
+		$make( 'action_frame', 'true_false', array( 'label' => 'Project Action Button Frame', 'ui' => 1, 'default_value' => 0, 'instructions' => 'Use the selected native button typography, dimensions and Site Colors. Blank preserves existing link styles.' ) ),
 		$make( 'selection', 'select', array( 'choices' => array( '' => 'All Selected Source Records', 'flagged' => 'Marked Records Only' ), 'instructions' => 'Source, item count, manual selection and ordering remain in the existing collection controls.' ) ),
 		$make( 'flag_field', 'text', array( 'instructions' => 'Existing true/false field required to equal 1 when Marked Records Only is selected. An empty or invalid field returns no records.' ) ),
 		$make( 'image_field', 'text', array( 'instructions' => 'Optional existing image field. A missing or invalid selection falls back to the featured image.' ) ),
@@ -25,10 +26,10 @@ function mrn_base_stack_get_project_list_fields( $seed ) {
 		$make( 'columns', 'select', array( 'choices' => array( '1' => 'One', '2' => 'Two', '3' => 'Three', '4' => 'Four' ), 'default_value' => '3' ) ),
 	);
 	foreach ( mrn_base_stack_get_project_frame_dimensions() as $name ) { $fields[] = $make( $name, 'text', array( 'instructions' => 'Optional bounded dimension or Site Text size/line token. Outer section spacing uses native row presets.', 'wrapper' => array( 'width' => '50' ) ) ); }
-	foreach ( array( 'heading', 'title', 'subtitle', 'tag' ) as $part ) {
+	foreach ( array( 'heading', 'title', 'subtitle', 'tag', 'action' ) as $part ) {
 		$fields[] = $make( $part . '_weight', 'select', array( 'choices' => array( '' => 'Use Existing Weight' ) + array_combine( range( 100, 900, 100 ), range( 100, 900, 100 ) ) ) );
 	}
-	foreach ( array( 'heading', 'title', 'title_hover', 'subtitle', 'tag', 'tag_surface' ) as $part ) { $field = mrn_base_stack_get_background_color_field( $seed . '_project_' . $part . '_color' ); $field['name'] = 'project_' . $part . '_color'; $field['label'] = 'Project ' . ucwords( str_replace( '_', ' ', $part ) ) . ' Color'; $fields[] = $field; }
+	foreach ( array( 'heading', 'title', 'title_hover', 'subtitle', 'tag', 'tag_surface', 'action_text', 'action_background', 'action_hover_background' ) as $part ) { $field = mrn_base_stack_get_background_color_field( $seed . '_project_' . $part . '_color' ); $field['name'] = 'project_' . $part . '_color'; $field['label'] = 'Project ' . ucwords( str_replace( '_', ' ', $part ) ) . ' Color'; $fields[] = $field; }
 	$fields = array_merge( $fields, mrn_rbl_get_content_link_fields( $seed . '_project_links', 'Project Actions', 'project_links', 1 ) );
 	foreach ( $fields as &$field ) { $field['conditional_logic'] = array( array( array( 'field' => $seed . '_record_presentation', 'operator' => '==', 'value' => 'projects' ) ) ); } unset( $field );
 	return $fields;
@@ -48,12 +49,13 @@ function mrn_base_stack_get_project_list_contract( array $row ) {
 	$out = array( 'classes' => array(), 'attributes' => array() );
 	if ( ! mrn_base_stack_is_project_list( $row ) ) { return $out; }
 	mrn_base_stack_enqueue_presentation(); $out['classes'][] = 'has-project-collection';
+	if ( in_array( $row['project_action_frame'] ?? 0, array( true, 1, '1' ), true ) ) { $out['classes'][] = 'has-project-action-frame'; }
 	$breakpoint = in_array( $row['project_grid_breakpoint'] ?? '', array( '576', '767', '991' ), true ) ? $row['project_grid_breakpoint'] : '767'; $out['classes'][] = 'project-grid-at-' . $breakpoint;
 	$styles = array();
 	foreach ( mrn_base_stack_get_project_frame_dimensions() as $name ) { $value = mrn_base_stack_get_content_frame_dimension( $row[ 'project_' . $name ] ?? '', $name ); if ( '' !== $value ) { $styles[] = '--mrn-project-' . str_replace( '_', '-', $name ) . ':' . $value; } }
 	$columns = $row['project_columns'] ?? '3'; if ( in_array( $columns, array( 1, 2, 3, 4, '1', '2', '3', '4' ), true ) ) { $styles[] = '--mrn-project-columns:' . $columns; }
-	foreach ( array( 'heading', 'title', 'subtitle', 'tag' ) as $part ) { $value = $row[ 'project_' . $part . '_weight' ] ?? ''; if ( is_scalar( $value ) && in_array( (string) $value, array_map( 'strval', range( 100, 900, 100 ) ), true ) ) { $styles[] = '--mrn-project-' . $part . '-weight:' . $value; } }
-	foreach ( array( 'heading', 'title', 'title_hover', 'subtitle', 'tag', 'tag_surface' ) as $part ) { $value = mrn_base_stack_get_frame_palette_color( $row[ 'project_' . $part . '_color' ] ?? '' ); if ( '' !== $value ) { $styles[] = '--mrn-project-' . str_replace( '_', '-', $part ) . '-color:' . $value; } }
+	foreach ( array( 'heading', 'title', 'subtitle', 'tag', 'action' ) as $part ) { $value = $row[ 'project_' . $part . '_weight' ] ?? ''; if ( is_scalar( $value ) && in_array( (string) $value, array_map( 'strval', range( 100, 900, 100 ) ), true ) ) { $styles[] = '--mrn-project-' . $part . '-weight:' . $value; } }
+	foreach ( array( 'heading', 'title', 'title_hover', 'subtitle', 'tag', 'tag_surface', 'action_text', 'action_background', 'action_hover_background' ) as $part ) { $value = mrn_base_stack_get_frame_palette_color( $row[ 'project_' . $part . '_color' ] ?? '' ); if ( '' !== $value ) { $styles[] = '--mrn-project-' . str_replace( '_', '-', $part ) . '-color:' . $value; } }
 	$out['attributes']['style'] = implode( ';', $styles ); return $out;
 }
 
