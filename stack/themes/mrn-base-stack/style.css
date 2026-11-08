@@ -8063,6 +8063,7 @@ a.mrn-social-links__link:focus-visible svg {
 .has-stats-frame.has-stats-value-font-heading .mrn-stats-row__value { font-family: var(--site-font-heading); }
 .has-stats-frame.has-stats-value-font-body .mrn-stats-row__value { font-family: var(--site-font-body); }
 .has-stats-frame.has-stats-label-letter-spacing .mrn-stats-row__item > .mrn-ui__label { letter-spacing: var(--mrn-stats-frame-label-letter-spacing); }
+.has-stats-frame.has-stats-divider-color.mrn-content-builder__row--stats-has-dividers .mrn-stats-row__item { border-bottom-color: var(--mrn-stats-frame-divider-color); }
 @media (max-width: 767px) { .has-stats-inline-pair .mrn-stats-row__grid { grid-template-columns: minmax(0, 1fr); } }
 .has-image-frame > .mrn-layout-section--image-content > .mrn-layout-container { box-sizing: border-box; width: 100%; max-width: var(--mrn-image-frame-content-width, none); margin-inline: auto; padding-block: 0; padding-inline: var(--mrn-image-frame-inner-gutter, 0px); }
 .has-body-frame .mrn-layout-grid--text-shell, .has-body-frame .mrn-ui__body, .has-body-frame .mrn-ui__head { gap: 0; }

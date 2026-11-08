@@ -9,6 +9,11 @@ foreach ( array( 'body_text', 'stats', 'image_content' ) as $layout ) {
 	foreach ( mrn_base_stack_get_content_frame_fields( $layout, 'fixture' ) as $field ) { $expect( isset( $fields[ $field['name'] ] ), 'Registered ' . $layout . ' field: ' . $field['name'] ); }
 	$expect( array( 'classes' => array(), 'attributes' => array() ) === mrn_base_stack_get_content_frame_contract( array(), $layout ), 'Unset ' . $layout . ' frame retains existing output' );
 }
+$divider = mrn_base_stack_get_content_frame_contract( array( 'stats_frame' => 'contained', 'stats_divider_color' => 'light-gray' ), 'stats' );
+$expect( in_array( 'has-stats-divider-color', $divider['classes'], true ) && str_contains( $divider['attributes']['style'] ?? '', '--mrn-stats-frame-divider-color:var(--site-color-light-gray)' ), 'Stats divider uses selected Site Color' );
+$expect( array( 'classes' => array(), 'attributes' => array() ) === mrn_base_stack_get_content_frame_contract( array( 'stats_divider_color' => 'light-gray' ), 'stats' ), 'Unselected Stats frame ignores divider color' );
+$invalid_divider = mrn_base_stack_get_content_frame_contract( array( 'stats_frame' => 'contained', 'stats_divider_color' => 'url(bad)' ), 'stats' );
+$expect( ! in_array( 'has-stats-divider-color', $invalid_divider['classes'], true ), 'Unsafe Stats divider color is rejected' );
 $fields = array_column( $layouts['tabbed_layout']['sub_fields'], null, 'name' );
 foreach ( mrn_base_stack_get_tabs_frame_fields( 'fixture' ) as $field ) { $expect( isset( $fields[ $field['name'] ] ), 'Registered Tabs field: ' . $field['name'] ); }
 foreach ( array( 'url(bad)', 'var(--unknown-size)', '-4px', '1px;color:red', array( '12px' ) ) as $bad ) {
