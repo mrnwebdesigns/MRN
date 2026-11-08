@@ -96,6 +96,10 @@ $section_classes = array(
 	'mrn-content-builder__row--stats-columns-' . sanitize_html_class( (string) $columns ),
 );
 
+if ( 'inline-pair' === ( $row['stats_presentation'] ?? '' ) ) {
+	$section_classes[] = 'has-stats-inline-pair';
+}
+
 if ( $show_dividers ) {
 	$section_classes[] = 'mrn-content-builder__row--stats-has-dividers';
 }

@@ -28,7 +28,9 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 	if ( 'faq_jump_nav' === $layout ) { return mrn_base_stack_get_jump_nav_frame_fields( $seed ); }
 	if ( 'tabbed_layout' === $layout ) { return mrn_base_stack_get_tabs_frame_fields( $seed ); }
 	if ( 'wpforms' === $layout ) { return mrn_base_stack_get_content_frame_fields( $layout, $seed ); }
-	if ( 'stats' === $layout ) { return mrn_base_stack_get_content_frame_fields( $layout, $seed ); }
+	if ( 'stats' === $layout ) {
+		return array_merge( array( array( 'key' => $seed . '_stats_presentation', 'name' => 'stats_presentation', 'label' => 'Stats Presentation', 'type' => 'select', 'choices' => array( '' => 'Standard', 'inline-pair' => 'Inline Value and Label' ), 'default_value' => '', 'instructions' => 'Pairs each value and label on one line, stacking the pairs below 768px. Use the Content Frame for the inner width, gaps and type.' ) ), mrn_base_stack_get_content_frame_fields( $layout, $seed ) );
+	}
 	if ( 'two_column_split' === $layout ) {
 		return array_merge( mrn_base_stack_get_split_aside_fields( $seed ), array(
 			$make( 'column_rows_mode', 'Column Content', 'select', array( 'choices' => array( 'single' => 'First Row (Existing Behavior)', 'stack' => 'Stacked Rows' ), 'default_value' => 'single', 'instructions' => 'Stacked Rows displays up to ten rows in each column. Existing rows retain first-row rendering until this is selected.' ) ),

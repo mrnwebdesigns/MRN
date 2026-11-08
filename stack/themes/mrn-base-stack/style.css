@@ -8050,6 +8050,14 @@ a.mrn-social-links__link:focus-visible svg {
 /* Opt-in composed content frames: section spacing remains owned by row presets. */
 .has-body-frame > .mrn-layout-section--text > .mrn-layout-container { box-sizing: border-box; width: 100%; max-width: var(--mrn-body-frame-content-width, none); margin-inline: auto; padding-block: 0; padding-inline: var(--mrn-body-frame-inner-gutter, 0px); }
 .has-stats-frame > .mrn-layout-section--stats > .mrn-layout-container { box-sizing: border-box; width: 100%; max-width: var(--mrn-stats-frame-content-width, none); margin-inline: auto; padding-block: 0; padding-inline: var(--mrn-stats-frame-inner-gutter, 0px); }
+@media (max-width: 1199px) { .has-stats-frame.has-stats-inner-gutter-compact > .mrn-layout-section--stats > .mrn-layout-container { padding-inline: var(--mrn-stats-frame-inner-gutter-compact); } }
+.has-stats-inline-pair.has-stats-frame .mrn-layout-section--stats .mrn-layout-container .mrn-stats-row__grid { row-gap: var(--mrn-stats-frame-item-gap, 30px); column-gap: var(--mrn-stats-frame-column-gap, 0px); }
+.has-stats-inline-pair .mrn-stats-row__item { display: flex; align-items: end; justify-content: space-between; gap: 30px; min-width: 0; }
+.has-stats-inline-pair .mrn-stats-row__item > .mrn-ui__label { padding-bottom: 15px; text-align: right; }
+.has-stats-frame.has-stats-value-font-heading .mrn-stats-row__value { font-family: var(--site-font-heading); }
+.has-stats-frame.has-stats-value-font-body .mrn-stats-row__value { font-family: var(--site-font-body); }
+.has-stats-frame.has-stats-label-letter-spacing .mrn-stats-row__item > .mrn-ui__label { letter-spacing: var(--mrn-stats-frame-label-letter-spacing); }
+@media (max-width: 767px) { .has-stats-inline-pair .mrn-stats-row__grid { grid-template-columns: minmax(0, 1fr); } }
 .has-image-frame > .mrn-layout-section--image-content > .mrn-layout-container { box-sizing: border-box; width: 100%; max-width: var(--mrn-image-frame-content-width, none); margin-inline: auto; padding-block: 0; padding-inline: var(--mrn-image-frame-inner-gutter, 0px); }
 .has-body-frame .mrn-layout-grid--text-shell, .has-body-frame .mrn-ui__body, .has-body-frame .mrn-ui__head { gap: 0; }
 .has-body-frame .mrn-ui__head { margin: 0; }
