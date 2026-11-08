@@ -18,7 +18,7 @@ $items            = isset( $row['logo_items'] ) && is_array( $row['logo_items'] 
 $labeled          = 'labeled' === ( $row['logos_presentation'] ?? '' );
 $auto_grid        = 'auto-grid' === ( $row['logos_presentation'] ?? '' );
 $icon_strip       = 'icons' === ( $row['logos_presentation'] ?? '' );
-$logos_description = $labeled && is_string( $row['logos_description'] ?? '' ) ? $row['logos_description'] : '';
+$logos_description = $labeled && is_string( $row['logos_description'] ?? null ) ? $row['logos_description'] : '';
 $display_mode     = isset( $row['display_mode'] ) ? sanitize_key( (string) $row['display_mode'] ) : 'grid';
 $logos_per_page   = isset( $row['per_page'] ) ? max( 3, min( 7, (int) $row['per_page'] ) ) : 6;
 $responsive       = mrn_base_stack_get_logos_responsive_config( $row );
@@ -63,7 +63,7 @@ foreach ( $items as $item ) {
 		? mrn_base_stack_get_repeater_item_primary_link( $item )
 		: array();
 
-	$item_label = $labeled && is_string( $item['item_label'] ?? '' ) ? $item['item_label'] : '';
+	$item_label = $labeled && is_string( $item['item_label'] ?? null ) ? $item['item_label'] : '';
 	if ( ( ! function_exists( 'mrn_base_stack_image_has_content' ) || ! mrn_base_stack_image_has_content( $image ) ) && '' === $item_label ) {
 		continue;
 	}

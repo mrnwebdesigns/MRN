@@ -8309,14 +8309,16 @@ a.mrn-social-links__link:focus-visible svg {
 }
 
 /* Optional labeled logo relationships; all geometry comes from native fields. */
+.has-labeled-logos.mrn-content-builder__row { min-width: 0; }
+.has-labeled-logos > .mrn-layout-section { padding: var(--mrn-row-padding-top, 0px) var(--mrn-row-padding-right, 0px) var(--mrn-row-padding-bottom, 0px) var(--mrn-row-padding-left, 0px); }
 .has-labeled-logos > .mrn-layout-section > .mrn-layout-container { box-sizing: border-box; width: 100%; max-width: var(--mrn-logos-frame-content-width, none); margin-inline: auto; padding: 0 var(--mrn-logos-gutter-current, var(--mrn-logos-frame-inner-gutter, 0px)); }
 .has-labeled-logos.mrn-content-builder__row .mrn-layout-container > .mrn-layout-grid--logos { display: flex; flex-direction: column; gap: var(--mrn-logos-frame-section-gap, 2rem); }
-.has-labeled-logos .mrn-ui__head { margin: 0; gap: 0; }
-.has-labeled-logos .mrn-ui__heading { margin: 0; max-width: var(--mrn-logos-frame-heading-width, none); font-size: var(--mrn-logos-frame-heading-size, inherit); line-height: var(--mrn-logos-frame-heading-line-height, normal); font-weight: var(--mrn-logos-frame-heading-weight, inherit); color: var(--mrn-logos-frame-heading-color, inherit); white-space: pre-line; }
-.has-labeled-logos.mrn-content-builder__row .mrn-layout-container .mrn-logos-row__grid { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-start; gap: var(--mrn-logos-frame-item-gap, 2rem); }
+.has-labeled-logos .mrn-ui__head { min-width: 0; width: 100%; margin: 0; gap: 0; }
+.has-labeled-logos .mrn-ui__heading { min-width: 0; width: 100%; margin: 0; max-width: var(--mrn-logos-frame-heading-width, none); font-size: var(--mrn-logos-frame-heading-size, inherit); line-height: var(--mrn-logos-frame-heading-line-height, normal); font-weight: var(--mrn-logos-frame-heading-weight, inherit); color: var(--mrn-logos-frame-heading-color, inherit); white-space: pre-line; }
+.has-labeled-logos.mrn-content-builder__row .mrn-layout-container .mrn-logos-row__grid { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-start; min-width: 0; max-width: 100%; gap: var(--mrn-logos-frame-item-gap, 2rem); }
 .has-labeled-logos .mrn-logos-row__item { display: flex; align-items: flex-start; gap: var(--mrn-logos-frame-label-gap, 1rem); min-width: 0; max-width: 100%; width: auto; padding: 0; border: 0; background: transparent; }
 .has-labeled-logos .mrn-logos-row__item-label { margin: 0; white-space: nowrap; font-size: var(--mrn-logos-frame-label-size, inherit); line-height: var(--mrn-logos-frame-label-line-height, normal); font-weight: var(--mrn-logos-frame-label-weight, inherit); color: var(--mrn-logos-frame-label-color, inherit); text-transform: var(--mrn-logos-frame-label-transform, none); }
-.has-labeled-logos .mrn-logos-row__labeled-image { display: inline-flex; align-items: center; flex: 0 0 auto; min-width: 0; max-width: 100%; width: var(--mrn-logos-image-width, auto); }
+.has-labeled-logos .mrn-logos-row__labeled-image { display: inline-flex; align-items: center; flex: 0 0 auto; min-width: 0; width: var(--mrn-logos-image-width, auto); }
 .has-labeled-logos .mrn-logos-row__labeled-image img { display: block; width: 100%; max-width: 100%; height: auto; max-height: none; object-fit: contain; }
 .has-labeled-logos .mrn-logos-row__description { max-width: var(--mrn-logos-frame-text-width, none); font-size: var(--mrn-logos-frame-text-size, inherit); line-height: var(--mrn-logos-frame-text-line-height, normal); font-weight: var(--mrn-logos-frame-text-weight, inherit); color: var(--mrn-logos-frame-text-color, inherit); }
 .has-labeled-logos .mrn-logos-row__description > :first-child { margin-top: 0; }
@@ -8333,12 +8335,23 @@ a.mrn-social-links__link:focus-visible svg {
 @media (max-width: 560px) {
  .has-labeled-logos.mrn-content-builder__row .mrn-layout-container > .mrn-layout-grid--logos { gap: var(--mrn-logos-frame-section-gap-mobile, var(--mrn-logos-frame-section-gap-tablet, 2rem)); }
  .has-labeled-logos .mrn-ui__heading { font-size: var(--mrn-logos-frame-heading-size-mobile, var(--mrn-logos-frame-heading-size-tablet, inherit)); line-height: var(--mrn-logos-frame-heading-line-height-mobile, var(--mrn-logos-frame-heading-line-height, normal)); }
- .has-labeled-logos .mrn-logos-row__item { flex-direction: column; gap: var(--mrn-logos-frame-label-gap-mobile, 1rem); }
+ .has-labeled-logos .mrn-logos-row__item { flex-direction: column; min-width: min-content; gap: var(--mrn-logos-frame-label-gap-mobile, 1rem); }
+ .has-labeled-logos .mrn-logos-row__labeled-image { width: 100%; max-width: 100%; }
  .has-labeled-logos .mrn-logos-row__item-label { line-height: var(--mrn-logos-frame-label-line-height-mobile, var(--mrn-logos-frame-label-line-height, normal)); }
  .has-labeled-logos .mrn-logos-row__description { font-size: var(--mrn-logos-frame-text-size-mobile, var(--mrn-logos-frame-text-size, inherit)); line-height: var(--mrn-logos-frame-text-line-height-mobile, var(--mrn-logos-frame-text-line-height, normal)); }
 }
 
 @media (max-width: 1199px) { .has-labeled-logos { --mrn-logos-gutter-current: var(--mrn-logos-frame-inner-gutter-compact, var(--mrn-logos-frame-inner-gutter, 0px)); } }
+
+@media (min-width: 768px) and (max-width: 782px) {
+ .has-labeled-logos.has-logos-row-spacing-at-767[data-mrn-row-spacing] {
+  --mrn-row-padding-top: var(--mrn-row-padding-top-desktop);
+  --mrn-row-padding-right: var(--mrn-row-padding-right-desktop);
+  --mrn-row-padding-bottom: var(--mrn-row-padding-bottom-desktop);
+  --mrn-row-padding-left: var(--mrn-row-padding-left-desktop);
+  margin-top: var(--mrn-row-margin-top-desktop); margin-right: var(--mrn-row-margin-right-desktop); margin-bottom: var(--mrn-row-margin-bottom-desktop); margin-left: var(--mrn-row-margin-left-desktop);
+ }
+}
 
 /* Optional FAQ choices and fixed-size icon strips; row presets own section spacing. */
 .has-faq-frame:is(.has-faq-answer-size, .has-faq-answer-size-mobile) .mrn-reusable-block--faq .mrn-faq__answer { font-size: var(--mrn-faq-frame-answer-size-current, var(--mrn-faq-frame-answer-size, inherit)); }
