@@ -5,7 +5,7 @@ $checks = array();
 $expect = static function ( $condition, $message ) use ( &$checks ) { if ( ! $condition ) { throw new RuntimeException( esc_html( $message ) ); } $checks[] = $message; };
 $layouts = array_column( acf_get_field( 'field_mrn_page_content_rows' )['layouts'], null, 'name' );
 $fields = array_column( $layouts['two_column_split']['sub_fields'], null, 'name' );
-$expect( isset( $fields['split_frame']['choices']['bounded'], $fields['split_stack_breakpoint']['choices']['900'] ), 'Native bounded columns and 900px stacking are selectable' );
+$expect( isset( $fields['split_frame']['choices']['bounded'], $fields['split_stack_breakpoint']['choices']['900'], $fields['split_row_vertical_padding'] ), 'Native bounded columns, 900px stacking and optional vertical row spacing are selectable' );
 $props = array( 'split_first_column_min' => '120px', 'split_first_column_max' => '240px', 'split_second_column_max' => '750px', 'split_column_gap_tablet' => '64px' );
 foreach ( $props as $name => $value ) { $expect( isset( $fields[ $name ] ) && 'bounded' === $fields[ $name ]['conditional_logic'][0][0]['value'], 'Bounded-only native field: ' . $name ); }
 $zero = array(); foreach ( array( 'margin', 'padding' ) as $kind ) { foreach ( array( 'top', 'right', 'bottom', 'left' ) as $side ) { $zero[ 'row_spacing_' . $kind . '_' . $side . '_preset' ] = '0px'; } }
@@ -33,6 +33,8 @@ try {
 	$expect( array( 'classes' => array(), 'attributes' => array() ) === mrn_base_stack_get_split_aside_contract( $props ), 'Unselected bounded controls preserve existing rows' );
 	$expect( empty( mrn_base_stack_get_split_aside_contract( array_merge( $props, array( 'split_frame' => 'columns' ) ) )['attributes'] ), 'Bounded controls cannot alter ordinary ratio columns' );
 	$expect( array( 'has-split-columns-frame', 'split-stack-991' ) === mrn_base_stack_get_split_aside_contract( array( 'split_frame' => 'columns' ) )['classes'], 'Existing columns retain their 991px default' );
+	$expect( in_array( 'has-split-row-vertical-padding', mrn_base_stack_get_split_aside_contract( array( 'split_frame' => 'bounded', 'split_row_vertical_padding' => 1 ) )['classes'], true ), 'Selected bounded columns use saved row padding' );
+	$expect( ! in_array( 'has-split-row-vertical-padding', mrn_base_stack_get_split_aside_contract( array( 'split_frame' => 'aside', 'split_row_vertical_padding' => 1 ) )['classes'], true ), 'Aside spacing remains unchanged' );
 } finally { wp_delete_post( $id, true ); }
 $expect( null === get_post( $id ), 'Owned bounded columns draft removed' );
 WP_CLI::line( wp_json_encode( array( 'result' => 'passed', 'count' => count( $checks ), 'checks' => $checks, 'candidate_only' => true ), JSON_PRETTY_PRINT ) );
