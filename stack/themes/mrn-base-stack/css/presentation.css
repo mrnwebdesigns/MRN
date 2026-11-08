@@ -33,6 +33,11 @@
 .mrn-timeline[data-enhanced] .mrn-timeline__stage { position: sticky; top: var(--mrn-presentation-top, 6rem); }
 .mrn-timeline[data-enhanced] details[open] > summary { text-decoration: underline; text-underline-offset: .3em; }
 .mrn-timeline__end { scroll-margin-block-start: var(--mrn-presentation-top, 6rem); }
+.mrn-timeline[data-mrn-timeline-frame="contained"] { width: 100vw; max-width: 100vw; margin-inline-start: calc(50% - 50vw); }
+.mrn-timeline[data-mrn-timeline-frame="contained"] .mrn-timeline__range { box-sizing: border-box; width: 100%; max-width: var(--mrn-timeline-content-width, 1200px); margin-inline: auto; padding-inline: var(--mrn-timeline-inner-gutter, 30px); }
+.mrn-timeline[data-mrn-timeline-frame="contained"] .mrn-timeline__stage:has(.mrn-timeline__image) { grid-template-columns: minmax(0, var(--mrn-timeline-media-width, 419px)) minmax(0, 1fr); gap: var(--mrn-timeline-column-gap, 120px); }
+.mrn-timeline[data-mrn-timeline-frame="contained"] .mrn-timeline__image img { display: block; }
+.mrn-timeline[data-mrn-timeline-frame="contained"] .mrn-timeline__media .mrn-timeline__skip { display: block; margin: var(--mrn-timeline-skip-gap, 30px) 0 0; text-align: end; }
 .mrn-record-list--people .mrn-content-list-row__items { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2rem; list-style: none; padding: 0; }
 .mrn-record { min-width: 0; }
 .mrn-record article { background-color: inherit; border-radius: .25rem; }
@@ -59,6 +64,13 @@
 }
 @media (min-width: 768px) and (max-width: 999px) {
 	.mrn-timeline[data-mrn-timeline-pin-tablet="true"] .mrn-timeline__stage:has(.mrn-timeline__image) { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); }
+}
+@media (max-width: 1199px) {
+	.mrn-timeline[data-mrn-timeline-frame="contained"] .mrn-timeline__range { padding-inline: var(--mrn-timeline-inner-gutter-tablet, var(--mrn-timeline-inner-gutter, 15px)); }
+	.mrn-timeline[data-mrn-timeline-frame="contained"] .mrn-timeline__stage:has(.mrn-timeline__image) { grid-template-columns: minmax(0, var(--mrn-timeline-media-width-tablet, var(--mrn-timeline-media-width, 250px))) minmax(0, 1fr); gap: var(--mrn-timeline-column-gap-tablet, var(--mrn-timeline-column-gap, 50px)); }
+}
+@media (max-width: 767px) {
+	.mrn-timeline[data-mrn-timeline-frame="contained"] .mrn-timeline__stage:has(.mrn-timeline__image) { grid-template-columns: minmax(0, 1fr); gap: 30px; }
 }
 @media (max-width: 599px) {
 	.mrn-record-list--people .mrn-content-list-row__items, .mrn-record--comparisons .mrn-record__media { grid-template-columns: minmax(0, 1fr); }

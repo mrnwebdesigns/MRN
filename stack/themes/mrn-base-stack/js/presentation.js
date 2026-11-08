@@ -293,7 +293,7 @@
 			if ( reduced.matches || !( pinTablet ? tabletWide.matches : wide.matches ) || steps.length < 2 ) { return; }
 			const summaries = steps.reduce( ( total, step ) => total + step.querySelector( 'summary' ).getBoundingClientRect().height + 25, 0 );
 			const body = Math.max( ...steps.map( ( step ) => step.querySelector( '.mrn-timeline__body' ).getBoundingClientRect().height ) );
-			const height = Math.max( summaries + body, timeline.querySelector( '.mrn-timeline__image' )?.offsetHeight || 0 ) + 32;
+			const height = Math.max( summaries + body, timeline.querySelector( '.mrn-timeline__media, .mrn-timeline__image' )?.offsetHeight || 0 ) + 32;
 			if ( height > window.innerHeight - topOffset() - 32 ) { return; }
 			distance = timeline.dataset.mrnTimelineScrollPace === 'viewport'
 				? steps.length * Math.max( 320, Math.round( window.innerHeight * 0.55 ) )

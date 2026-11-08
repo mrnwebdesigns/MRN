@@ -265,7 +265,7 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 			}
 		}
 		unset( $field );
-		return array_merge( $fields, mrn_base_stack_get_card_frame_fields( $seed ), mrn_base_stack_get_pricing_fields( $seed ), mrn_base_stack_get_process_card_fields( $seed ) );
+		return array_merge( $fields, mrn_base_stack_get_timeline_frame_fields( $seed ), mrn_base_stack_get_card_frame_fields( $seed ), mrn_base_stack_get_pricing_fields( $seed ), mrn_base_stack_get_process_card_fields( $seed ) );
 	}
 	if ( 'content_lists' === $layout ) {
 		return array_merge( array(
