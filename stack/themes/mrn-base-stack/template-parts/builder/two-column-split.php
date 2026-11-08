@@ -49,6 +49,12 @@ $ratio_map               = array(
 $stacked_columns         = 'stack' === ( $row['column_rows_mode'] ?? '' );
 $left_rows               = array_slice( $left_rows, 0, $stacked_columns ? 10 : 1 );
 $right_rows              = array_slice( $right_rows, 0, $stacked_columns ? 10 : 1 );
+$mobile_action_index     = count( $left_rows ) - 1;
+$mobile_action_row       = ! empty( $row['split_mobile_action_after_columns'] ) && in_array( $row['split_frame'] ?? '', array( 'columns', 'bounded' ), true )
+	&& in_array( (string) ( $row['split_stack_breakpoint'] ?? '' ), array( '767', '900', '991' ), true ) && $stacked_columns && $right_rows
+	&& isset( $left_rows[ $mobile_action_index ] ) && 'cta' === ( $left_rows[ $mobile_action_index ]['acf_fc_layout'] ?? '' )
+	&& empty( $left_rows[ $mobile_action_index ]['anchor'] )
+	? $left_rows[ $mobile_action_index ] : null;
 
 $allowed_custom_heading_tags = array( 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'div' );
 if ( $is_hero_context ) {
@@ -186,7 +192,9 @@ echo mrn_base_stack_get_builder_anchor_markup( $row ); // phpcs:ignore WordPress
 						continue;
 					}
 					$child_render_index = $stacked_columns ? mrn_base_stack_get_nested_builder_row_index( $row_index, 0, $child_index ) : 0;
+					if ( null !== $mobile_action_row && $mobile_action_index === $child_index ) { echo '<div class="mrn-two-column-split__desktop-action">'; }
 					mrn_base_stack_render_builder_row( $child_row, $context_post_id, $child_render_index );
+					if ( null !== $mobile_action_row && $mobile_action_index === $child_index ) { echo '</div>'; }
 				}
 				?>
 			</div>
@@ -201,6 +209,11 @@ echo mrn_base_stack_get_builder_anchor_markup( $row ); // phpcs:ignore WordPress
 				}
 				?>
 			</div>
+				<?php if ( null !== $mobile_action_row ) : ?>
+					<div class="mrn-two-column-split__mobile-action">
+						<?php mrn_base_stack_render_builder_row( $mobile_action_row, $context_post_id, mrn_base_stack_get_nested_builder_row_index( $row_index, 0, $mobile_action_index ) ); ?>
+					</div>
+				<?php endif; ?>
 			</div>
 		</div>
 	</div>

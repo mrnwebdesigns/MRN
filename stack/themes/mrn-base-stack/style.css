@@ -3364,9 +3364,16 @@ button.mrn-ui__link--button {
 .mrn-ui__text--list-layout.has-list-space-before > :is(ul, ol) { margin-block-start: var(--mrn-list-space-before); }
 .mrn-ui__text--list-layout.has-list-space-after > :is(ul, ol) { margin-block-end: var(--mrn-list-space-after); }
 .mrn-ui__text--list-layout.has-list-item-space-after > :is(ul, ol) > li { margin-block: 0 var(--mrn-list-item-space-after); }
+.mrn-ui__text--list-layout.has-list-item-padding-block > :is(ul, ol) > li > :is(a, span) { display: inline-flex; padding-block: var(--mrn-list-item-padding-block); }
 .mrn-ui__text--list-layout.has-list-following-paragraph-space-before > :is(ul, ol) ~ p { margin-block-start: var(--mrn-list-following-paragraph-space-before); }
 .mrn-ui__text--list-layout.has-list-item-size > :is(ul, ol) > li { font-size: var(--mrn-list-item-size); }
 .mrn-ui__text--list-layout.has-list-item-line-height > :is(ul, ol) > li { line-height: var(--mrn-list-item-line-height); }
+.mrn-ui__text--list-layout.has-list-padding-inline-start > :is(ul, ol) { padding-inline-start: var(--mrn-list-padding-inline-start); }
+@media (max-width: 767px) {
+ .mrn-ui__text--list-layout.has-list-item-size-mobile > :is(ul, ol) > li { font-size: var(--mrn-list-item-size-mobile); }
+ .mrn-ui__text--list-layout.has-list-item-line-height-mobile > :is(ul, ol) > li { line-height: var(--mrn-list-item-line-height-mobile); }
+ .mrn-ui__text--list-layout.has-list-padding-inline-start-mobile > :is(ul, ol) { padding-inline-start: var(--mrn-list-padding-inline-start-mobile); }
+}
 .mrn-ui__text--list-layout.has-list-item-weight > :is(ul, ol) > li { font-weight: var(--mrn-list-item-weight); }
 .mrn-ui__text--list-layout.has-list-item-color > :is(ul, ol) > li { color: var(--mrn-list-item-color); }
 .mrn-ui__text--list-layout.has-list-item-font-body > :is(ul, ol) > li { font-family: var(--site-font-body, inherit); }
@@ -3387,6 +3394,23 @@ button.mrn-ui__link--button {
 .mrn-ui__text--list-plain > :is(ul, ol) > li::marker {
 	content: '';
 }
+.mrn-ui__text--list-layout.has-list-link-trailing-arrow > :is(ul, ol) > li > a {
+ display: inline-flex;
+ align-items: center;
+ gap: 8px;
+ text-decoration: none;
+}
+.mrn-ui__text--list-layout.has-list-link-trailing-arrow > :is(ul, ol) > li > a::after {
+ content: '';
+ display: block;
+ flex: 0 0 12px;
+ width: 12px;
+ height: 10px;
+ background: currentColor;
+ clip-path: polygon(0 43%, 60% 43%, 35% 15%, 48% 0, 100% 50%, 48% 100%, 35% 85%, 60% 57%, 0 57%);
+ opacity: 0;
+}
+.mrn-ui__text--list-layout.has-list-link-trailing-arrow > :is(ul, ol) > li > a:is(:hover, :focus-visible)::after { opacity: 1; }
 
 .mrn-ui__text--list-align-end > :is(ul, ol),
 .mrn-ui__text--list-align-end-start > :is(ul, ol) {
@@ -7178,6 +7202,20 @@ a.mrn-social-links__link:focus-visible svg {
 
 .mrn-layout-section--two-column-split .mrn-two-column-split__column--split-shell > :last-child {
 	margin-bottom: 0;
+}
+
+.has-split-mobile-action-after-columns .mrn-two-column-split__mobile-action { display: none; }
+@media (max-width: 991px) {
+ .has-split-mobile-action-after-columns.split-stack-991 .mrn-two-column-split__desktop-action { display: none; }
+ .has-split-mobile-action-after-columns.split-stack-991 .mrn-two-column-split__mobile-action { display: block; grid-column: 1 / -1; margin-top: var(--mrn-split-mobile-action-space-before, 0px); }
+}
+@media (max-width: 900px) {
+ .has-split-mobile-action-after-columns.split-stack-900 .mrn-two-column-split__desktop-action { display: none; }
+ .has-split-mobile-action-after-columns.split-stack-900 .mrn-two-column-split__mobile-action { display: block; grid-column: 1 / -1; margin-top: var(--mrn-split-mobile-action-space-before, 0px); }
+}
+@media (max-width: 767px) {
+ .has-split-mobile-action-after-columns.split-stack-767 .mrn-two-column-split__desktop-action { display: none; }
+ .has-split-mobile-action-after-columns.split-stack-767 .mrn-two-column-split__mobile-action { display: block; grid-column: 1 / -1; margin-top: var(--mrn-split-mobile-action-space-before, 0px); }
 }
 
 .mrn-layout-section--two-column-split.mrn-layout-section--contained .mrn-layout-container--content .mrn-layout-grid--two-column-split {

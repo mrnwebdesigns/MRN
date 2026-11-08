@@ -48,11 +48,12 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 			$make( 'list_alignment', 'List Alignment', 'select', array( 'choices' => array( 'start' => 'Start', 'end' => 'End', 'end-start' => 'End, Start on Small Screens' ), 'default_value' => 'start' ) ),
 			$make( 'list_gap', 'Space Between List Columns', 'text', array( 'instructions' => 'Optional non-negative CSS length, for example 30px. Does not change row margin or padding.' ) ),
 		);
-		foreach ( array( 'space_before' => 'Space Before List', 'space_after' => 'Space After List', 'item_space_after' => 'Space After List Items', 'following_paragraph_space_before' => 'Space Before Paragraphs After a List', 'item_size' => 'List Item Font Size', 'item_line_height' => 'List Item Line Height' ) as $name => $label ) {
+		foreach ( array( 'space_before' => 'Space Before List', 'space_after' => 'Space After List', 'item_space_after' => 'Space After List Items', 'item_padding_block' => 'List Link and Label Vertical Padding', 'following_paragraph_space_before' => 'Space Before Paragraphs After a List', 'item_size' => 'List Item Font Size', 'item_line_height' => 'List Item Line Height', 'item_size_mobile' => 'List Item Font Size at 767px', 'item_line_height_mobile' => 'List Item Line Height at 767px', 'padding_inline_start' => 'List Start Padding', 'padding_inline_start_mobile' => 'List Start Padding at 767px' ) as $name => $label ) {
 			$fields[] = $make( 'list_' . $name, $label, 'text', array( 'instructions' => 'Optional non-negative CSS length. Font size and line height also accept Site Text tokens. Applies only to top-level lists; section spacing stays in row presets.' ) );
 		}
 		$fields[] = $make( 'list_item_weight', 'List Item Weight', 'select', array( 'choices' => array( '' => 'Use Existing Weight' ) + array_combine( range( 100, 900, 100 ), range( 100, 900, 100 ) ), 'default_value' => '' ) );
 		$fields[] = $make( 'list_item_font', 'List Item Font', 'select', array( 'choices' => array( '' => 'Use Existing Font', 'body' => 'Site Body Font', 'heading' => 'Site Heading Font' ), 'default_value' => '' ) );
+		$fields[] = $make( 'list_link_trailing_icon', 'List Link Trailing Icon', 'select', array( 'choices' => array( '' => 'No Icon', 'arrow' => 'Decorative Arrow on Hover and Focus' ), 'default_value' => '', 'instructions' => 'Reserves icon width beside linked list labels while keeping the arrow decorative. Applies only to top-level list links.' ) );
 		$color = mrn_base_stack_get_background_color_field( $seed . '_list_item_color' ); $color['name'] = 'list_item_color'; $color['label'] = 'List Item Color'; $fields[] = $color;
 		foreach ( $fields as &$field ) {
 			if ( 'list_columns' !== $field['name'] ) {
@@ -479,12 +480,13 @@ function mrn_base_stack_get_body_list_contract( array $row ) {
 		$classes[] = 'mrn-ui__text--list-plain';
 	}
 	if ( 'text' === ( $row['list_item_style'] ?? '' ) ) { $classes[] = 'has-list-text-items'; }
+	if ( 'arrow' === ( $row['list_link_trailing_icon'] ?? '' ) ) { $classes[] = 'has-list-link-trailing-arrow'; }
 	$styles = array( '--mrn-list-columns:' . $columns, '--mrn-list-columns-mobile:' . $mobile );
 	$gap = mrn_base_stack_validate_media_height( (string) ( $row['list_gap'] ?? '' ) );
 	if ( '' !== $gap ) {
 		$styles[] = '--mrn-list-column-gap:' . $gap;
 	}
-	foreach ( array( 'space_before', 'space_after', 'item_space_after', 'following_paragraph_space_before', 'item_size', 'item_line_height' ) as $name ) {
+	foreach ( array( 'space_before', 'space_after', 'item_space_after', 'item_padding_block', 'following_paragraph_space_before', 'item_size', 'item_line_height', 'item_size_mobile', 'item_line_height_mobile', 'padding_inline_start', 'padding_inline_start_mobile' ) as $name ) {
 		$value = mrn_base_stack_get_content_frame_dimension( $row[ 'list_' . $name ] ?? '', $name );
 		if ( '' !== $value ) { $styles[] = '--mrn-list-' . str_replace( '_', '-', $name ) . ':' . $value; $classes[] = 'has-list-' . str_replace( '_', '-', $name ); }
 	}

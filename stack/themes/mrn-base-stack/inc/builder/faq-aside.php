@@ -71,6 +71,8 @@ function mrn_base_stack_get_split_aside_fields( $seed ) {
 	}
 	$fields[] = array( 'key' => $seed . '_split_stack_breakpoint', 'name' => 'split_stack_breakpoint', 'label' => 'Columns Stack Below', 'type' => 'select', 'choices' => array( '767' => '768px', '900' => '901px', '991' => '992px' ), 'default_value' => '991' );
 	$fields[] = array( 'key' => $seed . '_split_column_order', 'name' => 'split_column_order', 'label' => 'Desktop Column Order', 'type' => 'select', 'choices' => array( '' => 'Authored Order', 'reverse' => 'Reverse Above Stack Breakpoint' ), 'default_value' => '', 'instructions' => 'Use for media and text when the first authored column should remain first on small screens. Avoid changing the visual order of keyboard-interactive columns.' );
+	$fields[] = array( 'key' => $seed . '_split_mobile_action_after_columns', 'name' => 'split_mobile_action_after_columns', 'label' => 'Place Last Left Action After Columns on Small Screens', 'type' => 'true_false', 'ui' => 1, 'default_value' => 0, 'instructions' => 'For a simple final CTA in the left column, show it after the right column below the selected stack breakpoint. The action is rendered once per view; blank preserves its current position.' );
+	$fields[] = array( 'key' => $seed . '_split_mobile_action_space_before', 'name' => 'split_mobile_action_space_before', 'label' => 'Space Before Small-Screen Action', 'type' => 'text', 'default_value' => '', 'instructions' => 'Optional non-negative CSS length added after the stacked column gap. Outer section spacing remains in row presets.' );
 	$fields[] = array( 'key' => $seed . '_split_row_vertical_padding', 'name' => 'split_row_vertical_padding', 'label' => 'Use Row Vertical Padding', 'type' => 'true_false', 'ui' => 1, 'default_value' => 0, 'instructions' => 'Apply the native Row Spacing top and bottom padding presets to this framed Split. Blank retains existing spacing.' );
 	$fields[] = array( 'key' => $seed . '_split_row_horizontal_padding', 'name' => 'split_row_horizontal_padding', 'label' => 'Use Row Side Padding', 'type' => 'true_false', 'ui' => 1, 'default_value' => 0, 'instructions' => 'Apply the native Row Spacing left and right padding inside this framed Split, in addition to its frame gutter.' );
 	$fields[] = array( 'key' => $seed . '_split_row_spacing_mobile_breakpoint', 'name' => 'split_row_spacing_mobile_breakpoint', 'label' => 'Row Spacing Mobile Breakpoint', 'type' => 'select', 'choices' => array( '' => 'Site Default (782px)', '767' => '767px' ), 'default_value' => '' );
@@ -81,7 +83,7 @@ function mrn_base_stack_get_split_aside_fields( $seed ) {
 	foreach ( $fields as &$field ) {
 		if ( 'split_frame' === $field['name'] ) { continue; }
 		if ( in_array( $field['name'], array( 'split_first_column_min', 'split_first_column_max', 'split_second_column_max', 'split_column_gap_tablet', 'split_first_column_max_tablet', 'split_second_column_max_tablet' ), true ) ) { $modes = array( 'bounded' ); }
-		elseif ( in_array( $field['name'], array( 'split_stack_breakpoint', 'split_column_order', 'split_row_vertical_padding', 'split_row_horizontal_padding', 'split_row_spacing_mobile_breakpoint', 'split_stacked_column_min' ), true ) ) { $modes = array( 'columns', 'bounded' ); }
+		elseif ( in_array( $field['name'], array( 'split_stack_breakpoint', 'split_column_order', 'split_mobile_action_after_columns', 'split_mobile_action_space_before', 'split_row_vertical_padding', 'split_row_horizontal_padding', 'split_row_spacing_mobile_breakpoint', 'split_stacked_column_min' ), true ) ) { $modes = array( 'columns', 'bounded' ); }
 		elseif ( in_array( $field['name'], array( 'split_aside_width', 'split_aside_sticky_top' ), true ) ) { $modes = array( 'aside' ); }
 		else { $modes = array( 'aside', 'columns', 'bounded' ); }
 		$field['conditional_logic'] = array();
@@ -103,6 +105,11 @@ function mrn_base_stack_get_split_aside_contract( array $row ) {
 	if ( 'aside' !== $row['split_frame'] && '767' === ( $row['split_row_spacing_mobile_breakpoint'] ?? '' ) ) { $result['classes'][] = 'has-split-row-spacing-at-767'; }
 	if ( 'aside' !== $row['split_frame'] && '' !== mrn_base_stack_validate_hero_frame_dimension( $row['split_stacked_column_min'] ?? '', false, false ) ) { $result['classes'][] = 'has-split-stacked-column-min'; }
 	if ( 'aside' !== $row['split_frame'] && 'reverse' === ( $row['split_column_order'] ?? '' ) ) { $result['classes'][] = 'has-split-reverse-columns'; }
+	if ( 'aside' !== $row['split_frame'] && ! empty( $row['split_mobile_action_after_columns'] ) ) {
+		$result['classes'][] = 'has-split-mobile-action-after-columns';
+		$action_gap = mrn_base_stack_validate_hero_frame_dimension( $row['split_mobile_action_space_before'] ?? '' );
+		if ( '' !== $action_gap ) { $result['attributes']['style'] = '--mrn-split-mobile-action-space-before:' . $action_gap; }
+	}
 	$styles = array();
 	foreach ( array( 'content_width', 'inner_gutter', 'inner_gutter_mobile', 'aside_width', 'column_gap', 'column_gap_mobile', 'stacked_column_min', 'aside_sticky_top', 'heading_space_after', 'heading_space_after_mobile', 'heading_size', 'heading_line_height' ) as $name ) {
 		$value = mrn_base_stack_validate_hero_frame_dimension( $row[ 'split_' . $name ] ?? '', 'content_width' === $name, 'heading_line_height' === $name );
@@ -121,7 +128,7 @@ function mrn_base_stack_get_split_aside_contract( array $row ) {
 	if ( in_array( $row['split_heading_alignment'] ?? '', array( 'start', 'center', 'end' ), true ) ) { $styles[] = '--mrn-split-frame-heading-alignment:' . $row['split_heading_alignment']; $result['classes'][] = 'has-split-heading-alignment'; }
 	$color = mrn_base_stack_get_frame_palette_color( $row['split_heading_color'] ?? '' );
 	if ( '' !== $color ) { $styles[] = '--mrn-split-frame-heading-color:' . $color; $result['classes'][] = 'has-split-heading-color'; }
-	if ( $styles ) { $result['attributes']['style'] = implode( ';', $styles ); }
+	if ( $styles ) { $result['attributes']['style'] = trim( ( $result['attributes']['style'] ?? '' ) . ';' . implode( ';', $styles ), ';' ); }
 	return $result;
 }
 
