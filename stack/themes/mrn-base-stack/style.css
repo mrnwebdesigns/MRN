@@ -5407,6 +5407,11 @@ a.mrn-social-links__link:focus-visible svg {
 	padding-inline: 0;
 }
 
+.mrn-content-builder__row--image-cards .mrn-card-row__link {
+	margin-top: var(--mrn-card-section-link-space-before, 0px);
+	justify-content: var(--mrn-card-section-link-alignment, start);
+}
+
 .mrn-content-builder__row--image-card-reveal .mrn-card-row__item--has-image {
 	align-content: stretch;
 }
@@ -5420,7 +5425,7 @@ a.mrn-social-links__link:focus-visible svg {
 }
 
 @media (hover: hover) and (prefers-reduced-motion: no-preference) and (min-width: 768px) {
-	.mrn-content-builder__row--image-card-reveal .mrn-card-row__item--has-image:not(:hover):not(:focus-within) .mrn-card-row__content .mrn-ui__text {
+	.mrn-content-builder__row--image-card-reveal:not(.has-image-card-caption-flow-tablet) .mrn-card-row__item--has-image:not(:hover):not(:focus-within) .mrn-card-row__content .mrn-ui__text {
 		display: none;
 	}
 
@@ -5430,6 +5435,12 @@ a.mrn-social-links__link:focus-visible svg {
 
 	.mrn-content-builder__row--image-card-caption .mrn-card-row__item:is(:hover, :focus-within) {
 		transform: translateY(-5px);
+	}
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) and (min-width: 1200px) {
+	.mrn-content-builder__row--image-card-reveal.has-image-card-caption-flow-tablet .mrn-card-row__item--has-image:not(:hover):not(:focus-within) .mrn-card-row__content .mrn-ui__text {
+		display: none;
 	}
 }
 
@@ -5443,11 +5454,27 @@ a.mrn-social-links__link:focus-visible svg {
 	.mrn-content-builder__row--image-cards .mrn-card-row__grid {
 		grid-template-columns: repeat(var(--mrn-card-image-tablet-columns, 2), minmax(0, 1fr));
 	}
+	.mrn-content-builder__row--image-card-reveal.has-image-card-caption-flow-tablet .mrn-card-row__item--has-image > :is(.mrn-card-row__image, .mrn-card-row__caption) {
+		grid-area: auto;
+	}
+	.mrn-content-builder__row--image-card-reveal.has-image-card-caption-flow-tablet .mrn-card-row__item--has-image > .mrn-card-row__caption {
+		align-self: auto;
+	}
 }
 
 @media (max-width: 767px) {
 	.mrn-content-builder__row--image-cards .mrn-card-row__grid {
 		grid-template-columns: minmax(0, 1fr);
+	}
+	.mrn-content-builder__row--image-cards.has-image-card-natural-mobile .mrn-card-row__image {
+		aspect-ratio: auto;
+	}
+	.mrn-content-builder__row--image-cards.has-image-card-natural-mobile .mrn-card-row__image-media {
+		height: auto;
+		object-fit: contain;
+	}
+	.mrn-content-builder__row--image-cards .mrn-card-row__caption {
+		padding: var(--mrn-card-caption-padding-mobile, var(--mrn-card-caption-padding, 1.5rem));
 	}
 }
 

@@ -164,6 +164,12 @@ $section_classes = array(
 if ( $is_image_card ) {
 	$section_classes[] = 'mrn-content-builder__row--image-cards';
 	$section_classes[] = $reveal_content ? 'mrn-content-builder__row--image-card-reveal' : 'mrn-content-builder__row--image-card-caption';
+	if ( '1199' === ( $row['card_caption_flow_breakpoint'] ?? '' ) ) {
+		$section_classes[] = 'has-image-card-caption-flow-tablet';
+	}
+	if ( 'natural' === ( $row['card_image_mobile_sizing'] ?? '' ) ) {
+		$section_classes[] = 'has-image-card-natural-mobile';
+	}
 }
 if ( $has_card_links ) {
 	$section_classes[] = 'mrn-content-builder__row--card-full-link';

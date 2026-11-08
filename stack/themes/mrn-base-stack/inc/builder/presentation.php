@@ -232,10 +232,15 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 			$make( 'card_intro', 'Introduction', 'wysiwyg', array( 'tabs' => 'all', 'toolbar' => 'full', 'media_upload' => 0 ) ),
 			$make( 'card_reveal_content', 'Reveal Description on Hover or Focus', 'true_false', array( 'ui' => 1, 'default_value' => 0, 'instructions' => 'Image presentation only. Off shows a caption below the image. On overlays the heading and reveals its Body Text description on hover or keyboard focus. Touch screens and reduced motion show the full caption.' ) ),
 			$make( 'card_image_ratio', 'Card Image Aspect Ratio', 'text', array( 'instructions' => 'Image presentation only. Optional positive ratio, for example 4/3 or 1/1.' ) ),
+			$make( 'card_caption_flow_breakpoint', 'Caption Placement on Smaller Screens', 'select', array( 'choices' => array( '' => 'Keep Current Placement', '1199' => 'Below Image at 1199px and Narrower' ), 'default_value' => '', 'instructions' => 'Image presentation only. Keeps the desktop overlay and stacks the image above its caption on tablet and phone.' ) ),
+			$make( 'card_image_mobile_sizing', 'Card Image Sizing on Phone', 'select', array( 'choices' => array( '' => 'Keep Aspect Ratio', 'natural' => 'Use Natural Image Proportions at 767px' ), 'default_value' => '', 'instructions' => 'Image presentation only. Use with a caption below the image when the full image should remain visible on phones.' ) ),
 			$make( 'card_image_loading', 'Card Image Loading', 'select', array( 'choices' => array( 'lazy' => 'Lazy (Below the Fold)', 'eager' => 'Immediate (Above the Fold)' ), 'default_value' => 'lazy', 'instructions' => 'Use Immediate when these images appear in the initial viewport.' ) ),
 			$make( 'card_gap', 'Space Between Image Cards', 'text', array( 'instructions' => 'Image presentation only. Optional non-negative CSS length. Row spacing uses its existing fields.' ) ),
 			$make( 'card_caption_padding', 'Image Caption Padding', 'text', array( 'instructions' => 'Image presentation only. Optional non-negative CSS length.' ) ),
+			$make( 'card_caption_padding_mobile', 'Image Caption Padding on Phone', 'text', array( 'instructions' => 'Image presentation only. One to four non-negative CSS lengths at 767px and narrower, such as 22px 20px 24px.' ) ),
 			$make( 'card_caption_gap', 'Space Between Caption Heading and Copy', 'text', array( 'instructions' => 'Image presentation only. Optional non-negative CSS length.' ) ),
+			$make( 'card_section_link_space_before', 'Space Before Section Link', 'text', array( 'instructions' => 'Image presentation only. Optional non-negative CSS length or bounded clamp(). Keeps the link spacing editable.' ) ),
+			$make( 'card_section_link_alignment', 'Section Link Alignment', 'select', array( 'choices' => array( '' => 'Keep Current Alignment', 'start' => 'Start', 'center' => 'Center', 'end' => 'End' ), 'default_value' => '', 'instructions' => 'Image presentation only. Aligns section links beneath the image cards.' ) ),
 			$make(
 				'timeline_image',
 				'Timeline Image',
@@ -248,7 +253,7 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 			$make( 'timeline_skip_label', 'Timeline Skip Link', 'text', array( 'default_value' => 'Skip timeline' ) ),
 		);
 		foreach ( $fields as &$field ) {
-			if ( in_array( $field['name'], array( 'card_reveal_content', 'card_image_ratio', 'card_image_loading', 'card_gap', 'card_caption_padding', 'card_caption_gap' ), true ) ) {
+			if ( in_array( $field['name'], array( 'card_reveal_content', 'card_image_ratio', 'card_caption_flow_breakpoint', 'card_image_mobile_sizing', 'card_image_loading', 'card_gap', 'card_caption_padding', 'card_caption_padding_mobile', 'card_caption_gap', 'card_section_link_space_before', 'card_section_link_alignment' ), true ) ) {
 				$field['conditional_logic'] = array( array( array( 'field' => $seed . '_card_presentation', 'operator' => '==', 'value' => 'image-overlay' ) ) );
 			} elseif ( 'card_intro' === $field['name'] ) {
 				$field['conditional_logic'] = array( array( array( 'field' => $seed . '_card_presentation', 'operator' => '!=', 'value' => 'timeline' ) ) );
@@ -504,6 +509,20 @@ function mrn_base_stack_get_image_card_styles( array $row ) {
 	foreach ( array( 'card_gap' => '--mrn-card-row-gap', 'card_caption_padding' => '--mrn-card-caption-padding', 'card_caption_gap' => '--mrn-card-caption-gap' ) as $name => $property ) {
 		$value = mrn_base_stack_validate_media_height( (string) ( $row[ $name ] ?? '' ) );
 		if ( '' !== $value ) { $styles[] = $property . ':' . $value; }
+	}
+	$link_space = mrn_base_stack_validate_card_frame_dimension( $row['card_section_link_space_before'] ?? '' );
+	if ( '' !== $link_space ) { $styles[] = '--mrn-card-section-link-space-before:' . $link_space; }
+	$link_alignment = $row['card_section_link_alignment'] ?? '';
+	if ( in_array( $link_alignment, array( 'start', 'center', 'end' ), true ) ) { $styles[] = '--mrn-card-section-link-alignment:' . $link_alignment; }
+	$mobile_padding = $row['card_caption_padding_mobile'] ?? '';
+	if ( is_string( $mobile_padding ) && strlen( $mobile_padding ) <= 96 ) {
+		$parts = preg_split( '/\s+/', trim( $mobile_padding ) );
+		if ( 1 <= count( $parts ) && 4 >= count( $parts ) ) {
+			$values = array_map( 'mrn_base_stack_validate_media_height', $parts );
+			if ( ! in_array( '', $values, true ) ) {
+				$styles[] = '--mrn-card-caption-padding-mobile:' . implode( ' ', $values );
+			}
+		}
 	}
 	return $styles;
 }

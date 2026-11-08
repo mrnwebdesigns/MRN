@@ -37,4 +37,14 @@ foreach ( array( 'image_caption_offset_inline' => '-1px', 'image_caption_color' 
 $fields = mrn_base_stack_get_image_overlay_fields( 'field_one' ); $other = mrn_base_stack_get_image_overlay_fields( 'field_two' );
 $expect( count( $fields ) === count( array_unique( array_column( $fields, 'name' ) ) ) && ! array_intersect( array_column( $fields, 'key' ), array_column( $other, 'key' ) ), 'Top-level names and cloned native field keys remain distinct' );
 $repeater = array_column( $fields, null, 'name' )['image_markers']; $expect( 30 === $repeater['max'] && 9 === count( array_unique( array_column( $repeater['sub_fields'], 'key' ) ) ), 'Annotation capacity and child keys are explicit' );
+$image_card_styles = mrn_base_stack_get_image_card_styles( array( 'card_image_ratio' => '460/488', 'card_caption_padding_mobile' => '22px 20px 24px', 'card_section_link_space_before' => 'clamp(40px, 4vw + 0.5rem, 64px)', 'card_section_link_alignment' => 'center' ) );
+$expect( in_array( '--mrn-card-image-ratio:460/488', $image_card_styles, true ) && in_array( '--mrn-card-caption-padding-mobile:22px 20px 24px', $image_card_styles, true ) && in_array( '--mrn-card-section-link-space-before:clamp(40px, 4vw + 0.5rem, 64px)', $image_card_styles, true ) && in_array( '--mrn-card-section-link-alignment:center', $image_card_styles, true ), 'Responsive image Cards use exact validated native dimensions and link geometry' );
+foreach ( array( '22px;position:fixed', 'url(https://example.test)', '-1px 20px', '1px 2px 3px 4px 5px' ) as $bad ) {
+	$styles = mrn_base_stack_get_image_card_styles( array( 'card_caption_padding_mobile' => $bad ) );
+	$expect( ! array_filter( $styles, static fn( $style ) => str_starts_with( $style, '--mrn-card-caption-padding-mobile:' ) ), 'Unsafe mobile Card padding is rejected: ' . $bad );
+}
+foreach ( array( 'url(https://example.test)', '40px;color:red', '-1px' ) as $bad ) {
+	$styles = mrn_base_stack_get_image_card_styles( array( 'card_section_link_space_before' => $bad, 'card_section_link_alignment' => 'center;display:none' ) );
+	$expect( ! array_filter( $styles, static fn( $style ) => str_starts_with( $style, '--mrn-card-section-link-' ) ), 'Unsafe Card section link values are rejected: ' . $bad );
+}
 echo json_encode( array( 'result' => 'passed', 'count' => count( $checks ), 'checks' => $checks ), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ) . PHP_EOL;
