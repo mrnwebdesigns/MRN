@@ -82,6 +82,10 @@ $section_links = function_exists( 'mrn_rbl_get_content_links' )
 		)
 	)
 	: array();
+$inline_strip_action = 'scroll-strip' === ( $row['showcase_presentation'] ?? '' )
+	&& 'responsive' === ( $row['strip_frame'] ?? '' )
+	&& 'inline-action' === ( $row['strip_header_layout'] ?? '' )
+	&& ! empty( $section_links );
 if ( '' === $label && '' === $heading && '' === $subheading && empty( $section_links ) && empty( $valid_items ) ) {
 	return;
 }
@@ -137,8 +141,9 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 	<div class="mrn-layout-section mrn-layout-section--showcase <?php echo esc_attr( $width_layers['section_class'] ); ?><?php echo $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 		<div class="mrn-layout-container <?php echo esc_attr( $width_layers['container_class'] ); ?><?php echo ! $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo ! $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 			<div class="mrn-layout-grid mrn-layout-grid--showcase mrn-ui__body">
-		<?php if ( '' !== $label || '' !== $heading || '' !== $subheading ) : ?>
+		<?php if ( '' !== $label || '' !== $heading || '' !== $subheading || $inline_strip_action ) : ?>
 				<header class="mrn-layout-content mrn-layout-content--text mrn-showcase-row__header mrn-ui__head">
+				<?php if ( $inline_strip_action ) : ?><div class="mrn-showcase-row__header-copy"><?php endif; ?>
 				<?php if ( '' !== $label ) : ?>
 						<<?php echo esc_html( $label_tag ); ?> class="mrn-ui__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $label ) : esc_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $label_tag ); ?>>
 				<?php endif; ?>
@@ -148,6 +153,7 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 				<?php if ( '' !== $subheading ) : ?>
 						<<?php echo esc_html( $subheading_tag ); ?> class="mrn-ui__sub"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $subheading ) : esc_html( $subheading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $subheading_tag ); ?>>
 				<?php endif; ?>
+				<?php if ( $inline_strip_action ) : ?></div><?php get_template_part( 'template-parts/builder/showcase-actions', null, array( 'section_links' => $section_links ) ); ?><?php endif; ?>
 			</header>
 		<?php endif; ?>
 
@@ -208,49 +214,8 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 			<?php if ( 'scroll-strip' === ( $row['showcase_presentation'] ?? '' ) ) : ?></div></div><?php endif; ?>
 		<?php endif; ?>
 
-		<?php if ( ! empty( $section_links ) ) : ?>
-				<div class="mrn-layout-content mrn-layout-content--text mrn-showcase-row__link-wrap">
-				<?php foreach ( $section_links as $section_link ) : ?>
-					<?php
-					if ( ! is_array( $section_link ) ) {
-						continue;
-					}
-
-					$section_link_url           = isset( $section_link['url'] ) ? (string) $section_link['url'] : '';
-					$section_link_text          = isset( $section_link['text'] ) ? (string) $section_link['text'] : '';
-					$section_link_style         = isset( $section_link['link_style'] ) && in_array( $section_link['link_style'], array( 'link', 'button' ), true ) ? (string) $section_link['link_style'] : 'link';
-					$section_link_tag           = function_exists( 'mrn_rbl_get_content_link_tag_name' ) ? mrn_rbl_get_content_link_tag_name( $section_link ) : 'a';
-					$section_link_attr_html     = function_exists( 'mrn_rbl_get_content_link_html_attributes' ) ? mrn_rbl_get_content_link_html_attributes( $section_link ) : '';
-					$section_link_class_names   = 'mrn-ui__link ' . ( 'button' === $section_link_style ? 'mrn-ui__link--button' : 'mrn-ui__link--text' );
-					$section_link_icon_markup   = function_exists( 'mrn_base_stack_get_button_link_icon_markup' )
-						? mrn_base_stack_get_button_link_icon_markup( $section_link )
-						: '';
-					$section_link_icon_position = function_exists( 'mrn_base_stack_get_button_link_icon_position' )
-						? mrn_base_stack_get_button_link_icon_position( $section_link )
-						: 'left';
-
-					if ( function_exists( 'mrn_rbl_get_content_link_custom_class_names' ) ) {
-						$section_link_custom_classes = mrn_rbl_get_content_link_custom_class_names( $section_link );
-						if ( '' !== $section_link_custom_classes ) {
-							$section_link_class_names .= ' ' . $section_link_custom_classes;
-						}
-					}
-					?>
-					<<?php echo esc_html( $section_link_tag ); ?>
-						class="<?php echo esc_attr( trim( $section_link_class_names ) ); ?>"
-						<?php echo '' !== $section_link_attr_html ? $section_link_attr_html : 'href="' . esc_url( $section_link_url ) . '"'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-					>
-					<?php
-					$section_link_label = '' !== $section_link_text ? $section_link_text : $section_link_url;
-						echo wp_kses_post(
-							function_exists( 'mrn_base_stack_get_compact_link_label_markup' )
-								? mrn_base_stack_get_compact_link_label_markup( $section_link_label, $section_link_icon_markup, $section_link_icon_position )
-								: esc_html( $section_link_label )
-						);
-					?>
-				</<?php echo esc_html( $section_link_tag ); ?>>
-				<?php endforeach; ?>
-			</div>
+		<?php if ( ! $inline_strip_action && ! empty( $section_links ) ) : ?>
+			<?php get_template_part( 'template-parts/builder/showcase-actions', null, array( 'section_links' => $section_links ) ); ?>
 		<?php endif; ?>
 			</div>
 		</div>
