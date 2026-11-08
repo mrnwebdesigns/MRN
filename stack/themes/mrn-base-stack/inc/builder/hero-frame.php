@@ -20,6 +20,8 @@ function mrn_base_stack_get_hero_frame_fields() {
 		'heading_space_after' => 'Space After Heading',
 		'heading_space_after_mobile' => 'Small-Screen Space After Heading',
 		'actions_space_before' => 'Space Before Actions',
+		'actions_space_before_mobile' => 'Small-Screen Space Before Actions',
+		'actions_primary_min_width_mobile' => 'Small-Screen First Action Minimum Width',
 		'actions_row_gap' => 'Space Between Action Rows',
 		'actions_column_gap' => 'Space Between Actions',
 		'action_icon_height' => 'Action Media Icon Height',
@@ -83,6 +85,20 @@ function mrn_base_stack_get_hero_frame_fields() {
 		'instructions' => 'Select when this Hero should keep desktop row margins and padding through 768px. All dimensions still come from the selected native spacing presets.',
 	);
 	$fields[] = array( 'key' => 'field_mrn_hero_basic_block_frame_content_fill_mobile', 'name' => 'hero_content_fill_mobile', 'label' => 'Fill Small-Screen Content Width', 'type' => 'true_false', 'ui' => 1, 'default_value' => 0, 'instructions' => 'At 767px and below, let direct Hero content and its list items wrap within the available column instead of preserving intrinsic minimum widths.' );
+	$fields[] = array(
+		'key' => 'field_mrn_hero_basic_block_frame_actions_mobile_flow',
+		'name' => 'hero_actions_mobile_flow', 'label' => 'Small-Screen Action Flow', 'type' => 'select',
+		'choices' => array( '' => 'Use Existing Wrapping', 'paired-until-375' => 'Pair from 376px; Stack at 375px' ),
+		'default_value' => '', 'wrapper' => array( 'width' => '50' ),
+		'instructions' => 'Optional. At 376–767px, keep two actions on one row and let the second wrap its text. At 375px and below, each action fills its own row.',
+	);
+	$fields[] = array(
+		'key' => 'field_mrn_hero_basic_block_frame_rotation_control_placement',
+		'name' => 'hero_rotation_control_placement', 'label' => 'Rotating Heading Control Placement', 'type' => 'select',
+		'choices' => array( '' => 'In the Content Flow', 'overlay' => 'Compact Control in Bottom Padding' ),
+		'default_value' => '', 'wrapper' => array( 'width' => '50' ),
+		'instructions' => 'Optional. Keep the accessible pause and resume control while moving it out of the heading, text and action flow. Reserve bottom row padding through native Row Spacing.',
+	);
 	foreach ( array(
 		'padding_mobile_breakpoint' => array( 'Row Padding Breakpoint', array( '' => 'Use Existing Row Breakpoint', '900' => '900px', '640' => '640px (Vertical Padding Only)' ) ),
 		'heading_narrow_breakpoint' => array( 'Narrow-Screen Heading Breakpoint', array( '' => 'Use Existing (900px)', '1100' => '1100px' ) ),
@@ -157,6 +173,8 @@ function mrn_base_stack_get_hero_frame_contract( array $row ) {
 		$result['classes'][] = 'has-hero-heading-entrance-gentle-rise';
 	}
 	if ( '767' === ( $row['hero_row_spacing_mobile_breakpoint'] ?? '' ) ) { $result['classes'][] = 'has-hero-row-spacing-at-767'; }
+	if ( 'overlay' === ( $row['hero_rotation_control_placement'] ?? '' ) ) { $result['classes'][] = 'has-hero-rotation-control-overlay'; }
+	if ( 'paired-until-375' === ( $row['hero_actions_mobile_flow'] ?? '' ) ) { $result['classes'][] = 'has-hero-actions-paired-until-375'; }
 	if ( in_array( $row['hero_content_fill_mobile'] ?? 0, array( true, 1, '1' ), true ) ) { $result['classes'][] = 'has-hero-content-fill-mobile'; }
 	$breakpoint = $row['hero_inner_gutter_mobile_breakpoint'] ?? '';
 	if ( is_scalar( $breakpoint ) && in_array( (string) $breakpoint, array( '960', '1199' ), true ) ) {
@@ -191,7 +209,7 @@ function mrn_base_stack_get_hero_frame_contract( array $row ) {
 
 /** Resolve only explicitly selected, validated responsive Hero properties. */
 function mrn_base_stack_add_hero_media_frame_contract( array $row, array $result ) {
-	foreach ( array( 'inner_gutter_narrow', 'inner_gutter_small', 'media_width', 'media_column_gap', 'media_row_gap', 'media_radius', 'heading_space_after_narrow', 'actions_space_before_narrow', 'actions_gap_narrow', 'paragraph_space_before', 'lead_size', 'lead_line_height', 'lead_size_mobile', 'lead_line_height_mobile', 'lead_space_after' ) as $name ) {
+	foreach ( array( 'inner_gutter_narrow', 'inner_gutter_small', 'media_width', 'media_column_gap', 'media_row_gap', 'media_radius', 'heading_space_after_narrow', 'actions_space_before_narrow', 'actions_space_before_mobile', 'actions_primary_min_width_mobile', 'actions_gap_narrow', 'paragraph_space_before', 'lead_size', 'lead_line_height', 'lead_size_mobile', 'lead_line_height_mobile', 'lead_space_after' ) as $name ) {
 		$value = mrn_base_stack_validate_hero_frame_dimension( $row[ 'hero_' . $name ] ?? '', false, in_array( $name, array( 'lead_line_height', 'lead_line_height_mobile' ), true ) );
 		if ( '' !== $value ) { $result['styles'][] = '--mrn-hero-' . str_replace( '_', '-', $name ) . ':' . $value; $result['classes'][] = 'has-hero-' . str_replace( '_', '-', $name ); }
 	}

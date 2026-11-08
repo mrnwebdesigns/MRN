@@ -55,6 +55,7 @@
 		button.type = 'button';
 		button.className = 'mrn-rotation-toggle';
 		button.textContent = group.dataset.pauseLabel;
+		button.setAttribute( 'aria-pressed', 'false' );
 		group.parentElement.insertAdjacentElement( 'afterend', button );
 		let timer = null;
 		let paused = false;
@@ -80,6 +81,7 @@
 		button.addEventListener( 'click', () => {
 			paused = ! paused;
 			button.textContent = paused ? group.dataset.resumeLabel : group.dataset.pauseLabel;
+			button.setAttribute( 'aria-pressed', String( paused ) );
 			refresh();
 		} );
 		if ( 'IntersectionObserver' in window ) {
