@@ -20,6 +20,7 @@ $video_position      = function_exists( 'mrn_base_stack_normalize_video_position
 $video_aspect_ratio  = function_exists( 'mrn_base_stack_normalize_video_aspect_ratio' ) ? mrn_base_stack_normalize_video_aspect_ratio( $row['video_aspect_ratio'] ?? '' ) : sanitize_key( (string) ( $row['video_aspect_ratio'] ?? '16-9' ) );
 $display_mode        = function_exists( 'mrn_base_stack_normalize_video_display_mode' ) ? mrn_base_stack_normalize_video_display_mode( $row['video_display_mode'] ?? '' ) : sanitize_key( (string) ( $row['video_display_mode'] ?? 'inline' ) );
 $thumbnail_image     = isset( $row['video_thumbnail'] ) ? $row['video_thumbnail'] : 0;
+$poster_image        = isset( $row['video_poster'] ) ? $row['video_poster'] : 0;
 $background_color    = isset( $row['background_color'] ) ? trim( (string) $row['background_color'] ) : '';
 $bottom_accent       = ! empty( $row['bottom_accent'] );
 $accent_slug         = isset( $row['bottom_accent_style'] ) ? (string) $row['bottom_accent_style'] : '';
@@ -73,6 +74,8 @@ $has_video_media  = '' !== $resolved_video_url;
 $has_thumbnail    = function_exists( 'mrn_base_stack_image_has_content' ) ? mrn_base_stack_image_has_content( $thumbnail_image ) : ! empty( $thumbnail_image );
 $is_modal_mode    = 'modal' === $display_mode && $has_video_media && $has_thumbnail;
 $modal_href       = 'local' === $resolved_video_kind ? $local_video_url : $remote_video;
+$poster_url       = function_exists( 'mrn_base_stack_get_attachment_image_url' ) ? mrn_base_stack_get_attachment_image_url( $poster_image, 'mrn-content-media' ) : '';
+$ambient_loop     = 'muted-loop' === ( $row['video_playback'] ?? '' ) && 'local' === $resolved_video_kind && ! $is_modal_mode && '' !== $poster_url;
 
 if ( ! $has_text_content && ! $has_video_media ) {
 	return;
@@ -101,6 +104,9 @@ if ( $has_text_content ) {
 if ( $has_video_media ) {
 	$section_classes[] = 'has-video-media';
 }
+if ( $ambient_loop ) {
+	$section_classes[] = 'has-ambient-video';
+}
 
 if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' ) ) {
 	$section_styles[] = '--mrn-video-row-bg: var(' . mrn_site_colors_get_css_var( $background_color ) . ')';
@@ -126,10 +132,13 @@ $section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_clas
 $section_attrs     = isset( $display_contract['attributes'] ) && is_array( $display_contract['attributes'] ) ? $display_contract['attributes'] : array();
 $section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array() );
 $section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
-$expansion_poster = '';
+$frame_contract    = mrn_base_stack_get_content_frame_contract( $row, 'video' );
+$section_classes   = mrn_base_stack_merge_builder_section_classes( $section_classes, $frame_contract );
+$section_attrs     = mrn_base_stack_merge_builder_attributes( $section_attrs, $frame_contract['attributes'] );
+$expansion_poster = $poster_url;
 if ( 'scroll-expand' === ( $row['video_presentation'] ?? '' ) ) {
 	mrn_base_stack_enqueue_presentation();
-	$expansion_poster                       = $has_thumbnail ? mrn_base_stack_get_attachment_image_url( $thumbnail_image, 'mrn-content-media' ) : '';
+	if ( '' === $expansion_poster && $has_thumbnail ) { $expansion_poster = mrn_base_stack_get_attachment_image_url( $thumbnail_image, 'mrn-content-media' ); }
 	$section_attrs['data-mrn-video-expand'] = 'true';
 	if ( ! empty( $row['video_follow_color'] ) && function_exists( 'mrn_site_colors_get_css_var' ) ) {
 		$section_attrs['data-mrn-follow-color'] = mrn_site_colors_get_css_var( sanitize_key( $row['video_follow_color'] ) );
@@ -196,14 +205,19 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 					<?php if ( 'local' === $resolved_video_kind && '' !== $resolved_video_mime ) : ?>
 						data-video-mime="<?php echo esc_attr( $resolved_video_mime ); ?>"
 					<?php endif; ?>
-					data-video-background="false"
-					data-video-autoplay="false"
-					data-video-muted="false"
-					data-video-loop="false"
-					data-video-controls="true"
+					data-video-background="<?php echo esc_attr( $ambient_loop ? 'true' : 'false' ); ?>"
+					data-video-autoplay="<?php echo esc_attr( $ambient_loop ? 'true' : 'false' ); ?>"
+					data-video-muted="<?php echo esc_attr( $ambient_loop ? 'true' : 'false' ); ?>"
+					data-video-loop="<?php echo esc_attr( $ambient_loop ? 'true' : 'false' ); ?>"
+					data-video-controls="<?php echo esc_attr( $ambient_loop ? 'false' : 'true' ); ?>"
 					data-video-delay="250"
 					aria-hidden="false"
-				></div>
+				>
+					<?php if ( $ambient_loop ) : ?>
+						<?php echo mrn_base_stack_get_attachment_image( $poster_image, 'mrn-content-media', array( 'class' => 'mrn-video-row__poster', 'alt' => '', 'loading' => 'lazy' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped attachment helper. ?>
+						<button class="mrn-video-row__toggle" type="button" data-mrn-video-toggle data-pause-label="<?php echo esc_attr__( 'Pause video', 'mrn-base-stack' ); ?>" data-resume-label="<?php echo esc_attr__( 'Resume video', 'mrn-base-stack' ); ?>" hidden aria-pressed="false"><?php esc_html_e( 'Pause video', 'mrn-base-stack' ); ?></button>
+					<?php endif; ?>
+				</div>
 			<?php endif; ?>
 			</div>
 		</div>

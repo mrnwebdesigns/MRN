@@ -340,8 +340,9 @@
 		watch( section, () => {
 			const p = clamp( ( window.innerHeight - section.getBoundingClientRect().top ) / window.innerHeight );
 			if ( media ) {
-				media.style.transform = reduced.matches ? '' : 'scale(' + ( .82 + .18 * p ) + ')';
-				media.style.borderRadius = reduced.matches ? '' : ( ( 1 - p ) * 24 ) + 'px';
+				const compact = section.classList.contains( 'has-video-frame' ) && window.matchMedia( '(max-width: 767px)' ).matches;
+				media.style.transform = reduced.matches || compact ? '' : 'scale(' + ( .82 + .18 * p ) + ')';
+				media.style.borderRadius = reduced.matches || compact ? '' : ( ( 1 - p ) * 24 ) + 'px';
 			}
 			if ( surface && color && /^--[a-zA-Z0-9_-]+$/.test( color ) ) {
 				surface.style.backgroundColor = reduced.matches ? original : 'color-mix(in srgb, var(' + color + ') ' + ( p * 100 ) + '%, ' + base + ')';

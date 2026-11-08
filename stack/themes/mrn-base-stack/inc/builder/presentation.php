@@ -270,7 +270,9 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 		), mrn_base_stack_get_career_list_fields( $seed ), function_exists( 'mrn_base_stack_get_people_frame_fields' ) ? mrn_base_stack_get_people_frame_fields( $seed ) : array(), mrn_base_stack_get_article_list_fields( $seed ), function_exists( 'mrn_base_stack_get_project_list_fields' ) ? mrn_base_stack_get_project_list_fields( $seed ) : array() );
 	}
 	if ( 'video' === $layout ) {
-		return array(
+		return array_merge( array(
+			$make( 'video_playback', 'Inline Video Playback', 'select', array( 'choices' => array( '' => 'Standard Video Controls', 'muted-loop' => 'Muted Loop with Pause Control' ), 'default_value' => '', 'instructions' => 'For an uploaded inline video with a selected poster. The video loops silently with a visible Pause control. Reduced motion and data-saving views keep the poster.' ) ),
+			$make( 'video_poster', 'Inline Video Poster', 'image', array( 'return_format' => 'id', 'preview_size' => 'medium', 'library' => 'all', 'instructions' => 'Optional still for inline video. Required for muted looping playback and shown when the video cannot play.' ) ),
 			$make(
 				'video_presentation',
 				'Video Presentation',
@@ -293,7 +295,7 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 					'ui'         => 1,
 				)
 			),
-		);
+		), mrn_base_stack_get_content_frame_fields( $layout, $seed ) );
 	}
 	return array();
 }
