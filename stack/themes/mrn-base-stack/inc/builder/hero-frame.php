@@ -48,6 +48,8 @@ function mrn_base_stack_get_hero_frame_fields() {
 		'paragraph_space_before' => 'Space Between Consecutive Paragraphs',
 		'lead_size' => 'First Body Paragraph Font Size',
 		'lead_line_height' => 'First Body Paragraph Line Height',
+		'lead_size_mobile' => 'Small-Screen First Paragraph Font Size',
+		'lead_line_height_mobile' => 'Small-Screen First Paragraph Line Height',
 		'lead_space_after' => 'Space After First Body Paragraph',
 	);
 	$fields = array();
@@ -80,10 +82,11 @@ function mrn_base_stack_get_hero_frame_fields() {
 		'default_value' => '', 'wrapper' => array( 'width' => '50' ),
 		'instructions' => 'Select when this Hero should keep desktop row margins and padding through 768px. All dimensions still come from the selected native spacing presets.',
 	);
+	$fields[] = array( 'key' => 'field_mrn_hero_basic_block_frame_content_fill_mobile', 'name' => 'hero_content_fill_mobile', 'label' => 'Fill Small-Screen Content Width', 'type' => 'true_false', 'ui' => 1, 'default_value' => 0, 'instructions' => 'At 767px and below, let direct Hero content and its list items wrap within the available column instead of preserving intrinsic minimum widths.' );
 	foreach ( array(
 		'padding_mobile_breakpoint' => array( 'Row Padding Breakpoint', array( '' => 'Use Existing Row Breakpoint', '900' => '900px', '640' => '640px (Vertical Padding Only)' ) ),
 		'heading_narrow_breakpoint' => array( 'Narrow-Screen Heading Breakpoint', array( '' => 'Use Existing (900px)', '1100' => '1100px' ) ),
-		'typography_mobile_breakpoint' => array( 'Small-Screen Typography Breakpoint', array( '' => 'Use Existing (767px)', '640' => '640px' ) ),
+		'typography_mobile_breakpoint' => array( 'Small-Screen Typography Breakpoint', array( '' => 'Use Existing (767px)', '640' => '640px', '560' => '560px' ) ),
 		'padding_bottom_mobile_source' => array( 'Small-Screen Bottom Padding', array( '' => 'Use Preset Mobile Dimension', 'desktop' => 'Keep Preset Desktop Dimension' ) ),
 		'media_stack_breakpoint' => array( 'Media Stacking Breakpoint', array( '' => 'Use Existing (960px)', '900' => '900px' ) ),
 		'media_max_share' => array( 'Media Maximum Share of Inner Canvas', array( '' => 'Use Existing Grid', '40' => '40%', '50' => '50%' ) ),
@@ -154,6 +157,7 @@ function mrn_base_stack_get_hero_frame_contract( array $row ) {
 		$result['classes'][] = 'has-hero-heading-entrance-gentle-rise';
 	}
 	if ( '767' === ( $row['hero_row_spacing_mobile_breakpoint'] ?? '' ) ) { $result['classes'][] = 'has-hero-row-spacing-at-767'; }
+	if ( in_array( $row['hero_content_fill_mobile'] ?? 0, array( true, 1, '1' ), true ) ) { $result['classes'][] = 'has-hero-content-fill-mobile'; }
 	$breakpoint = $row['hero_inner_gutter_mobile_breakpoint'] ?? '';
 	if ( is_scalar( $breakpoint ) && in_array( (string) $breakpoint, array( '960', '1199' ), true ) ) {
 		$result['classes'][] = 'has-hero-gutter-at-' . (string) $breakpoint;
@@ -187,11 +191,11 @@ function mrn_base_stack_get_hero_frame_contract( array $row ) {
 
 /** Resolve only explicitly selected, validated responsive Hero properties. */
 function mrn_base_stack_add_hero_media_frame_contract( array $row, array $result ) {
-	foreach ( array( 'inner_gutter_narrow', 'inner_gutter_small', 'media_width', 'media_column_gap', 'media_row_gap', 'media_radius', 'heading_space_after_narrow', 'actions_space_before_narrow', 'actions_gap_narrow', 'paragraph_space_before', 'lead_size', 'lead_line_height', 'lead_space_after' ) as $name ) {
-		$value = mrn_base_stack_validate_hero_frame_dimension( $row[ 'hero_' . $name ] ?? '', false, 'lead_line_height' === $name );
+	foreach ( array( 'inner_gutter_narrow', 'inner_gutter_small', 'media_width', 'media_column_gap', 'media_row_gap', 'media_radius', 'heading_space_after_narrow', 'actions_space_before_narrow', 'actions_gap_narrow', 'paragraph_space_before', 'lead_size', 'lead_line_height', 'lead_size_mobile', 'lead_line_height_mobile', 'lead_space_after' ) as $name ) {
+		$value = mrn_base_stack_validate_hero_frame_dimension( $row[ 'hero_' . $name ] ?? '', false, in_array( $name, array( 'lead_line_height', 'lead_line_height_mobile' ), true ) );
 		if ( '' !== $value ) { $result['styles'][] = '--mrn-hero-' . str_replace( '_', '-', $name ) . ':' . $value; $result['classes'][] = 'has-hero-' . str_replace( '_', '-', $name ); }
 	}
-	foreach ( array( 'padding_mobile_breakpoint' => array( '900', '640' ), 'heading_narrow_breakpoint' => array( '1100' ), 'typography_mobile_breakpoint' => array( '640' ), 'padding_bottom_mobile_source' => array( 'desktop' ), 'media_stack_breakpoint' => array( '900' ), 'media_shadow' => array( 'none' ), 'actions_small_layout' => array( 'full-column' ) ) as $name => $choices ) {
+	foreach ( array( 'padding_mobile_breakpoint' => array( '900', '640' ), 'heading_narrow_breakpoint' => array( '1100' ), 'typography_mobile_breakpoint' => array( '640', '560' ), 'padding_bottom_mobile_source' => array( 'desktop' ), 'media_stack_breakpoint' => array( '900' ), 'media_shadow' => array( 'none' ), 'actions_small_layout' => array( 'full-column' ) ) as $name => $choices ) {
 		$value = $row[ 'hero_' . $name ] ?? '';
 		if ( is_string( $value ) && in_array( $value, $choices, true ) ) { $result['classes'][] = 'has-hero-' . str_replace( '_', '-', $name ) . '-' . $value; }
 	}

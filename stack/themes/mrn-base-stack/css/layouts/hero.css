@@ -184,13 +184,14 @@
  .mrn-hero--width-content.has-hero-gutter-at-1199 .mrn-hero__inner { max-width: min(calc(var(--mrn-shell-content-width) + (2 * var(--mrn-hero-inner-gutter-mobile, var(--mrn-hero-inner-gutter, var(--mrn-shell-gutter))))), calc(100% - (2 * var(--mrn-hero-inner-gutter-mobile, var(--mrn-hero-inner-gutter, var(--mrn-shell-gutter)))))); }
 }
 @media (max-width: 767px) {
+	.mrn-hero.has-hero-content-fill-mobile .mrn-hero__content > * { min-width: 0; width: 100%; }
  .mrn-hero__inner { max-width: min(var(--mrn-hero-inner-max-width, 78rem), calc(100% - (2 * var(--mrn-hero-inner-gutter-mobile, var(--mrn-hero-inner-gutter, var(--mrn-shell-gutter)))))); }
  .mrn-hero--width-content .mrn-hero__inner { max-width: min(calc(var(--mrn-shell-content-width) + (2 * var(--mrn-hero-inner-gutter-mobile, var(--mrn-hero-inner-gutter, var(--mrn-shell-gutter))))), calc(100% - (2 * var(--mrn-hero-inner-gutter-mobile, var(--mrn-hero-inner-gutter, var(--mrn-shell-gutter)))))); }
- .mrn-hero:where(:not(.has-hero-typography-mobile-breakpoint-640)) .mrn-hero__heading { margin-bottom: var(--mrn-hero-heading-space-after-mobile, var(--mrn-hero-heading-space-after, 0)); }
- .mrn-hero.has-hero-text-size-mobile:where(:not(.has-hero-typography-mobile-breakpoint-640)) .mrn-hero__text,
- .mrn-hero.has-hero-text-size-mobile:where(:not(.has-hero-typography-mobile-breakpoint-640)) .mrn-hero__text p { font-size: var(--mrn-hero-text-size-mobile); }
- .mrn-hero.has-hero-text-line-height-mobile:where(:not(.has-hero-typography-mobile-breakpoint-640)) .mrn-hero__text,
- .mrn-hero.has-hero-text-line-height-mobile:where(:not(.has-hero-typography-mobile-breakpoint-640)) .mrn-hero__text p { line-height: var(--mrn-hero-text-line-height-mobile); }
+ .mrn-hero:where(:not(.has-hero-typography-mobile-breakpoint-640):not(.has-hero-typography-mobile-breakpoint-560)) .mrn-hero__heading { margin-bottom: var(--mrn-hero-heading-space-after-mobile, var(--mrn-hero-heading-space-after, 0)); }
+ .mrn-hero.has-hero-text-size-mobile:where(:not(.has-hero-typography-mobile-breakpoint-640):not(.has-hero-typography-mobile-breakpoint-560)) .mrn-hero__text,
+ .mrn-hero.has-hero-text-size-mobile:where(:not(.has-hero-typography-mobile-breakpoint-640):not(.has-hero-typography-mobile-breakpoint-560)) .mrn-hero__text p { font-size: var(--mrn-hero-text-size-mobile); }
+ .mrn-hero.has-hero-text-line-height-mobile:where(:not(.has-hero-typography-mobile-breakpoint-640):not(.has-hero-typography-mobile-breakpoint-560)) .mrn-hero__text,
+ .mrn-hero.has-hero-text-line-height-mobile:where(:not(.has-hero-typography-mobile-breakpoint-640):not(.has-hero-typography-mobile-breakpoint-560)) .mrn-hero__text p { line-height: var(--mrn-hero-text-line-height-mobile); }
 }
 
 /* Optional row spacing breakpoint; values remain owned by native presets. */
@@ -290,10 +291,10 @@
 	.mrn-hero.has-hero-heading-narrow-breakpoint-1100.has-hero-heading-space-after-narrow .mrn-hero__heading { margin-bottom: var(--mrn-hero-heading-space-after-narrow); }
 }
 @media (max-width: 767px) {
-	.mrn-hero.has-hero-heading-size-mobile:where(:not(.has-hero-typography-mobile-breakpoint-640)) { --mrn-hero-current-heading-size: var(--mrn-hero-heading-size-mobile); }
-	.mrn-hero.has-hero-heading-size-mobile:where(:not(.has-hero-typography-mobile-breakpoint-640)) .mrn-hero__heading { font-size: var(--mrn-hero-current-heading-size); }
-	.mrn-hero.has-hero-heading-line-height-mobile:where(:not(.has-hero-typography-mobile-breakpoint-640)) { --mrn-hero-current-heading-line-height: var(--mrn-hero-heading-line-height-mobile); }
-	.mrn-hero.has-hero-heading-line-height-mobile:where(:not(.has-hero-typography-mobile-breakpoint-640)) .mrn-hero__heading { line-height: var(--mrn-hero-current-heading-line-height); }
+ .mrn-hero.has-hero-heading-size-mobile:where(:not(.has-hero-typography-mobile-breakpoint-640):not(.has-hero-typography-mobile-breakpoint-560)) { --mrn-hero-current-heading-size: var(--mrn-hero-heading-size-mobile); }
+ .mrn-hero.has-hero-heading-size-mobile:where(:not(.has-hero-typography-mobile-breakpoint-640):not(.has-hero-typography-mobile-breakpoint-560)) .mrn-hero__heading { font-size: var(--mrn-hero-current-heading-size); }
+ .mrn-hero.has-hero-heading-line-height-mobile:where(:not(.has-hero-typography-mobile-breakpoint-640):not(.has-hero-typography-mobile-breakpoint-560)) { --mrn-hero-current-heading-line-height: var(--mrn-hero-heading-line-height-mobile); }
+ .mrn-hero.has-hero-heading-line-height-mobile:where(:not(.has-hero-typography-mobile-breakpoint-640):not(.has-hero-typography-mobile-breakpoint-560)) .mrn-hero__heading { line-height: var(--mrn-hero-current-heading-line-height); }
 }
 @media (max-width: 640px) {
 	.mrn-hero.has-hero-typography-mobile-breakpoint-640.has-hero-heading-size-mobile { --mrn-hero-current-heading-size: var(--mrn-hero-heading-size-mobile); }
@@ -309,6 +310,21 @@
 		--mrn-row-padding-top: var(--mrn-row-padding-top-mobile, var(--mrn-row-padding-top-desktop));
 		--mrn-row-padding-bottom: var(--mrn-row-padding-bottom-mobile, var(--mrn-row-padding-bottom-desktop));
 	}
+}
+@media (max-width: 560px) {
+	.mrn-hero.has-hero-typography-mobile-breakpoint-560.has-hero-heading-size-mobile { --mrn-hero-current-heading-size: var(--mrn-hero-heading-size-mobile); }
+	.mrn-hero.has-hero-typography-mobile-breakpoint-560.has-hero-heading-size-mobile .mrn-hero__heading { font-size: var(--mrn-hero-current-heading-size); }
+	.mrn-hero.has-hero-typography-mobile-breakpoint-560.has-hero-heading-line-height-mobile { --mrn-hero-current-heading-line-height: var(--mrn-hero-heading-line-height-mobile); }
+	.mrn-hero.has-hero-typography-mobile-breakpoint-560.has-hero-heading-line-height-mobile .mrn-hero__heading { line-height: var(--mrn-hero-current-heading-line-height); }
+	.mrn-hero.has-hero-typography-mobile-breakpoint-560 .mrn-hero__heading { margin-bottom: var(--mrn-hero-heading-space-after-mobile, var(--mrn-hero-heading-space-after, 0)); }
+	.mrn-hero.has-hero-typography-mobile-breakpoint-560.has-hero-text-size-mobile .mrn-hero__text,
+	.mrn-hero.has-hero-typography-mobile-breakpoint-560.has-hero-text-size-mobile .mrn-hero__text p { font-size: var(--mrn-hero-text-size-mobile); }
+	.mrn-hero.has-hero-typography-mobile-breakpoint-560.has-hero-text-line-height-mobile .mrn-hero__text,
+	.mrn-hero.has-hero-typography-mobile-breakpoint-560.has-hero-text-line-height-mobile .mrn-hero__text p { line-height: var(--mrn-hero-text-line-height-mobile); }
+}
+@media (max-width: 560px) {
+	.mrn-hero.has-hero-lead-size-mobile .mrn-hero__text > p:first-child { font-size: var(--mrn-hero-lead-size-mobile); }
+	.mrn-hero.has-hero-lead-line-height-mobile .mrn-hero__text > p:first-child { line-height: var(--mrn-hero-lead-line-height-mobile); }
 }
 @media (max-width: 640px) {
 	.mrn-hero.has-hero-padding-mobile-breakpoint-640.has-hero-padding-bottom-mobile-source-desktop[data-mrn-row-spacing] { --mrn-row-padding-bottom: var(--mrn-row-padding-bottom-desktop); }

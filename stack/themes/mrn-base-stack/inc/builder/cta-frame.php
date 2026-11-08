@@ -62,6 +62,9 @@ function mrn_base_stack_get_cta_frame_fields( $seed ) {
 		'choices' => array( '' => '767px (Default)', '600' => '600px', '767' => '767px', '960' => '960px', '1199' => '1199px' ),
 		'default_value' => '', 'wrapper' => array( 'width' => '50' ),
 	);
+	$fields[] = array( 'key' => $seed . '_cta_row_spacing_mobile_breakpoint', 'name' => 'cta_row_spacing_mobile_breakpoint', 'label' => 'Row Spacing Mobile Breakpoint', 'type' => 'select', 'choices' => array( '' => 'Site Default (782px)', '767' => '767px' ), 'default_value' => '' );
+	$fields[] = array( 'key' => $seed . '_cta_action_unclamped_mobile', 'name' => 'cta_action_unclamped_mobile', 'label' => 'Allow Button Minimum Width on Small Screens', 'type' => 'true_false', 'ui' => 1, 'default_value' => 0, 'instructions' => 'Use the selected button minimum width even when it exceeds the content column at 600px and below. Check the 320px layout before enabling.' );
+	$fields[] = array( 'key' => $seed . '_cta_action_alignment_small', 'name' => 'cta_action_alignment_small', 'label' => 'Button Alignment at 480px', 'type' => 'select', 'choices' => array( '' => 'Use Content Alignment', 'start' => 'Start', 'center' => 'Center', 'end' => 'End' ), 'default_value' => '', 'instructions' => 'Align only the button on narrow screens; heading and body alignment stay unchanged.' );
 	$fields[] = array(
 		'key' => $seed . '_cta_content_alignment', 'name' => 'cta_content_alignment', 'label' => 'Content and Action Alignment',
 		'type' => 'select', 'choices' => array( '' => 'Start (Default)', 'start' => 'Start', 'center' => 'Center', 'end' => 'End' ),
@@ -124,6 +127,12 @@ function mrn_base_stack_get_cta_frame_contract( array $row ) {
 	if ( is_scalar( $action_weight ) && in_array( (string) $action_weight, array_map( 'strval', range( 100, 900, 100 ) ), true ) ) { $styles[] = '--mrn-cta-frame-action-weight:' . $action_weight; }
 	$breakpoint = $row['cta_inner_gutter_mobile_breakpoint'] ?? '';
 	if ( in_array( $breakpoint, array( '600', '960', '1199' ), true ) ) { $result['classes'][] = 'has-cta-gutter-at-' . $breakpoint; }
+	if ( '767' === ( $row['cta_row_spacing_mobile_breakpoint'] ?? '' ) ) { $result['classes'][] = 'has-cta-row-spacing-at-767'; }
+	if ( in_array( $row['cta_action_unclamped_mobile'] ?? 0, array( true, 1, '1' ), true ) && '' !== mrn_base_stack_validate_hero_frame_dimension( $row['cta_action_min_width'] ?? '' ) ) { $result['classes'][] = 'has-cta-action-unclamped-mobile'; }
+	if ( in_array( $row['cta_action_alignment_small'] ?? '', array( 'start', 'center', 'end' ), true ) ) {
+		$result['classes'][] = 'has-cta-action-alignment-small';
+		$styles[] = '--mrn-cta-frame-actions-alignment-small:' . array( 'start' => 'flex-start', 'center' => 'center', 'end' => 'flex-end' )[ $row['cta_action_alignment_small'] ];
+	}
 	$alignment = $row['cta_content_alignment'] ?? '';
 	if ( in_array( $alignment, array( 'start', 'center', 'end' ), true ) ) {
 		$styles[] = '--mrn-cta-frame-alignment:' . $alignment;
