@@ -38,6 +38,19 @@
 .mrn-timeline[data-mrn-timeline-frame="contained"] .mrn-timeline__stage:has(.mrn-timeline__image) { grid-template-columns: minmax(0, var(--mrn-timeline-media-width, 419px)) minmax(0, 1fr); gap: var(--mrn-timeline-column-gap, 120px); }
 .mrn-timeline[data-mrn-timeline-frame="contained"] .mrn-timeline__image img { display: block; }
 .mrn-timeline[data-mrn-timeline-frame="contained"] .mrn-timeline__media .mrn-timeline__skip { display: block; margin: var(--mrn-timeline-skip-gap, 30px) 0 0; text-align: end; }
+.mrn-timeline[data-mrn-timeline-step-style="numbered"] .mrn-timeline__steps { list-style: none; padding: 0; counter-reset: timeline-step; }
+.mrn-timeline[data-mrn-timeline-step-style="numbered"] .mrn-timeline__steps > li { position: relative; counter-increment: timeline-step; padding: 0 0 0 var(--mrn-timeline-step-inset, 96px); margin: 0 0 var(--mrn-timeline-step-gap, 30px); border: 0; }
+.mrn-timeline[data-mrn-timeline-step-style="numbered"] .mrn-timeline__steps > li:last-child { margin-bottom: 0; }
+.mrn-timeline[data-mrn-timeline-step-style="numbered"] .mrn-timeline__steps > li::before { content: counter(timeline-step); position: absolute; z-index: 1; left: 0; top: 0; display: grid; place-items: center; width: 64px; height: 64px; border-radius: 50%; background: var(--site-color-pale-gray, #f2f4f7); color: var(--site-color-charcoal, #0f111a); }
+.mrn-timeline[data-enhanced][data-mrn-timeline-step-style="numbered"] .mrn-timeline__steps > li:has(details[open])::before { background: var(--site-color-burgundy, #5a0f14); color: #fff; }
+.mrn-timeline[data-mrn-timeline-step-style="numbered"] .mrn-timeline__steps > li:not(:last-child)::after { content: ''; position: absolute; left: 32px; top: 32px; width: 1px; height: calc(100% + var(--mrn-timeline-step-gap, 30px) + 32px); background: var(--site-color-light-gray, #d3d6dc); pointer-events: none; }
+.mrn-timeline[data-mrn-timeline-step-style="numbered"] summary { display: block; padding: 14px 0; font-size: 20px; line-height: 36px; }
+.mrn-timeline[data-mrn-timeline-step-style="numbered"] .mrn-timeline__body { padding: 0; }
+.mrn-timeline[data-mrn-timeline-step-style="numbered"] .mrn-timeline__body .mrn-ui__text { margin: 0; text-align: start; }
+.mrn-timeline[data-mrn-timeline-step-style="numbered"] .mrn-timeline__steps > li:not(:has(.mrn-reusable-block__actions)) .mrn-ui__text p:last-child { margin-bottom: var(--mrn-timeline-step-plain-copy-space, 20px); }
+.mrn-timeline[data-mrn-timeline-step-style="numbered"] .mrn-reusable-block__content--cta { gap: 0; }
+.mrn-timeline[data-mrn-timeline-step-style="numbered"] .mrn-content-builder__row--cta:not(.has-cta-frame) .mrn-layout-section--reusable-cta.mrn-layout-section--contained .mrn-layout-container--wide > .mrn-layout-grid--reusable > .mrn-layout-content--reusable > .mrn-reusable-block--cta .mrn-reusable-block__actions--callout { margin: var(--mrn-timeline-step-action-gap, 30px) 0 0; justify-content: flex-start; text-align: start; }
+.mrn-timeline[data-mrn-timeline-step-style="numbered"] .mrn-timeline__body .mrn-reusable-block__actions a { font-family: var(--site-font-heading, inherit); font-size: 18px; font-weight: 600; line-height: 29px; }
 .mrn-record-list--people .mrn-content-list-row__items { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2rem; list-style: none; padding: 0; }
 .mrn-record { min-width: 0; }
 .mrn-record article { background-color: inherit; border-radius: .25rem; }
@@ -71,6 +84,11 @@
 }
 @media (max-width: 767px) {
 	.mrn-timeline[data-mrn-timeline-frame="contained"] .mrn-timeline__stage:has(.mrn-timeline__image) { grid-template-columns: minmax(0, 1fr); gap: 30px; }
+	.mrn-timeline[data-mrn-timeline-step-style="numbered"] .mrn-timeline__steps { margin-top: var(--mrn-timeline-step-mobile-offset, 16px); }
+	.mrn-timeline[data-mrn-timeline-step-style="numbered"] .mrn-timeline__steps > li { padding-left: var(--mrn-timeline-step-inset-mobile, 56px); }
+	.mrn-timeline[data-mrn-timeline-step-style="numbered"] .mrn-timeline__steps > li::before { width: 44px; height: 44px; }
+	.mrn-timeline[data-mrn-timeline-step-style="numbered"] .mrn-timeline__steps > li:not(:last-child)::after { left: 22px; top: 22px; height: calc(100% + var(--mrn-timeline-step-gap, 30px) + 22px); }
+	.mrn-timeline[data-mrn-timeline-step-style="numbered"] summary { padding: 5px 0; }
 }
 @media (max-width: 599px) {
 	.mrn-record-list--people .mrn-content-list-row__items, .mrn-record--comparisons .mrn-record__media { grid-template-columns: minmax(0, 1fr); }

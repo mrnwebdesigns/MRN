@@ -275,6 +275,7 @@
 		const stage = timeline.querySelector( '.mrn-timeline__stage' );
 		const steps = Array.from( timeline.querySelectorAll( '.mrn-timeline__steps > li > details' ) );
 		const pinTablet = timeline.dataset.mrnTimelinePinTablet === 'true';
+		const numberedSteps = timeline.dataset.mrnTimelineStepStyle === 'numbered';
 		const tabletWide = window.matchMedia( '(min-width: 768px)' );
 		if ( ! steps.length ) { return; }
 		let distance = 0;
@@ -291,9 +292,10 @@
 			stage.style.minHeight = '';
 			steps.forEach( ( step ) => { step.open = true; } );
 			if ( reduced.matches || !( pinTablet ? tabletWide.matches : wide.matches ) || steps.length < 2 ) { return; }
-			const summaries = steps.reduce( ( total, step ) => total + step.querySelector( 'summary' ).getBoundingClientRect().height + 25, 0 );
-			const body = Math.max( ...steps.map( ( step ) => step.querySelector( '.mrn-timeline__body' ).getBoundingClientRect().height ) );
-			const height = Math.max( summaries + body, timeline.querySelector( '.mrn-timeline__media, .mrn-timeline__image' )?.offsetHeight || 0 ) + 32;
+			const summaries = steps.reduce( ( total, step ) => total + step.querySelector( 'summary' ).getBoundingClientRect().height + ( numberedSteps ? 0 : 25 ), 0 );
+			const body = numberedSteps ? steps[ 0 ].querySelector( '.mrn-timeline__body' ).getBoundingClientRect().height : Math.max( ...steps.map( ( step ) => step.querySelector( '.mrn-timeline__body' ).getBoundingClientRect().height ) );
+			const stepSpace = numberedSteps ? ( parseFloat( getComputedStyle( steps[ 0 ].parentElement ).marginBottom ) || 0 ) * ( steps.length - 1 ) : 0;
+			const height = Math.max( summaries + body + stepSpace, timeline.querySelector( '.mrn-timeline__media, .mrn-timeline__image' )?.offsetHeight || 0 ) + ( numberedSteps ? 0 : 32 );
 			if ( height > window.innerHeight - topOffset() - 32 ) { return; }
 			distance = timeline.dataset.mrnTimelineScrollPace === 'viewport'
 				? steps.length * Math.max( 320, Math.round( window.innerHeight * 0.55 ) )

@@ -4,6 +4,7 @@ function mrn_base_stack_get_timeline_frame_fields( $seed ) {
 	$fields = array(
 		array( 'key' => $seed . '_timeline_frame', 'name' => 'timeline_frame', 'label' => 'Timeline Frame', 'type' => 'select', 'choices' => array( '' => 'Use Existing Frame', 'contained' => 'Contained Timeline' ), 'default_value' => '' ),
 		array( 'key' => $seed . '_timeline_skip_position', 'name' => 'timeline_skip_position', 'label' => 'Timeline Skip Link Position', 'type' => 'select', 'choices' => array( '' => 'Before Timeline', 'media' => 'Below Timeline Image' ), 'default_value' => '' ),
+		array( 'key' => $seed . '_timeline_step_style', 'name' => 'timeline_step_style', 'label' => 'Timeline Step Style', 'type' => 'select', 'choices' => array( '' => 'Use Existing Steps', 'numbered' => 'Numbered Steps with Inline Copy' ), 'default_value' => '' ),
 	);
 	$dimensions = array(
 		'content_width' => 'Timeline Maximum Width',
@@ -14,6 +15,12 @@ function mrn_base_stack_get_timeline_frame_fields( $seed ) {
 		'media_width' => 'Timeline Image Column Width',
 		'media_width_tablet' => 'Timeline Image Column Width at 1199px',
 		'skip_gap' => 'Space Above Skip Link',
+		'step_inset' => 'Space Reserved for Step Number',
+		'step_inset_mobile' => 'Space Reserved for Number on Phone',
+		'step_gap' => 'Space Between Steps',
+		'step_action_gap' => 'Space Before Step Action',
+		'step_plain_copy_space' => 'Space After a Step Without an Action',
+		'step_mobile_offset' => 'Space Before Steps on Phone',
 	);
 	foreach ( $dimensions as $name => $label ) {
 		$fields[] = array( 'key' => $seed . '_timeline_' . $name, 'name' => 'timeline_' . $name, 'label' => $label, 'type' => 'text', 'instructions' => 'Optional non-negative CSS length or clamp(). Outer section spacing uses native row presets.' );
@@ -23,6 +30,9 @@ function mrn_base_stack_get_timeline_frame_fields( $seed ) {
 		if ( 'timeline_frame' !== $field['name'] ) {
 			$conditions[] = array( 'field' => $seed . '_timeline_frame', 'operator' => '==', 'value' => 'contained' );
 		}
+		if ( str_starts_with( $field['name'], 'timeline_step_' ) && 'timeline_step_style' !== $field['name'] ) {
+			$conditions[] = array( 'field' => $seed . '_timeline_step_style', 'operator' => '==', 'value' => 'numbered' );
+		}
 		$field['conditional_logic'] = array( $conditions );
 	}
 	unset( $field );
@@ -31,13 +41,15 @@ function mrn_base_stack_get_timeline_frame_fields( $seed ) {
 
 /** Reject dormant controls and CSS injection before adding editable dimensions. */
 function mrn_base_stack_get_timeline_frame_contract( array $row ) {
-	$result = array( 'active' => false, 'media_skip' => false, 'styles' => array() );
+	$result = array( 'active' => false, 'media_skip' => false, 'numbered_steps' => false, 'styles' => array() );
 	if ( 'timeline' !== ( $row['card_presentation'] ?? '' ) || 'contained' !== ( $row['timeline_frame'] ?? '' ) ) {
 		return $result;
 	}
 	$result['active'] = true;
 	$result['media_skip'] = 'media' === ( $row['timeline_skip_position'] ?? '' ) && ! empty( $row['timeline_image'] );
-	foreach ( array( 'content_width', 'inner_gutter', 'inner_gutter_tablet', 'column_gap', 'column_gap_tablet', 'media_width', 'media_width_tablet', 'skip_gap' ) as $name ) {
+	$result['numbered_steps'] = 'numbered' === ( $row['timeline_step_style'] ?? '' );
+	foreach ( array( 'content_width', 'inner_gutter', 'inner_gutter_tablet', 'column_gap', 'column_gap_tablet', 'media_width', 'media_width_tablet', 'skip_gap', 'step_inset', 'step_inset_mobile', 'step_gap', 'step_action_gap', 'step_plain_copy_space', 'step_mobile_offset' ) as $name ) {
+		if ( str_starts_with( $name, 'step_' ) && ! $result['numbered_steps'] ) { continue; }
 		$value = mrn_base_stack_validate_card_frame_dimension( $row[ 'timeline_' . $name ] ?? '' );
 		if ( '' !== $value ) {
 			$result['styles'][] = '--mrn-timeline-' . str_replace( '_', '-', $name ) . ':' . $value;
