@@ -16,9 +16,11 @@ $end_id      = wp_unique_id( 'mrn-timeline-end-' );
 $heading_tag = mrn_base_stack_normalize_text_tag( $row['heading_tag'] ?? 'h2', 'h2' );
 $skip        = trim( (string) ( $row['timeline_skip_label'] ?? '' ) );
 $skip        = '' !== $skip ? $skip : __( 'Skip timeline', 'mrn-base-stack' );
+$pin_tablet  = ! empty( $row['timeline_pin_tablet'] );
+$scroll_pace = 'viewport' === ( $row['timeline_scroll_pace'] ?? '' ) ? 'viewport' : '';
 ob_start();
 ?>
-<div class="mrn-timeline" data-mrn-timeline>
+<div class="mrn-timeline" data-mrn-timeline<?php echo $pin_tablet ? ' data-mrn-timeline-pin-tablet="true"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Fixed literal attribute. ?><?php echo $scroll_pace ? ' data-mrn-timeline-scroll-pace="viewport"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Allowlisted literal attribute. ?>>
 	<?php if ( ! empty( $row['heading'] ) ) : ?>
 		<<?php echo esc_html( $heading_tag ); ?> class="mrn-ui__heading"><?php echo mrn_base_stack_format_heading_inline_html( $row['heading'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Shared escaped formatter. ?></<?php echo esc_html( $heading_tag ); ?>>
 	<?php endif; ?>

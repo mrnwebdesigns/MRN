@@ -57,6 +57,9 @@
 	.mrn-record-list--people .mrn-content-list-row__items { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 	.mrn-record--comparisons { position: static; }
 }
+@media (min-width: 768px) and (max-width: 999px) {
+	.mrn-timeline[data-mrn-timeline-pin-tablet="true"] .mrn-timeline__stage:has(.mrn-timeline__image) { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); }
+}
 @media (max-width: 599px) {
 	.mrn-record-list--people .mrn-content-list-row__items, .mrn-record--comparisons .mrn-record__media { grid-template-columns: minmax(0, 1fr); }
 }

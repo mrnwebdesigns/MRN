@@ -274,6 +274,8 @@
 		const range = timeline.querySelector( '.mrn-timeline__range' );
 		const stage = timeline.querySelector( '.mrn-timeline__stage' );
 		const steps = Array.from( timeline.querySelectorAll( '.mrn-timeline__steps > li > details' ) );
+		const pinTablet = timeline.dataset.mrnTimelinePinTablet === 'true';
+		const tabletWide = window.matchMedia( '(min-width: 768px)' );
 		if ( ! steps.length ) { return; }
 		let distance = 0;
 		let current = 0;
@@ -288,12 +290,14 @@
 			range.style.height = '';
 			stage.style.minHeight = '';
 			steps.forEach( ( step ) => { step.open = true; } );
-			if ( reduced.matches || ! wide.matches || steps.length < 2 ) { return; }
+			if ( reduced.matches || !( pinTablet ? tabletWide.matches : wide.matches ) || steps.length < 2 ) { return; }
 			const summaries = steps.reduce( ( total, step ) => total + step.querySelector( 'summary' ).getBoundingClientRect().height + 25, 0 );
 			const body = Math.max( ...steps.map( ( step ) => step.querySelector( '.mrn-timeline__body' ).getBoundingClientRect().height ) );
 			const height = Math.max( summaries + body, timeline.querySelector( '.mrn-timeline__image' )?.offsetHeight || 0 ) + 32;
 			if ( height > window.innerHeight - topOffset() - 32 ) { return; }
-			distance = ( steps.length - 1 ) * 240;
+			distance = timeline.dataset.mrnTimelineScrollPace === 'viewport'
+				? steps.length * Math.max( 320, Math.round( window.innerHeight * 0.55 ) )
+				: ( steps.length - 1 ) * 240;
 			range.style.height = ( height + distance ) + 'px';
 			stage.style.minHeight = height + 'px';
 			timeline.style.setProperty( '--mrn-presentation-top', topOffset() + 'px' );
