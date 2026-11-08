@@ -56,6 +56,9 @@ if ( ! in_array( $image_caption_style, array( 'under', 'inside' ), true ) ) {
 $has_image     = function_exists( 'mrn_base_stack_image_has_content' ) ? mrn_base_stack_image_has_content( $image ) : false;
 $column_gallery_markup = mrn_base_stack_get_column_gallery_markup( $row );
 $image_stage_attributes = mrn_base_stack_get_image_stage_attributes( $row );
+$overlay_media_raw = $row['image_overlay_media'] ?? 0;
+$overlay_media_id = is_scalar( $overlay_media_raw ) && ctype_digit( (string) $overlay_media_raw ) ? (int) $overlay_media_raw : 0;
+$overlay_media_url = $overlay_media_id > 0 && 'attachment' === get_post_type( $overlay_media_id ) && str_starts_with( (string) get_post_mime_type( $overlay_media_id ), 'image/' ) ? wp_get_attachment_url( $overlay_media_id ) : '';
 $has_image = $has_image || '' !== $column_gallery_markup;
 $image_caption = '';
 
@@ -228,7 +231,7 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 							<?php echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_wrap_image_action( mrn_base_stack_get_attachment_image( $image, $image_source_size, $image_attributes ), $row, $image ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 							<?php echo $image_markers_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Marker media and attributes are escaped by the shared helper. ?>
 							<?php echo $column_gallery_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Gallery images escaped by the Stack image helper. ?>
-							<?php if ( ! empty( $row['image_overlay'] ) && '' !== $image_stage_attributes && in_array( $row['image_presentation'] ?? '', array( 'scroll-zoom', 'tilted-gallery' ), true ) ) : ?><span class="mrn-image-stage__overlay" aria-hidden="true"></span><?php endif; ?>
+							<?php if ( ! empty( $row['image_overlay'] ) && '' !== $image_stage_attributes && in_array( $row['image_presentation'] ?? '', array( 'scroll-zoom', 'tilted-gallery' ), true ) ) : ?><span class="mrn-image-stage__overlay<?php echo $overlay_media_url ? ' mrn-image-stage__overlay--media' : ''; ?>" aria-hidden="true"><?php if ( $overlay_media_url ) : ?><img src="<?php echo esc_url( $overlay_media_url ); ?>" alt="" loading="eager" decoding="async"><?php endif; ?></span><?php endif; ?>
 							<?php if ( '' !== $image_caption_markup ) : ?>
 								<figcaption class="mrn-image-content-row__caption"><?php echo $image_caption_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></figcaption>
 							<?php endif; ?>

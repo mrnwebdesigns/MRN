@@ -152,6 +152,12 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 			$make( 'media_height_mobile', 'Mobile Media Height', 'text', array( 'instructions' => 'Optional CSS length for narrow screens.' ) ),
 			$make( 'gallery_mobile_behavior', 'Column Gallery on Phones', 'select', array( 'choices' => array( '' => 'Rotated Columns', 'rail' => 'Horizontal Swipe Rail' ), 'default_value' => '', 'instructions' => 'Optional phone presentation for a Rotated Column Gallery. Keeps the selected columns and images in their saved order.', 'conditional_logic' => array( array( array( 'field' => $seed . '_image_presentation', 'operator' => '==', 'value' => 'tilted-gallery' ) ) ) ) ),
 			$make( 'gallery_mobile_label', 'Phone Gallery Accessible Name', 'text', array( 'instructions' => 'Name the horizontal image gallery for keyboard and screen-reader users.', 'conditional_logic' => array( array( array( 'field' => $seed . '_gallery_mobile_behavior', 'operator' => '==', 'value' => 'rail' ) ) ) ) ),
+			$make( 'gallery_mobile_start', 'Phone Gallery Starting Position', 'select', array( 'choices' => array( '' => 'First Column', 'center' => 'Center Column' ), 'default_value' => '', 'instructions' => 'Optional initial scroll position. Every selected column remains reachable by swiping or keyboard.', 'conditional_logic' => array( array( array( 'field' => $seed . '_gallery_mobile_behavior', 'operator' => '==', 'value' => 'rail' ) ) ) ) ),
+			$make( 'gallery_desktop_behavior', 'Column Gallery on Larger Screens', 'select', array( 'choices' => array( '' => 'Existing Rotated Grid', 'cropped-wall' => 'Cropped Project Wall' ), 'default_value' => '', 'instructions' => 'Optional cropped gallery presentation above 767px. Inner gallery sizing is independent of section spacing.', 'conditional_logic' => array( array( array( 'field' => $seed . '_image_presentation', 'operator' => '==', 'value' => 'tilted-gallery' ) ) ) ) ),
+			$make( 'gallery_desktop_column_width', 'Gallery Column Width (px)', 'number', array( 'min' => 100, 'max' => 800, 'step' => 1, 'default_value' => 370, 'conditional_logic' => array( array( array( 'field' => $seed . '_gallery_desktop_behavior', 'operator' => '==', 'value' => 'cropped-wall' ) ) ) ) ),
+			$make( 'gallery_desktop_image_height', 'Gallery Image Height (px)', 'number', array( 'min' => 100, 'max' => 800, 'step' => 1, 'default_value' => 250, 'conditional_logic' => array( array( array( 'field' => $seed . '_gallery_desktop_behavior', 'operator' => '==', 'value' => 'cropped-wall' ) ) ) ) ),
+			$make( 'gallery_desktop_top_offset', 'Gallery Top Offset (px)', 'number', array( 'min' => 0, 'max' => 500, 'step' => 1, 'default_value' => 140, 'conditional_logic' => array( array( array( 'field' => $seed . '_gallery_desktop_behavior', 'operator' => '==', 'value' => 'cropped-wall' ) ) ) ) ),
+			$make( 'gallery_desktop_inline_offset', 'Gallery Horizontal Offset (px)', 'number', array( 'min' => -500, 'max' => 500, 'step' => 1, 'default_value' => -100, 'conditional_logic' => array( array( array( 'field' => $seed . '_gallery_desktop_behavior', 'operator' => '==', 'value' => 'cropped-wall' ) ) ) ) ),
 			$make(
 				'image_overlay',
 				'Image Overlay',
@@ -161,6 +167,7 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 					'default_value' => 0,
 				)
 			),
+			$make( 'image_overlay_media', 'Overlay Artwork', 'image', array( 'return_format' => 'id', 'preview_size' => 'thumbnail', 'instructions' => 'Optional decorative artwork across the image stage. The existing gradient remains when no artwork is selected.', 'conditional_logic' => array( array( array( 'field' => $seed . '_image_overlay', 'operator' => '==', 'value' => '1' ) ) ) ) ),
 			$make(
 				'gallery_columns',
 				'Gallery Columns',
@@ -669,11 +676,35 @@ function mrn_base_stack_get_column_gallery_markup( array $row ) {
 		$columns .= '<div class="mrn-column-gallery__column">' . $images . '</div>';
 	}
 	if ( '' === $columns ) { return ''; }
-	if ( 'rail' !== ( $row['gallery_mobile_behavior'] ?? '' ) ) { return '<div class="mrn-column-gallery">' . $columns . '</div>'; }
+	$rail = 'rail' === ( $row['gallery_mobile_behavior'] ?? '' );
+	$wall = 'cropped-wall' === ( $row['gallery_desktop_behavior'] ?? '' );
+	if ( ! $rail && ! $wall ) { return '<div class="mrn-column-gallery">' . $columns . '</div>'; }
 	$raw_name = $row['gallery_mobile_label'] ?? '';
 	$name = is_scalar( $raw_name ) ? sanitize_text_field( (string) $raw_name ) : '';
 	if ( '' === $name ) { $name = __( 'Image gallery', 'mrn-base-stack' ); }
-	return '<div class="mrn-column-gallery" data-mrn-gallery-mobile="rail" role="region" tabindex="0" aria-label="' . esc_attr( $name ) . '">' . $columns . '</div>';
+	$styles = array();
+	if ( $wall ) {
+		foreach ( array(
+			'gallery_desktop_column_width' => array( '--mrn-gallery-column-width', 100, 800, 370 ),
+			'gallery_desktop_image_height' => array( '--mrn-gallery-image-height', 100, 800, 250 ),
+			'gallery_desktop_top_offset' => array( '--mrn-gallery-top-offset', 0, 500, 140 ),
+			'gallery_desktop_inline_offset' => array( '--mrn-gallery-inline-offset', -500, 500, -100 ),
+		) as $field => $rule ) {
+			$value = $row[ $field ] ?? $rule[3];
+			if ( ! is_scalar( $value ) || is_bool( $value ) || ! is_numeric( $value ) || ! is_finite( (float) $value ) || (float) $value !== (float) (int) $value || $value < $rule[1] || $value > $rule[2] ) { $value = $rule[3]; }
+			$styles[] = $rule[0] . ':' . (int) $value . 'px';
+		}
+	}
+	return '<div ' . mrn_base_stack_get_html_attributes( array(
+		'class' => 'mrn-column-gallery',
+		'data-mrn-gallery-mobile' => $rail ? 'rail' : null,
+		'data-mrn-gallery-start' => $rail && 'center' === ( $row['gallery_mobile_start'] ?? '' ) ? 'center' : null,
+		'data-mrn-gallery-desktop' => $wall ? 'cropped-wall' : null,
+		'role' => $rail ? 'region' : null,
+		'tabindex' => $rail ? '0' : null,
+		'aria-label' => $rail ? $name : null,
+		'style' => implode( ';', $styles ),
+	) ) . '>' . $columns . '</div>';
 }
 
 /**

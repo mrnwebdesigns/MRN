@@ -92,6 +92,17 @@
 	function initImage( stage ) {
 		const image = stage.querySelector( ':scope > img' );
 		const columns = Array.from( stage.querySelectorAll( '.mrn-column-gallery__column' ) );
+		const centerRail = stage.querySelector( '[data-mrn-gallery-mobile="rail"][data-mrn-gallery-start="center"]' );
+		if ( centerRail ) {
+			let centered = false;
+			const centerOnce = () => {
+				if ( centered || ! window.matchMedia( '(max-width: 767px)' ).matches ) { return; }
+				centerRail.scrollLeft = Math.max( 0, ( centerRail.scrollWidth - centerRail.clientWidth ) / 2 );
+				centered = true;
+			};
+			window.requestAnimationFrame( centerOnce );
+			window.addEventListener( 'resize', centerOnce, { passive: true } );
+		}
 		const framed = stage.dataset.mrnImageStage === 'framed-zoom';
 		const inset = Number( stage.dataset.mrnImageZoomInset );
 		if ( framed && ( ! Number.isInteger( inset ) || inset < 0 || inset > 240 ) ) { return; }
