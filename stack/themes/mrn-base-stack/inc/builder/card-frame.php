@@ -20,6 +20,7 @@ function mrn_base_stack_get_card_frame_fields( $seed ) {
 	$fields[] = array( 'key' => $seed . '_card_intro_alignment', 'name' => 'card_intro_alignment', 'label' => 'Introduction Alignment', 'type' => 'select', 'choices' => array( '' => 'Use Existing Alignment', 'start' => 'Start', 'center' => 'Center', 'end' => 'End' ), 'default_value' => '', 'instructions' => 'Explicit alignment fills the available introduction width independently of the heading; its maximum width still applies.' );
 	$fields[] = array( 'key' => $seed . '_card_intro_lead_style', 'name' => 'card_intro_lead_style', 'label' => 'First Introduction Paragraph', 'type' => 'select', 'choices' => array( '' => 'Use Existing Typography', 'label' => 'Use Section Label Typography' ), 'default_value' => '', 'instructions' => 'Uses existing section label size, line height, weight, color, case, tracking and spacing controls without moving or changing the authored introduction HTML.' );
 	$fields[] = array( 'key' => $seed . '_card_equal_height_items', 'name' => 'card_equal_height_items', 'label' => 'Fill Equal-Height Card Items', 'type' => 'true_false', 'ui' => 1, 'default_value' => 0, 'instructions' => 'Stretch items and their native content to the tallest item in each grid row. Combine with a filled CTA to align its actions at the bottom.' );
+	$fields[] = array( 'key' => $seed . '_card_heading_breaks_mobile', 'name' => 'card_heading_breaks_mobile', 'label' => 'Hide Heading Line Breaks on Small Screens', 'type' => 'true_false', 'ui' => 1, 'default_value' => 0, 'instructions' => 'At 767px and below, allow the heading to wrap naturally instead of forcing authored line breaks. The words remain unchanged.' );
 	$fields = array_merge( $fields, mrn_base_stack_get_frame_spacing_fields( $seed, 'card' ) );
 	foreach ( $fields as &$field ) {
 		if ( in_array( $field['name'], array( 'card_grid_column_gap_tablet', 'card_grid_row_gap_tablet' ), true ) ) { $field['instructions'] = 'Tablet override at 1024px, or 1199px when the 991px/600px responsive view is selected.'; }
@@ -69,6 +70,7 @@ function mrn_base_stack_get_card_frame_contract( array $row ) {
 	if ( in_array( $row['card_intro_alignment'] ?? '', array( 'start', 'center', 'end' ), true ) ) { $result['classes'][] = 'has-card-intro-alignment'; $styles[] = '--mrn-card-frame-intro-alignment:' . $row['card_intro_alignment']; }
 	if ( 'label' === ( $row['card_intro_lead_style'] ?? '' ) ) { $result['classes'][] = 'has-card-intro-lead-label'; }
 	if ( in_array( $row['card_equal_height_items'] ?? 0, array( true, 1, '1' ), true ) ) { $result['classes'][] = 'has-card-equal-height-items'; }
+	if ( in_array( $row['card_heading_breaks_mobile'] ?? 0, array( true, 1, '1' ), true ) ) { $result['classes'][] = 'has-card-heading-breaks-mobile'; }
 	$columns = mrn_base_stack_normalize_card_per_row( $row['cards_per_row'] ?? 3 );
 	$styles[] = '--mrn-card-frame-columns:' . $columns;
 	$styles[] = '--mrn-card-frame-tablet-columns:' . min( 2, $columns );
