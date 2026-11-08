@@ -8144,6 +8144,42 @@ a.mrn-social-links__link:focus-visible svg {
 .has-image-frame.has-image-height .mrn-image-action { height: 100%; }
 
 .has-stats-frame .mrn-stats-row__item > .mrn-ui__label { margin: 0; }
+
+/* An opt-in logo strip uses its own inner frame; outer spacing remains on the row. */
+.mrn-content-builder__row.has-logos-slider-frame > .mrn-layout-section--logos > .mrn-layout-container {
+	box-sizing: border-box;
+	width: 100%;
+	max-width: var(--mrn-logos-slider-content-width, none);
+	margin-inline: auto;
+	padding-block: 0;
+	padding-inline: var(--mrn-logos-slider-inner-gutter, 0px);
+}
+@media (max-width: 1199px) {
+	.mrn-content-builder__row.has-logos-slider-frame > .mrn-layout-section--logos > .mrn-layout-container {
+		padding-inline: var(--mrn-logos-slider-inner-gutter-compact, var(--mrn-logos-slider-inner-gutter, 0px));
+	}
+}
+.has-logos-slider-frame .mrn-logos-row__splide { position: relative; }
+.has-logos-slider-frame .mrn-logos-row__splide .splide__track { height: var(--mrn-logos-slider-height, auto); }
+.has-logos-slider-frame .mrn-logos-row__splide .splide__list,
+.has-logos-slider-frame .mrn-logos-row__splide .splide__slide,
+.has-logos-slider-frame .mrn-logos-row__splide .mrn-logos-row__item { height: 100%; }
+.has-logos-slider-frame .mrn-logos-row__splide .mrn-logos-row__item { align-items: center; justify-content: center; }
+.has-logos-slider-frame .mrn-logos-row__splide .mrn-logos-row__item img { max-height: var(--mrn-logos-slider-height, none); width: auto; }
+@media (min-width: 1200px) {
+	.has-logos-slider-natural-desktop .mrn-logos-row__splide .splide__list { justify-content: space-between !important; }
+	.has-logos-slider-natural-desktop .mrn-logos-row__splide .splide__slide { width: auto !important; margin-right: 0 !important; }
+}
+.has-logos-slider-muted .mrn-logos-row__item img { filter: brightness(0) saturate(100%) invert(86%) sepia(13%) saturate(330%) hue-rotate(187deg) brightness(94%) contrast(89%); transition: filter 0.3s ease; }
+.has-logos-slider-muted .mrn-logos-row__item:hover img,
+.has-logos-slider-muted .mrn-logos-row__item:focus-within img { filter: none; }
+@media (prefers-reduced-motion: reduce) { .has-logos-slider-muted .mrn-logos-row__item img { transition: none; } }
+.has-logos-slider-frame .mrn-logos-row__splide button[data-mrn-slider-toggle] {
+	position: absolute;
+	top: calc(var(--mrn-logos-slider-height, 50px) + 8px);
+	right: 0;
+	min-height: 44px;
+}
 .has-body-frame .mrn-layout-grid--text-shell .mrn-layout-content--text-shell .mrn-ui__head { gap: 0; }
 
 /* Optional native text/card refinements. Outer spacing remains in row presets. */

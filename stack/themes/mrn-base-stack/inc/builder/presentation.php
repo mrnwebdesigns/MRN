@@ -64,6 +64,13 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 	}
 	if ( 'logos' === $layout ) {
 		return array_merge( mrn_base_stack_get_labeled_logos_fields( $seed ), array(
+			$make( 'logos_slider_frame', 'Slider Frame', 'select', array( 'choices' => array( '' => 'Use Existing Slider', 'contained' => 'Contained Logo Strip' ), 'default_value' => '', 'instructions' => 'Optional inner width and logo height for sliders. Outer spacing stays in row presets.' ) ),
+			$make( 'logos_slider_content_width', 'Slider Content Width', 'text', array( 'instructions' => 'Optional maximum width including the inner gutter, for example 1140px.' ) ),
+			$make( 'logos_slider_inner_gutter', 'Slider Inner Gutter', 'text', array( 'instructions' => 'Optional non-negative horizontal gutter. Outer row padding remains editable separately.' ) ),
+			$make( 'logos_slider_inner_gutter_compact', 'Slider Inner Gutter at 1199px', 'text', array( 'instructions' => 'Optional smaller-screen horizontal gutter.' ) ),
+			$make( 'logos_slider_height', 'Logo Strip Height', 'text', array( 'instructions' => 'Optional height for the logo track. Images keep their aspect ratio; the autoplay pause control remains available.' ) ),
+			$make( 'logos_slider_desktop_fit', 'Desktop Logo Fit', 'select', array( 'choices' => array( '' => 'Use Existing Slide Widths', 'natural' => 'Distribute Natural Logo Widths' ), 'default_value' => '', 'instructions' => 'For a short desktop logo set, distributes original logo widths across the track. Smaller responsive views keep their selected logo count.' ) ),
+			$make( 'logos_slider_image_treatment', 'Logo Color Treatment', 'select', array( 'choices' => array( '' => 'Original Colors', 'muted' => 'Muted Until Hover or Focus' ), 'default_value' => '' ) ),
 			$make( 'slider_breakpoints', 'Responsive Logo Views', 'repeater', array(
 				'max' => 4, 'layout' => 'row', 'button_label' => 'Add Viewport',
 				'instructions' => 'Optional overrides at or below each viewport width. Leave empty for the existing responsive views.',
@@ -289,6 +296,22 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 		);
 	}
 	return array();
+}
+
+/** Optional bounded slider geometry independent of the labeled/grid logo frame. */
+function mrn_base_stack_get_logos_slider_frame_contract( array $row, $item_count ) {
+	$result = array( 'classes' => array(), 'attributes' => array() );
+	if ( 'contained' !== ( $row['logos_slider_frame'] ?? '' ) ) { return $result; }
+	$result['classes'][] = 'has-logos-slider-frame';
+	if ( 'natural' === ( $row['logos_slider_desktop_fit'] ?? '' ) && $item_count > 0 && $item_count <= (int) ( $row['per_page'] ?? 6 ) ) { $result['classes'][] = 'has-logos-slider-natural-desktop'; }
+	if ( 'muted' === ( $row['logos_slider_image_treatment'] ?? '' ) ) { $result['classes'][] = 'has-logos-slider-muted'; }
+	$styles = array();
+	foreach ( array( 'content_width', 'inner_gutter', 'inner_gutter_compact', 'height' ) as $name ) {
+		$value = mrn_base_stack_validate_hero_frame_dimension( $row[ 'logos_slider_' . $name ] ?? '' );
+		if ( '' !== $value ) { $styles[] = '--mrn-logos-slider-' . str_replace( '_', '-', $name ) . ':' . $value; }
+	}
+	if ( $styles ) { $result['attributes']['style'] = implode( ';', $styles ); }
+	return $result;
 }
 
 /** Optional scroll-bound word color, independent of timed entrance effects. */
