@@ -15,6 +15,7 @@ $attrs = mrn_base_stack_get_image_stage_attributes( array( 'image_presentation' 
 $expect( ! str_contains( $attrs, 'onclick' ) && ! str_contains( $attrs, 'color:red' ) && ! str_contains( $attrs, '--mrn-media-height' ), 'Malformed dimensions and breakpoint cannot inject CSS or attributes' );
 $expect( '' === mrn_base_stack_get_image_stage_attributes( array( 'image_presentation' => 'standard' ) ), 'Standard image adds no stage attributes' );
 $expect( '' === $fields['image_row_spacing_mobile_breakpoint']['default_value'] && isset( $fields['image_row_spacing_mobile_breakpoint']['choices']['767'] ), 'Image row spacing keeps the 782px default and offers an independent 767px selection' );
+$expect( '' === $fields['gallery_mobile_behavior']['default_value'] && isset( $fields['gallery_mobile_behavior']['choices']['rail'], $fields['gallery_mobile_label'] ), 'Phone gallery rail is opt-in and has an editable accessible name' );
 $image = get_posts( array( 'post_type' => 'attachment', 'post_mime_type' => 'image', 'post_status' => 'inherit', 'numberposts' => 1, 'fields' => 'ids' ) )[0] ?? 0;
 $expect( $image > 0, 'Local image fixture exists' );
 foreach ( array( '', 'cover', 'unsafe" onclick="bad', array( 'cover' ) ) as $sizing ) {
@@ -28,4 +29,13 @@ foreach ( array( '', '767', array( '767' ), '767" onclick="bad' ) as $breakpoint
  ob_start(); mrn_base_stack_render_builder_row( array( 'acf_fc_layout' => 'image_content', 'image' => $image, 'image_row_spacing_mobile_breakpoint' => $breakpoint ), 0, 0 ); $html = ob_get_clean();
  $expect( ( '767' === $breakpoint ) === str_contains( $html, 'has-image-row-spacing-at-767' ) && ! str_contains( $html, 'onclick=' ), 'Only the exact optional Image row-spacing breakpoint activates' );
 }
+$gallery = array( 'image_presentation' => 'tilted-gallery', 'gallery_columns' => array( array( 'images' => array( $image ) ) ) );
+$plain = mrn_base_stack_get_column_gallery_markup( $gallery );
+$expect( str_contains( $plain, 'mrn-column-gallery__image' ) && ! str_contains( $plain, 'data-mrn-gallery-mobile' ) && ! str_contains( $plain, 'tabindex=' ), 'Existing rotated column gallery stays unchanged without the rail selection' );
+$gallery['gallery_mobile_behavior'] = 'rail';
+$gallery['gallery_mobile_label'] = 'Projects" onclick="bad';
+$rail = mrn_base_stack_get_column_gallery_markup( $gallery );
+$expect( str_contains( $rail, 'data-mrn-gallery-mobile="rail"' ) && str_contains( $rail, 'role="region" tabindex="0"' ) && str_contains( $rail, 'aria-label="Projects&quot; onclick=&quot;bad"' ) && ! str_contains( $rail, 'onclick="bad' ), 'Phone rail preserves media and escapes its keyboard region name' );
+$gallery['gallery_mobile_label'] = array( 'unexpected' );
+$expect( str_contains( mrn_base_stack_get_column_gallery_markup( $gallery ), 'aria-label="Image gallery"' ), 'Invalid gallery name falls back without a PHP warning' );
 WP_CLI::line( wp_json_encode( array( 'result' => 'passed', 'count' => count( $checks ), 'checks' => $checks, 'candidate_only' => true ), JSON_PRETTY_PRINT ) );

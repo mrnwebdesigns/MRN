@@ -150,6 +150,8 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 			$make( 'media_mobile_breakpoint', 'Small-Screen Media Breakpoint', 'select', array( 'choices' => array( '' => 'Use Existing (999px)', '767' => '767px' ), 'default_value' => '', 'instructions' => 'Optional height breakpoint for image stages; row spacing retains its separate native breakpoint.' ) ),
 			$make( 'media_height', 'Media Height', 'text', array( 'instructions' => 'Optional CSS length, such as 52rem or 80vh. Applies to the media stage, not row spacing. Framed Viewport Zoom includes the row padding in this total height.' ) ),
 			$make( 'media_height_mobile', 'Mobile Media Height', 'text', array( 'instructions' => 'Optional CSS length for narrow screens.' ) ),
+			$make( 'gallery_mobile_behavior', 'Column Gallery on Phones', 'select', array( 'choices' => array( '' => 'Rotated Columns', 'rail' => 'Horizontal Swipe Rail' ), 'default_value' => '', 'instructions' => 'Optional phone presentation for a Rotated Column Gallery. Keeps the selected columns and images in their saved order.', 'conditional_logic' => array( array( array( 'field' => $seed . '_image_presentation', 'operator' => '==', 'value' => 'tilted-gallery' ) ) ) ) ),
+			$make( 'gallery_mobile_label', 'Phone Gallery Accessible Name', 'text', array( 'instructions' => 'Name the horizontal image gallery for keyboard and screen-reader users.', 'conditional_logic' => array( array( array( 'field' => $seed . '_gallery_mobile_behavior', 'operator' => '==', 'value' => 'rail' ) ) ) ) ),
 			$make(
 				'image_overlay',
 				'Image Overlay',
@@ -666,7 +668,12 @@ function mrn_base_stack_get_column_gallery_markup( array $row ) {
 		}
 		$columns .= '<div class="mrn-column-gallery__column">' . $images . '</div>';
 	}
-	return '' !== $columns ? '<div class="mrn-column-gallery">' . $columns . '</div>' : '';
+	if ( '' === $columns ) { return ''; }
+	if ( 'rail' !== ( $row['gallery_mobile_behavior'] ?? '' ) ) { return '<div class="mrn-column-gallery">' . $columns . '</div>'; }
+	$raw_name = $row['gallery_mobile_label'] ?? '';
+	$name = is_scalar( $raw_name ) ? sanitize_text_field( (string) $raw_name ) : '';
+	if ( '' === $name ) { $name = __( 'Image gallery', 'mrn-base-stack' ); }
+	return '<div class="mrn-column-gallery" data-mrn-gallery-mobile="rail" role="region" tabindex="0" aria-label="' . esc_attr( $name ) . '">' . $columns . '</div>';
 }
 
 /**

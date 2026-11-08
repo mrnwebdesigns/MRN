@@ -65,6 +65,13 @@
 
 @media (max-width: 767px) { [data-mrn-image-stage][data-mrn-media-breakpoint="767"] { --mrn-media-height-current: var(--mrn-media-height-mobile, 21.25rem); } }
 
+@media (max-width: 767px) {
+	.mrn-column-gallery[data-mrn-gallery-mobile="rail"] { position: relative; inset: auto; box-sizing: border-box; display: flex; justify-content: flex-start; gap: 16px; width: 100%; margin: 0 0 0 -28px; padding: 20px; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; transform: rotate(3deg); }
+	.mrn-column-gallery[data-mrn-gallery-mobile="rail"] .mrn-column-gallery__column { min-width: 70%; flex: 0 0 70%; scroll-snap-align: start; }
+	.mrn-layout-section--image-content .mrn-image-content-row__media.mrn-ui__media.mrn-layout-content--media .mrn-column-gallery[data-mrn-gallery-mobile="rail"] .mrn-column-gallery__image { display: block; width: 100%; height: 200px; max-height: none; aspect-ratio: auto; object-fit: cover; object-position: top; border-radius: 10px; }
+}
+.mrn-column-gallery[data-mrn-gallery-mobile="rail"]:focus-visible { outline: 3px solid currentColor; outline-offset: -3px; }
+
 /* Opt-in responsive strip: only row presets add section margin/padding. */
 .mrn-content-builder__row.has-strip-frame {
  padding: var(--mrn-row-padding-top, 0px) var(--mrn-row-padding-right, 0px) var(--mrn-row-padding-bottom, 0px) var(--mrn-row-padding-left, 0px);
