@@ -74,13 +74,14 @@ function mrn_base_stack_get_split_aside_fields( $seed ) {
 	$fields[] = array( 'key' => $seed . '_split_row_vertical_padding', 'name' => 'split_row_vertical_padding', 'label' => 'Use Row Vertical Padding', 'type' => 'true_false', 'ui' => 1, 'default_value' => 0, 'instructions' => 'Apply the native Row Spacing top and bottom padding presets to this framed Split. Blank retains existing spacing.' );
 	$fields[] = array( 'key' => $seed . '_split_row_horizontal_padding', 'name' => 'split_row_horizontal_padding', 'label' => 'Use Row Side Padding', 'type' => 'true_false', 'ui' => 1, 'default_value' => 0, 'instructions' => 'Apply the native Row Spacing left and right padding inside this framed Split, in addition to its frame gutter.' );
 	$fields[] = array( 'key' => $seed . '_split_row_spacing_mobile_breakpoint', 'name' => 'split_row_spacing_mobile_breakpoint', 'label' => 'Row Spacing Mobile Breakpoint', 'type' => 'select', 'choices' => array( '' => 'Site Default (782px)', '767' => '767px' ), 'default_value' => '' );
+	$fields[] = array( 'key' => $seed . '_split_stacked_column_min', 'name' => 'split_stacked_column_min', 'label' => 'Small-Screen Stacked Column Minimum Width', 'type' => 'text', 'default_value' => '', 'instructions' => 'Optional minimum width at 560px and below when inner row padding narrows the content canvas. Keep the rendered result within the viewport.', 'wrapper' => array( 'width' => '50' ) );
 	$fields[] = array( 'key' => $seed . '_split_heading_alignment', 'name' => 'split_heading_alignment', 'label' => 'Section Heading Alignment', 'type' => 'select', 'choices' => array( '' => 'Use Existing Alignment', 'start' => 'Start', 'center' => 'Center', 'end' => 'End' ), 'default_value' => '' );
 	$fields[] = array( 'key' => $seed . '_split_heading_space_after_mobile', 'name' => 'split_heading_space_after_mobile', 'label' => 'Small-Screen Space After Section Heading', 'type' => 'text', 'instructions' => 'Optional non-negative CSS length at 767px and below.' );
 	$field = mrn_base_stack_get_background_color_field( $seed . '_split_heading_color' ); $field['name'] = 'split_heading_color'; $field['label'] = 'Section Heading Color'; $fields[] = $field;
 	foreach ( $fields as &$field ) {
 		if ( 'split_frame' === $field['name'] ) { continue; }
 		if ( in_array( $field['name'], array( 'split_first_column_min', 'split_first_column_max', 'split_second_column_max', 'split_column_gap_tablet', 'split_first_column_max_tablet', 'split_second_column_max_tablet' ), true ) ) { $modes = array( 'bounded' ); }
-		elseif ( in_array( $field['name'], array( 'split_stack_breakpoint', 'split_column_order', 'split_row_vertical_padding', 'split_row_horizontal_padding', 'split_row_spacing_mobile_breakpoint' ), true ) ) { $modes = array( 'columns', 'bounded' ); }
+		elseif ( in_array( $field['name'], array( 'split_stack_breakpoint', 'split_column_order', 'split_row_vertical_padding', 'split_row_horizontal_padding', 'split_row_spacing_mobile_breakpoint', 'split_stacked_column_min' ), true ) ) { $modes = array( 'columns', 'bounded' ); }
 		elseif ( in_array( $field['name'], array( 'split_aside_width', 'split_aside_sticky_top' ), true ) ) { $modes = array( 'aside' ); }
 		else { $modes = array( 'aside', 'columns', 'bounded' ); }
 		$field['conditional_logic'] = array();
@@ -100,9 +101,10 @@ function mrn_base_stack_get_split_aside_contract( array $row ) {
 	if ( 'aside' !== $row['split_frame'] && is_scalar( $row['split_row_vertical_padding'] ?? null ) && '1' === (string) $row['split_row_vertical_padding'] ) { $result['classes'][] = 'has-split-row-vertical-padding'; }
 	if ( 'aside' !== $row['split_frame'] && is_scalar( $row['split_row_horizontal_padding'] ?? null ) && '1' === (string) $row['split_row_horizontal_padding'] ) { $result['classes'][] = 'has-split-row-horizontal-padding'; }
 	if ( 'aside' !== $row['split_frame'] && '767' === ( $row['split_row_spacing_mobile_breakpoint'] ?? '' ) ) { $result['classes'][] = 'has-split-row-spacing-at-767'; }
+	if ( 'aside' !== $row['split_frame'] && '' !== mrn_base_stack_validate_hero_frame_dimension( $row['split_stacked_column_min'] ?? '', false, false ) ) { $result['classes'][] = 'has-split-stacked-column-min'; }
 	if ( 'aside' !== $row['split_frame'] && 'reverse' === ( $row['split_column_order'] ?? '' ) ) { $result['classes'][] = 'has-split-reverse-columns'; }
 	$styles = array();
-	foreach ( array( 'content_width', 'inner_gutter', 'inner_gutter_mobile', 'aside_width', 'column_gap', 'column_gap_mobile', 'aside_sticky_top', 'heading_space_after', 'heading_space_after_mobile', 'heading_size', 'heading_line_height' ) as $name ) {
+	foreach ( array( 'content_width', 'inner_gutter', 'inner_gutter_mobile', 'aside_width', 'column_gap', 'column_gap_mobile', 'stacked_column_min', 'aside_sticky_top', 'heading_space_after', 'heading_space_after_mobile', 'heading_size', 'heading_line_height' ) as $name ) {
 		$value = mrn_base_stack_validate_hero_frame_dimension( $row[ 'split_' . $name ] ?? '', 'content_width' === $name, 'heading_line_height' === $name );
 		if ( '' !== $value ) {
 			$styles[] = '--mrn-split-frame-' . str_replace( '_', '-', $name ) . ':' . $value;

@@ -8168,6 +8168,9 @@ a.mrn-social-links__link:focus-visible svg {
  .has-image-frame.has-image-height-mobile .mrn-layout-section--image-content .mrn-image-content-row__figure { height: var(--mrn-image-frame-height-mobile); }
  .mrn-text-tags--pills > li > a, .mrn-text-tags--pills > li > span { font-size: var(--mrn-tag-font-size-mobile, var(--mrn-tag-font-size, inherit)); }
 }
+@media (max-width: 560px) {
+ .has-split-columns-frame.has-split-stacked-column-min > .mrn-layout-section--two-column-split > .mrn-layout-container > .mrn-layout-grid--two-column-split { grid-template-columns: minmax(var(--mrn-split-frame-stacked-column-min), 1fr); }
+}
 
 .has-image-only-frame .mrn-image-content-row__content { display: none; }
 .has-image-only-frame .mrn-layout-grid--image-content { gap: 0; }
