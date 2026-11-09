@@ -320,6 +320,9 @@
 		timeline.querySelector( '.mrn-timeline__skip' ).addEventListener( 'click', () => timeline.querySelector( '.mrn-timeline__end' ).focus() );
 		prepare();
 		window.addEventListener( 'resize', prepare, { passive: true } );
+		// Step heights depend on web fonts and images; measure again once they settle so the pinned height is not a startup race.
+		window.addEventListener( 'load', prepare, { once: true } );
+		if ( document.fonts && document.fonts.ready ) { document.fonts.ready.then( prepare ); }
 		reduced.addEventListener( 'change', prepare );
 		watch( timeline, () => {
 			if ( ! timeline.hasAttribute( 'data-enhanced' ) || timeline.contains( document.activeElement ) ) { return; }
