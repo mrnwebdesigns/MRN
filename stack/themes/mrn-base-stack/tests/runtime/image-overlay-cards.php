@@ -20,6 +20,7 @@ try {
 	$nested_items = array_column( $nested_fields['card_items']['sub_fields'], null, 'name' );
 	$expect( isset( $item_fields['image'], $nested_items['image'] ) && $item_fields['image']['key'] !== $nested_items['image']['key'], 'Root and nested Card Images have unique native ACF keys' );
 	$expect( 'wysiwyg' === $fields['card_intro']['type'], 'Card introduction retains rich editable content' );
+	$expect( isset( $fields['bottom_accent_space_source']['choices']['row-spacing'] ) && 'graphic' === $fields['bottom_accent_space_source']['default_value'], 'Root Cards expose opt-in row-controlled accent space without changing the default' );
 	$selection = getenv( 'MRN_CARD_TEST_IMAGE_IDS' );
 	$expect( (bool) preg_match( '/^\d+(?:,\d+){2}$/D', (string) $selection ), 'Three explicit existing images selected' );
 	$images = array_map( 'intval', explode( ',', $selection ) );
@@ -47,6 +48,15 @@ try {
 	$expect( 2 === substr_count( $html, 'tabindex="0"' ) && str_contains( $html, 'aria-label="Card 2 with editable copy"' ), 'Unlinked reveal cards have named keyboard focus stops' );
 	$expect( str_contains( $html, 'rel="noopener noreferrer"' ) && str_contains( $html, 'Card 1 with editable copy</span>' ), 'Linked cards have a meaningful name and safe new-window relation' );
 	$expect( str_contains( $html, '--mrn-card-image-ratio:460/488' ) && str_contains( $html, '--mrn-card-row-gap:30px' ), 'Only authored native geometry reaches escaped styles' );
+	$accent_row = $readback;
+	$accent_row['bottom_accent'] = 1;
+	$accent_row['bottom_accent_space_source'] = 'row-spacing';
+	$accent_row['row_spacing_margin_bottom_preset'] = 'Small';
+	ob_start(); mrn_base_stack_render_builder_row( $accent_row, $id, 3 ); $accent_html = ob_get_clean();
+	$expect( str_contains( $accent_html, 'has-bottom-accent-row-spacing' ), 'Explicit row-spacing source reserves accent space through the native row margin' );
+	$accent_row['bottom_accent_space_source'] = 'graphic';
+	ob_start(); mrn_base_stack_render_builder_row( $accent_row, $id, 4 ); $graphic_html = ob_get_clean();
+	$expect( ! str_contains( $graphic_html, 'has-bottom-accent-row-spacing' ), 'Default Graphic Element spacing remains unchanged' );
 	$caption = $readback; $caption['card_reveal_content'] = 0; $caption['heading'] = 'Always-visible captions';
 	ob_start(); mrn_base_stack_render_builder_row( $caption, $id, 1 ); $caption_html = ob_get_clean();
 	$expect( str_contains( $caption_html, 'mrn-content-builder__row--image-card-caption' ) && ! str_contains( $caption_html, 'tabindex="0"' ), 'Always-visible caption variant avoids redundant focus stops' );

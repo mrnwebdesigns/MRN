@@ -1740,6 +1740,16 @@ function mrn_base_stack_register_acf_field_groups() {
 											'width' => '50',
 										),
 									),
+									array(
+										'key'           => 'field_mrn_card_bottom_accent_space_source',
+										'label'         => 'Accent Reserved Space',
+										'name'          => 'bottom_accent_space_source',
+										'type'          => 'select',
+										'choices'       => array( 'graphic' => 'Graphic Element', 'row-spacing' => 'Row Spacing' ),
+										'default_value' => 'graphic',
+										'ui'            => 1,
+										'instructions'  => 'Use Row Spacing when this row’s bottom margin preset controls the space beneath the accent.',
+									),
 								),
 							),
 							'layout_mrn_two_column_split' => array(
