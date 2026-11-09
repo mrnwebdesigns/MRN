@@ -277,6 +277,12 @@
 	.mrn-hero.has-hero-media.has-hero-media-max-share:not(.has-hero-media-stack-breakpoint-900) .mrn-hero__inner { grid-template-columns: 1fr; }
 	.mrn-hero.has-hero-media-width:not(.has-hero-media-stack-breakpoint-900) .mrn-hero__media--hero-shell { max-width: none; }
 }
+@media (min-width: 768px) and (max-width: 960px) {
+	.mrn-hero.has-hero-media.has-hero-media-stack-breakpoint-767:not(.mrn-hero--width-content) .mrn-hero__inner { grid-template-columns: minmax(0, 1fr) minmax(16rem, 32rem); }
+	.mrn-hero.has-hero-media.has-hero-media-stack-breakpoint-767.has-hero-media-max-share:where(:not(.mrn-hero--width-content)) .mrn-hero__inner { grid-template-columns: minmax(0, 1fr) min(var(--mrn-hero-media-width, 32rem), var(--mrn-hero-media-max-share)); }
+	.mrn-hero.has-hero-media-stack-breakpoint-767 .mrn-hero__content--hero-shell { max-width: var(--mrn-hero-content-width, 40rem); }
+	.mrn-hero.has-hero-media-stack-breakpoint-767 .mrn-hero__heading { max-width: var(--mrn-hero-heading-width, 14ch); }
+}
 @media (max-width: 900px) {
 	.mrn-hero.has-hero-media.has-hero-media-stack-breakpoint-900 .mrn-hero__inner { grid-template-columns: 1fr; }
 	.mrn-hero.has-hero-media-stack-breakpoint-900 .mrn-hero__media--hero-shell { max-width: none; }

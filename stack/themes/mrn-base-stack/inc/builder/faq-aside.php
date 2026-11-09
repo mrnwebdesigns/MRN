@@ -83,7 +83,7 @@ function mrn_base_stack_get_split_aside_fields( $seed ) {
 	foreach ( $fields as &$field ) {
 		if ( 'split_frame' === $field['name'] ) { continue; }
 		if ( in_array( $field['name'], array( 'split_first_column_min', 'split_first_column_max', 'split_second_column_max', 'split_column_gap_tablet', 'split_first_column_max_tablet', 'split_second_column_max_tablet' ), true ) ) { $modes = array( 'bounded' ); }
-		elseif ( in_array( $field['name'], array( 'split_stack_breakpoint', 'split_column_order', 'split_mobile_action_after_columns', 'split_mobile_action_space_before', 'split_row_vertical_padding', 'split_row_horizontal_padding', 'split_row_spacing_mobile_breakpoint', 'split_stacked_column_min' ), true ) ) { $modes = array( 'columns', 'bounded' ); }
+		elseif ( in_array( $field['name'], array( 'split_stack_breakpoint', 'split_column_order', 'split_mobile_action_after_columns', 'split_mobile_action_space_before', 'split_row_horizontal_padding', 'split_row_spacing_mobile_breakpoint', 'split_stacked_column_min' ), true ) ) { $modes = array( 'columns', 'bounded' ); }
 		elseif ( in_array( $field['name'], array( 'split_aside_width', 'split_aside_sticky_top' ), true ) ) { $modes = array( 'aside' ); }
 		else { $modes = array( 'aside', 'columns', 'bounded' ); }
 		$field['conditional_logic'] = array();
@@ -100,7 +100,7 @@ function mrn_base_stack_get_split_aside_contract( array $row ) {
 	$result['classes'][] = 'aside' === $row['split_frame'] ? 'has-split-aside-frame' : 'has-split-columns-frame';
 	if ( 'aside' !== $row['split_frame'] ) { $result['classes'][] = 'split-stack-' . ( in_array( $row['split_stack_breakpoint'] ?? '', array( '767', '900' ), true ) ? $row['split_stack_breakpoint'] : '991' ); }
 	if ( 'bounded' === $row['split_frame'] ) { $result['classes'][] = 'has-split-bounded-columns'; }
-	if ( 'aside' !== $row['split_frame'] && is_scalar( $row['split_row_vertical_padding'] ?? null ) && '1' === (string) $row['split_row_vertical_padding'] ) { $result['classes'][] = 'has-split-row-vertical-padding'; }
+	if ( is_scalar( $row['split_row_vertical_padding'] ?? null ) && '1' === (string) $row['split_row_vertical_padding'] ) { $result['classes'][] = 'has-split-row-vertical-padding'; }
 	if ( 'aside' !== $row['split_frame'] && is_scalar( $row['split_row_horizontal_padding'] ?? null ) && '1' === (string) $row['split_row_horizontal_padding'] ) { $result['classes'][] = 'has-split-row-horizontal-padding'; }
 	if ( 'aside' !== $row['split_frame'] && '767' === ( $row['split_row_spacing_mobile_breakpoint'] ?? '' ) ) { $result['classes'][] = 'has-split-row-spacing-at-767'; }
 	if ( 'aside' !== $row['split_frame'] && '' !== mrn_base_stack_validate_hero_frame_dimension( $row['split_stacked_column_min'] ?? '', false, false ) ) { $result['classes'][] = 'has-split-stacked-column-min'; }

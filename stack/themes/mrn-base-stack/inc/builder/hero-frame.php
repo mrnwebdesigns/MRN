@@ -104,7 +104,7 @@ function mrn_base_stack_get_hero_frame_fields() {
 		'heading_narrow_breakpoint' => array( 'Narrow-Screen Heading Breakpoint', array( '' => 'Use Existing (900px)', '1100' => '1100px' ) ),
 		'typography_mobile_breakpoint' => array( 'Small-Screen Typography Breakpoint', array( '' => 'Use Existing (767px)', '640' => '640px', '560' => '560px' ) ),
 		'padding_bottom_mobile_source' => array( 'Small-Screen Bottom Padding', array( '' => 'Use Preset Mobile Dimension', 'desktop' => 'Keep Preset Desktop Dimension' ) ),
-		'media_stack_breakpoint' => array( 'Media Stacking Breakpoint', array( '' => 'Use Existing (960px)', '900' => '900px' ) ),
+		'media_stack_breakpoint' => array( 'Media Stacking Breakpoint', array( '' => 'Use Existing (960px)', '900' => '900px', '767' => '767px' ) ),
 		'media_max_share' => array( 'Media Maximum Share of Inner Canvas', array( '' => 'Use Existing Grid', '40' => '40%', '50' => '50%' ) ),
 		'media_shadow' => array( 'Media Shadow', array( '' => 'Use Existing Shadow', 'none' => 'None' ) ),
 		'media_size' => array( 'Media Image Source', array( '' => 'Use Existing Hero Crop', 'full' => 'Original Aspect with Responsive Sources' ) ),
@@ -213,7 +213,7 @@ function mrn_base_stack_add_hero_media_frame_contract( array $row, array $result
 		$value = mrn_base_stack_validate_hero_frame_dimension( $row[ 'hero_' . $name ] ?? '', false, in_array( $name, array( 'lead_line_height', 'lead_line_height_mobile' ), true ) );
 		if ( '' !== $value ) { $result['styles'][] = '--mrn-hero-' . str_replace( '_', '-', $name ) . ':' . $value; $result['classes'][] = 'has-hero-' . str_replace( '_', '-', $name ); }
 	}
-	foreach ( array( 'padding_mobile_breakpoint' => array( '900', '640' ), 'heading_narrow_breakpoint' => array( '1100' ), 'typography_mobile_breakpoint' => array( '640', '560' ), 'padding_bottom_mobile_source' => array( 'desktop' ), 'media_stack_breakpoint' => array( '900' ), 'media_shadow' => array( 'none' ), 'actions_small_layout' => array( 'full-column' ) ) as $name => $choices ) {
+	foreach ( array( 'padding_mobile_breakpoint' => array( '900', '640' ), 'heading_narrow_breakpoint' => array( '1100' ), 'typography_mobile_breakpoint' => array( '640', '560' ), 'padding_bottom_mobile_source' => array( 'desktop' ), 'media_stack_breakpoint' => array( '900', '767' ), 'media_shadow' => array( 'none' ), 'actions_small_layout' => array( 'full-column' ) ) as $name => $choices ) {
 		$value = $row[ 'hero_' . $name ] ?? '';
 		if ( is_string( $value ) && in_array( $value, $choices, true ) ) { $result['classes'][] = 'has-hero-' . str_replace( '_', '-', $name ) . '-' . $value; }
 	}
@@ -253,7 +253,8 @@ function mrn_base_stack_get_hero_media_image_attributes( array $row ) {
 	$attributes = function_exists( 'mrn_base_stack_get_hero_image_attributes' ) ? mrn_base_stack_get_hero_image_attributes() : array( 'loading' => 'eager', 'fetchpriority' => 'high', 'decoding' => 'async' );
 	$width = $row['hero_media_width'] ?? ''; $share = $row['hero_media_max_share'] ?? '';
 	if ( is_string( $width ) && preg_match( '/^(\d{1,4}(?:\.\d{1,4})?)px$/D', $width ) && (float) $width > 0 && is_scalar( $share ) && in_array( (string) $share, array( '40', '50' ), true ) ) {
-		$breakpoint = '900' === ( $row['hero_media_stack_breakpoint'] ?? '' ) ? '900' : '960';
+		$breakpoint = $row['hero_media_stack_breakpoint'] ?? '';
+		$breakpoint = in_array( $breakpoint, array( '900', '767' ), true ) ? $breakpoint : '960';
 		$attributes['sizes'] = '(max-width: ' . $breakpoint . 'px) 100vw, min(' . $width . ', ' . (string) $share . 'vw)';
 	}
 	return $attributes;
