@@ -1,5 +1,5 @@
 {
-  "plain_plugin_count": 35,
+  "plain_plugin_count": 36,
   "plugins": [
     {
       "main_file": "admin-menu-editor-pro/menu-editor.php",
@@ -358,6 +358,21 @@
         "url": "https://downloads.wordpress.org/plugin/post-duplicator.3.0.16.zip"
       },
       "version": "3.0.16"
+    },
+    {
+      "main_file": "previewshare/previewshare.php",
+      "manifest_source": "previewshare",
+      "name": "PreviewShare",
+      "package": "previewshare.1.1.0.zip",
+      "profile": "all",
+      "sha256": "1ed6551614eb784b001f338d2a60df057c10217ebc63d7b36b84632160488b40",
+      "size_bytes": 710941,
+      "slug": "previewshare",
+      "source": {
+        "type": "wordpress.org",
+        "url": "https://downloads.wordpress.org/plugin/previewshare.1.1.0.zip"
+      },
+      "version": "1.1.0"
     },
     {
       "main_file": "post-types-order/post-types-order.php",

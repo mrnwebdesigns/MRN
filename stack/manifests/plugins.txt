@@ -29,6 +29,7 @@ wordfence|9.0.2
 /home/mrndev-stack-manager/stack/packages/mrn-reusable-block-library.zip|stack
 /home/mrndev-stack-manager/stack/packages/mrn-universal-sticky-bar.zip
 post-duplicator|3.0.16
+previewshare|1.1.0
 post-types-order|2.5.6
 relevanssi|4.28.4
 relevanssi-live-ajax-search|2.6

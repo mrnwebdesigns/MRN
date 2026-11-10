@@ -26,6 +26,8 @@ SSH_HOST="${MRN_ROLLOUT_SSH_HOST:-mrndev}"
 STACK_ROOT_REMOTE="/home/mrndev-stack-manager/stack"
 LIVE_SITE_ROOT="${MRN_DEFAULT_CONFIGS_LIVE_SITE_ROOT:-}"
 EXPECTED_THEME_SLUG="${MRN_DEFAULT_CONFIGS_THEME_SLUG:-default-configs}"
+PREVIEWSHARE_POST_TYPES="${MRN_PREVIEWSHARE_POST_TYPES:-post,page}"
+PREVIEWSHARE_TTL_HOURS="${MRN_PREVIEWSHARE_DEFAULT_TTL_HOURS:-6}"
 LIVE_SITE_ROOT_EXPLICIT=0
 
 if [[ -n "${MRN_DEFAULT_CONFIGS_LIVE_SITE_ROOT:-}" ]]; then
@@ -73,9 +75,13 @@ LOCAL_STICKY_FALLBACK="${REPO_ROOT}/plugins/mrn-universal-sticky-bar/includes/mr
 
 REMOTE_SHARED_DIR="${STACK_ROOT_REMOTE}/shared"
 LOCAL_SITE_BOOTSTRAP="${REPO_ROOT}/stack/scripts/site-bootstrap.sh"
+LOCAL_PREVIEWSHARE_CONFIG="${REPO_ROOT}/stack/scripts/configure-previewshare.php"
+LOCAL_PREVIEWSHARE_VERIFY="${REPO_ROOT}/stack/scripts/verify-previewshare.php"
 LOCAL_STACK_EXPORT_IMPORTER="${REPO_ROOT}/stack/configs/importers/stack-export-importer.sh"
 LOCAL_IMPORTERS_MANIFEST="${REPO_ROOT}/stack/manifests/importers.txt"
 REMOTE_SITE_BOOTSTRAP="${STACK_ROOT_REMOTE}/scripts/site-bootstrap.sh"
+REMOTE_PREVIEWSHARE_CONFIG="${STACK_ROOT_REMOTE}/scripts/configure-previewshare.php"
+REMOTE_PREVIEWSHARE_VERIFY="${STACK_ROOT_REMOTE}/scripts/verify-previewshare.php"
 REMOTE_STACK_EXPORT_IMPORTER="${STACK_ROOT_REMOTE}/configs/importers/stack-export-importer.sh"
 REMOTE_IMPORTERS_MANIFEST="${STACK_ROOT_REMOTE}/manifests/importers.txt"
 REMOTE_STACK_RETENTION_WRAPPER="${STACK_ROOT_REMOTE}/mu-plugins/mrn-updraft-local-retention.php"
@@ -130,9 +136,20 @@ require_command ssh
 require_command unzip
 require_command python3
 
+[[ "${PREVIEWSHARE_POST_TYPES}" =~ ^[A-Za-z0-9_,-]+$ ]] || fail "MRN_PREVIEWSHARE_POST_TYPES contains unsupported characters"
+[[ "${PREVIEWSHARE_TTL_HOURS}" =~ ^[0-9]+$ ]] || fail "MRN_PREVIEWSHARE_DEFAULT_TTL_HOURS must be a non-negative integer"
+
 [[ -f "${LOCAL_PLUGINS_MANIFEST}" ]] || fail "Local plugin manifest not found: ${LOCAL_PLUGINS_MANIFEST}"
 grep -Fxq '/home/mrndev-stack-manager/stack/packages/mrn-universal-sticky-bar.zip' "${LOCAL_PLUGINS_MANIFEST}" || fail "Required Stack plugin missing from manifest: mrn-universal-sticky-bar"
 pass "Required Stack plugin manifest includes mrn-universal-sticky-bar"
+grep -Fxq 'previewshare|1.1.0' "${LOCAL_PLUGINS_MANIFEST}" || fail "Required Stack plugin missing from manifest: previewshare"
+pass "Required Stack plugin manifest includes PreviewShare 1.1.0"
+
+for previewshare_file in "${LOCAL_PREVIEWSHARE_CONFIG}" "${LOCAL_PREVIEWSHARE_VERIFY}"; do
+  [[ -f "${previewshare_file}" ]] || fail "PreviewShare Stack helper missing: ${previewshare_file}"
+done
+grep -Fq 'configure_previewshare' "${LOCAL_SITE_BOOTSTRAP}" || fail "Bootstrap does not configure PreviewShare"
+pass "PreviewShare configuration and verification helpers are present"
 
 [[ -f "${LOCAL_STICKY_HELPER}" ]] || fail "Canonical sticky-toolbar helper not found: ${LOCAL_STICKY_HELPER}"
 [[ -f "${LOCAL_STICKY_FALLBACK}" ]] || fail "Standalone sticky-toolbar fallback not found: ${LOCAL_STICKY_FALLBACK}"
@@ -183,6 +200,8 @@ remote_file_exists "${REMOTE_SHARED_DIR}/mrn-universal-sticky-bar-assets.php" ||
 pass "Remote stack shared runtime exists"
 
 verify_remote_file_sha256 "${LOCAL_SITE_BOOTSTRAP}" "${REMOTE_SITE_BOOTSTRAP}" "site bootstrap"
+verify_remote_file_sha256 "${LOCAL_PREVIEWSHARE_CONFIG}" "${REMOTE_PREVIEWSHARE_CONFIG}" "PreviewShare configuration helper"
+verify_remote_file_sha256 "${LOCAL_PREVIEWSHARE_VERIFY}" "${REMOTE_PREVIEWSHARE_VERIFY}" "PreviewShare verification helper"
 verify_remote_file_sha256 "${LOCAL_STACK_EXPORT_IMPORTER}" "${REMOTE_STACK_EXPORT_IMPORTER}" "Stack export importer"
 verify_remote_file_sha256 "${LOCAL_IMPORTERS_MANIFEST}" "${REMOTE_IMPORTERS_MANIFEST}" "importer manifest"
 
@@ -213,6 +232,11 @@ REMOTE_LIVE_RETENTION_MAIN="${LIVE_SITE_ROOT}/wp-content/mu-plugins/mrn-updraft-
 remote_dir_exists "${REMOTE_LIVE_SHARED_DIR}" || fail "Live site shared runtime missing: ${REMOTE_LIVE_SHARED_DIR}"
 remote_file_exists "${REMOTE_LIVE_SHARED_DIR}/mrn-sticky-settings-toolbar.php" || fail "Live site shared runtime missing mrn-sticky-settings-toolbar.php"
 pass "Live site shared runtime exists"
+
+REMOTE_PREVIEWSHARE_RESULT="$(
+	ssh "${SSH_HOST}" "STACK_PREVIEWSHARE_POST_TYPES='${PREVIEWSHARE_POST_TYPES}' STACK_PREVIEWSHARE_DEFAULT_TTL_HOURS='${PREVIEWSHARE_TTL_HOURS}' wp eval-file '${REMOTE_PREVIEWSHARE_VERIFY}' --path='${LIVE_SITE_ROOT}' 2>&1" | tr -d '\r' | xargs
+)" || fail "Live site PreviewShare verification failed: ${REMOTE_PREVIEWSHARE_RESULT}"
+pass "Live site PreviewShare is active and matches its configured expiry and post types"
 
 remote_file_exists "${REMOTE_LIVE_RETENTION_WRAPPER}" || fail "Live site MU wrapper missing: ${REMOTE_LIVE_RETENTION_WRAPPER}"
 remote_file_exists "${REMOTE_LIVE_RETENTION_MAIN}" || fail "Live site MU plugin missing: ${REMOTE_LIVE_RETENTION_MAIN}"

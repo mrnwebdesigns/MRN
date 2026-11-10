@@ -2,7 +2,7 @@
 
 Plugin-input candidate: `2026.10.30-mail-media-security-candidate`. Source preparation only: full release qualification, immutable platform lock and publication remain pending. Site deployment remains separate.
 
-The Stack profile selects **36 standard plugins**. The plain profile selects **35**, excluding only Reusable Block Library. Community versions are pinned in `plugins.txt`; every plugin archive is checksum-bound in `manifests/bootstrap-packages.lock.json`. The MRN platform lock separately covers the parent/child pair, MU components and shared runtime.
+The Stack profile selects **37 standard plugins**. The plain profile selects **36**, excluding only Reusable Block Library. Community versions are pinned in `plugins.txt`; every plugin archive is checksum-bound in `manifests/bootstrap-packages.lock.json`. The MRN platform lock separately covers the parent/child pair, MU components and shared runtime.
 
 ## Standard plugins
 
@@ -31,6 +31,7 @@ The Stack profile selects **36 standard plugins**. The plain profile selects **3
 | MRN Reusable Block Library (`mrn-reusable-block-library`) | 0.2.3 | stack |
 | MRN Universal Sticky Bar (`mrn-universal-sticky-bar`) | 1.3.0 | all |
 | Post Duplicator (`post-duplicator`) | 3.0.16 | all |
+| PreviewShare (`previewshare`) | 1.1.0 | all |
 | Post Types Order (`post-types-order`) | 2.5.6 | all |
 | Relevanssi (`relevanssi`) | 4.28.4 | all |
 | Relevanssi Live Ajax Search (`relevanssi-live-ajax-search`) | 2.6 | all |
@@ -57,6 +58,7 @@ The Stack profile selects **36 standard plugins**. The plain profile selects **3
 - Premium licenses, reCAPTCHA/UptimeRobot credentials and backup destination settings stay in the existing secure manager configuration; no credentials are shipped in the release archive.
 - Development scheduled backups remain manual. Shared-runtime writes still require the established fresh remote database-backup gate.
 - Form Success is installed with tracking inactive. Configure the site’s own lead forms in Settings → MRN Form Success; existing consent and GTM/GA4 rules own analytics delivery.
+- PreviewShare is active and configured with a six-hour default preview-link expiry. See [PreviewShare configuration and release verification](PREVIEWSHARE.md) for the site-level post-type allow-list, per-item overrides, revocation, and migration boundary.
 
 ## Excluded defaults
 

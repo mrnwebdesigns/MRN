@@ -6,6 +6,10 @@ Use this to classify each plugin configuration path so bootstrap is reliable.
 
 - Simple scalar options (booleans, strings, numbers)
 - Settings with stable keys and no site-specific IDs
+- PreviewShare: `stack/scripts/configure-previewshare.php` validates the configured
+  public/viewable type allow-list and writes its default expiry through WordPress.
+  Use `STACK_PREVIEWSHARE_POST_TYPES` and
+  `STACK_PREVIEWSHARE_DEFAULT_TTL_HOURS`; do not edit the shared plugin.
 
 ## Import/Export Preferred
 

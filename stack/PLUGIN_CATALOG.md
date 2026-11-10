@@ -6,7 +6,7 @@ This is the human-readable index of MRN-owned WordPress components. The authorit
 
 Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberately retaining the component. It does **not** mean the component should be installed on every website.
 
-The exact new-site selection and package versions are listed in [BOOTSTRAP_RELEASE.md](BOOTSTRAP_RELEASE.md) and `manifests/bootstrap-packages.lock.json`: 34 standard plugins for Stack, 33 for plain. Exact package versions and checksums come from the published bootstrap lock; accepted source alone does not establish publication.
+The exact new-site selection and package versions are listed in [BOOTSTRAP_RELEASE.md](BOOTSTRAP_RELEASE.md) and `manifests/bootstrap-packages.lock.json`: 37 standard plugins for Stack, 36 for plain. Exact package versions and checksums come from the published bootstrap lock; accepted source alone does not establish publication.
 
 `Current distribution` describes today's stack behavior. `Target tier` is the approved Phase 1 classification and does not itself change bootstrap, packaging, activation, deployment, or MU loading.
 

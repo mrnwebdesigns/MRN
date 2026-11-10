@@ -962,6 +962,27 @@ echo "Configured Post Types Order defaults and marked CPT_configured=TRUE\n";'
   echo "Auto-configured Post Types Order settings."
 }
 
+configure_previewshare() {
+  local post_types ttl_hours output
+
+  if ! run_wp plugin is-active previewshare >/dev/null 2>&1; then
+    add_warning "PreviewShare is not active; its Stack configuration was not applied."
+    return 0
+  fi
+
+  post_types="${STACK_PREVIEWSHARE_POST_TYPES:-post,page}"
+  ttl_hours="${STACK_PREVIEWSHARE_DEFAULT_TTL_HOURS:-6}"
+  if ! output="$(sudo -u "${SITE_USER}" env \
+    STACK_PREVIEWSHARE_POST_TYPES="${post_types}" \
+    STACK_PREVIEWSHARE_DEFAULT_TTL_HOURS="${ttl_hours}" \
+    wp --path="${WP_PATH}" eval-file "${STACK_ROOT}/scripts/configure-previewshare.php" 2>&1)"; then
+    add_warning "Failed to configure PreviewShare: ${output}"
+    return 0
+  fi
+
+  echo "Configured PreviewShare: ${output}"
+}
+
 apply_licenses() {
   apply_updraft_premium_mapping() {
     local raw_value="$1"
@@ -2193,6 +2214,7 @@ main() {
   ensure_all_plugins_active
   configure_wordfence_defaults
   configure_post_types_order
+  configure_previewshare
   apply_licenses
   sync_mu_plugins
   sync_shared_runtime
