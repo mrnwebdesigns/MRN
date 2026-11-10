@@ -4,6 +4,9 @@
 .mrn-rotate__size { visibility: hidden; pointer-events: none; }
 .mrn-rotation-toggle { display: block; margin-block: .75rem; padding: .4rem .7rem; font: inherit; font-size: .875rem; color: inherit; background: transparent; border: 1px solid currentColor; border-radius: .25rem; cursor: pointer; }
 .mrn-rotation-toggle[hidden] { display: none !important; }
+/* In a CTA the pause control sits in the block corner so the centered copy keeps its height. */
+.mrn-reusable-block--cta { position: relative; }
+.mrn-reusable-block--cta .mrn-rotation-toggle { inset-block-start: .5rem; inset-inline-end: .5rem; margin: 0; position: absolute; width: auto; }
 .mrn-rotation-toggle:focus-visible, .mrn-timeline summary:focus-visible, .mrn-record article:focus-visible, .mrn-scroll-strip__viewport:focus-visible { outline: 3px solid currentColor; outline-offset: 4px; }
 [data-mrn-image-stage] { position: relative; overflow: hidden; height: var(--mrn-media-height-current, var(--mrn-media-height, 52.9375rem)); margin: 0; isolation: isolate; }
 [data-mrn-image-stage] > img { width: 100%; height: 100%; object-fit: cover; transform-origin: center; }
