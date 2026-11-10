@@ -20,7 +20,8 @@ permissions:
   contents: read
 jobs:
   contract:
-    runs-on: ubuntu-latest
+    # Match the browser runtime used by the reusable deployment workflow.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2

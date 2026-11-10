@@ -81,7 +81,9 @@ permissions:
 jobs:
   deploy:
     if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    # Playwright 1.60 is qualified on Ubuntu 24.04. Keep the deployment runner
+    # explicit so a moving GitHub "latest" label cannot bypass browser QA.
+    runs-on: ubuntu-24.04
     timeout-minutes: ${{ inputs.local_qa_acceptance != '' && 65 || 40 }}
     environment:
       name: ${{ inputs.target }}

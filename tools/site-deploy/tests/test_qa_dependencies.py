@@ -5,6 +5,13 @@ import yaml
 
 
 class QADependencyContract(unittest.TestCase):
+    def test_browser_qa_jobs_pin_the_qualified_runner(self):
+        root = Path(__file__).resolve().parents[3]
+        for workflow, job in [('site-deploy-target.yml', 'deploy'), ('site-deploy-ci.yml', 'contract')]:
+            with self.subTest(workflow=workflow):
+                data = yaml.load((root / '.github/workflows' / workflow).read_text(), Loader=yaml.BaseLoader)
+                self.assertEqual('ubuntu-24.04', data['jobs'][job]['runs-on'])
+
     def test_both_qa_jobs_use_shared_isolated_installer_before_acceptance(self):
         root = Path(__file__).resolve().parents[3]
         for workflow, job in [('site-source-qa.yml', 'qa'), ('site-deploy-target.yml', 'deploy')]:
