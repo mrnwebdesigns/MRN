@@ -1670,6 +1670,11 @@ body[data-mrn-surface="dark"] .main-navigation.mrn-site-primary-navigation a:foc
 	padding-right: 0;
 }
 
+/* Content Builder rows own their spacing through Row Spacing, so the shell does not add a second section gap above the footer. */
+.site-main:has(> .mrn-content-builder) {
+	padding-bottom: 0;
+}
+
 /* 404 page
 --------------------------------------------- */
 .site-main--404 {
