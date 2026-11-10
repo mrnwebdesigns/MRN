@@ -7669,6 +7669,11 @@ a.mrn-social-links__link:focus-visible svg {
 	max-width: none;
 }
 
+/* A stacked editorial FAQ frame may own the heading-to-list gap; unset keeps the existing rhythm. */
+.mrn-layout-section--reusable-faq .mrn-layout-container > .mrn-layout-grid--reusable > .mrn-layout-content--reusable > .mrn-reusable-block--faq .mrn-faq.mrn-faq--editorial-shell {
+	gap: var(--mrn-faq-frame-column-gap, var(--mrn-faq-gap, 0));
+}
+
 .mrn-layout-section--reusable-faq.mrn-layout-section--full .mrn-layout-container--full > .mrn-layout-grid--reusable > .mrn-layout-content--reusable > .mrn-reusable-block--faq .mrn-faq__item {
 	box-shadow: none;
 }

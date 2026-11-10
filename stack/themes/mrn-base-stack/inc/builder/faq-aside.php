@@ -54,7 +54,7 @@ function mrn_base_stack_get_faq_frame_contract( array $row ) {
 		if ( '' !== $value ) { $styles[] = '--mrn-faq-frame-' . str_replace( '_', '-', $part ) . '-color:' . $value; }
 	}
 	if ( in_array( $row['faq_question_font'] ?? '', array( 'heading', 'body' ), true ) ) { $result['classes'][] = 'has-faq-question-font-' . $row['faq_question_font']; }
-	foreach ( array( 'heading_size', 'heading_line_height' ) as $name ) {
+	foreach ( array( 'heading_size', 'heading_line_height', 'column_gap' ) as $name ) {
 		$value = mrn_base_stack_get_content_frame_dimension( $row[ 'faq_' . $name ] ?? '', $name );
 		if ( '' !== $value ) { $styles[] = '--mrn-faq-frame-' . str_replace( '_', '-', $name ) . ':' . $value; $result['classes'][] = 'has-faq-frame-heading'; }
 	}
