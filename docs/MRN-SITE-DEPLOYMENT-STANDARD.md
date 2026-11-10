@@ -125,6 +125,9 @@ in the site PR. Do not let dispatch inputs choose arbitrary filesystem paths.
 
 Both reusable QA jobs install Semgrep 1.179.0 into a private runner-temporary
 Python 3.11 virtual environment through `tools/site-deploy/install-qa-python.sh`.
+The deployment job and its representative browser qualification job pin
+`ubuntu-24.04`, the runner qualified for the pinned Playwright 1.60 toolchain;
+they must not use the moving `ubuntu-latest` label.
 The QA Engine deliberately changes `HOME` while scanning. A user-site Python
 installation becomes invisible after that change and previously failed with
 `ModuleNotFoundError: No module named 'semgrep'`. Dependency setup now checks the
