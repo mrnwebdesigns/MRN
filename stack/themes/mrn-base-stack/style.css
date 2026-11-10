@@ -2719,6 +2719,67 @@ button.mrn-ui__link--button {
 	text-align: inherit;
 }
 
+/* Link styles: add one of these through a link's CSS Classes field. They use Site Colors and the heading font, with the arrow drawn from currentColor so it follows the link color. */
+:is(a, .mrn-content-builder__row a).mrn-link-style--burgundy-pill,
+:is(a, .mrn-content-builder__row a).mrn-link-style--burgundy-text {
+	align-items: center;
+	display: inline-flex;
+	font-family: var(--site-font-heading);
+	font-weight: 500;
+	gap: 8px;
+	text-decoration: none;
+}
+
+:is(a, .mrn-content-builder__row a).mrn-link-style--burgundy-pill::after,
+:is(a, .mrn-content-builder__row a).mrn-link-style--burgundy-text::after {
+	background-color: currentColor;
+	content: "";
+	flex: none;
+	height: 10px;
+	-webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='10' viewBox='0 0 12 10'%3E%3Cpath d='M4.608 9.952L9.584 4.96 4.624 0H6.4L11.36 4.976 6.384 9.952ZM0 4.32H10.56V5.632H0Z'/%3E%3C/svg%3E") center / contain no-repeat;
+	mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='10' viewBox='0 0 12 10'%3E%3Cpath d='M4.608 9.952L9.584 4.96 4.624 0H6.4L11.36 4.976 6.384 9.952ZM0 4.32H10.56V5.632H0Z'/%3E%3C/svg%3E") center / contain no-repeat;
+	transition: transform 0.25s ease;
+	width: 12px;
+}
+
+:is(a, .mrn-content-builder__row a).mrn-link-style--burgundy-pill:is(:hover, :focus-visible)::after,
+:is(a, .mrn-content-builder__row a).mrn-link-style--burgundy-text:is(:hover, :focus-visible)::after {
+	transform: translateX(2px);
+}
+
+:is(a, .mrn-content-builder__row a).mrn-link-style--burgundy-pill,
+:is(a, .mrn-content-builder__row a).mrn-link-style--burgundy-pill:visited {
+	background: var(--site-color-burgundy);
+	border: 1px solid var(--site-color-burgundy);
+	border-radius: 40px;
+	color: var(--site-color-off-white);
+	font-size: 16px;
+	line-height: 20px;
+	padding: 13px 21px;
+}
+
+:is(a, .mrn-content-builder__row a).mrn-link-style--burgundy-pill:is(:hover, :focus-visible) {
+	background: var(--site-color-red);
+	border-color: var(--site-color-red);
+	color: var(--site-color-off-white);
+}
+
+:is(a, .mrn-content-builder__row a).mrn-link-style--burgundy-text,
+:is(a, .mrn-content-builder__row a).mrn-link-style--burgundy-text:visited {
+	color: var(--site-color-burgundy);
+}
+
+:is(a, .mrn-content-builder__row a).mrn-link-style--burgundy-text:is(:hover, :focus-visible) {
+	color: var(--site-color-red);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	:is(a, .mrn-content-builder__row a).mrn-link-style--burgundy-pill::after,
+	:is(a, .mrn-content-builder__row a).mrn-link-style--burgundy-text::after {
+		transition: none;
+	}
+}
+
 .mrn-ui__link-icon {
 	display: inline-flex;
 	align-items: center;
