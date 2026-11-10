@@ -4215,6 +4215,13 @@ button.mrn-ui__link--button {
 	letter-spacing: 0;
 }
 
+.has-faq-frame-heading:not(.has-faq-scroll-active) .mrn-faq--editorial-shell > .mrn-ui__head .mrn-ui__heading {
+	font-size: var(--mrn-faq-frame-heading-size, inherit);
+	line-height: var(--mrn-faq-frame-heading-line-height, inherit);
+	font-weight: var(--mrn-faq-frame-heading-weight, inherit);
+	color: var(--mrn-faq-frame-heading-color, inherit);
+}
+
 .mrn-faq__items {
 	display: grid;
 	gap: var(--mrn-faq-item-gap, 0);

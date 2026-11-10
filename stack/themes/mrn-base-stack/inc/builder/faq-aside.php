@@ -54,6 +54,14 @@ function mrn_base_stack_get_faq_frame_contract( array $row ) {
 		if ( '' !== $value ) { $styles[] = '--mrn-faq-frame-' . str_replace( '_', '-', $part ) . '-color:' . $value; }
 	}
 	if ( in_array( $row['faq_question_font'] ?? '', array( 'heading', 'body' ), true ) ) { $result['classes'][] = 'has-faq-question-font-' . $row['faq_question_font']; }
+	foreach ( array( 'heading_size', 'heading_line_height' ) as $name ) {
+		$value = mrn_base_stack_get_content_frame_dimension( $row[ 'faq_' . $name ] ?? '', $name );
+		if ( '' !== $value ) { $styles[] = '--mrn-faq-frame-' . str_replace( '_', '-', $name ) . ':' . $value; $result['classes'][] = 'has-faq-frame-heading'; }
+	}
+	$heading_weight = $row['faq_heading_weight'] ?? '';
+	if ( is_scalar( $heading_weight ) && in_array( (string) $heading_weight, array_map( 'strval', range( 100, 900, 100 ) ), true ) ) { $styles[] = '--mrn-faq-frame-heading-weight:' . $heading_weight; $result['classes'][] = 'has-faq-frame-heading'; }
+	$heading_color = mrn_base_stack_get_frame_palette_color( $row['faq_heading_color'] ?? '' );
+	if ( '' !== $heading_color ) { $styles[] = '--mrn-faq-frame-heading-color:' . $heading_color; $result['classes'][] = 'has-faq-frame-heading'; }
 	if ( 'chevron' === ( $row['faq_icon_style'] ?? '' ) ) { $result['classes'][] = 'has-faq-chevron'; }
 	if ( 'none' === ( $row['faq_item_border'] ?? '' ) ) { $result['classes'][] = 'has-faq-no-dividers'; }
 	if ( $styles ) { $result['attributes']['style'] = implode( ';', $styles ); }
