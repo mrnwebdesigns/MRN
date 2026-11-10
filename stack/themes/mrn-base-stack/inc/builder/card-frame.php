@@ -15,6 +15,11 @@ function mrn_base_stack_get_card_frame_fields( $seed ) {
 	$color = mrn_base_stack_get_background_color_field( $seed . '_card_label_color' ); $color['name'] = 'card_label_color'; $color['label'] = 'Section Label Color'; $fields[] = $color;
 	$fields[] = array( 'key' => $seed . '_card_heading_weight', 'name' => 'card_heading_weight', 'label' => 'Section Heading Weight', 'type' => 'select', 'choices' => array( '' => 'Use Existing Weight' ) + array_combine( range( 100, 900, 100 ), range( 100, 900, 100 ) ), 'default_value' => '' );
 	$color = mrn_base_stack_get_background_color_field( $seed . '_card_heading_color' ); $color['name'] = 'card_heading_color'; $color['label'] = 'Section Heading Color'; $fields[] = $color;
+	foreach ( array( 'item_title_size' => 'Card Title Font Size', 'item_title_line_height' => 'Card Title Line Height', 'item_title_icon_size' => 'Card Title Icon Size', 'item_title_icon_gap' => 'Card Title Icon Gap' ) as $name => $label ) {
+		$fields[] = array( 'key' => $seed . '_card_' . $name, 'name' => 'card_' . $name, 'label' => $label, 'type' => 'text', 'default_value' => '', 'instructions' => 'Optional card title control for an item label with an icon. Sizes and line heights accept Site Text tokens or non-negative lengths. Blank retains existing output.' );
+	}
+	$fields[] = array( 'key' => $seed . '_card_item_title_weight', 'name' => 'card_item_title_weight', 'label' => 'Card Title Weight', 'type' => 'select', 'choices' => array( '' => 'Use Existing Weight' ) + array_combine( range( 100, 900, 100 ), range( 100, 900, 100 ) ), 'default_value' => '' );
+	$color = mrn_base_stack_get_background_color_field( $seed . '_card_item_title_color' ); $color['name'] = 'card_item_title_color'; $color['label'] = 'Card Title Color'; $fields[] = $color;
 	foreach ( array( 'heading_width' => 'Section Heading Maximum Width', 'heading_width_tablet' => 'Section Heading Maximum Width at 900px', 'intro_size' => 'Introduction Font Size', 'intro_line_height' => 'Introduction Line Height', 'intro_paragraph_space_after' => 'Introduction Paragraph Spacing', 'cards_space_before_tablet' => 'Space Before Cards at 900px' ) as $name => $label ) {
 		$fields[] = array( 'key' => $seed . '_card_' . $name, 'name' => 'card_' . $name, 'label' => $label, 'type' => 'text', 'default_value' => '', 'instructions' => 'Optional non-negative length or clamp; maximum widths also accept none. Introduction typography accepts Site Text size/line tokens. Blank retains existing output.' );
 	}
@@ -62,6 +67,12 @@ function mrn_base_stack_get_card_frame_contract( array $row ) {
 	$tracking = mrn_base_stack_get_frame_letter_spacing( $row['card_label_letter_spacing'] ?? '' ); if ( '' !== $tracking ) { $styles[] = '--mrn-card-frame-label-letter-spacing:' . $tracking; $result['classes'][] = 'has-card-label-letter-spacing'; }
 	$color = mrn_base_stack_get_frame_palette_color( $row['card_label_color'] ?? '' ); if ( '' !== $color ) { $styles[] = '--mrn-card-frame-label-color:' . $color; $result['classes'][] = 'has-card-label-color'; }
 	if ( in_array( $row['card_header_alignment'] ?? '', array( 'start', 'center', 'end' ), true ) ) { $styles[] = '--mrn-card-frame-header-alignment:' . $row['card_header_alignment']; }
+	foreach ( array( 'item_title_size', 'item_title_line_height', 'item_title_icon_size', 'item_title_icon_gap' ) as $name ) {
+		$value = mrn_base_stack_get_content_frame_dimension( $row[ 'card_' . $name ] ?? '', $name );
+		if ( '' !== $value ) { $styles[] = '--mrn-card-frame-' . str_replace( '_', '-', $name ) . ':' . $value; $result['classes'][] = 'has-card-' . str_replace( '_', '-', $name ); }
+	}
+	$weight = $row['card_item_title_weight'] ?? ''; if ( is_scalar( $weight ) && in_array( (string) $weight, array_map( 'strval', range( 100, 900, 100 ) ), true ) ) { $styles[] = '--mrn-card-frame-item-title-weight:' . $weight; $result['classes'][] = 'has-card-item-title-weight'; }
+	$color = mrn_base_stack_get_frame_palette_color( $row['card_item_title_color'] ?? '' ); if ( '' !== $color ) { $styles[] = '--mrn-card-frame-item-title-color:' . $color; $result['classes'][] = 'has-card-item-title-color'; }
 	$weight = $row['card_heading_weight'] ?? ''; if ( is_scalar( $weight ) && in_array( (string) $weight, array_map( 'strval', range( 100, 900, 100 ) ), true ) ) { $styles[] = '--mrn-card-frame-heading-weight:' . $weight; $result['classes'][] = 'has-card-heading-weight'; }
 	$color = mrn_base_stack_get_frame_palette_color( $row['card_heading_color'] ?? '' ); if ( '' !== $color ) { $styles[] = '--mrn-card-frame-heading-color:' . $color; $result['classes'][] = 'has-card-heading-color'; }
 	$background = mrn_base_stack_get_frame_palette_color( $row['background_color'] ?? '' );

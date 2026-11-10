@@ -2769,6 +2769,12 @@ button.mrn-ui__link--button {
 	color: var(--site-color-burgundy);
 }
 
+:is(a, .mrn-content-builder__row a).mrn-link-style--large {
+	font-size: 18px;
+	font-weight: 600;
+	line-height: 22.5px;
+}
+
 :is(a, .mrn-content-builder__row a).mrn-link-style--burgundy-text:is(:hover, :focus-visible) {
 	color: var(--site-color-red);
 }
@@ -8573,6 +8579,13 @@ a.mrn-social-links__link:focus-visible svg {
 .has-card-frame.has-card-heading-line-height .mrn-card-row__head > .mrn-ui__heading { line-height: var(--mrn-card-frame-heading-line-height-current, var(--mrn-card-frame-heading-line-height)); }
 .has-card-frame.has-card-heading-weight .mrn-card-row__head > .mrn-ui__heading { font-weight: var(--mrn-card-frame-heading-weight); }
 .has-card-frame.has-card-heading-color .mrn-card-row__head > .mrn-ui__heading { color: var(--mrn-card-frame-heading-color); }
+.has-card-frame.has-card-item-title-size .mrn-card-row__item-title { font-size: var(--mrn-card-frame-item-title-size); }
+.has-card-frame.has-card-item-title-line-height .mrn-card-row__item-title { line-height: var(--mrn-card-frame-item-title-line-height); }
+.has-card-frame.has-card-item-title-line-height .mrn-card-row__item-head { display: flex; }
+.has-card-frame.has-card-item-title-weight .mrn-card-row__item-title { font-weight: var(--mrn-card-frame-item-title-weight); }
+.has-card-frame.has-card-item-title-color .mrn-card-row__item-title { color: var(--mrn-card-frame-item-title-color); }
+.has-card-frame.has-card-item-title-icon-gap .mrn-card-row__item-title { gap: var(--mrn-card-frame-item-title-icon-gap); }
+.has-card-frame.has-card-item-title-icon-size .mrn-card-row__item-title .mrn-ui__link-icon-image { height: var(--mrn-card-frame-item-title-icon-size); width: var(--mrn-card-frame-item-title-icon-size); }
 .has-card-frame.has-card-grid-991-600 .mrn-card-row__grid--layout-grid { grid-template-columns: repeat(var(--mrn-card-frame-columns, 3), minmax(0, 1fr)); }
 @media (max-width: 1199px) {
  .has-card-frame.has-card-grid-991-600.has-card-grid-column-gap-tablet { --mrn-card-frame-grid-column-gap-current: var(--mrn-card-frame-grid-column-gap-tablet); }
