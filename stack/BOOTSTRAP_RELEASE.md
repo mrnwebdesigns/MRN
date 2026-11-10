@@ -2,7 +2,7 @@
 
 Plugin-input candidate: `2026.10.30-mail-media-security-candidate`. Source preparation only: full release qualification, immutable platform lock and publication remain pending. Site deployment remains separate.
 
-The Stack profile selects **37 standard plugins**. The plain profile selects **36**, excluding only Reusable Block Library. Community versions are pinned in `plugins.txt`; every plugin archive is checksum-bound in `manifests/bootstrap-packages.lock.json`. The MRN platform lock separately covers the parent/child pair, MU components and shared runtime.
+The Stack profile selects **36 standard plugins**. The plain profile selects **36**, excluding only Reusable Block Library. Community versions are pinned in `plugins.txt`; every plugin archive is checksum-bound in `manifests/bootstrap-packages.lock.json`. The MRN platform lock separately covers the parent/child pair, MU components and shared runtime.
 
 ## Standard plugins
 
