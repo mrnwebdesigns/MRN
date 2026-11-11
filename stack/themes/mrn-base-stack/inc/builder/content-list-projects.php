@@ -5,15 +5,33 @@ function mrn_base_stack_is_project_list( array $row ) {
 	return 'projects' === ( $row['record_presentation'] ?? '' );
 }
 
+function mrn_base_stack_is_project_carousel( array $row ) {
+	return mrn_base_stack_is_project_list( $row ) && 'carousel' === ( $row['project_layout'] ?? '' );
+}
+
+/** Viewport, track and previous/next buttons around the item list. Buttons need at least two cards. */
+function mrn_base_stack_get_project_carousel_markup( array $row, $count, $list_id, $closing = false ) {
+	if ( ! mrn_base_stack_is_project_carousel( $row ) ) { return ''; }
+	if ( ! $closing ) { return '<div class="mrn-project-carousel" data-mrn-project-viewport><div class="mrn-project-carousel__track">'; }
+	$html = '</div>';
+	if ( (int) $count > 1 ) {
+		$html .= '<button type="button" class="mrn-project-carousel__button mrn-project-carousel__button--prev" data-mrn-project-prev hidden aria-controls="' . esc_attr( $list_id ) . '" aria-label="' . esc_attr__( 'Previous case study', 'mrn-base-stack' ) . '"></button>';
+		$html .= '<button type="button" class="mrn-project-carousel__button mrn-project-carousel__button--next" data-mrn-project-next hidden aria-controls="' . esc_attr( $list_id ) . '" aria-label="' . esc_attr__( 'Next case study', 'mrn-base-stack' ) . '"></button>';
+	}
+	return $html . '</div>';
+}
+
 function mrn_base_stack_get_project_frame_dimensions() {
-	return explode( ' ', 'content_width inner_gutter inner_gutter_compact inner_gutter_mobile column_gap row_gap heading_size heading_line_height heading_space_after media_height media_height_mobile media_radius media_space_after media_space_after_mobile subtitle_size subtitle_line_height subtitle_space_after title_size title_line_height tags_space_before tags_gap tag_padding_inline tag_padding_block tag_radius tag_size tag_line_height actions_space_before action_size action_line_height action_padding_inline action_padding_block action_radius action_icon_width action_icon_height' );
+	return explode( ' ', 'content_width inner_gutter inner_gutter_compact inner_gutter_mobile column_gap row_gap heading_size heading_line_height heading_space_after media_height media_height_mobile media_radius media_space_after media_space_after_mobile subtitle_size subtitle_line_height subtitle_space_after title_size title_line_height tags_space_before tags_gap tag_padding_inline tag_padding_block tag_radius tag_size tag_line_height actions_space_before action_size action_line_height action_padding_inline action_padding_block action_radius action_icon_width action_icon_height carousel_gap carousel_gap_mobile carousel_card_padding_bottom carousel_edge_width carousel_control_size carousel_control_size_mobile carousel_control_top carousel_control_top_mobile' );
 }
 
 function mrn_base_stack_get_project_list_fields( $seed ) {
 	$make = static function ( $name, $type, array $extra = array() ) use ( $seed ) { return array_merge( array( 'key' => $seed . '_project_' . $name, 'name' => 'project_' . $name, 'label' => 'Project ' . ucwords( str_replace( '_', ' ', $name ) ), 'type' => $type, 'default_value' => '' ), $extra ); };
 	$fields = array(
+		$make( 'layout', 'select', array( 'label' => 'Project Layout', 'choices' => array( '' => 'Grid', 'carousel' => 'Peek Carousel' ), 'instructions' => 'Peek Carousel runs the selected projects in one draggable row that shows a partial next card, with previous/next buttons. Records rotate without duplicates. Without JavaScript the row scrolls.' ) ),
+		$make( 'carousel_autoplay', 'true_false', array( 'label' => 'Project Carousel Autoplay', 'ui' => 1, 'default_value' => 0, 'instructions' => 'Advance one card every few seconds. Pauses on hover and focus; never runs for visitors who prefer reduced motion.' ) ),
 		$make( 'action_frame', 'true_false', array( 'label' => 'Project Action Button Frame', 'ui' => 1, 'default_value' => 0, 'instructions' => 'Use the selected native button typography, dimensions and Site Colors. Blank preserves existing link styles.' ) ),
-		$make( 'selection', 'select', array( 'choices' => array( '' => 'All Selected Source Records', 'flagged' => 'Marked Records Only' ), 'instructions' => 'Source, item count, manual selection and ordering remain in the existing collection controls.' ) ),
+		$make( 'selection', 'select', array( 'choices' => array( '' => 'All Selected Source Records', 'flagged' => 'Marked Records Only', 'unless_off' => 'Skip Records Marked Off' ), 'instructions' => 'Source, item count, manual selection and ordering remain in the existing collection controls. Skip Records Marked Off keeps unset records and hides only those whose field equals 0.' ) ),
 		$make( 'flag_field', 'text', array( 'instructions' => 'Existing true/false field required to equal 1 when Marked Records Only is selected. An empty or invalid field returns no records.' ) ),
 		$make( 'image_field', 'text', array( 'instructions' => 'Optional existing image field. A missing or invalid selection falls back to the featured image.' ) ),
 		$make( 'subtitle_field', 'text', array( 'instructions' => 'Optional existing text field. Blank content uses the first term from the fallback taxonomy.' ) ),
@@ -32,15 +50,16 @@ function mrn_base_stack_get_project_list_fields( $seed ) {
 	foreach ( array( 'heading', 'title', 'title_hover', 'subtitle', 'tag', 'tag_surface', 'action_text', 'action_background', 'action_hover_background' ) as $part ) { $field = mrn_base_stack_get_background_color_field( $seed . '_project_' . $part . '_color' ); $field['name'] = 'project_' . $part . '_color'; $field['label'] = 'Project ' . ucwords( str_replace( '_', ' ', $part ) ) . ' Color'; $fields[] = $field; }
 	$fields = array_merge( $fields, mrn_rbl_get_content_link_fields( $seed . '_project_links', 'Project Actions', 'project_links', 1 ) );
 	foreach ( $fields as &$field ) { $field['conditional_logic'] = array( array( array( 'field' => $seed . '_record_presentation', 'operator' => '==', 'value' => 'projects' ) ) ); } unset( $field );
-	return $fields;
+	return array_merge( $fields, function_exists( 'mrn_base_stack_get_project_filter_fields' ) ? mrn_base_stack_get_project_filter_fields( $seed ) : array() );
 }
 
 /** Closed flag semantics preserve other constraints; malformed marked queries fail closed. */
 function mrn_base_stack_get_project_collection_query( array $row, array $query ) {
-	if ( ! mrn_base_stack_is_project_list( $row ) || 'flagged' !== ( $row['project_selection'] ?? '' ) ) { return $query; }
+	$selection = $row['project_selection'] ?? '';
+	if ( ! mrn_base_stack_is_project_list( $row ) || ! in_array( $selection, array( 'flagged', 'unless_off' ), true ) ) { return $query; }
 	$field = $row['project_flag_field'] ?? '';
 	if ( ! is_string( $field ) || ! preg_match( '/^[a-zA-Z0-9_]+$/D', $field ) ) { $query['post__in'] = array( 0 ); return $query; }
-	$flag = array( 'key' => $field, 'value' => '1', 'compare' => '=' );
+	$flag = 'unless_off' === $selection ? array( 'relation' => 'OR', array( 'key' => $field, 'compare' => 'NOT EXISTS' ), array( 'key' => $field, 'value' => '0', 'compare' => '!=' ) ) : array( 'key' => $field, 'value' => '1', 'compare' => '=' );
 	$query['meta_query'] = ! empty( $query['meta_query'] ) ? array( 'relation' => 'AND', $query['meta_query'], $flag ) : array( $flag );
 	return $query;
 }
@@ -50,12 +69,20 @@ function mrn_base_stack_get_project_list_contract( array $row ) {
 	if ( ! mrn_base_stack_is_project_list( $row ) ) { return $out; }
 	mrn_base_stack_enqueue_presentation(); $out['classes'][] = 'has-project-collection';
 	if ( in_array( $row['project_action_frame'] ?? 0, array( true, 1, '1' ), true ) ) { $out['classes'][] = 'has-project-action-frame'; }
+	if ( mrn_base_stack_is_project_carousel( $row ) ) { $out['classes'][] = 'has-project-carousel'; $out['attributes']['data-mrn-project-carousel'] = in_array( $row['project_carousel_autoplay'] ?? 0, array( true, 1, '1' ), true ) ? 'autoplay' : 'manual'; }
 	$breakpoint = in_array( $row['project_grid_breakpoint'] ?? '', array( '576', '767', '991' ), true ) ? $row['project_grid_breakpoint'] : '767'; $out['classes'][] = 'project-grid-at-' . $breakpoint;
 	$styles = array();
 	foreach ( mrn_base_stack_get_project_frame_dimensions() as $name ) { $value = mrn_base_stack_get_content_frame_dimension( $row[ 'project_' . $name ] ?? '', $name ); if ( '' !== $value ) { $styles[] = '--mrn-project-' . str_replace( '_', '-', $name ) . ':' . $value; } }
 	$columns = $row['project_columns'] ?? '3'; if ( in_array( $columns, array( 1, 2, 3, 4, '1', '2', '3', '4' ), true ) ) { $styles[] = '--mrn-project-columns:' . $columns; }
 	foreach ( array( 'heading', 'title', 'subtitle', 'tag', 'action' ) as $part ) { $value = $row[ 'project_' . $part . '_weight' ] ?? ''; if ( is_scalar( $value ) && in_array( (string) $value, array_map( 'strval', range( 100, 900, 100 ) ), true ) ) { $styles[] = '--mrn-project-' . $part . '-weight:' . $value; } }
 	foreach ( array( 'heading', 'title', 'title_hover', 'subtitle', 'tag', 'tag_surface', 'action_text', 'action_background', 'action_hover_background' ) as $part ) { $value = mrn_base_stack_get_frame_palette_color( $row[ 'project_' . $part . '_color' ] ?? '' ); if ( '' !== $value ) { $styles[] = '--mrn-project-' . str_replace( '_', '-', $part ) . '-color:' . $value; } }
+	$ratio = function_exists( 'mrn_base_stack_get_project_media_ratio' ) ? mrn_base_stack_get_project_media_ratio( $row ) : '';
+	if ( '' !== $ratio ) { $styles[] = '--mrn-project-media-ratio:' . $ratio; $out['classes'][] = 'has-project-media-ratio'; }
+	if ( function_exists( 'mrn_base_stack_get_project_filter_contract' ) ) {
+		$filters = mrn_base_stack_get_project_filter_contract( $row );
+		$out['classes'] = array_merge( $out['classes'], $filters['classes'] );
+		$out['attributes'] = array_merge( $out['attributes'], $filters['attributes'] );
+	}
 	$out['attributes']['style'] = implode( ';', $styles ); return $out;
 }
 
@@ -76,7 +103,8 @@ function mrn_base_stack_render_project_list_item( WP_Post $post, array $args ) {
 	$size = in_array( $row['project_image_size'] ?? '', array( 'medium_large', 'large', 'full' ), true ) ? $row['project_image_size'] : 'large';
 	$image = $data['image'] ? mrn_base_stack_get_attachment_image( $data['image'], $size, array( 'alt' => $data['title'], 'loading' => 'lazy' ) ) : '';
 	$linked = ! empty( $args['link_items'] ) && '' !== esc_url( $data['url'] );
-	$html = '<li class="mrn-content-list-row__item mrn-record mrn-project" data-record-id="' . esc_attr( (string) $post->ID ) . '"><article>';
+	$filtered = function_exists( 'mrn_base_stack_get_project_filter_item_attributes' ) ? mrn_base_stack_get_project_filter_item_attributes( $post, $row, $args['item_index'] ?? -1 ) : '';
+	$html = '<li class="mrn-content-list-row__item mrn-record mrn-project" data-record-id="' . esc_attr( (string) $post->ID ) . '"' . $filtered . '><article>';
 	if ( '' !== $image ) {
 		$media = '<div class="mrn-record__media mrn-project__media">' . $image;
 		if ( '' !== $data['video'] ) { $media .= '<video data-mrn-hover-video data-src="' . esc_url( $data['video'], array( 'http', 'https' ) ) . '" muted loop playsinline preload="none" aria-hidden="true" tabindex="-1"></video>'; }
@@ -84,7 +112,10 @@ function mrn_base_stack_render_project_list_item( WP_Post $post, array $args ) {
 		$html .= $linked ? '<a class="mrn-project__image-link" href="' . esc_url( $data['url'] ) . '" aria-label="' . esc_attr( sprintf( __( 'View %s case study', 'mrn-base-stack' ), $data['title'] ) ) . '">' . $media . '</a>' : $media;
 	}
 	if ( '' !== $data['subtitle'] ) { $html .= '<p class="mrn-project__subtitle">' . esc_html( $data['subtitle'] ) . '</p>'; }
-	$title = esc_html( $data['title'] ); $arrow = '<svg class="mrn-project__arrow" width="20" height="20" viewBox="0 0 12 10" aria-hidden="true" focusable="false"><path d="M4.608 9.952L9.584 4.96 4.624 0H6.4L11.36 4.976 6.384 9.952ZM0 4.32H10.56V5.632H0Z" fill="currentColor"/></svg>';
+	$title = esc_html( $data['title'] );
+	$arrow = '<svg class="mrn-project__arrow" width="20" height="20" viewBox="0 0 12 10" aria-hidden="true" focusable="false"><path d="M4.608 9.952L9.584 4.96 4.624 0H6.4L11.36 4.976 6.384 9.952ZM0 4.32H10.56V5.632H0Z" fill="currentColor"/></svg>';
+	// Keep the last word and the arrow together so the arrow cannot wrap alone.
+	if ( '' !== $filtered ) { $cut = strrpos( $data['title'], ' ' ); $head = false === $cut ? '' : esc_html( substr( $data['title'], 0, $cut + 1 ) ); $tail = false === $cut ? $data['title'] : substr( $data['title'], $cut + 1 ); $title = $head . '<span class="mrn-project__title-tail">' . esc_html( $tail ) . $arrow . '</span>'; $arrow = ''; }
 	$html .= '<' . $tag . ' class="mrn-project__title">' . ( $linked ? '<a href="' . esc_url( $data['url'] ) . '">' . $title . $arrow . '</a>' : $title ) . '</' . $tag . '>';
 	if ( $data['features'] ) { $html .= '<ul class="mrn-project__tags" aria-label="' . esc_attr__( 'Project features', 'mrn-base-stack' ) . '">'; foreach ( $data['features'] as $term ) { $html .= '<li>' . esc_html( $term->name ) . '</li>'; } $html .= '</ul>'; }
 	return $html . '</article></li>';

@@ -461,3 +461,236 @@
 		update();
 	} );
 }() );
+
+( function() {
+	'use strict';
+	// Project peek carousel: rotates the first/last card so no clones are needed; drag, buttons and optional autoplay.
+	const reduced = window.matchMedia( '(prefers-reduced-motion: reduce)' );
+	const SPEED = 500;
+	document.querySelectorAll( '[data-mrn-project-carousel]' ).forEach( ( section ) => {
+		const viewport = section.querySelector( '[data-mrn-project-viewport]' );
+		const list = viewport && viewport.querySelector( '.mrn-content-list-row__items' );
+		const prevButton = section.querySelector( '[data-mrn-project-prev]' );
+		const nextButton = section.querySelector( '[data-mrn-project-next]' );
+		if ( ! viewport || ! list || list.children.length < 2 || list.querySelector( '.mrn-content-list-row__item--empty' ) ) { return; }
+		const step = () => list.children[ 0 ].getBoundingClientRect().width + ( parseFloat( getComputedStyle( list ).columnGap ) || 0 );
+		let animating = false, dragging = false, pending = false, startX = 0, currentX = 0, pointer = null, preparedPrev = false, suppress = false, suppressTimer = 0, timer = 0, paused = false;
+		const settle = ( done ) => {
+			let called = false;
+			const run = () => { if ( called ) { return; } called = true; list.removeEventListener( 'transitionend', onEnd ); done(); };
+			const onEnd = ( event ) => { if ( event.target === list && ( ! event.propertyName || 'transform' === event.propertyName ) ) { run(); } };
+			list.addEventListener( 'transitionend', onEnd );
+			window.setTimeout( run, SPEED + 80 );
+		};
+		const animate = ( x ) => { list.style.transition = reduced.matches ? 'none' : 'transform ' + SPEED + 'ms ease'; list.style.transform = 'translateX(' + x + 'px)'; };
+		const rotateForward = () => { list.style.transition = 'none'; list.appendChild( list.firstElementChild ); list.style.transform = 'translateX(0px)'; void list.offsetWidth; };
+		const next = () => {
+			if ( animating || dragging ) { return; }
+			animating = true; animate( -step() );
+			settle( () => { rotateForward(); animating = false; } );
+		};
+		const prev = () => {
+			if ( animating || dragging ) { return; }
+			animating = true; list.style.transition = 'none';
+			list.insertBefore( list.lastElementChild, list.firstElementChild );
+			list.style.transform = 'translateX(' + ( -step() ) + 'px)'; void list.offsetWidth;
+			animate( 0 );
+			settle( () => { list.style.transition = 'none'; animating = false; } );
+		};
+		const stopTimer = () => { if ( timer ) { window.clearInterval( timer ); timer = 0; } };
+		const startTimer = () => {
+			if ( 'autoplay' !== section.getAttribute( 'data-mrn-project-carousel' ) || reduced.matches || paused || timer ) { return; }
+			timer = window.setInterval( () => { if ( ! paused && ! animating && ! dragging ) { next(); } }, 5200 );
+		};
+		const pause = () => { paused = true; stopTimer(); };
+		const resume = () => { paused = false; startTimer(); };
+		[ [ prevButton, prev ], [ nextButton, next ] ].forEach( ( [ button, action ] ) => {
+			if ( ! button ) { return; }
+			button.hidden = false;
+			button.addEventListener( 'pointerdown', ( event ) => { event.stopPropagation(); pause(); } );
+			button.addEventListener( 'click', ( event ) => { event.preventDefault(); event.stopPropagation(); pause(); action(); } );
+		} );
+		const clearDrag = () => { pending = false; dragging = false; preparedPrev = false; pointer = null; section.classList.remove( 'is-carousel-dragging' ); resume(); };
+		const finishDrag = ( dx ) => {
+			const threshold = Math.max( 48, step() * 0.16 );
+			animating = true;
+			const forward = () => { animate( -step() ); settle( () => { rotateForward(); animating = false; clearDrag(); } ); };
+			const rest = () => { animate( 0 ); settle( () => { list.style.transition = 'none'; animating = false; clearDrag(); } ); };
+			if ( preparedPrev ) { dx > threshold ? rest() : forward(); return; }
+			dx < -threshold ? forward() : rest();
+		};
+		viewport.addEventListener( 'pointerdown', ( event ) => {
+			if ( animating || event.button > 0 || event.target.closest( 'button' ) ) { return; }
+			pending = true; dragging = false; startX = currentX = event.clientX; pointer = event.pointerId; preparedPrev = false; suppress = false;
+		} );
+		viewport.addEventListener( 'pointermove', ( event ) => {
+			if ( ! pending || event.pointerId !== pointer ) { return; }
+			currentX = event.clientX; const dx = currentX - startX;
+			if ( ! dragging ) {
+				if ( Math.abs( dx ) <= 10 ) { return; }
+				pause(); dragging = true; suppress = true; window.clearTimeout( suppressTimer ); suppressTimer = window.setTimeout( () => { suppress = false; }, 350 );
+				list.style.transition = 'none'; section.classList.add( 'is-carousel-dragging' );
+				if ( viewport.setPointerCapture ) { viewport.setPointerCapture( pointer ); }
+			}
+			if ( event.cancelable ) { event.preventDefault(); }
+			if ( dx > 0 && ! preparedPrev ) { preparedPrev = true; list.insertBefore( list.lastElementChild, list.firstElementChild ); }
+			list.style.transform = 'translateX(' + ( preparedPrev ? -step() + Math.max( dx, 0 ) : Math.min( dx, 0 ) ) + 'px)';
+		} );
+		const end = ( event, cancelled ) => {
+			if ( ! pending || event.pointerId !== pointer ) { return; }
+			if ( ! dragging ) { pending = false; pointer = null; return; }
+			try { viewport.releasePointerCapture( pointer ); } catch ( ignore ) {}
+			if ( cancelled ) { suppress = false; }
+			finishDrag( cancelled ? 0 : currentX - startX );
+		};
+		viewport.addEventListener( 'pointerup', ( event ) => end( event, false ) );
+		viewport.addEventListener( 'pointercancel', ( event ) => end( event, true ) );
+		viewport.addEventListener( 'click', ( event ) => { if ( suppress ) { event.preventDefault(); event.stopPropagation(); suppress = false; } }, true );
+		viewport.addEventListener( 'dragstart', ( event ) => event.preventDefault() );
+		section.addEventListener( 'mouseenter', pause ); section.addEventListener( 'mouseleave', resume );
+		section.addEventListener( 'focusin', pause ); section.addEventListener( 'focusout', ( event ) => { if ( ! section.contains( event.relatedTarget ) ) { resume(); } } );
+		let resizeTimer = 0;
+		window.addEventListener( 'resize', () => { window.clearTimeout( resizeTimer ); resizeTimer = window.setTimeout( () => { list.style.transition = 'none'; list.style.transform = 'translateX(0px)'; animating = false; }, 150 ); }, { passive: true } );
+		reduced.addEventListener( 'change', () => { reduced.matches ? stopTimer() : startTimer(); } );
+		section.classList.add( 'is-carousel-ready' );
+		startTimer();
+	} );
+}() );
+
+( function() {
+	'use strict';
+	// Project filters: tabs, term dropdowns with live counts, reset, load more and return-to-list state.
+	const split = ( value ) => ( value || '' ).split( /\s+/ ).filter( Boolean );
+	document.querySelectorAll( '[data-mrn-project-filters]' ).forEach( ( root ) => {
+		if ( root.dataset.mrnProjectsMounted ) { return; }
+		const cards = Array.from( root.querySelectorAll( '[data-project-card]' ) );
+		const list = cards.length ? cards[ 0 ].parentElement : null;
+		if ( ! list ) { return; }
+		const sizes = ( root.getAttribute( 'data-mrn-project-filters' ) || '' ).split( ',' ).map( Number );
+		const initial = sizes[ 0 ] >= 1 ? sizes[ 0 ] : 9;
+		const batch = sizes[ 1 ] >= 1 ? sizes[ 1 ] : 6;
+		const tabs = Array.from( root.querySelectorAll( 'button[data-project-tab]' ) );
+		const groups = Array.from( root.querySelectorAll( '[data-project-group]' ) ).map( ( group ) => ( {
+			key: group.getAttribute( 'data-project-group' ),
+			element: group,
+			trigger: group.querySelector( '.mrn-project-filters__trigger' ),
+			panel: group.querySelector( '.mrn-project-filters__panel' ),
+			badge: group.querySelector( '[data-project-badge]' ),
+			boxes: Array.from( group.querySelectorAll( 'input[type="checkbox"]' ) ),
+			active: new Set(),
+		} ) );
+		const reset = root.querySelector( '[data-project-reset]' );
+		const resetCount = root.querySelector( '[data-project-reset-count]' );
+		const more = root.querySelector( '[data-project-more]' );
+		const status = root.querySelector( '[data-project-status]' );
+		const message = root.getAttribute( 'data-project-status-message' ) || 'Showing %1$d of %2$d projects';
+		const empty = document.createElement( 'li' );
+		empty.className = 'mrn-project-filters__empty'; empty.hidden = true; empty.textContent = root.getAttribute( 'data-project-empty' ) || 'No posts found.';
+		list.appendChild( empty );
+		const storageKey = 'mrn-project-filters:' + window.location.pathname + '#' + ( root.id || '' );
+		let tab = '*', loaded = initial;
+		const slugs = ( card, name ) => split( card.getAttribute( 'data-project-' + name ) );
+		const inTab = ( card ) => '*' === tab || slugs( card, 'tabs' ).includes( tab );
+		const matches = ( card ) => inTab( card ) && groups.every( ( group ) => 0 === group.active.size || slugs( card, group.key ).some( ( slug ) => group.active.has( slug ) ) );
+		const badge = ( group ) => { if ( group.badge ) { group.badge.textContent = String( group.active.size ); group.badge.hidden = 0 === group.active.size; } };
+		const syncOptions = () => {
+			const tabCards = cards.filter( inTab );
+			groups.forEach( ( group ) => {
+				const counts = {};
+				tabCards.forEach( ( card ) => slugs( card, group.key ).forEach( ( slug ) => { counts[ slug ] = ( counts[ slug ] || 0 ) + 1; } ) );
+				group.boxes.forEach( ( box ) => {
+					const item = box.closest( '[data-project-term]' ), count = counts[ box.value ] || 0, label = item && item.querySelector( '[data-project-count]' );
+					if ( label ) { label.textContent = String( count ); }
+					if ( item ) { item.hidden = 0 === count; }
+					if ( 0 === count && box.checked ) { box.checked = false; group.active.delete( box.value ); }
+				} );
+				badge( group );
+			} );
+		};
+		const render = ( resetVisible, announce ) => {
+			if ( resetVisible ) { loaded = initial; }
+			const filtered = cards.filter( matches );
+			const visible = new Set( filtered.slice( 0, loaded ) );
+			let position = 0;
+			cards.forEach( ( card ) => {
+				const show = visible.has( card );
+				if ( show && card.hidden ) { card.style.setProperty( '--mrn-project-delay', ( position * 55 ) + 'ms' ); position++; }
+				card.hidden = ! show;
+			} );
+			empty.hidden = 0 !== filtered.length;
+			if ( more ) { more.parentElement.hidden = 0 === filtered.length || visible.size >= filtered.length; }
+			const total = groups.reduce( ( sum, group ) => sum + group.active.size, 0 );
+			if ( reset ) { reset.disabled = 0 === total; }
+			if ( resetCount ) { resetCount.textContent = total > 0 ? '(' + total + ')' : ''; }
+			if ( status && announce ) { status.textContent = message.replace( '%1$d', String( visible.size ) ).replace( '%2$d', String( filtered.length ) ); }
+			return Array.from( visible );
+		};
+		const closeAll = ( except ) => groups.forEach( ( group ) => { if ( group !== except && group.trigger && ! group.panel.hidden ) { group.panel.hidden = true; group.trigger.setAttribute( 'aria-expanded', 'false' ); } } );
+		groups.forEach( ( group ) => {
+			if ( ! group.trigger || ! group.panel ) { return; }
+			group.trigger.addEventListener( 'click', ( event ) => {
+				event.stopPropagation();
+				const open = group.panel.hidden;
+				closeAll( group );
+				group.panel.hidden = ! open; group.trigger.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
+			} );
+			group.panel.addEventListener( 'click', ( event ) => event.stopPropagation() );
+			group.boxes.forEach( ( box ) => box.addEventListener( 'change', () => {
+				box.checked ? group.active.add( box.value ) : group.active.delete( box.value );
+				badge( group ); render( true, true );
+			} ) );
+		} );
+		document.addEventListener( 'click', () => closeAll() );
+		document.addEventListener( 'keydown', ( event ) => {
+			if ( 'Escape' !== event.key ) { return; }
+			const open = groups.find( ( group ) => group.panel && ! group.panel.hidden );
+			if ( ! open ) { return; }
+			const inside = open.element.contains( document.activeElement );
+			closeAll();
+			if ( inside ) { open.trigger.focus(); }
+		} );
+		tabs.forEach( ( button ) => button.addEventListener( 'click', () => {
+			tab = button.getAttribute( 'data-project-tab' ) || '*';
+			tabs.forEach( ( other ) => other.setAttribute( 'aria-pressed', other === button ? 'true' : 'false' ) );
+			syncOptions(); render( true, true );
+		} ) );
+		if ( reset ) { reset.addEventListener( 'click', () => {
+			tab = '*';
+			tabs.forEach( ( button ) => button.setAttribute( 'aria-pressed', '*' === button.getAttribute( 'data-project-tab' ) ? 'true' : 'false' ) );
+			groups.forEach( ( group ) => { group.boxes.forEach( ( box ) => { box.checked = false; } ); group.active.clear(); } );
+			syncOptions(); render( true, true );
+		} ); }
+		if ( more ) { more.addEventListener( 'click', () => {
+			const before = new Set( cards.filter( ( card ) => ! card.hidden ) );
+			loaded += batch;
+			const visible = render( false, true );
+			if ( more.parentElement.hidden && document.activeElement === more ) {
+				const next = visible.find( ( card ) => ! before.has( card ) ), link = next && next.querySelector( 'a[href]' );
+				if ( link ) { link.focus( { preventScroll: true } ); }
+			}
+		} ); }
+		list.addEventListener( 'click', ( event ) => {
+			if ( ! event.target.closest( '[data-project-card] a[href]' ) ) { return; }
+			try { window.sessionStorage.setItem( storageKey, JSON.stringify( { tab, loaded, scroll: window.scrollY, groups: groups.map( ( group ) => [ group.key, Array.from( group.active ) ] ) } ) ); } catch ( ignore ) {}
+		} );
+		let restored = false;
+		try {
+			const saved = JSON.parse( window.sessionStorage.getItem( storageKey ) || 'null' );
+			window.sessionStorage.removeItem( storageKey );
+			if ( saved && 'object' === typeof saved ) {
+				if ( 'string' === typeof saved.tab && tabs.some( ( button ) => button.getAttribute( 'data-project-tab' ) === saved.tab ) ) { tab = saved.tab; tabs.forEach( ( button ) => button.setAttribute( 'aria-pressed', button.getAttribute( 'data-project-tab' ) === tab ? 'true' : 'false' ) ); }
+				( Array.isArray( saved.groups ) ? saved.groups : [] ).forEach( ( entry ) => {
+					const group = groups.find( ( candidate ) => candidate.key === entry[ 0 ] );
+					if ( group && Array.isArray( entry[ 1 ] ) ) { group.boxes.forEach( ( box ) => { if ( entry[ 1 ].includes( box.value ) ) { box.checked = true; group.active.add( box.value ); } } ); badge( group ); }
+				} );
+				loaded = Number.isInteger( saved.loaded ) && saved.loaded >= initial ? Math.min( saved.loaded, 1000 ) : initial;
+				restored = Number.isFinite( saved.scroll ) ? saved.scroll : true;
+			}
+		} catch ( ignore ) {}
+		root.querySelectorAll( '[data-project-controls]' ).forEach( ( controls ) => { controls.hidden = false; } );
+		syncOptions(); render( false, false );
+		root.classList.add( 'is-filters-ready' );
+		root.dataset.mrnProjectsMounted = 'true';
+		if ( true !== restored && false !== restored ) { window.requestAnimationFrame( () => window.scrollTo( { top: restored, behavior: 'instant' } ) ); }
+	} );
+}() );

@@ -266,8 +266,10 @@ echo mrn_base_stack_get_builder_anchor_markup( $row ); // phpcs:ignore WordPress
 					</div>
 				<?php endif; ?>
 
+				<?php echo mrn_base_stack_get_project_filter_controls( $row, $list_post_type ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Helper escapes every control. ?>
 				<?php echo mrn_base_stack_get_article_controls( $row ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Shared helper escapes all controls. ?>
-					<<?php echo esc_html( $list_tag ); ?> class="mrn-content-list-row__items mrn-content-list-row__items--<?php echo esc_attr( $list_style ); ?> mrn-ui__items">
+				<?php echo mrn_base_stack_get_project_carousel_markup( $row, $query->post_count, $row_anchor_id . '-items' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Helper returns static markup. ?>
+					<<?php echo esc_html( $list_tag ); ?><?php echo mrn_base_stack_is_project_carousel( $row ) ? ' id="' . esc_attr( $row_anchor_id . '-items' ) . '"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped id attribute. ?> class="mrn-content-list-row__items mrn-content-list-row__items--<?php echo esc_attr( $list_style ); ?> mrn-ui__items">
 					<?php if ( $has_posts ) : ?>
 						<?php while ( $query->have_posts() ) : ?>
 							<?php
@@ -286,6 +288,7 @@ echo mrn_base_stack_get_builder_anchor_markup( $row ); // phpcs:ignore WordPress
 										'article_settings' => $row,
 										'project_settings' => $row,
 										'comparison_settings' => $row,
+										'item_index'      => (int) $query->current_post,
 										'display_style'   => $display_style,
 										'show_featured_image' => $show_featured_image,
 										'show_publish_date' => $show_publish_date,
@@ -307,6 +310,8 @@ echo mrn_base_stack_get_builder_anchor_markup( $row ); // phpcs:ignore WordPress
 					<?php endif; ?>
 					<?php if ( $is_article_list && $has_posts ) : ?><li class="mrn-article__empty" data-article-empty hidden><?php echo esc_html( $empty_message ); ?></li><?php endif; ?>
 				</<?php echo esc_html( $list_tag ); ?>>
+				<?php echo mrn_base_stack_get_project_carousel_markup( $row, $query->post_count, $row_anchor_id . '-items', true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Helper returns static markup. ?>
+				<?php echo mrn_base_stack_get_project_filter_controls( $row, $list_post_type, true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Helper escapes every control. ?>
 				<?php echo mrn_base_stack_get_project_actions( $row ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Native helper escapes links and labels. ?>
 					<?php echo mrn_base_stack_get_article_controls( $row, true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Shared helper escapes all controls. ?>
 

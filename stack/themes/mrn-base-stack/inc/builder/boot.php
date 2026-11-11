@@ -38,6 +38,7 @@ require_once __DIR__ . '/content-list-careers.php';
 require_once __DIR__ . '/content-list-people.php';
 require_once __DIR__ . '/content-list-articles.php';
 require_once __DIR__ . '/content-list-projects.php';
+require_once __DIR__ . '/content-list-project-filters.php';
 
 require_once __DIR__ . '/content-list-comparisons.php';
 

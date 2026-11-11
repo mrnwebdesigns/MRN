@@ -134,7 +134,7 @@ if ( in_array( 'has-framed-image-stage', $section_classes, true ) && 'cover' ===
 if ( ( in_array( 'has-image-frame', $section_classes, true ) || in_array( 'has-framed-image-stage', $section_classes, true ) ) && '' === $label && '' === $heading && '' === $subheading && '' === trim( wp_strip_all_tags( $content ) ) && empty( $content_links ) ) { $section_classes[] = 'has-image-only-frame'; }
 $image_source_size = ( in_array( 'has-image-fill-media', $section_classes, true ) || in_array( 'has-image-natural-media', $section_classes, true ) || in_array( 'has-framed-image-stage', $section_classes, true ) ) ? 'full' : 'mrn-content-media';
 $image_attributes = array();
-if ( in_array( 'has-image-only-frame', $section_classes, true ) && in_array( $row['image_presentation'] ?? 'standard', array( 'standard', 'scroll-drift', 'framed-zoom' ), true ) ) {
+if ( ( in_array( 'has-image-only-frame', $section_classes, true ) || in_array( 'has-image-natural-media', $section_classes, true ) ) && in_array( $row['image_presentation'] ?? 'standard', array( 'standard', 'scroll-drift', 'framed-zoom' ), true ) ) {
 	// Keep WordPress auto-sizes containment proportional to the requested media.
 	$dimensions = mrn_base_stack_get_attachment_image_src( $image, $image_source_size );
 	if ( is_array( $dimensions ) && (int) $dimensions[1] > 0 && (int) $dimensions[2] > 0 ) { $image_attributes['style'] = sprintf( 'aspect-ratio:auto %d / %d', (int) $dimensions[1], (int) $dimensions[2] ); }
