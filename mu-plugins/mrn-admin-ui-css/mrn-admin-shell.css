@@ -308,6 +308,47 @@ body.mrn-themed-content #wpbody-content .acf-tab-wrap.-left > .acf-tab-group > l
 .mrn-themed-content #wpbody-content .mrn-notifications-center__item--alert { border-left-color: var(--mrn-admin-warning-line); }
 .mrn-themed-content #wpbody-content :is(.mrn-notifications-center__meta,.mrn-config-helper-field-description) { color: var(--mrn-admin-muted); }
 .mrn-themed-content #wpbody-content :is(.mrn-notifications-center__tabs,.mrn-notifications-center__toolbar,.mrn-config-helper-section-header) { background: transparent; color: var(--mrn-admin-ink); }
+/* Native Menus keeps WordPress's nesting, disclosure, drag and save behavior.
+   Theme its own surfaces rather than recoloring every plugin's accordion. */
+body.mrn-admin-menus #wpbody-content :is(.manage-menus,.menu-edit,#post-body,.accordion-container,.accordion-section-content,.tabs-panel,.menu-item-settings) {
+ background: var(--mrn-admin-surface); color: var(--mrn-admin-ink); border-color: var(--mrn-admin-line); box-shadow: none;
+}
+body.mrn-admin-menus #wpbody-content :is(#nav-menu-header,#nav-menu-footer,.accordion-section-title,.menu-item-handle,.bulk-select-button) {
+ background: var(--mrn-admin-surface-subtle); color: var(--mrn-admin-ink); border-color: var(--mrn-admin-line); box-shadow: none;
+}
+body.mrn-admin-menus #wpbody-content :is(.accordion-section,.menu-settings,.link-to-original) { border-color: var(--mrn-admin-line); }
+body.mrn-admin-menus #wpbody-content :is(.is-submenu,.item-type,.menu-item-title.no-title,.link-to-original,.accordion-section-title .dashicons) { color: var(--mrn-admin-muted); }
+body.mrn-admin-menus #wpbody-content .accordion-trigger { color: inherit; }
+body.mrn-admin-menus #wpbody-content :is(.accordion-section-title,.menu-item-handle,.bulk-select-button):hover,
+body.mrn-admin-menus #wpbody-content .bulk-select-button:focus-within { background: var(--mrn-admin-surface-hover); color: var(--mrn-admin-ink); border-color: var(--mrn-admin-control-line); }
+body.mrn-admin-menus #wpbody-content .bulk-selection .bulk-select-button,
+body.mrn-admin-menus #wpbody-content .bulk-select-switcher:focus + .bulk-select-button-label { color: var(--mrn-admin-accent); }
+body.mrn-admin-menus #wpbody-content :is(.category-tabs,.add-menu-item-tabs) > li.tabs { background: var(--mrn-admin-surface); border-color: var(--mrn-admin-line); }
+body.mrn-admin-menus #wpbody-content :is(.category-tabs,.add-menu-item-tabs) > li.tabs > a { color: var(--mrn-admin-ink); }
+body.mrn-admin-menus #wpbody-content :is(.item-delete,.menu-delete,.menu-items-delete) { color: var(--mrn-admin-danger); }
+body.mrn-admin-menus #wpbody-content #menu-to-edit :is(.menu-item-invalid,.deleting) .menu-item-handle { background: var(--mrn-admin-danger-surface); color: var(--mrn-admin-danger); border-color: var(--mrn-admin-danger-line); }
+body.mrn-admin-menus #wpbody-content .menu-item-pending .menu-item-handle { background: var(--mrn-admin-warning-surface); color: var(--mrn-admin-warning); border-color: var(--mrn-admin-warning-line); }
+@media (max-width:782px) {
+ body.mrn-admin-menus #menu-management-liquid { width: 100%; min-width: 0; }
+}
+/* MRN status panels share the shell palette, including supporting text and
+   semantic badges. This changes presentation only, never security settings. */
+.mrn-themed-content #wpbody-content .mrn-public-security-panel { background: var(--mrn-admin-surface); color: var(--mrn-admin-ink); border-color: var(--mrn-admin-line); border-radius: var(--mrn-admin-radius-component); }
+.mrn-themed-content #wpbody-content .mrn-public-security-panel__header { background: var(--mrn-admin-surface-subtle); border-color: var(--mrn-admin-line); border-radius: var(--mrn-admin-radius-component) var(--mrn-admin-radius-component) 0 0; }
+.mrn-themed-content #wpbody-content .mrn-public-security-detail { color: var(--mrn-admin-ink); }
+.mrn-themed-content #wpbody-content :is(.mrn-public-security-intro,.mrn-public-security-muted) { color: var(--mrn-admin-muted); }
+.mrn-themed-content #wpbody-content .mrn-public-security-copy-status { color: var(--mrn-admin-accent); }
+.mrn-themed-content #wpbody-content .mrn-public-security-wrap code { background: var(--mrn-admin-surface-subtle); color: var(--mrn-admin-muted); }
+.mrn-themed-content #wpbody-content .mrn-public-security-status--good { background: var(--mrn-admin-success-surface); color: var(--mrn-admin-success); border-color: var(--mrn-admin-success-line); }
+.mrn-themed-content #wpbody-content .mrn-public-security-status--warn { background: var(--mrn-admin-warning-surface); color: var(--mrn-admin-warning); border-color: var(--mrn-admin-warning-line); }
+.mrn-themed-content #wpbody-content .mrn-public-security-status--off { background: var(--mrn-admin-surface-subtle); color: var(--mrn-admin-muted); border-color: var(--mrn-admin-line); }
+.mrn-themed-content #wpbody-content .mrn-public-security-status--info { background: var(--mrn-admin-selected); color: var(--mrn-admin-selected-ink); border-color: var(--mrn-admin-control-line); }
+/* This exact library overview renders an inline grid and inline white cards.
+   Override only those legacy surfaces; other plugin grids remain untouched. */
+body.mrn-themed-content.toplevel_page_mrn-reusable-block-library #wpbody-content > .wrap > div[style*="display:grid"] { grid-template-columns: repeat(auto-fit,minmax(min(300px,100%),1fr)) !important; }
+body.mrn-themed-content.toplevel_page_mrn-reusable-block-library #wpbody-content > .wrap > div[style*="display:grid"] > div {
+ background: var(--mrn-admin-surface) !important; border-color: var(--mrn-admin-line) !important; color: var(--mrn-admin-ink);
+}
 /* Keep the settings bar in flow from first paint. Its actual wrapped height
    reserves the space; the legacy measured spacer is unnecessary in this shell.
    The helper still owns dirty-state detection and native saving. */

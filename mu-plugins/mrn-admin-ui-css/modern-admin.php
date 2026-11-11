@@ -14,6 +14,9 @@ function mrn_admin_ui_modern_screen() {
 	if ( 'dashboard' === $screen->id ) {
 		return 'dashboard';
 	}
+	if ( 'nav-menus' === $screen->id && 'nav-menus' === $screen->base ) {
+		return 'menus';
+	}
 	if ( in_array( $screen->id, array( 'users', 'plugins' ), true ) ) {
 		return 'list';
 	}
