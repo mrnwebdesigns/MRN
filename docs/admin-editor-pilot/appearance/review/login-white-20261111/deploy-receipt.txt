@@ -1,0 +1,12 @@
+No syntax errors detected in /home/mrndev-admin-editor/review-private/login-white-20261111/mrn-admin-ui-css.php
+{
+    "valid": true,
+    "host": "admin-editor-pilot.mrndev.io",
+    "checked_at": 1794407130,
+    "label": "pre-admin-pilot-login-white-20261111",
+    "nonce": "06e29f2d68db",
+    "key": "sites\/admin-editor-pilot-mrndev-io\/backup_2026-11-11-1425_Trilliant_06e29f2d68db-db.gz",
+    "size": 7094602,
+    "sha256": "6cecfae5bbd0c366fcf55e29a6f9cbd0b592f546bc3a6b54cf6a32877fc3b2c7"
+}
+{"installed": {"mrn-login-logo-white.svg": "8999edf405337f2b98c37b84f7f47cb9d59857acc59bc7cc0ad9fd06e6399cfb", "login.css": "080e87833bd72a71c6bc2426a742ce832890f5af8019511d10f646382780a2e0", "mrn-admin-ui-css.php": "0338fe5624a38d89bfa3ee8ce389cffd318ccd4b1d3db92665dc82d445c62929"}, "rollback": "/home/mrndev-admin-editor/review-private/login-white-20261111/rollback", "version": "3.3.7"}

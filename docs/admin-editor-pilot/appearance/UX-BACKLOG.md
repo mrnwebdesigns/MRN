@@ -253,3 +253,10 @@ sign-in/out, preference persistence, invalid-nonce handling, mobile and scoped a
 checks pass. [Screenshots and qualification](review/login-20261106/REVIEW.md).
 Await visual acceptance; next annotation UX-053. Whole-editor CPU, residual save
 latency and separate Hub health remain open; release/Fleet gates remain closed.
+
+**P2 UX-053 — white login logo in Dark Mode:** implemented and installed on Local
+Hub and the isolated review site. Reuses the existing white MRN knockout asset in
+Dark/System-dark; Light branding, link and dimensions are unchanged. Responsive,
+System switching and scoped accessibility checks pass. [Evidence and screenshots](review/login-white-20261111/REVIEW.md).
+Await visual acceptance; next annotation UX-054. Existing editor performance and
+Hub blockers remain open; release/Fleet gates remain closed.

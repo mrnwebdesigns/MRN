@@ -1,0 +1,161 @@
+/* Native login/recovery forms. Shared tokens own color; AME owns logo and links. */
+body.login.mrn-login {
+ background-color: var(--mrn-admin-canvas);
+ color: var(--mrn-admin-ink);
+ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+ font-size: 14px;
+ line-height: 1.5;
+ min-height: 100vh;
+}
+/* Site typography can also be printed on login; keep admin text in its own UI font. */
+.mrn-login :is(p, a, label, button, input, select, textarea) { font-family: inherit; }
+.mrn-login #login p { color: inherit; font: inherit; }
+.mrn-login :is(button, .button) { text-transform: none; letter-spacing: normal; }
+.mrn-login #login {
+ box-sizing: border-box;
+ width: min(100%, 448px);
+ padding: clamp(32px, 8vh, 80px) 24px 32px;
+}
+.mrn-login #login h1 a { max-width: 100%; margin-bottom: 28px; }
+.mrn-login #login form {
+ box-sizing: border-box;
+ margin: 0;
+ padding: 28px;
+ border: 1px solid var(--mrn-admin-line);
+ border-radius: var(--mrn-admin-radius-component);
+ background-color: var(--mrn-admin-surface);
+ color: var(--mrn-admin-ink);
+ box-shadow: var(--mrn-admin-shadow);
+ overflow: visible;
+}
+.mrn-login #login form::after { content: ""; display: table; clear: both; }
+.mrn-login #login label { color: var(--mrn-admin-ink); font: inherit; font-weight: 600; }
+.mrn-login #login form .input,
+.mrn-login .language-switcher select {
+ box-sizing: border-box;
+ min-height: 44px;
+ padding: 9px 12px;
+ border: 1px solid var(--mrn-admin-control-line);
+ border-radius: var(--mrn-admin-radius-control);
+ background-color: var(--mrn-admin-surface);
+ color: var(--mrn-admin-ink);
+ font: inherit;
+ font-size: 16px;
+ box-shadow: none;
+}
+.mrn-login #login form .input { width: 100%; margin: 8px 0 20px; }
+.mrn-login #login .wp-pwd input { padding-inline-end: 48px; }
+.mrn-login #login .wp-pwd .wp-hide-pw {
+ top: 8px;
+ width: 44px;
+ height: 44px;
+ padding: 0;
+ border: 0;
+ border-radius: var(--mrn-admin-radius-control);
+ background: transparent;
+ color: var(--mrn-admin-muted);
+}
+.mrn-login #login .wp-pwd .wp-hide-pw:hover { color: var(--mrn-admin-ink); background: var(--mrn-admin-surface-hover); }
+.mrn-login #login .forgetmenot { float: none; display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
+.mrn-login #login .forgetmenot label { font-weight: 400; }
+.mrn-login input[type="checkbox"] {
+ width: 18px;
+ height: 18px;
+ margin: 0;
+ border: 1px solid var(--mrn-admin-control-line);
+ border-radius: 3px;
+ background: var(--mrn-admin-surface);
+ box-shadow: none;
+}
+.mrn-login input[type="checkbox"]:checked::before {
+ content: "";
+ width: 5px;
+ height: 9px;
+ margin: 1px 5px;
+ border: solid var(--mrn-admin-accent);
+ border-width: 0 2px 2px 0;
+ transform: rotate(45deg);
+}
+.mrn-login #login .button,
+.mrn-login .language-switcher .button {
+ box-sizing: border-box;
+ min-height: 44px;
+ padding: 9px 16px;
+ border: 1px solid var(--mrn-admin-control-line);
+ border-radius: var(--mrn-admin-radius-control);
+ background: var(--mrn-admin-surface);
+ color: var(--mrn-admin-accent);
+ font: inherit;
+ font-weight: 600;
+ line-height: 24px;
+ text-shadow: none;
+ box-shadow: none;
+}
+.mrn-login #login .button-primary {
+ float: none;
+ width: 100%;
+ border-color: var(--mrn-admin-primary);
+ background: var(--mrn-admin-primary);
+ color: var(--mrn-admin-on-primary);
+}
+.mrn-login #login .button:hover,
+.mrn-login .language-switcher .button:hover { background: var(--mrn-admin-surface-hover); }
+.mrn-login #login .button-primary:hover { border-color: var(--mrn-admin-primary-hover); background: var(--mrn-admin-primary-hover); }
+.mrn-login #login .button:disabled {
+ color: var(--mrn-admin-disabled-ink);
+ background: var(--mrn-admin-disabled);
+ border-color: var(--mrn-admin-control-line);
+ cursor: default;
+}
+.mrn-login #login :is(input, button, a):focus-visible,
+.mrn-login .language-switcher :is(select, input):focus-visible {
+ outline: 2px solid var(--mrn-admin-focus);
+ outline-offset: 3px;
+ box-shadow: none;
+}
+.mrn-login #login .input:focus { border-color: var(--mrn-admin-focus); box-shadow: 0 0 0 1px var(--mrn-admin-focus); }
+.mrn-login #login a,
+.mrn-login .privacy-policy-page-link a { color: var(--mrn-admin-accent); text-decoration: underline; text-underline-offset: 3px; }
+.mrn-login #login a:hover { color: var(--mrn-admin-selected-ink); }
+.mrn-login #login #nav,
+.mrn-login #login #backtoblog { padding: 0 8px; margin: 20px 0 0; font: inherit; }
+.mrn-login .privacy-policy-page-link { margin: 28px 0 0; }
+.mrn-login #login #ame-login-form_bottom_message {
+ margin-top: 24px;
+ padding-top: 20px;
+ border-top: 1px solid var(--mrn-admin-line);
+ color: var(--mrn-admin-muted);
+ font: inherit;
+ overflow-wrap: anywhere;
+}
+.mrn-login #login :is(.message, .notice, #login_error) {
+ padding: 16px 20px;
+ margin: 0 0 20px;
+ border: 1px solid var(--mrn-admin-line);
+ border-inline-start: 4px solid var(--mrn-admin-accent);
+ border-radius: var(--mrn-admin-radius-control);
+ background: var(--mrn-admin-surface);
+ color: var(--mrn-admin-ink);
+ box-shadow: none;
+ overflow-wrap: anywhere;
+}
+.mrn-login #login :is(#login_error, .notice-error) {
+ border-inline-start-color: var(--mrn-admin-danger-line);
+ background: var(--mrn-admin-danger-surface);
+ color: var(--mrn-admin-danger);
+}
+.mrn-login #login .notice-success { border-inline-start-color: var(--mrn-admin-success-line); background: var(--mrn-admin-success-surface); color: var(--mrn-admin-success); }
+.mrn-login #login .notice-warning { border-inline-start-color: var(--mrn-admin-warning-line); background: var(--mrn-admin-warning-surface); color: var(--mrn-admin-warning); }
+.mrn-login #login .description,
+.mrn-login #login .indicator-hint { color: var(--mrn-admin-muted); font-size: 14px; }
+.mrn-login .language-switcher { padding: 0 24px 24px; }
+.mrn-login .language-switcher form { display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap; }
+.mrn-login .language-switcher select { max-width: 100%; }
+body.interim-login.mrn-login #login { padding-top: 20px; }
+@media (max-width: 480px) {
+ .mrn-login #login { padding-inline: 20px; }
+ .mrn-login #login form { padding: 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+ .mrn-login #login { animation: none; }
+}

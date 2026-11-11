@@ -1,0 +1,310 @@
+{
+  "phase": "installed",
+  "rows": [
+    {
+      "preference": "light",
+      "scheme": "dark",
+      "screen": "login",
+      "dark": false,
+      "image": "none, url(\"https://admin-editor-pilot.localhost/wp-content/uploads/mrn-stack-branding/mrn-login-logo.png\")",
+      "href": "https://mrnwebdesigns.com/",
+      "aria": null,
+      "text": "Created by MRN Web Designs",
+      "rect": {
+        "width": 90,
+        "height": 90
+      },
+      "inputs": [
+        [
+          "log",
+          "text"
+        ],
+        [
+          "pwd",
+          "password"
+        ],
+        [
+          "rememberme",
+          "checkbox"
+        ],
+        [
+          "wp-submit",
+          "submit"
+        ],
+        [
+          "redirect_to",
+          "hidden"
+        ],
+        [
+          "testcookie",
+          "hidden"
+        ]
+      ],
+      "scripts": [],
+      "violations": [],
+      "errors": []
+    },
+    {
+      "preference": "light",
+      "scheme": "dark",
+      "screen": "recovery",
+      "dark": false,
+      "image": "none, url(\"https://admin-editor-pilot.localhost/wp-content/uploads/mrn-stack-branding/mrn-login-logo.png\")",
+      "href": "https://mrnwebdesigns.com/",
+      "aria": null,
+      "text": "Created by MRN Web Designs",
+      "rect": {
+        "width": 90,
+        "height": 90
+      },
+      "inputs": [
+        [
+          "user_login",
+          "text"
+        ],
+        [
+          "redirect_to",
+          "hidden"
+        ],
+        [
+          "wp-submit",
+          "submit"
+        ]
+      ],
+      "scripts": [],
+      "violations": [],
+      "errors": []
+    },
+    {
+      "preference": "dark",
+      "scheme": "light",
+      "screen": "login",
+      "dark": true,
+      "image": "url(\"https://admin-editor-pilot.localhost/wp-content/mu-plugins/mrn-admin-ui-css/mrn-login-logo-white.svg\")",
+      "href": "https://mrnwebdesigns.com/",
+      "aria": null,
+      "text": "Created by MRN Web Designs",
+      "rect": {
+        "width": 90,
+        "height": 90
+      },
+      "inputs": [
+        [
+          "log",
+          "text"
+        ],
+        [
+          "pwd",
+          "password"
+        ],
+        [
+          "rememberme",
+          "checkbox"
+        ],
+        [
+          "wp-submit",
+          "submit"
+        ],
+        [
+          "redirect_to",
+          "hidden"
+        ],
+        [
+          "testcookie",
+          "hidden"
+        ]
+      ],
+      "scripts": [],
+      "violations": [],
+      "errors": []
+    },
+    {
+      "preference": "dark",
+      "scheme": "light",
+      "screen": "recovery",
+      "dark": true,
+      "image": "url(\"https://admin-editor-pilot.localhost/wp-content/mu-plugins/mrn-admin-ui-css/mrn-login-logo-white.svg\")",
+      "href": "https://mrnwebdesigns.com/",
+      "aria": null,
+      "text": "Created by MRN Web Designs",
+      "rect": {
+        "width": 90,
+        "height": 90
+      },
+      "inputs": [
+        [
+          "user_login",
+          "text"
+        ],
+        [
+          "redirect_to",
+          "hidden"
+        ],
+        [
+          "wp-submit",
+          "submit"
+        ]
+      ],
+      "scripts": [],
+      "violations": [],
+      "errors": []
+    },
+    {
+      "preference": "system",
+      "scheme": "light",
+      "screen": "login",
+      "dark": false,
+      "image": "none, url(\"https://admin-editor-pilot.localhost/wp-content/uploads/mrn-stack-branding/mrn-login-logo.png\")",
+      "href": "https://mrnwebdesigns.com/",
+      "aria": null,
+      "text": "Created by MRN Web Designs",
+      "rect": {
+        "width": 90,
+        "height": 90
+      },
+      "inputs": [
+        [
+          "log",
+          "text"
+        ],
+        [
+          "pwd",
+          "password"
+        ],
+        [
+          "rememberme",
+          "checkbox"
+        ],
+        [
+          "wp-submit",
+          "submit"
+        ],
+        [
+          "redirect_to",
+          "hidden"
+        ],
+        [
+          "testcookie",
+          "hidden"
+        ]
+      ],
+      "scripts": [],
+      "violations": [],
+      "errors": []
+    },
+    {
+      "preference": "system",
+      "scheme": "light",
+      "screen": "recovery",
+      "dark": false,
+      "image": "none, url(\"https://admin-editor-pilot.localhost/wp-content/uploads/mrn-stack-branding/mrn-login-logo.png\")",
+      "href": "https://mrnwebdesigns.com/",
+      "aria": null,
+      "text": "Created by MRN Web Designs",
+      "rect": {
+        "width": 90,
+        "height": 90
+      },
+      "inputs": [
+        [
+          "user_login",
+          "text"
+        ],
+        [
+          "redirect_to",
+          "hidden"
+        ],
+        [
+          "wp-submit",
+          "submit"
+        ]
+      ],
+      "scripts": [],
+      "violations": [],
+      "errors": []
+    },
+    {
+      "preference": "system",
+      "scheme": "dark",
+      "screen": "login",
+      "dark": true,
+      "image": "url(\"https://admin-editor-pilot.localhost/wp-content/mu-plugins/mrn-admin-ui-css/mrn-login-logo-white.svg\")",
+      "href": "https://mrnwebdesigns.com/",
+      "aria": null,
+      "text": "Created by MRN Web Designs",
+      "rect": {
+        "width": 90,
+        "height": 90
+      },
+      "inputs": [
+        [
+          "log",
+          "text"
+        ],
+        [
+          "pwd",
+          "password"
+        ],
+        [
+          "rememberme",
+          "checkbox"
+        ],
+        [
+          "wp-submit",
+          "submit"
+        ],
+        [
+          "redirect_to",
+          "hidden"
+        ],
+        [
+          "testcookie",
+          "hidden"
+        ]
+      ],
+      "scripts": [],
+      "violations": [],
+      "errors": []
+    },
+    {
+      "preference": "system",
+      "scheme": "dark",
+      "screen": "recovery",
+      "dark": true,
+      "image": "url(\"https://admin-editor-pilot.localhost/wp-content/mu-plugins/mrn-admin-ui-css/mrn-login-logo-white.svg\")",
+      "href": "https://mrnwebdesigns.com/",
+      "aria": null,
+      "text": "Created by MRN Web Designs",
+      "rect": {
+        "width": 90,
+        "height": 90
+      },
+      "inputs": [
+        [
+          "user_login",
+          "text"
+        ],
+        [
+          "redirect_to",
+          "hidden"
+        ],
+        [
+          "wp-submit",
+          "submit"
+        ]
+      ],
+      "scripts": [],
+      "violations": [],
+      "errors": []
+    }
+  ],
+  "checks": [
+    "Light logo screenshot unchanged from previous CSS",
+    "MRN link and 90px geometry retained",
+    "Explicit Light wins over dark OS; explicit Dark wins over light OS",
+    "System switches logo live with OS",
+    "Login and recovery: axe zero violations",
+    "320px and 768px no overflow",
+    "No added component JavaScript"
+  ]
+}
