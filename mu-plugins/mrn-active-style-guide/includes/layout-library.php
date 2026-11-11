@@ -162,6 +162,36 @@ function mrn_active_style_guide_get_layout_library_sample_values( array $fields,
 }
 
 /**
+ * Resolve a layout's full ACF field schema from the active site's field group.
+ *
+ * The Stack allowlist intentionally holds rendering metadata only, so its
+ * layouts do not include the ACF sub-field schema required for fixtures.
+ *
+ * @param array<string, mixed> $entry       Layout catalog entry.
+ * @param string               $layout_name Layout machine name.
+ * @return array<int, array<string, mixed>>
+ */
+function mrn_active_style_guide_get_layout_library_layout_fields( array $entry, string $layout_name ): array {
+	if ( ! function_exists( 'acf_get_field' ) ) {
+		return array();
+	}
+
+	$field = acf_get_field( sanitize_key( (string) ( $entry['field_name'] ?? '' ) ) );
+	$layout_name = sanitize_key( $layout_name );
+	if ( ! is_array( $field ) || '' === $layout_name || empty( $field['layouts'] ) || ! is_array( $field['layouts'] ) ) {
+		return array();
+	}
+
+	foreach ( $field['layouts'] as $layout ) {
+		if ( is_array( $layout ) && $layout_name === sanitize_key( (string) ( $layout['name'] ?? '' ) ) ) {
+			return isset( $layout['sub_fields'] ) && is_array( $layout['sub_fields'] ) ? $layout['sub_fields'] : array();
+		}
+	}
+
+	return array();
+}
+
+/**
  * Create or update private fixtures for layouts with no published example.
  *
  * @return array<string, mixed>
@@ -207,7 +237,7 @@ function mrn_active_style_guide_regenerate_layout_library_fixtures(): array {
 		update_post_meta( $post_id, MRN_ACTIVE_STYLE_GUIDE_LAYOUT_LIBRARY_FIXTURE_META, $layout_name );
 		$row = array_merge(
 			array( 'acf_fc_layout' => $layout_name ),
-			mrn_active_style_guide_get_layout_library_sample_values( $entry['layout']['sub_fields'] ?? array(), $layout_name )
+			mrn_active_style_guide_get_layout_library_sample_values( mrn_active_style_guide_get_layout_library_layout_fields( $entry, $layout_name ), $layout_name )
 		);
 		update_field( $field_key, array( $row ), $post_id );
 		$result['created'][ $layout_name ] = $post_id;
