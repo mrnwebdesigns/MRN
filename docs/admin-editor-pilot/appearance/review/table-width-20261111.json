@@ -1,0 +1,101 @@
+{
+  "date": "2026-11-11",
+  "source_commit": "2bb1858454e4ac93cb5bbb1fcad4f342ca029107",
+  "host": "admin-editor-pilot.mrndev.io",
+  "change": "Remove the 1600px wrapper cap only for shared native admin lists; preserve existing gutters and native 100% table width.",
+  "file": "mu-plugins/mrn-admin-ui-css/mrn-modern-admin.css",
+  "css_bytes_added": 158,
+  "javascript_added": false,
+  "qa": {
+    "mrn_qa": "pass, component source checks",
+    "staged_gate": "pass, exact source index snapshot",
+    "responsive_fixture": {
+      "pass": true,
+      "cases": 24,
+      "viewport_widths": [
+        390,
+        768,
+        1440,
+        1920,
+        2560,
+        3840
+      ],
+      "appearances": [
+        "light",
+        "dark"
+      ],
+      "sidebar": [
+        "expanded",
+        "folded"
+      ],
+      "assertions": [
+        "wrapper fills available width",
+        "table and toolbar align",
+        "no added horizontal overflow",
+        "narrow layouts unchanged",
+        "dashboard/settings/vendor scopes retain existing cap"
+      ]
+    },
+    "runtime_browser": "Not run: this older thread has no internal_browser tools. Fixture uses anonymous isolated native markup and deployed WordPress core CSS, not an authenticated admin capture.",
+    "axe": "Not run against authenticated admin; no markup, colors, or focus changes. Responsive overflow checked in isolated fixture.",
+    "performance": "Two CSS lines; no new request, JavaScript, DOM mutation, or layout initialization. No runtime timing claim.",
+    "api": "No handlers changed; source API audit passed. Runtime API smoke not triggered by CSS-only change.",
+    "release": "Not release or Fleet qualification; existing editor CPU/save and Hub blockers unchanged."
+  },
+  "wide_measurements": [
+    {
+      "viewport": 390,
+      "before": 358,
+      "after": 358,
+      "table": 358
+    },
+    {
+      "viewport": 768,
+      "before": 736,
+      "after": 736,
+      "table": 736
+    },
+    {
+      "viewport": 1440,
+      "before": 1216,
+      "after": 1216,
+      "table": 1216
+    },
+    {
+      "viewport": 1920,
+      "before": 1600,
+      "after": 1696,
+      "table": 1696
+    },
+    {
+      "viewport": 2560,
+      "before": 1600,
+      "after": 2336,
+      "table": 2336
+    },
+    {
+      "viewport": 3840,
+      "before": 1600,
+      "after": 3616,
+      "table": 3616
+    }
+  ],
+  "deployment": {
+    "host": "admin-editor-pilot.mrndev.io",
+    "backup": {
+      "valid": true,
+      "host": "admin-editor-pilot.mrndev.io",
+      "checked_at": 1794420758,
+      "label": "pre-admin-pilot-table-width-20261111",
+      "nonce": "307941d47542",
+      "key": "sites/admin-editor-pilot-mrndev-io/backup_2026-11-11-1812_Trilliant_307941d47542-db.gz",
+      "size": 7092985,
+      "sha256": "f8201ce22523306250407f8ae528dd51d7c9b8b0efb8f3f438de04047a1509c5"
+    },
+    "file": "mrn-modern-admin.css",
+    "before": "d551834287004afc8a7f02248cb8ee2dbf2979d7532e186ebf6a5ffd5f3cb165",
+    "installed": "b975d036788d93f4e09a22b8b6d0d4353a350a4c62d88af0f450ca0d5723ddd6",
+    "rollback": "/home/mrndev-admin-editor/review-private/table-width-20261111/rollback"
+  },
+  "public_stylesheet_sha256": "b975d036788d93f4e09a22b8b6d0d4353a350a4c62d88af0f450ca0d5723ddd6"
+}
