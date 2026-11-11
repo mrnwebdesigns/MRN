@@ -694,3 +694,119 @@
 		if ( true !== restored && false !== restored ) { window.requestAnimationFrame( () => window.scrollTo( { top: restored, behavior: 'instant' } ) ); }
 	} );
 }() );
+
+( function() {
+	'use strict';
+	// Underlined WPForms: floating labels, a styled single-select panel and an all-required-filled submit state.
+	const clean = ( text ) => ( text || '' ).replace( /\s*\*\s*$/, '' ).replace( /^choose\s+/i, '' ).trim();
+	const hasValue = ( control ) => !! control && ( ( control.value == null ? '' : control.value ) + '' ).trim() !== '';
+	const controlOf = ( field ) => field.querySelector( 'input:not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]), textarea, select' );
+	const placeholderOf = ( control ) => {
+		if ( ! control ) { return ''; }
+		if ( 'SELECT' === control.tagName ) { const option = control.querySelector( 'option.placeholder, option[value=""]' ); return clean( option ? option.textContent : '' ); }
+		return clean( control.getAttribute( 'placeholder' ) || control.getAttribute( 'aria-label' ) || '' );
+	};
+	let uid = 0;
+	function floating( field ) {
+		if ( field.dataset.mrnFloatingInit === '1' || field.matches( '.wpforms-field-payment-checkbox, .wpforms-field-file-upload' ) ) { return; }
+		const control = controlOf( field );
+		if ( ! control || 'true' === control.getAttribute( 'aria-hidden' ) || control.tabIndex < 0 ) { return; }
+		let label = field.querySelector( ':scope > .wpforms-field-label' );
+		if ( label && 'true' === label.getAttribute( 'aria-hidden' ) ) { return; }
+		if ( ! ( label && label.classList.contains( 'wpforms-label-hide' ) ) && ! placeholderOf( control ) ) { return; }
+		const placeholder = placeholderOf( control );
+		if ( ! label && placeholder && control.id ) {
+			label = document.createElement( 'label' );
+			label.className = 'wpforms-field-label wpforms-label-hide mrn-generated-label';
+			label.setAttribute( 'for', control.id ); label.textContent = placeholder;
+			field.insertBefore( label, field.firstChild );
+		} else if ( label && ! clean( label.textContent ) && placeholder ) { label.textContent = placeholder; }
+		if ( ! label ) { return; }
+		const name = clean( label.textContent ) || placeholder;
+		if ( name && ! control.getAttribute( 'aria-label' ) ) { control.setAttribute( 'aria-label', name ); }
+		field.dataset.mrnFloatingInit = '1'; field.classList.add( 'mrn-floating-field' );
+		const refresh = () => { const value = hasValue( control ); field.classList.toggle( 'mrn-field-has-value', value ); field.classList.toggle( 'mrn-field-is-active', value || field.classList.contains( 'mrn-field-is-focused' ) ); };
+		control.addEventListener( 'focus', () => { field.classList.add( 'mrn-field-is-focused' ); refresh(); } );
+		control.addEventListener( 'blur', () => { field.classList.remove( 'mrn-field-is-focused' ); refresh(); } );
+		control.addEventListener( 'input', refresh ); control.addEventListener( 'change', refresh );
+		refresh();
+	}
+	function enhanceSelect( select ) {
+		if ( select.dataset.mrnSelectInit === '1' || select.multiple || select.closest( '.choices' ) ) { return; }
+		select.dataset.mrnSelectInit = '1'; select.setAttribute( 'tabindex', '-1' );
+		const field = select.closest( '.wpforms-field' );
+		const fieldLabel = field ? field.querySelector( ':scope > .wpforms-field-label' ) : null;
+		const base = select.id || 'mrn-select-' + ( ++uid );
+		if ( fieldLabel && ! fieldLabel.id ) { fieldLabel.id = base + '-label'; }
+		const wrap = document.createElement( 'div' ); wrap.className = 'mrn-select';
+		const trigger = document.createElement( 'button' ); trigger.type = 'button'; trigger.className = 'mrn-select__trigger';
+		trigger.setAttribute( 'aria-haspopup', 'listbox' ); trigger.setAttribute( 'aria-expanded', 'false' );
+		trigger.innerHTML = '<span class="mrn-select__label"></span><svg class="mrn-select__chevron" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"></polyline></svg>';
+		const value = trigger.querySelector( '.mrn-select__label' ); value.id = base + '-value';
+		if ( fieldLabel && fieldLabel.id ) { trigger.setAttribute( 'aria-labelledby', fieldLabel.id + ' ' + value.id ); } else if ( fieldLabel ) { trigger.setAttribute( 'aria-label', clean( fieldLabel.textContent ) ); }
+		const panel = document.createElement( 'div' ); panel.className = 'mrn-select__panel'; panel.id = base + '-listbox'; panel.setAttribute( 'role', 'listbox' ); panel.setAttribute( 'aria-hidden', 'true' );
+		if ( fieldLabel ) { panel.setAttribute( 'aria-labelledby', fieldLabel.id ); } else { panel.setAttribute( 'aria-label', 'Options' ); }
+		trigger.setAttribute( 'aria-controls', panel.id );
+		const options = Array.from( select.options ).map( ( opt, i ) => {
+			const item = document.createElement( 'div' ); item.className = 'mrn-select__option' + ( '' === opt.value ? ' is-placeholder' : '' );
+			item.setAttribute( 'role', 'option' ); item.setAttribute( 'tabindex', '-1' ); item.dataset.index = String( i ); item.id = base + '-option-' + i; item.textContent = opt.textContent;
+			item.addEventListener( 'click', () => { choose( i ); close(); next(); } ); panel.appendChild( item ); return item;
+		} );
+		const selectable = () => options.filter( ( item ) => ! item.classList.contains( 'is-placeholder' ) );
+		const sync = () => {
+			const opt = select.options[ select.selectedIndex ]; value.textContent = opt ? opt.textContent : ''; wrap.classList.toggle( 'is-empty', ! select.value );
+			options.forEach( ( item ) => { const on = parseInt( item.dataset.index, 10 ) === select.selectedIndex; item.classList.toggle( 'is-selected', on ); item.setAttribute( 'aria-selected', on ? 'true' : 'false' ); } );
+		};
+		const choose = ( index ) => { select.selectedIndex = index; select.dispatchEvent( new Event( 'input', { bubbles: true } ) ); select.dispatchEvent( new Event( 'change', { bubbles: true } ) ); sync(); };
+		const open = () => { wrap.classList.add( 'is-open' ); trigger.setAttribute( 'aria-expanded', 'true' ); panel.setAttribute( 'aria-hidden', 'false' ); };
+		const close = () => { wrap.classList.remove( 'is-open' ); trigger.setAttribute( 'aria-expanded', 'false' ); panel.setAttribute( 'aria-hidden', 'true' ); };
+		let skipFocusOpen = false;
+		const next = () => {
+			const fields = select.form ? Array.from( select.form.querySelectorAll( '.wpforms-field' ) ) : [];
+			for ( let i = fields.indexOf( field ) + 1; field && i < fields.length; i++ ) {
+				const control = fields[ i ].querySelector( 'input:not([type="hidden"]):not([disabled]), textarea:not([disabled]), .mrn-select__trigger' );
+				if ( control && null !== control.offsetParent ) { control.focus(); return; }
+			}
+			skipFocusOpen = true; trigger.focus(); window.setTimeout( () => { skipFocusOpen = false; }, 0 );
+		};
+		trigger.addEventListener( 'pointerdown', () => { skipFocusOpen = true; window.setTimeout( () => { skipFocusOpen = false; }, 0 ); } );
+		trigger.addEventListener( 'focus', () => { if ( ! skipFocusOpen ) { open(); } } );
+		trigger.addEventListener( 'click', ( event ) => { event.preventDefault(); wrap.classList.contains( 'is-open' ) ? close() : open(); } );
+		trigger.addEventListener( 'keydown', ( event ) => {
+			if ( [ 'ArrowDown', 'Enter', ' ' ].includes( event.key ) ) { event.preventDefault(); open(); const list = selectable(); const current = list.find( ( item ) => item.classList.contains( 'is-selected' ) ) || list[ 0 ]; if ( current ) { current.focus(); } }
+		} );
+		panel.addEventListener( 'keydown', ( event ) => {
+			const list = selectable(), index = list.indexOf( document.activeElement );
+			if ( 'ArrowDown' === event.key ) { event.preventDefault(); ( list[ index + 1 ] || list[ 0 ] ).focus(); }
+			else if ( 'ArrowUp' === event.key ) { event.preventDefault(); ( list[ index - 1 ] || list[ list.length - 1 ] ).focus(); }
+			else if ( ( 'Enter' === event.key || ' ' === event.key ) && document.activeElement.dataset.index ) { event.preventDefault(); choose( parseInt( document.activeElement.dataset.index, 10 ) ); close(); next(); }
+			else if ( 'Escape' === event.key ) { close(); trigger.focus(); }
+		} );
+		document.addEventListener( 'click', ( event ) => { if ( ! wrap.contains( event.target ) ) { close(); } } );
+		wrap.addEventListener( 'focusout', () => window.setTimeout( () => { if ( ! wrap.contains( document.activeElement ) ) { close(); } }, 0 ) );
+		select.addEventListener( 'change', sync );
+		select.parentNode.insertBefore( wrap, select ); wrap.appendChild( trigger ); wrap.appendChild( panel ); wrap.appendChild( select ); sync();
+	}
+	function filled( form ) {
+		const usable = ( el ) => ! [ 'hidden', 'button', 'submit', 'reset' ].includes( ( el.type || '' ).toLowerCase() );
+		const inputs = Array.from( form.querySelectorAll( 'input[required], select[required], textarea[required], [aria-required="true"], .wpforms-field-required input, .wpforms-field-required select, .wpforms-field-required textarea' ) ).filter( usable );
+		const has = ( el ) => {
+			const type = ( el.type || '' ).toLowerCase();
+			if ( 'checkbox' === type || 'radio' === type ) { return el.name && el.form ? el.form.querySelectorAll( 'input[name="' + ( window.CSS && CSS.escape ? CSS.escape( el.name ) : el.name ) + '"]:checked' ).length > 0 : el.checked; }
+			return hasValue( el );
+		};
+		form.classList.toggle( 'all-filled', inputs.length > 0 && inputs.every( has ) );
+	}
+	function init() {
+		document.querySelectorAll( '[data-mrn-underline-form] .wpforms-form' ).forEach( ( form ) => {
+			if ( form.dataset.mrnUnderlineMounted ) { return; }
+			form.dataset.mrnUnderlineMounted = '1';
+			form.querySelectorAll( '.wpforms-field' ).forEach( floating );
+			form.querySelectorAll( '.wpforms-field select' ).forEach( enhanceSelect );
+			form.querySelectorAll( '.select_inline select' ).forEach( ( select ) => select.addEventListener( 'change', () => { if ( '' !== select.value ) { select.closest( '.select_inline' ).classList.add( 'selected' ); } } ) );
+			[ 'input', 'change', 'keyup', 'blur' ].forEach( ( type ) => form.addEventListener( type, () => filled( form ), true ) );
+			filled( form ); window.setTimeout( () => filled( form ), 600 ); window.setTimeout( () => filled( form ), 1800 );
+		} );
+	}
+	if ( document.readyState === 'loading' ) { document.addEventListener( 'DOMContentLoaded', init, { once: true } ); } else { init(); }
+}() );
