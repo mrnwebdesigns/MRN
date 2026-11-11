@@ -286,7 +286,7 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 					'instructions'  => 'People use designation and hover_video. Comparisons use before_image, after_image and tags. Sources, selection, order and pagination remain controlled by Content Lists.',
 				)
 			),
-		), mrn_base_stack_get_career_list_fields( $seed ), function_exists( 'mrn_base_stack_get_people_frame_fields' ) ? mrn_base_stack_get_people_frame_fields( $seed ) : array(), mrn_base_stack_get_article_list_fields( $seed ), function_exists( 'mrn_base_stack_get_project_list_fields' ) ? mrn_base_stack_get_project_list_fields( $seed ) : array() );
+		), mrn_base_stack_get_career_list_fields( $seed ), function_exists( 'mrn_base_stack_get_people_frame_fields' ) ? mrn_base_stack_get_people_frame_fields( $seed ) : array(), mrn_base_stack_get_article_list_fields( $seed ), function_exists( 'mrn_base_stack_get_project_list_fields' ) ? mrn_base_stack_get_project_list_fields( $seed ) : array(), function_exists( 'mrn_base_stack_get_comparison_list_fields' ) ? mrn_base_stack_get_comparison_list_fields( $seed ) : array() );
 	}
 	if ( 'video' === $layout ) {
 		return array_merge( array(

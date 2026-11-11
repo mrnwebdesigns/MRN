@@ -3262,6 +3262,8 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 
 	if ( 'careers' === ( $args['record_presentation'] ?? '' ) ) { return mrn_base_stack_render_career_list_item( $item_post, $args ); }
 
+	if ( 'comparisons' === ( $args['record_presentation'] ?? '' ) && mrn_base_stack_is_comparison_frame( is_array( $args['comparison_settings'] ?? null ) ? $args['comparison_settings'] : array() ) ) { return mrn_base_stack_render_comparison_stack_item( $item_post, $args ); }
+
 	if ( in_array( $args['record_presentation'] ?? '', array( 'people', 'comparisons' ), true ) && function_exists( 'mrn_base_stack_render_record_presentation' ) ) {
 		return mrn_base_stack_render_record_presentation( $item_post, $args );
 	}

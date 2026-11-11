@@ -390,3 +390,74 @@
 	}
 	if ( document.readyState === 'loading' ) { document.addEventListener( 'DOMContentLoaded', init, { once: true } ); } else { init(); }
 }() );
+
+( function() {
+	'use strict';
+	// Before / After stacked cards: pin below the site header; each covered card recedes and the oldest releases.
+	const GAP = 10;
+	const SCALE_MIN = 0.94;
+	const LIFT = 40;
+	const VISIBLE = 3;
+	const reduced = window.matchMedia( '(prefers-reduced-motion: reduce)' );
+	const small = window.matchMedia( '(max-width: 767px)' );
+	const lists = document.querySelectorAll( '.has-comparison-frame .mrn-content-list-row__items' );
+	lists.forEach( ( list ) => {
+		const cards = Array.from( list.querySelectorAll( '[data-mrn-comparison-card]' ) );
+		const section = list.closest( '.has-comparison-frame' );
+		if ( ! section || cards.length < 1 ) { return; }
+		const count = cards.length;
+		const peek = () => parseFloat( getComputedStyle( section ).getPropertyValue( '--mrn-comparison-stack-peek' ) ) || 10;
+		let stackTop = GAP;
+		const shift = cards.map( () => 0 );
+		const header = document.querySelector( '#masthead, #site-header, .site-header' );
+		const measure = () => {
+			stackTop = ( header ? header.getBoundingClientRect().height : 0 ) + GAP;
+			section.style.setProperty( '--mrn-comparison-stack-top', stackTop + 'px' );
+		};
+		const enabled = () => ! reduced.matches && ! small.matches;
+		const clear = () => cards.forEach( ( card, i ) => {
+			card.style.transform = '';
+			card.style.opacity = '';
+			card.style.pointerEvents = '';
+			card.style.setProperty( '--mrn-comparison-cover', 0 );
+			shift[ i ] = 0;
+		} );
+		const pinProgress = ( i ) => {
+			const card = cards[ i ];
+			const pinned = stackTop + i * peek();
+			const height = card.offsetHeight || 1;
+			const top = card.getBoundingClientRect().top - shift[ i ];
+			return Math.max( 0, Math.min( 1, ( pinned + height - top ) / height ) );
+		};
+		const update = () => {
+			if ( ! enabled() ) { clear(); return; }
+			let released = 0;
+			cards.forEach( ( card, i ) => {
+				card.style.setProperty( '--mrn-comparison-index', i );
+				const cover = i < count - 1 ? pinProgress( i + 1 ) : 0;
+				const scale = 1 - cover * ( 1 - SCALE_MIN );
+				const exit = i + VISIBLE < count ? pinProgress( i + VISIBLE ) : 0;
+				const e = exit * exit * ( 3 - 2 * exit );
+				const ty = -( released * peek() ) - e * LIFT;
+				card.style.transform = 'translateY(' + ty.toFixed( 1 ) + 'px) scale(' + ( scale * ( 1 - e * 0.04 ) ).toFixed( 4 ) + ')';
+				card.style.opacity = ( 1 - e ).toFixed( 3 );
+				card.style.pointerEvents = e > 0.95 ? 'none' : '';
+				card.style.setProperty( '--mrn-comparison-cover', cover.toFixed( 4 ) );
+				shift[ i ] = ty;
+				released += e;
+			} );
+		};
+		let ticking = false;
+		const onScroll = () => {
+			if ( ticking ) { return; }
+			ticking = true;
+			window.requestAnimationFrame( () => { ticking = false; update(); } );
+		};
+		measure();
+		window.addEventListener( 'scroll', onScroll, { passive: true } );
+		window.addEventListener( 'resize', () => { measure(); update(); } );
+		reduced.addEventListener?.( 'change', update );
+		small.addEventListener?.( 'change', update );
+		update();
+	} );
+}() );
