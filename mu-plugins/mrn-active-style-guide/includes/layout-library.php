@@ -276,6 +276,7 @@ add_filter( 'mrn_base_stack_acf_layout_picker_metadata', 'mrn_active_style_guide
 /** Build the capture plan used by the reviewed Playwright capture tool. */
 function mrn_active_style_guide_get_layout_library_capture_manifest(): array {
 	$targets = array();
+	$unavailable = array();
 	foreach ( mrn_active_style_guide_get_layout_library_catalog() as $layout_name => $entry ) {
 		$post_id = mrn_active_style_guide_find_layout_library_representative( $layout_name );
 		$source = 'published';
@@ -289,16 +290,24 @@ function mrn_active_style_guide_get_layout_library_capture_manifest(): array {
 			$source = 'fixture';
 		}
 		if ( $post_id > 0 ) {
-			$targets[] = array(
+			$markup = function_exists( 'mrn_base_stack_get_builder_markup' ) ? mrn_base_stack_get_builder_markup( (string) $entry['field_name'], $post_id ) : '';
+			$preview = array(
 				'layout' => $layout_name,
 				'label' => isset( $entry['layout']['label'] ) ? (string) $entry['layout']['label'] : $layout_name,
 				'source' => $source, 'post_id' => $post_id, 'url' => get_permalink( $post_id ),
 				'selector' => '.mrn-content-builder__row--' . sanitize_html_class( $layout_name ),
 			);
+			if ( '' === trim( (string) $markup ) ) {
+				$unavailable[] = $preview;
+				continue;
+			}
+			$targets[] = array(
+				'layout' => $preview['layout'], 'label' => $preview['label'], 'source' => $preview['source'], 'post_id' => $preview['post_id'], 'url' => $preview['url'], 'selector' => $preview['selector'],
+			);
 		}
 	}
 
-	return array( 'fingerprint' => mrn_active_style_guide_get_layout_library_fingerprint(), 'generatedAt' => gmdate( 'c' ), 'targets' => $targets );
+	return array( 'fingerprint' => mrn_active_style_guide_get_layout_library_fingerprint(), 'generatedAt' => gmdate( 'c' ), 'targets' => $targets, 'unavailable' => $unavailable );
 }
 
 /** Import locally captured screenshots into the Media Library and map them. */
@@ -336,6 +345,35 @@ function mrn_active_style_guide_import_layout_library_thumbnails( string $direct
 	return $thumbnails;
 }
 
+/**
+ * Hide WordPress chrome inside the authenticated, read-only library preview.
+ *
+ * The underlying preview page remains subject to its ordinary post-status and
+ * capability rules; this only gives the iframe a useful visual surface.
+ *
+ * @param bool $show Whether to show the admin bar.
+ * @return bool
+ */
+function mrn_active_style_guide_hide_admin_bar_in_layout_library_preview( bool $show ): bool {
+	return ! empty( $_GET['mrn-layout-library-preview'] ) && current_user_can( 'edit_theme_options' ) ? false : $show;
+}
+add_filter( 'show_admin_bar', 'mrn_active_style_guide_hide_admin_bar_in_layout_library_preview' );
+
+/** Print preview-only styles after the active theme has registered its chrome. */
+function mrn_active_style_guide_print_layout_library_preview_styles(): void {
+	if ( empty( $_GET['mrn-layout-library-preview'] ) || ! current_user_can( 'edit_theme_options' ) ) {
+		return;
+	}
+	?>
+	<style id="mrn-layout-library-preview-styles">
+		#wpadminbar, #masthead, #colophon { display: none !important; }
+		html { margin-top: 0 !important; }
+		#page, #primary, .site-main, .site-content { margin: 0 !important; padding: 0 !important; max-width: none !important; width: 100% !important; }
+	</style>
+	<?php
+}
+add_action( 'wp_head', 'mrn_active_style_guide_print_layout_library_preview_styles', 999 );
+
 /** Render the admin Layout Library page. */
 function mrn_active_style_guide_render_layout_library_page(): void {
 	if ( ! current_user_can( 'edit_theme_options' ) ) {
@@ -360,12 +398,39 @@ function mrn_active_style_guide_render_layout_library_page(): void {
 			<?php wp_nonce_field( 'mrn_active_style_guide_regenerate_layout_library' ); ?>
 			<?php submit_button( __( 'Regenerate preview fixtures', 'mrn-active-style-guide' ), 'primary', 'submit', false ); ?>
 		</form>
-		<table class="widefat striped" style="margin-top: 1.5rem"><thead><tr><th><?php esc_html_e( 'Layout', 'mrn-active-style-guide' ); ?></th><th><?php esc_html_e( 'Preview source', 'mrn-active-style-guide' ); ?></th></tr></thead><tbody>
-		<?php foreach ( mrn_active_style_guide_get_layout_library_catalog() as $layout_name => $entry ) : ?>
-			<?php $post_id = mrn_active_style_guide_find_layout_library_representative( $layout_name ); ?>
-			<tr><td><strong><?php echo esc_html( $entry['layout']['label'] ?? $layout_name ); ?></strong><br><code><?php echo esc_html( $layout_name ); ?></code></td><td><?php echo $post_id ? esc_html( get_the_title( $post_id ) ) : esc_html__( 'Private fixture required', 'mrn-active-style-guide' ); ?></td></tr>
+		<h2><?php esc_html_e( 'Live previews', 'mrn-active-style-guide' ); ?></h2>
+		<p><?php esc_html_e( 'These are the active site’s rendered layouts—not static mockups. Open a preview to inspect it at full size.', 'mrn-active-style-guide' ); ?></p>
+		<style>
+			.mrn-layout-library-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(360px,1fr)); gap:20px; max-width:1500px; margin:20px 0; }
+			.mrn-layout-library-card { background:#fff; border:1px solid #ccd0d4; border-radius:4px; overflow:hidden; }
+			.mrn-layout-library-card__header { display:flex; gap:12px; align-items:baseline; justify-content:space-between; padding:12px 14px; }
+			.mrn-layout-library-card__title { margin:0; font-size:14px; }
+			.mrn-layout-library-card__frame { display:block; width:100%; height:360px; border:0; border-top:1px solid #ccd0d4; background:#f6f7f7; }
+			.mrn-layout-library-card__meta { padding:9px 14px; color:#50575e; font-size:12px; }
+		</style>
+		<?php $manifest = mrn_active_style_guide_get_layout_library_capture_manifest(); ?>
+		<div class="mrn-layout-library-grid">
+		<?php foreach ( $manifest['targets'] as $target ) : ?>
+			<?php $preview_url = add_query_arg( 'mrn-layout-library-preview', '1', (string) $target['url'] ); ?>
+			<article class="mrn-layout-library-card">
+				<div class="mrn-layout-library-card__header">
+					<h3 class="mrn-layout-library-card__title"><?php echo esc_html( $target['label'] ); ?></h3>
+					<a href="<?php echo esc_url( $preview_url ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Open full size', 'mrn-active-style-guide' ); ?></a>
+				</div>
+				<iframe class="mrn-layout-library-card__frame" title="<?php echo esc_attr( sprintf( __( '%s live layout preview', 'mrn-active-style-guide' ), $target['label'] ) ); ?>" src="<?php echo esc_url( $preview_url ); ?>" loading="lazy"></iframe>
+				<div class="mrn-layout-library-card__meta"><code><?php echo esc_html( $target['layout'] ); ?></code> · <?php echo esc_html( ucfirst( (string) $target['source'] ) ); ?></div>
+			</article>
 		<?php endforeach; ?>
-		</tbody></table>
+		</div>
+		<?php if ( ! empty( $manifest['unavailable'] ) ) : ?>
+			<h2><?php esc_html_e( 'Needs site content', 'mrn-active-style-guide' ); ?></h2>
+			<p><?php esc_html_e( 'These layouts require a site-owned form, image, reusable block, selected content, or another dependency before a meaningful preview can be rendered. They will join the live gallery automatically once that content is available.', 'mrn-active-style-guide' ); ?></p>
+			<ul class="ul-disc">
+			<?php foreach ( $manifest['unavailable'] as $preview ) : ?>
+				<li><strong><?php echo esc_html( $preview['label'] ); ?></strong> <code><?php echo esc_html( $preview['layout'] ); ?></code></li>
+			<?php endforeach; ?>
+			</ul>
+		<?php endif; ?>
 	</div>
 	<?php
 }
