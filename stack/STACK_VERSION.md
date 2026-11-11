@@ -1,8 +1,8 @@
 # Stack Version
 
 ## Candidate Release
-- Stack release: `2026.11.10-fleet-auto-fcafc64aa483`
-- Release date: `2026-11-10`
+- Stack release: `2026.11.11-fleet-auto-7df0886dc6be`
+- Release date: `2026-11-11`
 - Status: `source snapshot; qualification/publication evidence establishes Fleet readiness; site rollout separate`
 
 ## Included MRN-Owned Components
