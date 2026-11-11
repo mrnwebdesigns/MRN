@@ -374,6 +374,33 @@ function mrn_active_style_guide_print_layout_library_preview_styles(): void {
 }
 add_action( 'wp_head', 'mrn_active_style_guide_print_layout_library_preview_styles', 999 );
 
+/** Return catalog metadata used by the searchable editor guide. */
+function mrn_active_style_guide_get_layout_library_guide_metadata( string $layout_name, array $entry ): array {
+	$metadata = function_exists( 'mrn_base_stack_get_acf_layout_picker_metadata' )
+		? mrn_base_stack_get_acf_layout_picker_metadata( $layout_name, $entry['layout'] ?? array(), array( 'name' => $entry['field_name'] ?? '' ) )
+		: array();
+	$category = isset( $metadata['category'] ) ? (string) $metadata['category'] : '';
+	if ( '' === $category ) {
+		if ( preg_match( '/cta|form|wpforms/', $layout_name ) ) {
+			$category = __( 'Calls to action and forms', 'mrn-active-style-guide' );
+		} elseif ( preg_match( '/image|video|slider|showcase|logos/', $layout_name ) ) {
+			$category = __( 'Media and showcase', 'mrn-active-style-guide' );
+		} elseif ( preg_match( '/card|grid|list|stats/', $layout_name ) ) {
+			$category = __( 'Content collections', 'mrn-active-style-guide' );
+		} elseif ( preg_match( '/faq|tab|jump/', $layout_name ) ) {
+			$category = __( 'Interactive content', 'mrn-active-style-guide' );
+		} else {
+			$category = __( 'Content and structure', 'mrn-active-style-guide' );
+		}
+	}
+	$keywords = isset( $metadata['keywords'] ) && is_array( $metadata['keywords'] ) ? $metadata['keywords'] : array();
+	return array(
+		'category'    => $category,
+		'description' => isset( $metadata['description'] ) && '' !== $metadata['description'] ? (string) $metadata['description'] : __( 'A site-aware layout available in the active Stack theme.', 'mrn-active-style-guide' ),
+		'keywords'    => $keywords,
+	);
+}
+
 /** Render the admin Layout Library page. */
 function mrn_active_style_guide_render_layout_library_page(): void {
 	if ( ! current_user_can( 'edit_theme_options' ) ) {
@@ -384,10 +411,22 @@ function mrn_active_style_guide_render_layout_library_page(): void {
 	$state = is_array( $state ) ? $state : array();
 	$fingerprint = mrn_active_style_guide_get_layout_library_fingerprint();
 	$is_stale = empty( $state['fingerprint'] ) || ! hash_equals( (string) $state['fingerprint'], $fingerprint );
+	$catalog = mrn_active_style_guide_get_layout_library_catalog();
+	$manifest = mrn_active_style_guide_get_layout_library_capture_manifest();
+	$previews = array();
+	foreach ( array_merge( $manifest['targets'], $manifest['unavailable'] ) as $preview ) {
+		$previews[ $preview['layout'] ] = $preview;
+	}
+	$categories = array();
+	foreach ( $catalog as $layout_name => $entry ) {
+		$categories[] = mrn_active_style_guide_get_layout_library_guide_metadata( $layout_name, $entry )['category'];
+	}
+	$categories = array_values( array_unique( $categories ) );
+	sort( $categories, SORT_NATURAL | SORT_FLAG_CASE );
 	?>
-	<div class="wrap">
+	<div class="wrap mrn-layout-library">
 		<h1><?php esc_html_e( 'Layout Library', 'mrn-active-style-guide' ); ?></h1>
-		<p><?php esc_html_e( 'This catalog is read from the active Stack theme. Published layout instances are preferred; private, no-index fixtures cover layouts without an existing example.', 'mrn-active-style-guide' ); ?></p>
+		<p class="mrn-layout-library__intro"><?php esc_html_e( 'Choose a layout for your content. Each card uses this site’s current theme and shows the fields an editor can change.', 'mrn-active-style-guide' ); ?></p>
 		<?php if ( $is_stale ) : ?>
 			<div class="notice notice-warning"><p><?php esc_html_e( 'Layout previews need regeneration because the active site styles or layout catalog changed.', 'mrn-active-style-guide' ); ?></p></div>
 		<?php else : ?>
@@ -398,39 +437,50 @@ function mrn_active_style_guide_render_layout_library_page(): void {
 			<?php wp_nonce_field( 'mrn_active_style_guide_regenerate_layout_library' ); ?>
 			<?php submit_button( __( 'Regenerate preview fixtures', 'mrn-active-style-guide' ), 'primary', 'submit', false ); ?>
 		</form>
-		<h2><?php esc_html_e( 'Live previews', 'mrn-active-style-guide' ); ?></h2>
-		<p><?php esc_html_e( 'These are the active site’s rendered layouts—not static mockups. Open a preview to inspect it at full size.', 'mrn-active-style-guide' ); ?></p>
+		<div class="mrn-layout-library__tools">
+			<label for="mrn-layout-library-search"><?php esc_html_e( 'Search layouts', 'mrn-active-style-guide' ); ?></label>
+			<input type="search" id="mrn-layout-library-search" placeholder="<?php esc_attr_e( 'Text, image, FAQ, call to action…', 'mrn-active-style-guide' ); ?>">
+			<label for="mrn-layout-library-category"><?php esc_html_e( 'Layout family', 'mrn-active-style-guide' ); ?></label>
+			<select id="mrn-layout-library-category"><option value=""><?php esc_html_e( 'All families', 'mrn-active-style-guide' ); ?></option><?php foreach ( $categories as $category ) : ?><option value="<?php echo esc_attr( $category ); ?>"><?php echo esc_html( $category ); ?></option><?php endforeach; ?></select>
+			<p id="mrn-layout-library-count" role="status"></p>
+		</div>
 		<style>
-			.mrn-layout-library-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(360px,1fr)); gap:20px; max-width:1500px; margin:20px 0; }
-			.mrn-layout-library-card { background:#fff; border:1px solid #ccd0d4; border-radius:4px; overflow:hidden; }
+			.mrn-layout-library { max-width:1500px; }
+			.mrn-layout-library__intro { font-size:16px; max-width:800px; }
+			.mrn-layout-library__tools { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin:24px 0; }
+			.mrn-layout-library__tools input { min-width:min(100%,300px); }
+			.mrn-layout-library-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr)); gap:24px; margin:20px 0; }
+			.mrn-layout-library-card { background:#fff; border:1px solid #ccd0d4; border-radius:6px; overflow:hidden; }
+			.mrn-layout-library-card[hidden] { display:none; }
 			.mrn-layout-library-card__header { display:flex; gap:12px; align-items:baseline; justify-content:space-between; padding:12px 14px; }
-			.mrn-layout-library-card__title { margin:0; font-size:14px; }
-			.mrn-layout-library-card__frame { display:block; width:100%; height:360px; border:0; border-top:1px solid #ccd0d4; background:#f6f7f7; }
-			.mrn-layout-library-card__meta { padding:9px 14px; color:#50575e; font-size:12px; }
+			.mrn-layout-library-card__title { margin:0; font-size:18px; }
+			.mrn-layout-library-card__frame { display:block; width:100%; height:300px; border:0; border-top:1px solid #ccd0d4; background:#f6f7f7; }
+			.mrn-layout-library-card__unavailable { display:grid; min-height:300px; place-items:center; padding:20px; box-sizing:border-box; background:#f6f7f7; color:#50575e; text-align:center; }
+			.mrn-layout-library-card__copy { padding:16px; }
+			.mrn-layout-library-card__category { color:#50575e; font-size:12px; margin:0 0 8px; }
+			.mrn-layout-library-card__meta { color:#50575e; font-size:12px; }
+			.mrn-layout-library :focus-visible { outline:3px solid #2271b1; outline-offset:3px; }
 		</style>
-		<?php $manifest = mrn_active_style_guide_get_layout_library_capture_manifest(); ?>
 		<div class="mrn-layout-library-grid">
-		<?php foreach ( $manifest['targets'] as $target ) : ?>
-			<?php $preview_url = add_query_arg( 'mrn-layout-library-preview', '1', (string) $target['url'] ); ?>
-			<article class="mrn-layout-library-card">
+		<?php foreach ( $catalog as $layout_name => $entry ) : ?>
+			<?php
+			$guide = mrn_active_style_guide_get_layout_library_guide_metadata( $layout_name, $entry );
+			$preview = $previews[ $layout_name ] ?? null;
+			$fields = array_filter( mrn_active_style_guide_get_layout_library_layout_fields( $entry, $layout_name ), static function ( $field ) { return is_array( $field ) && ! empty( $field['label'] ) && ! in_array( $field['type'] ?? '', array( 'tab', 'accordion', 'message' ), true ); } );
+			$search = strtolower( $entry['layout']['label'] . ' ' . $layout_name . ' ' . $guide['description'] . ' ' . implode( ' ', $guide['keywords'] ) );
+			?>
+			<article class="mrn-layout-library-card" data-category="<?php echo esc_attr( $guide['category'] ); ?>" data-search="<?php echo esc_attr( $search ); ?>">
 				<div class="mrn-layout-library-card__header">
-					<h3 class="mrn-layout-library-card__title"><?php echo esc_html( $target['label'] ); ?></h3>
-					<a href="<?php echo esc_url( $preview_url ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Open full size', 'mrn-active-style-guide' ); ?></a>
+					<h2 class="mrn-layout-library-card__title"><?php echo esc_html( $entry['layout']['label'] ); ?></h2>
+					<?php if ( $preview && in_array( $preview, $manifest['targets'], true ) ) : ?><a href="<?php echo esc_url( add_query_arg( 'mrn-layout-library-preview', '1', (string) $preview['url'] ) ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Open full size', 'mrn-active-style-guide' ); ?></a><?php endif; ?>
 				</div>
-				<iframe class="mrn-layout-library-card__frame" title="<?php echo esc_attr( sprintf( __( '%s live layout preview', 'mrn-active-style-guide' ), $target['label'] ) ); ?>" src="<?php echo esc_url( $preview_url ); ?>" loading="lazy"></iframe>
-				<div class="mrn-layout-library-card__meta"><code><?php echo esc_html( $target['layout'] ); ?></code> · <?php echo esc_html( ucfirst( (string) $target['source'] ) ); ?></div>
+				<?php if ( $preview && in_array( $preview, $manifest['targets'], true ) ) : ?><iframe class="mrn-layout-library-card__frame" title="<?php echo esc_attr( sprintf( __( '%s live layout preview', 'mrn-active-style-guide' ), $entry['layout']['label'] ) ); ?>" src="<?php echo esc_url( add_query_arg( 'mrn-layout-library-preview', '1', (string) $preview['url'] ) ); ?>" loading="lazy"></iframe><?php else : ?><div class="mrn-layout-library-card__unavailable"><?php esc_html_e( 'This layout needs site-owned content before it can render a meaningful example.', 'mrn-active-style-guide' ); ?></div><?php endif; ?>
+				<div class="mrn-layout-library-card__copy"><p class="mrn-layout-library-card__category"><?php echo esc_html( $guide['category'] ); ?></p><p><?php echo esc_html( $guide['description'] ); ?></p><details><summary><?php esc_html_e( 'Editable fields', 'mrn-active-style-guide' ); ?></summary><ul><?php foreach ( $fields as $field ) : ?><li><strong><?php echo esc_html( $field['label'] ); ?></strong><?php if ( 'repeater' === ( $field['type'] ?? '' ) ) : ?> — <?php esc_html_e( 'repeatable items', 'mrn-active-style-guide' ); ?><?php endif; ?></li><?php endforeach; ?></ul></details><p class="mrn-layout-library-card__meta"><code><?php echo esc_html( $layout_name ); ?></code> · <?php echo esc_html( $preview ? ucfirst( (string) $preview['source'] ) : __( 'No preview source', 'mrn-active-style-guide' ) ); ?></p></div>
 			</article>
 		<?php endforeach; ?>
 		</div>
-		<?php if ( ! empty( $manifest['unavailable'] ) ) : ?>
-			<h2><?php esc_html_e( 'Needs site content', 'mrn-active-style-guide' ); ?></h2>
-			<p><?php esc_html_e( 'These layouts require a site-owned form, image, reusable block, selected content, or another dependency before a meaningful preview can be rendered. They will join the live gallery automatically once that content is available.', 'mrn-active-style-guide' ); ?></p>
-			<ul class="ul-disc">
-			<?php foreach ( $manifest['unavailable'] as $preview ) : ?>
-				<li><strong><?php echo esc_html( $preview['label'] ); ?></strong> <code><?php echo esc_html( $preview['layout'] ); ?></code></li>
-			<?php endforeach; ?>
-			</ul>
-		<?php endif; ?>
+		<p class="mrn-layout-library__empty" hidden><?php esc_html_e( 'No layouts match. Try another search or choose All families.', 'mrn-active-style-guide' ); ?></p>
+		<script>document.addEventListener('DOMContentLoaded',function(){var s=document.getElementById('mrn-layout-library-search'),c=document.getElementById('mrn-layout-library-category'),a=[].slice.call(document.querySelectorAll('.mrn-layout-library-card')),n=document.getElementById('mrn-layout-library-count'),e=document.querySelector('.mrn-layout-library__empty');function f(){var q=s.value.trim().toLowerCase(),v=0;a.forEach(function(x){x.hidden=!!((q&&-1===x.dataset.search.indexOf(q))||(c.value&&c.value!==x.dataset.category));if(!x.hidden){v++;}});n.textContent=v+' of '+a.length+' layouts';e.hidden=0!==v;}s.addEventListener('input',f);c.addEventListener('change',f);f();});</script>
 	</div>
 	<?php
 }
