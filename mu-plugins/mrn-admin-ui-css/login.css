@@ -17,6 +17,15 @@ body.login.mrn-login {
  padding: clamp(32px, 8vh, 80px) 24px 32px;
 }
 .mrn-login #login h1 a { max-width: 100%; margin-bottom: 28px; }
+/* Existing MRN knockout artwork; AME still owns sizing, links and other branding. */
+:root[data-mrn-appearance="dark"] .mrn-login #login :is(h1, .wp-login-logo) a:is([href="https://mrnwebdesigns.com"], [href="https://mrnwebdesigns.com/"]) {
+ background-image: url("mrn-login-logo-white.svg");
+}
+@media (prefers-color-scheme: dark) {
+ :root[data-mrn-appearance="system"] .mrn-login #login :is(h1, .wp-login-logo) a:is([href="https://mrnwebdesigns.com"], [href="https://mrnwebdesigns.com/"]) {
+  background-image: url("mrn-login-logo-white.svg");
+ }
+}
 .mrn-login #login form {
  box-sizing: border-box;
  margin: 0;
