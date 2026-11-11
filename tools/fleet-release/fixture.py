@@ -78,7 +78,8 @@ def extract(archive, destination, *, expected=None, prefix=None):
 
 
 class WordPressFixture:
-    def __init__(self, bootstrap, root, settings, *, additional=None, max_input_vars=1000):
+    def __init__(self, bootstrap, root, settings, *, additional=None, max_input_vars=1000,
+                 max_execution_time=120):
         self.bootstrap, self.root, self.settings = Path(bootstrap), Path(root), settings
         self.public = self.root / 'wordpress'
         self.content = self.public / 'wp-content'
@@ -92,6 +93,13 @@ class WordPressFixture:
         if not isinstance(max_input_vars, int) or not 1000 <= max_input_vars <= 10000:
             raise ReleaseError('Invalid native fixture input capacity')
         self.max_input_vars = max_input_vars
+        # This is a disposable test runtime only.  The cumulative ACF fixture
+        # deliberately exercises a large native save and its revision copy;
+        # the host default of 30 seconds can expire while private MySQL is
+        # under qualification load.  Do not project this setting onto sites.
+        if not isinstance(max_execution_time, int) or not 30 <= max_execution_time <= 300:
+            raise ReleaseError('Invalid native fixture execution capacity')
+        self.max_execution_time = max_execution_time
         with socket.socket() as probe:
             probe.bind(('127.0.0.1', 0))
             self.port = probe.getsockname()[1]
@@ -286,6 +294,7 @@ add_action('doing_it_wrong_run', static function ($function) {
                                + "require __DIR__.'/wordpress/index.php';\n")
         self.log = (self.root / 'http.log').open('w')
         self.process = subprocess.Popen([self.settings['php'], '-d', 'max_input_vars=' + str(self.max_input_vars),
+                                         '-d', 'max_execution_time=' + str(self.max_execution_time),
                                          '-S', '127.0.0.1:' + str(self.port),
                                          '-t', str(self.public), str(self.router)],
                                         stdout=self.log, stderr=self.log)

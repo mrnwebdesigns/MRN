@@ -101,12 +101,13 @@ Required diagnostics, native editor, API, whole-page AA, timing and CWV failures
 block source publication. Site-specific contrast/content/provider failures and
 holds remain rollout blockers in their own evidence.
 
-The cumulative presentation fixture explicitly uses `max_input_vars=10000` to
-save its large synthetic ACF form. The parent rejects a truncated native editor
-submission before WordPress changes saved content. Automatic browser coverage
-checks rejection of an incomplete submission and complete public readback after
-a valid save, including six legacy Text Swipe panels. This fixture setting does
-not configure client hosts; installed site QA must use their actual capacity.
+The cumulative presentation fixture explicitly uses `max_input_vars=10000` and
+`max_execution_time=120` to save its large synthetic ACF form and its native
+revision copy. The parent rejects a truncated native editor submission before
+WordPress changes saved content. Automatic browser coverage checks rejection of
+an incomplete submission and complete public readback after a valid save,
+including six legacy Text Swipe panels. These fixture settings do not configure
+client hosts; installed site QA must use their actual capacity.
 
 Wordfence's optional remote NTP is disabled only in the disposable offline
 fixtures. Their known loopback address is seeded into Wordfence's DNS cache;
