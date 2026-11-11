@@ -1,0 +1,236 @@
+{
+  "date": "2026-11-11",
+  "source_commit": "bda6c74d4a02f69f9c7d13c3c2432588aba05a8d",
+  "host": "admin-editor-pilot.mrndev.io",
+  "changes": [
+    "Static shared page heading across ordinary admin pages; existing MRN settings bars and full editing workspaces retain ownership.",
+    "Duplicate native H1 labels visually suppressed while preserving semantic headings and embedded actions.",
+    "WPForms Entries overview/tables/panels/controls and pagination use shared Light/Dark/System tokens; duplicate logo header disabled using vendor filter.",
+    "Chart axes and grid follow appearance changes, retaining vendor chart data and filter lifecycle. Chart settings button receives accessible name.",
+    "Mobile sticky toolbar and Media folder/navigation offsets reserve their space before enhancement."
+  ],
+  "qa": {
+    "mrn_qa": "Component full-source static QA passed; final exact staged snapshot proof passed.",
+    "scope_harness": "Passed: core and plugin pages, existing settings owners, editor preservation, emergency switch, escaped title, static markup.",
+    "entries_fixture": {
+      "source": "Read-only installed WPForms PHP renderer output and installed vendor CSS/Chart.js in isolated headless context; no browser credentials.",
+      "cases": 8,
+      "widths": [
+        390,
+        768,
+        1440,
+        2560
+      ],
+      "modes": [
+        "light",
+        "dark"
+      ],
+      "axe_violations": 0,
+      "horizontal_overflow": 0,
+      "first_paint": "Content clears header before and after chart initialization; no header insertion shift.",
+      "dynamic_chart": true
+    },
+    "headers": [
+      {
+        "name": "list",
+        "width": 390,
+        "state": {
+          "top": 46,
+          "width": 390,
+          "right": 390,
+          "overflow": 0,
+          "bars": 1,
+          "actions": true
+        }
+      },
+      {
+        "name": "list",
+        "width": 1440,
+        "state": {
+          "top": 32,
+          "width": 1280,
+          "right": 1440,
+          "overflow": 0,
+          "bars": 1,
+          "actions": true
+        }
+      },
+      {
+        "name": "menus",
+        "width": 390,
+        "state": {
+          "top": 46,
+          "width": 390,
+          "right": 390,
+          "overflow": 0,
+          "bars": 1,
+          "actions": true
+        }
+      },
+      {
+        "name": "menus",
+        "width": 1440,
+        "state": {
+          "top": 32,
+          "width": 1280,
+          "right": 1440,
+          "overflow": 0,
+          "bars": 1,
+          "actions": true
+        }
+      },
+      {
+        "name": "native",
+        "width": 390,
+        "state": {
+          "top": 46,
+          "width": 390,
+          "right": 390,
+          "overflow": 0,
+          "bars": 1,
+          "actions": true
+        }
+      },
+      {
+        "name": "native",
+        "width": 1440,
+        "state": {
+          "top": 32,
+          "width": 1280,
+          "right": 1440,
+          "overflow": 0,
+          "bars": 1,
+          "actions": true
+        }
+      },
+      {
+        "name": "owned",
+        "width": 390,
+        "state": {
+          "top": 46,
+          "width": 390,
+          "right": 390,
+          "overflow": 0,
+          "bars": 1,
+          "actions": true
+        }
+      },
+      {
+        "name": "owned",
+        "width": 1440,
+        "state": {
+          "top": 32,
+          "width": 1280,
+          "right": 1440,
+          "overflow": 0,
+          "bars": 1,
+          "actions": true
+        }
+      },
+      {
+        "name": "media",
+        "width": 390,
+        "state": {
+          "top": 46,
+          "width": 390,
+          "right": 390,
+          "overflow": 0,
+          "bars": 1,
+          "actions": true,
+          "media": 110
+        }
+      },
+      {
+        "name": "media",
+        "width": 1440,
+        "state": {
+          "top": 32,
+          "width": 1440,
+          "right": 1440,
+          "overflow": 0,
+          "bars": 1,
+          "actions": true,
+          "media": 96
+        }
+      }
+    ],
+    "installed_runtime": {
+      "routing": {
+        "nav-menus": {
+          "header": "automatic",
+          "scope": "menus"
+        },
+        "wpforms_page_wpforms-entries": {
+          "header": "automatic",
+          "scope": "wpforms-entries"
+        },
+        "toplevel_page_mrn-business-information": {
+          "header": "owned",
+          "scope": "settings"
+        }
+      },
+      "static_header": true
+    },
+    "performance": "Header adds no JavaScript, spacer, cloned controls or layout observer. Chart adapter loads only on WPForms Entries with its chart library, observes only the root appearance attribute and OS color scheme; no polling/network calls. Runtime CPU/CWV benchmarks not run.",
+    "api": "No request/save handlers, permissions, nonce checks or stored settings changed. Static API audit passed; runtime API smoke not triggered.",
+    "browser_limit": "Current thread exposes no internal_browser tools. Authenticated click-through, save, date-filter requests and entry actions not tested. Browser fixture uses representative core headers and actual read-only Entries overview output; not a complete vendor-app audit.",
+    "release": "Review-only patch. Release/Fleet qualification, full parity and existing editor CPU/save/Hub blockers remain open."
+  },
+  "manifest": {
+    "modern-admin.php": {
+      "before": "0856e0aebdc93645f7aebd7d9656a67135bb52086d9a167a2b257e6e2966f7a5",
+      "after": "ac813a6842f1bae62a560281c81c6750209621a72137745d3879fcf82b21f7e2"
+    },
+    "mrn-admin-ui-css.php": {
+      "before": "8335f49420d8be1e3a4807014d7f183f79ce6c193a1988e62535a2aa1346e2c8",
+      "after": "848a837732a32975c30e57a69b9f46756a8dfb59ea2ff06a10cb0f049d929a5c"
+    },
+    "mrn-admin-shell.css": {
+      "before": "10682f36256b85d06ae858e2644aea890346fa1587097ecb7463a1a0065d0ca6",
+      "after": "90323094e3054e44b8939a39521d0d6afc91ea59ff4f711df488182758d307fc"
+    },
+    "page-header.php": {
+      "before": null,
+      "after": "3913e0ad936b8f978d79bde49684e695a8b4a80fb42108c0ed904838ffdf7d49"
+    },
+    "wpforms-entries.css": {
+      "before": null,
+      "after": "835800f8e83b4088c994d70ab23039bbc845568be0422b5b2b38ca11dc274e9a"
+    },
+    "wpforms-entries.js": {
+      "before": null,
+      "after": "2055e8cf48d82683f0711fd3afe3d24ee1f123d3ddac446695d0ae144fbb625a"
+    }
+  },
+  "deployment": {
+    "host": "admin-editor-pilot.mrndev.io",
+    "backup": {
+      "valid": true,
+      "host": "admin-editor-pilot.mrndev.io",
+      "checked_at": 1794422874,
+      "label": "pre-admin-pilot-universal-header-20261111",
+      "key": "sites/admin-editor-pilot-mrndev-io/backup_2026-11-11-1847_Trilliant_8a90eec9b488-db.gz",
+      "size": 7093219,
+      "sha256": "1074958e8eead5a03261aac1747cd1887b72a772ab398478ff5fd27c89c4514a"
+    },
+    "files": {
+      "modern-admin.php": "ac813a6842f1bae62a560281c81c6750209621a72137745d3879fcf82b21f7e2",
+      "mrn-admin-ui-css.php": "848a837732a32975c30e57a69b9f46756a8dfb59ea2ff06a10cb0f049d929a5c",
+      "mrn-admin-shell.css": "90323094e3054e44b8939a39521d0d6afc91ea59ff4f711df488182758d307fc",
+      "page-header.php": "3913e0ad936b8f978d79bde49684e695a8b4a80fb42108c0ed904838ffdf7d49",
+      "wpforms-entries.css": "835800f8e83b4088c994d70ab23039bbc845568be0422b5b2b38ca11dc274e9a",
+      "wpforms-entries.js": "2055e8cf48d82683f0711fd3afe3d24ee1f123d3ddac446695d0ae144fbb625a"
+    },
+    "rollback": "/home/mrndev-admin-editor/review-private/universal-header-20261111/rollback",
+    "asset_mtimes": {
+      "mrn-admin-shell.css": 1794422874,
+      "wpforms-entries.css": 1794422874,
+      "wpforms-entries.js": 1794422874
+    }
+  },
+  "served_assets": {
+    "mrn-admin-shell.css": "90323094e3054e44b8939a39521d0d6afc91ea59ff4f711df488182758d307fc",
+    "wpforms-entries.css": "835800f8e83b4088c994d70ab23039bbc845568be0422b5b2b38ca11dc274e9a",
+    "wpforms-entries.js": "2055e8cf48d82683f0711fd3afe3d24ee1f123d3ddac446695d0ae144fbb625a"
+  }
+}
