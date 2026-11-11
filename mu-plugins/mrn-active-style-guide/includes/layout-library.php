@@ -15,6 +15,12 @@ defined( 'ABSPATH' ) || exit;
 const MRN_ACTIVE_STYLE_GUIDE_LAYOUT_LIBRARY_OPTION = 'mrn_active_style_guide_layout_library';
 const MRN_ACTIVE_STYLE_GUIDE_LAYOUT_LIBRARY_FIXTURE_META = '_mrn_layout_library_fixture';
 
+/** Local fixture pages may be publicly rendered for the capture worker only. */
+function mrn_active_style_guide_layout_library_fixture_status(): string {
+	$host = (string) wp_parse_url( home_url(), PHP_URL_HOST );
+	return in_array( wp_get_environment_type(), array( 'local', 'development' ), true ) && '.localhost' === substr( $host, -10 ) ? 'publish' : 'private';
+}
+
 /**
  * Return the theme's currently available builder layouts, keyed by layout name.
  *
@@ -177,9 +183,9 @@ function mrn_active_style_guide_get_layout_library_sample_values( array $fields,
 				$values[ $name ] = empty( $item ) ? array() : array( $item, $item, $item );
 				break;
 			case 'flexible_content':
-				$layouts = isset( $field['layouts'] ) && is_array( $field['layouts'] ) ? $field['layouts'] : array();
-				$layout = reset( $layouts );
-				$values[ $name ] = is_array( $layout ) && ! empty( $layout['name'] ) ? array( array_merge( array( 'acf_fc_layout' => $layout['name'] ), mrn_active_style_guide_get_layout_library_sample_values( $layout['sub_fields'] ?? array(), $layout_name, $depth + 1 ) ) ) : array();
+				// Nested flexible groups have layout-specific contracts. Leave them
+				// empty here; a blueprint can opt into a valid nested composition.
+				$values[ $name ] = array();
 				break;
 		}
 	}
@@ -239,6 +245,22 @@ function mrn_active_style_guide_get_layout_library_layout_fields( array $entry, 
 	return array();
 }
 
+/** Persist a fixture row, including nested ACF structures that need row context. */
+function mrn_active_style_guide_update_layout_library_fixture_row( string $field_key, string $field_name, array $row, array $fields, int $post_id ): void {
+	update_field( $field_key, array( $row ), $post_id );
+	if ( ! function_exists( 'update_sub_field' ) ) {
+		return;
+	}
+	foreach ( $fields as $field ) {
+		if ( ! is_array( $field ) || empty( $field['name'] ) || ! isset( $row[ $field['name'] ] ) || ! in_array( $field['type'] ?? '', array( 'repeater', 'group', 'flexible_content' ), true ) ) {
+			continue;
+		}
+		// ACF's flexible-content root write does not reliably hydrate nested
+		// repeater metadata. Saving from the row path preserves the schema.
+		update_sub_field( array( $field_name, 1, $field['name'] ), $row[ $field['name'] ], $post_id );
+	}
+}
+
 /**
  * Create or update private fixtures for layouts with no published example.
  *
@@ -265,15 +287,16 @@ function mrn_active_style_guide_regenerate_layout_library_fixtures(): array {
 
 		$existing = get_posts( array(
 			'post_type'      => 'page',
-			'post_status'    => 'private',
+			'post_status'    => 'any',
 			'posts_per_page' => 1,
 			'meta_key'       => MRN_ACTIVE_STYLE_GUIDE_LAYOUT_LIBRARY_FIXTURE_META,
 			'meta_value'     => $layout_name,
 			'fields'         => 'ids',
 		) );
+		$fixture_status = mrn_active_style_guide_layout_library_fixture_status();
 		$post_id = ! empty( $existing ) ? absint( $existing[0] ) : wp_insert_post( array(
 			'post_title'  => sprintf( 'MRN Layout Preview: %s', $layout_name ),
-			'post_status' => 'private',
+			'post_status' => $fixture_status,
 			'post_type'   => 'page',
 			'post_name'   => 'mrn-layout-preview-' . $layout_name,
 		), true );
@@ -281,18 +304,32 @@ function mrn_active_style_guide_regenerate_layout_library_fixtures(): array {
 			$result['skipped'][] = $layout_name;
 			continue;
 		}
+		if ( get_post_status( $post_id ) !== $fixture_status ) {
+			wp_update_post( array( 'ID' => $post_id, 'post_status' => $fixture_status ) );
+		}
 
 		update_post_meta( $post_id, MRN_ACTIVE_STYLE_GUIDE_LAYOUT_LIBRARY_FIXTURE_META, $layout_name );
+		$layout_fields = mrn_active_style_guide_get_layout_library_layout_fields( $entry, $layout_name );
 		$row = array_merge(
 			array( 'acf_fc_layout' => $layout_name ),
-			mrn_active_style_guide_get_layout_library_sample_values( mrn_active_style_guide_get_layout_library_layout_fields( $entry, $layout_name ), $layout_name )
+			mrn_active_style_guide_get_layout_library_sample_values( $layout_fields, $layout_name )
 		);
-		update_field( $field_key, array( $row ), $post_id );
+		mrn_active_style_guide_update_layout_library_fixture_row( $field_key, $field_name, $row, $layout_fields, $post_id );
 		$result['created'][ $layout_name ] = $post_id;
 	}
 
 	return $result;
 }
+
+/** Prevent generated local fixtures from appearing in search results. */
+function mrn_active_style_guide_layout_library_fixture_robots( array $robots ): array {
+	if ( is_singular() && get_post_meta( get_queried_object_id(), MRN_ACTIVE_STYLE_GUIDE_LAYOUT_LIBRARY_FIXTURE_META, true ) ) {
+		$robots['noindex'] = true;
+		$robots['nofollow'] = true;
+	}
+	return $robots;
+}
+add_filter( 'wp_robots', 'mrn_active_style_guide_layout_library_fixture_robots' );
 
 /** Get the generated thumbnail attachment for a layout, if it is current. */
 function mrn_active_style_guide_get_layout_library_thumbnail_id( string $layout_name ): int {
@@ -330,7 +367,7 @@ function mrn_active_style_guide_get_layout_library_capture_manifest(): array {
 		$source = 'published';
 		if ( $post_id <= 0 ) {
 			$fixtures = get_posts( array(
-				'post_type' => 'page', 'post_status' => 'private', 'posts_per_page' => 1,
+				'post_type' => 'page', 'post_status' => 'any', 'posts_per_page' => 1,
 				'meta_key' => MRN_ACTIVE_STYLE_GUIDE_LAYOUT_LIBRARY_FIXTURE_META,
 				'meta_value' => $layout_name, 'fields' => 'ids',
 			) );
@@ -343,7 +380,9 @@ function mrn_active_style_guide_get_layout_library_capture_manifest(): array {
 				'layout' => $layout_name,
 				'label' => isset( $entry['layout']['label'] ) ? (string) $entry['layout']['label'] : $layout_name,
 				'source' => $source, 'post_id' => $post_id, 'url' => get_permalink( $post_id ),
-				'selector' => '.mrn-content-builder__row--' . sanitize_html_class( $layout_name ),
+				// Every fixture owns exactly one layout, while individual renderer
+				// wrappers vary. The page article is the stable capture boundary.
+				'selector' => '#post-' . $post_id,
 			);
 			if ( '' === trim( (string) $markup ) ) {
 				$unavailable[] = $preview;
@@ -502,7 +541,7 @@ function mrn_active_style_guide_render_layout_library_page(): void {
 			.mrn-layout-library-card[hidden] { display:none; }
 			.mrn-layout-library-card__header { display:flex; gap:12px; align-items:baseline; justify-content:space-between; padding:12px 14px; }
 			.mrn-layout-library-card__title { margin:0; font-size:18px; }
-			.mrn-layout-library-card__frame { display:block; width:100%; height:300px; border:0; border-top:1px solid #ccd0d4; background:#f6f7f7; }
+			.mrn-layout-library-card__image { display:block; width:100%; height:300px; object-fit:cover; border-top:1px solid #ccd0d4; background:#f6f7f7; }
 			.mrn-layout-library-card__unavailable { display:grid; min-height:300px; place-items:center; padding:20px; box-sizing:border-box; background:#f6f7f7; color:#50575e; text-align:center; }
 			.mrn-layout-library-card__copy { padding:16px; }
 			.mrn-layout-library-card__category { color:#50575e; font-size:12px; margin:0 0 8px; }
@@ -514,15 +553,17 @@ function mrn_active_style_guide_render_layout_library_page(): void {
 			<?php
 			$guide = mrn_active_style_guide_get_layout_library_guide_metadata( $layout_name, $entry );
 			$preview = $previews[ $layout_name ] ?? null;
+			$thumbnail_id = mrn_active_style_guide_get_layout_library_thumbnail_id( $layout_name );
+			$thumbnail_url = $thumbnail_id ? wp_get_attachment_image_url( $thumbnail_id, 'medium_large' ) : '';
 			$fields = array_filter( mrn_active_style_guide_get_layout_library_layout_fields( $entry, $layout_name ), static function ( $field ) { return is_array( $field ) && ! empty( $field['label'] ) && ! in_array( $field['type'] ?? '', array( 'tab', 'accordion', 'message' ), true ); } );
 			$search = strtolower( $entry['layout']['label'] . ' ' . $layout_name . ' ' . $guide['description'] . ' ' . implode( ' ', $guide['keywords'] ) );
 			?>
 			<article class="mrn-layout-library-card" data-category="<?php echo esc_attr( $guide['category'] ); ?>" data-search="<?php echo esc_attr( $search ); ?>">
 				<div class="mrn-layout-library-card__header">
 					<h2 class="mrn-layout-library-card__title"><?php echo esc_html( $entry['layout']['label'] ); ?></h2>
-					<?php if ( $preview && in_array( $preview, $manifest['targets'], true ) ) : ?><a href="<?php echo esc_url( add_query_arg( 'mrn-layout-library-preview', '1', (string) $preview['url'] ) ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Open full size', 'mrn-active-style-guide' ); ?></a><?php endif; ?>
+					<?php if ( $thumbnail_url ) : ?><a href="<?php echo esc_url( wp_get_attachment_url( $thumbnail_id ) ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Open full size', 'mrn-active-style-guide' ); ?></a><?php endif; ?>
 				</div>
-				<?php if ( $preview && in_array( $preview, $manifest['targets'], true ) ) : ?><iframe class="mrn-layout-library-card__frame" title="<?php echo esc_attr( sprintf( __( '%s live layout preview', 'mrn-active-style-guide' ), $entry['layout']['label'] ) ); ?>" src="<?php echo esc_url( add_query_arg( 'mrn-layout-library-preview', '1', (string) $preview['url'] ) ); ?>" loading="lazy"></iframe><?php else : ?><div class="mrn-layout-library-card__unavailable"><?php esc_html_e( 'This layout needs site-owned content before it can render a meaningful example.', 'mrn-active-style-guide' ); ?></div><?php endif; ?>
+				<?php if ( $thumbnail_url ) : ?><img class="mrn-layout-library-card__image" src="<?php echo esc_url( $thumbnail_url ); ?>" alt="" loading="lazy"><?php else : ?><div class="mrn-layout-library-card__unavailable"><?php esc_html_e( 'This layout needs site-owned content before it can render a meaningful example.', 'mrn-active-style-guide' ); ?></div><?php endif; ?>
 				<div class="mrn-layout-library-card__copy"><p class="mrn-layout-library-card__category"><?php echo esc_html( $guide['category'] ); ?></p><p><?php echo esc_html( $guide['description'] ); ?></p><details><summary><?php esc_html_e( 'Editable fields', 'mrn-active-style-guide' ); ?></summary><ul><?php foreach ( $fields as $field ) : ?><li><strong><?php echo esc_html( $field['label'] ); ?></strong><?php if ( 'repeater' === ( $field['type'] ?? '' ) ) : ?> — <?php esc_html_e( 'repeatable items', 'mrn-active-style-guide' ); ?><?php endif; ?></li><?php endforeach; ?></ul></details><p class="mrn-layout-library-card__meta"><code><?php echo esc_html( $layout_name ); ?></code> · <?php echo esc_html( $preview ? ucfirst( (string) $preview['source'] ) : __( 'No preview source', 'mrn-active-style-guide' ) ); ?></p></div>
 			</article>
 		<?php endforeach; ?>
