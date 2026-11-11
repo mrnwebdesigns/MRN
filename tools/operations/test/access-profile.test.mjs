@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import test from 'node:test';
@@ -50,14 +50,15 @@ test('existing cookies are refused, never replaced', () => fixture(directory => 
 }));
 
 test('bounded profile parser, redaction and cleanup failure tests', () => {
-  execFileSync('python3', [new URL('./runtime/test-access-profile.py', import.meta.url).pathname], { timeout: 30000, maxBuffer: 65536 });
+  const script = fileURLToPath(new URL('./runtime/test-access-profile.py', import.meta.url));
+  execFileSync('python3', [script], { timeout: 30000, maxBuffer: 65536 });
 });
 
 test('ordinary integration workflow matches its reviewed checksum and profile stop precedes capture', () => {
   const normal = readFileSync(new URL('../../../.github/workflows/operations-ci.yml', import.meta.url));
-  // Reviewed fixture-only addition retains a bounded capture-progress report.
-  // Request/authority deadlines and diagnostic-profile isolation are unchanged.
-  assert.equal(createHash('sha256').update(normal).digest('hex'), 'bce3220e31a9bc501cc8ba8d57a1f7627c22ada10e4a96e0e9353619be8d30f2');
+  // The reviewed workflow includes the manual private fixture retrieval job.
+  // Preserve the diagnostic profile isolation and request deadlines below.
+  assert.equal(createHash('sha256').update(normal).digest('hex'), 'b021d2c56b55639d7b6317f43a38d3a6d10d34ca404d39d493ac689c03fea24d');
   const source = readFileSync(new URL('./runtime/check-existing-binding.mjs', import.meta.url), 'utf8');
   assert.ok(source.indexOf('throw profileStop;') < source.indexOf("phase = 'private-capture-interruption'"));
   assert.ok(source.includes('(context.limits.hook_seconds - 10) * 1000'));

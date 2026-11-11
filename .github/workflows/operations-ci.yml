@@ -8,10 +8,26 @@ on:
       - .github/workflows/operations-ci.yml
   workflow_dispatch:
     inputs:
+      phase3_fixture_preflight:
+        description: Verify private fixture retrieval on the Phase 3 branch without running WordPress
+        type: boolean
+        default: false
       native_write_acceptance:
         description: Run the owned disposable ACF/CSS acceptance with existing private fixture delivery
         type: boolean
         default: false
+      code_snippets_asset_id:
+        description: Reviewed private provider Release asset ID; never a URL or credential
+        type: string
+        default: ''
+      updraftplus_asset_id:
+        description: Reviewed private provider Release asset ID for UpdraftPlus Premium
+        type: string
+        default: ''
+      updraftplus_sha256:
+        description: Independently reviewed UpdraftPlus Premium 2.26.13.26 SHA-256
+        type: string
+        default: ''
       code_snippets_archive:
         description: Absolute path already staged by approved private fixture delivery; never a URL or credential
         type: string
@@ -23,7 +39,145 @@ on:
 permissions:
   contents: read
 jobs:
+  phase3-fixture-preflight:
+    if: github.event_name == 'workflow_dispatch' && inputs.phase3_fixture_preflight
+    runs-on: ubuntu-24.04
+    permissions: {}
+    timeout-minutes: 6
+    env:
+      MRN_PHASE3_PRIVATE_FIXTURES: 'true'
+    steps:
+      - name: Require the fixture branch and mutually exclusive preflight mode
+        env:
+          NATIVE_WRITE_REQUESTED: ${{ inputs.native_write_acceptance }}
+          CODE_ASSET_ID: ${{ inputs.code_snippets_asset_id }}
+          UPDRAFT_ASSET_ID: ${{ inputs.updraftplus_asset_id }}
+        run: |
+          set -euo pipefail
+          [[ $GITHUB_REF == refs/heads/codex/enhanced-mcp-workflows && $NATIVE_WRITE_REQUESTED == false ]] || exit 1
+          [[ $CODE_ASSET_ID =~ ^[1-9][0-9]{0,19}$ && $UPDRAFT_ASSET_ID =~ ^[1-9][0-9]{0,19}$ ]] || exit 1
+      - name: Request read-only access to the private fixture repository
+        id: provider-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.MRN_CI_STANDALONE_REPOS_APP_ID }}
+          private-key: ${{ secrets.MRN_CI_STANDALONE_REPOS_PRIVATE_KEY }}
+          owner: mrnwebdesigns
+          repositories: mrn-mainwp-operations-api
+          permission-contents: read
+      - &stage-private-fixtures
+        name: Stage approved private fixture Release assets
+        id: private-fixtures
+        if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/codex/enhanced-mcp-workflows' && env.MRN_PHASE3_PRIVATE_FIXTURES == 'true' && (inputs.code_snippets_asset_id != '' || inputs.updraftplus_asset_id != '')
+        env:
+          GH_TOKEN: ${{ steps.provider-token.outputs.token }}
+          GH_DEBUG: ''
+          MRN_CODE_SNIPPETS_ASSET_ID: ${{ inputs.code_snippets_asset_id }}
+          MRN_CODE_SNIPPETS_SHA256: ${{ inputs.code_snippets_sha256 }}
+          MRN_UPDRAFTPLUS_ASSET_ID: ${{ inputs.updraftplus_asset_id }}
+          MRN_UPDRAFTPLUS_SHA256: ${{ inputs.updraftplus_sha256 }}
+        run: |
+          #!/usr/bin/env bash
+          set -euo pipefail
+          umask 077
+          [[ ${GITHUB_ACTIONS:-} == true && ${GITHUB_EVENT_NAME:-} == workflow_dispatch ]] || exit 1
+          [[ ${GITHUB_REPOSITORY:-} == mrnwebdesigns/MRN && ${GITHUB_REF:-} == refs/heads/codex/enhanced-mcp-workflows && -n ${GH_TOKEN:-} ]] || exit 1
+          [[ -d ${RUNNER_TEMP:-} && -f ${GITHUB_OUTPUT:-} ]] || exit 1
+          private_repo=mrnwebdesigns/mrn-mainwp-operations-api
+          [[ $(gh api "repos/$private_repo" --jq '.private == true and .full_name == "mrnwebdesigns/mrn-mainwp-operations-api"') == true ]] || exit 1
+
+          fixture_dir=$(mktemp -d "$RUNNER_TEMP/mrn-private-fixtures.XXXXXXXX")
+          chmod 700 "$fixture_dir"
+          printf 'private_dir=%s\n' "$fixture_dir" >> "$GITHUB_OUTPUT"
+          for kind in code_snippets updraftplus; do
+            if [[ $kind == code_snippets ]]; then
+              asset_id=${MRN_CODE_SNIPPETS_ASSET_ID:-}
+              expected=${MRN_CODE_SNIPPETS_SHA256:-}
+            else
+              asset_id=${MRN_UPDRAFTPLUS_ASSET_ID:-}
+              expected=${MRN_UPDRAFTPLUS_SHA256:-}
+            fi
+            [[ $asset_id =~ ^[1-9][0-9]{0,19}$ && $expected =~ ^[a-f0-9]{64}$ ]] || exit 1
+            destination="$fixture_dir/$kind.zip"
+            if ! gh api "repos/$private_repo/releases/assets/$asset_id" \
+              --jq '{id,state,size}' > "$destination.metadata.json" 2>/dev/null; then
+              printf '%s\n' 'Private fixture metadata is inaccessible' >&2
+              exit 1
+            fi
+            python3 - "$destination.metadata.json" "$asset_id" <<'PY'
+          import json, pathlib, sys
+          record = json.loads(pathlib.Path(sys.argv[1]).read_text())
+          assert record['id'] == int(sys.argv[2]) and record['state'] == 'uploaded'
+          assert type(record['size']) is int and 0 < record['size'] <= 16 * 1024 * 1024
+          PY
+            # GitHub CLI handles its own authenticated asset redirects. No signed URL,
+            # credential, raw response header or licensed source is printed to a log.
+            if ! (ulimit -f 32768; gh api "repos/$private_repo/releases/assets/$asset_id" \
+              -H 'Accept: application/octet-stream' > "$destination" 2>/dev/null); then
+              printf '%s\n' 'Private fixture download failed' >&2
+              exit 1
+            fi
+            python3 - "$destination" "$expected" "$kind" <<'PY'
+          import hashlib, json, os, pathlib, re, stat, sys, zipfile
+          p, expected, kind = pathlib.Path(sys.argv[1]), sys.argv[2], sys.argv[3]
+          info = p.lstat()
+          assert stat.S_ISREG(info.st_mode) and info.st_nlink == 1 and info.st_uid == os.getuid()
+          assert stat.S_IMODE(info.st_mode) == 0o600 and not any(x.is_symlink() for x in p.parents)
+          assert 0 < info.st_size <= 16 * 1024 * 1024
+          assert json.loads(pathlib.Path(str(p) + '.metadata.json').read_text())['size'] == info.st_size
+          assert hashlib.sha256(p.read_bytes()).hexdigest() == expected
+          root, version = ('mainwp-code-snippets-extension', '5.1.1') if kind == 'code_snippets' else ('updraftplus', '2.26.13.26')
+          with zipfile.ZipFile(p) as z:
+              entries = z.infolist()
+              assert entries and len(entries) <= 20000
+              assert sum(e.file_size for e in entries) <= 128 * 1024 * 1024
+              names = set()
+              for e in entries:
+                  parts = e.filename.rstrip('/').split('/')
+                  assert parts[0] == root and all(x not in ('', '.', '..', '.git') for x in parts)
+                  assert e.filename.casefold() not in names and not (e.flag_bits & 1)
+                  assert stat.S_IFMT(e.external_attr >> 16) in (0, stat.S_IFREG, stat.S_IFDIR)
+                  assert e.file_size <= 16 * 1024 * 1024
+                  names.add(e.filename.casefold())
+              main = z.getinfo(f'{root}/{root}.php')
+              assert main.file_size <= 1024 * 1024
+              header = z.read(main).decode('utf-8')
+              assert re.search(r'(?mi)^\s*\*?\s*Version:\s*' + re.escape(version) + r'\s*$', header)
+              if kind == 'code_snippets':
+                  # The owner-supplied vendor ZIP omits a License header. Require the
+                  # exact privately reviewed archive covered by MainWP's license terms.
+                  assert expected == 'd34b63dc7f9c5e32ebcff33b30930f1cfb238ccf8b625937dd0d72288bbcf93a'
+              else:
+                  assert expected == 'a2eecc0e2739363cc31f552a06c067eac46a317b8bab8d026fb0feaf3c7553ed'
+                  assert re.search(r'(?mi)^\s*\*?\s*License:\s*(?:GPL|GNU)', header)
+              assert z.testzip() is None
+          PY
+            printf '%s_archive=%s\n' "$kind" "$destination" >> "$GITHUB_OUTPUT"
+          done
+          printf '%s\n' 'Private fixture hashes, versions, license checks and file custody verified.'
+      - &remove-private-fixtures
+        name: Remove only this job's private fixture copies
+        if: always() && steps.private-fixtures.outputs.private_dir != ''
+        env:
+          MRN_PRIVATE_FIXTURE_DIR: ${{ steps.private-fixtures.outputs.private_dir }}
+        run: |
+          python3 - <<'PY_CLEAN'
+          import os, pathlib, re, stat
+          p = pathlib.Path(os.environ['MRN_PRIVATE_FIXTURE_DIR'])
+          root = pathlib.Path(os.environ['RUNNER_TEMP'])
+          assert p.parent == root and re.fullmatch(r'mrn-private-fixtures\.[A-Za-z0-9]{8}', p.name)
+          assert not any(x.is_symlink() for x in (p, *p.parents))
+          assert p.stat().st_uid == os.getuid() and stat.S_IMODE(p.stat().st_mode) == 0o700
+          allowed = {'code_snippets.zip', 'updraftplus.zip', 'code_snippets.zip.metadata.json', 'updraftplus.zip.metadata.json'}
+          files = list(p.iterdir())
+          assert all(x.name in allowed and x.is_file() and not x.is_symlink() and x.stat().st_uid == os.getuid() and x.stat().st_nlink == 1 for x in files)
+          for x in files:
+              x.unlink()
+          p.rmdir()
+          PY_CLEAN
+
   controlled-contracts:
+    if: github.event_name != 'workflow_dispatch' || !inputs.phase3_fixture_preflight
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -46,13 +200,16 @@ jobs:
     name: Disposable gateway MainWP transport (${{ matrix.acceptance }})
     needs: controlled-contracts
     runs-on: ubuntu-24.04
+    environment: ${{ matrix.acceptance == 'write' && 'mrn-phase3-native' || '' }}
+    env:
+      MRN_PHASE3_PRIVATE_FIXTURES: ${{ matrix.acceptance == 'write' }}
     # The complete inherited suite remains required. An explicit write run adds
     # an independent composition under the same bounded job allocation, so a
     # failure in either composition stays visible and does not cancel the other.
     strategy:
       fail-fast: false
       matrix:
-        acceptance: ${{ fromJSON(github.event_name == 'workflow_dispatch' && inputs.native_write_acceptance && '["existing","write"]' || '["existing"]') }}
+        acceptance: ${{ fromJSON(github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/codex/enhanced-mcp-workflows' && inputs.native_write_acceptance && '["existing","write"]' || '["existing"]') }}
     # Source-context composition b2b6698 passed in 29m14s, leaving only 46s at
     # the old whole-job cap. Include room for the added catalog composition and
     # original artifact retention. This is only the overall CI job allocation:
@@ -122,6 +279,7 @@ jobs:
           token: ${{ steps.provider-token.outputs.token }}
           path: .runtime/management-worker
           persist-credentials: false
+      - *stage-private-fixtures
       - name: Install locked test dependencies and build MCP
         run: |
           npm ci --ignore-scripts --prefix tools/operations
@@ -131,7 +289,7 @@ jobs:
       - name: Validate explicitly supplied private write fixture custody
         if: matrix.acceptance == 'write'
         env:
-          MRN_DISPOSABLE_CODE_SNIPPETS_ARCHIVE: ${{ inputs.code_snippets_archive }}
+          MRN_DISPOSABLE_CODE_SNIPPETS_ARCHIVE: ${{ steps.private-fixtures.outputs.code_snippets_archive || inputs.code_snippets_archive }}
           MRN_DISPOSABLE_CODE_SNIPPETS_SHA256: ${{ inputs.code_snippets_sha256 }}
         run: |
           python3 - <<'PY'
@@ -191,7 +349,7 @@ jobs:
           MRN_DISPOSABLE_NATIVE_CHILD: '1'
           MRN_DISPOSABLE_WRITE_WORKFLOWS: ${{ matrix.acceptance == 'write' && '1' || '0' }}
           MRN_NATIVE_PREPARE_FIXTURE: ${{ matrix.acceptance == 'write' && '1' || '0' }}
-          MRN_DISPOSABLE_CODE_SNIPPETS_ARCHIVE: ${{ matrix.acceptance == 'write' && inputs.code_snippets_archive || '' }}
+          MRN_DISPOSABLE_CODE_SNIPPETS_ARCHIVE: ${{ matrix.acceptance == 'write' && (steps.private-fixtures.outputs.code_snippets_archive || inputs.code_snippets_archive) || '' }}
           MRN_DISPOSABLE_CODE_SNIPPETS_SHA256: ${{ matrix.acceptance == 'write' && inputs.code_snippets_sha256 || '' }}
           MRN_DISPOSABLE_SYNC_AUTH_DIAGNOSTICS: '1'
           MRN_DISPOSABLE_MANAGEMENT_TEST: ${{ matrix.acceptance == 'existing' && '1' || '0' }}
@@ -591,3 +749,4 @@ jobs:
             ${{ runner.temp }}/native-existing-directory-lock.json
           if-no-files-found: error
           retention-days: 14
+      - *remove-private-fixtures
