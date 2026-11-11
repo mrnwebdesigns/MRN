@@ -15,12 +15,6 @@ defined( 'ABSPATH' ) || exit;
 const MRN_ACTIVE_STYLE_GUIDE_LAYOUT_LIBRARY_OPTION = 'mrn_active_style_guide_layout_library';
 const MRN_ACTIVE_STYLE_GUIDE_LAYOUT_LIBRARY_FIXTURE_META = '_mrn_layout_library_fixture';
 
-/** Local fixture pages may be publicly rendered for the capture worker only. */
-function mrn_active_style_guide_layout_library_fixture_status(): string {
-	$host = (string) wp_parse_url( home_url(), PHP_URL_HOST );
-	return in_array( wp_get_environment_type(), array( 'local', 'development' ), true ) && '.localhost' === substr( $host, -10 ) ? 'publish' : 'private';
-}
-
 /**
  * Return the theme's currently available builder layouts, keyed by layout name.
  *
@@ -293,10 +287,9 @@ function mrn_active_style_guide_regenerate_layout_library_fixtures(): array {
 			'meta_value'     => $layout_name,
 			'fields'         => 'ids',
 		) );
-		$fixture_status = mrn_active_style_guide_layout_library_fixture_status();
 		$post_id = ! empty( $existing ) ? absint( $existing[0] ) : wp_insert_post( array(
 			'post_title'  => sprintf( 'MRN Layout Preview: %s', $layout_name ),
-			'post_status' => $fixture_status,
+			'post_status' => 'private',
 			'post_type'   => 'page',
 			'post_name'   => 'mrn-layout-preview-' . $layout_name,
 		), true );
@@ -304,8 +297,8 @@ function mrn_active_style_guide_regenerate_layout_library_fixtures(): array {
 			$result['skipped'][] = $layout_name;
 			continue;
 		}
-		if ( get_post_status( $post_id ) !== $fixture_status ) {
-			wp_update_post( array( 'ID' => $post_id, 'post_status' => $fixture_status ) );
+		if ( 'private' !== get_post_status( $post_id ) ) {
+			wp_update_post( array( 'ID' => $post_id, 'post_status' => 'private' ) );
 		}
 
 		update_post_meta( $post_id, MRN_ACTIVE_STYLE_GUIDE_LAYOUT_LIBRARY_FIXTURE_META, $layout_name );
@@ -320,43 +313,6 @@ function mrn_active_style_guide_regenerate_layout_library_fixtures(): array {
 
 	return $result;
 }
-
-/** Prevent generated local fixtures from appearing in search results. */
-function mrn_active_style_guide_layout_library_fixture_robots( array $robots ): array {
-	if ( is_singular() && get_post_meta( get_queried_object_id(), MRN_ACTIVE_STYLE_GUIDE_LAYOUT_LIBRARY_FIXTURE_META, true ) ) {
-		$robots['noindex'] = true;
-		$robots['nofollow'] = true;
-	}
-	return $robots;
-}
-add_filter( 'wp_robots', 'mrn_active_style_guide_layout_library_fixture_robots' );
-
-/** Get the generated thumbnail attachment for a layout, if it is current. */
-function mrn_active_style_guide_get_layout_library_thumbnail_id( string $layout_name ): int {
-	$state = get_option( MRN_ACTIVE_STYLE_GUIDE_LAYOUT_LIBRARY_OPTION, array() );
-	$state = is_array( $state ) ? $state : array();
-	$thumbnails = isset( $state['thumbnails'] ) && is_array( $state['thumbnails'] ) ? $state['thumbnails'] : array();
-	$attachment_id = isset( $thumbnails[ sanitize_key( $layout_name ) ] ) ? absint( $thumbnails[ sanitize_key( $layout_name ) ] ) : 0;
-
-	return $attachment_id > 0 && 'attachment' === get_post_type( $attachment_id ) ? $attachment_id : 0;
-}
-
-/** Give the existing Stack picker its site-generated thumbnail. */
-function mrn_active_style_guide_add_layout_library_picker_thumbnail( array $metadata, $layout_name ): array {
-	$attachment_id = mrn_active_style_guide_get_layout_library_thumbnail_id( (string) $layout_name );
-	if ( $attachment_id <= 0 ) {
-		return $metadata;
-	}
-
-	$url = wp_get_attachment_image_url( $attachment_id, 'medium_large' );
-	if ( is_string( $url ) && '' !== $url ) {
-		$metadata['preview_thumbnail_url'] = $url;
-		$metadata['preview_alt_text'] = sprintf( __( '%s layout preview from this site', 'mrn-active-style-guide' ), (string) $layout_name );
-	}
-
-	return $metadata;
-}
-add_filter( 'mrn_base_stack_acf_layout_picker_metadata', 'mrn_active_style_guide_add_layout_library_picker_thumbnail', 20, 2 );
 
 /** Build the capture plan used by the reviewed Playwright capture tool. */
 function mrn_active_style_guide_get_layout_library_capture_manifest(): array {
@@ -395,41 +351,6 @@ function mrn_active_style_guide_get_layout_library_capture_manifest(): array {
 	}
 
 	return array( 'fingerprint' => mrn_active_style_guide_get_layout_library_fingerprint(), 'generatedAt' => gmdate( 'c' ), 'targets' => $targets, 'unavailable' => $unavailable );
-}
-
-/** Import locally captured screenshots into the Media Library and map them. */
-function mrn_active_style_guide_import_layout_library_thumbnails( string $directory ): array {
-	$directory = wp_normalize_path( $directory );
-	if ( ! is_dir( $directory ) || ! is_readable( $directory ) ) {
-		throw new InvalidArgumentException( 'Capture directory is not readable.' );
-	}
-	$report_path = trailingslashit( $directory ) . 'capture-report.json';
-	$report = is_readable( $report_path ) ? json_decode( (string) file_get_contents( $report_path ), true ) : null;
-	if ( ! is_array( $report ) || ! empty( $report['failed'] ) || empty( $report['fingerprint'] ) || ! hash_equals( mrn_active_style_guide_get_layout_library_fingerprint(), (string) $report['fingerprint'] ) ) {
-		throw new InvalidArgumentException( 'Capture report is missing, failed, or no longer matches the current site fingerprint.' );
-	}
-	require_once ABSPATH . 'wp-admin/includes/file.php';
-	require_once ABSPATH . 'wp-admin/includes/media.php';
-	require_once ABSPATH . 'wp-admin/includes/image.php';
-	$thumbnails = array();
-	foreach ( glob( trailingslashit( $directory ) . '*.jpg' ) ?: array() as $file ) {
-		$layout_name = sanitize_key( pathinfo( $file, PATHINFO_FILENAME ) );
-		if ( '' === $layout_name || ! isset( mrn_active_style_guide_get_layout_library_catalog()[ $layout_name ] ) ) {
-			continue;
-		}
-		$attachment_id = media_handle_sideload( array( 'name' => basename( $file ), 'tmp_name' => $file ), 0, 'Layout Library preview: ' . $layout_name );
-		if ( ! is_wp_error( $attachment_id ) ) {
-			update_post_meta( $attachment_id, '_mrn_layout_library_preview', $layout_name );
-			$thumbnails[ $layout_name ] = (int) $attachment_id;
-		}
-	}
-	$state = get_option( MRN_ACTIVE_STYLE_GUIDE_LAYOUT_LIBRARY_OPTION, array() );
-	$state = is_array( $state ) ? $state : array();
-	$state['thumbnails'] = array_merge( isset( $state['thumbnails'] ) && is_array( $state['thumbnails'] ) ? $state['thumbnails'] : array(), $thumbnails );
-	$state['fingerprint'] = mrn_active_style_guide_get_layout_library_fingerprint();
-	$state['captured_at'] = time();
-	update_option( MRN_ACTIVE_STYLE_GUIDE_LAYOUT_LIBRARY_OPTION, $state, false );
-	return $thumbnails;
 }
 
 /**
@@ -541,7 +462,7 @@ function mrn_active_style_guide_render_layout_library_page(): void {
 			.mrn-layout-library-card[hidden] { display:none; }
 			.mrn-layout-library-card__header { display:flex; gap:12px; align-items:baseline; justify-content:space-between; padding:12px 14px; }
 			.mrn-layout-library-card__title { margin:0; font-size:18px; }
-			.mrn-layout-library-card__image { display:block; width:100%; height:300px; object-fit:cover; border-top:1px solid #ccd0d4; background:#f6f7f7; }
+			.mrn-layout-library-card__frame { display:block; width:100%; height:360px; border:0; border-top:1px solid #ccd0d4; background:#f6f7f7; }
 			.mrn-layout-library-card__unavailable { display:grid; min-height:300px; place-items:center; padding:20px; box-sizing:border-box; background:#f6f7f7; color:#50575e; text-align:center; }
 			.mrn-layout-library-card__copy { padding:16px; }
 			.mrn-layout-library-card__category { color:#50575e; font-size:12px; margin:0 0 8px; }
@@ -553,17 +474,15 @@ function mrn_active_style_guide_render_layout_library_page(): void {
 			<?php
 			$guide = mrn_active_style_guide_get_layout_library_guide_metadata( $layout_name, $entry );
 			$preview = $previews[ $layout_name ] ?? null;
-			$thumbnail_id = mrn_active_style_guide_get_layout_library_thumbnail_id( $layout_name );
-			$thumbnail_url = $thumbnail_id ? wp_get_attachment_image_url( $thumbnail_id, 'medium_large' ) : '';
 			$fields = array_filter( mrn_active_style_guide_get_layout_library_layout_fields( $entry, $layout_name ), static function ( $field ) { return is_array( $field ) && ! empty( $field['label'] ) && ! in_array( $field['type'] ?? '', array( 'tab', 'accordion', 'message' ), true ); } );
 			$search = strtolower( $entry['layout']['label'] . ' ' . $layout_name . ' ' . $guide['description'] . ' ' . implode( ' ', $guide['keywords'] ) );
 			?>
 			<article class="mrn-layout-library-card" data-category="<?php echo esc_attr( $guide['category'] ); ?>" data-search="<?php echo esc_attr( $search ); ?>">
 				<div class="mrn-layout-library-card__header">
 					<h2 class="mrn-layout-library-card__title"><?php echo esc_html( $entry['layout']['label'] ); ?></h2>
-					<?php if ( $thumbnail_url ) : ?><a href="<?php echo esc_url( wp_get_attachment_url( $thumbnail_id ) ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Open full size', 'mrn-active-style-guide' ); ?></a><?php endif; ?>
+					<?php if ( $preview && in_array( $preview, $manifest['targets'], true ) ) : ?><a href="<?php echo esc_url( add_query_arg( 'mrn-layout-library-preview', '1', (string) $preview['url'] ) ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Open full size', 'mrn-active-style-guide' ); ?></a><?php endif; ?>
 				</div>
-				<?php if ( $thumbnail_url ) : ?><img class="mrn-layout-library-card__image" src="<?php echo esc_url( $thumbnail_url ); ?>" alt="" loading="lazy"><?php else : ?><div class="mrn-layout-library-card__unavailable"><?php esc_html_e( 'This layout needs site-owned content before it can render a meaningful example.', 'mrn-active-style-guide' ); ?></div><?php endif; ?>
+				<?php if ( $preview && in_array( $preview, $manifest['targets'], true ) ) : ?><iframe class="mrn-layout-library-card__frame" title="<?php echo esc_attr( sprintf( __( '%s live layout preview', 'mrn-active-style-guide' ), $entry['layout']['label'] ) ); ?>" src="<?php echo esc_url( add_query_arg( 'mrn-layout-library-preview', '1', (string) $preview['url'] ) ); ?>" loading="lazy"></iframe><?php else : ?><div class="mrn-layout-library-card__unavailable"><?php esc_html_e( 'This layout needs site-owned content before it can render a meaningful example.', 'mrn-active-style-guide' ); ?></div><?php endif; ?>
 				<div class="mrn-layout-library-card__copy"><p class="mrn-layout-library-card__category"><?php echo esc_html( $guide['category'] ); ?></p><p><?php echo esc_html( $guide['description'] ); ?></p><details><summary><?php esc_html_e( 'Editable fields', 'mrn-active-style-guide' ); ?></summary><ul><?php foreach ( $fields as $field ) : ?><li><strong><?php echo esc_html( $field['label'] ); ?></strong><?php if ( 'repeater' === ( $field['type'] ?? '' ) ) : ?> — <?php esc_html_e( 'repeatable items', 'mrn-active-style-guide' ); ?><?php endif; ?></li><?php endforeach; ?></ul></details><p class="mrn-layout-library-card__meta"><code><?php echo esc_html( $layout_name ); ?></code> · <?php echo esc_html( $preview ? ucfirst( (string) $preview['source'] ) : __( 'No preview source', 'mrn-active-style-guide' ) ); ?></p></div>
 			</article>
 		<?php endforeach; ?>
@@ -591,12 +510,6 @@ function mrn_active_style_guide_handle_layout_library_regeneration(): void {
 	$fingerprint = mrn_active_style_guide_get_layout_library_fingerprint();
 	update_option( MRN_ACTIVE_STYLE_GUIDE_LAYOUT_LIBRARY_OPTION, array( 'fingerprint' => $fingerprint, 'regenerated_at' => time(), 'result' => $result ), false );
 
-	/**
-	 * Allows an approved capture worker to generate thumbnail attachments after
-	 * fixtures have been refreshed. The hook never makes an external request.
-	 */
-	do_action( 'mrn_active_style_guide_layout_library_regenerated', $result, $fingerprint );
-
 	wp_safe_redirect( add_query_arg( 'mrn-layout-library-regenerated', '1', admin_url( 'themes.php?page=mrn-layout-library' ) ) );
 	exit;
 }
@@ -606,16 +519,5 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 	/** Expose only explicit local/on-host capture operations to WP-CLI. */
 	WP_CLI::add_command( 'mrn-layout-library capture-manifest', static function (): void {
 		WP_CLI::line( wp_json_encode( mrn_active_style_guide_get_layout_library_capture_manifest(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ) );
-	} );
-	WP_CLI::add_command( 'mrn-layout-library import-thumbnails', static function ( array $args ): void {
-		if ( empty( $args[0] ) ) {
-			WP_CLI::error( 'Usage: wp mrn-layout-library import-thumbnails <directory>' );
-		}
-		try {
-			$imported = mrn_active_style_guide_import_layout_library_thumbnails( (string) $args[0] );
-			WP_CLI::success( sprintf( 'Imported %d layout thumbnails.', count( $imported ) ) );
-		} catch ( InvalidArgumentException $error ) {
-			WP_CLI::error( $error->getMessage() );
-		}
 	} );
 }
