@@ -349,85 +349,116 @@ body.mrn-themed-content.toplevel_page_mrn-reusable-block-library #wpbody-content
 body.mrn-themed-content.toplevel_page_mrn-reusable-block-library #wpbody-content > .wrap > div[style*="display:grid"] > div {
  background: var(--mrn-admin-surface) !important; border-color: var(--mrn-admin-line) !important; color: var(--mrn-admin-ink);
 }
+/* Automatic page headers use the settings toolbar's static variant. Their
+   server-rendered height reserves space without a DOM move or measured spacer. */
+body.mrn-appearance #mrn-admin-page-toolbar {
+ position: sticky; top: var(--wp-admin--admin-bar--height,32px); z-index: 9900;
+ display: flex; align-items: center; box-sizing: border-box; min-height: 64px;
+ width: calc(100% + 20px); margin: 0 0 0 -20px; padding: 12px 28px;
+ background: var(--mrn-admin-surface); color: var(--mrn-admin-ink);
+ border: 0; border-bottom: 1px solid var(--mrn-admin-line); box-shadow: none;
+}
+/* Original H1 remains the semantic heading. Hide only its duplicate label;
+   embedded Add/Preview links remain visible and keyboard accessible. */
+body.mrn-admin-page-heading:has(.mrn-sticky-save-bar) #wpbody-content > .wrap > h1:not(:has(a,button,input,select)) {
+ position: absolute !important; width: 1px !important; height: 1px !important;
+ padding: 0 !important; margin: -1px !important; overflow: hidden;
+ clip: rect(0,0,0,0); clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+body.mrn-admin-page-heading:has(.mrn-sticky-save-bar) #wpbody-content > .wrap > h1:has(a,button) { font-size: 0; line-height: 0; margin: 0 0 20px; padding: 0; }
+body.mrn-admin-page-heading:has(.mrn-sticky-save-bar) #wpbody-content > .wrap > h1 :is(a,button) { font-size: 14px; line-height: 1.5; margin-left: 0; }
+body.mrn-admin-page-heading:has(.mrn-sticky-save-bar) #wpbody-content > .wrap > h1:has(a,button) > :not(a,button) { font-size: 14px; line-height: 1.5; }
+body.mrn-admin-page-heading:has(.mrn-sticky-save-bar) .wrap > h1 + .page-title-action { margin-left: 0; }
+body.mrn-media-workspace.mrn-admin-page-heading { --mrn-media-header-bottom: calc(var(--wp-admin--admin-bar--height,32px) + 64px + 54px); }
+body.mrn-media-workspace #mrn-admin-page-toolbar { width: 100%; margin-left: 0; }
+body.mrn-media-workspace.mrn-admin-page-heading #mrn-media-workspace-header { top: calc(var(--wp-admin--admin-bar--height,32px) + 64px); }
+@media (max-width:782px) {
+ html.wp-toolbar:has(body.mrn-admin-page-heading) { padding-top: var(--wp-admin--admin-bar--height,46px); }
+ body.mrn-admin-page-heading #wpadminbar { position: fixed; }
+ body.mrn-admin-page-heading #wpbody { padding-top: 0; }
+ body.mrn-appearance #mrn-admin-page-toolbar { width: calc(100% + 10px); margin-left: -10px; padding: 12px; }
+ body.mrn-media-workspace #mrn-admin-page-toolbar { width: 100%; margin-left: 0; }
+}
 /* Keep the settings bar in flow from first paint. Its actual wrapped height
    reserves the space; the legacy measured spacer is unnecessary in this shell.
    The helper still owns dirty-state detection and native saving. */
-body.mrn-appearance.mrn-admin-settings #wpbody-content .mrn-sticky-save-bar {
+body.mrn-appearance.mrn-admin-page-heading #wpbody-content .mrn-sticky-save-bar {
+ display: flex; align-items: center; box-sizing: border-box;
  position: sticky; left: auto; right: auto; width: calc(100% + 20px); margin: 0 0 0 -20px;
  top: var(--wp-admin--admin-bar--height, 32px); z-index: 9900; min-height: 64px;
  padding: 12px 28px; gap: 12px 24px; flex-wrap: wrap;
  border: 0; border-bottom: 1px solid var(--mrn-admin-line); box-shadow: none;
  background: var(--mrn-admin-surface); color: var(--mrn-admin-ink);
 }
-body.mrn-appearance.mrn-admin-settings #wpbody-content .mrn-admin-toolbar-spacer { display: none; }
+body.mrn-appearance.mrn-admin-page-heading #wpbody-content .mrn-admin-toolbar-spacer { display: none; }
 /* Config Helper renders the same bar inside its wrap. Let that bar occupy the
    full shell and keep the original content gutter on its existing native form. */
-body.mrn-appearance.mrn-admin-settings #wpbody-content > .wrap:has(> #mrn-site-config-toolbar) { margin: 0; max-width: none; }
-body.mrn-appearance.mrn-admin-settings #mrn-site-config-form { margin: 32px 32px 0 12px; max-width: 1600px; }
-body.mrn-appearance.mrn-admin-settings .mrn-settings-toolbar__meta { min-width: 0; flex: 1 1 auto; }
-body.mrn-appearance.mrn-admin-settings .mrn-settings-toolbar__title { font-size: 18px; font-weight: 650; line-height: 1.4; white-space: normal; color: var(--mrn-admin-ink); }
-body.mrn-appearance.mrn-admin-settings #wpbody-content .mrn-settings-toolbar__actions { min-width: 0; margin: 0; width: auto; flex: 1 1 auto; justify-content: flex-end; gap: 12px; }
-body.mrn-appearance.mrn-admin-settings #wpbody-content .mrn-settings-toolbar__actions:not(:has(.mrn-settings-tabs)) { flex: 0 0 auto; }
-body.mrn-appearance.mrn-admin-settings #wpbody-content .mrn-settings-tabs { width: auto; padding: 0; gap: 4px; background: transparent; }
-body.mrn-appearance.mrn-admin-settings #wpbody-content .mrn-sticky-save-bar .mrn-settings-tab--save.button-primary { border-radius: 6px; background: var(--mrn-admin-primary); border-color: var(--mrn-admin-primary); color: var(--mrn-admin-on-primary); box-shadow: none; }
-body.mrn-appearance.mrn-admin-settings #wpbody-content .mrn-sticky-save-bar .mrn-settings-tab--save.button-primary:hover { background: var(--mrn-admin-primary-hover); border-color: var(--mrn-admin-primary-hover); }
-body.mrn-appearance.mrn-admin-settings #wpbody-content .mrn-sticky-save-bar .mrn-settings-tab--save.button-primary:disabled { background: var(--mrn-admin-disabled); border-color: var(--mrn-admin-line); color: var(--mrn-admin-disabled-ink); }
+body.mrn-appearance.mrn-admin-page-heading #wpbody-content > .wrap:has(> #mrn-site-config-toolbar) { margin: 0; max-width: none; }
+body.mrn-appearance.mrn-admin-page-heading #mrn-site-config-form { margin: 32px 32px 0 12px; max-width: 1600px; }
+body.mrn-appearance.mrn-admin-page-heading .mrn-settings-toolbar__meta { min-width: 0; flex: 1 1 auto; }
+body.mrn-appearance.mrn-admin-page-heading .mrn-settings-toolbar__title { font-size: 18px; font-weight: 650; line-height: 1.4; white-space: normal; color: var(--mrn-admin-ink); }
+body.mrn-appearance.mrn-admin-page-heading #wpbody-content .mrn-settings-toolbar__actions { min-width: 0; margin: 0; width: auto; flex: 1 1 auto; justify-content: flex-end; gap: 12px; }
+body.mrn-appearance.mrn-admin-page-heading #wpbody-content .mrn-settings-toolbar__actions:not(:has(.mrn-settings-tabs)) { flex: 0 0 auto; }
+body.mrn-appearance.mrn-admin-page-heading #wpbody-content .mrn-settings-tabs { width: auto; padding: 0; gap: 4px; background: transparent; }
+body.mrn-appearance.mrn-admin-page-heading #wpbody-content .mrn-sticky-save-bar .mrn-settings-tab--save.button-primary { border-radius: 6px; background: var(--mrn-admin-primary); border-color: var(--mrn-admin-primary); color: var(--mrn-admin-on-primary); box-shadow: none; }
+body.mrn-appearance.mrn-admin-page-heading #wpbody-content .mrn-sticky-save-bar .mrn-settings-tab--save.button-primary:hover { background: var(--mrn-admin-primary-hover); border-color: var(--mrn-admin-primary-hover); }
+body.mrn-appearance.mrn-admin-page-heading #wpbody-content .mrn-sticky-save-bar .mrn-settings-tab--save.button-primary:disabled { background: var(--mrn-admin-disabled); border-color: var(--mrn-admin-line); color: var(--mrn-admin-disabled-ink); }
 /* Only these qualified screens repeat the toolbar's title. Keep the original
    H1 available to screen readers, and fail open if its native bar is absent. */
-body.mrn-appearance.mrn-admin-settings #wpbody-content:has(:is(#mrn-business-information-toolbar,#mrn-theme-header-footer-toolbar,#mrn-header-utility-message-toolbar,#mrn-site-config-toolbar)) > .wrap > h1,
-body.mrn-appearance.mrn-admin-settings #wpbody-content:has(.mrn-sticky-save-bar) :is(#acf-group_mrn_business_information,#acf-group_mrn_theme_header_footer,#acf-group_mrn_header_utility_message):not(.closed) > .postbox-header > h2 {
+body.mrn-appearance.mrn-admin-page-heading #wpbody-content:has(:is(#mrn-business-information-toolbar,#mrn-theme-header-footer-toolbar,#mrn-header-utility-message-toolbar,#mrn-site-config-toolbar)) > .wrap > h1,
+body.mrn-appearance.mrn-admin-page-heading #wpbody-content:has(.mrn-sticky-save-bar) :is(#acf-group_mrn_business_information,#acf-group_mrn_theme_header_footer,#acf-group_mrn_header_utility_message):not(.closed) > .postbox-header > h2 {
  position: absolute !important; width: 1px !important; height: 1px !important;
  padding: 0 !important; margin: -1px !important; overflow: hidden;
  clip: rect(0,0,0,0); clip-path: inset(50%); white-space: nowrap; border: 0;
 }
 /* Preserve the native collapse button beside the first tab/field. Distinct
    panel headings and the closed panel's restore affordance remain intact. */
-body.mrn-appearance.mrn-admin-settings #wpbody-content:has(.mrn-sticky-save-bar) :is(#acf-group_mrn_business_information,#acf-group_mrn_theme_header_footer,#acf-group_mrn_header_utility_message) { position: relative; border: 1px solid var(--mrn-admin-line); border-radius: 12px; }
-body.mrn-appearance.mrn-admin-settings #wpbody-content:has(.mrn-sticky-save-bar) :is(#acf-group_mrn_business_information,#acf-group_mrn_theme_header_footer,#acf-group_mrn_header_utility_message):not(.closed) > .postbox-header { position: absolute; top: 8px; right: 8px; z-index: 3; border: 0; background: transparent; }
-body.mrn-appearance.mrn-admin-settings #wpbody-content:has(.mrn-sticky-save-bar) :is(#acf-group_mrn_business_information,#acf-group_mrn_theme_header_footer,#acf-group_mrn_header_utility_message) > .inside > .acf-tab-wrap > .acf-tab-group { padding-right: 44px; }
-body.mrn-appearance.mrn-admin-settings #wpbody-content:has(.mrn-sticky-save-bar) :is(#acf-group_mrn_business_information,#acf-group_mrn_theme_header_footer,#acf-group_mrn_header_utility_message) > .inside > .acf-field:first-child > .acf-label { padding-right: 44px; }
+body.mrn-appearance.mrn-admin-page-heading #wpbody-content:has(.mrn-sticky-save-bar) :is(#acf-group_mrn_business_information,#acf-group_mrn_theme_header_footer,#acf-group_mrn_header_utility_message) { position: relative; border: 1px solid var(--mrn-admin-line); border-radius: 12px; }
+body.mrn-appearance.mrn-admin-page-heading #wpbody-content:has(.mrn-sticky-save-bar) :is(#acf-group_mrn_business_information,#acf-group_mrn_theme_header_footer,#acf-group_mrn_header_utility_message):not(.closed) > .postbox-header { position: absolute; top: 8px; right: 8px; z-index: 3; border: 0; background: transparent; }
+body.mrn-appearance.mrn-admin-page-heading #wpbody-content:has(.mrn-sticky-save-bar) :is(#acf-group_mrn_business_information,#acf-group_mrn_theme_header_footer,#acf-group_mrn_header_utility_message) > .inside > .acf-tab-wrap > .acf-tab-group { padding-right: 44px; }
+body.mrn-appearance.mrn-admin-page-heading #wpbody-content:has(.mrn-sticky-save-bar) :is(#acf-group_mrn_business_information,#acf-group_mrn_theme_header_footer,#acf-group_mrn_header_utility_message) > .inside > .acf-field:first-child > .acf-label { padding-right: 44px; }
 @media (max-width: 782px) {
- body.mrn-appearance.mrn-admin-settings #mrn-site-config-form { margin: 22px 16px 0 6px; }
- body.mrn-appearance.mrn-admin-settings:has(.mrn-sticky-save-bar) #wpadminbar { position: fixed; }
- body.mrn-appearance.mrn-admin-settings #wpbody-content .mrn-sticky-save-bar { width: calc(100% + 10px); margin-left: -10px; padding: 8px 12px; gap: 8px 12px; }
- body.mrn-appearance.mrn-admin-settings #wpbody-content .mrn-settings-toolbar__actions:has(.mrn-settings-tabs) { flex-basis: 100%; }
- body.mrn-appearance.mrn-admin-settings #wpbody-content .mrn-sticky-save-bar :is(.button,.mrn-settings-tab) { min-height: 44px; }
+ body.mrn-appearance.mrn-admin-page-heading #mrn-site-config-form { margin: 22px 16px 0 6px; }
+ body.mrn-appearance.mrn-admin-page-heading:has(.mrn-sticky-save-bar) #wpadminbar { position: fixed; }
+ body.mrn-appearance.mrn-admin-page-heading #wpbody-content .mrn-sticky-save-bar { width: calc(100% + 10px); margin-left: -10px; padding: 8px 12px; gap: 8px 12px; }
+ body.mrn-appearance.mrn-admin-page-heading #wpbody-content .mrn-settings-toolbar__actions:has(.mrn-settings-tabs) { flex-basis: 100%; }
+ body.mrn-appearance.mrn-admin-page-heading #wpbody-content .mrn-sticky-save-bar :is(.button,.mrn-settings-tab) { min-height: 44px; }
 }
 .mrn-admin-list .inline-edit-row :is(td,fieldset,legend), .mrn-admin-list .inline-edit-row { background: var(--mrn-admin-surface-subtle); color: var(--mrn-admin-ink); }
 .mrn-admin-list .inline-edit-row :is(.title,.checkbox-title,.inline-edit-group label) { color: var(--mrn-admin-ink); }
 .mrn-admin-list .wp-list-table :is(td,th) { color: var(--mrn-admin-ink); border-color: var(--mrn-admin-line); }
 /* Shared native list pagination. Keep WP URLs, labels, input and disabled spans;
    align before first paint without an initializer or per-screen copies. */
-body.mrn-appearance:is(.mrn-admin-list,.upload-php) #wpbody-content .tablenav-pages:not(.no-pages) {
+body.mrn-appearance:is(.mrn-admin-list,.upload-php,.mrn-admin-wpforms-entries) #wpbody-content .tablenav-pages:not(.no-pages) {
  --mrn-pagination-size: 36px;
  display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px 12px;
  min-height: var(--mrn-pagination-size); height: auto; color: var(--mrn-pagination-text,var(--mrn-admin-muted));
 }
 /* Media's vendor-owned canvas remains native light; its unboxed text follows it. */
 body.mrn-appearance.mrn-native-app.upload-php .tablenav-pages { --mrn-pagination-text: var(--mrn-native-ink); }
-body.mrn-appearance:is(.mrn-admin-list,.upload-php) #wpbody-content .tablenav-pages .displaying-num { margin: 0; line-height: 1.5; }
-body.mrn-appearance:is(.mrn-admin-list,.upload-php) #wpbody-content .tablenav-pages:not(.one-page) .pagination-links,
-body.mrn-appearance:is(.mrn-admin-list,.upload-php) #wpbody-content .tablenav-pages .paging-input {
+body.mrn-appearance:is(.mrn-admin-list,.upload-php,.mrn-admin-wpforms-entries) #wpbody-content .tablenav-pages .displaying-num { margin: 0; line-height: 1.5; }
+body.mrn-appearance:is(.mrn-admin-list,.upload-php,.mrn-admin-wpforms-entries) #wpbody-content .tablenav-pages:not(.one-page) .pagination-links,
+body.mrn-appearance:is(.mrn-admin-list,.upload-php,.mrn-admin-wpforms-entries) #wpbody-content .tablenav-pages .paging-input {
  display: inline-flex; align-items: center; gap: 4px; margin: 0; white-space: nowrap;
 }
-body.mrn-appearance:is(.mrn-admin-list,.upload-php) #wpbody-content .tablenav-pages :is(.pagination-links a,.tablenav-pages-navspan,.current-page) {
+body.mrn-appearance:is(.mrn-admin-list,.upload-php,.mrn-admin-wpforms-entries) #wpbody-content .tablenav-pages :is(.pagination-links a,.tablenav-pages-navspan,.current-page) {
  box-sizing: border-box; min-width: var(--mrn-pagination-size); height: var(--mrn-pagination-size); min-height: var(--mrn-pagination-size);
  margin: 0; padding: 0 8px; border: 1px solid var(--mrn-admin-control-line); border-radius: 6px;
  background: var(--mrn-admin-surface); color: var(--mrn-admin-ink); text-align: center; box-shadow: none;
 }
-body.mrn-appearance:is(.mrn-admin-list,.upload-php) #wpbody-content .tablenav-pages :is(.pagination-links a,.tablenav-pages-navspan) {
+body.mrn-appearance:is(.mrn-admin-list,.upload-php,.mrn-admin-wpforms-entries) #wpbody-content .tablenav-pages :is(.pagination-links a,.tablenav-pages-navspan) {
  display: inline-flex; align-items: center; justify-content: center; line-height: 1; font-size: 20px; text-decoration: none;
 }
-body.mrn-appearance:is(.mrn-admin-list,.upload-php) #wpbody-content .tablenav-pages .pagination-links a { color: var(--mrn-admin-accent); }
-body.mrn-appearance:is(.mrn-admin-list,.upload-php) #wpbody-content .tablenav-pages .pagination-links a:hover { background: var(--mrn-admin-surface-hover); }
-body.mrn-appearance:is(.mrn-admin-list,.upload-php) #wpbody-content .tablenav-pages .tablenav-pages-navspan {
+body.mrn-appearance:is(.mrn-admin-list,.upload-php,.mrn-admin-wpforms-entries) #wpbody-content .tablenav-pages .pagination-links a { color: var(--mrn-admin-accent); }
+body.mrn-appearance:is(.mrn-admin-list,.upload-php,.mrn-admin-wpforms-entries) #wpbody-content .tablenav-pages .pagination-links a:hover { background: var(--mrn-admin-surface-hover); }
+body.mrn-appearance:is(.mrn-admin-list,.upload-php,.mrn-admin-wpforms-entries) #wpbody-content .tablenav-pages .tablenav-pages-navspan {
  /* Core marks .button.disabled colors important, including on these spans. */
  background: var(--mrn-admin-disabled) !important; color: var(--mrn-admin-disabled-ink) !important; border-color: var(--mrn-admin-line) !important; cursor: default;
 }
-body.mrn-appearance:is(.mrn-admin-list,.upload-php) #wpbody-content .tablenav-pages :is(a,input):focus-visible { outline: 2px solid var(--mrn-admin-focus); outline-offset: 2px; }
+body.mrn-appearance:is(.mrn-admin-list,.upload-php,.mrn-admin-wpforms-entries) #wpbody-content .tablenav-pages :is(a,input):focus-visible { outline: 2px solid var(--mrn-admin-focus); outline-offset: 2px; }
 @media (max-width:782px) {
- body.mrn-appearance:is(.mrn-admin-list,.upload-php) #wpbody-content .tablenav-pages:not(.no-pages) { --mrn-pagination-size: 44px; justify-content: center; }
- body.mrn-appearance:is(.mrn-admin-list,.upload-php) #wpbody-content .tablenav-pages .displaying-num { position: static; }
+ body.mrn-appearance:is(.mrn-admin-list,.upload-php,.mrn-admin-wpforms-entries) #wpbody-content .tablenav-pages:not(.no-pages) { --mrn-pagination-size: 44px; justify-content: center; }
+ body.mrn-appearance:is(.mrn-admin-list,.upload-php,.mrn-admin-wpforms-entries) #wpbody-content .tablenav-pages .displaying-num { position: static; }
 }
 /* Native dialogs/editor chrome remain one coherent light island in either mode. */
 .mrn-themed-content #wpbody-content .wp-editor-wrap .wp-editor-tools { background: var(--mrn-native-surface); color: var(--mrn-native-ink); }

@@ -1,0 +1,34 @@
+/* Qualified WPForms Entries adapter. Vendor markup, requests and actions stay
+   with WPForms; only this screen consumes the shared appearance palette. */
+body.mrn-admin-wpforms-entries { background: var(--mrn-admin-canvas); color: var(--mrn-admin-ink); }
+body.mrn-admin-wpforms-entries #wpcontent { padding-top: 0; }
+body.mrn-admin-wpforms-entries #mrn-admin-page-toolbar { width: 100%; margin-left: 0; }
+body.mrn-admin-wpforms-entries #wpbody-content > .wpforms-admin-wrap { max-width: none; margin: 24px 20px 0; }
+body.mrn-admin-wpforms-entries #wpbody-content .wpforms-admin-content { padding: 0; }
+body.mrn-admin-wpforms-entries #wpbody-content :is(.wpforms-overview-top-bar,.wpforms-overview-top-bar-filters) { flex-wrap: wrap; gap: 12px; }
+body.mrn-admin-wpforms-entries #wpbody-content :is(.wpforms-overview-top-bar-heading h2,.wpforms-overview-chart-notice-content h2) { color: var(--mrn-admin-ink); }
+body.mrn-admin-wpforms-entries #wpbody-content :is(.wpforms-overview-chart,.wpforms-overview-chart-canvas,.wpforms-overview-chart .spinner,.wpforms-overview-chart-notice-content,.wpforms-dash-widget-settings-menu,.wpforms-entries-settings-menu,.wpforms-datepicker-popover,.postbox,.inside) {
+ background-color: var(--mrn-admin-surface); color: var(--mrn-admin-ink); border-color: var(--mrn-admin-line);
+}
+body.mrn-admin-wpforms-entries #wpbody-content :is(.wpforms-overview-chart,.postbox) { border-radius: var(--mrn-admin-radius-component); box-shadow: none; }
+body.mrn-admin-wpforms-entries #wpbody-content :is(.wpforms-overview-chart-heading,.postbox-header,.hndle,.wpforms-settings-title) { background: var(--mrn-admin-surface-subtle); color: var(--mrn-admin-ink); border-color: var(--mrn-admin-line); }
+body.mrn-admin-wpforms-entries #wpbody-content .wpforms-overview-chart-notice { background: radial-gradient(ellipse,transparent 0,var(--mrn-admin-surface) 100%); }
+body.mrn-admin-wpforms-entries #wpbody-content .wpforms-overview-chart-notice-content { box-shadow: var(--mrn-admin-shadow); border: 1px solid var(--mrn-admin-line); }
+body.mrn-admin-wpforms-entries #wpbody-content :is(.wpforms-overview-chart-notice-content p,.description,.wpforms-entry-field-name,.wpforms-entry-field-empty) { color: var(--mrn-admin-muted); }
+body.mrn-admin-wpforms-entries #wpbody-content .wp-list-table { width: 100%; background: var(--mrn-admin-surface); border: 1px solid var(--mrn-admin-line); border-radius: var(--mrn-admin-radius-component); border-spacing: 0; overflow: hidden; box-shadow: none; }
+body.mrn-admin-wpforms-entries #wpbody-content .wp-list-table :is(th,td) { color: var(--mrn-admin-ink); border-color: var(--mrn-admin-line); background: transparent; padding: 14px; }
+body.mrn-admin-wpforms-entries #wpbody-content .wp-list-table :is(thead,tfoot) { background: var(--mrn-admin-surface-subtle); }
+body.mrn-admin-wpforms-entries #wpbody-content .wp-list-table tbody tr { background: var(--mrn-admin-surface); }
+body.mrn-admin-wpforms-entries #wpbody-content .wp-list-table tbody tr:nth-child(odd) { background: var(--mrn-admin-surface-subtle); }
+body.mrn-admin-wpforms-entries #wpbody-content .wp-list-table tbody tr:hover { background: var(--mrn-admin-surface-hover); }
+body.mrn-admin-wpforms-entries #wpbody-content :is(.button,.wpforms-btn,.wpforms-datepicker-button) { background: var(--mrn-admin-surface); color: var(--mrn-admin-accent); border: 1px solid var(--mrn-admin-control-line); border-radius: 6px; box-shadow: none; min-height: 36px; }
+body.mrn-admin-wpforms-entries #wpbody-content :is(.button-primary,.wpforms-btn-orange) { background: var(--mrn-admin-primary); color: var(--mrn-admin-on-primary); border-color: var(--mrn-admin-primary); }
+body.mrn-admin-wpforms-entries #wpbody-content :is(.button,.wpforms-btn,.wpforms-datepicker-button):hover { background: var(--mrn-admin-surface-hover); color: var(--mrn-admin-accent); }
+body.mrn-admin-wpforms-entries #wpbody-content :is(.button-primary,.wpforms-btn-orange):hover { background: var(--mrn-admin-primary-hover); color: var(--mrn-admin-on-primary); }
+body.mrn-admin-wpforms-entries #wpbody-content :is(a,button,input,select):focus-visible { outline: 2px solid var(--mrn-admin-accent); outline-offset: 2px; }
+body.mrn-admin-wpforms-entries #wpbody-content :is(.row-actions .trash a,.submitdelete) { color: var(--mrn-admin-danger); }
+@media (max-width:782px) {
+ body.mrn-admin-wpforms-entries #wpbody-content > .wpforms-admin-wrap { margin: 20px 12px 0; }
+ body.mrn-admin-wpforms-entries #wpbody-content .wpforms-overview-top-bar-filters { margin-left: 0; }
+ body.mrn-admin-wpforms-entries #wpbody-content :is(.button,.wpforms-btn,.wpforms-datepicker-button) { min-height: 44px; }
+}

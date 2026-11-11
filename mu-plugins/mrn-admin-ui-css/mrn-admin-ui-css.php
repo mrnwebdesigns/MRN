@@ -9,6 +9,7 @@ defined('ABSPATH') || exit;
 
 require_once __DIR__ . '/modern-admin.php';
 require_once __DIR__ . '/appearance.php';
+require_once __DIR__ . '/page-header.php';
 require_once __DIR__ . '/login.php';
 
 if (!function_exists('mrn_admin_ui_contract_version')) {
@@ -92,7 +93,7 @@ add_action('admin_enqueue_scripts', function ($hook) {
     // Native menus and these settings forms contain no row-action tables. Unknown MRN
     // screens retain the shared enhancer; taxonomy/native lists still receive it.
     $page = isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : '';
-    $form_only = 'menus' === $modern_scope || ('settings' === $modern_scope && ($screen->id === 'options-general' || in_array($page, array('mrn-business-information', 'mrn-theme-header-footer', 'mrn-header-utility-message', 'mrn-config-helper'), true)));
+    $form_only = in_array($modern_scope, array('menus', 'wpforms-entries'), true) || ('settings' === $modern_scope && ($screen->id === 'options-general' || in_array($page, array('mrn-business-information', 'mrn-theme-header-footer', 'mrn-header-utility-message', 'mrn-config-helper'), true)));
     if ('dashboard' !== $modern_scope && !$form_only) {
       wp_enqueue_style('mrn-row-actions', content_url('mu-plugins/mrn-admin-ui-css/row-actions.css'), array('mrn-admin-tokens'), (string) filemtime(__DIR__ . '/row-actions.css'));
     }

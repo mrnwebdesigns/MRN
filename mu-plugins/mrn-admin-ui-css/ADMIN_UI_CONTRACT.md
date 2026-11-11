@@ -37,8 +37,8 @@ Do not label a recoverable trash operation `Delete`. Whole-record trash actions 
 
 ### Shared native content-list header
 
-Native Posts, Pages and content CPT lists reuse the Careers layout: the original
-heading and Add action, status views, search, and the bulk/filter/count toolbar.
+Native Posts, Pages and content CPT lists reuse the Careers layout: the shared
+sticky heading and original Add action, status views, search, and the bulk/filter/count toolbar.
 Keep WordPress's `.wrap > h1`, `.page-title-action`, `.subsubsub`, `.search-box`
 and `.tablenav` markup and native forms. `mrn-modern-admin.css` supplies the shared
 Light/Dark presentation; do not rebuild or move the header with JavaScript.
@@ -51,6 +51,30 @@ as data. Custom application workspaces and redirected screens keep their owners;
 this classification applies only to native `edit` list screens. Taxonomy and
 editor eligibility are unchanged. The existing emergency switch restores native
 presentation. No additional consumer setting or registration contract is needed.
+
+### Universal page heading and plugin adapters
+
+The appearance pilot renders the static `.mrn-sticky-save-bar` variant in
+`in_admin_header` on ordinary admin pages, using WordPress's registered page
+title. It shares the existing settings toolbar classes and palette. It adds no
+spacer, form observer, cloned action or JavaScript header initializer. Native
+page H1 labels remain accessible but are visually suppressed when the bar exists;
+actions embedded in the heading remain usable in their original form/context.
+
+Existing MRN settings save bars retain ownership. Their page slugs are declared
+in `mrn_admin_page_header_mode()` and can be extended through
+`mrn_admin_page_header_owned`. Classic content editors, the Site Editor and the
+fullscreen WPForms builder retain their existing editing headers. Media's title,
+Site menu and folder-panel offsets account for the same shared header height.
+
+Plugin interiors require exact screen adapters. WPForms Entries is qualified by
+both its page slug and screen ID; its overview, tables, panels and controls use
+the shared palette and pagination. Its supported branding-header filter removes
+the duplicate logo header. WPForms still owns requests, permissions, entry data,
+actions, date filters and chart datasets. The chart adapter only colors its axes
+and grid, updates on appearance/OS changes, and names its settings button. It
+loads only when that screen enqueues the vendor chart library. No polling or
+global application restyling is introduced.
 
 ### Reusable row-actions component
 

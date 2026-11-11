@@ -52,6 +52,9 @@ function mrn_admin_ui_modern_screen() {
 	// Exact MRN pages only. Prefix matching would accidentally claim third-party apps.
 	$pages = array( 'mrn-config-helper', 'mrn-notifications-center', 'mrn-reusable-block-library', 'mrn-tokens', 'mrn-theme-header-footer', 'mrn-header-utility-message', 'mrn-business-information', 'mrn-404-page', 'mrn-public-security-hardening' );
 	$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
+	if ( 'wpforms-entries' === $page && 'wpforms_page_wpforms-entries' === $screen->id ) {
+		return 'wpforms-entries';
+	}
 	return in_array( $page, $pages, true ) ? 'settings' : '';
 }
 
