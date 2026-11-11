@@ -19,7 +19,8 @@ permissions:
   contents: read
 jobs:
   qa:
-    runs-on: ubuntu-latest
+    # Keep the QA image stable; `ubuntu-latest` is currently migrating to 26.04.
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     outputs:
       source_sha: ${{ steps.accepted.outputs.source_sha }}
@@ -64,8 +65,21 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install -y ripgrep
+          # GitHub's Ubuntu images include ripgrep. Avoid a package-mirror
+          # dependency for the normal path; retain a bounded fallback for
+          # custom runners.
+          if ! command -v rg >/dev/null 2>&1; then
+            for attempt in 1 2 3; do
+              if sudo apt-get update && sudo apt-get install -y ripgrep; then
+                break
+              fi
+              if [[ "$attempt" == 3 ]]; then
+                echo '::error::ripgrep is unavailable and apt setup failed after 3 attempts.'
+                exit 1
+              fi
+              sleep $(( attempt * 5 ))
+            done
+          fi
           bash "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/install-qa-python.sh"
           composer global config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
           composer global require --no-interaction --no-progress squizlabs/php_codesniffer:^3.13 wp-coding-standards/wpcs:^3.0 dealerdirect/phpcodesniffer-composer-installer:^1.1
