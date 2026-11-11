@@ -1,0 +1,65 @@
+{
+  "date": "2026-11-11",
+  "source_commit": "68662d1296c6a5666d50096bb3b04020a4b75a20",
+  "host": "admin-editor-pilot.mrndev.io",
+  "change": "Enable shared appearance on native Menus; theme Public Security Hardening panels and Reusable Block Library cards using shared tokens. Fit menu form and library grid on narrow screens.",
+  "qa": {
+    "mrn_qa": "pass, component source checks and exact staged snapshot",
+    "fixture": {
+      "source": "isolated fixtures from read-only installed PHP renderer output; native menu wrapper fixture",
+      "cases": 24,
+      "widths": [
+        390,
+        1440
+      ],
+      "appearances": [
+        "light",
+        "dark",
+        "system/light",
+        "system/dark"
+      ],
+      "axe_violations": 0,
+      "maximum_horizontal_overflow": 0,
+      "system_live_switch": true
+    },
+    "scope_harness": "pass: Menus eligibility and CSS assets, no row-action script on Menus, vendor exclusion, CPT list, emergency switch",
+    "runtime_browser": "Not run: current thread has no internal_browser tools. No authenticated navigation, native drag or save checks claimed. Isolated renderer fixture includes expanded menu items.",
+    "performance": "No JavaScript added or DOM initialization. Menus omits table-action enhancement; no live timing claim.",
+    "api": "No handlers, permissions, nonces or saved settings changed; static API audit passed. Runtime API check not triggered.",
+    "release": "Review-site patch only. Full release, parity, Fleet and existing editor CPU/save/Hub blockers remain outside this task."
+  },
+  "manifest": {
+    "modern-admin.php": {
+      "before": "455473800bbfaa22071acdb05cdef6fc5723b2c3031c85c5eb5926df8f84d176",
+      "after": "0856e0aebdc93645f7aebd7d9656a67135bb52086d9a167a2b257e6e2966f7a5"
+    },
+    "mrn-admin-ui-css.php": {
+      "before": "0338fe5624a38d89bfa3ee8ce389cffd318ccd4b1d3db92665dc82d445c62929",
+      "after": "8335f49420d8be1e3a4807014d7f183f79ce6c193a1988e62535a2aa1346e2c8"
+    },
+    "mrn-admin-shell.css": {
+      "before": "80e75c4bc3b35c8aa72c921a72346802182b3f49e83578931d9a2a725e470463",
+      "after": "10682f36256b85d06ae858e2644aea890346fa1587097ecb7463a1a0065d0ca6"
+    }
+  },
+  "deployment": {
+    "host": "admin-editor-pilot.mrndev.io",
+    "backup": {
+      "valid": true,
+      "host": "admin-editor-pilot.mrndev.io",
+      "checked_at": 1794421832,
+      "label": "pre-admin-pilot-theme-gaps-20261111",
+      "key": "sites/admin-editor-pilot-mrndev-io/backup_2026-11-11-1830_Trilliant_ab8ef3be4a09-db.gz",
+      "size": 7093109,
+      "sha256": "f0231a96dde8ed95fbe39100eb2c3b06fab715e237e8e6f575921cbfe0e844ae"
+    },
+    "files": {
+      "modern-admin.php": "0856e0aebdc93645f7aebd7d9656a67135bb52086d9a167a2b257e6e2966f7a5",
+      "mrn-admin-ui-css.php": "8335f49420d8be1e3a4807014d7f183f79ce6c193a1988e62535a2aa1346e2c8",
+      "mrn-admin-shell.css": "10682f36256b85d06ae858e2644aea890346fa1587097ecb7463a1a0065d0ca6"
+    },
+    "rollback": "/home/mrndev-admin-editor/review-private/theme-gaps-20261111/rollback",
+    "css_mtime": 1794421832
+  },
+  "public_stylesheet_sha256": "10682f36256b85d06ae858e2644aea890346fa1587097ecb7463a1a0065d0ca6"
+}
