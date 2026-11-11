@@ -147,12 +147,11 @@ const {createRequire} = require('node:module');
     await expect(heading).toHaveValue('Optional presentations');
     checks.push('incomplete native editor submission is rejected without changing saved content');
     await heading.fill('Presentation settings saved through Classic Editor');
-    const [saved] = await Promise.all([
-      page.waitForResponse(response => response.request().method() === 'POST'
-        && new URL(response.url()).pathname === '/wp-admin/post.php'),
-      page.locator('#publish').click(),
-    ]);
-    assert.equal(saved.status(), 302, 'Native save must redirect successfully');
+    // The browser can follow WordPress' native POST redirect before a response
+    // listener observes it.  Assert the editor's successful result and then
+    // reload/read back the persisted fields below; that verifies the contract
+    // without coupling the qualification to response-event timing.
+    await page.locator('#publish').click();
     await expect(page.locator('#message')).toContainText('Page updated.');
     await page.reload({waitUntil: 'networkidle'});
     await openRow();
