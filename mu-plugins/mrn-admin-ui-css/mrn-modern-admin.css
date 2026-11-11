@@ -40,6 +40,8 @@ body.mrn-modern-admin { background: var(--mrn-admin-canvas); color: var(--mrn-ad
 .mrn-start-support > summary { cursor: pointer; font-weight: 600; color: var(--mrn-admin-muted); }
 .mrn-start-support[open] > summary { margin-bottom: 20px; }
 /* Native content lists: visible actions, clear title priority, a separate filter/work area. */
+/* Tables and their controls fill the workspace, including on wide displays. */
+.mrn-modern-admin.mrn-admin-list #wpbody-content > .wrap { max-width: none; }
 .mrn-admin-list .subsubsub { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 18px; float: none; }
 .mrn-admin-list .subsubsub li { font-size: 0; }
 .mrn-admin-list .subsubsub a { display: inline-block; font-size: 13px; padding: 8px 13px; background: var(--mrn-admin-surface); border: 1px solid var(--mrn-admin-line); border-radius: 7px; text-decoration: none; }
