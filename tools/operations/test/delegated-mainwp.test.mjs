@@ -73,10 +73,26 @@ test('typed ACF writes retain per-person signed confirmation and closed manageme
   assert.equal(f.state.dispatched[0].ability, 'mrn-mainwp/preview-content-edit-v1');
   assert.deepEqual(f.state.dispatched[0].args, input); assert.equal(f.state.dispatched[0].person.google_sub, '123');
   assert.equal(f.state.calls.filter(n => n === delegationTools.run).length, 2);
-  await assert.rejects(() => client.callTool({ name: 'mrn_mainwp__preview_content_edit_v1', arguments: { ...input, post_id: 0 } }), { code: 'CAPABILITY_UNAVAILABLE' });
+  await assert.rejects(() => client.callTool({ name: 'mrn_mainwp__preview_content_edit_v1', arguments: { ...input, post_id: 0 } }), { code: 'EDITORIAL_FIXTURE_ONLY' });
   await assert.rejects(() => client.callTool({ name: 'mrn_mainwp__preview_content_edit_v1', arguments: { ...input, actor: 'someone-else' } }));
   await assert.rejects(() => client.callTool({ name: 'mrn_mainwp__execute_content_edit_v2', arguments: {} }), { code: 'CAPABILITY_DENIED' });
   assert.equal(f.state.dispatched.length, 1);
+});
+
+test('only a new draft on the exact disposable child can use the delegated zero-ID preview', async () => {
+  const f = fixture(), client = f.delegated('123');
+  const args = { site_id: 73, site_url: 'https://child.fixture.example.invalid', post_type: 'page', post_id: 0,
+    expected_snapshot_sha256: 'a'.repeat(64), idempotency_key: randomUUID(), reason: 'Unit fixture draft',
+    changes: { post_title: 'Fixture draft', post_name: 'fixture-draft', post_status: 'draft' } };
+  const call = arguments_ => client.callTool({ name: 'mrn_mainwp__preview_content_edit_v1', arguments: arguments_ });
+  await assert.rejects(() => call({ ...args, changes: { ...args.changes, post_status: 'publish' } }), { code: 'CAPABILITY_UNAVAILABLE' });
+  await assert.rejects(() => call({ ...args, acf_patches: [{ path: ['field_copy'], value: 'Blocked' }] }), { code: 'CAPABILITY_UNAVAILABLE' });
+  await assert.rejects(() => call({ ...args, site_url: 'https://deployment-test.mrndev.io' }), { code: 'EDITORIAL_FIXTURE_ONLY' });
+  assert.equal(f.state.calls.length, 0);
+  await call(args);
+  assert.deepEqual(f.state.dispatched, [{ person: { oauth_subject: f.actor('123').subject, google_sub: '123',
+    email: f.actor('123').verifiedEmail }, ability: 'mrn-mainwp/preview-content-edit-v1', args }]);
+  assert.equal(f.state.calls.filter(n => n === delegationTools.run).length, 2);
 });
 
 function queueFixture(t) {

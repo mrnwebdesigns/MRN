@@ -31,8 +31,9 @@ async function hosted(t, authenticate) {
 test('ChatGPT receives OAuth declarations on the wire and accurate operation effects', async t => {
   const f = await hosted(t, async () => actor);
   const { status, body } = await f.call('tools/list'); assert.equal(status, 200);
-  assert.equal(body.result.tools.length, 21);
+  assert.equal(body.result.tools.length, 24);
   const writeNames = ['prepare_repair', 'prepare_rollback', 'prepare_code_edit', 'prepare_content_edit',
+    'prepare_content_draft', 'prepare_content_core_edit', 'prepare_content_status',
     'approve_code_source', 'approve_operation', 'execute_operation', 'reconcile_operation'];
   for (const tool of body.result.tools) {
     assert.deepEqual(tool.securitySchemes, [{ type: 'oauth2', scopes: writeNames.includes(tool.name) ? ['mrn:operations', 'mrn:operations:write'] : ['mrn:operations'] }]);
@@ -40,6 +41,11 @@ test('ChatGPT receives OAuth declarations on the wire and accurate operation eff
     assert.equal(tool.inputSchema.type, 'object'); assert.ok(tool.title);
   }
   const tools = Object.fromEntries(body.result.tools.map(tool => [tool.name, tool]));
+  for (const name of ['prepare_content_draft', 'prepare_content_core_edit', 'prepare_content_status']) {
+    assert.equal(tools[name].inputSchema.additionalProperties, false);
+    assert.equal(tools[name].annotations.destructiveHint, false);
+    assert.equal(tools[name].annotations.idempotentHint, true);
+  }
   for (const name of ['inspect_website', 'test_website', 'prepare_repair', 'prepare_rollback', 'assess_fleet']) {
     assert.equal(tools[name].annotations.readOnlyHint, false); assert.equal(tools[name].annotations.destructiveHint, false);
   }
@@ -90,6 +96,9 @@ test('every change lifecycle tool refuses a read-only sign-in before work or cal
     ['prepare_rollback', { operationId: id, requestKey: 'scope-test' }],
     ['prepare_code_edit', { website: 'example', path: 'wp-content/themes/child/style.css', expectedSha256: hash, content: 'body {}', reason: 'Scope test', requestKey: 'scope-test' }],
     ['prepare_content_edit', { website: 'example', target: { kind: 'post', post_type: 'page', post_id: 123, field: 'post_content' }, expectedSnapshotSha256: hash, newValue: 'Text', reason: 'Scope test', requestKey: 'scope-test' }],
+    ['prepare_content_draft', { website: 'example', postType: 'page', title: 'Scope test', slug: 'scope-test', reason: 'Scope test', requestKey: 'scope-test' }],
+    ['prepare_content_core_edit', { website: 'example', postType: 'page', recordId: 123, expectedSnapshotSha256: hash, fields: { title: 'Scope test' }, reason: 'Scope test', requestKey: 'scope-test' }],
+    ['prepare_content_status', { website: 'example', postType: 'page', recordId: 123, expectedSnapshotSha256: hash, status: 'publish', reason: 'Scope test', requestKey: 'scope-test' }],
     ['approve_code_source', { operationId: id, planDigest: hash }],
     ['approve_operation', { operationId: id, planDigest: hash }],
     ['execute_operation', { operationId: id }],

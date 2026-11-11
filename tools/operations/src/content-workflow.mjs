@@ -1,9 +1,10 @@
 import { randomUUID } from 'node:crypto';
-import { digest, requireThat, safeError } from './contracts.mjs';
+import { digest, OpsError, requireThat, safeError } from './contracts.mjs';
 import { delegationDigest } from './delegation.mjs';
 import { contentTargetSchema, contentCall, contentSnapshot, contentSame, contentPaths, validateContentPlan, validateContentMigration } from './content-contract.mjs';
 import { contentQaInput, managementQaInput } from './content-qa.mjs';
 import { acfPatchSchema, acfScalar, managedTargetSchema } from './content.mjs';
+import { editorialIntent, editorialVisibility, validateEditorialScope } from './content-editorial.mjs';
 import { managementCall, validateManagementRead, validateManagementEvidence, validateManagementOutcome, managementCandidateHash } from './content-management-contract.mjs';
 import { toolNames } from './mainwp.mjs';
 import { htmlContentText } from './probe.mjs';
@@ -47,6 +48,52 @@ export class ContentWorkflow {
     return this.qa.profile(evidence.site.url, target, evidence.policy.profile);
   }
   bind(session, plan) { session.contentOperation = { id: plan.operation_id, digest: plan.digest }; }
+  async prepareEditorial(actor, action, { website, environment, requestKey, reason, ...fields }) {
+    const s = this.service, { expectedSnapshotSha256 } = fields, intent = editorialIntent(action, fields);
+    await s.discovery?.refresh(actor);
+    const target = s.registry.resolve(actor, website, environment, 'content'), authorize = this.authorize(actor, target);
+    await authorize();
+    validateEditorialScope(target.url);
+    requireThat(target.environment === 'development', 'EDITORIAL_FIXTURE_ONLY', 'Use the enrolled development fixture.');
+    requireThat(target.backup === 'updraft', 'BACKUP_UNQUALIFIED', 'Editorial changes require the existing verified remote database recovery route.');
+    requireThat(typeof reason === 'string' && reason.trim() && reason.isWellFormed() && !reason.includes('\0')
+      && Buffer.byteLength(reason) <= 500, 'CONTENT_INPUT', 'Supply a bounded reason for the exact editorial change.');
+    const { record: op, created } = s.store.request(actor, requestKey, { editorial: action, target, fields, reason },
+      () => s.store.create('operation', actor, target, { workflow: 'content', status: 'preparing', editorial: action }));
+    if (!created) return s.view(op);
+    let session;
+    try {
+      s.store.audit(actor, target, op.id, 'content:editorial-preview', 'attempted');
+      session = await s.session(actor, target, 'content', op.id);
+      const site = await session.fresh();
+      validateEditorialScope(site.url);
+      const { post_type, post_id } = intent.target, args = { site_id: site.id, site_url: site.url, post_type, post_id };
+      const read = validateManagementRead(await managementCall(session, 'read-content-record-v1', args), { site, target: intent.target });
+      requireThat(post_id === 0 || read.snapshot_sha256 === expectedSnapshotSha256,
+        'CONTENT_PRECONDITION', 'Read the current exact content snapshot before preparing this editorial change.');
+      const visibility = editorialVisibility(intent, read.snapshot.core);
+      const preview = { ...args, changes: intent.changes, expected_snapshot_sha256: read.snapshot_sha256, idempotency_key: op.id, reason };
+      const plan = await managementCall(session, 'preview-content-edit-v1', preview);
+      this.bind(session, plan);
+      const migration = await managementCall(session, 'get-content-edit-migration-v1',
+        { site_id: site.id, site_url: site.url, operation_id: plan.operation_id });
+      // The descriptor is self-consistency evidence here, not a trusted QA
+      // profile. No editorial signer or approved run exists in this release.
+      validateManagementEvidence({ review: plan, migration, read }, { site, target: intent.target,
+        request: preview, profile: plan.profile, editorialPreview: true });
+      await authorize();
+      op.plan = { kind: 'content', adapter: 'content-management-v1', editorial: action, visibility, description: reason,
+        provider: plan, migration, preview };
+      op.status = 'blocked';
+      op.error = safeError(new OpsError('EDITORIAL_QA_UNQUALIFIED', 'The provider preview is verified. Protected editorial QA is not qualified; this preview cannot be approved or executed.'));
+      s.store.save(op);
+      s.store.audit(actor, target, op.id, 'content:editorial-preview', 'preview-only');
+    } catch (error) {
+      op.status = 'blocked'; op.error = safeError(error); s.store.save(op);
+      s.store.audit(actor, target, op.id, 'content:editorial-preview', 'blocked');
+    } finally { await session?.close(); }
+    return s.view(s.store.get(op.id));
+  }
   async prepare(actor, input, previous = null) {
     if (input.target?.kind === 'wordpress-content') return this.prepareManagement(actor, input, previous);
     const s = this.service; await s.discovery?.refresh(actor);
@@ -99,6 +146,8 @@ export class ContentWorkflow {
     return evidence;
   }
   proof(op) {
+    requireThat(!op.editorial && !op.plan?.editorial, 'EDITORIAL_QA_UNQUALIFIED', 'Protected editorial QA is not qualified; this preview cannot be approved or executed.');
+    requireThat(op.qaRequest && op.qaProof && op.qaTicket, 'CONTENT_QA_REQUIRED', 'This content plan has no verified protected QA evidence.');
     this.qa.qualifyRequest(op.qaRequest);
     requireThat(op.plan.provider.expires_at * 1000 > Date.now(), 'PLAN_EXPIRED', 'The prepared content proposal expired.');
     return this.qa.verifyReceipt(op.qaProof.envelope, op.qaRequest, op.qaTicket.runId, op.qaProof.reportSha256);

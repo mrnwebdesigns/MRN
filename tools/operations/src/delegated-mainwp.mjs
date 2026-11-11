@@ -5,6 +5,7 @@ import { delegationCanonical, delegationDigest } from './delegation.mjs';
 import { qualificationRequestSchema, validateQueuePins } from './content-access-store.mjs';
 import { managementQualificationRequestSchema, validateManagementQueuePins } from './content-management-access-store.mjs';
 import { managementSchemas } from './content-management-contract.mjs';
+import { validateDraftPreview } from './content-editorial.mjs';
 import { OriginalManagementAuthorizationLedger, originalQualificationAbility } from './original-management-authorization.mjs';
 import { originalReadinessObservation } from './original-authorization-transport.mjs';
 
@@ -96,7 +97,7 @@ export class DelegatedMainwpClient {
     const management = managementSchemas[ability.replace('mrn-mainwp/', '')];
     if (['preview-content-edit-v1', 'approve-content-edit-v1', 'execute-content-edit-v1', 'get-content-edit-v1', 'get-content-edit-migration-v1', 'preview-content-edit-rollback-v1'].some(name => ability === `mrn-mainwp/${name}`) && management) {
       args = management.input.parse(args);
-      if (ability === 'mrn-mainwp/preview-content-edit-v1') requireThat(args.post_id > 0, 'CAPABILITY_UNAVAILABLE', 'New-record creation is not admitted by this release.');
+      if (ability === 'mrn-mainwp/preview-content-edit-v1' && args.post_id === 0) validateDraftPreview(args);
     }
     if (ability === 'mainwp/sync-sites-v1') requireThat(Object.keys(args).length === 1
       && Array.isArray(args.site_ids) && args.site_ids.length === 1 && Number.isSafeInteger(args.site_ids[0]) && args.site_ids[0] > 0,

@@ -105,7 +105,7 @@ try {
   } else {
     const alice = await token('111111'); const bob = await token('222222');
     for (const bearer of [alice, bob, alice]) {
-      const result = await call(bearer); assert.equal(result.status, 200); assert.equal(result.body.result.tools.length, 21);
+      const result = await call(bearer); assert.equal(result.status, 200); assert.equal(result.body.result.tools.length, 24);
     }
     pass('HTTP gateway validates signed individual identities through real MCP and WordPress');
     const lists = await Promise.all([alice, bob].map(bearer => call(bearer, 'tools/call', { name: 'list_websites', arguments: {},

@@ -28,7 +28,9 @@ export class Operations {
       return { id: record.id, type: record.type, workflow: 'content', target: this.targetView(record.target), status: record.status,
         requestedBy: record.requestedBy, approvedBy: record.approvedBy, executedBy: record.executedBy, planDigest: record.planDigest, expiresAt: record.expiresAt,
         error: record.error, result: record.result, qa: record.qaTicket && { url: record.qaTicket.url, runId: record.qaTicket.runId },
-        preview: p && { target: p.target, ...(record.plan.adapter === 'content-management-v1' ? { acfPath: record.plan.acfPath,
+        preview: p && { target: p.target, ...(record.plan.editorial ? { action: record.plan.editorial, visibility: record.plan.visibility,
+          before: Array.isArray(p.before_snapshot.core) ? null : p.before_snapshot.core, after: p.candidate_snapshot.core }
+          : record.plan.adapter === 'content-management-v1' ? { acfPath: record.plan.acfPath,
           before: acfScalar(p.before_snapshot, record.plan.acfPath), after: acfScalar(p.candidate_snapshot, record.plan.acfPath) }
           : { before: p.before_snapshot[p.target.field], after: p.candidate_snapshot[p.target.field] }),
           beforeSha256: p.before_sha256, afterSha256: p.candidate_sha256, reason: record.plan.description, affectedPaths: p.affected_paths,
@@ -170,6 +172,10 @@ export class Operations {
     requireThat(this.contentWorkflow, 'CONTENT_WORKFLOW_UNAVAILABLE', 'The protected content workflow is not configured.');
     return this.contentWorkflow.prepare(actor, input);
   }
+  async prepareEditorial(actor, action, input) {
+    requireThat(this.contentWorkflow, 'CONTENT_WORKFLOW_UNAVAILABLE', 'The protected content workflow is not configured.');
+    return this.contentWorkflow.prepareEditorial(actor, action, input);
+  }
   async prepareCode(actor, input) {
     requireThat(this.codeWorkflow, 'CODE_WORKFLOW_UNAVAILABLE', 'The protected code workflow is not provisioned on this service.');
     return this.codeWorkflow.prepare(actor, input);
@@ -235,6 +241,7 @@ export class Operations {
     if (op.workflow === 'code') requireThat(this.codeWorkflow && op.requestedBy === actor.subject, 'CODE_OPERATOR', 'The original verified operator must execute this code workflow.');
     if (op.workflow === 'content') requireThat(this.contentWorkflow && op.requestedBy === actor.subject, 'CONTENT_OPERATOR', 'The original verified operator must execute this content workflow.');
     requireThat(this.writesEnabled, 'WRITES_DISABLED', 'Hosted write execution is disabled until service qualification and operating acceptance are complete.');
+    requireThat(!op.editorial && !op.plan?.editorial, 'EDITORIAL_QA_UNQUALIFIED', 'Protected editorial QA is not qualified; this preview cannot be executed.');
     requireThat(op.target.coordination?.exclusiveWriter === 'mrn-operations' && Date.parse(op.target.coordination.validUntil) > Date.now(), 'COORDINATION_REQUIRED', 'Enroll all writers in the same site lock or disable competing deployment routes before enabling this website.');
     requireThat(op.planDigest === digest({ target: op.target, plan: op.plan }), 'PLAN_CHANGED', 'The stored plan does not match its approval.');
     const { record, claimed } = this.store.claim(op.id, actor);

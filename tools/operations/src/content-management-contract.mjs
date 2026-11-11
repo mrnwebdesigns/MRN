@@ -115,11 +115,11 @@ export function managementCandidate(before, request) {
   return managementSnapshot(snapshot);
 }
 
-export function validateManagementEvidence({ review, migration, read }, { site, target, request, profile, rollbackOf = '', now = Date.now() }) {
+export function validateManagementEvidence({ review, migration, read }, { site, target, request, profile, rollbackOf = '', now = Date.now(), editorialPreview = false }) {
   review = managementTypes.review.parse(review); migration = managementTypes.migration.parse(migration);
   request = managementSchemas['preview-content-edit-v1'].input.parse(request);
   profile = managementTypes.profile.parse(profile); read = validateManagementRead(read, { site, target });
-  contentPaths(read.affected_paths, site.url);
+  if (!editorialPreview) contentPaths(read.affected_paths, site.url);
   const descriptor = { ...review }; delete descriptor.digest;
   const expectedRequest = { site_id: request.site_id, site_url: request.site_url, post_type: request.post_type,
     post_id: request.post_id, before_sha256: request.expected_snapshot_sha256,
@@ -137,7 +137,14 @@ export function validateManagementEvidence({ review, migration, read }, { site, 
     && migration.candidate_sha256 === review.candidate_sha256 && delegationDigest(migration) === review.migration_artifact.sha256);
   const at = Math.floor(now / 1000);
   requireThat(review.expires_at > at && review.expires_at <= at + 900, 'PLAN_EXPIRED', 'The management preview expired or exceeds its supported lifetime.');
-  contentPaths(review.affected_paths, site.url);
+  if (editorialPreview) {
+    // Read references may include the exact private WordPress ID query. Do
+    // not treat it as public evidence, follow it, or accept a different ID.
+    validateManagementRead({ ...read, affected_paths: review.affected_paths }, { site, target });
+    insist(review.affected_paths.length <= (target.post_id ? 2 : 0)
+      && new Set(review.affected_paths).size === review.affected_paths.length
+      && read.affected_paths.every(path => review.affected_paths.includes(path)));
+  } else contentPaths(review.affected_paths, site.url);
   return { review, migration, read };
 }
 
