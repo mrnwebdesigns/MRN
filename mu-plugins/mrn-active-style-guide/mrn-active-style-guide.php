@@ -3,10 +3,12 @@
  * Plugin Name: MRN Active Style Guide
  * Description: Adds a logged-in-only front-end style guide panel and full reference page for reviewing live brand styles.
  * Author: MRN Web Designs
- * Version: 0.1.7
+ * Version: 0.2.3
  */
 
 defined('ABSPATH') || exit;
+
+require_once __DIR__ . '/includes/layout-library.php';
 
 /**
  * Determine whether the style guide should be available on the current request.

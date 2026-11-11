@@ -408,7 +408,7 @@
         "state": "confirmed"
       },
       "target_tier": "platform-required",
-      "version": "0.1.7"
+      "version": "0.2.0"
     },
     {
       "classification": "platform-loader",
@@ -784,7 +784,9 @@
       "data": {
         "cron": [],
         "external_services": [],
-        "options": [],
+        "options": [
+          "mrn_active_style_guide_layout_library"
+        ],
         "routes": [],
         "tables": []
       },
@@ -800,7 +802,7 @@
       },
       "lifecycle": "supported-development",
       "name": "MRN Active Style Guide",
-      "purpose": "Provides a logged-in design-system reference and diagnostic view.",
+      "purpose": "Provides a logged-in design-system reference, site-aware Layout Library, and preview-fixture diagnostics.",
       "runtime_type": "mu-component",
       "slug": "mrn-active-style-guide",
       "source": {
@@ -809,7 +811,7 @@
         "state": "confirmed"
       },
       "target_tier": "platform-required",
-      "version": "0.1.7"
+      "version": "0.2.0"
     },
     {
       "classification": "integration-adapter",

@@ -5,7 +5,7 @@
 - Name: `Style Guide (MU)`
 - Slug: `mrn-active-style-guide`
 - Type: MU plugin
-- Current version: `0.1.2`
+- Current version: `0.2.0`
 - Source path:
   - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-active-style-guide`
 
@@ -39,6 +39,33 @@ This plugin does not own:
 - reusable block rendering
 - builder field configuration
 
+The Layout Library reads the active theme's builder catalog rather than duplicating
+those definitions. It prefers a current published instance as a visual source;
+when no instance exists, an administrator can generate a private, explicitly
+marked ACF fixture. The library fingerprints the active parent/child stylesheets,
+Site Styles colors, and catalog keys, so a Fleet style or layout change marks the
+fixture set stale until it is regenerated. Screenshot capture and Media Library
+import remain an approved site-operation step; this component never makes an
+external browser request or writes a remote site on its own.
+
+### Preview regeneration workflow
+
+1. An authorized administrator selects **Regenerate preview fixtures** in
+   `Appearance -> Layout Library`. Published examples remain preferred; only
+   missing layouts receive a private fixture.
+2. On the named site/runtime, produce a capture manifest with
+   `wp mrn-layout-library capture-manifest > layout-manifest.json`.
+3. Run `node tools/layout-library/capture.mjs --manifest layout-manifest.json
+   --output <approved-temporary-directory> --storage-state <authenticated-playwright-state>`.
+   The browser state is required because fixtures are private.
+4. Review the capture report, then import the images through WordPress with
+   `wp mrn-layout-library import-thumbnails <approved-temporary-directory>`.
+
+The import creates Media Library attachments and maps them back to the existing
+ACF picker metadata. Capture output is temporary operational data, not Stack
+source; only the Media Library records are runtime state. A later style/catalog
+fingerprint change marks the set stale again.
+
 Those responsibilities live elsewhere, especially in:
 
 - `mrn-site-colors` / `Site Styles`
@@ -51,6 +78,8 @@ The plugin adds:
 
 - `Appearance -> Style Guide`
 - a front-end admin bar entry labeled `Style Guide`
+- `Appearance -> Layout Library`, including stale/current preview-fixture state
+  and a nonce/capability-protected regeneration action
 
 The wp-admin menu item is mainly a redirect entry. The real guide lives on the front end.
 
