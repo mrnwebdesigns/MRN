@@ -437,72 +437,32 @@ function mrn_active_style_guide_get_layout_library_capture_manifest(): array {
 			$preview = array(
 				'layout' => $layout_name,
 				'label' => isset( $entry['layout']['label'] ) ? (string) $entry['layout']['label'] : $layout_name,
-				'source' => $source, 'post_id' => $post_id, 'url' => get_permalink( $post_id ),
-				// Every fixture owns exactly one layout, while individual renderer
-				// wrappers vary. The page article is the stable capture boundary.
-				'selector' => '#post-' . $post_id,
+				'source' => $source, 'post_id' => $post_id, 'markup' => $markup,
 			);
 			if ( '' === trim( (string) $markup ) ) {
 				$unavailable[] = $preview;
 				continue;
 			}
-			$targets[] = array(
-				'layout' => $preview['layout'], 'label' => $preview['label'], 'source' => $preview['source'], 'post_id' => $preview['post_id'], 'url' => $preview['url'], 'selector' => $preview['selector'],
-			);
+			$targets[] = $preview;
 		}
 	}
 
 	return array( 'fingerprint' => mrn_active_style_guide_get_layout_library_fingerprint(), 'generatedAt' => gmdate( 'c' ), 'targets' => $targets, 'unavailable' => $unavailable );
 }
 
-/**
- * Render a purpose-built, authenticated document for an HTML layout preview.
- *
- * This deliberately renders the builder markup rather than a screenshot or a
- * theme page with its navigation hidden by CSS. The fixture remains private,
- * and only people able to manage the theme may view it.
- */
-function mrn_active_style_guide_render_layout_library_preview_document(): void {
-	if ( empty( $_GET['mrn-layout-library-preview'] ) || ! is_singular() ) {
+/** Load the active site's visual system on the Layout Library screen only. */
+function mrn_active_style_guide_enqueue_layout_library_preview_styles( string $hook_suffix ): void {
+	if ( 'appearance_page_mrn-layout-library' !== $hook_suffix ) {
 		return;
 	}
-
-	$post_id = get_queried_object_id();
-	$layout_name = sanitize_key( (string) get_post_meta( $post_id, MRN_ACTIVE_STYLE_GUIDE_LAYOUT_LIBRARY_FIXTURE_META, true ) );
-	$catalog = mrn_active_style_guide_get_layout_library_catalog();
-	if ( ! $post_id || ! current_user_can( 'edit_theme_options' ) || '' === $layout_name || empty( $catalog[ $layout_name ] ) ) {
-		wp_die( esc_html__( 'This Layout Library preview is not available.', 'mrn-active-style-guide' ), '', array( 'response' => 404 ) );
+	foreach ( array( get_template_directory(), get_stylesheet_directory() ) as $index => $directory ) {
+		$file = trailingslashit( $directory ) . 'style.css';
+		if ( is_readable( $file ) ) {
+			wp_enqueue_style( 'mrn-layout-library-theme-' . $index, trailingslashit( ( 0 === $index ? get_template_directory_uri() : get_stylesheet_directory_uri() ) ) . 'style.css', array(), (string) filemtime( $file ) );
+		}
 	}
-
-	$field_name = (string) $catalog[ $layout_name ]['field_name'];
-	$markup = function_exists( 'mrn_base_stack_get_builder_markup' ) ? mrn_base_stack_get_builder_markup( $field_name, $post_id ) : '';
-	if ( '' === trim( (string) $markup ) ) {
-		wp_die( esc_html__( 'This layout does not yet have a valid preview fixture.', 'mrn-active-style-guide' ), '', array( 'response' => 404 ) );
-	}
-
-	nocache_headers();
-	?>
-	<!doctype html>
-	<html <?php language_attributes(); ?>><head>
-	<meta charset="<?php bloginfo( 'charset' ); ?>">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<?php wp_head(); ?>
-	<style id="mrn-layout-library-preview-document-styles">
-		html { margin: 0 !important; }
-		body { margin: 0; min-width: 0; background: #fff; }
-		.mrn-layout-library-preview-document { overflow: hidden; }
-	</style>
-	</head><body <?php body_class( 'mrn-layout-library-preview-document' ); ?>>
-	<?php wp_body_open(); ?>
-	<main id="mrn-layout-library-preview" aria-label="<?php esc_attr_e( 'Layout preview', 'mrn-active-style-guide' ); ?>">
-		<?php echo $markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Stack renderer escapes its complete markup contract. ?>
-	</main>
-	<?php wp_footer(); ?>
-	</body></html>
-	<?php
-	exit;
 }
-add_action( 'template_redirect', 'mrn_active_style_guide_render_layout_library_preview_document', 99 );
+add_action( 'admin_enqueue_scripts', 'mrn_active_style_guide_enqueue_layout_library_preview_styles' );
 
 /** Return catalog metadata used by the searchable editor guide. */
 function mrn_active_style_guide_get_layout_library_guide_metadata( string $layout_name, array $entry ): array {
@@ -584,7 +544,9 @@ function mrn_active_style_guide_render_layout_library_page(): void {
 			.mrn-layout-library-card[hidden] { display:none; }
 			.mrn-layout-library-card__header { display:flex; gap:12px; align-items:baseline; justify-content:space-between; padding:12px 14px; }
 			.mrn-layout-library-card__title { margin:0; font-size:18px; }
-			.mrn-layout-library-card__frame { display:block; width:100%; height:360px; border:0; border-top:1px solid #ccd0d4; background:#f6f7f7; }
+			.mrn-layout-library-card__preview { border-top:1px solid #ccd0d4; background:#fff; }
+			.mrn-layout-library-card__preview .mrn-content-builder { margin:0; }
+			.mrn-layout-library-card__preview .mrn-content-builder__row:first-child { margin-top:0; }
 			.mrn-layout-library-card__unavailable { display:grid; min-height:300px; place-items:center; padding:20px; box-sizing:border-box; background:#f6f7f7; color:#50575e; text-align:center; }
 			.mrn-layout-library-card__copy { padding:16px; }
 			.mrn-layout-library-card__category { color:#50575e; font-size:12px; margin:0 0 8px; }
@@ -602,9 +564,8 @@ function mrn_active_style_guide_render_layout_library_page(): void {
 			<article class="mrn-layout-library-card" data-category="<?php echo esc_attr( $guide['category'] ); ?>" data-search="<?php echo esc_attr( $search ); ?>">
 				<div class="mrn-layout-library-card__header">
 					<h2 class="mrn-layout-library-card__title"><?php echo esc_html( $entry['layout']['label'] ); ?></h2>
-					<?php if ( $preview && in_array( $preview, $manifest['targets'], true ) ) : ?><a href="<?php echo esc_url( add_query_arg( 'mrn-layout-library-preview', '1', (string) $preview['url'] ) ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Open full size', 'mrn-active-style-guide' ); ?></a><?php endif; ?>
 				</div>
-				<?php if ( $preview && in_array( $preview, $manifest['targets'], true ) ) : ?><iframe class="mrn-layout-library-card__frame" title="<?php echo esc_attr( sprintf( __( '%s live HTML layout preview', 'mrn-active-style-guide' ), $entry['layout']['label'] ) ); ?>" src="<?php echo esc_url( add_query_arg( 'mrn-layout-library-preview', '1', (string) $preview['url'] ) ); ?>" loading="lazy"></iframe><?php else : ?><div class="mrn-layout-library-card__unavailable"><?php esc_html_e( 'Regenerate to create this layout’s private HTML preview fixture.', 'mrn-active-style-guide' ); ?></div><?php endif; ?>
+				<?php if ( $preview && in_array( $preview, $manifest['targets'], true ) ) : ?><div class="mrn-layout-library-card__preview"><?php echo $preview['markup']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Stack renderer escapes its complete markup contract. ?></div><?php else : ?><div class="mrn-layout-library-card__unavailable"><?php esc_html_e( 'Regenerate to create this layout’s private HTML preview fixture.', 'mrn-active-style-guide' ); ?></div><?php endif; ?>
 				<div class="mrn-layout-library-card__copy"><p class="mrn-layout-library-card__category"><?php echo esc_html( $guide['category'] ); ?></p><p><?php echo esc_html( $guide['description'] ); ?></p><details><summary><?php esc_html_e( 'Editable fields', 'mrn-active-style-guide' ); ?></summary><ul><?php foreach ( $fields as $field ) : ?><li><strong><?php echo esc_html( $field['label'] ); ?></strong><?php if ( 'repeater' === ( $field['type'] ?? '' ) ) : ?> — <?php esc_html_e( 'repeatable items', 'mrn-active-style-guide' ); ?><?php endif; ?></li><?php endforeach; ?></ul></details><p class="mrn-layout-library-card__meta"><code><?php echo esc_html( $layout_name ); ?></code> · <?php echo esc_html( $preview ? ucfirst( (string) $preview['source'] ) : __( 'No preview source', 'mrn-active-style-guide' ) ); ?></p></div>
 			</article>
 		<?php endforeach; ?>
