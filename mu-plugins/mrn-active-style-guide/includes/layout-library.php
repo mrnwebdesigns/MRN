@@ -535,23 +535,23 @@ function mrn_active_style_guide_render_layout_library_page(): void {
 			<p id="mrn-layout-library-count" role="status"></p>
 		</div>
 		<style>
-			.mrn-layout-library { max-width:1500px; }
-			.mrn-layout-library__intro { font-size:16px; max-width:800px; }
+			.mrn-layout-library { max-width:1480px; color:#243842; }
+			.mrn-layout-library__intro { font-size:17px; max-width:900px; }
 			.mrn-layout-library__tools { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin:24px 0; }
 			.mrn-layout-library__tools input { min-width:min(100%,300px); }
-			.mrn-layout-library-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr)); gap:24px; margin:20px 0; }
-			.mrn-layout-library-card { background:#fff; border:1px solid #ccd0d4; border-radius:6px; overflow:hidden; }
+			.mrn-layout-library-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr)); gap:24px; margin:20px 0; }
+			.mrn-layout-library-card { background:#fff; border:1px solid #d1d9dd; border-radius:8px; overflow:hidden; }
 			.mrn-layout-library-card[hidden] { display:none; }
-			.mrn-layout-library-card__header { display:flex; gap:12px; align-items:baseline; justify-content:space-between; padding:12px 14px; }
-			.mrn-layout-library-card__title { margin:0; font-size:18px; }
-			.mrn-layout-library-card__preview { border-top:1px solid #ccd0d4; background:#fff; }
+			.mrn-layout-library-card__preview { aspect-ratio:3/2; overflow:hidden; position:relative; background:#f4f6f8; border-bottom:1px solid #e4e8ea; }
+			.mrn-layout-library-card__preview-inner { width:200%; min-height:200%; transform:scale(.5); transform-origin:top left; pointer-events:none; }
 			.mrn-layout-library-card__preview .mrn-content-builder { margin:0; }
 			.mrn-layout-library-card__preview .mrn-content-builder__row:first-child { margin-top:0; }
-			.mrn-layout-library-card__unavailable { display:grid; min-height:300px; place-items:center; padding:20px; box-sizing:border-box; background:#f6f7f7; color:#50575e; text-align:center; }
-			.mrn-layout-library-card__copy { padding:16px; }
-			.mrn-layout-library-card__category { color:#50575e; font-size:12px; margin:0 0 8px; }
-			.mrn-layout-library-card__meta { color:#50575e; font-size:12px; }
-			.mrn-layout-library :focus-visible { outline:3px solid #2271b1; outline-offset:3px; }
+			.mrn-layout-library-card__unavailable { display:grid; min-height:220px; place-items:center; padding:20px; box-sizing:border-box; background:#f4f6f8; color:#53646b; text-align:center; }
+			.mrn-layout-library-card__copy { padding:20px; }
+			.mrn-layout-library-card__title { font-size:19px; line-height:1.3; color:#0a3e52; margin:8px 0 12px; }
+			.mrn-layout-library-card__category, .mrn-layout-library-card__meta { color:#53646b; font-size:12px; margin:0; }
+			.mrn-layout-library-card__copy li { margin-bottom:6px; }
+			.mrn-layout-library :focus-visible { outline:3px solid #0a3e52; outline-offset:3px; }
 		</style>
 		<div class="mrn-layout-library-grid">
 		<?php foreach ( $catalog as $layout_name => $entry ) : ?>
@@ -562,11 +562,8 @@ function mrn_active_style_guide_render_layout_library_page(): void {
 			$search = strtolower( $entry['layout']['label'] . ' ' . $layout_name . ' ' . $guide['description'] . ' ' . implode( ' ', $guide['keywords'] ) );
 			?>
 			<article class="mrn-layout-library-card" data-category="<?php echo esc_attr( $guide['category'] ); ?>" data-search="<?php echo esc_attr( $search ); ?>">
-				<div class="mrn-layout-library-card__header">
-					<h2 class="mrn-layout-library-card__title"><?php echo esc_html( $entry['layout']['label'] ); ?></h2>
-				</div>
-				<?php if ( $preview && in_array( $preview, $manifest['targets'], true ) ) : ?><div class="mrn-layout-library-card__preview"><?php echo $preview['markup']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Stack renderer escapes its complete markup contract. ?></div><?php else : ?><div class="mrn-layout-library-card__unavailable"><?php esc_html_e( 'Regenerate to create this layout’s private HTML preview fixture.', 'mrn-active-style-guide' ); ?></div><?php endif; ?>
-				<div class="mrn-layout-library-card__copy"><p class="mrn-layout-library-card__category"><?php echo esc_html( $guide['category'] ); ?></p><p><?php echo esc_html( $guide['description'] ); ?></p><details><summary><?php esc_html_e( 'Editable fields', 'mrn-active-style-guide' ); ?></summary><ul><?php foreach ( $fields as $field ) : ?><li><strong><?php echo esc_html( $field['label'] ); ?></strong><?php if ( 'repeater' === ( $field['type'] ?? '' ) ) : ?> — <?php esc_html_e( 'repeatable items', 'mrn-active-style-guide' ); ?><?php endif; ?></li><?php endforeach; ?></ul></details><p class="mrn-layout-library-card__meta"><code><?php echo esc_html( $layout_name ); ?></code> · <?php echo esc_html( $preview ? ucfirst( (string) $preview['source'] ) : __( 'No preview source', 'mrn-active-style-guide' ) ); ?></p></div>
+				<?php if ( $preview && in_array( $preview, $manifest['targets'], true ) ) : ?><div class="mrn-layout-library-card__preview" aria-label="<?php echo esc_attr( sprintf( __( '%s layout preview', 'mrn-active-style-guide' ), $entry['layout']['label'] ) ); ?>"><div class="mrn-layout-library-card__preview-inner"><?php echo $preview['markup']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Stack renderer escapes its complete markup contract. ?></div></div><?php else : ?><div class="mrn-layout-library-card__unavailable"><?php esc_html_e( 'Regenerate to create this layout’s private HTML preview fixture.', 'mrn-active-style-guide' ); ?></div><?php endif; ?>
+				<div class="mrn-layout-library-card__copy"><p class="mrn-layout-library-card__category"><?php echo esc_html( $guide['category'] ); ?></p><h2 class="mrn-layout-library-card__title"><?php echo esc_html( $entry['layout']['label'] ); ?></h2><p><?php echo esc_html( $guide['description'] ); ?></p><details><summary><?php esc_html_e( 'Editable fields', 'mrn-active-style-guide' ); ?></summary><ul><?php foreach ( $fields as $field ) : ?><li><strong><?php echo esc_html( $field['label'] ); ?></strong><?php if ( 'repeater' === ( $field['type'] ?? '' ) ) : ?> — <?php esc_html_e( 'repeatable items', 'mrn-active-style-guide' ); ?><?php endif; ?></li><?php endforeach; ?></ul></details></div>
 			</article>
 		<?php endforeach; ?>
 		</div>
