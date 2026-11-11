@@ -14,6 +14,7 @@ defined( 'ABSPATH' ) || exit;
 
 const MRN_ACTIVE_STYLE_GUIDE_LAYOUT_LIBRARY_OPTION = 'mrn_active_style_guide_layout_library';
 const MRN_ACTIVE_STYLE_GUIDE_LAYOUT_LIBRARY_FIXTURE_META = '_mrn_layout_library_fixture';
+const MRN_ACTIVE_STYLE_GUIDE_LAYOUT_LIBRARY_SUPPORT_META = '_mrn_layout_library_support';
 
 /**
  * Return the theme's currently available builder layouts, keyed by layout name.
@@ -187,6 +188,98 @@ function mrn_active_style_guide_get_layout_library_sample_values( array $fields,
 	return $values;
 }
 
+/**
+ * Supply the small nested compositions that a generic field walk cannot infer.
+ *
+ * These are private fixture values, not defaults for editor-authored content.
+ * Keeping them here means an unused layout still has a truthful HTML example.
+ *
+ * @param string $layout_name Layout machine name.
+ * @return array<string, mixed>
+ */
+function mrn_active_style_guide_get_layout_library_fixture_blueprint( string $layout_name ): array {
+	$body_row = array(
+		'acf_fc_layout' => 'body_text',
+		'heading'       => __( 'Example content heading', 'mrn-active-style-guide' ),
+		'heading_tag'   => 'h3',
+		'body_text'     => __( '<p>This is representative preview content. Editors replace it with their own content when they add the layout.</p>', 'mrn-active-style-guide' ),
+	);
+
+	switch ( $layout_name ) {
+		case 'faq_jump_nav':
+			return array(
+				'jump_nav_source'  => 'manual',
+				'jump_nav_entries' => array(
+					array( 'label' => __( 'First question', 'mrn-active-style-guide' ), 'anchor' => 'example-question-one' ),
+					array( 'label' => __( 'Second question', 'mrn-active-style-guide' ), 'anchor' => 'example-question-two' ),
+					array( 'label' => __( 'Third question', 'mrn-active-style-guide' ), 'anchor' => 'example-question-three' ),
+				),
+			);
+		case 'tabbed_layout':
+			return array(
+				'tabs' => array(
+					array( 'tab_label' => __( 'Overview', 'mrn-active-style-guide' ), 'panel_rows' => array( $body_row ) ),
+					array( 'tab_label' => __( 'Details', 'mrn-active-style-guide' ), 'panel_rows' => array( array_merge( $body_row, array( 'heading' => __( 'Example detail heading', 'mrn-active-style-guide' ) ) ) ) ),
+				),
+			);
+		case 'two_column_split':
+			return array(
+				'column_rows_mode' => 'stack',
+				'left_column_rows' => array( $body_row ),
+				'right_column_rows' => array( array_merge( $body_row, array( 'heading' => __( 'Second column', 'mrn-active-style-guide' ) ) ) ),
+			);
+	}
+
+	return array();
+}
+
+/** Return the private reusable block that backs the reusable-block preview. */
+function mrn_active_style_guide_get_layout_library_reusable_block_id(): int {
+	$existing = get_posts( array( 'post_type' => 'mrn_reusable_basic', 'post_status' => 'any', 'posts_per_page' => 1, 'meta_key' => MRN_ACTIVE_STYLE_GUIDE_LAYOUT_LIBRARY_SUPPORT_META, 'meta_value' => 'reusable-basic', 'fields' => 'ids' ) );
+	if ( ! empty( $existing ) ) {
+		return absint( $existing[0] );
+	}
+
+	$post_id = wp_insert_post( array( 'post_title' => __( 'Layout Library example reusable block', 'mrn-active-style-guide' ), 'post_status' => 'private', 'post_type' => 'mrn_reusable_basic' ), true );
+	if ( is_wp_error( $post_id ) || ! $post_id ) {
+		return 0;
+	}
+	update_post_meta( $post_id, MRN_ACTIVE_STYLE_GUIDE_LAYOUT_LIBRARY_SUPPORT_META, 'reusable-basic' );
+	update_field( 'heading', __( 'Example reusable content', 'mrn-active-style-guide' ), $post_id );
+	update_field( 'content', __( '<p>This private source record exists only to demonstrate the reusable block layout.</p>', 'mrn-active-style-guide' ), $post_id );
+	return absint( $post_id );
+}
+
+/** Return the private WPForms form that backs the WPForms preview. */
+function mrn_active_style_guide_get_layout_library_wpforms_form_id(): int {
+	$existing = get_posts( array( 'post_type' => 'wpforms', 'post_status' => 'any', 'posts_per_page' => 1, 'meta_key' => MRN_ACTIVE_STYLE_GUIDE_LAYOUT_LIBRARY_SUPPORT_META, 'meta_value' => 'wpforms', 'fields' => 'ids' ) );
+	if ( ! empty( $existing ) ) {
+		return absint( $existing[0] );
+	}
+	if ( ! shortcode_exists( 'wpforms' ) ) {
+		return 0;
+	}
+
+	$data = array(
+		'fields' => array(
+			'1' => array( 'id' => '1', 'type' => 'text', 'label' => __( 'Name', 'mrn-active-style-guide' ), 'required' => '1' ),
+			'2' => array( 'id' => '2', 'type' => 'email', 'label' => __( 'Email', 'mrn-active-style-guide' ), 'required' => '1' ),
+		),
+		'settings' => array( 'form_title' => __( 'Layout Library example form', 'mrn-active-style-guide' ), 'submit_text' => __( 'Send', 'mrn-active-style-guide' ) ),
+	);
+	$form_id = wp_insert_post( array(
+		'post_title'   => __( 'Layout Library example form', 'mrn-active-style-guide' ),
+		'post_status'  => 'private',
+		'post_type'    => 'wpforms',
+		'post_content' => function_exists( 'wpforms_encode' ) ? wpforms_encode( $data ) : wp_json_encode( $data ),
+	), true );
+	if ( is_wp_error( $form_id ) || ! $form_id ) {
+		return 0;
+	}
+	update_post_meta( $form_id, MRN_ACTIVE_STYLE_GUIDE_LAYOUT_LIBRARY_SUPPORT_META, 'wpforms' );
+	return absint( $form_id );
+}
+
 /** Return a reusable, existing site image for synthetic preview-only content. */
 function mrn_active_style_guide_get_layout_library_sample_attachment_id(): int {
 	static $attachment_id = null;
@@ -246,11 +339,12 @@ function mrn_active_style_guide_update_layout_library_fixture_row( string $field
 		return;
 	}
 	foreach ( $fields as $field ) {
-		if ( ! is_array( $field ) || empty( $field['name'] ) || ! isset( $row[ $field['name'] ] ) || ! in_array( $field['type'] ?? '', array( 'repeater', 'group', 'flexible_content' ), true ) ) {
+		if ( ! is_array( $field ) || empty( $field['name'] ) || ! isset( $row[ $field['name'] ] ) ) {
 			continue;
 		}
-		// ACF's flexible-content root write does not reliably hydrate nested
-		// repeater metadata. Saving from the row path preserves the schema.
+		// Saving from the row path makes ACF persist the full layout schema,
+		// including regular text fields and nested repeater metadata. A root
+		// flexible-content update alone drops both on some ACF versions.
 		update_sub_field( array( $field_name, 1, $field['name'] ), $row[ $field['name'] ], $post_id );
 	}
 }
@@ -303,9 +397,17 @@ function mrn_active_style_guide_regenerate_layout_library_fixtures(): array {
 
 		update_post_meta( $post_id, MRN_ACTIVE_STYLE_GUIDE_LAYOUT_LIBRARY_FIXTURE_META, $layout_name );
 		$layout_fields = mrn_active_style_guide_get_layout_library_layout_fields( $entry, $layout_name );
+		$blueprint = mrn_active_style_guide_get_layout_library_fixture_blueprint( $layout_name );
+		if ( 'reusable_block' === $layout_name ) {
+			$blueprint['block'] = mrn_active_style_guide_get_layout_library_reusable_block_id();
+		}
+		if ( 'wpforms' === $layout_name ) {
+			$blueprint['form'] = mrn_active_style_guide_get_layout_library_wpforms_form_id();
+		}
 		$row = array_merge(
 			array( 'acf_fc_layout' => $layout_name ),
-			mrn_active_style_guide_get_layout_library_sample_values( $layout_fields, $layout_name )
+			mrn_active_style_guide_get_layout_library_sample_values( $layout_fields, $layout_name ),
+			$blueprint
 		);
 		mrn_active_style_guide_update_layout_library_fixture_row( $field_key, $field_name, $row, $layout_fields, $post_id );
 		$result['created'][ $layout_name ] = $post_id;
@@ -354,33 +456,53 @@ function mrn_active_style_guide_get_layout_library_capture_manifest(): array {
 }
 
 /**
- * Hide WordPress chrome inside the authenticated, read-only library preview.
+ * Render a purpose-built, authenticated document for an HTML layout preview.
  *
- * The underlying preview page remains subject to its ordinary post-status and
- * capability rules; this only gives the iframe a useful visual surface.
- *
- * @param bool $show Whether to show the admin bar.
- * @return bool
+ * This deliberately renders the builder markup rather than a screenshot or a
+ * theme page with its navigation hidden by CSS. The fixture remains private,
+ * and only people able to manage the theme may view it.
  */
-function mrn_active_style_guide_hide_admin_bar_in_layout_library_preview( bool $show ): bool {
-	return ! empty( $_GET['mrn-layout-library-preview'] ) && current_user_can( 'edit_theme_options' ) ? false : $show;
-}
-add_filter( 'show_admin_bar', 'mrn_active_style_guide_hide_admin_bar_in_layout_library_preview' );
-
-/** Print preview-only styles after the active theme has registered its chrome. */
-function mrn_active_style_guide_print_layout_library_preview_styles(): void {
-	if ( empty( $_GET['mrn-layout-library-preview'] ) || ! current_user_can( 'edit_theme_options' ) ) {
+function mrn_active_style_guide_render_layout_library_preview_document(): void {
+	if ( empty( $_GET['mrn-layout-library-preview'] ) || ! is_singular() ) {
 		return;
 	}
+
+	$post_id = get_queried_object_id();
+	$layout_name = sanitize_key( (string) get_post_meta( $post_id, MRN_ACTIVE_STYLE_GUIDE_LAYOUT_LIBRARY_FIXTURE_META, true ) );
+	$catalog = mrn_active_style_guide_get_layout_library_catalog();
+	if ( ! $post_id || ! current_user_can( 'edit_theme_options' ) || '' === $layout_name || empty( $catalog[ $layout_name ] ) ) {
+		wp_die( esc_html__( 'This Layout Library preview is not available.', 'mrn-active-style-guide' ), '', array( 'response' => 404 ) );
+	}
+
+	$field_name = (string) $catalog[ $layout_name ]['field_name'];
+	$markup = function_exists( 'mrn_base_stack_get_builder_markup' ) ? mrn_base_stack_get_builder_markup( $field_name, $post_id ) : '';
+	if ( '' === trim( (string) $markup ) ) {
+		wp_die( esc_html__( 'This layout does not yet have a valid preview fixture.', 'mrn-active-style-guide' ), '', array( 'response' => 404 ) );
+	}
+
+	nocache_headers();
 	?>
-	<style id="mrn-layout-library-preview-styles">
-		#wpadminbar, #masthead, #colophon { display: none !important; }
-		html { margin-top: 0 !important; }
-		#page, #primary, .site-main, .site-content { margin: 0 !important; padding: 0 !important; max-width: none !important; width: 100% !important; }
+	<!doctype html>
+	<html <?php language_attributes(); ?>><head>
+	<meta charset="<?php bloginfo( 'charset' ); ?>">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<?php wp_head(); ?>
+	<style id="mrn-layout-library-preview-document-styles">
+		html { margin: 0 !important; }
+		body { margin: 0; min-width: 0; background: #fff; }
+		.mrn-layout-library-preview-document { overflow: hidden; }
 	</style>
+	</head><body <?php body_class( 'mrn-layout-library-preview-document' ); ?>>
+	<?php wp_body_open(); ?>
+	<main id="mrn-layout-library-preview" aria-label="<?php esc_attr_e( 'Layout preview', 'mrn-active-style-guide' ); ?>">
+		<?php echo $markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Stack renderer escapes its complete markup contract. ?>
+	</main>
+	<?php wp_footer(); ?>
+	</body></html>
 	<?php
+	exit;
 }
-add_action( 'wp_head', 'mrn_active_style_guide_print_layout_library_preview_styles', 999 );
+add_action( 'template_redirect', 'mrn_active_style_guide_render_layout_library_preview_document', 99 );
 
 /** Return catalog metadata used by the searchable editor guide. */
 function mrn_active_style_guide_get_layout_library_guide_metadata( string $layout_name, array $entry ): array {
@@ -482,7 +604,7 @@ function mrn_active_style_guide_render_layout_library_page(): void {
 					<h2 class="mrn-layout-library-card__title"><?php echo esc_html( $entry['layout']['label'] ); ?></h2>
 					<?php if ( $preview && in_array( $preview, $manifest['targets'], true ) ) : ?><a href="<?php echo esc_url( add_query_arg( 'mrn-layout-library-preview', '1', (string) $preview['url'] ) ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Open full size', 'mrn-active-style-guide' ); ?></a><?php endif; ?>
 				</div>
-				<?php if ( $preview && in_array( $preview, $manifest['targets'], true ) ) : ?><iframe class="mrn-layout-library-card__frame" title="<?php echo esc_attr( sprintf( __( '%s live layout preview', 'mrn-active-style-guide' ), $entry['layout']['label'] ) ); ?>" src="<?php echo esc_url( add_query_arg( 'mrn-layout-library-preview', '1', (string) $preview['url'] ) ); ?>" loading="lazy"></iframe><?php else : ?><div class="mrn-layout-library-card__unavailable"><?php esc_html_e( 'This layout needs site-owned content before it can render a meaningful example.', 'mrn-active-style-guide' ); ?></div><?php endif; ?>
+				<?php if ( $preview && in_array( $preview, $manifest['targets'], true ) ) : ?><iframe class="mrn-layout-library-card__frame" title="<?php echo esc_attr( sprintf( __( '%s live HTML layout preview', 'mrn-active-style-guide' ), $entry['layout']['label'] ) ); ?>" src="<?php echo esc_url( add_query_arg( 'mrn-layout-library-preview', '1', (string) $preview['url'] ) ); ?>" loading="lazy"></iframe><?php else : ?><div class="mrn-layout-library-card__unavailable"><?php esc_html_e( 'Regenerate to create this layout’s private HTML preview fixture.', 'mrn-active-style-guide' ); ?></div><?php endif; ?>
 				<div class="mrn-layout-library-card__copy"><p class="mrn-layout-library-card__category"><?php echo esc_html( $guide['category'] ); ?></p><p><?php echo esc_html( $guide['description'] ); ?></p><details><summary><?php esc_html_e( 'Editable fields', 'mrn-active-style-guide' ); ?></summary><ul><?php foreach ( $fields as $field ) : ?><li><strong><?php echo esc_html( $field['label'] ); ?></strong><?php if ( 'repeater' === ( $field['type'] ?? '' ) ) : ?> — <?php esc_html_e( 'repeatable items', 'mrn-active-style-guide' ); ?><?php endif; ?></li><?php endforeach; ?></ul></details><p class="mrn-layout-library-card__meta"><code><?php echo esc_html( $layout_name ); ?></code> · <?php echo esc_html( $preview ? ucfirst( (string) $preview['source'] ) : __( 'No preview source', 'mrn-active-style-guide' ) ); ?></p></div>
 			</article>
 		<?php endforeach; ?>
