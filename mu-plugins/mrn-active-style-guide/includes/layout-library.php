@@ -139,6 +139,22 @@ function mrn_active_style_guide_get_layout_library_sample_values( array $fields,
 			case 'link':
 				$values[ $name ] = array( 'title' => __( 'Learn more', 'mrn-active-style-guide' ), 'url' => home_url( '/' ), 'target' => '' );
 				break;
+			case 'image':
+			case 'file':
+				$values[ $name ] = mrn_active_style_guide_get_layout_library_sample_attachment_id();
+				break;
+			case 'gallery':
+				$attachment_id = mrn_active_style_guide_get_layout_library_sample_attachment_id();
+				$values[ $name ] = $attachment_id ? array( $attachment_id ) : array();
+				break;
+			case 'post_object':
+			case 'page_link':
+				$values[ $name ] = mrn_active_style_guide_get_layout_library_sample_post_id( $field );
+				break;
+			case 'relationship':
+				$post_id = mrn_active_style_guide_get_layout_library_sample_post_id( $field );
+				$values[ $name ] = $post_id ? array( $post_id ) : array();
+				break;
 			case 'true_false':
 				$values[ $name ] = 1;
 				break;
@@ -148,6 +164,11 @@ function mrn_active_style_guide_get_layout_library_sample_values( array $fields,
 				$choices = isset( $field['choices'] ) && is_array( $field['choices'] ) ? $field['choices'] : array();
 				$values[ $name ] = (string) array_key_first( $choices );
 				break;
+			case 'checkbox':
+				$choices = isset( $field['choices'] ) && is_array( $field['choices'] ) ? $field['choices'] : array();
+				$choice = array_key_first( $choices );
+				$values[ $name ] = null === $choice ? array() : array( (string) $choice );
+				break;
 			case 'group':
 				$values[ $name ] = mrn_active_style_guide_get_layout_library_sample_values( $field['sub_fields'] ?? array(), $layout_name, $depth + 1 );
 				break;
@@ -155,10 +176,37 @@ function mrn_active_style_guide_get_layout_library_sample_values( array $fields,
 				$item = mrn_active_style_guide_get_layout_library_sample_values( $field['sub_fields'] ?? array(), $layout_name, $depth + 1 );
 				$values[ $name ] = empty( $item ) ? array() : array( $item, $item, $item );
 				break;
+			case 'flexible_content':
+				$layouts = isset( $field['layouts'] ) && is_array( $field['layouts'] ) ? $field['layouts'] : array();
+				$layout = reset( $layouts );
+				$values[ $name ] = is_array( $layout ) && ! empty( $layout['name'] ) ? array( array_merge( array( 'acf_fc_layout' => $layout['name'] ), mrn_active_style_guide_get_layout_library_sample_values( $layout['sub_fields'] ?? array(), $layout_name, $depth + 1 ) ) ) : array();
+				break;
 		}
 	}
 
 	return $values;
+}
+
+/** Return a reusable, existing site image for synthetic preview-only content. */
+function mrn_active_style_guide_get_layout_library_sample_attachment_id(): int {
+	static $attachment_id = null;
+	if ( null !== $attachment_id ) {
+		return $attachment_id;
+	}
+	$attachments = get_posts( array( 'post_type' => 'attachment', 'post_status' => 'inherit', 'post_mime_type' => 'image', 'posts_per_page' => 1, 'orderby' => 'date', 'order' => 'DESC', 'fields' => 'ids' ) );
+	$attachment_id = ! empty( $attachments ) ? absint( $attachments[0] ) : 0;
+	return $attachment_id;
+}
+
+/** Return an existing record compatible with an ACF relationship-style field. */
+function mrn_active_style_guide_get_layout_library_sample_post_id( array $field ): int {
+	$post_types = isset( $field['post_type'] ) ? (array) $field['post_type'] : array( 'page', 'post' );
+	$post_types = array_values( array_filter( array_map( 'sanitize_key', $post_types ) ) );
+	if ( empty( $post_types ) ) {
+		$post_types = array( 'page', 'post' );
+	}
+	$posts = get_posts( array( 'post_type' => $post_types, 'post_status' => array( 'publish', 'private' ), 'posts_per_page' => 1, 'orderby' => 'date', 'order' => 'DESC', 'fields' => 'ids' ) );
+	return ! empty( $posts ) ? absint( $posts[0] ) : 0;
 }
 
 /**
