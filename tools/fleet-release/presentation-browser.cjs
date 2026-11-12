@@ -126,6 +126,18 @@ const {createRequire} = require('node:module');
     async function openRow() {
       if ((await row.getAttribute('class')).split(/\s+/).includes('-collapsed')) await row.locator('.acf-fc-layout-handle').first().click();
     }
+    async function reloadEditor() {
+      // Editor readiness is the native form and its initialized ACF model.
+      // Background asset/heartbeat activity need not become network-idle.
+      const response = await page.reload({waitUntil: 'domcontentloaded'});
+      assert.equal(response.status(), 200, 'Native editor reload must succeed');
+      await expect(page.locator('#post')).toBeVisible();
+      await expect(page.locator('#publish')).toBeEnabled();
+      await expect.poll(() => page.evaluate(() => Boolean(
+        window.acf && typeof window.acf.getField === 'function'
+        && window.acf.getField('field_mrn_page_content_rows')
+      )), {message: 'Native ACF content rows must initialize after reload'}).toBe(true);
+    }
     await openRow();
     const heading = row.locator('.acf-field[data-name="heading"] input').first();
     await expect(heading).toHaveValue('Optional presentations');
@@ -141,7 +153,7 @@ const {createRequire} = require('node:module');
     });
     assert.equal(rejected.status(), 400, 'Incomplete native form must fail before saving');
     assert.match(await rejected.text(), /Your saved content is unchanged/);
-    await page.reload({waitUntil: 'networkidle'});
+    await reloadEditor();
     await expect(page.locator('#title')).toHaveValue('Presentation qualification');
     await openRow();
     await expect(heading).toHaveValue('Optional presentations');
@@ -157,7 +169,7 @@ const {createRequire} = require('node:module');
       page.locator('#publish').click(),
     ]);
     await expect(page.locator('#message')).toContainText('Page updated.');
-    await page.reload({waitUntil: 'networkidle'});
+    await reloadEditor();
     await openRow();
     await expect(heading).toHaveValue('Presentation settings saved through Classic Editor');
     await expect(row.locator('.acf-field[data-name="text_presentation"] select').first()).toHaveValue('scroll-words');
