@@ -8180,7 +8180,7 @@ a.mrn-social-links__link:focus-visible svg {
 
 .has-cta-frame.has-cta-text-size .mrn-reusable-block--cta .mrn-ui__text { font-size: var(--mrn-cta-frame-text-size); }
 
-.has-cta-frame.has-cta-text-line-height .mrn-reusable-block--cta .mrn-ui__text { line-height: var(--mrn-cta-frame-text-line-height); }
+.has-cta-frame.has-cta-text-line-height .mrn-reusable-block--cta .mrn-ui__text, .has-cta-frame.has-cta-text-line-height .mrn-reusable-block--cta .mrn-ui__text p { line-height: var(--mrn-cta-frame-text-line-height); }
 
 .has-cta-frame.has-cta-text-color .mrn-reusable-block--cta .mrn-ui__text { color: var(--mrn-cta-frame-text-color); }
 

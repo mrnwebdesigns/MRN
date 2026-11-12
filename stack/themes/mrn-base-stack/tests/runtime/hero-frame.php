@@ -39,7 +39,7 @@ try {
 		'hero_heading_width' => 'none', 'hero_heading_width_mobile' => 'none', 'hero_text_width' => 'none',
 		'hero_content_gap' => '0px', 'hero_heading_space_after' => '36px', 'hero_heading_space_after_mobile' => '16px',
 		'hero_actions_space_before' => '56px', 'hero_actions_space_before_mobile' => '30px', 'hero_actions_primary_min_width_mobile' => '197px', 'hero_actions_row_gap' => '15px', 'hero_actions_column_gap' => '18px', 'hero_rotation_control_placement' => 'overlay', 'hero_actions_mobile_flow' => 'paired-until-375',
-		'hero_action_icon_height' => '10px',
+		'hero_action_icon_height' => '10px', 'hero_action_line_height' => '20px',
 		'hero_heading_size' => 'clamp(32px,5vw,64px)', 'hero_heading_line_height' => '1.2', 'hero_heading_weight' => '500',
 		'hero_text_size' => '20px', 'hero_text_line_height' => '1.5', 'hero_paragraph_space_after' => '0px',
 		'hero_inner_gutter_mobile' => '15px', 'hero_text_size_mobile' => '16px', 'hero_text_line_height_mobile' => '1.2',
@@ -58,6 +58,7 @@ try {
 		ob_start(); get_template_part( 'template-parts/builder/hero', null, array( 'row' => $value, 'post_id' => $id ) ); return ob_get_clean();
 	};
 	$html = $render( $readback );
+	$expect( false !== strpos( $html, '--mrn-hero-action-line-height:20px' ) && false !== strpos( $html, 'has-hero-action-line-height' ), 'Hero renders the optional action line height contract' );
 	$expect( str_contains( $html, '--mrn-hero-content-width:750px' ) && str_contains( $html, '--mrn-hero-content-gap:0px' ) && str_contains( $html, 'font-size:clamp(32px, 5vw, 64px)' ), 'Native renderer uses actual saved frame and fluid typography values' );
 	$expect( str_contains( $html, '--mrn-hero-inner-max-width:1170px' ) && str_contains( $html, 'has-hero-row-spacing-at-767' ), 'Saved inner canvas cap and independent row-spacing breakpoint render natively' );
 	$expect( str_contains( $html, 'has-hero-rotation-control-overlay' ) && str_contains( $html, 'has-hero-actions-paired-until-375' ) && str_contains( $html, 'has-hero-actions-space-before-mobile' ) && str_contains( $html, '--mrn-hero-actions-space-before-mobile:30px' ) && str_contains( $html, '--mrn-hero-actions-primary-min-width-mobile:197px' ), 'Saved rotating-control placement and phone action flow render only on the selected Hero' );

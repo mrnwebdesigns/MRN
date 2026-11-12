@@ -25,6 +25,7 @@ function mrn_base_stack_get_hero_frame_fields() {
 		'actions_row_gap' => 'Space Between Action Rows',
 		'actions_column_gap' => 'Space Between Actions',
 		'action_icon_height' => 'Action Media Icon Height',
+		'action_line_height' => 'Action Line Height',
 		'heading_size' => 'Heading Font Size',
 		'heading_line_height' => 'Heading Line Height',
 		'text_size' => 'Body Font Size',
@@ -160,11 +161,12 @@ function mrn_base_stack_validate_hero_frame_dimension( $raw, $allow_none = false
 function mrn_base_stack_get_hero_frame_contract( array $row ) {
 	$result = array( 'styles' => array(), 'heading_styles' => array(), 'classes' => array() );
 	$widths = array( 'content_width', 'content_width_mobile', 'heading_width', 'heading_width_mobile', 'text_width' );
-	foreach ( array_merge( $widths, array( 'inner_gutter', 'inner_gutter_mobile', 'inner_max_width', 'content_gap', 'heading_space_after', 'heading_space_after_mobile', 'actions_space_before', 'actions_row_gap', 'actions_column_gap', 'action_icon_height', 'body_h2_space_before', 'body_h2_space_after' ) ) as $name ) {
+	foreach ( array_merge( $widths, array( 'inner_gutter', 'inner_gutter_mobile', 'inner_max_width', 'content_gap', 'heading_space_after', 'heading_space_after_mobile', 'actions_space_before', 'actions_row_gap', 'actions_column_gap', 'action_icon_height', 'action_line_height', 'body_h2_space_before', 'body_h2_space_after' ) ) as $name ) {
 		$value = mrn_base_stack_validate_hero_frame_dimension( $row[ 'hero_' . $name ] ?? '', in_array( $name, $widths, true ) );
 		if ( '' !== $value ) {
 			$result['styles'][] = '--mrn-hero-' . str_replace( '_', '-', $name ) . ':' . $value;
 			if ( 'action_icon_height' === $name ) { $result['classes'][] = 'has-hero-action-icon-height'; }
+			if ( 'action_line_height' === $name ) { $result['classes'][] = 'has-hero-action-line-height'; }
 			if ( str_starts_with( $name, 'body_h2_space_' ) ) { $result['classes'][] = 'has-hero-' . str_replace( '_', '-', $name ); }
 		}
 	}

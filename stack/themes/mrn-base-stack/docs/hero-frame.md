@@ -70,3 +70,7 @@ The Row Padding Breakpoint additionally offers **640px (Vertical Padding Only)**
 Top/bottom values come exclusively from the selected native spacing presets;
 side padding and all margins retain their independent row breakpoints. There is
 no site-specific selector, script, timer, CSS request or unselected default change.
+
+## Action line height
+
+An optional **Action Line Height** control (`hero_action_line_height`) sets the line height of Hero action links through `--mrn-hero-action-line-height` and the `has-hero-action-line-height` class. A blank value retains the existing inherited line height. Native sites use it to match a 20px action line box (48px button height).
