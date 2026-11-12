@@ -242,6 +242,8 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 			$make( 'card_caption_gap', 'Space Between Caption Heading and Copy', 'text', array( 'instructions' => 'Image presentation only. Optional non-negative CSS length.' ) ),
 			$make( 'card_section_link_space_before', 'Space Before Section Link', 'text', array( 'instructions' => 'Image presentation only. Optional non-negative CSS length or bounded clamp(). Keeps the link spacing editable.' ) ),
 			$make( 'card_section_link_alignment', 'Section Link Alignment', 'select', array( 'choices' => array( '' => 'Keep Current Alignment', 'start' => 'Start', 'center' => 'Center', 'end' => 'End' ), 'default_value' => '', 'instructions' => 'Image presentation only. Aligns section links beneath the image cards.' ) ),
+			$make( 'card_section_link_size', 'Section Link Size', 'text', array( 'instructions' => 'Image presentation only. Optional non-negative CSS length or bounded clamp() for the section link text.' ) ),
+			$make( 'card_section_link_line_height', 'Section Link Line Height', 'text', array( 'instructions' => 'Image presentation only. Optional non-negative CSS length or unitless ratio for the section link line box.' ) ),
 			$make(
 				'timeline_image',
 				'Timeline Image',
@@ -256,7 +258,7 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 			$make( 'timeline_scroll_pace', 'Timeline Scroll Pace', 'select', array( 'choices' => array( '' => 'Standard', 'viewport' => '55% of Viewport Height per Step' ), 'default_value' => '', 'instructions' => 'Optional longer scroll journey for pinned timelines. Each step uses at least 320px of page scroll.' ) ),
 		);
 		foreach ( $fields as &$field ) {
-			if ( in_array( $field['name'], array( 'card_reveal_content', 'card_image_ratio', 'card_caption_flow_breakpoint', 'card_image_mobile_sizing', 'card_image_loading', 'card_gap', 'card_caption_padding', 'card_caption_padding_mobile', 'card_caption_gap', 'card_section_link_space_before', 'card_section_link_alignment' ), true ) ) {
+			if ( in_array( $field['name'], array( 'card_reveal_content', 'card_image_ratio', 'card_caption_flow_breakpoint', 'card_image_mobile_sizing', 'card_image_loading', 'card_gap', 'card_caption_padding', 'card_caption_padding_mobile', 'card_caption_gap', 'card_section_link_space_before', 'card_section_link_alignment', 'card_section_link_size', 'card_section_link_line_height' ), true ) ) {
 				$field['conditional_logic'] = array( array( array( 'field' => $seed . '_card_presentation', 'operator' => '==', 'value' => 'image-overlay' ) ) );
 			} elseif ( in_array( $field['name'], array( 'timeline_image', 'timeline_skip_label', 'timeline_pin_tablet', 'timeline_scroll_pace' ), true ) ) {
 				$field['conditional_logic'] = array( array( array( 'field' => $seed . '_card_presentation', 'operator' => '==', 'value' => 'timeline' ) ) );
@@ -519,6 +521,10 @@ function mrn_base_stack_get_image_card_styles( array $row ) {
 	}
 	$link_space = mrn_base_stack_validate_card_frame_dimension( $row['card_section_link_space_before'] ?? '' );
 	if ( '' !== $link_space ) { $styles[] = '--mrn-card-section-link-space-before:' . $link_space; }
+	foreach ( array( 'card_section_link_size' => '--mrn-card-section-link-size', 'card_section_link_line_height' => '--mrn-card-section-link-line-height' ) as $name => $property ) {
+		$value = mrn_base_stack_validate_card_frame_dimension( $row[ $name ] ?? '' );
+		if ( '' !== $value ) { $styles[] = $property . ':' . $value; }
+	}
 	$link_alignment = $row['card_section_link_alignment'] ?? '';
 	if ( in_array( $link_alignment, array( 'start', 'center', 'end' ), true ) ) { $styles[] = '--mrn-card-section-link-alignment:' . $link_alignment; }
 	$mobile_padding = $row['card_caption_padding_mobile'] ?? '';

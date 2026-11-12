@@ -20,11 +20,14 @@ function mrn_base_stack_get_timeline_frame_fields( $seed ) {
 		'step_inset_mobile' => 'Space Reserved for Number on Phone',
 		'step_gap' => 'Space Between Steps',
 		'step_action_gap' => 'Space Before Step Action',
+		'step_action_line_height' => 'Step Action Line Height',
 		'step_plain_copy_space' => 'Space After a Step Without an Action',
 		'step_mobile_offset' => 'Space Before Steps on Phone',
 		'step_icon_gap' => 'Space Before Step Action Icon',
 		'heading_space_after' => 'Space After Timeline Heading',
 		'subheading_width' => 'Timeline Introduction Maximum Width',
+		'subheading_size' => 'Timeline Introduction Font Size',
+		'subheading_line_height' => 'Timeline Introduction Line Height',
 		'header_space_after' => 'Space After Timeline Introduction',
 	);
 	foreach ( $dimensions as $name => $label ) {
@@ -54,7 +57,7 @@ function mrn_base_stack_get_timeline_frame_contract( array $row ) {
 	$result['media_skip'] = 'media' === ( $row['timeline_skip_position'] ?? '' ) && ! empty( $row['timeline_image'] );
 	$result['numbered_steps'] = 'numbered' === ( $row['timeline_step_style'] ?? '' );
 	$result['arrow_actions'] = $result['numbered_steps'] && 'arrow' === ( $row['timeline_step_action_icon'] ?? '' );
-	foreach ( array( 'content_width', 'inner_gutter', 'inner_gutter_tablet', 'column_gap', 'column_gap_tablet', 'media_width', 'media_width_tablet', 'skip_gap', 'step_inset', 'step_inset_mobile', 'step_gap', 'step_action_gap', 'step_plain_copy_space', 'step_mobile_offset', 'step_icon_gap', 'heading_space_after', 'subheading_width', 'header_space_after' ) as $name ) {
+	foreach ( array( 'content_width', 'inner_gutter', 'inner_gutter_tablet', 'column_gap', 'column_gap_tablet', 'media_width', 'media_width_tablet', 'skip_gap', 'step_inset', 'step_inset_mobile', 'step_gap', 'step_action_gap', 'step_action_line_height', 'step_plain_copy_space', 'step_mobile_offset', 'step_icon_gap', 'heading_space_after', 'subheading_width', 'subheading_size', 'subheading_line_height', 'header_space_after' ) as $name ) {
 		if ( str_starts_with( $name, 'step_' ) && ! $result['numbered_steps'] ) { continue; }
 		if ( 'step_icon_gap' === $name && ! $result['arrow_actions'] ) { continue; }
 		$value = mrn_base_stack_validate_card_frame_dimension( $row[ 'timeline_' . $name ] ?? '' );
