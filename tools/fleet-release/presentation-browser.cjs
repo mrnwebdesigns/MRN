@@ -147,11 +147,15 @@ const {createRequire} = require('node:module');
     await expect(heading).toHaveValue('Optional presentations');
     checks.push('incomplete native editor submission is rejected without changing saved content');
     await heading.fill('Presentation settings saved through Classic Editor');
-    // The browser can follow WordPress' native POST redirect before a response
-    // listener observes it.  Assert the editor's successful result and then
-    // reload/read back the persisted fields below; that verifies the contract
-    // without coupling the qualification to response-event timing.
-    await page.locator('#publish').click();
+    // The native ACF revision copy can make this POST take longer than
+    // Playwright's normal action-navigation window. Wait for WordPress'
+    // successful redirect, then verify the editor result and persisted fields
+    // below. This avoids coupling the qualification to response-event timing.
+    await Promise.all([
+      page.waitForURL(url => new URL(url).searchParams.get('message') === '1',
+                      {waitUntil: 'domcontentloaded', timeout: 180000}),
+      page.locator('#publish').click(),
+    ]);
     await expect(page.locator('#message')).toContainText('Page updated.');
     await page.reload({waitUntil: 'networkidle'});
     await openRow();
@@ -169,7 +173,8 @@ const {createRequire} = require('node:module');
   } catch (error) {
     if (page && !page.isClosed()) {
       await page.screenshot({path: path.join(path.dirname(input.output), 'failure.png'), fullPage: true}).catch(() => {});
-      fs.writeFileSync(path.join(path.dirname(input.output), 'failure.html'), await page.content());
+      const document = await page.content().catch(() => 'Page content was unavailable while navigating.');
+      fs.writeFileSync(path.join(path.dirname(input.output), 'failure.html'), document);
     }
     fs.writeFileSync(input.output, JSON.stringify({status: 'fail', error: error.message, checks, scans, errors}, null, 2));
     throw error;
