@@ -369,7 +369,7 @@ jobs:
             --rollback-receipt "$RUNNER_TEMP/site-deployment.json" --receipt "$RUNNER_TEMP/site-rollback.json"
       - name: Run runtime QA
         id: runtime
-        if: success() && inputs.mode == 'deploy' && inputs.local_qa_acceptance == ''
+        if: success() && inputs.mode == 'deploy'
         continue-on-error: ${{ inputs.target == 'dev' && !inputs.qualify_dev }}
         run: |
           set -euo pipefail
@@ -390,28 +390,11 @@ jobs:
         run: |
           python3 "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/atomic_runner.py" \
             --rollback-receipt "$RUNNER_TEMP/site-deployment.json" --receipt "$RUNNER_TEMP/site-rollback.json"
-      - name: Require fresh Live REST and operator browser readback
-        id: local_readback
-        if: success() && inputs.mode == 'deploy' && inputs.local_qa_acceptance != ''
-        run: |
-          echo 'Awaiting release-bound Freedom House Live readback (20 minute deadline).' >> "$GITHUB_STEP_SUMMARY"
-          python3 "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/freedomhouse_acceptance.py" wait \
-            --qualification "$RUNNER_TEMP/site-local-qualification.json" \
-            --deployment "$RUNNER_TEMP/site-deployment.json" \
-            --receipt "$RUNNER_TEMP/site-live-readback.json"
-      - name: Restore the prior release if local acceptance lacks Live readback
-        if: failure() && inputs.mode == 'deploy' && steps.activation.outcome == 'success' && steps.local_readback.outcome == 'failure'
-        env:
-          DEPLOY_KINSTA_API_TOKEN: ${{ secrets.DEPLOY_KINSTA_API_TOKEN }}
-          DEPLOY_KNOWN_HOSTS_FILE: ${{ runner.temp }}/site-deploy.known_hosts
-        run: |
-          python3 "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/atomic_runner.py" \
-            --rollback-receipt "$RUNNER_TEMP/site-deployment.json" --receipt "$RUNNER_TEMP/site-rollback.json"
       - name: Report deployment and runtime acceptance
         if: always() && inputs.mode == 'deploy' && steps.activation.outcome == 'success'
         env:
           QA_RESULT: ${{ steps.runtime.outcome }}
-          LOCAL_RESULT: ${{ steps.local_readback.outcome }}
+          LOCAL_RESULT: runtime-qa
         run: |
           python3 - <<'PY'
           import json, os, pathlib
