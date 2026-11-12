@@ -123,6 +123,11 @@ an incomplete submission and complete public readback after a valid save,
 including six legacy Text Swipe panels. These fixture settings do not configure
 client hosts; installed site QA must use their actual capacity.
 
+Native editor reloads require HTTP 200, a visible form, an enabled save control,
+an initialized ACF content-row model and persisted field values. Background
+editor requests need not become network-idle. Navigation timeouts and the
+separate runtime timing/Core Web Vitals gates remain unchanged.
+
 Wordfence's optional remote NTP is disabled only in the disposable offline
 fixtures. Their known loopback address is seeded into Wordfence's DNS cache;
 Wordfence 9.0.2 otherwise sends the loopback URL's port to DNS and exceeds PHP's
