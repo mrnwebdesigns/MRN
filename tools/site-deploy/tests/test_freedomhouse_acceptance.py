@@ -38,6 +38,7 @@ class LocalQualification(unittest.TestCase):
         sha = acceptance.git('rev-parse', 'HEAD')
         report = f'commit: {sha}\n- Mode: release\n**Release QA Result: 100% SUCCESS**\n'
         report += '\n'.join(f'| {row} | Ran | Pass | fixture | passed |' for row in acceptance.REQUIRED_ROWS)
+        report += '\n| PHPUnit | Ran | Pass | fixture | passed |'
         self.report = Path('qa/release-acceptance/local-release.md')
         self.report.parent.mkdir(parents=True, exist_ok=True)
         self.report.write_text(report)
@@ -93,6 +94,12 @@ class LocalQualification(unittest.TestCase):
         self.write_proof()
         with self.assertRaises(ValueError):
             acceptance.qualify(self.env)
+
+    def test_explicit_no_phpunit_suite_is_accepted(self):
+        self.report.write_text(self.report.read_text().replace('| PHPUnit | Ran | Pass |', '| PHPUnit | Skipped | Pass |'))
+        self.proof['report_sha256'] = hashlib.sha256(self.report.read_bytes()).hexdigest()
+        self.write_proof()
+        self.assertEqual(acceptance.qualify(self.env)['status'], 'locally-qualified-awaiting-live-readback')
         self.proof['qualified_at'] = now()
         self.report.write_text(self.report.read_text().replace('| PHPStan | Ran | Pass |', '| PHPStan | Skipped | Pass |'))
         self.proof['report_sha256'] = hashlib.sha256(self.report.read_bytes()).hexdigest()

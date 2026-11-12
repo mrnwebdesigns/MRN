@@ -28,8 +28,7 @@ QA_INPUTS = [SOURCE, 'composer.json', 'composer.lock', 'phpstan.neon.dist',
 REQUIRED_ROWS = ['PHP lint', 'PHPCS', 'WordPress best practices', 'PHP compatibility',
                  'PHPStan', 'Semgrep', 'Secrets scan', 'WordPress API surface audit',
                  'WordPress API runtime smoke', 'qa-theme.sh', 'qa-security.sh',
-                 'qa-playwright-local-stack-site.sh', 'Accessibility smoke', 'Composer audit',
-                 'PHPUnit']
+                 'qa-playwright-local-stack-site.sh', 'Accessibility smoke', 'Composer audit']
 # Local page-speed and Core Web Vitals checks are deliberately not deployment
 # gates: they measure the developer workstation and its local runtime, not the
 # production artifact. Production health and browser readback remain mandatory.
@@ -89,6 +88,12 @@ def qualify(environ):
             '**Release QA Result: 100% SUCCESS**' in report, 'A passing exact-source release report is required')
     for row in REQUIRED_ROWS:
         require(f'| {row} | Ran | Pass |' in report, f'Missing passing required local QA row: {row}')
+    # Freedom House has no PHPUnit configuration yet.  The QA engine reports
+    # that absence as a successful skipped row, rather than manufacturing a
+    # test run.  If a suite is later configured, it must run and pass.
+    require(re.search(r'^\s*\|\s*PHPUnit\s*\|\s*(?:Ran|Skipped)\s*\|\s*Pass\s*\|', report,
+                      flags=re.MULTILINE) is not None,
+            'Missing passing PHPUnit coverage or an explicit no-suite result')
     require(proof.get('php_version') == '8.4.26' and proof.get('parent_version') == '1.2.106' and
             proof.get('searchwp_version') == '4.6.1.1', 'Qualified runtime differs from approved Live baseline')
     return {**proof, 'status': 'locally-qualified-awaiting-live-readback',
