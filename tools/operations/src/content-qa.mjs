@@ -5,7 +5,7 @@ import { absoluteUrl, digest, requireThat, sha } from './contracts.mjs';
 import { delegationCanonical, delegationDigest } from './delegation.mjs';
 import { ProtectedCodeQa } from './code-qa.mjs';
 import { receiptFromZip } from './receipt-zip.mjs';
-import { managementTypes, managementSchemas, validateManagementEvidence } from './content-management-contract.mjs';
+import { managementTypes, managementSchemas, validateManagementEvidence, validateDraftManagement } from './content-management-contract.mjs';
 import { verifyManagementReceipt } from './content-management-qa.mjs';
 import { acfPatchSchema, acfScalar, managedTargetSchema } from './content.mjs';
 import { contentEnvelopeSchema, contentProfileSchema, contentSnapshotSchema, contentSnapshot, contentTargetSchema, contentSame, contentPaths, contentSchemas, contentPlanDescriptor } from './content-contract.mjs';
@@ -17,7 +17,7 @@ const providerSource = z.object(Object.fromEntries(['child/content-acf.php', 'ch
   'includes/class-mrn-mainwp-content-management.php', 'includes/class-mrn-mainwp-content-source.php', 'release-source.json'].map(k => [k, sha]))).strict();
 const managementProfile = z.object({ siteUrl: absoluteUrl, profile: managementTypes.profile,
   targets: z.array(z.object({ target: managedTargetSchema, selector: z.string().min(1).max(256),
-    acfPath: acfPatchSchema.shape.path, providerSource }).strict()).min(1) }).strict();
+    acfPath: acfPatchSchema.shape.path, providerSource, visibility: z.literal('draft').optional() }).strict()).min(1) }).strict();
 export const contentQaPolicySchema = z.object({ version: z.literal(1), repository: z.literal('mrnwebdesigns/mrn-code-qa-runner'), workflowCommit: commit,
   actor: z.string().regex(/^[A-Za-z0-9-]+\[bot\]$/), keyId: z.string().regex(/^[A-Za-z0-9_-]{1,64}$/), publicKeyBase64: z.string().length(44), engineCommit: commit,
   profiles: z.array(z.union([z.object({ siteUrl: absoluteUrl, profile: contentProfileSchema,
@@ -91,7 +91,8 @@ export class ProtectedContentQa extends ProtectedCodeQa {
     request = this.qualifyRequest(request);
     const p = request.review;
     return verifyManagementReceipt({ envelope, evidence: request,
-      expected: { site: { id: p.site_id, url: p.site_url }, target: p.target, request: request.preview, profile: p.profile, rollbackOf: p.rollback_operation_id },
+      expected: { site: { id: p.site_id, url: p.site_url }, target: p.target, request: request.preview, profile: p.profile, rollbackOf: p.rollback_operation_id,
+        draft: request.read.snapshot.core.post_status === 'draft' },
       signer: { keyId: this.policy.keyId, publicKeyBase64: this.policy.publicKeyBase64, engineCommit: this.policy.engineCommit },
       run: { id: runId, requestId: request.request_id, reportSha256 } });
   }
@@ -100,12 +101,15 @@ export class ProtectedContentQa extends ProtectedCodeQa {
       ? p.targets.filter(t => contentSame(t.target, target)).map(t => ({ ...t, profile: p.profile })) : []);
     requireThat(matches.length === 1, 'CONTENT_TARGET_UNQUALIFIED', 'This existing ACF record has no unique qualified scalar rendering profile.');
     const match = matches[0], snapshot = read.snapshot;
+    const draft = match.visibility === 'draft';
     const context = delegationDigest({ adapter: 'content-management-v1', runtime: snapshot.runtime,
       acf_definitions: snapshot.acf_definitions, source: match.providerSource });
     requireThat(match.profile.sha256 === context && match.profile.runtime_context_sha256 === context
-      && snapshot.core.post_status === 'publish' && read.affected_paths.length > 0,
+      && snapshot.core.post_status === (draft ? 'draft' : 'publish') && read.affected_paths.length > 0,
     'CONTENT_PROFILE_UNQUALIFIED', 'The ACF definitions, runtime, provider sources or public record differ from the trusted profile.');
-    contentPaths(read.affected_paths, siteUrl); acfScalar(snapshot, match.acfPath); return match;
+    if (draft) validateDraftManagement(siteUrl, target, read);
+    else contentPaths(read.affected_paths, siteUrl);
+    acfScalar(snapshot, match.acfPath); return match;
   }
   profile(siteUrl, target, descriptor) {
     const matches = this.policy.profiles.filter(p => p.siteUrl === siteUrl && contentSame(p.profile, descriptor));
@@ -125,7 +129,7 @@ export class ProtectedContentQa extends ProtectedCodeQa {
       requireThat(contentSame(patch.path, qualified.acfPath) && patch.value.isWellFormed() && !patch.value.includes('\0')
         && Buffer.byteLength(patch.value) <= 8192, 'CONTENT_ACF_PATH', 'The ACF scalar path and bounded UTF-8 value must match the trusted rendering profile.');
       validateManagementEvidence(request, { site: { id: p.site_id, url: p.site_url }, target: p.target,
-        request: request.preview, profile: qualified.profile, rollbackOf: p.rollback_operation_id });
+        request: request.preview, profile: qualified.profile, rollbackOf: p.rollback_operation_id, draft: qualified.visibility === 'draft' });
       requireThat(contentSame(request.read.affected_paths, p.affected_paths), 'CONTENT_MANAGEMENT_MISMATCH', 'The ACF rendering paths changed in the proposal.');
       requireThat(Buffer.byteLength(JSON.stringify(request)) <= 48000, 'QA_SIZE', 'The complete ACF request exceeds the protected dispatch bound. No fields were truncated.');
       return request;

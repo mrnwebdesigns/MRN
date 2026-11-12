@@ -3,6 +3,7 @@ import { requireThat } from './contracts.mjs';
 import { delegationCanonical, delegationDigest } from './delegation.mjs';
 import { contentPaths } from './content-contract.mjs';
 import { compileManagementSchema } from './content-management-schema.mjs';
+import { editorialFixtureUrl } from './content-editorial.mjs';
 
 // A separate adapter, not a replacement for content-v1 or its QA authority.
 // Admission still requires an owner-qualified exact target/runtime profile.
@@ -115,11 +116,22 @@ export function managementCandidate(before, request) {
   return managementSnapshot(snapshot);
 }
 
-export function validateManagementEvidence({ review, migration, read }, { site, target, request, profile, rollbackOf = '', now = Date.now(), editorialPreview = false }) {
+export function validateDraftManagement(siteUrl, target, read) {
+  requireThat(siteUrl === editorialFixtureUrl && target.post_type === 'page' && target.post_id > 0
+    && read.snapshot.core.post_status === 'draft' && read.affected_paths.length === 1
+    && read.affected_paths[0] === '/?page_id=' + target.post_id, 'CONTENT_DRAFT_UNQUALIFIED',
+  'A private draft requires an exact fixture page and its own WordPress record reference.');
+}
+
+export function validateManagementEvidence({ review, migration, read }, { site, target, request, profile, rollbackOf = '', now = Date.now(), editorialPreview = false, draft = false }) {
   review = managementTypes.review.parse(review); migration = managementTypes.migration.parse(migration);
   request = managementSchemas['preview-content-edit-v1'].input.parse(request);
   profile = managementTypes.profile.parse(profile); read = validateManagementRead(read, { site, target });
-  if (!editorialPreview) contentPaths(read.affected_paths, site.url);
+  if (draft) {
+    validateDraftManagement(site.url, target, read);
+    insist(!Object.keys(request.changes ?? {}).length && request.acf_patches?.length === 1
+      && same(read.affected_paths, review.affected_paths));
+  } else if (!editorialPreview) contentPaths(read.affected_paths, site.url);
   const descriptor = { ...review }; delete descriptor.digest;
   const expectedRequest = { site_id: request.site_id, site_url: request.site_url, post_type: request.post_type,
     post_id: request.post_id, before_sha256: request.expected_snapshot_sha256,
@@ -144,11 +156,11 @@ export function validateManagementEvidence({ review, migration, read }, { site, 
     insist(review.affected_paths.length <= (target.post_id ? 2 : 0)
       && new Set(review.affected_paths).size === review.affected_paths.length
       && read.affected_paths.every(path => review.affected_paths.includes(path)));
-  } else contentPaths(review.affected_paths, site.url);
+  } else if (!draft) contentPaths(review.affected_paths, site.url);
   return { review, migration, read };
 }
 
-export function validateManagementOutcome(value, installedRead, review) {
+export function validateManagementOutcome(value, installedRead, review, { draft = false } = {}) {
   review = managementTypes.review.parse(review);
   const state = managementTypes.state.parse(value);
   requireThat(state.state === 'completed', 'CONTENT_OUTCOME_UNVERIFIED', 'Retain the content lock and inspect the uncertain outcome; do not retry.');
@@ -157,7 +169,11 @@ export function validateManagementOutcome(value, installedRead, review) {
     && state.rollback_available === (review.target.post_id > 0 && review.rollback_operation_id === ''));
   const read = validateManagementRead(installedRead, { site: { id: review.site_id, url: review.site_url },
     target: { ...review.target, post_id: state.post_id } });
-  contentPaths(read.affected_paths, review.site_url);
+  if (draft) {
+    insist(review.before_snapshot.core.post_status === 'draft' && review.candidate_snapshot.core.post_status === 'draft'
+      && same(read.affected_paths, review.affected_paths));
+    validateDraftManagement(review.site_url, review.target, read);
+  } else contentPaths(read.affected_paths, review.site_url);
   insist(state.installed_sha256 === read.snapshot_sha256 && same(read.snapshot.core, review.candidate_snapshot.core)
     && same(read.snapshot.runtime, review.candidate_snapshot.runtime));
   // Creation can activate new ACF location rules only after WordPress assigns

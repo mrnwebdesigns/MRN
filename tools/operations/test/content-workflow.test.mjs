@@ -19,28 +19,32 @@ const person = { subject: 'google-oauth2|123456', googleSubject: '123456', ident
 
 // Unit transport/signature fixture only. These cases never claim native QA,
 // remote backup qualification or production readiness.
-function managed(t) {
+function managed(t, { draft = false, admitDraft = draft } = {}) {
   const f = setup(); t.after(f.close); const q = contentQaFixture();
+  if (draft) f.state.url = f.registryData.websites[0].environments[0].url = 'https://child.fixture.example.invalid';
   const vector = JSON.parse(readFileSync(new URL('./fixtures/content-management-v1.json', import.meta.url))).cases[0];
   const snapshot = structuredClone(vector.read.snapshot); snapshot.site_id = 1; snapshot.site_url = f.state.url;
+  if (draft) snapshot.core.post_status = 'draft';
   const leaf = ['field_rows', 0, 'field_body'], recordTarget = { kind: 'wordpress-content', post_type: 'page', post_id: snapshot.post_id };
   const providerSource = Object.fromEntries(['child/content-acf.php', 'child/content-fields.php', 'child/content-records.php',
     'includes/class-mrn-mainwp-content-management.php', 'includes/class-mrn-mainwp-content-source.php', 'release-source.json'].map(k => [k, 'a'.repeat(64)]));
   const hash = delegationDigest({ adapter: 'content-management-v1', runtime: snapshot.runtime, acf_definitions: snapshot.acf_definitions, source: providerSource });
   const descriptor = { sha256: hash, runtime_url: 'https://mrn-qa.internal:9443', runtime_context_sha256: hash };
-  q.policy.profiles = [{ siteUrl: f.state.url, profile: descriptor, targets: [{ target: recordTarget, selector: '.unit-acf', acfPath: leaf, providerSource }] }];
+  q.policy.profiles = [{ siteUrl: f.state.url, profile: descriptor, targets: [{ target: recordTarget, selector: '.unit-acf', acfPath: leaf, providerSource,
+    ...(admitDraft ? { visibility: 'draft' } : {}) }] }];
   f.policy.members.push({ subject: person.subject, enabled: true, grants: [{ website: 'example', environments: ['development'], actions: ['read', 'content'] }] });
   f.state.contentManagement = true;
   const state = { snapshot, plans: new Map(), applied: 0, approvals: 0, reads: 0, qa: 0, revoked: false };
+  const paths = draft ? ['/?page_id=' + snapshot.post_id] : ['/sample-page/'];
   const initial = structuredClone(snapshot), read = () => ({ success: true, snapshot: structuredClone(state.snapshot),
-    snapshot_sha256: delegationDigest(state.snapshot), affected_paths: ['/sample-page/'] });
+    snapshot_sha256: delegationDigest(state.snapshot), affected_paths: paths });
   const make = (preview, rollbackOf = '') => {
     const { expected_snapshot_sha256: before_sha256, idempotency_key: _key, reason, ...base } = preview;
     const request = { ...base, before_sha256 }, before = structuredClone(state.snapshot), candidate = managementCandidate(before, request), operation_id = randomUUID();
     const migration = { schema: 1, adapter: 'content-management-v1', operation_id, reason, request,
       candidate_snapshot: candidate, candidate_sha256: managementCandidateHash(candidate), rollback_snapshot: before };
     const plan = { site_id: 1, site_url: f.state.url, operation_id, target: recordTarget, before_snapshot: before, candidate_snapshot: candidate,
-      before_sha256, candidate_sha256: migration.candidate_sha256, affected_paths: ['/sample-page/'], rollback_operation_id: rollbackOf,
+      before_sha256, candidate_sha256: migration.candidate_sha256, affected_paths: paths, rollback_operation_id: rollbackOf,
       migration_artifact: { ref: `mrn-content://management/${operation_id}`, sha256: delegationDigest(migration) }, profile: descriptor,
       expires_at: Math.floor(Date.now() / 1000) + 900 };
     plan.digest = delegationDigest(plan); state.plans.set(operation_id, { plan, migration }); return plan;
@@ -97,6 +101,7 @@ function managed(t) {
   };
   const publicProbe = f.service.publicProbe;
   f.service.publicProbe = async (url, authorize, options) => {
+    if (draft) assert.equal(new URL(url).search, '', 'The private record reference must never become a public probe');
     if (!options?.contentAssertions) return publicProbe(url, authorize, options);
     authorize(); const value = acfScalar(state.staleFrontend ? initial : state.snapshot, leaf);
     return responseEvidence(url, 200, Buffer.from(`<html><body><div class="unit-acf">${value}</div></body></html>`), {}, options);
@@ -126,6 +131,35 @@ test('typed ACF unit lifecycle shares approval, backup, complete readback, rende
   assert.equal(restored.result.rollbackAvailable, false);
   const audit = JSON.stringify(f.store.db.prepare('SELECT * FROM audit').all());
   assert.equal(/signature_base64|fixture-private|payload_base64/.test(audit + JSON.stringify(restored)), false);
+});
+
+test('an enrolled draft ACF leaf uses exact approval, signed QA and independent private readback and inverse', async t => {
+  const f = managed(t, { draft: true });
+  const op = await f.prepare();
+  assert.equal(op.status, 'prepared', JSON.stringify(op.error));
+  await assert.rejects(() => f.service.execute(person, { operationId: op.id }), { code: 'APPROVAL_REQUIRED' });
+  const result = await execute(f, op);
+  assert.equal(result.status, 'verified', JSON.stringify(result.error));
+  assert.equal(result.result.draftReadbackVerified, true);
+  assert.equal(result.result.publicHtmlContentVerified, false);
+  assert.equal(f.state.snapshot.core.post_status, 'draft');
+  assert.deepEqual(f.state.snapshot.acf_values.field_rows[1], f.initial.acf_values.field_rows[1]);
+  assert.equal(f.state.snapshot.unrelated_meta_sha256, f.initial.unrelated_meta_sha256);
+  assert.ok(f.state.reads >= 5);
+  const inverse = await f.service.prepareRollback(person, { operationId: op.id, requestKey: 'draft-inverse' });
+  await f.service.jobs.get(inverse.id);
+  assert.equal((await execute(f, f.service.get(person, inverse.id))).status, 'verified');
+  assert.deepEqual(f.state.snapshot, f.initial);
+  assert.equal(f.mainwpState.backups, 2);
+});
+
+test('a published profile grants no draft access and an unqualified draft never obtains QA', async t => {
+  const f = managed(t, { draft: true, admitDraft: false });
+  const op = await f.prepare();
+  assert.equal(op.status, 'blocked');
+  assert.equal(op.error.code, 'CONTENT_PROFILE_UNQUALIFIED');
+  assert.equal(f.state.qa, 0);
+  assert.equal(f.mainwpState.backups, 0);
 });
 
 test('typed ACF unit failures never substitute core evidence or retry uncertain mutation', async t => {

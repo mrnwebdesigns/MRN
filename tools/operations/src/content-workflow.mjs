@@ -269,7 +269,7 @@ export class ContentWorkflow {
       this.bind(session, plan);
       const migration = await managementCall(session, 'get-content-edit-migration-v1', { site_id: evidence.site.id, site_url: evidence.site.url, operation_id: plan.operation_id });
       validateManagementEvidence({ review: plan, migration, read: evidence.read }, { site: evidence.site, target: recordTarget,
-        request: preview, profile: qualified.profile, rollbackOf: previous?.plan.provider.operation_id || '' });
+        request: preview, profile: qualified.profile, rollbackOf: previous?.plan.provider.operation_id || '', draft: qualified.visibility === 'draft' });
       if (previous) requireThat(managementCandidateHash(plan.candidate_snapshot) === managementCandidateHash(previous.plan.provider.before_snapshot),
         'CONTENT_ROLLBACK', 'The inverse did not preserve the exact original core and ACF values, definitions and runtime.');
       op.plan = { kind: 'content', adapter: 'content-management-v1', description: input.reason, provider: plan, migration,
@@ -289,13 +289,14 @@ export class ContentWorkflow {
       operation_id: p.operation_id, reviewed_digest: p.digest, confirm: true, backup_receipt: receipt }); }
     catch (error) { await this.service.confirmChangeRefusal(actor, op, session, error, () => this.fresh(session, op)); throw error; }
     const after = await inspectContentTarget(session, p.target);
-    const outcome = validateManagementOutcome(state, after.read, p);
     const qualified = this.qa.managementProfile(p.site_url, p.target, after.read);
+    const draft = qualified.visibility === 'draft';
+    const outcome = validateManagementOutcome(state, after.read, p, { draft });
     requireThat(contentSame(qualified.profile, p.profile) && contentSame(after.read.affected_paths, p.affected_paths)
       && outcome.read.snapshot.unrelated_meta_sha256 === p.before_snapshot.unrelated_meta_sha256,
     'CONTENT_READBACK', 'Independent ACF readback changed the rendering profile, unrelated metadata or affected paths.');
     const expectedText = htmlContentText(acfScalar(p.candidate_snapshot, op.plan.acfPath));
-    for (const path of p.affected_paths) {
+    for (const path of draft ? [] : p.affected_paths) {
       await authorize();
       const result = await this.service.publicProbe(new URL(path, p.site_url).href, () => session.authorize(),
         { contentAssertions: [{ selector: qualified.selector, expectedText }] });
@@ -305,8 +306,9 @@ export class ContentWorkflow {
     const rest = await this.service.publicProbe(p.site_url + '/wp-json/', () => session.authorize(), { checkRest: true });
     requireThat(rest.status === 200 && rest.restHealthy === true, 'PUBLIC_VERIFICATION', 'Post-change WordPress API health is unverified.');
     return { providerOperationId: p.operation_id, snapshotSha256: after.read.snapshot_sha256, candidateSha256: p.candidate_sha256,
-      backupVerified: true, contentSnapshotVerified: true, unrelatedMetadataVerified: true, publicHtmlContentVerified: true,
-      publicVerificationMethod: 'exact-selector-html-text', liveBrowserVerified: false, qaReportSha256: op.qaProof.claims.qa_report_sha256,
+      backupVerified: true, contentSnapshotVerified: true, unrelatedMetadataVerified: true, publicHtmlContentVerified: !draft,
+      ...(draft ? { draftReadbackVerified: true } : { publicVerificationMethod: 'exact-selector-html-text' }),
+      liveBrowserVerified: false, qaReportSha256: op.qaProof.claims.qa_report_sha256,
       migration: p.migration_artifact, rollbackAvailable: state.rollback_available };
   }
 }
