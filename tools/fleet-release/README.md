@@ -49,10 +49,24 @@ Qualified plugin ZIPs are retained in the private immutable local cache before
 their promotion records merge, so a superseding release can recover those exact
 inputs. Caching inputs does not advance the Fleet-ready index.
 
+New candidate release IDs and promotion branches bind both the distributable
+content fingerprint and the accepted Git source vector. A newer source snapshot
+with identical package bytes therefore cannot reuse an earlier candidate's
+branch or immutable release ID. Existing candidates, tags, locks, artifacts and
+ownership checks remain intact. Once published, unchanged material still uses
+the existing distribution rather than generating a release for unrelated commits.
+
 The static publisher names individual bootstrap helpers, configuration files
 and guides explicitly. A contract test checks every `BOOTSTRAP_FILES` input
 against that allowlist; nearby unlisted paths, credentials, traversal and unsafe
 ownership remain blocked.
+
+PreviewShare's configuration helper, verification helper and guide are part of
+the bootstrap bundle. Native qualification executes those bundled helpers and
+records its installed activation, six-hour expiry, post/page selection and
+registered robots protection before browser QA. A contract check also verifies
+that every static Stack script referenced by a published bootstrap script is
+included, so adding a bootstrap call cannot silently omit its helper.
 
 The host publisher accepts only the canonical source-owner/root/depot. It
 requires one-time source-lease enrollment before replacing the bootstrap bundle.

@@ -21,9 +21,10 @@ BOOTSTRAP_FILES = (
     'scripts/site-bootstrap.sh', 'scripts/bootstrap-new-sites.sh',
     'scripts/bootstrap-dev-enrollment.sh', 'scripts/bootstrap_readiness.py',
     'scripts/source-distribution-lease.sh', 'scripts/configure-wordfence.php',
+    'scripts/configure-previewshare.php', 'scripts/verify-previewshare.php',
     'configs/wordfence/cloudflare.json', 'configs/wordfence/standalone.json',
     'configs/importers/stack-export-importer.sh', 'configs/site-owner-authorized-key.pub',
-    'BOOTSTRAP_RELEASE.md', 'MAIL-MEDIA-SECURITY.md', 'STACK_VERSION.md',
+    'BOOTSTRAP_RELEASE.md', 'MAIL-MEDIA-SECURITY.md', 'PREVIEWSHARE.md', 'STACK_VERSION.md',
     'RESTORING-RETIRED-CAPABILITIES.md',
     'manifests/plugins.txt', 'manifests/themes.txt', 'manifests/licenses.txt',
     'manifests/importers.txt', 'manifests/credential-files.txt',
@@ -323,6 +324,12 @@ def default_packages(repo, standalone, policy, inputs, output, registry_inputs=N
     return packages
 
 
+def release_identity(selected):
+    """Bind an immutable candidate to its bytes and accepted Git source vector."""
+    return digest(canonical({key: selected[key] for key in
+                             ('material_sha256', 'source_vector_sha256')}))[:12]
+
+
 def prepare_metadata(repo, standalone, policy, inputs, job, selected, registry_inputs=None):
     """Generate metadata; runtime source stays byte-identical to accepted refs."""
     repo, standalone, job = Path(repo), Path(standalone), Path(job)
@@ -341,7 +348,7 @@ def prepare_metadata(repo, standalone, policy, inputs, job, selected, registry_i
                         'show', '-s', '--format=%ct', sha))
                 for name, sha in selected['refs'].items())
     date = dt.datetime.fromtimestamp(epoch, dt.timezone.utc).date().isoformat()
-    release_id = date.replace('-', '.') + '-fleet-auto-' + selected['material_sha256'][:12]
+    release_id = date.replace('-', '.') + '-fleet-auto-' + release_identity(selected)
     previous = {r['slug']: r for r in old_lock['components'] + old_lock['themes']}
     rows = {r['slug']: r for r in roster(repo)}
     for entry in catalog['components']:
