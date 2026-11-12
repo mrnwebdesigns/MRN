@@ -810,3 +810,56 @@
 	}
 	if ( document.readyState === 'loading' ) { document.addEventListener( 'DOMContentLoaded', init, { once: true } ); } else { init(); }
 }() );
+
+/* Link-opened form dialogs: focus handoff, Tab containment, Escape, scroll lock and focus return. */
+( function () {
+	'use strict';
+	const modals = () => Array.from( document.querySelectorAll( '[data-mrn-form-modal]' ) );
+	let active = null, opener = null;
+	const focusables = ( root ) => Array.from( root.querySelectorAll( 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])' ) ).filter( ( el ) => el.offsetParent !== null && ! el.classList.contains( 'mrn-form-modal__backdrop' ) && ! el.closest( '.wpforms-field-hp' ) );
+	function open( modal, trigger ) {
+		active = modal; opener = trigger || null;
+		modal.classList.add( 'is-open' ); document.body.classList.add( 'mrn-form-modal-open' );
+		const dialog = modal.querySelector( '.mrn-form-modal__dialog' );
+		const place = () => {
+			if ( active !== modal || modal.contains( document.activeElement ) ) { return; }
+			const first = focusables( modal ).find( ( el ) => ! el.classList.contains( 'mrn-form-modal__close' ) && ! el.closest( '[aria-hidden="true"]' ) ) || dialog;
+			first.focus();
+			if ( ! modal.contains( document.activeElement ) && dialog ) { dialog.focus(); }
+		};
+		place(); window.requestAnimationFrame( place ); window.setTimeout( place, 250 );
+	}
+	function close() {
+		if ( ! active ) { return; }
+		active.classList.remove( 'is-open' ); document.body.classList.remove( 'mrn-form-modal-open' );
+		if ( window.location.hash === '#' + active.id ) { window.history.replaceState( null, '', window.location.pathname + window.location.search ); }
+		const back = opener; active = null; opener = null;
+		if ( back && document.contains( back ) ) { back.focus(); }
+	}
+	function init() {
+		const all = modals();
+		if ( ! all.length ) { return; }
+		all.forEach( ( modal ) => document.body.appendChild( modal ) );
+		document.addEventListener( 'click', ( event ) => {
+			const link = event.target.closest( 'a[href^="#"]' );
+			if ( link && link.hasAttribute( 'data-mrn-form-modal-close' ) ) { event.preventDefault(); close(); return; }
+			if ( ! link ) { return; }
+			const modal = all.find( ( m ) => link.getAttribute( 'href' ) === '#' + m.id );
+			if ( modal ) { event.preventDefault(); open( modal, link ); }
+		} );
+		document.addEventListener( 'keydown', ( event ) => {
+			if ( ! active ) { return; }
+			if ( event.key === 'Escape' ) { event.preventDefault(); close(); return; }
+			if ( event.key !== 'Tab' ) { return; }
+			const items = focusables( active );
+			if ( ! items.length ) { return; }
+			const first = items[ 0 ], last = items[ items.length - 1 ];
+			if ( ! active.contains( document.activeElement ) ) { event.preventDefault(); first.focus(); }
+			else if ( event.shiftKey && document.activeElement === first ) { event.preventDefault(); last.focus(); }
+			else if ( ! event.shiftKey && document.activeElement === last ) { event.preventDefault(); first.focus(); }
+		} );
+		const fromHash = all.find( ( m ) => window.location.hash === '#' + m.id );
+		if ( fromHash ) { open( fromHash, null ); }
+	}
+	if ( document.readyState === 'loading' ) { document.addEventListener( 'DOMContentLoaded', init, { once: true } ); } else { init(); }
+}() );

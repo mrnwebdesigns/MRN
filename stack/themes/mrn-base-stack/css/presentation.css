@@ -441,3 +441,33 @@
 .has-form-underline .mrn-select__option:is(:hover, :focus), .has-form-underline .mrn-select__option.is-selected { background: var(--site-color-pale-gray, #f2f4f7); }
 .has-form-underline .mrn-select__option.is-selected { color: var(--mrn-form-ink); }
 .has-form-underline .mrn-select__option.is-placeholder { display: none; }
+
+/* Link-opened form dialog. Hidden by default; the :target rule opens it without JavaScript. */
+.mrn-form-modal { position: fixed; inset: 0; z-index: 9999; display: none; }
+.mrn-form-modal:target, .mrn-form-modal.is-open { display: flex; align-items: center; justify-content: center; padding: 16px; }
+.mrn-form-modal__backdrop { position: absolute; inset: 0; background: rgba(15, 17, 26, 0.55); cursor: default; }
+.mrn-form-modal__dialog { position: relative; width: 100%; max-width: var(--mrn-form-modal-width, 720px); max-height: 90vh; overflow-y: auto; margin: 0; padding: 56px 48px 48px; border-radius: 12px; background: var(--site-color-off-white, #fafaf8); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25); }
+.mrn-form-modal__close { position: absolute; top: 16px; right: 16px; display: block; padding: 6px; line-height: 0; color: var(--site-color-charcoal, #0f111a); }
+.mrn-form-modal__close:hover { color: var(--site-color-burgundy, #5a0f14); }
+.mrn-form-modal__close:focus-visible, .mrn-form-modal__dialog :focus-visible { outline: 2px solid var(--site-color-burgundy, #5a0f14); outline-offset: 2px; }
+.mrn-form-modal__title { margin: 0 0 24px; font-family: var(--site-font-heading, inherit); font-weight: 500; font-size: clamp(24px, 3vw, 32px); line-height: 1.2; letter-spacing: -0.02em; color: var(--site-color-charcoal, #0f111a); }
+.mrn-form-modal .wpforms-container .wpforms-field input, .mrn-form-modal .wpforms-container .wpforms-field select, .mrn-form-modal .wpforms-container .wpforms-field textarea { background-color: transparent; }
+.mrn-form-modal .wpforms-container .wpforms-field textarea { padding-left: 0; padding-right: 0; }
+body.mrn-form-modal-open { overflow: hidden; }
+@media (prefers-reduced-motion: no-preference) {
+	.mrn-form-modal:target .mrn-form-modal__backdrop, .mrn-form-modal.is-open .mrn-form-modal__backdrop { animation: mrn-form-modal-fade 0.2s ease; }
+	.mrn-form-modal:target .mrn-form-modal__dialog, .mrn-form-modal.is-open .mrn-form-modal__dialog { animation: mrn-form-modal-pop 0.25s ease; }
+	.mrn-form-modal__close { transition: transform 0.2s ease; }
+	.mrn-form-modal__close:hover { transform: rotate(90deg); }
+}
+@keyframes mrn-form-modal-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes mrn-form-modal-pop { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 640px) { .mrn-form-modal__dialog { padding: 48px 24px 24px; max-height: calc(100vh - 32px); } }
+
+/* Optional heading-to-columns row gap for framed Splits whose column gap is wider than the space under the section heading. */
+@media (min-width: 768px) { .has-split-columns-frame.split-stack-767.has-split-row-gap > .mrn-layout-section--two-column-split > .mrn-layout-container > .mrn-layout-grid--two-column-split { row-gap: var(--mrn-split-frame-row-gap); } }
+@media (min-width: 901px) { .has-split-columns-frame.split-stack-900.has-split-row-gap > .mrn-layout-section--two-column-split > .mrn-layout-container > .mrn-layout-grid--two-column-split { row-gap: var(--mrn-split-frame-row-gap); } }
+@media (min-width: 992px) { .has-split-columns-frame.split-stack-991.has-split-row-gap > .mrn-layout-section--two-column-split > .mrn-layout-container > .mrn-layout-grid--two-column-split { row-gap: var(--mrn-split-frame-row-gap); } }
+/* A framed Split's section heading owns its space-after control; its own margin must not stack on top. */
+.has-split-columns-frame.has-split-heading-space-after > .mrn-layout-section--two-column-split > .mrn-layout-container > .mrn-layout-grid--two-column-split > .mrn-two-column-split__header > .mrn-ui__heading { margin-bottom: 0; }
+.mrn-form-modal__dialog:focus { outline: none; }

@@ -42,6 +42,49 @@ if ( $form_id <= 0 || ! shortcode_exists( 'wpforms' ) ) {
 	return;
 }
 
+$modal_id = function_exists( 'mrn_base_stack_get_form_modal_id' ) ? mrn_base_stack_get_form_modal_id( $row ) : '';
+if ( '' !== $modal_id ) {
+	if ( function_exists( 'mrn_base_stack_enqueue_presentation' ) ) {
+		mrn_base_stack_enqueue_presentation();
+	}
+	$modal_frame   = mrn_base_stack_get_content_frame_contract( $row, 'wpforms' );
+	$modal_classes = mrn_base_stack_merge_builder_section_classes( array( 'mrn-form-modal' ), $modal_frame );
+	$modal_attrs   = mrn_base_stack_merge_builder_attributes( array(), $modal_frame['attributes'] );
+	$modal_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $modal_attrs ) : '';
+	$title_id      = $modal_id . '-title';
+	$close_label   = __( 'Close', 'mrn-base-stack' );
+	$shortcode_out = do_shortcode( sprintf( '[wpforms id="%d" title="false" description="false"]', $form_id ) );
+	$format        = static function ( $text ) {
+		return function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $text ) : esc_html( $text );
+	};
+	?>
+<div class="<?php echo esc_attr( implode( ' ', $modal_classes ) ); ?>" id="<?php echo esc_attr( $modal_id ); ?>" role="dialog" aria-modal="true"<?php echo '' !== $heading ? ' aria-labelledby="' . esc_attr( $title_id ) . '"' : ' aria-label="' . esc_attr__( 'Form', 'mrn-base-stack' ) . '"'; ?> data-mrn-form-modal<?php echo '' !== $modal_attr_html ? ' ' . $modal_attr_html : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+	<a class="mrn-form-modal__backdrop" href="#" tabindex="-1" aria-hidden="true" data-mrn-form-modal-close></a>
+	<div class="mrn-form-modal__dialog" tabindex="-1">
+		<a class="mrn-form-modal__close" href="#" role="button" aria-label="<?php echo esc_attr( $close_label ); ?>" data-mrn-form-modal-close>
+			<svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><path d="M6 6L18 18M6 18L18 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+		</a>
+		<div class="mrn-form-modal__content mrn-ui__body">
+			<?php if ( '' !== $label ) : ?>
+				<<?php echo esc_html( $label_tag ); ?> class="mrn-ui__label"><?php echo $format( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $label_tag ); ?>>
+			<?php endif; ?>
+			<?php if ( '' !== $heading ) : ?>
+				<<?php echo esc_html( $heading_tag ); ?> class="mrn-ui__heading mrn-form-modal__title" id="<?php echo esc_attr( $title_id ); ?>"><?php echo $format( $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $heading_tag ); ?>>
+			<?php endif; ?>
+			<?php if ( '' !== $subheading ) : ?>
+				<<?php echo esc_html( $subheading_tag ); ?> class="mrn-ui__sub"><?php echo $format( $subheading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $subheading_tag ); ?>>
+			<?php endif; ?>
+			<?php if ( '' !== trim( $intro ) ) : ?>
+				<div class="mrn-ui__text"><?php echo apply_filters( 'the_content', $intro ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
+			<?php endif; ?>
+			<div class="mrn-form-modal__form"><?php echo $shortcode_out; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
+		</div>
+	</div>
+</div>
+	<?php
+	return;
+}
+
 $section_classes  = array(
 	'mrn-content-builder__row',
 	'mrn-content-builder__row--wpforms',

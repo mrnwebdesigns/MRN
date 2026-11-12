@@ -57,7 +57,16 @@ function mrn_base_stack_get_content_frame_fields( $layout, $seed ) {
 	foreach ( $fields as &$field ) { if ( $prefix . '_frame' !== $field['name'] ) { $field['conditional_logic'] = array( array( array( 'field' => $fields[0]['key'], 'operator' => '==', 'value' => 'contained' ) ) ); } }
 	if ( 'body_text' === $layout ) { foreach ( $fields as &$field ) { if ( str_starts_with( $field['name'], 'body_quote_' ) ) { $field['conditional_logic'][0][] = array( 'field' => $seed . '_body_text_semantics', 'operator' => '==', 'value' => 'quote' ); } } }
 	unset( $field );
+	if ( 'wpforms' === $layout ) {
+		$fields[] = array( 'key' => $seed . '_form_modal_id', 'name' => 'form_modal_id', 'label' => 'Open as Modal From Links To', 'type' => 'text', 'default_value' => '', 'instructions' => 'Optional anchor ID such as audit-modal. The form then stays hidden in an accessible dialog and opens when a visitor activates a link whose address is # followed by this ID. Without JavaScript the same link still shows the dialog. Lowercase letters, numbers and hyphens only; leave blank to show the form in the page.' );
+	}
 	return $fields;
+}
+
+/** The validated anchor ID that turns a WPForms row into a link-opened dialog, or an empty string. */
+function mrn_base_stack_get_form_modal_id( array $row ) {
+	$id = $row['form_modal_id'] ?? '';
+	return is_string( $id ) && preg_match( '/^[a-z][a-z0-9-]{0,62}$/D', $id ) ? $id : '';
 }
 
 /** Typography may reference only the bounded existing Site Text token namespace. */

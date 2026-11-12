@@ -71,7 +71,7 @@ function mrn_base_stack_get_faq_frame_contract( array $row ) {
 /** Optional finite Split geometry for a main column and a right aside. */
 function mrn_base_stack_get_split_aside_fields( $seed ) {
 	$fields = array( array( 'key' => $seed . '_split_frame', 'name' => 'split_frame', 'label' => 'Split Frame', 'type' => 'select', 'choices' => array( '' => 'Use Existing Frame', 'aside' => 'Main Content with Aside', 'columns' => 'Contained Columns', 'bounded' => 'Bounded Columns' ), 'default_value' => '', 'instructions' => 'Aside uses a fixed right column. Contained Columns uses the selected ratio. Bounded Columns uses editable minimum/maximum widths. Blank retains existing geometry.' ) );
-	foreach ( array( 'content_width' => 'Content Maximum Width', 'inner_gutter' => 'Inner Horizontal Gutter', 'inner_gutter_mobile' => 'Small-Screen Inner Gutter (1199px)', 'aside_width' => 'Aside Width', 'column_gap' => 'Space Between Columns', 'column_gap_mobile' => 'Space Between Stacked Columns', 'aside_sticky_top' => 'Sticky Aside Top Offset', 'heading_space_after' => 'Space After Section Heading', 'heading_size' => 'Section Heading Font Size', 'heading_line_height' => 'Section Heading Line Height' ) as $name => $label ) {
+	foreach ( array( 'content_width' => 'Content Maximum Width', 'inner_gutter' => 'Inner Horizontal Gutter', 'inner_gutter_mobile' => 'Small-Screen Inner Gutter (1199px)', 'aside_width' => 'Aside Width', 'column_gap' => 'Space Between Columns', 'row_gap' => 'Space Between Heading and Columns', 'column_gap_mobile' => 'Space Between Stacked Columns', 'aside_sticky_top' => 'Sticky Aside Top Offset', 'heading_space_after' => 'Space After Section Heading', 'heading_size' => 'Section Heading Font Size', 'heading_line_height' => 'Section Heading Line Height' ) as $name => $label ) {
 		$fields[] = array( 'key' => $seed . '_split_' . $name, 'name' => 'split_' . $name, 'label' => $label, 'type' => 'text', 'default_value' => '', 'instructions' => 'Optional non-negative CSS length or clamp(). Width accepts none; line height accepts unitless numbers. Outer section spacing uses row presets.', 'wrapper' => array( 'width' => '50' ) );
 	}
 	foreach ( array( 'first_column_min' => 'First Column Minimum Width', 'first_column_max' => 'First Column Maximum Width', 'second_column_max' => 'Second Column Maximum Width', 'column_gap_tablet' => 'Column Gap at 1024px and Below', 'first_column_max_tablet' => 'First Column Maximum at 1024px', 'second_column_max_tablet' => 'Second Column Maximum at 1024px' ) as $name => $label ) {
@@ -93,6 +93,7 @@ function mrn_base_stack_get_split_aside_fields( $seed ) {
 		if ( in_array( $field['name'], array( 'split_first_column_min', 'split_first_column_max', 'split_second_column_max', 'split_column_gap_tablet', 'split_first_column_max_tablet', 'split_second_column_max_tablet' ), true ) ) { $modes = array( 'bounded' ); }
 		elseif ( in_array( $field['name'], array( 'split_stack_breakpoint', 'split_column_order', 'split_mobile_action_after_columns', 'split_mobile_action_space_before', 'split_row_horizontal_padding', 'split_row_spacing_mobile_breakpoint', 'split_stacked_column_min' ), true ) ) { $modes = array( 'columns', 'bounded' ); }
 		elseif ( in_array( $field['name'], array( 'split_aside_width', 'split_aside_sticky_top' ), true ) ) { $modes = array( 'aside' ); }
+		elseif ( 'split_row_gap' === $field['name'] ) { $modes = array( 'columns', 'bounded' ); }
 		else { $modes = array( 'aside', 'columns', 'bounded' ); }
 		$field['conditional_logic'] = array();
 		foreach ( $modes as $mode ) { $field['conditional_logic'][] = array( array( 'field' => $fields[0]['key'], 'operator' => '==', 'value' => $mode ) ); }
@@ -119,10 +120,12 @@ function mrn_base_stack_get_split_aside_contract( array $row ) {
 		if ( '' !== $action_gap ) { $result['attributes']['style'] = '--mrn-split-mobile-action-space-before:' . $action_gap; }
 	}
 	$styles = array();
-	foreach ( array( 'content_width', 'inner_gutter', 'inner_gutter_mobile', 'aside_width', 'column_gap', 'column_gap_mobile', 'stacked_column_min', 'aside_sticky_top', 'heading_space_after', 'heading_space_after_mobile', 'heading_size', 'heading_line_height' ) as $name ) {
+	foreach ( array( 'content_width', 'inner_gutter', 'inner_gutter_mobile', 'aside_width', 'column_gap', 'row_gap', 'column_gap_mobile', 'stacked_column_min', 'aside_sticky_top', 'heading_space_after', 'heading_space_after_mobile', 'heading_size', 'heading_line_height' ) as $name ) {
 		$value = mrn_base_stack_validate_hero_frame_dimension( $row[ 'split_' . $name ] ?? '', 'content_width' === $name, 'heading_line_height' === $name );
 		if ( '' !== $value ) {
+			if ( 'row_gap' === $name && 'aside' === $row['split_frame'] ) { continue; }
 			$styles[] = '--mrn-split-frame-' . str_replace( '_', '-', $name ) . ':' . $value;
+			if ( 'row_gap' === $name ) { $result['classes'][] = 'has-split-row-gap'; }
 			if ( in_array( $name, array( 'heading_size', 'heading_line_height', 'heading_space_after', 'heading_space_after_mobile' ), true ) ) { $result['classes'][] = 'has-split-' . str_replace( '_', '-', $name ); }
 		}
 	}
