@@ -276,6 +276,17 @@ add_action('doing_it_wrong_run', static function ($function) {
         # onboarding. This is the same narrow cleanup as the accepted bootstrap.
         self.php("delete_option('post_smtp_activation_redirect');echo json_encode(['cleared'=>true]);",
                  skip_smtp=True)
+        # Exercise the helpers from the built distribution, not the source
+        # checkout: a missing bootstrap helper must fail qualification.
+        previewshare_config = "putenv('STACK_PREVIEWSHARE_POST_TYPES=post,page');putenv('STACK_PREVIEWSHARE_DEFAULT_TTL_HOURS=6');"
+        self.php(previewshare_config + 'require ' + repr(str(
+            self.bootstrap / 'scripts/configure-previewshare.php')) + ';')
+        previewshare = self.php(previewshare_config + 'require ' + repr(str(
+            self.bootstrap / 'scripts/verify-previewshare.php')) + ';')
+        if (previewshare.get('active') is not True or previewshare.get('default_ttl_hours') != 6
+                or previewshare.get('post_types') != ['post', 'page']):
+            raise ReleaseError('Installed PreviewShare defaults differ from the bootstrap contract')
+        write(self.root / 'previewshare.json', previewshare)
         seed = (Path(__file__).with_name('fixture-seed.php')).read_text()
         self.ids = self.php(seed.removeprefix('<?php\n'))
         self.inventory = self.php("require_once ABSPATH.'wp-admin/includes/plugin.php';"

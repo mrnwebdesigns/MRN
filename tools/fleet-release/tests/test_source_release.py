@@ -5,6 +5,7 @@ import io
 import json
 import os
 from pathlib import Path
+import re
 import sys
 import tarfile
 import tempfile
@@ -76,9 +77,29 @@ class SourcePublication(unittest.TestCase):
             with self.subTest(path=name):
                 self.assertEqual(host.allowed(name).as_posix(), name)
 
+    def test_bootstrap_script_dependencies_are_distributed(self):
+        root = Path(__file__).resolve().parents[3] / 'stack'
+        for name in build.BOOTSTRAP_FILES:
+            if not name.startswith('scripts/') or not name.endswith('.sh'):
+                continue
+            dependencies = re.findall(r'\$\{STACK_ROOT\}/(scripts/[A-Za-z0-9._-]+)',
+                                      (root / name).read_text())
+            for dependency in dependencies:
+                with self.subTest(script=name, dependency=dependency):
+                    self.assertIn(dependency, build.BOOTSTRAP_FILES)
+
+    def test_previewshare_bootstrap_includes_configuration_and_verification(self):
+        for name in ('scripts/configure-previewshare.php', 'scripts/verify-previewshare.php',
+                     'PREVIEWSHARE.md'):
+            with self.subTest(path=name):
+                self.assertIn(name, build.BOOTSTRAP_FILES)
+                self.assertEqual(host.allowed(name).as_posix(), name)
+
     def test_new_bootstrap_scopes_do_not_admit_unrelated_paths(self):
         for name in ('configs/wordfence/unknown.json', 'configs/wordfence/private.php',
                      'scripts/unknown.php', 'scripts/configure-wordfence.php/extra',
+                     'scripts/configure-previewshare.php/extra', 'scripts/verify-previewshare.sh',
+                     'PREVIEWSHARE.php',
                      'MAIL-MEDIA-SECURITY.php', 'configs/wordfence/../private.json'):
             with self.subTest(path=name), self.assertRaises(host.PublicationError):
                 host.allowed(name)
@@ -170,6 +191,49 @@ class SourcePublication(unittest.TestCase):
 
 
 class QualificationContracts(unittest.TestCase):
+    def test_candidate_identity_separates_source_history_without_payload_changes(self):
+        first = {'material_sha256': 'a' * 64, 'source_vector_sha256': 'b' * 64}
+        newer = {**first, 'source_vector_sha256': 'c' * 64}
+        changed = {**first, 'material_sha256': 'd' * 64}
+        self.assertEqual(build.release_identity(first), build.release_identity(dict(first)))
+        self.assertNotEqual(build.release_identity(first), build.release_identity(newer))
+        self.assertNotEqual(build.release_identity(first), build.release_identity(changed))
+        self.assertRegex(build.release_identity(first), r'^[a-f0-9]{12}$')
+
+    def test_same_material_new_source_does_not_reuse_the_old_promotion_branch(self):
+        branches = []
+        with tempfile.TemporaryDirectory() as temporary:
+            for vector in ('b' * 64, 'c' * 64):
+                metadata = {'release_id': '2026.11.12-fleet-auto-123456abcdef',
+                            'snapshot': {'material_sha256': 'a' * 64,
+                                         'source_vector_sha256': vector}}
+                with patch.object(coordinator, 'git', return_value='d' * 40), \
+                     patch.object(coordinator, 'run', side_effect=['[]', 'https://github.com/mrnwebdesigns/MRN/pull/426']), \
+                     patch.object(coordinator, 'git_network') as push:
+                    self.assertEqual(coordinator.propose(Path('.'), Path(temporary), metadata), 426)
+                    branches.append(push.call_args.args[-1])
+            self.assertNotEqual(branches[0], branches[1])
+            self.assertNotIn(':refs/heads/codex/fleet-promotion-' + 'a' * 12, branches[0])
+
+    def test_candidate_retry_requires_the_same_source_marker_and_head(self):
+        snapshot = {'material_sha256': 'a' * 64, 'source_vector_sha256': 'b' * 64}
+        metadata = {'snapshot': snapshot}
+        original = {'number': 426, 'state': 'OPEN', 'headRefOid': 'c' * 40,
+                    'body': 'MRN_FLEET_SOURCE_VECTOR=' + 'b' * 64}
+        for replacement in ({}, {'headRefOid': 'd' * 40}, {'body': 'foreign source'},
+                            {'number': 427, 'body': ''}):
+            existing = {**original, **replacement}
+            with self.subTest(replacement=replacement), \
+                 patch.object(coordinator, 'git', return_value='c' * 40), \
+                 patch.object(coordinator, 'run', return_value=json.dumps([existing])), \
+                 patch.object(coordinator, 'git_network') as push:
+                if replacement:
+                    with self.assertRaisesRegex(common.ReleaseError, 'ownership/source identity'):
+                        coordinator.propose(Path('.'), Path('.'), metadata)
+                else:
+                    self.assertEqual(coordinator.propose(Path('.'), Path('.'), metadata), 426)
+                push.assert_not_called()
+
     def test_accepted_qa_engine_revision_is_a_source_and_material_input(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary); repo = root / 'MRN'; repo.mkdir()

@@ -27,7 +27,7 @@ HASH = re.compile(r'^[a-f0-9]{64}$')
 COVERAGE = {'source', 'contracts', 'installed-default-packages', 'installed-optional-packages', 'no-woocommerce',
             'native-editor', 'native-wpforms', 'api', 'browser', 'accessibility',
             'performance', 'core-web-vitals', 'distribution'}
-ALLOWED_FILES = {'BOOTSTRAP_RELEASE.md', 'MAIL-MEDIA-SECURITY.md', 'STACK_VERSION.md',
+ALLOWED_FILES = {'BOOTSTRAP_RELEASE.md', 'MAIL-MEDIA-SECURITY.md', 'PREVIEWSHARE.md', 'STACK_VERSION.md',
                  'RESTORING-RETIRED-CAPABILITIES.md', 'bootstrap-bundle.json'}
 ALLOWED_CONFIGS = {'configs/wordfence/cloudflare.json', 'configs/wordfence/standalone.json',
                    'configs/importers/stack-export-importer.sh',
@@ -38,6 +38,7 @@ ALLOWED_CONFIGS = {'configs/wordfence/cloudflare.json', 'configs/wordfence/stand
                    'configs/exports/MRN-Login.png', 'configs/exports/mrn-logo-png.png',
                    'configs/exports/mrn-logo.svg'}
 SCRIPTS = {'scripts/site-bootstrap.sh', 'scripts/configure-wordfence.php',
+           'scripts/configure-previewshare.php', 'scripts/verify-previewshare.php',
            'scripts/bootstrap_readiness.py', 'scripts/bootstrap-new-sites.sh',
            'scripts/bootstrap-dev-enrollment.sh', 'scripts/source-distribution-lease.sh', 'scripts/bootstrap_readiness.py'}
 MANIFESTS = {'plugins.txt', 'themes.txt', 'licenses.txt', 'importers.txt',

@@ -17,7 +17,7 @@ import tempfile
 import time
 
 from build import (build_all, default_packages, generate_lock, main_file,
-                   prepare_metadata, snapshot, package_files, plugin_payload)
+                   prepare_metadata, snapshot, package_files, plugin_payload, release_identity)
 from common import (COMMIT, SHA256, ReleaseError, canonical, clean_main, digest,
                     file_hash, fleet, git, lock_tool, promotion, read,
                     relative, repository_name, roster, run, write)
@@ -201,7 +201,7 @@ def prepare_registry(repo, standalone, job, registry_inputs=None):
 
 
 def propose(repo, job, metadata):
-    branch = 'codex/fleet-promotion-' + metadata['snapshot']['material_sha256'][:12]
+    branch = 'codex/fleet-promotion-' + release_identity(metadata['snapshot'])
     marker = 'MRN_FLEET_SOURCE_VECTOR=' + metadata['snapshot']['source_vector_sha256']
     head = git(repo, 'rev-parse', 'HEAD')
     existing = json.loads(run(['gh', 'pr', 'list', '--repo', REPOSITORY, '--head', branch,
