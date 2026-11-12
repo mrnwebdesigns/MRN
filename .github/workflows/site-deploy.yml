@@ -165,7 +165,9 @@ jobs:
     with:
       target: live
       qualify_doster_live: ${{ inputs.qualify_doster_live }}
-      local_qa_acceptance: ${{ inputs.local_qa_acceptance }}
+      # Freedom House may request its approved local qualification through a
+      # trusted deploy-live tag as well as the legacy dispatch checkbox.
+      local_qa_acceptance: ${{ inputs.local_qa_acceptance != '' && inputs.local_qa_acceptance || (fromJSON(needs.request.outputs.release_intent).kind == 'tag' && fromJSON(needs.request.outputs.release_intent).target == 'live' && 'qa/release-acceptance/freedomhouse-20261014.json' || '') }}
       mode: ${{ inputs.mode }}
       source_sha: ${{ needs.request.outputs.source_sha }}
       qa_source_sha: ${{ needs.source-qa.outputs.source_sha }}
