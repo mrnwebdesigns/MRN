@@ -1,6 +1,6 @@
 {
   "authority": "Checksum- and tree-locked standard-plugin releases available to explicit one-site Stack component plans. Registration never authorizes a site write or changes the immutable Stack release identity.",
-  "catalog_updated": "2026-11-12",
+  "catalog_updated": "2026-11-13",
   "releases": [
     {
       "current_distribution": "standard-bootstrap",
@@ -2120,6 +2120,35 @@
         "preserve_active_state": true
       },
       "version": "0.2.4"
+    },
+    {
+      "current_distribution": "catalog-only",
+      "package": {
+        "filename": "mrn-contextual-content-editor-0.4.12-a289dccdd4c4.zip",
+        "main_file": "mrn-contextual-content-editor/mrn-contextual-content-editor.php",
+        "path": "releases/stack-plugins/mrn-contextual-content-editor-0.4.12-a289dccdd4c4.zip",
+        "sha256": "3adde9d4d38f819619c1284205c6948f5e11a020e4b83ee51d4495ac3fd94d6f",
+        "size_bytes": 32201
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-contextual-content-editor",
+      "source": {
+        "git_commit": "a289dccdd4c450d741a1f0f685d6357716ada6ba",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-contextual-content-editor",
+        "repository": "mrnwebdesigns/mrn-contextual-content-editor"
+      },
+      "target_tier": "optional-shared",
+      "tree": {
+        "file_count": 16,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "67e2c184042c0030c6aaf9c8171d157e89e06a271edba29a1249f6b58486540f"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.4.12"
     }
   ],
   "schema_version": 1
