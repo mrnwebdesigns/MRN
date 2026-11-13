@@ -142,6 +142,9 @@ if ( 'scroll-expand' === ( $row['video_presentation'] ?? '' ) ) {
 	$section_attrs['data-mrn-video-expand'] = 'true';
 	if ( ! empty( $row['video_follow_color'] ) && function_exists( 'mrn_site_colors_get_css_var' ) ) {
 		$section_attrs['data-mrn-follow-color'] = mrn_site_colors_get_css_var( sanitize_key( $row['video_follow_color'] ) );
+		if ( 'release' === ( $row['video_follow_release'] ?? '' ) ) {
+			$section_attrs['data-mrn-follow-release'] = 'release';
+		}
 	}
 }
 $section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';

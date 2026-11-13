@@ -359,6 +359,8 @@
 		const original = surface ? surface.style.backgroundColor : '';
 		const base = surface ? getComputedStyle( surface ).backgroundColor : '';
 		const color = section.dataset.mrnFollowColor;
+		const release = 'release' === section.dataset.mrnFollowRelease;
+		if ( release && next ) { next.classList.add( 'has-mrn-follow-release' ); }
 		watch( section, () => {
 			const p = clamp( ( window.innerHeight - section.getBoundingClientRect().top ) / window.innerHeight );
 			if ( media ) {
@@ -367,7 +369,14 @@
 				media.style.borderRadius = reduced.matches || compact ? '' : ( ( 1 - p ) * 24 ) + 'px';
 			}
 			if ( surface && color && /^--[a-zA-Z0-9_-]+$/.test( color ) ) {
-				surface.style.backgroundColor = reduced.matches ? original : 'color-mix(in srgb, var(' + color + ') ' + ( p * 100 ) + '%, ' + base + ')';
+				let amount = p;
+				if ( release && next ) {
+					// Fade back to the section's own color between 80% and 60% of the viewport height.
+					const arrive = next.getBoundingClientRect().top / window.innerHeight;
+					amount = Math.min( p, clamp( ( arrive - 0.6 ) / 0.2 ) );
+				}
+				surface.style.backgroundColor = reduced.matches ? original : 'color-mix(in srgb, var(' + color + ') ' + ( amount * 100 ) + '%, ' + base + ')';
+				if ( release && next ) { next.classList.toggle( 'is-mrn-follow-dark', ! reduced.matches && amount >= 0.5 ); }
 			}
 		} );
 	}

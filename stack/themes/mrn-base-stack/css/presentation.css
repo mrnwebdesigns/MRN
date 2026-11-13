@@ -473,3 +473,8 @@ body.mrn-form-modal-open { overflow: hidden; }
 /* A framed Split's section heading owns its space-after control; its own margin must not stack on top. */
 .has-split-columns-frame.has-split-heading-space-after > .mrn-layout-section--two-column-split > .mrn-layout-container > .mrn-layout-grid--two-column-split > .mrn-two-column-split__header > .mrn-ui__heading { margin-bottom: 0; }
 .mrn-form-modal__dialog:focus { outline: none; }
+/* Video follow-color release: while the transition color shows, the following section's text uses light follow colors. */
+.mrn-content-builder__row.is-mrn-follow-dark :is(h1, h2, h3, h4, h5, h6) { color: var(--mrn-follow-heading-color, var(--site-color-off-white, #fffdfb)) !important; }
+.mrn-content-builder__row.is-mrn-follow-dark :is(p, li) { color: var(--mrn-follow-text-color, var(--site-color-light-gray, #c7cbd8)) !important; }
+@media (prefers-reduced-motion: no-preference) { .mrn-content-builder__row.has-mrn-follow-release :is(h1, h2, h3, h4, h5, h6, p, li) { transition: color .3s ease; } }
+

@@ -317,6 +317,19 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 					'ui'         => 1,
 				)
 			),
+			$make(
+				'video_follow_release',
+				'Following Section Transition End',
+				'select',
+				array(
+					'choices'       => array(
+						''        => 'Keep the Color',
+						'release' => 'Return to the Original Color as the Section Arrives',
+					),
+					'default_value' => '',
+					'instructions'  => 'Return fades the following section back to its own color as it scrolls into view. While the transition color shows, its text switches to the light follow colors.',
+				)
+			),
 		), mrn_base_stack_get_content_frame_fields( $layout, $seed ) );
 	}
 	return array();
