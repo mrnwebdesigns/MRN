@@ -69,7 +69,20 @@ function mrn_active_style_guide_get_layout_preview_asset_id( string $asset_name,
 		$source = '<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000"><defs><linearGradient id="a" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#183a4a"/><stop offset="1" stop-color="#c8a45c"/></linearGradient></defs><rect width="1600" height="1000" fill="url(#a)"/><circle cx="1230" cy="230" r="310" fill="#f1e5cd" fill-opacity=".52"/><path d="M0 780C300 490 650 1040 970 650s470-170 630-370v720H0z" fill="#fff" fill-opacity=".22"/></svg>';
 	}
 	if ( '' === $source || ! function_exists( 'wp_upload_bits' ) ) { return 0; }
+	$allow_generated_svg = 'generated' === $kind;
+	if ( $allow_generated_svg ) {
+		// WordPress normally rejects SVG uploads. Permit this one controlled,
+		// hard-coded abstract demo asset for the duration of this write only.
+		$svg_mimes = static function ( array $mimes ): array {
+			$mimes['svg'] = 'image/svg+xml';
+			return $mimes;
+		};
+		add_filter( 'upload_mimes', $svg_mimes );
+	}
 	$upload = wp_upload_bits( 'mrn-layout-preview-' . sanitize_file_name( $asset_name ) . '-' . substr( $signature, 0, 12 ) . '.svg', null, $source );
+	if ( $allow_generated_svg ) {
+		remove_filter( 'upload_mimes', $svg_mimes );
+	}
 	if ( ! empty( $upload['error'] ) || empty( $upload['file'] ) ) { return 0; }
 	$attachment_id = wp_insert_attachment( array( 'post_title' => 'Private Layout Library Preview Asset', 'post_status' => 'private', 'post_mime_type' => 'image/svg+xml', 'post_content' => __( 'Generated/demo asset for private Layout Library fixtures. Not client content.', 'mrn-active-style-guide' ) ), $upload['file'], 0, true );
 	if ( is_wp_error( $attachment_id ) ) { return 0; }

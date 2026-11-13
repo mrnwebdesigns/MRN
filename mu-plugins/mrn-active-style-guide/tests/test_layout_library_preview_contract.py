@@ -31,6 +31,8 @@ class LayoutLibraryPreviewContractTests(unittest.TestCase):
     def test_generic_generated_and_local_paths_are_supported(self):
         self.assertIn("'kind' => 'generated'", PROFILE)
         self.assertIn("'local' === $kind", PROFILE)
+        self.assertIn("add_filter( 'upload_mimes', $svg_mimes )", PROFILE)
+        self.assertIn("remove_filter( 'upload_mimes', $svg_mimes )", PROFILE)
         self.assertIn("mrn_active_style_guide_layout_preview_profile", PROFILE)
 
 
