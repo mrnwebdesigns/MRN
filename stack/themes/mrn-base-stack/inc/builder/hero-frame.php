@@ -109,6 +109,7 @@ function mrn_base_stack_get_hero_frame_fields() {
 		'media_stack_breakpoint' => array( 'Media Stacking Breakpoint', array( '' => 'Use Existing (960px)', '900' => '900px', '767' => '767px' ) ),
 		'media_max_share' => array( 'Media Maximum Share of Inner Canvas', array( '' => 'Use Existing Grid', '40' => '40%', '50' => '50%' ) ),
 		'media_shadow' => array( 'Media Shadow', array( '' => 'Use Existing Shadow', 'none' => 'None' ) ),
+		'media_drift' => array( 'Media Scroll Drift', array( '' => 'None', 'scroll' => 'Drift With Scroll (0.08 speed, 36px maximum)' ) ),
 		'media_size' => array( 'Media Image Source', array( '' => 'Use Existing Hero Crop', 'full' => 'Original Aspect with Responsive Sources' ) ),
 		'actions_small_layout' => array( 'Actions at 480px', array( '' => 'Use Existing Wrapping', 'full-column' => 'Full-Width Column' ) ),
 		'lead_weight' => array( 'First Body Paragraph Font Weight', array( '' => 'Use Existing Weight' ) + array_combine( range( 100, 900, 100 ), range( 100, 900, 100 ) ) ),

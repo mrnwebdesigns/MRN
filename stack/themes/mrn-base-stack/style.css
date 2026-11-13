@@ -9242,5 +9242,5 @@ a.mrn-social-links__link:focus-visible svg {
 .mrn-card-row__content .mrn-ui__text--list-layout.has-list-text-items > :is(ul, ol) { gap:0; }
 .mrn-card-row__content .mrn-ui__text--list-layout.has-list-text-items > :is(ul, ol) > li { display:list-item; padding:0; border:0; border-radius:0; background:transparent; }
 
-/* A full-width surface section already carries the row's vertical padding; the row itself must not pad again. */
-.mrn-content-builder__row:has(> :is(.mrn-layout-section--stats, .mrn-layout-section--logos).mrn-layout-surface) { padding-top: 0; padding-bottom: 0; }
+/* Framed stats and logo-slider rows: a full-width surface section already carries the row's vertical padding, so the row must not pad again. */
+:is(.mrn-content-builder__row--stats.has-stats-frame, .mrn-content-builder__row--logos.has-logos-slider-frame):has(> :is(.mrn-layout-section--stats, .mrn-layout-section--logos).mrn-layout-surface) { padding-top: 0; padding-bottom: 0; }

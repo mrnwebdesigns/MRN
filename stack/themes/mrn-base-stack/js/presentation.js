@@ -130,7 +130,7 @@
 		let settings;
 		try { settings = JSON.parse( stage.dataset.mrnImageDrift ); } catch ( error ) { return; }
 		if ( ! settings || ! Number.isFinite( settings.speed ) || settings.speed < .01 || settings.speed > .15 || ! Number.isInteger( settings.maximum ) || settings.maximum < 1 || settings.maximum > 100 ) { return; }
-		const section = stage.closest( '.mrn-content-builder__row--two-column-split' ) || stage.closest( '.mrn-content-builder__row' ) || stage;
+		const section = stage.closest( '.mrn-content-builder__row--two-column-split' ) || stage.closest( '.mrn-content-builder__row, .mrn-hero' ) || stage;
 		const pointer = window.matchMedia( '(hover: hover) and (pointer: fine)' );
 		const desktop = window.matchMedia( '(min-width: 768px)' );
 		const update = () => {

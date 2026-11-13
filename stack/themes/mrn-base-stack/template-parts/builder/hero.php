@@ -287,7 +287,7 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 		</div>
 
 		<?php if ( $has_image ) : ?>
-			<div class="mrn-hero__media mrn-hero__media--hero-shell">
+			<div class="mrn-hero__media mrn-hero__media--hero-shell"<?php echo 'scroll' === ( $row['hero_media_drift'] ?? '' ) && function_exists( 'mrn_base_stack_get_image_stage_attributes' ) ? ' ' . mrn_base_stack_get_image_stage_attributes( array( 'image_presentation' => 'scroll-drift' ) ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Helper returns escaped attributes. ?>>
 				<?php
 				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Shared image helper returns escaped wp_get_attachment_image markup.
 				echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image(
