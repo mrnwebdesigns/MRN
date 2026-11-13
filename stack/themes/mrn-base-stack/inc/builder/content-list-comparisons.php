@@ -16,7 +16,7 @@ function mrn_base_stack_is_comparison_frame( array $row ) {
 
 /** Bounded dimension names (Site Text tokens, px, rem, em, %, vw). */
 function mrn_base_stack_get_comparison_dimensions() {
-	return explode( ' ', 'content_width inner_gutter card_margin_inline card_margin_inline_mobile card_gap card_radius inner_padding_top inner_padding_top_mobile media_gap media_gap_mobile media_space_before media_space_before_mobile image_width image_radius title_size title_size_mobile title_line_height tags_gap tags_space_before tags_space_before_mobile tag_padding_inline tag_padding_block tag_radius tag_size tag_line_height stack_peek' );
+	return explode( ' ', 'content_width inner_gutter card_margin_inline card_margin_inline_mobile card_gap card_radius inner_padding_top inner_padding_top_mobile inner_padding_inline_mobile media_gap media_gap_mobile media_space_before media_space_before_mobile image_width image_radius title_size title_size_mobile title_line_height tags_gap tags_space_before tags_space_before_mobile tag_padding_inline tag_padding_block tag_radius tag_size tag_line_height stack_peek' );
 }
 
 /** Editor fields, shown only for the Comparison Stack presentation. */
