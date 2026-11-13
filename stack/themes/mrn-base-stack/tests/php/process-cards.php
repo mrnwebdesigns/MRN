@@ -22,7 +22,7 @@ function mrn_base_stack_get_html_attributes( $attributes ) { $out = array(); for
 function wp_kses_post( $value ) { return strip_tags( $value, '<p><ul><li><a><strong><em>' ); }
 function mrn_rbl_get_content_links( $row, $options ) { return $row['test_links'] ?? array(); }
 $base = dirname( __DIR__, 2 );
-foreach ( array( 'hero-frame', 'card-frame', 'content-frame', 'faq-aside', 'faq-scroll', 'process-cards', 'pricing-cards', 'presentation' ) as $file ) { require_once $base . '/inc/builder/' . $file . '.php'; }
+foreach ( array( 'hero-frame', 'card-frame', 'content-frame', 'faq-aside', 'faq-scroll', 'process-cards', 'pricing-cards', 'timeline-frame', 'presentation' ) as $file ) { require_once $base . '/inc/builder/' . $file . '.php'; }
 $checks = array(); $expect = static function ( $ok, $label ) use ( &$checks ) { if ( ! $ok ) { throw new RuntimeException( $label ); } $checks[] = $label; };
 $empty = array( 'classes' => array(), 'attributes' => array() );
 foreach ( array( array(), array( 'card_presentation' => 'standard' ), array( 'card_presentation' => 'pricing' ), array( 'card_presentation' => array( 'process' ) ), array( 'process_step_diameter' => '193px' ) ) as $i => $row ) { $expect( $empty === mrn_base_stack_get_process_card_contract( $row ) && ! mrn_base_stack_get_process_card_items( $row ), 'Dormant process values cannot change other presentations: ' . $i ); }

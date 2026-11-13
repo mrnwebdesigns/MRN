@@ -124,6 +124,8 @@ function mrn_base_stack_render_project_list_item( WP_Post $post, array $args ) {
 /** Reuse canonical link normalization, styles, attributes and icon helpers. */
 function mrn_base_stack_get_project_actions( array $row ) {
 	if ( ! mrn_base_stack_is_project_list( $row ) ) { return ''; }
+	// The link helpers belong to the reusable blocks plugin; without it there are no project actions.
+	if ( ! function_exists( 'mrn_rbl_get_content_links' ) || ! function_exists( 'mrn_rbl_get_content_link_tag_name' ) || ! function_exists( 'mrn_rbl_get_content_link_html_attributes' ) || ! function_exists( 'mrn_rbl_get_content_link_custom_class_names' ) ) { return ''; }
 	$links = mrn_rbl_get_content_links( array( 'links' => $row['project_links'] ?? array() ), array( 'max' => 4 ) ); if ( ! $links ) { return ''; }
 	$html = '<div class="mrn-project__actions">';
 	foreach ( $links as $link ) {

@@ -27,8 +27,8 @@ function mrn_base_stack_get_faq_scroll_fields( $seed ) {
 	}
 	foreach ( $fields as &$field ) {
 		if ( 'faq_presentation' !== $field['name'] ) { $field['conditional_logic'] = array( array( array( 'field' => $seed . '_faq_presentation', 'operator' => '==', 'value' => 'scroll-active' ) ) ); }
-		// Stacked editorial FAQ rows share the same heading typography controls.
-		if ( in_array( $field['name'], array( 'faq_heading_size', 'faq_heading_line_height', 'faq_heading_weight', 'faq_heading_color', 'faq_column_gap' ), true ) ) { $field['conditional_logic'][] = array( array( 'field' => $seed . '_faq_frame', 'operator' => '==', 'value' => 'editorial' ) ); }
+		// Stacked editorial FAQ rows share the same heading typography controls and the content width / compact gutter.
+		if ( in_array( $field['name'], array( 'faq_heading_size', 'faq_heading_line_height', 'faq_heading_weight', 'faq_heading_color', 'faq_column_gap', 'faq_content_width', 'faq_inner_gutter_compact' ), true ) ) { $field['conditional_logic'][] = array( array( 'field' => $seed . '_faq_frame', 'operator' => '==', 'value' => 'editorial' ) ); }
 	}
 	unset( $field );
 	return $fields;

@@ -140,6 +140,10 @@ if ( 'scroll-expand' === ( $row['video_presentation'] ?? '' ) ) {
 	mrn_base_stack_enqueue_presentation();
 	if ( '' === $expansion_poster && $has_thumbnail ) { $expansion_poster = mrn_base_stack_get_attachment_image_url( $thumbnail_image, 'mrn-content-media' ); }
 	$section_attrs['data-mrn-video-expand'] = 'true';
+	$expand_from                            = absint( $row['video_expand_start_width'] ?? 0 );
+	if ( $expand_from >= 320 && $expand_from <= 2400 ) {
+		$section_attrs['data-mrn-video-expand-from'] = (string) $expand_from;
+	}
 	if ( ! empty( $row['video_follow_color'] ) && function_exists( 'mrn_site_colors_get_css_var' ) ) {
 		$section_attrs['data-mrn-follow-color'] = mrn_site_colors_get_css_var( sanitize_key( $row['video_follow_color'] ) );
 		if ( 'release' === ( $row['video_follow_release'] ?? '' ) ) {

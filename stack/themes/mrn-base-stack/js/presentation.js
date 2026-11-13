@@ -361,9 +361,27 @@
 		const color = section.dataset.mrnFollowColor;
 		const release = 'release' === section.dataset.mrnFollowRelease;
 		if ( release && next ) { next.classList.add( 'has-mrn-follow-release' ); }
+		const from = parseFloat( section.dataset.mrnVideoExpandFrom ) || 0;
+		if ( from ) {
+			// The following section's own color, or the page color when it has none.
+			const clear = /^(transparent|rgba\(0, 0, 0, 0\))$/;
+			const after = base && ! clear.test( base ) ? base : getComputedStyle( document.body ).backgroundColor;
+			if ( after && ! clear.test( after ) ) { section.style.setProperty( '--mrn-video-after-color', after ); }
+		}
 		watch( section, () => {
 			const p = clamp( ( window.innerHeight - section.getBoundingClientRect().top ) / window.innerHeight );
-			if ( media ) {
+			if ( media && from ) {
+				// Grow from the start width to full width over 30% of the viewport (min 220px), anchored at the bottom edge,
+				// then fade the row background as the expanded video scrolls past the top (smootherstep over 40%, min 200px).
+				const still = reduced.matches || window.matchMedia( '(max-width: 767px)' ).matches;
+				const vh = window.innerHeight;
+				const start = Math.min( 1, from / ( media.offsetWidth || from ) );
+				const grown = still ? 1 : clamp( ( vh - section.getBoundingClientRect().top ) / Math.max( 220, vh * .3 ) );
+				media.style.transformOrigin = '50% 100%';
+				media.style.transform = still ? '' : 'scale(' + ( start + ( 1 - start ) * grown ) + ')';
+				const t = still || grown < .999 ? 0 : clamp( -media.getBoundingClientRect().top / Math.max( 200, vh * .4 ) );
+				section.style.setProperty( '--mrn-video-after-progress', ( t * t * t * ( t * ( t * 6 - 15 ) + 10 ) ).toFixed( 4 ) );
+			} else if ( media ) {
 				const compact = section.classList.contains( 'has-video-frame' ) && window.matchMedia( '(max-width: 767px)' ).matches;
 				media.style.transform = reduced.matches || compact ? '' : 'scale(' + ( .82 + .18 * p ) + ')';
 				media.style.borderRadius = reduced.matches || compact ? '' : ( ( 1 - p ) * 24 ) + 'px';

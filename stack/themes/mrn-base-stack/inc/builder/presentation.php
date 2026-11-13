@@ -308,6 +308,18 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 				)
 			),
 			$make(
+				'video_expand_start_width',
+				'Expand Start Width',
+				'number',
+				array(
+					'min'          => 320,
+					'max'          => 2400,
+					'step'         => 1,
+					'append'       => 'px',
+					'instructions' => 'Optional, for Expand on Scroll. The video starts at this width (or its own width when narrower) and grows from its bottom edge to the full row width as the row scrolls in, with square corners. Once it has scrolled past the top, the row background fades to the following section color. Leave empty for the standard expand.',
+				)
+			),
+			$make(
 				'video_follow_color',
 				'Following Section Transition Color',
 				'select',

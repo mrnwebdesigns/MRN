@@ -8207,6 +8207,8 @@ a.mrn-social-links__link:focus-visible svg {
 }
 
 .has-faq-frame > .mrn-layout-section--reusable-faq > .mrn-layout-container { padding-inline: var(--mrn-faq-frame-inner-gutter, 0px); }
+.has-faq-frame.has-faq-content-width:not(.has-faq-scroll-active) > .mrn-layout-section--reusable-faq > .mrn-layout-container { box-sizing: border-box; max-width: var(--mrn-faq-frame-content-width); margin-inline: auto; }
+@media (max-width: 1199px) { .has-faq-frame.has-faq-inner-gutter-compact:not(.has-faq-scroll-active) > .mrn-layout-section--reusable-faq > .mrn-layout-container { padding-inline: var(--mrn-faq-frame-inner-gutter-compact); } }
 .has-faq-frame .mrn-reusable-block--faq .mrn-faq__items.mrn-ui__items { gap: var(--mrn-faq-frame-item-gap, 0px); }
 .has-faq-frame .mrn-reusable-block--faq .mrn-faq__question::after { flex-basis: var(--mrn-faq-frame-icon-width, auto); }
 /* Sticky columns must use the page scroll container, not a clipped row. */
@@ -8580,7 +8582,7 @@ a.mrn-social-links__link:focus-visible svg {
 .has-faq-frame .mrn-faq__question::after { color: var(--mrn-faq-frame-icon-color, currentColor); }
 .has-faq-frame .mrn-faq__item[open] .mrn-faq__question::after { color: var(--mrn-faq-frame-icon-open-color, currentColor); }
 .has-faq-frame.has-faq-no-dividers .mrn-faq__item.mrn-ui__item { border: 0; }
-.has-faq-frame.has-faq-chevron .mrn-faq__question::after { content: ''; box-sizing: border-box; width: var(--mrn-faq-frame-icon-width, 12px); height: var(--mrn-faq-frame-icon-width, 12px); border: 0; background: currentColor; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E") center / contain no-repeat; transform: none; margin-top: .125em; }
+.has-faq-frame.has-faq-chevron .mrn-faq__question::after { content: ''; box-sizing: border-box; width: var(--mrn-faq-frame-icon-width, 12px); height: var(--mrn-faq-frame-icon-width, 12px); border: 0; background: currentColor; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 8'%3E%3Cpath d='M1.2 1.2 7 7l5.8-5.8' fill='none' stroke='black' stroke-width='2.2'/%3E%3C/svg%3E") center / contain no-repeat; transform: none; margin-top: 0; align-self: center; }
 .has-faq-frame.has-faq-chevron .mrn-faq__item[open] .mrn-faq__question::after { content: ''; transform: rotate(180deg); }
 .has-icon-logos > .mrn-layout-section--logos > .mrn-layout-container { width: 100%; max-width: none; padding: 0; }
 .has-icon-logos.mrn-content-builder__row .mrn-layout-container .mrn-logos-row__grid { display: flex; flex-wrap: wrap; align-items: center; gap: var(--mrn-logos-icon-gap, 1rem); margin-top: var(--mrn-logos-icon-space-before, 0px); }
