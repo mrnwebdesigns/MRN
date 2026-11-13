@@ -408,7 +408,7 @@
         "state": "confirmed"
       },
       "target_tier": "platform-required",
-      "version": "0.2.3"
+      "version": "0.2.4"
     },
     {
       "classification": "platform-loader",
@@ -811,7 +811,7 @@
         "state": "confirmed"
       },
       "target_tier": "platform-required",
-      "version": "0.2.3"
+      "version": "0.2.4"
     },
     {
       "classification": "integration-adapter",

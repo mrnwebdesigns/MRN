@@ -10,8 +10,8 @@
 | Component | Version |
 | --- | --- |
 | `mrn-acf-focal-point` | `1.1.2` |
-| `mrn-active-style-guide` | `0.2.3` |
-| `mrn-active-style-guide-loader` | `0.2.3` |
+| `mrn-active-style-guide` | `0.2.4` |
+| `mrn-active-style-guide-loader` | `0.2.4` |
 | `mrn-admin-data-post-types` | `0.3.0` |
 | `mrn-admin-data-post-types-loader` | `0.3.0` |
 | `mrn-admin-ui-css` | `3.2.4` |
