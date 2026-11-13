@@ -5691,6 +5691,10 @@ a.mrn-social-links__link:focus-visible svg {
 	line-height: var(--mrn-card-section-link-line-height, inherit);
 }
 
+[style*="--mrn-card-section-link-color"] .mrn-card-row__link a {
+	color: var(--mrn-card-section-link-color);
+}
+
 /* Card decks keep their pill/list contract explicit and override-friendly. */
 .mrn-card-row__content ul {
 	display: flex;

@@ -244,6 +244,7 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 			$make( 'card_section_link_alignment', 'Section Link Alignment', 'select', array( 'choices' => array( '' => 'Keep Current Alignment', 'start' => 'Start', 'center' => 'Center', 'end' => 'End' ), 'default_value' => '', 'instructions' => 'Image presentation only. Aligns section links beneath the image cards.' ) ),
 			$make( 'card_section_link_size', 'Section Link Size', 'text', array( 'instructions' => 'Image presentation only. Optional non-negative CSS length or bounded clamp() for the section link text.' ) ),
 			$make( 'card_section_link_line_height', 'Section Link Line Height', 'text', array( 'instructions' => 'Image presentation only. Optional non-negative CSS length or unitless ratio for the section link line box.' ) ),
+			$make( 'card_section_link_color', 'Section Link Color', 'select', array( 'choices' => array( '' => 'Use Existing Color' ) + ( function_exists( 'mrn_rbl_get_site_color_choices' ) ? mrn_rbl_get_site_color_choices() : array() ), 'default_value' => '', 'instructions' => 'Image presentation only. Site Color for the section link text.' ) ),
 			$make(
 				'timeline_image',
 				'Timeline Image',
@@ -258,7 +259,7 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 			$make( 'timeline_scroll_pace', 'Timeline Scroll Pace', 'select', array( 'choices' => array( '' => 'Standard', 'viewport' => '55% of Viewport Height per Step' ), 'default_value' => '', 'instructions' => 'Optional longer scroll journey for pinned timelines. Each step uses at least 320px of page scroll.' ) ),
 		);
 		foreach ( $fields as &$field ) {
-			if ( in_array( $field['name'], array( 'card_reveal_content', 'card_image_ratio', 'card_caption_flow_breakpoint', 'card_image_mobile_sizing', 'card_image_loading', 'card_gap', 'card_caption_padding', 'card_caption_padding_mobile', 'card_caption_gap', 'card_section_link_space_before', 'card_section_link_alignment', 'card_section_link_size', 'card_section_link_line_height' ), true ) ) {
+			if ( in_array( $field['name'], array( 'card_reveal_content', 'card_image_ratio', 'card_caption_flow_breakpoint', 'card_image_mobile_sizing', 'card_image_loading', 'card_gap', 'card_caption_padding', 'card_caption_padding_mobile', 'card_caption_gap', 'card_section_link_space_before', 'card_section_link_alignment', 'card_section_link_size', 'card_section_link_line_height', 'card_section_link_color' ), true ) ) {
 				$field['conditional_logic'] = array( array( array( 'field' => $seed . '_card_presentation', 'operator' => '==', 'value' => 'image-overlay' ) ) );
 			} elseif ( in_array( $field['name'], array( 'timeline_image', 'timeline_skip_label', 'timeline_pin_tablet', 'timeline_scroll_pace' ), true ) ) {
 				$field['conditional_logic'] = array( array( array( 'field' => $seed . '_card_presentation', 'operator' => '==', 'value' => 'timeline' ) ) );
@@ -525,6 +526,8 @@ function mrn_base_stack_get_image_card_styles( array $row ) {
 		$value = mrn_base_stack_validate_card_frame_dimension( $row[ $name ] ?? '' );
 		if ( '' !== $value ) { $styles[] = $property . ':' . $value; }
 	}
+	$link_color = function_exists( 'mrn_base_stack_get_frame_palette_color' ) ? mrn_base_stack_get_frame_palette_color( $row['card_section_link_color'] ?? '' ) : '';
+	if ( '' !== $link_color ) { $styles[] = '--mrn-card-section-link-color:' . $link_color; }
 	$link_alignment = $row['card_section_link_alignment'] ?? '';
 	if ( in_array( $link_alignment, array( 'start', 'center', 'end' ), true ) ) { $styles[] = '--mrn-card-section-link-alignment:' . $link_alignment; }
 	$mobile_padding = $row['card_caption_padding_mobile'] ?? '';

@@ -195,6 +195,7 @@
 .mrn-hero.has-hero-text-line-height .mrn-hero__text,
 .mrn-hero.has-hero-text-line-height .mrn-hero__text p { line-height: var(--mrn-hero-text-line-height); }
 .mrn-hero.has-hero-text-color .mrn-hero__text p { color: var(--mrn-hero-text-color); }
+.mrn-hero.has-hero-phrase-color .mrn-hero__heading .mrn-rotate { color: var(--mrn-hero-phrase-color); }
 .mrn-hero.has-hero-paragraph-space-after .mrn-hero__text p { margin-bottom: var(--mrn-hero-paragraph-space-after); }
 .mrn-hero.has-hero-action-icon-height .mrn-hero__link-wrap .mrn-ui__link-icon-image { height: var(--mrn-hero-action-icon-height); }
 .mrn-hero.has-hero-action-line-height .mrn-hero__link { line-height: var(--mrn-hero-action-line-height); }

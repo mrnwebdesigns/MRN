@@ -130,7 +130,7 @@ function mrn_base_stack_get_hero_frame_fields() {
 		'choices' => array( '' => 'Use Existing Weight' ) + array_combine( range( 100, 900, 100 ), range( 100, 900, 100 ) ),
 		'default_value' => '', 'wrapper' => array( 'width' => '50' ),
 	);
-	foreach ( array( 'heading' => 'Heading Color', 'text' => 'Body Paragraph Color', 'lead' => 'First Body Paragraph Color' ) as $part => $label ) {
+	foreach ( array( 'heading' => 'Heading Color', 'phrase' => 'Rotating Phrase Color', 'text' => 'Body Paragraph Color', 'lead' => 'First Body Paragraph Color' ) as $part => $label ) {
 		$field = mrn_base_stack_get_background_color_field( 'field_mrn_hero_basic_block_frame_' . $part . '_color' );
 		$field['name'] = 'hero_' . $part . '_color';
 		$field['label'] = $label;
@@ -193,11 +193,12 @@ function mrn_base_stack_get_hero_frame_contract( array $row ) {
 	if ( is_scalar( $weight ) && in_array( (string) $weight, array_map( 'strval', range( 100, 900, 100 ) ), true ) ) {
 		$result['heading_styles'][] = 'font-weight:' . (string) $weight;
 	}
-	foreach ( array( 'heading', 'text' ) as $part ) {
+	foreach ( array( 'heading', 'phrase', 'text' ) as $part ) {
 		$slug = $row[ 'hero_' . $part . '_color' ] ?? '';
 		if ( is_string( $slug ) && '' !== $slug && function_exists( 'mrn_site_colors_get_value' ) && '' !== mrn_site_colors_get_value( $slug ) ) {
 			$color = 'var(' . mrn_site_colors_get_css_var( $slug ) . ')';
 			if ( 'heading' === $part ) { $result['heading_styles'][] = 'color:' . $color; }
+			elseif ( 'phrase' === $part ) { $result['styles'][] = '--mrn-hero-phrase-color:' . $color; $result['classes'][] = 'has-hero-phrase-color'; }
 			else { $result['styles'][] = '--mrn-hero-text-color:' . $color; $result['classes'][] = 'has-hero-text-color'; }
 		}
 	}

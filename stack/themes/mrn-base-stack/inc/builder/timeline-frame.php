@@ -33,6 +33,10 @@ function mrn_base_stack_get_timeline_frame_fields( $seed ) {
 	foreach ( $dimensions as $name => $label ) {
 		$fields[] = array( 'key' => $seed . '_timeline_' . $name, 'name' => 'timeline_' . $name, 'label' => $label, 'type' => 'text', 'instructions' => 'Optional non-negative CSS length or clamp(). Outer section spacing uses native row presets.' );
 	}
+	$color          = mrn_base_stack_get_background_color_field( $seed . '_timeline_subheading_color' );
+	$color['name']  = 'timeline_subheading_color';
+	$color['label'] = 'Timeline Introduction Color';
+	$fields[]       = $color;
 	foreach ( $fields as &$field ) {
 		$conditions = array( array( 'field' => $seed . '_card_presentation', 'operator' => '==', 'value' => 'timeline' ) );
 		if ( 'timeline_frame' !== $field['name'] ) {
@@ -64,6 +68,10 @@ function mrn_base_stack_get_timeline_frame_contract( array $row ) {
 		if ( '' !== $value ) {
 			$result['styles'][] = '--mrn-timeline-' . str_replace( '_', '-', $name ) . ':' . $value;
 		}
+	}
+	$subheading = function_exists( 'mrn_base_stack_get_frame_palette_color' ) ? mrn_base_stack_get_frame_palette_color( $row['timeline_subheading_color'] ?? '' ) : '';
+	if ( '' !== $subheading ) {
+		$result['styles'][] = '--mrn-timeline-subheading-color:' . $subheading;
 	}
 	return $result;
 }
