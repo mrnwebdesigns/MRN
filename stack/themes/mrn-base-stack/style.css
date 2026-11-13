@@ -5685,10 +5685,13 @@ a.mrn-social-links__link:focus-visible svg {
 	margin: 0;
 }
 
-.mrn-content-builder__row--image-cards .mrn-card-row__link,
-.mrn-content-builder__row--image-cards .mrn-card-row__link a {
-	font-size: var(--mrn-card-section-link-size, inherit);
-	line-height: var(--mrn-card-section-link-line-height, inherit);
+/* Only rows that set a section link size or line height override the link's own style (pill, text link). */
+.mrn-content-builder__row--image-cards[style*="--mrn-card-section-link-size"] :is(.mrn-card-row__link, .mrn-card-row__link a) {
+	font-size: var(--mrn-card-section-link-size);
+}
+
+.mrn-content-builder__row--image-cards[style*="--mrn-card-section-link-line-height"] :is(.mrn-card-row__link, .mrn-card-row__link a) {
+	line-height: var(--mrn-card-section-link-line-height);
 }
 
 [style*="--mrn-card-section-link-color"] .mrn-card-row__link a {
@@ -8582,7 +8585,7 @@ a.mrn-social-links__link:focus-visible svg {
 .has-faq-frame .mrn-faq__question::after { color: var(--mrn-faq-frame-icon-color, currentColor); }
 .has-faq-frame .mrn-faq__item[open] .mrn-faq__question::after { color: var(--mrn-faq-frame-icon-open-color, currentColor); }
 .has-faq-frame.has-faq-no-dividers .mrn-faq__item.mrn-ui__item { border: 0; }
-.has-faq-frame.has-faq-chevron .mrn-faq__question::after { content: ''; box-sizing: border-box; width: var(--mrn-faq-frame-icon-width, 12px); height: var(--mrn-faq-frame-icon-width, 12px); border: 0; background: currentColor; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 8'%3E%3Cpath d='M1.2 1.2 7 7l5.8-5.8' fill='none' stroke='black' stroke-width='2.2'/%3E%3C/svg%3E") center / contain no-repeat; transform: none; margin-top: 0; align-self: center; }
+.has-faq-frame.has-faq-chevron .mrn-faq__question::after { content: ''; box-sizing: border-box; width: var(--mrn-faq-frame-icon-width, 12px); height: var(--mrn-faq-frame-icon-width, 12px); border: 0; background: currentColor; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 8'%3E%3Cpath d='M1.2 1.2 7 7l5.8-5.8' fill='none' stroke='black' stroke-width='2.2'/%3E%3C/svg%3E") center / min(100%, 13px) auto no-repeat; transform: none; margin-top: 0; align-self: center; }
 .has-faq-frame.has-faq-chevron .mrn-faq__item[open] .mrn-faq__question::after { content: ''; transform: rotate(180deg); }
 .has-icon-logos > .mrn-layout-section--logos > .mrn-layout-container { width: 100%; max-width: none; padding: 0; }
 .has-icon-logos.mrn-content-builder__row .mrn-layout-container .mrn-logos-row__grid { display: flex; flex-wrap: wrap; align-items: center; gap: var(--mrn-logos-icon-gap, 1rem); margin-top: var(--mrn-logos-icon-space-before, 0px); }
