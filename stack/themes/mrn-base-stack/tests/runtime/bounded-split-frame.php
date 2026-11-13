@@ -30,6 +30,9 @@ try {
 		$tracking = mrn_base_stack_get_content_frame_contract( array( 'body_frame' => 'contained', 'body_text_letter_spacing_mobile' => '-1px' === $bad ? '-11px' : $bad ), 'body_text' );
 		$expect( empty( $tracking['attributes'] ), 'Unsafe mobile tracking cannot emit styles' );
 	}
+	$heading_tracking = mrn_base_stack_get_content_frame_contract( array( 'body_frame' => 'contained', 'body_heading_letter_spacing' => '-0.32px' ), 'body_text' );
+	$expect( in_array( 'has-body-heading-letter-spacing', $heading_tracking['classes'], true ) && str_contains( $heading_tracking['attributes']['style'], '--mrn-body-frame-heading-letter-spacing:-0.32px' ), 'Heading tracking is independently editable' );
+	$expect( empty( mrn_base_stack_get_content_frame_contract( array( 'body_frame' => 'contained', 'body_heading_letter_spacing' => '0px;color:red' ), 'body_text' )['attributes'] ), 'Unsafe heading tracking cannot emit styles' );
 	$expect( array( 'classes' => array(), 'attributes' => array() ) === mrn_base_stack_get_split_aside_contract( $props ), 'Unselected bounded controls preserve existing rows' );
 	$expect( empty( mrn_base_stack_get_split_aside_contract( array_merge( $props, array( 'split_frame' => 'columns' ) ) )['attributes'] ), 'Bounded controls cannot alter ordinary ratio columns' );
 	$expect( array( 'has-split-columns-frame', 'split-stack-991' ) === mrn_base_stack_get_split_aside_contract( array( 'split_frame' => 'columns' ) )['classes'], 'Existing columns retain their 991px default' );

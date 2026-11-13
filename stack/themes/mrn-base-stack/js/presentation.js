@@ -275,13 +275,20 @@
 	function initTimeline( timeline ) {
 		const range = timeline.querySelector( '.mrn-timeline__range' );
 		const stage = timeline.querySelector( '.mrn-timeline__stage' );
+		const pinned = timeline.querySelector( '.mrn-timeline__pin' ) || stage;
 		const steps = Array.from( timeline.querySelectorAll( '.mrn-timeline__steps > li > details' ) );
 		const pinTablet = timeline.dataset.mrnTimelinePinTablet === 'true';
 		const numberedSteps = timeline.dataset.mrnTimelineStepStyle === 'numbered';
+		const pinCenter = timeline.dataset.mrnTimelinePinPosition === 'center';
+		// Viewport pace gives each step its own equal stretch of scroll; standard pace snaps to the nearest step.
+		const perStep = timeline.dataset.mrnTimelineScrollPace === 'viewport';
+		const stepAt = ( p ) => perStep ? Math.min( steps.length - 1, Math.floor( p * steps.length ) ) : Math.round( p * ( steps.length - 1 ) );
+		const stepStart = ( index ) => perStep ? ( index + 0.5 ) / steps.length : index / ( steps.length - 1 );
 		const tabletWide = window.matchMedia( '(min-width: 768px)' );
 		if ( ! steps.length ) { return; }
 		let distance = 0;
 		let current = 0;
+		let pinTop = topOffset();
 		const select = ( index ) => {
 			current = index;
 			steps.forEach( ( step, position ) => { step.open = position === index; } );
@@ -298,13 +305,17 @@
 			const body = numberedSteps ? steps[ 0 ].querySelector( '.mrn-timeline__body' ).getBoundingClientRect().height : Math.max( ...steps.map( ( step ) => step.querySelector( '.mrn-timeline__body' ).getBoundingClientRect().height ) );
 			const stepSpace = numberedSteps ? ( parseFloat( getComputedStyle( steps[ 0 ].parentElement ).marginBottom ) || 0 ) * ( steps.length - 1 ) : 0;
 			const height = Math.max( summaries + body + stepSpace, timeline.querySelector( '.mrn-timeline__media, .mrn-timeline__image' )?.offsetHeight || 0 ) + ( numberedSteps ? 0 : 32 );
-			if ( height > window.innerHeight - topOffset() - 32 ) { return; }
+			// A pinned heading holds with the stage, so it counts toward the pinned height.
+			const held = height + ( pinned === stage ? 0 : stage.getBoundingClientRect().top - pinned.getBoundingClientRect().top );
+			if ( held > window.innerHeight - topOffset() - 32 ) { return; }
 			distance = timeline.dataset.mrnTimelineScrollPace === 'viewport'
 				? steps.length * Math.max( 320, Math.round( window.innerHeight * 0.55 ) )
 				: ( steps.length - 1 ) * 240;
-			range.style.height = ( height + distance ) + 'px';
+			range.style.height = ( held + distance ) + 'px';
 			stage.style.minHeight = height + 'px';
-			timeline.style.setProperty( '--mrn-presentation-top', topOffset() + 'px' );
+			// Centered pins hold the stage mid-viewport (never under the header); the default holds it below the header.
+			pinTop = pinCenter ? Math.max( topOffset(), Math.round( ( window.innerHeight - held ) / 2 ) ) : topOffset();
+			timeline.style.setProperty( '--mrn-presentation-top', pinTop + 'px' );
 			timeline.dataset.enhanced = 'true';
 			select( Math.min( current, steps.length - 1 ) );
 			schedule();
@@ -314,7 +325,7 @@
 				if ( ! timeline.hasAttribute( 'data-enhanced' ) ) { return; }
 				event.preventDefault();
 				select( index );
-				window.scrollTo( { top: window.scrollY + range.getBoundingClientRect().top - topOffset() + index / ( steps.length - 1 ) * distance, behavior: 'auto' } );
+				window.scrollTo( { top: window.scrollY + range.getBoundingClientRect().top - pinTop + stepStart( index ) * distance, behavior: 'auto' } );
 			} );
 		} );
 		timeline.querySelector( '.mrn-timeline__skip' ).addEventListener( 'click', () => timeline.querySelector( '.mrn-timeline__end' ).focus() );
@@ -326,8 +337,8 @@
 		reduced.addEventListener( 'change', prepare );
 		watch( timeline, () => {
 			if ( ! timeline.hasAttribute( 'data-enhanced' ) || timeline.contains( document.activeElement ) ) { return; }
-			const p = clamp( ( topOffset() - range.getBoundingClientRect().top ) / distance );
-			select( Math.round( p * ( steps.length - 1 ) ) );
+			const p = clamp( ( pinTop - range.getBoundingClientRect().top ) / distance );
+			select( stepAt( p ) );
 		} );
 	}
 	function initHover( video ) {

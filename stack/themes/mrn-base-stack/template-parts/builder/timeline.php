@@ -18,10 +18,13 @@ $skip        = trim( (string) ( $row['timeline_skip_label'] ?? '' ) );
 $skip        = '' !== $skip ? $skip : __( 'Skip timeline', 'mrn-base-stack' );
 $pin_tablet  = ! empty( $row['timeline_pin_tablet'] );
 $scroll_pace = 'viewport' === ( $row['timeline_scroll_pace'] ?? '' ) ? 'viewport' : '';
+$pin_center  = 'center' === ( $row['timeline_pin_position'] ?? '' );
+$pin_heading = ! empty( $row['timeline_pin_heading'] ) && ( ! empty( $row['heading'] ) || ! empty( $row['subheading'] ) );
 $frame       = mrn_base_stack_get_timeline_frame_contract( $row );
 ob_start();
 ?>
-<div class="mrn-timeline" data-mrn-timeline<?php echo $pin_tablet ? ' data-mrn-timeline-pin-tablet="true"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Fixed literal attribute. ?><?php echo $scroll_pace ? ' data-mrn-timeline-scroll-pace="viewport"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Allowlisted literal attribute. ?><?php echo $frame['active'] ? ' data-mrn-timeline-frame="contained"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Fixed literal attribute. ?><?php echo $frame['numbered_steps'] ? ' data-mrn-timeline-step-style="numbered"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Fixed literal attribute. ?><?php echo $frame['arrow_actions'] ? ' data-mrn-timeline-step-action-icon="arrow"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Fixed literal attribute. ?><?php echo $frame['styles'] ? ' style="' . esc_attr( implode( ';', $frame['styles'] ) ) . '"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Validated dimensions, escaped attribute. ?>>
+<div class="mrn-timeline" data-mrn-timeline<?php echo $pin_tablet ? ' data-mrn-timeline-pin-tablet="true"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Fixed literal attribute. ?><?php echo $scroll_pace ? ' data-mrn-timeline-scroll-pace="viewport"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Allowlisted literal attribute. ?><?php echo $pin_center ? ' data-mrn-timeline-pin-position="center"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Allowlisted literal attribute. ?><?php echo $frame['active'] ? ' data-mrn-timeline-frame="contained"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Fixed literal attribute. ?><?php echo $frame['numbered_steps'] ? ' data-mrn-timeline-step-style="numbered"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Fixed literal attribute. ?><?php echo $frame['arrow_actions'] ? ' data-mrn-timeline-step-action-icon="arrow"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Fixed literal attribute. ?><?php echo $frame['styles'] ? ' style="' . esc_attr( implode( ';', $frame['styles'] ) ) . '"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Validated dimensions, escaped attribute. ?>>
+	<?php if ( ! $pin_heading ) : ?>
 	<?php if ( ! empty( $row['heading'] ) ) : ?>
 		<<?php echo esc_html( $heading_tag ); ?> class="mrn-ui__heading"><?php echo mrn_base_stack_format_heading_inline_html( $row['heading'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Shared escaped formatter. ?></<?php echo esc_html( $heading_tag ); ?>>
 	<?php endif; ?>
@@ -30,7 +33,17 @@ ob_start();
 		?>
 		<p><?php echo wp_kses_post( $row['subheading'] ); ?></p><?php endif; ?>
 	<?php if ( ! $frame['media_skip'] ) : ?><a class="mrn-timeline__skip" href="#<?php echo esc_attr( $end_id ); ?>"><?php echo esc_html( $skip ); ?></a><?php endif; ?>
-	<div class="mrn-timeline__range"><div class="mrn-timeline__stage">
+	<?php endif; ?>
+	<div class="mrn-timeline__range"><?php if ( $pin_heading ) : ?><div class="mrn-timeline__pin">
+	<?php if ( ! empty( $row['heading'] ) ) : ?>
+			<<?php echo esc_html( $heading_tag ); ?> class="mrn-ui__heading"><?php echo mrn_base_stack_format_heading_inline_html( $row['heading'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Shared escaped formatter. ?></<?php echo esc_html( $heading_tag ); ?>>
+		<?php endif; ?>
+		<?php
+		if ( ! empty( $row['subheading'] ) ) :
+			?>
+			<p><?php echo wp_kses_post( $row['subheading'] ); ?></p><?php endif; ?>
+		<?php if ( ! $frame['media_skip'] ) : ?><a class="mrn-timeline__skip" href="#<?php echo esc_attr( $end_id ); ?>"><?php echo esc_html( $skip ); ?></a><?php endif; ?>
+	<?php endif; ?><div class="mrn-timeline__stage">
 		<?php if ( $frame['media_skip'] ) : ?><div class="mrn-timeline__media"><?php endif; ?>
 		<?php if ( ! empty( $row['timeline_image'] ) ) : ?>
 			<div class="mrn-timeline__image"><?php echo mrn_base_stack_get_attachment_image( $row['timeline_image'], 'mrn-content-media', array( 'loading' => 'lazy' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped image helper. ?></div>
@@ -59,7 +72,7 @@ ob_start();
 			</details></li>
 		<?php endforeach; ?>
 		</ol>
-	</div></div>
+	</div><?php echo $pin_heading ? '</div>' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Fixed literal markup. ?></div>
 	<div class="mrn-timeline__end" id="<?php echo esc_attr( $end_id ); ?>" tabindex="-1"></div>
 </div>
 <?php

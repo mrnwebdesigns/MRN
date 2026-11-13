@@ -2775,6 +2775,11 @@ button.mrn-ui__link--button {
 	line-height: 22.5px;
 }
 
+/* Large text links use the body font (pills and plain text links keep the heading font). */
+:is(a, .mrn-content-builder__row a).mrn-link-style--burgundy-text.mrn-link-style--large {
+	font-family: var(--site-font-body, inherit);
+}
+
 :is(a, .mrn-content-builder__row a).mrn-link-style--burgundy-text:is(:hover, :focus-visible) {
 	color: var(--site-color-red);
 }
@@ -4245,6 +4250,7 @@ button.mrn-ui__link--button {
 	line-height: var(--mrn-faq-frame-heading-line-height, inherit);
 	font-weight: var(--mrn-faq-frame-heading-weight, inherit);
 	color: var(--mrn-faq-frame-heading-color, inherit);
+	letter-spacing: var(--mrn-faq-frame-heading-letter-spacing, 0);
 }
 
 .mrn-faq__items {
@@ -8416,6 +8422,7 @@ a.mrn-social-links__link:focus-visible svg {
 /* Optional native text/card refinements. Outer spacing remains in row presets. */
 .has-body-frame.has-body-heading-breaks .mrn-ui__heading { white-space: pre-line; }
 .has-body-frame.has-body-label-letter-spacing .mrn-ui__label { letter-spacing: var(--mrn-body-frame-label-letter-spacing); }
+.has-body-frame.has-body-heading-letter-spacing .mrn-ui__heading { letter-spacing: var(--mrn-body-frame-heading-letter-spacing); }
 .has-body-frame.has-body-text-letter-spacing .mrn-ui__text { letter-spacing: var(--mrn-body-frame-text-letter-spacing); }
 .has-body-frame.has-body-text-size .mrn-ui__text > p { font-size: inherit; }
 .has-body-frame.has-body-text-line-height .mrn-ui__text > p { line-height: inherit; }
@@ -9067,6 +9074,7 @@ a.mrn-social-links__link:focus-visible svg {
 .has-card-frame.has-card-equal-height-items > .mrn-layout-section--card > .mrn-layout-container > .mrn-layout-grid--card > .mrn-card-row__grid > .mrn-card-row__item > .mrn-card-row__content { flex: 1; }
 @media (max-width:767px) {
  .has-card-frame.has-card-heading-breaks-mobile > .mrn-layout-section--card > .mrn-layout-container > .mrn-layout-grid--card > .mrn-card-row__head .mrn-ui__heading br { display:none; }
+ .has-card-frame.has-card-item-heading-breaks-mobile > .mrn-layout-section--card > .mrn-layout-container > .mrn-layout-grid--card > .mrn-card-row__grid > .mrn-card-row__item .mrn-ui__heading br { display:none; }
 }
 @media (max-width: 900px) {
  .has-card-frame.has-card-heading-width-tablet .mrn-card-row__head > .mrn-ui__heading { max-width: var(--mrn-card-frame-heading-width-tablet); }
@@ -9229,14 +9237,17 @@ a.mrn-social-links__link:focus-visible svg {
 @media (min-width:768px) {
  .has-split-reverse-columns.split-stack-767 > .mrn-layout-section--two-column-split > .mrn-layout-container > .mrn-layout-grid--two-column-split > .mrn-two-column-split__column--left { order:2; }
  .has-split-reverse-columns.split-stack-767 > .mrn-layout-section--two-column-split > .mrn-layout-container > .mrn-layout-grid--two-column-split > .mrn-two-column-split__column--right { order:1; }
+ .has-split-reverse-columns.has-split-bounded-columns.split-stack-767 > .mrn-layout-section--two-column-split > .mrn-layout-container > .mrn-layout-grid--two-column-split { justify-content:end; }
 }
 @media (min-width:901px) {
  .has-split-reverse-columns.split-stack-900 > .mrn-layout-section--two-column-split > .mrn-layout-container > .mrn-layout-grid--two-column-split > .mrn-two-column-split__column--left { order:2; }
  .has-split-reverse-columns.split-stack-900 > .mrn-layout-section--two-column-split > .mrn-layout-container > .mrn-layout-grid--two-column-split > .mrn-two-column-split__column--right { order:1; }
+ .has-split-reverse-columns.has-split-bounded-columns.split-stack-900 > .mrn-layout-section--two-column-split > .mrn-layout-container > .mrn-layout-grid--two-column-split { justify-content:end; }
 }
 @media (min-width:992px) {
  .has-split-reverse-columns.split-stack-991 > .mrn-layout-section--two-column-split > .mrn-layout-container > .mrn-layout-grid--two-column-split > .mrn-two-column-split__column--left { order:2; }
  .has-split-reverse-columns.split-stack-991 > .mrn-layout-section--two-column-split > .mrn-layout-container > .mrn-layout-grid--two-column-split > .mrn-two-column-split__column--right { order:1; }
+ .has-split-reverse-columns.has-split-bounded-columns.split-stack-991 > .mrn-layout-section--two-column-split > .mrn-layout-container > .mrn-layout-grid--two-column-split { justify-content:end; }
 }
 
 @media (max-width:767px) {

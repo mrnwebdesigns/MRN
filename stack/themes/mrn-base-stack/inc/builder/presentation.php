@@ -257,11 +257,13 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 			$make( 'timeline_skip_label', 'Timeline Skip Link', 'text', array( 'default_value' => 'Skip timeline' ) ),
 			$make( 'timeline_pin_tablet', 'Pin Timeline on Tablet', 'true_false', array( 'ui' => 1, 'default_value' => 0, 'instructions' => 'Opt in to the two-column pinned timeline at 768px and wider. Phones and reduced-motion visitors see every step in document order.' ) ),
 			$make( 'timeline_scroll_pace', 'Timeline Scroll Pace', 'select', array( 'choices' => array( '' => 'Standard', 'viewport' => '55% of Viewport Height per Step' ), 'default_value' => '', 'instructions' => 'Optional longer scroll journey for pinned timelines. Each step uses at least 320px of page scroll.' ) ),
+			$make( 'timeline_pin_position', 'Timeline Pin Position', 'select', array( 'choices' => array( '' => 'Below Site Header', 'center' => 'Centered in Viewport' ), 'default_value' => '', 'instructions' => 'Where the pinned image and steps hold while the timeline scrolls. Centered never sits under the site header.' ) ),
+			$make( 'timeline_pin_heading', 'Pin Heading with Timeline', 'true_false', array( 'ui' => 1, 'default_value' => 0, 'instructions' => 'Keep the section heading and introduction on screen with the pinned image and steps. Phones and reduced-motion visitors see them in document order.' ) ),
 		);
 		foreach ( $fields as &$field ) {
 			if ( in_array( $field['name'], array( 'card_reveal_content', 'card_image_ratio', 'card_caption_flow_breakpoint', 'card_image_mobile_sizing', 'card_image_loading', 'card_gap', 'card_caption_padding', 'card_caption_padding_mobile', 'card_caption_gap', 'card_section_link_space_before', 'card_section_link_alignment', 'card_section_link_size', 'card_section_link_line_height', 'card_section_link_color' ), true ) ) {
 				$field['conditional_logic'] = array( array( array( 'field' => $seed . '_card_presentation', 'operator' => '==', 'value' => 'image-overlay' ) ) );
-			} elseif ( in_array( $field['name'], array( 'timeline_image', 'timeline_skip_label', 'timeline_pin_tablet', 'timeline_scroll_pace' ), true ) ) {
+			} elseif ( in_array( $field['name'], array( 'timeline_image', 'timeline_skip_label', 'timeline_pin_tablet', 'timeline_scroll_pace', 'timeline_pin_position', 'timeline_pin_heading' ), true ) ) {
 				$field['conditional_logic'] = array( array( array( 'field' => $seed . '_card_presentation', 'operator' => '==', 'value' => 'timeline' ) ) );
 			} elseif ( 'card_intro' === $field['name'] ) {
 				$field['conditional_logic'] = array( array( array( 'field' => $seed . '_card_presentation', 'operator' => '!=', 'value' => 'timeline' ) ) );

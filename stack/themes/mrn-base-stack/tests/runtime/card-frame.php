@@ -30,6 +30,7 @@ try {
 	$row = array_merge( $row, array( 'card_row_spacing_mobile_breakpoint' => '767', 'card_padding_mobile_breakpoint' => '900', 'card_inner_gutter_narrow' => '28px', 'card_inner_gutter_small' => '20px' ) );
 	$row = array_merge( $row, array( 'card_heading_width' => '750px', 'card_heading_width_tablet' => 'none', 'card_intro_size' => 'var(--site-text-body-2-size)', 'card_intro_line_height' => 'var(--site-text-body-2-line)', 'card_intro_paragraph_space_after' => '0px', 'card_cards_space_before_tablet' => '20px', 'card_intro_alignment' => 'start', 'card_intro_lead_style' => 'label', 'card_equal_height_items' => true, 'card_grid_breakpoints' => '1199-900' ) );
 	$row['card_heading_breaks_mobile'] = true;
+	$row['card_item_heading_breaks_mobile'] = true;
 	update_field( 'field_mrn_page_content_rows', array( $row ), $id ); acf_flush_value_cache( $id, 'page_content_rows' ); $saved = get_field( 'page_content_rows', $id )[0];
 	foreach ( mrn_base_stack_get_card_frame_fields( 'fixture' ) as $field ) {
 		$name = $field['name'];
@@ -43,6 +44,8 @@ try {
 	$unsafe = mrn_base_stack_get_card_frame_contract( array( 'card_frame' => 'contained', 'card_heading_width' => '1px;bad', 'card_intro_alignment' => array( 'start' ), 'card_intro_lead_style' => 'label;bad', 'card_equal_height_items' => '1;bad', 'card_intro_size' => 'var(--bad)' ) );
 	$expect( ! str_contains( $unsafe['attributes']['style'], 'heading-width' ) && ! str_contains( $unsafe['attributes']['style'], 'intro-' ) && ! in_array( 'has-card-equal-height-items', $unsafe['classes'], true ), 'Malformed optional introduction and fill settings cannot emit presentation' );
 	$expect( ! in_array( 'has-card-heading-breaks-mobile', mrn_base_stack_get_card_frame_contract( array( 'card_frame' => 'contained', 'card_heading_breaks_mobile' => '1;bad' ) )['classes'], true ), 'Malformed responsive break selection stays inert' );
+	$expect( str_contains( $html, 'has-card-item-heading-breaks-mobile' ), 'Saved card title break option renders natively' );
+	$expect( ! in_array( 'has-card-item-heading-breaks-mobile', mrn_base_stack_get_card_frame_contract( array( 'card_frame' => 'contained', 'card_item_heading_breaks_mobile' => '1;bad' ) )['classes'], true ), 'Malformed card title break selection stays inert' );
 	$saved['card_frame'] = '';
 	ob_start(); mrn_base_stack_render_builder_row( $saved, $id, 0 ); $default_html = ob_get_clean();
 	$expect( ! str_contains( $default_html, 'has-card-frame' ) && ! str_contains( $default_html, '--mrn-card-frame-' ), 'Unselected frames do not activate any new output contract' );

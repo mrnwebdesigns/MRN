@@ -69,6 +69,8 @@ function mrn_base_stack_get_faq_frame_contract( array $row ) {
 	if ( is_scalar( $heading_weight ) && in_array( (string) $heading_weight, array_map( 'strval', range( 100, 900, 100 ) ), true ) ) { $styles[] = '--mrn-faq-frame-heading-weight:' . $heading_weight; $result['classes'][] = 'has-faq-frame-heading'; }
 	$heading_color = mrn_base_stack_get_frame_palette_color( $row['faq_heading_color'] ?? '' );
 	if ( '' !== $heading_color ) { $styles[] = '--mrn-faq-frame-heading-color:' . $heading_color; $result['classes'][] = 'has-faq-frame-heading'; }
+	$heading_tracking = mrn_base_stack_get_frame_letter_spacing( $row['faq_heading_letter_spacing'] ?? '' );
+	if ( '' !== $heading_tracking ) { $styles[] = '--mrn-faq-frame-heading-letter-spacing:' . $heading_tracking; $result['classes'][] = 'has-faq-frame-heading'; }
 	if ( 'chevron' === ( $row['faq_icon_style'] ?? '' ) ) { $result['classes'][] = 'has-faq-chevron'; }
 	if ( 'none' === ( $row['faq_item_border'] ?? '' ) ) { $result['classes'][] = 'has-faq-no-dividers'; }
 	if ( $styles ) { $result['attributes']['style'] = implode( ';', $styles ); }
