@@ -25,6 +25,7 @@ class LayoutLibraryPreviewContractTests(unittest.TestCase):
     def test_assets_are_private_and_not_recent_uploads(self):
         self.assertIn("MRN_ACTIVE_STYLE_GUIDE_LAYOUT_PREVIEW_ASSET_META", PROFILE)
         self.assertIn("post_status' => 'private'", PROFILE)
+        self.assertIn("'' !== (string) get_post_meta", PROFILE)
         self.assertIn("exclude_layout_preview_assets_from_media_library", PROFILE)
         self.assertNotIn("get_layout_library_sample_attachment_id", LIBRARY)
 

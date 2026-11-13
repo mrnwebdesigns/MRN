@@ -44,7 +44,7 @@ function mrn_active_style_guide_get_layout_preview_profile(): array {
 
 /** Check that an attachment is reserved for private preview use. */
 function mrn_active_style_guide_is_layout_preview_asset( int $attachment_id ): bool {
-	return $attachment_id > 0 && '1' === (string) get_post_meta( $attachment_id, MRN_ACTIVE_STYLE_GUIDE_LAYOUT_PREVIEW_ASSET_META, true );
+	return $attachment_id > 0 && '' !== (string) get_post_meta( $attachment_id, MRN_ACTIVE_STYLE_GUIDE_LAYOUT_PREVIEW_ASSET_META, true );
 }
 
 /** Create/find an attachment for a local descriptor or deterministic generated demo. */
