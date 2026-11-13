@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "privacy-requirements-registry.schema.json",
+  "title": "MRN privacy requirements registry",
+  "type": "object",
+  "required": ["registry_id", "schema_version", "registry_version", "source_retrieval_date", "review_status", "counsel_review_required", "disclaimer", "conservative_practices", "jurisdictions"],
+  "properties": {
+    "schema_version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},
+    "registry_version": {"type": "string", "pattern": "^\\d{4}\\.\\d{2}\\.\\d{2}(\\.\\d+)?$"},
+    "source_retrieval_date": {"$ref": "#/$defs/date"},
+    "review_status": {"enum": ["unreviewed_by_counsel", "counsel_reviewed"]},
+    "counsel_review_required": {"const": true},
+    "conservative_practices": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "basis", "practice"],
+        "properties": {"id": {"type": "string", "pattern": "^CP-[A-Z0-9-]+$"}, "basis": {"const": "recommendation_not_statutory"}, "practice": {"type": "string"}},
+        "additionalProperties": false
+      }
+    },
+    "jurisdictions": {
+      "type": "object",
+      "propertyNames": {"pattern": "^(EU|[A-Z]{2}(-[A-Z0-9]{1,3})?)$"},
+      "additionalProperties": {"$ref": "#/$defs/jurisdiction"}
+    }
+  },
+  "$defs": {
+    "date": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+    "nullableDate": {"anyOf": [{"$ref": "#/$defs/date"}, {"type": "null"}]},
+    "tri": {"type": ["boolean", "null"]},
+    "nullableInt": {"type": ["integer", "null"]},
+    "ids": {"type": "array", "items": {"type": "string"}},
+    "jurisdiction": {
+      "type": "object",
+      "required": ["key", "name", "country", "level", "status", "counsel_review_required", "summary", "laws", "required_website_behavior", "regulator_guidance", "recommended_conservative_practices", "uncertainty", "pending_changes", "verification", "sources", "customer_override"],
+      "additionalProperties": false,
+      "properties": {
+        "key": {"type": "string"},
+        "name": {"type": "string"},
+        "country": {"type": "string"},
+        "level": {"enum": ["subnational", "national", "supranational"]},
+        "status": {"enum": ["in_force", "enacted_not_yet_effective", "sectoral_only", "no_comprehensive_law_identified"]},
+        "counsel_review_required": {"const": true},
+        "summary": {"type": "object"},
+        "laws": {"type": "array", "items": {"$ref": "#/$defs/law"}},
+        "required_website_behavior": {"type": "array", "items": {"$ref": "#/$defs/behavior"}},
+        "regulator_guidance": {
+          "type": "array",
+          "items": {"type": "object", "required": ["summary", "binding", "source_ids"], "properties": {"summary": {"type": "string"}, "binding": {"type": "boolean"}, "source_ids": {"$ref": "#/$defs/ids"}}}
+        },
+        "recommended_conservative_practices": {
+          "type": "object",
+          "required": ["basis", "practice_ids"],
+          "additionalProperties": false,
+          "properties": {"basis": {"const": "recommendation_not_statutory"}, "practice_ids": {"$ref": "#/$defs/ids"}}
+        },
+        "uncertainty": {
+          "type": "array",
+          "items": {"type": "object", "required": ["topic", "detail", "counsel_review"], "properties": {"topic": {"type": "string"}, "detail": {"type": "string"}, "counsel_review": {"type": "boolean"}}}
+        },
+        "pending_changes": {
+          "type": "array",
+          "items": {"type": "object", "required": ["description"], "properties": {"description": {"type": "string"}, "effective_date": {"type": ["string", "null"]}, "source_ids": {"$ref": "#/$defs/ids"}}}
+        },
+        "verification": {"type": "object"},
+        "sources": {"type": "array", "items": {"$ref": "#/$defs/source"}},
+        "customer_override": {
+          "type": "object",
+          "required": ["active", "treat_as_applicable", "behavior_overrides", "reason", "approved_by", "approved_date", "counsel_reference", "expires"],
+          "additionalProperties": false,
+          "properties": {
+            "active": {"type": "boolean"},
+            "treat_as_applicable": {"$ref": "#/$defs/tri"},
+            "behavior_overrides": {
+              "type": "object",
+              "description": "Keyed by required_website_behavior id or conservative practice id.",
+              "additionalProperties": {"type": "object", "required": ["mode"], "properties": {"mode": {"enum": ["enforce", "relax", "disable"]}, "note": {"type": "string"}}}
+            },
+            "reason": {"type": ["string", "null"]},
+            "approved_by": {"type": ["string", "null"]},
+            "approved_date": {"$ref": "#/$defs/nullableDate"},
+            "counsel_reference": {"type": ["string", "null"]},
+            "expires": {"$ref": "#/$defs/nullableDate"}
+          },
+          "if": {"properties": {"active": {"const": true}}},
+          "then": {"properties": {"reason": {"type": "string"}, "approved_by": {"type": "string"}, "approved_date": {"$ref": "#/$defs/date"}}}
+        }
+      }
+    },
+    "law": {
+      "type": "object",
+      "required": ["id", "short_name", "citation", "type", "effective_date", "applicability", "consent_model", "consumer_opt_out_rights", "sensitive_data", "universal_opt_out", "source_ids"],
+      "properties": {
+        "type": {"enum": ["comprehensive", "sectoral", "regulation", "eprivacy"]},
+        "effective_date": {"$ref": "#/$defs/date"},
+        "enforcement_start_date": {"$ref": "#/$defs/nullableDate"},
+        "applicability": {
+          "type": "object",
+          "required": ["summary", "thresholds", "revenue_threshold", "consumer_count_threshold", "sale_revenue_consumer_count_threshold", "sale_revenue_percent_threshold", "applies_without_threshold"],
+          "properties": {
+            "revenue_threshold": {"$ref": "#/$defs/nullableInt"},
+            "consumer_count_threshold": {"$ref": "#/$defs/nullableInt"},
+            "sale_revenue_consumer_count_threshold": {"$ref": "#/$defs/nullableInt"},
+            "sale_revenue_percent_threshold": {"$ref": "#/$defs/nullableInt"},
+            "applies_without_threshold": {"type": "boolean"}
+          }
+        },
+        "consent_model": {"enum": ["opt_in", "opt_out", "mixed", "unclear"]},
+        "consumer_opt_out_rights": {
+          "type": "object",
+          "properties": {"sale": {"$ref": "#/$defs/tri"}, "targeted_advertising": {"$ref": "#/$defs/tri"}, "sharing_cross_context": {"$ref": "#/$defs/tri"}, "profiling": {"$ref": "#/$defs/tri"}}
+        },
+        "sensitive_data": {"enum": ["opt_in_consent", "opt_out", "notice_only", "prohibited_sale", "unclear", "not_addressed"]},
+        "universal_opt_out": {
+          "type": "object",
+          "required": ["must_honor", "effective_date", "gpc_named_or_recognized"],
+          "properties": {
+            "must_honor": {"$ref": "#/$defs/tri"},
+            "effective_date": {"$ref": "#/$defs/nullableDate"},
+            "gpc_named_or_recognized": {"enum": ["named_in_law", "recognized_by_regulator", "not_named", "unclear"]}
+          }
+        },
+        "source_ids": {"$ref": "#/$defs/ids"}
+      }
+    },
+    "behavior": {
+      "type": "object",
+      "required": ["id", "behavior", "basis", "citation", "applies_when", "source_ids", "confidence"],
+      "properties": {
+        "basis": {"enum": ["statute", "regulation", "case_law"]},
+        "confidence": {"enum": ["high", "medium", "low"]},
+        "source_ids": {"$ref": "#/$defs/ids", "minItems": 1}
+      }
+    },
+    "source": {
+      "type": "object",
+      "required": ["id", "title", "url", "publisher", "type", "official", "retrieved_date", "verified_by_fetch"],
+      "properties": {
+        "url": {"type": "string", "pattern": "^https?://"},
+        "type": {"enum": ["statute", "regulation", "bill", "regulator_guidance", "regulator_page", "case", "secondary"]},
+        "official": {"type": "boolean"},
+        "retrieved_date": {"$ref": "#/$defs/date"},
+        "verified_by_fetch": {"type": "boolean"}
+      }
+    }
+  }
+}
