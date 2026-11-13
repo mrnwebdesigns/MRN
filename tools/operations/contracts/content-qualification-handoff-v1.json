@@ -1,0 +1,15 @@
+{
+  "contract_version": 1,
+  "frozen_qualification_contract_sha256": "9c8d3fa9e27d7e4aa36109ccb33d76f7babf5bc6aea4f3661fcfd6e26ab62e03",
+  "dispatch_owner": "mrn-operations-gateway",
+  "provider_readiness_claim": false,
+  "handoff_deadline_seconds": 300,
+  "invariants": [
+    "Gateway verifies configured protected dispatch and exact source/recipe pins BEFORE requesting a provider job. Absent or rejected preflight returns local blocked/worker_unavailable and creates no provider job.",
+    "Provider queued state is pending intent, never proof of remote-worker availability. Policy.enabled and caller flags cannot establish dispatcher readiness.",
+    "Private immutable handoff deadline is min(job expires_at, created_at + 300 seconds). Only purpose-signed authenticated exact capture before that deadline can transition queued to running.",
+    "Status, protected context and capture derive or persist blocked/worker_unavailable after an unclaimed handoff deadline. Late capture cannot revive, recapture or rebase the job.",
+    "Gateway reports known dispatch failure immediately as blocked. Provider converges at deadline if protected failure route is unavailable. Indeterminate dispatch remains pending with read-only exact-job reconciliation; no duplicate dispatch, fabricated worker failure or automatic mutation retry.",
+    "No public readiness/worker endpoint. Gateway never receives registrar private keys. Existing staff wire and null-only consumer binding remain unchanged."
+  ]
+}

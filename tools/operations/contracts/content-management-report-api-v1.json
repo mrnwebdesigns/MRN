@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "adapter": "content-management-private-report-api-v1",
+  "status": "source-only machine registration; no consumer or production admission",
+  "production_enabled": false,
+  "consumer_binding_enabled": false,
+  "frozen_protocols": {
+    "content-management-report-v1.json": "312b7fb7d7179e419686bed93d51f27adfbbe432c75f1f52db909b4d9f6728e6",
+    "content-management-evidence-v1.json": "6923e15402d99203e297b590145947b6ac1d39552e5cde7bc173e45090a47084"
+  },
+  "abilities": [
+    {
+      "name": "mrn-mainwp/retain-content-edit-qualification-report-v1",
+      "contract": "content-management-report-v1.json",
+      "input_definition": "retain_input",
+      "output_definition": "retained_summary",
+      "callback": "acquire",
+      "http_method": "POST",
+      "private_backend_only": true,
+      "staff_allowlisted": false,
+      "maximum_response_bytes": 32768,
+      "registered": true
+    },
+    {
+      "name": "mrn-mainwp/read-content-edit-qualification-report-v1",
+      "contract": "content-management-report-v1.json",
+      "input_definition": "read_input",
+      "output_definition": "retained_summary",
+      "callback": "read",
+      "http_method": "POST",
+      "private_backend_only": true,
+      "staff_allowlisted": false,
+      "maximum_response_bytes": 32768,
+      "registered": true
+    },
+    {
+      "name": "mrn-mainwp/read-management-evidence-query-v1",
+      "contract": "content-management-evidence-v1.json",
+      "input_definition": "query_readback_input",
+      "output_definition": "query_readback_output",
+      "callback": "read_query",
+      "http_method": "POST",
+      "private_backend_only": true,
+      "staff_allowlisted": false,
+      "maximum_response_bytes": 32768,
+      "registered": true
+    }
+  ]
+}

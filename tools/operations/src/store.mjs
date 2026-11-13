@@ -14,13 +14,15 @@ export class Store {
       CREATE TABLE IF NOT EXISTS requests(subject TEXT NOT NULL, key TEXT NOT NULL, fingerprint TEXT NOT NULL, record_id TEXT NOT NULL, PRIMARY KEY(subject,key));
       CREATE TABLE IF NOT EXISTS locks(target TEXT PRIMARY KEY, operation TEXT NOT NULL UNIQUE);
       CREATE TABLE IF NOT EXISTS audit(seq INTEGER PRIMARY KEY, time TEXT NOT NULL, subject TEXT NOT NULL, target TEXT NOT NULL, operation TEXT NOT NULL, event TEXT NOT NULL, outcome TEXT NOT NULL);`);
+    if (!this.db.prepare('PRAGMA table_info(audit)').all().some(c => c.name === 'identity')) this.db.exec("ALTER TABLE audit ADD COLUMN identity TEXT NOT NULL DEFAULT '{}'");
   }
   transaction(fn) { this.db.exec('BEGIN IMMEDIATE'); try { const r = fn(); this.db.exec('COMMIT'); return r; } catch (e) { this.db.exec('ROLLBACK'); throw e; } }
   close() { this.db.close(); }
   audit(actor, target, operation, event, outcome) {
     // Never store tool arguments, response bodies, JWTs, passwords, confirmation tokens or backup receipts.
-    this.db.prepare('INSERT INTO audit(time,subject,target,operation,event,outcome) VALUES(?,?,?,?,?,?)')
-      .run(new Date().toISOString(), actor.subject, targetKey(target), operation || '', event, outcome);
+    this.db.prepare('INSERT INTO audit(time,subject,target,operation,event,outcome,identity) VALUES(?,?,?,?,?,?,?)')
+      .run(new Date().toISOString(), actor.subject, targetKey(target), operation || '', event, outcome,
+        JSON.stringify(actor.identityProvider === 'google-oauth2' ? { googleSubject: actor.googleSubject, email: actor.verifiedEmail, provider: actor.identityProvider } : {}));
   }
   get(id) { const row = this.db.prepare('SELECT body FROM records WHERE id=?').get(id); requireThat(row, 'NOT_FOUND', 'Record not found.'); return JSON.parse(row.body); }
   save(record) {

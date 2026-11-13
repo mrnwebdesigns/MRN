@@ -5,7 +5,7 @@
 Once MRN has made the plugin available in its ChatGPT workspace:
 
 1. Install **MRN Website Operations** from the workspace's plugins.
-2. Connect it and sign in with the approved individual MRN account.
+2. Connect it and sign in with your active `@mrnwebdesigns.com` Google Workspace account.
 3. Select the plugin in chat and ask, for example, “Inspect this website and tell
    me what needs attention.”
 
@@ -45,6 +45,12 @@ listing, inspection, recorded results and history; repairs and deployment are
 disabled. See `VALIDATION.md` for remaining acceptance limits. This workspace
 publication does not imply public-directory approval or a full Stack release.
 
+## Unified integration candidate
+
+Active MRN Google staff receive automatic portfolio membership; there is no individual approval or enrollment step. Existing signed-in users are still checked for active Directory membership and revocation. Change approvals remain in chat.
+
+The source candidate registers 21 tools, including expanded details/content reads, typed content inspection/preparation, code inspection, code preparation and source approval. These new tools have not replaced the deployed four-tool workspace surface. Refresh and publish this same existing plugin only after the reviewed provider/service migration; do not create a second connector. See [the integration inventory and acceptance gates](UNIFIED-INTEGRATION.md).
+
 ## MRN operator delivery
 
 Use a workspace-published plugin for the team. The operator creates the remote
@@ -67,7 +73,7 @@ settings in `service.json` and the chosen identity provider:
 | --- | --- |
 | Public resource | Approved HTTPS URL ending in `/mcp`; also use it as token audience |
 | Issuer and JWKS | Actual MRN authorization server; exact issuer match and published signing keys |
-| OAuth | Authorization code with PKCE S256 and scope `mrn:operations` |
+| OAuth | Authorization code with PKCE S256; `mrn:operations` for reads and additional `mrn:operations:write` for guarded changes (new scope activation pending review) |
 | Client registration | The provider's supported CIMD, DCR or predefined client route |
 | Callback | Copy the exact URI shown by ChatGPT into the provider's allowlist |
 | Member policy | Verified MRN email-domain read access; explicit subject overrides and write permissions |
@@ -120,7 +126,7 @@ evidence but must not change site code/content or submit forms.
 Only after that succeeds should a controlled environment exercise a specifically
 authorized repair, verified backup, execution, post-change verification and
 recovery through the same conversation. Existing QA, backup, lock and release
-gates remain required. The local HTTP/stdio fixtures do not replace this test.
+gates remain required. The local HTTP/stdio fixtures do not replace this test. The [team acceptance record](TEAM-ACCEPTANCE.md) tracks the unified release without a named tester or individual onboarding approval.
 
 The host, existing MRN identity provider and staff audience are identified.
 The host, Operations OAuth registration and MRN workspace publication are active.

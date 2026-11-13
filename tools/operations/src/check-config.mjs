@@ -2,9 +2,12 @@ import { loadConfig } from './config.mjs';
 import { policySchema, readJson } from './contracts.mjs';
 import { recoverySchema } from './recovery.mjs';
 try {
-  const { config, registry } = loadConfig(process.env.MRN_OPERATIONS_CONFIG || '/etc/mrn-operations/service.json');
+  const { config, registry, workflowPolicies } = loadConfig(process.env.MRN_OPERATIONS_CONFIG || '/etc/mrn-operations/service.json');
   const policy = policySchema.parse(readJson(config.policyPath));
   if (config.recoveryEvidencePath) recoverySchema.parse(readJson(config.recoveryEvidencePath));
   process.stdout.write(JSON.stringify({ valid: true, websiteOverrides: registry.data().websites.length, discoveryEnabled: Boolean(config.discovery), members: policy.members.length,
-    emailDomains: policy.emailDomains.length, writesEnabled: config.writesEnabled, hostingVerified: false }) + '\n');
+    emailDomains: policy.emailDomains.length, writesEnabled: config.writesEnabled,
+    codeProfiles: workflowPolicies.code?.profiles.length || 0, contentProfiles: workflowPolicies.content?.profiles.length || 0,
+    privateContentAccessConfigured: config.contentAccess,
+    hostingVerified: false }) + '\n');
 } catch { process.stderr.write('Configuration validation failed. Check required fields, absolute paths, exact environment identities and issuer URLs.\n'); process.exitCode = 1; }

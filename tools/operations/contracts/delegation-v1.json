@@ -1,0 +1,538 @@
+{
+  "schema": 1,
+  "status": "Implemented locally; no production deployment or policy activation",
+  "prefix": "mrn-mainwp-delegation-v1:",
+  "algorithm": "Ed25519",
+  "ttl_seconds": 60,
+  "issuer": "https://operations.mrnwebdesigns.com",
+  "audience": "https://wpcontrol.mrndev.io",
+  "canonical": "Recursively sort nonempty ASCII object keys; reject __proto__/prototype/constructor; preserve arrays and empty objects; safe integers only; compact UTF8 JSON with Unicode, slashes and line terminators unescaped. arguments_json must already be canonical. Reject floats, -0, duplicate keys, invalid UTF8, excessive depth/size and unknown fields.",
+  "claims": [
+    "schema",
+    "issuer",
+    "audience",
+    "issued_at",
+    "expires_at",
+    "request_id",
+    "nonce",
+    "authenticated_connection_sha256",
+    "oauth_subject",
+    "google_sub",
+    "email",
+    "email_verified",
+    "hosted_domain",
+    "identity_provider",
+    "google_connection",
+    "ability",
+    "arguments_sha256",
+    "policy_sha256"
+  ],
+  "abilities": {
+    "mrn-mainwp/get-delegation-challenge-v1": {
+      "input": {
+        "type": "object",
+        "properties": {
+          "ability": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "arguments_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "ability",
+          "arguments_sha256"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "nonce": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "expires_at": {
+            "type": "integer"
+          },
+          "authenticated_connection_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "policy_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "nonce",
+          "expires_at",
+          "authenticated_connection_sha256",
+          "policy_sha256"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "mrn-mainwp/get-team-access-v1": {
+      "input": {
+        "type": "object",
+        "properties": {
+          "delegation": {
+            "type": "object",
+            "properties": {
+              "key_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9._-]{1,120}$"
+              },
+              "payload_base64": {
+                "type": "string",
+                "maxLength": 16384
+              },
+              "signature_base64": {
+                "type": "string",
+                "maxLength": 88
+              }
+            },
+            "required": [
+              "key_id",
+              "payload_base64",
+              "signature_base64"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "delegation"
+        ],
+        "additionalProperties": false
+      },
+      "signed_arguments_json": "{}",
+      "output": {
+        "type": "object",
+        "properties": {
+          "schema": {
+            "type": "integer",
+            "enum": [
+              1
+            ]
+          },
+          "oauth_subject": {
+            "type": "string"
+          },
+          "google_sub": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "portfolio_access": {
+            "type": "boolean"
+          },
+          "expires_at": {
+            "type": "integer"
+          },
+          "policy_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "schema",
+          "oauth_subject",
+          "google_sub",
+          "email",
+          "roles",
+          "portfolio_access",
+          "expires_at",
+          "policy_sha256"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "mrn-mainwp/run-delegated-operation-v1": {
+      "input": {
+        "type": "object",
+        "properties": {
+          "ability": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "arguments_json": {
+            "type": "string",
+            "maxLength": 98304
+          },
+          "delegation": {
+            "type": "object",
+            "properties": {
+              "key_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9._-]{1,120}$"
+              },
+              "payload_base64": {
+                "type": "string",
+                "maxLength": 16384
+              },
+              "signature_base64": {
+                "type": "string",
+                "maxLength": 88
+              }
+            },
+            "required": [
+              "key_id",
+              "payload_base64",
+              "signature_base64"
+            ],
+            "additionalProperties": false
+          },
+          "confirm": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ability",
+          "arguments_json",
+          "delegation",
+          "confirm"
+        ],
+        "additionalProperties": false
+      },
+      "binding": "The signed ability and argument digest refer to the INNER ability and parsed arguments_json, never the wrapper or envelope.",
+      "output": {
+        "type": "object",
+        "properties": {
+          "schema": {
+            "type": "integer",
+            "enum": [
+              1
+            ]
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "ability": {
+            "type": "string"
+          },
+          "actor": {
+            "type": "object",
+            "properties": {
+              "oauth_subject": {
+                "type": "string"
+              },
+              "google_sub": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "oauth_subject",
+              "google_sub",
+              "email"
+            ],
+            "additionalProperties": false
+          },
+          "result": {},
+          "policy_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "schema",
+          "request_id",
+          "ability",
+          "actor",
+          "result",
+          "policy_sha256"
+        ],
+        "additionalProperties": false
+      },
+      "meta": {
+        "readonly": false,
+        "destructive": true
+      },
+      "mcp_confirmation": "No dry_run. Call outer confirm:true to obtain MCP preview token without upstream execution; immediately follow with exact same envelope + user_confirmed:true + confirmation_token. Mint delegation after exact-plan user approval; expires after60s. Native inner guards and confirm remain independent."
+    },
+    "mrn-mainwp/read-delegated-operation-v1": {
+      "input": {
+        "type": "object",
+        "properties": {
+          "ability": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "arguments_json": {
+            "type": "string",
+            "maxLength": 98304
+          },
+          "delegation": {
+            "type": "object",
+            "properties": {
+              "key_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9._-]{1,120}$"
+              },
+              "payload_base64": {
+                "type": "string",
+                "maxLength": 16384
+              },
+              "signature_base64": {
+                "type": "string",
+                "maxLength": 88
+              }
+            },
+            "required": [
+              "key_id",
+              "payload_base64",
+              "signature_base64"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ability",
+          "arguments_json",
+          "delegation"
+        ],
+        "additionalProperties": false
+      },
+      "binding": "The signed ability and argument digest refer to the INNER ability and parsed arguments_json, never the wrapper or envelope.",
+      "output": {
+        "type": "object",
+        "properties": {
+          "schema": {
+            "type": "integer",
+            "enum": [
+              1
+            ]
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "ability": {
+            "type": "string"
+          },
+          "actor": {
+            "type": "object",
+            "properties": {
+              "oauth_subject": {
+                "type": "string"
+              },
+              "google_sub": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "oauth_subject",
+              "google_sub",
+              "email"
+            ],
+            "additionalProperties": false
+          },
+          "result": {},
+          "policy_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "schema",
+          "request_id",
+          "ability",
+          "actor",
+          "result",
+          "policy_sha256"
+        ],
+        "additionalProperties": false
+      },
+      "meta": {
+        "readonly": false,
+        "destructive": false
+      }
+    },
+    "mrn-mainwp/sync-delegated-site-v1": {
+      "input": {
+        "type": "object",
+        "properties": {
+          "ability": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "arguments_json": {
+            "type": "string",
+            "maxLength": 98304
+          },
+          "delegation": {
+            "type": "object",
+            "properties": {
+              "key_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9._-]{1,120}$"
+              },
+              "payload_base64": {
+                "type": "string",
+                "maxLength": 16384
+              },
+              "signature_base64": {
+                "type": "string",
+                "maxLength": 88
+              }
+            },
+            "required": [
+              "key_id",
+              "payload_base64",
+              "signature_base64"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ability",
+          "arguments_json",
+          "delegation"
+        ],
+        "additionalProperties": false
+      },
+      "binding": "The signed ability and argument digest refer to the INNER ability and parsed arguments_json, never the wrapper or envelope.",
+      "output": {
+        "type": "object",
+        "properties": {
+          "schema": {
+            "type": "integer",
+            "enum": [
+              1
+            ]
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "ability": {
+            "type": "string"
+          },
+          "actor": {
+            "type": "object",
+            "properties": {
+              "oauth_subject": {
+                "type": "string"
+              },
+              "google_sub": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "oauth_subject",
+              "google_sub",
+              "email"
+            ],
+            "additionalProperties": false
+          },
+          "result": {},
+          "policy_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "schema",
+          "request_id",
+          "ability",
+          "actor",
+          "result",
+          "policy_sha256"
+        ],
+        "additionalProperties": false
+      },
+      "meta": {
+        "readonly": false,
+        "destructive": false
+      },
+      "only_inner_ability": "mainwp/sync-sites-v1"
+    }
+  },
+  "auth": "Only the explicitly pinned WP Application Password connection can call these endpoints. Existing native ability schemas are unchanged. No raw native REST or child transport calls and no legacy Google lease fallback through that service credential. Each nested ability validates its original schema and permissions.",
+  "roles": "Automatic reader/preparer/approver/executor grant for active MRN staff under owner-approved domain/customer policy; explicit subject revocations override it. No manual person enrollment. Owner-policy administration is not delegated.",
+  "native_initial_allowlist": [
+    "mainwp/count-client-sites-v1",
+    "mainwp/count-clients-v1",
+    "mainwp/count-sites-v1",
+    "mainwp/get-abandoned-plugins-v1",
+    "mainwp/get-abandoned-themes-v1",
+    "mainwp/get-client-costs-v1",
+    "mainwp/get-client-sites-v1",
+    "mainwp/get-client-v1",
+    "mainwp/get-site-changes-v1",
+    "mainwp/get-site-client-v1",
+    "mainwp/get-site-costs-v1",
+    "mainwp/get-site-plugins-v1",
+    "mainwp/get-site-security-v1",
+    "mainwp/get-site-themes-v1",
+    "mainwp/get-site-updates-v1",
+    "mainwp/get-site-v1",
+    "mainwp/get-sites-basic-v1",
+    "mainwp/get-tag-clients-v1",
+    "mainwp/get-tag-sites-v1",
+    "mainwp/get-tag-v1",
+    "mainwp/list-clients-v1",
+    "mainwp/list-ignored-updates-v1",
+    "mainwp/list-sites-v1",
+    "mainwp/list-tags-v1",
+    "mainwp/sync-sites-v1",
+    "mrn-mainwp/approve-code-change-v1",
+    "mrn-mainwp/execute-code-change-v1",
+    "mrn-mainwp/get-code-operation-v1",
+    "mrn-mainwp/get-database-backup-status-v1",
+    "mrn-mainwp/get-google-fonts-status-v1",
+    "mrn-mainwp/get-stack-deployment-agent-status-v1",
+    "mrn-mainwp/get-stack-runtime-report-v1",
+    "mrn-mainwp/inspect-backup-retention-policy-v1",
+    "mrn-mainwp/inspect-code-file-v1",
+    "mrn-mainwp/prepare-code-change-v1",
+    "mrn-mainwp/qualify-code-storage-v1",
+    "mrn-mainwp/qualify-stack-site-v1",
+    "mrn-mainwp/start-database-backup-v1"
+  ],
+  "scope": "Directory list is portfolio read; child actions require one exact site. Other mutations stay closed until separately qualified adapters are added. Existing code QA site/root/source requirements stay enforced. No production configuration changed.",
+  "unversioned_qa": {
+    "source": {
+      "mode": "unversioned"
+    },
+    "manifest": "Use the existing src/contracts.mjs closed request schema; captured expected_sha256 and candidate bytes remain mandatory; approved runtime profile is chosen by trusted signer policy, not chat.",
+    "qualification": "Current production profile covers only company frontend-accessibility.php; general snapshots/profiles and service-actor dispatch still need qualification."
+  },
+  "owner_policy_fields": [
+    "enabled",
+    "service_connections",
+    "keys",
+    "google_connection",
+    "workspace_customer_id",
+    "staff_roles",
+    "portfolio_access"
+  ],
+  "owner_configuration_ability": "mrn-mainwp/configure-team-delegation-v1 {policy_json:canonical_json,confirm:true}; fresh existing owner Google proof required, service credential cannot call it",
+  "provider_candidate_version": "0.14.0",
+  "constraints": {
+    "page": "positive safe integer",
+    "per_page": "1..100",
+    "client_target": "exact positive client_id_or_email integer, never email alias",
+    "tag_target": "exact positive tag_id",
+    "site_target": "one positive site ID, no empty/all-site sync or ignored-update selection"
+  },
+  "receipt_status": "get-database-backup-status-v1 is a mutating preparer operation through run-delegated-operation-v1: it may issue a one-use deployment receipt. It is not admitted to the read wrapper.",
+  "site_lock_helper": "Private MRN_MainWP_Site_Lock::acquire/owned/release; provider-generated UUID4; same mrn_code_site_lock_<id> namespace; atomic compare-and-delete; no public unlock operation.",
+  "transport": "POST-only, including team/access and read wrappers: each consumes nonce/audit bookkeeping. Explicit readonly=false/destructive=false avoids the pinned MCP serializing signed identity proof into GET URLs. Gateway site-read tools remain semantically read-only."
+}

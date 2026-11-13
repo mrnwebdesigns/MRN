@@ -28,3 +28,477 @@ jobs:
         run: node --test stack/tests/test_mrn_fleet_update.mjs
       - name: Dependency security audit
         run: npm audit --omit=dev --audit-level=high --prefix tools/operations
+
+  provider-transport:
+    name: Disposable gateway MainWP transport
+    needs: controlled-contracts
+    runs-on: ubuntu-24.04
+    # Source-context composition b2b6698 passed in 29m14s, leaving only 46s at
+    # the old whole-job cap. Include room for the added catalog composition and
+    # original artifact retention. This is only the overall CI job allocation:
+    # individual request/authority deadlines, the 300s synthetic grant and
+    # the 300s native-hook allocation remain independently enforced below.
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Read immutable integration inputs
+        id: sources
+        run: |
+          node --input-type=module <<'JS'
+          import { readFileSync, appendFileSync } from 'node:fs';
+          import assert from 'node:assert/strict';
+          const lock = JSON.parse(readFileSync('tools/operations/test/runtime/sources.json', 'utf8'));
+          assert.equal(lock.schema, 1);
+          for (const [name, repository] of [['provider', 'mrnwebdesigns/mrn-mainwp-operations-api'], ['transport', 'mrnwebdesigns/mainwp-mcp'], ['runner', 'mrnwebdesigns/mrn-code-qa-runner'], ['managementWorker', 'mrnwebdesigns/mrn-code-qa-runner']]) {
+            assert.equal(lock[name].repository, repository);
+            assert.match(lock[name].commit, /^[a-f0-9]{40}$/);
+            appendFileSync(process.env.GITHUB_OUTPUT, `${name}=${lock[name].commit}\n`);
+          }
+          JS
+      - name: Request existing read-only access to pinned provider and runner sources
+        id: provider-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.MRN_CI_STANDALONE_REPOS_APP_ID }}
+          private-key: ${{ secrets.MRN_CI_STANDALONE_REPOS_PRIVATE_KEY }}
+          owner: mrnwebdesigns
+          repositories: |
+            mrn-mainwp-operations-api
+            mrn-code-qa-runner
+          permission-contents: read
+      - name: Check out the accepted provider checkpoint
+        uses: actions/checkout@v4
+        with:
+          repository: mrnwebdesigns/mrn-mainwp-operations-api
+          ref: ${{ steps.sources.outputs.provider }}
+          token: ${{ steps.provider-token.outputs.token }}
+          path: .runtime/provider
+          persist-credentials: false
+      - name: Check out the canonical MCP transport
+        uses: actions/checkout@v4
+        with:
+          repository: mrnwebdesigns/mainwp-mcp
+          ref: ${{ steps.sources.outputs.transport }}
+          path: .runtime/transport
+          persist-credentials: false
+      - name: Check out the qualified acquisition runner
+        uses: actions/checkout@v4
+        with:
+          repository: mrnwebdesigns/mrn-code-qa-runner
+          ref: ${{ steps.sources.outputs.runner }}
+          token: ${{ steps.provider-token.outputs.token }}
+          path: .runtime/runner
+          persist-credentials: false
+      - name: Check out the management context reader candidate
+        uses: actions/checkout@v4
+        with:
+          repository: mrnwebdesigns/mrn-code-qa-runner
+          ref: ${{ steps.sources.outputs.managementWorker }}
+          token: ${{ steps.provider-token.outputs.token }}
+          path: .runtime/management-worker
+          persist-credentials: false
+      - name: Install locked test dependencies and build MCP
+        run: |
+          npm ci --ignore-scripts --prefix tools/operations
+          npm ci --ignore-scripts --prefix .runtime/transport
+          npm audit --omit=dev --prefix .runtime/transport
+          npm run build --prefix .runtime/transport
+      - name: Verify pinned PHP and JavaScript source closure vectors
+        run: node --test .runtime/management-worker/test/management-source-closure.test.mjs
+      - name: Verify private capture transport size and deadlines
+        env:
+          MRN_GATEWAY_MCP_SOURCE: ${{ github.workspace }}/.runtime/transport
+          MRN_CAPTURE_TRANSPORT_REPORT: ${{ runner.temp }}/capture-transport-report.json
+        run: node tools/operations/test/runtime/check-capture-transport.mjs
+      - name: Verify original dispatch readback between gateway and protected worker
+        env:
+          MRN_GATEWAY_MANAGEMENT_RUNNER_SOURCE: ${{ github.workspace }}/.runtime/management-worker
+          MRN_GATEWAY_RUNNER_SOURCE: ${{ github.workspace }}/.runtime/runner
+          MRN_GATEWAY_PROVIDER_SOURCE: ${{ github.workspace }}/.runtime/provider
+          MRN_GATEWAY_WORKER_REPORT: ${{ runner.temp }}/gateway-worker-report.json
+        run: node tools/operations/test/runtime/check-management-worker.mjs
+      - name: Verify native preparation leaves immutable source clean
+        env:
+          MRN_GATEWAY_PROVIDER_SOURCE: ${{ github.workspace }}/.runtime/provider
+        run: python3 tools/operations/test/runtime/test-native-source-cleanliness.py
+      - name: Exercise actual gateway, MCP and WordPress authorization
+        env:
+          # The early cache helper imports another pinned Python module. Keep
+          # generated bytecode out of the immutable provider checkout; the later
+          # clean-source gate still rejects every real tracked/untracked change.
+          PYTHONDONTWRITEBYTECODE: '1'
+          MRN_DISPOSABLE_API_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/provider-hook.sh
+          MRN_DISPOSABLE_NATIVE_CHILD: '1'
+          MRN_DISPOSABLE_SYNC_AUTH_DIAGNOSTICS: '1'
+          MRN_DISPOSABLE_MANAGEMENT_TEST: '1'
+          MRN_DISPOSABLE_SOURCE_TEST: '1'
+          # Separate cloned Dashboard; never initializes the legacy fixture.
+          MRN_DISPOSABLE_EXISTING_BINDING_TEST: '1'
+          MRN_DISPOSABLE_EXISTING_SOURCE_CONTEXT_TEST: '1'
+          MRN_DISPOSABLE_EXISTING_SOURCE_CATALOG_TEST: '1'
+          MRN_DISPOSABLE_EXISTING_SOURCE_STORAGE_TEST: '1'
+          MRN_DISPOSABLE_EXISTING_SOURCE_TRANSPORT_TEST: '1'
+          MRN_DISPOSABLE_EXISTING_BINDING_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/existing-binding-hook.sh
+          # Qualified provider; actual gateway custody remains a required CI gate.
+          MRN_DISPOSABLE_REPORT_CUSTODY_TEST: '1'
+          MRN_DISPOSABLE_NATIVE_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/native-hook.sh
+          MRN_DISPOSABLE_ACCESS_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/access-hook.sh
+          MRN_DISPOSABLE_SOURCE_HOOK: ${{ github.workspace }}/tools/operations/test/runtime/source-hook.sh
+          MRN_GATEWAY_MCP_SOURCE: ${{ github.workspace }}/.runtime/transport
+          MRN_GATEWAY_REPORT: ${{ runner.temp }}/gateway-provider-report.json
+          MRN_GATEWAY_PROVIDER_SOURCE: ${{ github.workspace }}/.runtime/provider
+          MRN_GATEWAY_RUNNER_SOURCE: ${{ github.workspace }}/.runtime/runner
+          MRN_GATEWAY_MANAGEMENT_RUNNER_SOURCE: ${{ github.workspace }}/.runtime/management-worker
+          MRN_GATEWAY_NATIVE_REPORT: ${{ runner.temp }}/gateway-native-content-report.json
+          MRN_GATEWAY_ACCESS_REPORT: ${{ runner.temp }}/gateway-access-report.json
+          MRN_GATEWAY_MANAGEMENT_REPORT: ${{ runner.temp }}/gateway-management-report.json
+          MRN_GATEWAY_SOURCE_REPORT: ${{ runner.temp }}/gateway-native-source-report.json
+          MRN_GATEWAY_REPORT_CUSTODY_REPORT: ${{ runner.temp }}/gateway-report-custody-report.json
+          MRN_GATEWAY_EXISTING_BINDING_REPORT: ${{ runner.temp }}/gateway-existing-binding-report.json
+        run: |
+          .runtime/provider/tests/runtime/run-dashboard-api.sh
+          node --input-type=module <<'JS'
+          import { readFileSync } from 'node:fs';
+          import assert from 'node:assert/strict';
+          import { execFileSync } from 'node:child_process';
+          const proof = JSON.parse(readFileSync(process.env.MRN_GATEWAY_REPORT, 'utf8'));
+          assert.equal(proof.result, 'PASS');
+          assert.equal(proof.passed.length, 10);
+          assert.equal(proof.productionCredentials, false);
+          assert.equal(proof.chatgptAcceptanceVerified, false);
+          const native = JSON.parse(readFileSync(process.env.MRN_GATEWAY_NATIVE_REPORT, 'utf8'));
+          assert.equal(native.result, 'PASS');
+          assert.equal(native.passed.length, 8);
+          assert.equal(native.scope, 'disposable-native-child-only');
+          assert.equal(native.managedSites, 1);
+          for (const field of ['contentWriteVerified', 'contentRollbackVerified', 'publicHtmlVerified']) assert.equal(native[field], true);
+          assert.equal(native.structuredManagementReadsVerified, true);
+          assert.equal(native.managementReadOnlyScopeVerified, true);
+          assert.equal(native.managementWritesVerified, false);
+          for (const field of ['productionCredentials', 'liveGoogleVerified', 'protectedQaVerified', 'productionQaVerified', 'remoteBackupVerified', 'chatgptAcceptanceVerified', 'codeWriteVerified']) assert.equal(native[field], false);
+          const access = JSON.parse(readFileSync(process.env.MRN_GATEWAY_ACCESS_REPORT, 'utf8'));
+          assert.equal(access.result, 'PASS');
+          assert.equal(access.passed.length, 11);
+          assert.equal(access.scope, 'disposable-native-access-only');
+          for (const field of ['captureVerified', 'pendingDuringReadVerified', 'retainedCaptureRecoveryVerified', 'pendingRecoveryDenied', 'currentSitePermissionVerified', 'privateLifecycleVerified', 'measurementReadbackVerified', 'measurementSitePermissionVerified', 'pendingMeasurementsDenied', 'nodeAcquisitionVerified', 'nodeAcquisitionDenialsVerified']) assert.equal(access[field], true);
+          for (const field of ['productionCredentials', 'liveGoogleVerified', 'protectedWorkerVerified', 'chatgptAcceptanceVerified', 'codeWriteVerified', 'contentWriteVerified', 'remoteBackupVerified']) assert.equal(access[field], false);
+          const management = JSON.parse(readFileSync(process.env.MRN_GATEWAY_MANAGEMENT_REPORT, 'utf8'));
+          assert.equal(management.result, 'PASS');
+          assert.equal(management.passed.length, 6);
+          assert.equal(management.scope, 'disposable-native-management-access-only');
+          for (const field of ['managementCallbackVerified', 'originalIntentVerified', 'completeCaptureVerified', 'independentReadbackVerified', 'retainedMeasurementsVerified', 'currentPermissionVerified', 'pendingDuringReadVerified', 'pendingRecoveryDenied', 'childUnchangedVerified']) assert.equal(management[field], true);
+          for (const field of ['productionCredentials', 'liveGoogleVerified', 'protectedWorkerVerified', 'renderedQaVerified', 'consumerBindingIssued', 'contentWriteVerified', 'remoteBackupVerified', 'chatgptAcceptanceVerified']) assert.equal(management[field], false);
+          assert.ok(management.capture.measurements.readback_bytes > 65535);
+          assert.ok(management.capture.measurements.readback_chunks > 1);
+          assert.ok(management.callbackPosts > 0);
+          assert.equal(management.draftRecordReadVerified, true);
+          assert.equal(management.publishedTargetVerified, true);
+          const source = JSON.parse(readFileSync(process.env.MRN_GATEWAY_SOURCE_REPORT, 'utf8'));
+          assert.equal(source.result, 'PASS');
+          assert.equal(source.scope, 'disposable-native-source-integration');
+          assert.deepEqual(source.passed, [
+            'fresh-original-Google-intent-and-actual-native-capture-readback',
+            'canonical-MCP-bootstrap-and-native-source-capture-retain-one-original-slot',
+            'independent-worker-reads-signed-original-metadata-and-binds-recipient-over-TLS',
+            'actual-provider-native-frames-cross-encrypted-broker-and-independent-decryption',
+            'complete-real-cache-and-native-source-reconstruction-independently-reopened',
+            'original-pending-revocation-denies-provider-bootstrap-and-protected-source',
+            'original-child-content-unchanged-without-candidate-execution',
+          ]);
+          for (const field of ['providerSourceBootstrapVerified', 'nativeSourceCaptureVerified', 'sourceBrokerTlsVerified', 'fullSourceBytesVerified', 'originalRevocationVerified']) assert.equal(source[field], true);
+          for (const field of ['productionCredentials', 'liveGoogleVerified', 'hostedOidcVerified', 'hostedCacheProvenanceVerified', 'protectedRenderedQaVerified', 'consumerBindingIssued', 'contentWriteVerified', 'remoteBackupVerified', 'chatgptAcceptanceVerified']) assert.equal(source[field], false);
+          for (const field of ['manifest_sha256', 'parity_sha256', 'transfer_manifest_sha256']) assert.match(source.sourceClosure[field], /^[a-f0-9]{64}$/);
+          const sourceLimits = JSON.parse(readFileSync('tools/operations/contracts/content-management-source-transfer-v1.json', 'utf8')).limits;
+          for (const [field, maximum] of [['cache_artifacts', 128], ['native_files', sourceLimits.native_files], ['native_bytes', sourceLimits.native_bytes], ['source_frames', sourceLimits.total_frames]]) {
+            assert.ok(Number.isSafeInteger(source.sourceClosure[field]) && source.sourceClosure[field] > 0 && source.sourceClosure[field] <= maximum);
+          }
+          assert.ok(['0', '1'].includes(process.env.MRN_DISPOSABLE_REPORT_CUSTODY_TEST));
+          let custody;
+          if (process.env.MRN_DISPOSABLE_REPORT_CUSTODY_TEST === '1') {
+            custody = JSON.parse(readFileSync(process.env.MRN_GATEWAY_REPORT_CUSTODY_REPORT, 'utf8'));
+            assert.equal(custody.result, 'PASS');
+            assert.equal(custody.scope, 'disposable-native-report-custody');
+            assert.deepEqual(custody.syntheticObservations, ['rendered_runtime', 'wordpress_http_transcript', 'github_run_and_artifacts']);
+            assert.deepEqual(custody.passed, [
+              'signed-native-packet-preserves-original-dispatch-and-separate-QA-authority',
+              'actual-MCP-retention-completes-through-Node-TLS-callback-and-distinct-role-keys',
+              'fresh-MCP-readback-matches-original-report-and-both-archive-hashes',
+              'consumed-acquisition-cannot-retry-or-mint-another-callback',
+              'fresh-original-revocation-denies-unused-report-read',
+            ]);
+            for (const field of ['productionCredentials', 'liveGoogleVerified', 'hostedProvenanceVerified', 'protectedRenderedQaVerified', 'consumerBindingIssued', 'contentWriteVerified', 'remoteBackupVerified', 'chatgptAcceptanceVerified']) assert.equal(custody[field], false);
+            assert.deepEqual(custody.callback, { requests: 1, completed: 1, queryReads: 1 });
+            assert.deepEqual(custody.syntheticObservationStages, ['run', 'inventory', 'qualification', 'acquisition', 'finish']);
+            assert.equal(Object.hasOwn(custody, 'failures'), false);
+            assert.equal(custody.retained.state, 'retained');
+            assert.equal(custody.retained.consumer_binding_issued, false);
+            assert.equal(custody.retained.production_qualified, false);
+            for (const field of ['management_context_sha256', 'qualification_report_sha256', 'qualification_archive_sha256', 'acquisition_archive_sha256', 'acquisition_observation_sha256', 'evidence_policy_sha256']) assert.match(custody.retained[field], /^[a-f0-9]{64}$/);
+          }
+          const sources = JSON.parse(readFileSync('tools/operations/test/runtime/sources.json', 'utf8'));
+          const binding = JSON.parse(readFileSync(process.env.MRN_GATEWAY_EXISTING_BINDING_REPORT, 'utf8'));
+          const { parseExistingSourceContextAudit } = await import('./tools/operations/test/runtime/existing-binding-context.mjs');
+          const sourceAudit = parseExistingSourceContextAudit(readFileSync('.runtime/provider/reports/native-existing-source-context-audit.json'));
+          assert.equal(binding.schema, 2); assert.equal(binding.result, 'PASS');
+          assert.equal(binding.scope, 'disposable-native-existing-queue-access-v2-only');
+          assert.deepEqual(binding.passed, [
+            'Separate synthetic v2 descriptor and installed immutable source independently verified',
+            'Actual signed preview and complete candidate reconstruction retain the original verified actor and epoch',
+            'One actual provider bind succeeds before a simulated lost response; no local receipt or retry is created',
+            'SQLite reopen and a fresh authenticated login recover the exact binding by signed read without extending the original grant',
+            'Actual signed qualification queues the retained original once with unchanged grant and intent ceilings',
+            'Actual registrar context request triggers the provider TLS callback and separate signed identity readback',
+            'One native capture survives a lost response and SQLite reopen with identical bounded read recovery and no recapture',
+            'Native measurement read matches the independently retained capture receipt under the original authority',
+            'Canonical source lookup refuses an invalid signature, binds two reads to retained evidence and refuses a third',
+            'Root-signed v2 owner catalog matches independent pre-queue configuration without source admission',
+            'Preserved empty seed precedes actual native source capture and all canonical frame batches match independent original inventory',
+            'Fresh exact-site sync and full Child readback prove the preview, binding and qualification did not edit content',
+            'Revocation during actual provider context lookup returns a signed denial and blocks later local dispatch',
+          ]);
+          for (const field of ['productionCredentials', 'productionActivation', 'liveGoogleVerified', 'protectedWorkerVerified',
+            'renderedQaVerified', 'consumerBindingIssued', 'contentWriteVerified', 'codeWriteVerified', 'remoteBackupVerified',
+            'chatgptAcceptanceVerified', 'afterTransportExpiryVerified']) assert.equal(binding[field], false);
+          assert.equal(Object.hasOwn(binding, 'failure'), false);
+          assert.equal(binding.pins.provider_source_sha, sources.provider.commit);
+          assert.equal(Object.keys(binding.pins).length, 8);
+          for (const field of ['installed_manifest_sha256', 'source_binding_sha256', 'authorization_policy_sha256',
+            'delegation_policy_sha256', 'coherence_epoch_sha256', 'qualification_catalog_sha256', 'qualification_authority_sha256'])
+            assert.match(binding.pins[field], /^[a-f0-9]{64}$/);
+          for (const field of ['reviewed_digest', 'original_authorization_sha256', 'projection_sha256', 'receipt_sha256', 'coherence_epoch_sha256'])
+            assert.match(binding.binding[field], /^[a-f0-9]{64}$/);
+          for (const field of ['original_request_id', 'operation_id']) assert.match(binding.binding[field], /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/);
+          assert.equal(binding.binding.coherence_epoch_sha256, binding.pins.coherence_epoch_sha256);
+          assert.equal(binding.binding.bind_dispatches, 1); assert.equal(binding.binding.read_dispatches, 1);
+          assert.ok(Number.isSafeInteger(binding.binding.original_expires_at) && binding.binding.original_expires_at > 0);
+          assert.match(binding.qualification.job_id, /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/);
+          assert.match(binding.qualification.context_sha256, /^[a-f0-9]{64}$/);
+          assert.equal(binding.qualification.dispatches, 1);
+          assert.deepEqual(binding.queueConfirmation, { phases: [false, true], same_input: true,
+            http_before: [0, 0], http_after: [0, 1] });
+          assert.equal(binding.qualification.original_expires_at, binding.binding.original_expires_at);
+          assert.ok(Number.isSafeInteger(binding.qualification.job_expires_at) && binding.qualification.job_expires_at > 0
+            && binding.qualification.job_expires_at <= binding.binding.original_expires_at);
+          assert.equal(binding.capture.dispatches, 1); assert.equal(binding.capture.recovery_reads, 1);
+          assert.equal(binding.capture.uncertain_before_recovery, true);
+          for (const field of ['artifact_sha256', 'measurements_sha256', 'binding_sha256']) assert.match(binding.capture[field], /^[a-f0-9]{64}$/);
+          assert.equal(binding.capture.binding_sha256, binding.qualification.context_sha256);
+          assert.equal(binding.capture.original_expires_at, binding.binding.original_expires_at);
+          assert.equal(binding.capture.job_expires_at, binding.qualification.job_expires_at);
+          assert.ok(Number.isSafeInteger(binding.capture.native_calls) && binding.capture.native_calls >= 2 && binding.capture.native_calls <= 151);
+          assert.deepEqual(binding.measurements, { reads: 1, measurement_record_sha256: binding.capture.measurements_sha256,
+            matches_retained_capture: true, original_authorization_unchanged: true, admitted: false });
+          for (const field of ['source_context_sha256', 'independent_owner_sha256', 'parity_sha256']) assert.match(binding.sourceContext[field], /^[a-f0-9]{64}$/);
+          assert.deepEqual(Object.keys(binding.sourceContext.owner).sort(), ['evidence_policy_epoch', 'evidence_policy_sha256', 'source_recipe_catalog_sha256']);
+          assert.ok(Number.isSafeInteger(binding.sourceContext.owner.evidence_policy_epoch) && binding.sourceContext.owner.evidence_policy_epoch > 0);
+          for (const field of ['evidence_policy_sha256', 'source_recipe_catalog_sha256']) assert.match(binding.sourceContext.owner[field], /^[a-f0-9]{64}$/);
+          assert.deepEqual(binding.sourceContext, { unsigned_refused: 1, successful_reads: 2, refused_reads: 1, dispatches: 3,
+            source_context_sha256: binding.sourceContext.source_context_sha256, independent_owner_sha256: binding.sourceContext.independent_owner_sha256,
+            parity_sha256: binding.sourceContext.parity_sha256,
+            owner: binding.sourceContext.owner, original_authorization_unchanged: true, source_bytes_verified: false, slot_created: false, admitted: false });
+          assert.equal(binding.sourceContextCalls.length, 3);
+          binding.sourceContextCalls.forEach((call, index) => {
+            assert.ok(Number.isSafeInteger(call.elapsed_ms) && call.elapsed_ms >= 0 && call.elapsed_ms < 20000);
+            assert.ok(Number.isSafeInteger(call.granted_ms) && call.granted_ms > 0 && call.granted_ms <= 20000);
+            assert.ok(Number.isSafeInteger(call.remaining_ms) && call.remaining_ms > 0 && call.remaining_ms <= call.granted_ms);
+            assert.deepEqual(call, { ordinal: index + 1, elapsed_ms: call.elapsed_ms, granted_ms: call.granted_ms,
+              remaining_ms: call.remaining_ms, transport_timeout_ms: 20000,
+              kind: index < 2 ? 'returned' : 'tool-error', provider_code: index < 2 ? 'none' : 'mrn_management_existing_source_context' });
+          });
+          assert.equal(sourceAudit.qualification_job_id, binding.qualification.job_id);
+          assert.equal(sourceAudit.binding_sha256, binding.capture.binding_sha256);
+          assert.equal(sourceAudit.source_context_sha256, binding.sourceContext.source_context_sha256);
+          assert.equal(sourceAudit.capture_artifact_sha256, binding.capture.artifact_sha256);
+          assert.equal(sourceAudit.measurement_record_sha256, binding.capture.measurements_sha256);
+          assert.equal(sourceAudit.parity_sha256, binding.sourceContext.parity_sha256);
+          const { verifyExistingSourceStorageAudit } = await import('./tools/operations/test/runtime/existing-source-storage-audit.mjs');
+          verifyExistingSourceStorageAudit(readFileSync('.runtime/provider/reports/native-existing-source-storage-audit.json'),
+            readFileSync('.runtime/provider/reports/native-existing-source-context-audit.json'), binding);
+          const { verifyExistingSourceTransferAudit } = await import('./tools/operations/test/runtime/existing-source-transfer-audit.mjs');
+          verifyExistingSourceTransferAudit(readFileSync('.runtime/provider/reports/native-existing-source-transfer-audit.json'),
+            readFileSync('.runtime/provider/reports/native-existing-source-storage-audit.json'),
+            readFileSync('.runtime/provider/reports/native-existing-source-context-audit.json'), binding);
+          for (const field of ['catalog_sha256', 'registry_sha256', 'configuration_sha256']) assert.match(binding.sourceCatalog[field], /^[a-f0-9]{64}$/);
+          assert.equal(binding.sourceCatalog.catalog_sha256, binding.sourceContext.owner.source_recipe_catalog_sha256);
+          assert.deepEqual(binding.sourceCatalog, { schema: 2, configuration_reads: 2,
+            catalog_sha256: binding.sourceCatalog.catalog_sha256, registry_sha256: binding.sourceCatalog.registry_sha256,
+            configuration_sha256: binding.sourceCatalog.configuration_sha256, catalog_artifacts: binding.sourceCatalog.catalog_artifacts, native_reads: true,
+            original_authorization_unchanged: true, source_bytes_verified: false, slot_created: false, admitted: false });
+          assert.ok(Number.isSafeInteger(binding.sourceCatalog.catalog_artifacts) && binding.sourceCatalog.catalog_artifacts >= 1
+            && binding.sourceCatalog.catalog_artifacts <= 64);
+          assert.ok(Number.isSafeInteger(binding.currentAccess.signed_callbacks) && binding.currentAccess.signed_callbacks >= binding.capture.native_calls + 4
+            && binding.currentAccess.signed_callbacks <= 512);
+          assert.deepEqual(binding.currentAccess, { context_requests: 2, signed_callbacks: binding.currentAccess.signed_callbacks,
+            clear: binding.currentAccess.signed_callbacks - 1, pending_revocation: 1,
+            pre_source_callbacks: binding.currentAccess.pre_source_callbacks, pre_source_retain_callbacks: 2,
+            source_callbacks: binding.currentAccess.source_callbacks,
+            repeated_revoked_read_dispatched: false });
+          assert.ok(Number.isSafeInteger(binding.currentAccess.pre_source_callbacks) && binding.currentAccess.pre_source_callbacks >= 2);
+          assert.ok(Number.isSafeInteger(binding.currentAccess.source_callbacks) && binding.currentAccess.source_callbacks > 0);
+          assert.equal(binding.currentAccess.pre_source_callbacks + binding.currentAccess.source_callbacks + 1, binding.currentAccess.signed_callbacks);
+          assert.equal(binding.callbackRouteDisabled, true);
+          assert.equal(binding.child.site.site_url, 'https://child.fixture.example.invalid');
+          assert.ok(Number.isSafeInteger(binding.child.site.site_id) && binding.child.site.site_id > 0);
+          assert.equal(binding.child.target.kind, 'wordpress-content'); assert.equal(binding.child.target.post_type, 'page');
+          assert.ok(Number.isSafeInteger(binding.child.target.post_id) && binding.child.target.post_id > 0);
+          assert.match(binding.child.before_sha256, /^[a-f0-9]{64}$/); assert.equal(binding.child.after_sha256, binding.child.before_sha256);
+          assert.equal(binding.network.signed_control_posts, 2); assert.match(binding.network.network_log_sha256, /^[a-f0-9]{64}$/);
+          assert.equal(binding.network.context_posts, 2); assert.equal(binding.network.access_readback_posts, binding.currentAccess.signed_callbacks);
+          assert.equal(binding.network.capture_posts, 1); assert.equal(binding.network.recovery_posts, 1);
+          assert.equal(binding.network.measurement_posts, 1);
+          assert.equal(binding.network.source_context_posts, 4);
+          assert.equal(binding.network.source_capture_posts, 1); assert.equal(binding.network.source_status_posts, 1);
+          assert.equal(binding.network.source_read_posts, binding.sourceTransfer.source_reads);
+          assert.equal(binding.network.queue_posts, 1);
+          assert.equal(binding.staffChecks.connections, 1);
+          assert.ok(Number.isSafeInteger(binding.staffChecks.dispatched) && binding.staffChecks.dispatched > 0);
+          assert.equal(binding.staffChecks.dispatched, binding.staffChecks.completed);
+          assert.equal(binding.staffChecks.completed, binding.staffChecks.verified_posts);
+          assert.deepEqual(binding.fixtureLimits, { initial_grant_seconds: 300, hook_seconds: 300, owner_wait_seconds: 320 });
+          assert.equal(binding.aggregateDeadlineExceeded, false);
+          assert.ok(Number.isSafeInteger(binding.elapsedMs) && binding.elapsedMs > 0 && binding.elapsedMs < 300000);
+          for (const name of ['provider', 'transport', 'runner']) assert.equal(execFileSync('git', ['-C', `.runtime/${name}`, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), sources[name].commit);
+          assert.equal(execFileSync('git', ['-C', '.runtime/management-worker', 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), sources.managementWorker.commit);
+          for (const report of [proof, native, access, management, source, binding, ...(custody ? [custody] : [])]) assert.deepEqual(report.source, sources);
+          JS
+      - name: Retain redacted disposable worker failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gateway-provider-worker-failure
+          path: .runtime/provider/reports/native-job-worker-failure.json
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Retain bounded original source-context audit
+        if: always()
+        env:
+          MRN_SOURCE_AUDIT_OUTPUT: ${{ runner.temp }}/native-existing-source-context-audit.json
+        run: |
+          node --input-type=module <<'JS'
+          import { copyFileSync, existsSync, lstatSync, readFileSync } from 'node:fs';
+          import assert from 'node:assert/strict';
+          import { parseExistingSourceContextAudit } from './tools/operations/test/runtime/existing-binding-context.mjs';
+          const path = '.runtime/provider/reports/native-existing-source-context-audit.json';
+          if (existsSync(path)) {
+            const info = lstatSync(path);
+            assert.ok(info.isFile() && !info.isSymbolicLink() && info.size <= 4096 && (info.mode & 0o777) === 0o600);
+            parseExistingSourceContextAudit(readFileSync(path));
+            copyFileSync(path, process.env.MRN_SOURCE_AUDIT_OUTPUT);
+          }
+          JS
+      - name: Retain separate bounded original source-storage seed audit
+        if: always()
+        env:
+          MRN_SOURCE_STORAGE_AUDIT_OUTPUT: ${{ runner.temp }}/native-existing-source-storage-audit.json
+        run: |
+          node --input-type=module <<'JS'
+          import { copyFileSync, existsSync, lstatSync, readFileSync } from 'node:fs';
+          import assert from 'node:assert/strict';
+          import { parseExistingSourceStorageAudit } from './tools/operations/test/runtime/existing-source-storage-audit.mjs';
+          const path = '.runtime/provider/reports/native-existing-source-storage-audit.json';
+          if (existsSync(path)) {
+            const info = lstatSync(path);
+            assert.ok(info.isFile() && !info.isSymbolicLink() && info.size <= 8192 && (info.mode & 0o777) === 0o600);
+            parseExistingSourceStorageAudit(readFileSync(path));
+            copyFileSync(path, process.env.MRN_SOURCE_STORAGE_AUDIT_OUTPUT);
+          }
+          JS
+      - name: Retain separate bounded final existing source-transfer audit
+        if: always()
+        env:
+          MRN_SOURCE_TRANSFER_AUDIT_OUTPUT: ${{ runner.temp }}/native-existing-source-transfer-audit.json
+        run: |
+          node --input-type=module <<'JS'
+          import { copyFileSync, existsSync, lstatSync, readFileSync } from 'node:fs';
+          import assert from 'node:assert/strict';
+          import { parseExistingSourceTransferAudit } from './tools/operations/test/runtime/existing-source-transfer-audit.mjs';
+          const path = '.runtime/provider/reports/native-existing-source-transfer-audit.json';
+          if (existsSync(path)) {
+            const info = lstatSync(path);
+            assert.ok(info.isFile() && !info.isSymbolicLink() && info.size <= 8192 && (info.mode & 0o777) === 0o600);
+            parseExistingSourceTransferAudit(readFileSync(path));
+            copyFileSync(path, process.env.MRN_SOURCE_TRANSFER_AUDIT_OUTPUT);
+          }
+          JS
+      - name: Retain separate bounded provider source-context phase timings
+        if: always()
+        env:
+          MRN_SOURCE_TIMING_OUTPUT: ${{ runner.temp }}/native-existing-source-context-timing.json
+        run: |
+          node --input-type=module <<'JS'
+          import { existsSync, lstatSync, readFileSync, writeFileSync } from 'node:fs';
+          import assert from 'node:assert/strict';
+          import { parseExistingSourceContextTiming } from './tools/operations/test/runtime/existing-source-context-timing.mjs';
+          const path = '.runtime/provider/reports/native-existing-source-context-timing.json';
+          if (existsSync(path)) {
+            const info = lstatSync(path);
+            assert.ok(info.isFile() && !info.isSymbolicLink() && info.size <= 32768 && (info.mode & 0o777) === 0o600);
+            const report = parseExistingSourceContextTiming(readFileSync(path));
+            // Retain the closed parsed projection, never arbitrary raw bytes.
+            writeFileSync(process.env.MRN_SOURCE_TIMING_OUTPUT, JSON.stringify(report) + '\n', { mode: 0o600, flag: 'wx' });
+          }
+          JS
+      - name: Retain bounded capture progress even after request cancellation
+        if: always()
+        env:
+          MRN_SOURCE_PROGRESS_OUTPUT: ${{ runner.temp }}/native-existing-source-progress.json
+        run: |
+          node --input-type=module <<'JS'
+          import { existsSync, lstatSync, readFileSync, writeFileSync } from 'node:fs';
+          import assert from 'node:assert/strict';
+          import { parseExistingSourceProgress } from './tools/operations/test/runtime/existing-source-progress.mjs';
+          const path = '.runtime/provider/reports/native-existing-source-progress.json';
+          if (existsSync(path)) {
+            const info = lstatSync(path);
+            assert.ok(info.isFile() && !info.isSymbolicLink() && info.size <= 16384 && (info.mode & 0o777) === 0o600);
+            const report = parseExistingSourceProgress(readFileSync(path));
+            writeFileSync(process.env.MRN_SOURCE_PROGRESS_OUTPUT, JSON.stringify(report) + '\n', { mode: 0o600, flag: 'wx' });
+          }
+          JS
+      - name: Retain closed disposable Directory lock probe
+        if: always()
+        env:
+          MRN_DIRECTORY_LOCK_OUTPUT: ${{ runner.temp }}/native-existing-directory-lock.json
+        run: |
+          node --input-type=module <<'JS'
+          import { existsSync, lstatSync, readFileSync, writeFileSync } from 'node:fs';
+          import assert from 'node:assert/strict';
+          import { parseExistingDirectoryLock } from './tools/operations/test/runtime/existing-directory-lock.mjs';
+          const path = '.runtime/provider/reports/native-existing-directory-lock.json';
+          if (existsSync(path)) {
+            const info = lstatSync(path);
+            assert.ok(info.isFile() && !info.isSymbolicLink() && info.size <= 2048 && (info.mode & 0o777) === 0o600);
+            const report = parseExistingDirectoryLock(readFileSync(path));
+            writeFileSync(process.env.MRN_DIRECTORY_LOCK_OUTPUT, JSON.stringify(report) + '\n', { mode: 0o600, flag: 'wx' });
+            assert.equal(report.cache_write_in_work, false, 'API-token cache must not write in the work transaction');
+            assert.equal(report.independent_lock_refused, false, 'Independent expired-cache handling must not block');
+          }
+          JS
+      - name: Retain bounded integration evidence only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gateway-provider-transport
+          path: |
+            ${{ runner.temp }}/gateway-provider-report.json
+            ${{ runner.temp }}/gateway-native-content-report.json
+            ${{ runner.temp }}/capture-transport-report.json
+            ${{ runner.temp }}/gateway-worker-report.json
+            ${{ runner.temp }}/gateway-access-report.json
+            ${{ runner.temp }}/gateway-management-report.json
+            ${{ runner.temp }}/gateway-native-source-report.json
+            ${{ runner.temp }}/gateway-report-custody-report.json
+            ${{ runner.temp }}/gateway-existing-binding-report.json
+            ${{ runner.temp }}/native-existing-source-context-audit.json
+            ${{ runner.temp }}/native-existing-source-storage-audit.json
+            ${{ runner.temp }}/native-existing-source-transfer-audit.json
+            ${{ runner.temp }}/native-existing-source-context-timing.json
+            ${{ runner.temp }}/native-existing-source-progress.json
+            ${{ runner.temp }}/native-existing-directory-lock.json
+          if-no-files-found: error
+          retention-days: 14

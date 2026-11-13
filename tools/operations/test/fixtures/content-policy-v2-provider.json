@@ -1,0 +1,211 @@
+{
+  "schema": 1,
+  "status": "proposal; no deployed ability or access expansion",
+  "ability": "mrn-mainwp/get-content-policy-v2",
+  "role": "reader",
+  "wrapper": "read-delegated-operation-v1",
+  "input": {
+    "type": "object",
+    "properties": {
+      "site_id": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "site_url": {
+        "type": "string",
+        "maxLength": 512
+      },
+      "target": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "post"
+            ]
+          },
+          "post_type": {
+            "type": "string",
+            "enum": [
+              "post",
+              "page"
+            ]
+          },
+          "post_id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "field": {
+            "type": "string",
+            "enum": [
+              "post_title",
+              "post_excerpt",
+              "post_content"
+            ]
+          }
+        },
+        "required": [
+          "kind",
+          "post_type",
+          "post_id",
+          "field"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "required": [
+      "site_id",
+      "site_url",
+      "target"
+    ],
+    "additionalProperties": false
+  },
+  "output": {
+    "type": "object",
+    "properties": {
+      "site_id": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "site_url": {
+        "type": "string",
+        "maxLength": 512
+      },
+      "enabled": {
+        "type": "boolean"
+      },
+      "profile": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "maxLength": 120
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "runtime_url": {
+                "type": "string",
+                "maxLength": 512
+              },
+              "runtime_context_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "ownership": {
+                "type": "string",
+                "enum": [
+                  "wordpress-post",
+                  "unknown",
+                  "builder"
+                ]
+              },
+              "covered_fields": {
+                "type": "array",
+                "maxItems": 3,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "post_title",
+                    "post_excerpt",
+                    "post_content"
+                  ]
+                }
+              },
+              "requires_render_assertions": {
+                "type": "boolean",
+                "enum": [
+                  true
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "sha256",
+              "runtime_url",
+              "runtime_context_sha256",
+              "ownership",
+              "covered_fields",
+              "requires_render_assertions"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "qa_keys": {
+        "type": "array",
+        "maxItems": 10,
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "public_key_base64": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "public_key_base64"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "maximum_value_bytes": {
+        "type": "integer",
+        "enum": [
+          8192
+        ]
+      },
+      "maximum_snapshot_bytes": {
+        "type": "integer",
+        "enum": [
+          32768
+        ]
+      },
+      "policy_sha256": {
+        "type": "string",
+        "pattern": "^[a-f0-9]{64}$"
+      },
+      "supported_target_kinds": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "enum": [
+            "post"
+          ]
+        }
+      }
+    },
+    "required": [
+      "site_id",
+      "site_url",
+      "enabled",
+      "profile",
+      "qa_keys",
+      "maximum_value_bytes",
+      "maximum_snapshot_bytes",
+      "policy_sha256",
+      "supported_target_kinds"
+    ],
+    "additionalProperties": false
+  },
+  "compatibility": "v1 remains site-only and returns one profile only when exactly one record is qualified; multiple profiles return profile=null. v2 selects exact normalized site_id/site_url + target tuple; never infers whole-site ownership or chooses another record. Existing mutation/inspection/migration shapes remain content-v1.",
+  "policy_catalog": "Unique immutable site_id/site_url/target -> descriptor and trusted parity/runtime bindings. Distinct target records/fields may coexist on a site. v1 owner enrollment stays limited until v2 catalog exists.",
+  "service_owned_qualification": "Ordinary staff may request an edit or inspect a target. Missing qualification is handled by protected platform service using centrally enrolled template/ownership rules and independently measured live/runtime inputs; no staff record/site enrollment, new logins, per-site tokens or per-person approval. Until qualified it returns profile=null and mutations fail closed.",
+  "registration_boundary": "A future register-content-profile-v1 is control-plane only, never a delegated staff operation or advertised workspace tool. Require an independent protected registrar signature naming exact site/target/template eligibility/current owner policy and measured parity/runtime/profile/report hashes; one-use receipt and atomic catalog publication. A raw service credential or actor assertion cannot enroll a profile. No real-site activation is implemented by this proposal.",
+  "hashes": "Split stable authorization-policy version from immutable per-target qualification digest so publishing an unrelated record profile does not invalidate every pending site operation; target profile replacement/revocation always invalidates its affected plans/QA. Role, issuer, customer, service pin or signer changes still invalidate grants globally.",
+  "limits": "Bounded catalog and lookup; exact ID+stable selector, no aliases or wildcard matching. Each operation retains an immutable selected profile and remeasures parity under its target locks. Source ownership and independent live rendering checks remain mandatory.",
+  "followups": {
+    "acf": "Existing public record + owner-qualified ACF field key/name/reference/type. Start scalar text/textarea/URL/email/integer/boolean/select. Read effective definition and exact value/reference; CAS complete declared field/reference and rendering dependencies; update_field only; explicit sanitization/type bounds. No arbitrary post_custom, repeats, flexible content or builder writes.",
+    "menu": "Existing exact menu/term/item IDs and stable item identity. Start label and validated URL/target/rel only. Inspect full typed item/relationship snapshot; transaction CAS; fixed native wp_update_nav_menu_item; independent affected navigation paths and rollback. No create/delete/reorder without later qualification.",
+    "media": "Existing attachment + owner-qualified title/caption/alt metadata only. Preserve MIME/original file/dimensions/parent/link ownership and filesystem identity. CAS full typed attachment/meta snapshot; native WordPress update; affected display and rollback. File import/replacement/derivatives remain separate with reviewed MainWP File Uploader transport and explicit checksums/registration/rollback."
+  }
+}

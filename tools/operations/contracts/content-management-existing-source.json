@@ -1,0 +1,77 @@
+{
+  "repository": "mrnwebdesigns/mrn-mainwp-operations-api",
+  "commit": "e2413f0b38a09fe44403bc9b03dcd3a66b7d657e",
+  "schema_and_synthetic_signatures_only": true,
+  "runtimeAdoption": false,
+  "productionQualified": false,
+  "files": {
+    "contracts/content-management-existing-qualification-v2.json": {
+      "provider_path": "contracts/content-management-existing-qualification-v2.json",
+      "sha256": "1e652a77e369a341c4fa1d179ff6c69379b84661bdcd787850708adc6c01630e"
+    },
+    "contracts/content-management-existing-report-v2.json": {
+      "provider_path": "contracts/content-management-existing-report-v2.json",
+      "sha256": "dd20dc082d006e4e53d02eddb5cdfc1543e3056281ef304dd750687856030114"
+    },
+    "contracts/content-management-existing-evidence-v2.json": {
+      "provider_path": "contracts/content-management-existing-evidence-v2.json",
+      "sha256": "e511e4c9bc62eb839c68b59e64996e6b0d013f61ad8961520486ad821d4de6ff"
+    },
+    "contracts/content-management-existing-source-transfer-v2.json": {
+      "provider_path": "contracts/content-management-existing-source-transfer-v2.json",
+      "sha256": "c99c352961aaf7f289352e6aeacd4ad914747fdff69072cf54151c4d1e2f64d5"
+    },
+    "contracts/content-management-existing-source-context-v2.json": {
+      "provider_path": "contracts/content-management-existing-source-context-v2.json",
+      "sha256": "3996f36dc37181d1952b31ad32a2a231823954b4c058be1d3cb18e927a78b6c1"
+    },
+    "contracts/content-management-existing-wire-v2-proposal.json": {
+      "provider_path": "contracts/content-management-existing-wire-v2-proposal.json",
+      "sha256": "dd375ecdc7e33b8e8e8f80ed0846ab76a5f3ad038be83d349b2902f8ae8fcef6"
+    },
+    "contracts/content-management-v1.json": {
+      "provider_path": "contracts/content-management-v1.json",
+      "sha256": "e164d4bc265096493e6650c0beed42e7d8acbbd013d261a70b63513f591500de"
+    },
+    "contracts/content-management-qualification-v1.json": {
+      "provider_path": "contracts/content-management-qualification-v1.json",
+      "sha256": "7c0cd9e6f431f47580f9926e8d228728034f20b71d581c8dfb00b32dcb4f4f91"
+    },
+    "contracts/content-management-report-v1.json": {
+      "provider_path": "contracts/content-management-report-v1.json",
+      "sha256": "312b7fb7d7179e419686bed93d51f27adfbbe432c75f1f52db909b4d9f6728e6"
+    },
+    "contracts/content-management-evidence-v1.json": {
+      "provider_path": "contracts/content-management-evidence-v1.json",
+      "sha256": "6923e15402d99203e297b590145947b6ac1d39552e5cde7bc173e45090a47084"
+    },
+    "contracts/content-management-source-context-v1.json": {
+      "provider_path": "contracts/content-management-source-context-v1.json",
+      "sha256": "d114207fef098af71299e3c5b5a6b22f3ef36b55115b56efb03bb0d4bcab5418"
+    },
+    "contracts/content-management-source-transfer-v1.json": {
+      "provider_path": "contracts/content-management-source-transfer-v1.json",
+      "sha256": "36320f6d2d5dac5523ecc68b0fa463c2fa1246cbf75f81e3209c055aa196f3e9"
+    },
+    "contracts/content-management-source-api-v1.json": {
+      "provider_path": "contracts/content-management-source-api-v1.json",
+      "sha256": "039b40353aa21602e1a5b9b0f55530baf5edc200935bf2e990e0410297dee0a6"
+    },
+    "contracts/content-management-report-api-v1.json": {
+      "provider_path": "contracts/content-management-report-api-v1.json",
+      "sha256": "87f1324a03b9dfdec4beb5fe8965f6703622213aca262a104c8948e870802106"
+    },
+    "contracts/delegation-v1.json": {
+      "provider_path": "contracts/delegation-v1.json",
+      "sha256": "f88a42a21ad20e2c66b12fe573a88b7e475f68f5cc0d83cc30e61605fbfa526b"
+    },
+    "contracts/content-current-access-v1.json": {
+      "provider_path": "contracts/content-current-access-v1.json",
+      "sha256": "02fa1caca043f61a92a0e7cfe369db4f271dcebcaf2599b6a4422a3a4885d172"
+    },
+    "test/fixtures/content-management-existing-v2.json": {
+      "provider_path": "tests/fixtures/content-management-existing-v2.json",
+      "sha256": "042f1910dd08de2915b26b067bc1117b86eced1a5851a6d6aa9b11000ddfa02d"
+    }
+  }
+}

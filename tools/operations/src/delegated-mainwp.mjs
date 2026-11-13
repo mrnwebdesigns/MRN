@@ -1,0 +1,244 @@
+import { z } from 'zod';
+import { requireThat, requireWriteScope, sha } from './contracts.mjs';
+import { payload, validateStatus } from './mainwp.mjs';
+import { delegationCanonical, delegationDigest } from './delegation.mjs';
+import { qualificationRequestSchema, validateQueuePins } from './content-access-store.mjs';
+import { managementQualificationRequestSchema, validateManagementQueuePins } from './content-management-access-store.mjs';
+import { managementSchemas } from './content-management-contract.mjs';
+import { OriginalManagementAuthorizationLedger, originalQualificationAbility } from './original-management-authorization.mjs';
+import { originalReadinessObservation } from './original-authorization-transport.mjs';
+
+export const qualificationQueueTool = 'mrn_mainwp__queue_delegated_qualification_v1';
+
+export const delegationTools = Object.freeze({ challenge: 'mrn_mainwp__get_delegation_challenge_v1',
+  access: 'mrn_mainwp__get_team_access_v1', read: 'mrn_mainwp__read_delegated_operation_v1',
+  sync: 'mrn_mainwp__sync_delegated_site_v1', run: 'mrn_mainwp__run_delegated_operation_v1' });
+const readAbilities = new Set([
+  'list-sites', 'get-site', 'get-sites-basic', 'get-site-plugins', 'get-site-themes', 'get-site-updates',
+  'get-site-security', 'get-site-changes', 'get-abandoned-plugins', 'get-abandoned-themes', 'get-site-client', 'get-site-costs',
+  'count-sites', 'list-clients', 'count-clients', 'get-client', 'get-client-sites', 'count-client-sites', 'get-client-costs',
+  'list-tags', 'get-tag', 'get-tag-sites', 'get-tag-clients', 'list-ignored-updates', 'list-updates', 'get-batch-job-status',
+].map(name => `mainwp/${name}-v1`).concat([
+  'get-stack-runtime-report', 'qualify-stack-site', 'get-stack-deployment-agent-status', 'get-google-fonts-status',
+  'inspect-backup-retention-policy', 'inspect-code-file', 'get-code-operation',
+  'get-content-policy', 'inspect-content', 'get-content-operation', 'get-content-migration',
+  'list-content-records', 'read-content-record',
+  'authorize-email-address-audit', 'audit-email-address',
+].map(name => `mrn-mainwp/${name}-v1`)));
+readAbilities.add('mainwp/get-site-knowledge-v1');
+readAbilities.add('mrn-mainwp/get-content-policy-v2');
+const writeAbilities = new Set(['start-database-backup', 'get-database-backup-status', 'qualify-code-storage',
+  'prepare-code-change', 'approve-code-change', 'execute-code-change', 'preflight-stack-plugin-update',
+  'update-stack-plugin', 'rollback-stack-plugin', 'prepare-content-change', 'approve-content-change', 'execute-content-change', 'prepare-content-rollback'].map(name => `mrn-mainwp/${name}-v1`));
+const actorSchema = z.object({ oauth_subject: z.string(), google_sub: z.string(), email: z.string() }).strict();
+const resultSchema = z.object({ schema: z.literal(1), request_id: z.string().uuid(), ability: z.string(),
+  actor: actorSchema, result: z.unknown(), policy_sha256: sha }).strict();
+const accessSchema = actorSchema.extend({ schema: z.literal(1), roles: z.array(z.enum(['reader', 'preparer', 'approver', 'executor'])),
+  portfolio_access: z.boolean(), expires_at: z.number().int(), policy_sha256: sha }).strict();
+const identityMatches = (result, actor) => result.oauth_subject === actor.subject && result.google_sub === actor.googleSubject && result.email === actor.verifiedEmail;
+export function abilityName(tool) {
+  if (tool === 'mrn_mainwp__get_content_policy_v2') return 'mrn-mainwp/get-content-policy-v2';
+  requireThat(/^(?:mrn_mainwp__)?[a-z0-9]+(?:_[a-z0-9]+)*_v1$/.test(tool) && !Object.values(delegationTools).includes(tool),
+    'CAPABILITY_DENIED', 'Only a native qualified workflow may be delegated.');
+  const namespace = tool.startsWith('mrn_mainwp__') ? 'mrn-mainwp' : 'mainwp';
+  return `${namespace}/${tool.replace(/^mrn_mainwp__/, '').replaceAll('_', '-')}`;
+}
+
+// Construct one instance per verified actor. Nothing is written into the shared
+// MCP client's session, environment or Google lease; every dispatch is signed.
+export class DelegatedMainwpClient {
+  constructor(client, actor, signer) { Object.assign(this, { client, actor, signer }); }
+  async ready() {
+    validateStatus(await this.client.readResource({ uri: 'mainwp://status' }));
+    const names = new Set(); const metadata = new Map(); const cursors = new Set(); let cursor;
+    do {
+      const page = await this.client.listTools(cursor ? { cursor } : {});
+      requireThat(Array.isArray(page.tools) && names.size + page.tools.length <= 1000, 'MAINWP_SCHEMA', 'Invalid capability directory.');
+      for (const t of page.tools) { names.add(t.name); metadata.set(t.name, t.annotations); }
+      cursor = page.nextCursor;
+      requireThat(!cursor || !cursors.has(cursor), 'MAINWP_SCHEMA', 'Repeated capability page.');
+      if (cursor) cursors.add(cursor);
+    } while (cursor);
+    requireThat(Object.values(delegationTools).every(n => names.has(n)), 'DELEGATION_UNAVAILABLE', 'The MainWP provider or service policy has not enabled verified team delegation.');
+    requireThat(Object.values(delegationTools).every(n => metadata.get(n)?.readOnlyHint === false
+      && metadata.get(n)?.destructiveHint === (n === delegationTools.run)), 'DELEGATION_TRANSPORT',
+    'Delegation requires POST-only metadata and the explicit write-confirmation boundary. Assertions must never enter GET access logs.');
+    this.transportVerified = true;
+    this.metadata = metadata;
+  }
+  async envelope(ability, args, options) {
+    if (!this.transportVerified) await this.ready();
+    const challenge = await this.#challenge(ability, args, options);
+    options?.signal?.throwIfAborted();
+    const envelope = this.signer.sign(this.actor, ability, args, challenge);
+    return { envelope, claims: JSON.parse(Buffer.from(envelope.payload_base64, 'base64').toString('utf8')) };
+  }
+  async #challenge(ability, args, options) {
+    return payload(await this.client.callTool({ name: delegationTools.challenge,
+      arguments: { ability, arguments_sha256: delegationDigest(args) } }, undefined, { ...options, timeout: Math.min(30000, options?.timeout ?? 30000) }));
+  }
+  async verifyStaff() {
+    await this.ready();
+    const { envelope, claims } = await this.envelope('mrn-mainwp/get-team-access-v1', {});
+    const result = accessSchema.parse(payload(await this.client.callTool({ name: delegationTools.access, arguments: { delegation: envelope } }, undefined, { timeout: 30000 })));
+    requireThat(identityMatches(result, this.actor) && result.policy_sha256 === claims.policy_sha256
+      && result.expires_at > Date.now() / 1000 && result.roles.includes('reader') && result.portfolio_access,
+    'AUTH_REQUIRED', 'Active MRN staff membership and portfolio permission could not be verified.');
+    return result;
+  }
+  async callTool({ name, arguments: args = {} }, _schema, options) {
+    const ability = abilityName(name);
+    requireThat(readAbilities.has(ability) || writeAbilities.has(ability) || ability === 'mainwp/sync-sites-v1',
+      'CAPABILITY_DENIED', 'No qualified delegated adapter exists for this operation.');
+    if (writeAbilities.has(ability)) requireWriteScope(this.actor);
+    if (ability === 'mainwp/sync-sites-v1') requireThat(Object.keys(args).length === 1
+      && Array.isArray(args.site_ids) && args.site_ids.length === 1 && Number.isSafeInteger(args.site_ids[0]) && args.site_ids[0] > 0,
+    'TARGET_MISMATCH', 'Delegated sync requires one exact resolved site.');
+    const wrapper = readAbilities.has(ability) ? delegationTools.read : ability === 'mainwp/sync-sites-v1' ? delegationTools.sync : delegationTools.run;
+    return this.#dispatch(ability, args, wrapper, options);
+  }
+  async #dispatch(ability, args, wrapper, options, expectedPolicy) {
+    requireThat(Buffer.byteLength(delegationCanonical(args)) <= 98304, 'DELEGATION_INPUT', 'Delegated request exceeds the supported bound.');
+    const signed = await this.envelope(ability, args, options);
+    return this.#dispatchSigned(ability, args, wrapper, options, signed, expectedPolicy);
+  }
+  async #dispatchSigned(ability, args, wrapper, options, { envelope, claims }, expectedPolicy, beforeConfirmed) {
+    const arguments_json = delegationCanonical(args);
+    requireThat(Buffer.byteLength(arguments_json) <= 98304, 'DELEGATION_INPUT', 'Delegated request exceeds the supported bound.');
+    requireThat(expectedPolicy === undefined || expectedPolicy === claims.policy_sha256,
+      'DELEGATION_MISMATCH', 'The current delegation policy differs from the admitted worker policy.');
+    // No retry and no interactive-lease/raw-service fallback on any failure.
+    const input = { ability, arguments_json, delegation: envelope, ...(wrapper === delegationTools.run ? { confirm: true } : {}) };
+    let response = await this.client.callTool({ name: wrapper, arguments: input }, undefined, options);
+    if (wrapper === delegationTools.run) {
+      const preview = payload(response);
+      requireThat(preview.status === 'CONFIRMATION_REQUIRED' && typeof preview.confirmation_token === 'string' && preview.confirmation_token.length > 0,
+        'CONFIRMATION_GATE', 'The mandatory MainWP confirmation gate is unavailable or safe mode is enabled.');
+      await beforeConfirmed?.();
+      requireThat(claims.expires_at > Date.now() / 1000, 'DELEGATION_EXPIRED', 'The signed request expired before confirmed dispatch; prepare again.');
+      response = await this.client.callTool({ name: wrapper, arguments: { ...input, user_confirmed: true, confirmation_token: preview.confirmation_token } }, undefined, options);
+    }
+    const result = resultSchema.parse(payload(response));
+    requireThat(result.ability === ability && result.request_id === claims.request_id
+      && result.policy_sha256 === claims.policy_sha256 && identityMatches(result.actor, this.actor),
+    'DELEGATION_MISMATCH', 'MainWP returned a result for a different request or verified person.');
+    return { content: [{ type: 'text', text: JSON.stringify(result.result) }] };
+  }
+  // Private source integration only: no workspace exposure or worker dispatch.
+  // The service-owned readiness adapter must verify protected worker, exact
+  // recipe/source pins and fresh target before this can create a job.
+  async queueQualification(input, { ledger, admit } = {}) {
+    requireWriteScope(this.actor);
+    requireThat(ledger && typeof admit === 'function', 'QUALIFICATION_WORKER_UNAVAILABLE', 'Protected qualification dispatch is not configured.');
+    const args = qualificationRequestSchema.parse(input);
+    const admittedSite = ledger.assertQueueAllowed(this.actor, args);
+    const expected = validateQueuePins(await admit(this.actor, structuredClone(args)));
+    await this.ready();
+    requireThat(this.metadata.get(qualificationQueueTool)?.readOnlyHint === false
+      && this.metadata.get(qualificationQueueTool)?.destructiveHint === false,
+    'DELEGATION_TRANSPORT', 'Qualification requires the dedicated non-destructive POST queue.');
+    ledger.assertQueueAllowed(this.actor, args, admittedSite);
+    const ability = 'mrn-mainwp/request-content-qualification-v1';
+    const { envelope, claims } = await this.envelope(ability, args);
+    ledger.assertQueueAllowed(this.actor, args, admittedSite);
+    const response = resultSchema.parse(payload(await this.client.callTool({ name: qualificationQueueTool,
+      arguments: { ability, arguments_json: delegationCanonical(args), delegation: envelope } }, undefined, { timeout: 30000 })));
+    requireThat(response.ability === ability && response.request_id === claims.request_id
+      && response.policy_sha256 === claims.policy_sha256 && identityMatches(response.actor, this.actor),
+    'DELEGATION_MISMATCH', 'Qualification returned a different request or verified person.');
+    // A failed/missing durable map forbids subsequent dispatch. No retry or
+    // reconstruction from callback data after an uncertain queue response.
+    return ledger.recordQueued(this.actor, args, response.result, expected, admittedSite).job;
+  }
+  // Private management intent uses the provider's existing confirmed run
+  // wrapper, never the exclusive single-field qualification queue route.
+  async previewManagementEdit(input) {
+    requireWriteScope(this.actor);
+    const contract = managementSchemas['preview-content-edit-v1'], args = contract.input.parse(input);
+    requireThat(args.post_id > 0, 'CAPABILITY_UNAVAILABLE', 'New-record qualification is not available.');
+    return this.#managementReview(args, await this.#dispatch('mrn-mainwp/preview-content-edit-v1', args,
+      delegationTools.run, { timeout: 90000 }));
+  }
+  // Private composition only. Reuse the exact retained original envelope for
+  // both phases of the existing confirmed wrapper; never sign a replacement.
+  async previewOriginalManagementEdit(input, { ledger, attemptId, readiness } = {}) {
+    requireWriteScope(this.actor);
+    requireThat(ledger instanceof OriginalManagementAuthorizationLedger && ledger.signer === this.signer,
+      'ORIGINAL_AUTHORIZATION', 'The service-owned original ledger and identity signer are required.');
+    const args = managementSchemas['preview-content-edit-v1'].input.parse(input), ability = 'mrn-mainwp/preview-content-edit-v1';
+    requireThat(args.post_id > 0, 'CAPABILITY_UNAVAILABLE', 'New-record qualification is not available.');
+    requireThat(Buffer.byteLength(delegationCanonical(args)) <= 98304, 'DELEGATION_INPUT', 'Delegated request exceeds the supported bound.');
+    await this.ready();
+    const handle = await ledger.prepare(this.actor, args, await this.#challenge(ability, args), attemptId, readiness);
+    const envelope = await ledger.claimDispatch(handle, this.actor);
+    const claims = JSON.parse(Buffer.from(envelope.payload_base64, 'base64').toString('utf8'));
+    const review = this.#managementReview(args, await this.#dispatchSigned(ability, args, delegationTools.run,
+      { timeout: 90000 }, { envelope, claims }, undefined, async () => {
+        const current = await ledger.readCurrent(handle.requestId, this.actor), observed = originalReadinessObservation(readiness);
+        requireThat(current.state === 'dispatched' && current.mapping.readiness.coherenceEpochSha256 === observed.coherenceEpochSha256,
+          'ORIGINAL_AUTHORIZATION', 'The original preview authority changed before confirmed dispatch.');
+      }));
+    await ledger.readCurrent(handle.requestId, this.actor);
+    return { originalRequestId: handle.requestId, review };
+  }
+  #managementReview(args, response) {
+    const review = managementSchemas['preview-content-edit-v1'].output.parse(payload(response));
+    requireThat(review.site_id === args.site_id && review.site_url === args.site_url
+      && review.target.post_type === args.post_type && review.target.post_id === args.post_id
+      && review.before_sha256 === args.expected_snapshot_sha256,
+    'CONTENT_MANAGEMENT_MISMATCH', 'The preview returned a different website, record or baseline.');
+    return review; // Complete candidate/migration reconstruction still precedes queue admission.
+  }
+  async readManagementMigration(input) {
+    const contract = managementSchemas['get-content-edit-migration-v1'], args = contract.input.parse(input);
+    const migration = contract.output.parse(payload(await this.#dispatch('mrn-mainwp/get-content-edit-migration-v1', args,
+      delegationTools.read, { timeout: 30000 })));
+    requireThat(migration.operation_id === args.operation_id, 'CONTENT_MANAGEMENT_MISMATCH', 'The migration belongs to another operation.');
+    return migration;
+  }
+  async queueManagementQualification(input, { ledger, admit } = {}) {
+    requireWriteScope(this.actor);
+    requireThat(ledger && typeof admit === 'function', 'QUALIFICATION_WORKER_UNAVAILABLE', 'Protected management qualification is not configured.');
+    const args = managementQualificationRequestSchema.parse(input);
+    const admittedSite = ledger.assertQueueAllowed(this.actor, args);
+    const expected = await admit(this.actor, structuredClone(args));
+    validateManagementQueuePins(expected?.pins);
+    // Team delegation hashes identity policy; content authorization hashes
+    // content plus identity policy. They are distinct provider domains.
+    requireThat(sha.safeParse(expected?.delegationPolicySha256).success,
+      'ACCESS_MAPPING', 'An independently verified team-delegation policy is required.');
+    await this.ready();
+    ledger.assertQueueAllowed(this.actor, args, admittedSite);
+    const response = payload(await this.#dispatch('mrn-mainwp/request-content-edit-qualification-v1', args, delegationTools.run,
+      { timeout: 30000 }, expected.delegationPolicySha256));
+    // Failure to durably map this exact authenticated result forbids dispatch.
+    // A callback or fresh login cannot reconstruct or renew a missing mapping.
+    return ledger.recordQueued(this.actor, args, response, expected, admittedSite).context;
+  }
+  // Private existing-record composition. The ledger requires its observed v2
+  // original; no public protocol selector or raw-service queue is introduced.
+  async queueOriginalManagementQualification(input, { ledger, originalRequestId } = {}) {
+    requireWriteScope(this.actor);
+    requireThat(ledger instanceof OriginalManagementAuthorizationLedger && ledger.signer === this.signer,
+      'ORIGINAL_AUTHORIZATION', 'The service-owned original ledger and identity signer are required.');
+    const args = managementQualificationRequestSchema.parse(input);
+    await this.ready();
+    const handle = await ledger.prepareQueue(originalRequestId, this.actor, args, await this.#challenge(originalQualificationAbility, args));
+    const envelope = await ledger.claimQueueDispatch(handle, this.actor);
+    const claims = JSON.parse(Buffer.from(envelope.payload_base64, 'base64').toString('utf8'));
+    const response = payload(await this.#dispatchSigned(originalQualificationAbility, args, delegationTools.run,
+      { timeout: 30000 }, { envelope, claims }, undefined, async () => {
+        const current = await ledger.readQueue(originalRequestId, this.actor);
+        requireThat(current.state === 'dispatched' && current.queue.id === handle.queueId
+          && current.queue.envelopeSha256 === delegationDigest(envelope),
+        'ORIGINAL_AUTHORIZATION', 'Original qualification authority changed before confirmed dispatch.');
+      }));
+    return (await ledger.recordQueue(originalRequestId, handle.queueId, this.actor, response)).context;
+  }
+  async listTools(params) { return this.client.listTools(params); }
+  async readResource(params) {
+    requireThat(params.uri === 'mainwp://status', 'CAPABILITY_DENIED', 'Only non-secret connection status is available outside delegated actions.');
+    return this.client.readResource(params);
+  }
+  async close() { await this.client.close(); }
+}

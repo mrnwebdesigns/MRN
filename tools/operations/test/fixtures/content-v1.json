@@ -1,0 +1,179 @@
+{
+  "description": "Public semantic and signature fixtures only. Never enroll this key. Private test key discarded.",
+  "before_snapshot": {
+    "schema": 1,
+    "site_id": 85,
+    "site_url": "https://mrnwebdesigns.com",
+    "target": {
+      "kind": "post",
+      "post_type": "page",
+      "post_id": 11561,
+      "field": "post_title"
+    },
+    "post_status": "publish",
+    "post_name": "about",
+    "post_title": "About MRN",
+    "post_excerpt": "",
+    "post_content": "<p>Fixture content only.</p>"
+  },
+  "before_sha256": "3bc2ebe281e6bafd908f87ab764d82f7e15243149347f7c91ddaa183a8415621",
+  "candidate_snapshot": {
+    "schema": 1,
+    "site_id": 85,
+    "site_url": "https://mrnwebdesigns.com",
+    "target": {
+      "kind": "post",
+      "post_type": "page",
+      "post_id": 11561,
+      "field": "post_title"
+    },
+    "post_status": "publish",
+    "post_name": "about",
+    "post_title": "About the MRN team",
+    "post_excerpt": "",
+    "post_content": "<p>Fixture content only.</p>"
+  },
+  "candidate_sha256": "d23e44c397d89ce363014fac5da97bfcd85b22e8449817fca21982dfef93bf80",
+  "migration_bundle": {
+    "schema": 1,
+    "migration_id": "00000000-0000-4000-8000-000000000201",
+    "site_url": "https://mrnwebdesigns.com",
+    "target": {
+      "kind": "post",
+      "post_type": "page",
+      "post_id": 11561,
+      "field": "post_title"
+    },
+    "stable_selector": {
+      "post_type": "page",
+      "post_path": "about"
+    },
+    "expected_snapshot_sha256": "3bc2ebe281e6bafd908f87ab764d82f7e15243149347f7c91ddaa183a8415621",
+    "candidate_snapshot": {
+      "schema": 1,
+      "site_id": 85,
+      "site_url": "https://mrnwebdesigns.com",
+      "target": {
+        "kind": "post",
+        "post_type": "page",
+        "post_id": 11561,
+        "field": "post_title"
+      },
+      "post_status": "publish",
+      "post_name": "about",
+      "post_title": "About the MRN team",
+      "post_excerpt": "",
+      "post_content": "<p>Fixture content only.</p>"
+    },
+    "candidate_sha256": "d23e44c397d89ce363014fac5da97bfcd85b22e8449817fca21982dfef93bf80",
+    "affected_paths": [
+      "/about/"
+    ],
+    "rollback_snapshot_sha256": "3bc2ebe281e6bafd908f87ab764d82f7e15243149347f7c91ddaa183a8415621",
+    "adapter_version": "1"
+  },
+  "migration_artifact_sha256": "e2f0b03e48fd5ddbe13a9e00548ce6582ad7bba995f3ec6b7d00e2215aff5186",
+  "plan_descriptor": {
+    "schema": 1,
+    "operation_id": "00000000-0000-4000-8000-000000000201",
+    "site_id": 85,
+    "site_url": "https://mrnwebdesigns.com",
+    "target": {
+      "kind": "post",
+      "post_type": "page",
+      "post_id": 11561,
+      "field": "post_title"
+    },
+    "before_sha256": "3bc2ebe281e6bafd908f87ab764d82f7e15243149347f7c91ddaa183a8415621",
+    "candidate_sha256": "d23e44c397d89ce363014fac5da97bfcd85b22e8449817fca21982dfef93bf80",
+    "affected_paths": [
+      "/about/"
+    ],
+    "stable_selector": {
+      "post_type": "page",
+      "post_path": "about"
+    },
+    "migration_artifact_sha256": "e2f0b03e48fd5ddbe13a9e00548ce6582ad7bba995f3ec6b7d00e2215aff5186",
+    "profile_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "rollback_operation_id": "",
+    "adapter_version": "1"
+  },
+  "plan_digest": "4ab70a91081b3eef4a4c5dedede8aa5ab51e4e4840a97fce0145407100b39569",
+  "receipt_claims": {
+    "schema": 1,
+    "issuer": "mrn-qa-engine",
+    "audience": "https://wpcontrol.mrndev.io",
+    "kind": "content",
+    "result": "Pass",
+    "mode": "release",
+    "smoke_strict": true,
+    "issued_at": 1800000000,
+    "expires_at": 1800000900,
+    "receipt_id": "11111111111111111111111111111111",
+    "site_id": 85,
+    "site_url": "https://mrnwebdesigns.com",
+    "target": {
+      "kind": "post",
+      "post_type": "page",
+      "post_id": 11561,
+      "field": "post_title"
+    },
+    "before_sha256": "3bc2ebe281e6bafd908f87ab764d82f7e15243149347f7c91ddaa183a8415621",
+    "candidate_sha256": "d23e44c397d89ce363014fac5da97bfcd85b22e8449817fca21982dfef93bf80",
+    "plan_digest": "4ab70a91081b3eef4a4c5dedede8aa5ab51e4e4840a97fce0145407100b39569",
+    "rollback_operation_id": "",
+    "qa_report_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "engine_commit": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "runtime_url": "https://mrn-qa.internal:9443",
+    "runtime_context_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "profile_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "affected_paths": [
+      "/about/"
+    ],
+    "migration_artifact_sha256": "e2f0b03e48fd5ddbe13a9e00548ce6582ad7bba995f3ec6b7d00e2215aff5186"
+  },
+  "receipt_envelope": {
+    "key_id": "fixture-content-only",
+    "payload_base64": "eyJhZmZlY3RlZF9wYXRocyI6WyIvYWJvdXQvIl0sImF1ZGllbmNlIjoiaHR0cHM6Ly93cGNvbnRyb2wubXJuZGV2LmlvIiwiYmVmb3JlX3NoYTI1NiI6IjNiYzJlYmUyODFlNmJhZmQ5MDhmODdhYjc2NGQ4MmY3ZTE1MjQzMTQ5MzQ3ZjdjOTFkZGFhMTgzYTg0MTU2MjEiLCJjYW5kaWRhdGVfc2hhMjU2IjoiZDIzZTQ0YzM5N2Q4OWNlMzYzMDE0ZmFjNWRhOTdiZmNkODViMjJlODQ0OTgxN2ZjYTIxOTgyZGZlZjkzYmY4MCIsImVuZ2luZV9jb21taXQiOiJlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlIiwiZXhwaXJlc19hdCI6MTgwMDAwMDkwMCwiaXNzdWVkX2F0IjoxODAwMDAwMDAwLCJpc3N1ZXIiOiJtcm4tcWEtZW5naW5lIiwia2luZCI6ImNvbnRlbnQiLCJtaWdyYXRpb25fYXJ0aWZhY3Rfc2hhMjU2IjoiZTJmMGIwM2U0OGZkNWRkYmUxM2E5ZTAwNTQ4Y2U2NTgyYWQ3YmJhOTk1ZjNlYzZiN2QwMGUyMjE1YWZmNTE4NiIsIm1vZGUiOiJyZWxlYXNlIiwicGxhbl9kaWdlc3QiOiI0YWI3MGE5MTA4MWIzZWVmNGE0YzVkZWRlZGU4YWE1YWI1MWU0ZTQ4NDBhOTdmY2UwMTQ1NDA3MTAwYjM5NTY5IiwicHJvZmlsZV9zaGEyNTYiOiJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiIiwicWFfcmVwb3J0X3NoYTI1NiI6ImFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWEiLCJyZWNlaXB0X2lkIjoiMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTEiLCJyZXN1bHQiOiJQYXNzIiwicm9sbGJhY2tfb3BlcmF0aW9uX2lkIjoiIiwicnVudGltZV9jb250ZXh0X3NoYTI1NiI6ImNjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2MiLCJydW50aW1lX3VybCI6Imh0dHBzOi8vbXJuLXFhLmludGVybmFsOjk0NDMiLCJzY2hlbWEiOjEsInNpdGVfaWQiOjg1LCJzaXRlX3VybCI6Imh0dHBzOi8vbXJud2ViZGVzaWducy5jb20iLCJzbW9rZV9zdHJpY3QiOnRydWUsInRhcmdldCI6eyJmaWVsZCI6InBvc3RfdGl0bGUiLCJraW5kIjoicG9zdCIsInBvc3RfaWQiOjExNTYxLCJwb3N0X3R5cGUiOiJwYWdlIn19",
+    "signature_base64": "2QaMIpWTCYx6ZcZUOYXYb/jRdxz2ENlBFTfYkcSG1wnPKrWgk68ti+oT8ckIHIA8aLsdaa/lkbE7SNt6d/szAg=="
+  },
+  "public_key_base64": "6rVO0R6yQwHhaDBVTvLLnatYPmUS0TQHbR39gLX5Mp8=",
+  "rollback_case": {
+    "before_snapshot": {
+      "schema": 1,
+      "site_id": 85,
+      "site_url": "https://mrnwebdesigns.com",
+      "target": {
+        "kind": "post",
+        "post_type": "page",
+        "post_id": 11561,
+        "field": "post_title"
+      },
+      "post_status": "publish",
+      "post_name": "about",
+      "post_title": "About the MRN team",
+      "post_excerpt": "",
+      "post_content": "<p>Fixture content only.</p>"
+    },
+    "candidate_snapshot": {
+      "schema": 1,
+      "site_id": 85,
+      "site_url": "https://mrnwebdesigns.com",
+      "target": {
+        "kind": "post",
+        "post_type": "page",
+        "post_id": 11561,
+        "field": "post_title"
+      },
+      "post_status": "publish",
+      "post_name": "about",
+      "post_title": "About MRN",
+      "post_excerpt": "",
+      "post_content": "<p>Fixture content only.</p>"
+    },
+    "before_sha256": "d23e44c397d89ce363014fac5da97bfcd85b22e8449817fca21982dfef93bf80",
+    "candidate_sha256": "3bc2ebe281e6bafd908f87ab764d82f7e15243149347f7c91ddaa183a8415621",
+    "rollback_snapshot_sha256": "d23e44c397d89ce363014fac5da97bfcd85b22e8449817fca21982dfef93bf80",
+    "rollback_operation_id": "00000000-0000-4000-8000-000000000201"
+  }
+}

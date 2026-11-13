@@ -1,0 +1,201 @@
+{
+  "schema": 1,
+  "ability": "mrn-mainwp/get-content-policy-v2",
+  "role": "reader",
+  "wrapper": "read-delegated-operation-v1",
+  "input": {
+    "type": "object",
+    "properties": {
+      "site_id": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "site_url": {
+        "type": "string",
+        "maxLength": 512
+      },
+      "target": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "post"
+            ]
+          },
+          "post_type": {
+            "type": "string",
+            "enum": [
+              "post",
+              "page"
+            ]
+          },
+          "post_id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "field": {
+            "type": "string",
+            "enum": [
+              "post_title",
+              "post_excerpt",
+              "post_content"
+            ]
+          }
+        },
+        "required": [
+          "kind",
+          "post_type",
+          "post_id",
+          "field"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "required": [
+      "site_id",
+      "site_url",
+      "target"
+    ],
+    "additionalProperties": false
+  },
+  "output": {
+    "type": "object",
+    "properties": {
+      "site_id": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "site_url": {
+        "type": "string",
+        "maxLength": 512
+      },
+      "enabled": {
+        "type": "boolean"
+      },
+      "profile": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "maxLength": 120
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "runtime_url": {
+                "type": "string",
+                "maxLength": 512
+              },
+              "runtime_context_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "ownership": {
+                "type": "string",
+                "enum": [
+                  "wordpress-post",
+                  "unknown",
+                  "builder"
+                ]
+              },
+              "covered_fields": {
+                "type": "array",
+                "maxItems": 3,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "post_title",
+                    "post_excerpt",
+                    "post_content"
+                  ]
+                }
+              },
+              "requires_render_assertions": {
+                "type": "boolean",
+                "enum": [
+                  true
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "sha256",
+              "runtime_url",
+              "runtime_context_sha256",
+              "ownership",
+              "covered_fields",
+              "requires_render_assertions"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "qa_keys": {
+        "type": "array",
+        "maxItems": 10,
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "public_key_base64": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "public_key_base64"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "maximum_value_bytes": {
+        "type": "integer",
+        "enum": [
+          8192
+        ]
+      },
+      "maximum_snapshot_bytes": {
+        "type": "integer",
+        "enum": [
+          32768
+        ]
+      },
+      "policy_sha256": {
+        "type": "string",
+        "pattern": "^[a-f0-9]{64}$"
+      },
+      "supported_target_kinds": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "enum": [
+            "post"
+          ]
+        }
+      }
+    },
+    "required": [
+      "site_id",
+      "site_url",
+      "enabled",
+      "profile",
+      "qa_keys",
+      "maximum_value_bytes",
+      "maximum_snapshot_bytes",
+      "policy_sha256",
+      "supported_target_kinds"
+    ],
+    "additionalProperties": false
+  },
+  "compatibility": "v1 remains site-only and returns one profile only when exactly one record is qualified; multiple profiles return profile=null. v2 selects exact normalized site_id/site_url + target tuple; never infers whole-site ownership or chooses another record. Existing mutation/inspection/migration shapes remain content-v1.",
+  "status": "Gateway candidate contract; provider implementation and runtime qualification pending. No production activation."
+}

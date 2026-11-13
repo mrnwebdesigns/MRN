@@ -1,0 +1,529 @@
+{
+  "authority_verified": false,
+  "production_enabled": false,
+  "catalog": {
+    "schema": 1,
+    "adapter": "content-management-source-catalog-v1",
+    "catalog_id": "11111111-1111-4111-8111-111111111111",
+    "issued_at": 1700000000,
+    "expires_at": 1700000120,
+    "native_reads": true,
+    "artifacts": [
+      {
+        "artifact_id": "approved-cache-fixture",
+        "root_kind": "directory",
+        "relative_inventory_sha256": "cc14d0b7f3fe50c0f45c389abcf6cd44b8356a6911d47604d982248fec78d17d",
+        "archive_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "archive_format": "zip",
+        "maximum_archive_bytes": 536870912
+      }
+    ]
+  },
+  "context": {
+    "management": {
+      "binding": {
+        "schema": 1,
+        "adapter": "content-management-v1",
+        "qualification_job_id": "77777777-7777-4777-8777-777777777777",
+        "operation_id": "11111111-1111-4111-8111-111111111111",
+        "reviewed_digest": "94a40da5266454c31b3f3c5874615b2d7e0136025be87bb2841d26238c6c27a5",
+        "requester_binding_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+        "authorization_policy_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+        "site_id": 73,
+        "site_url": "https://fixture.example.invalid",
+        "target": {
+          "kind": "wordpress-content",
+          "post_type": "page",
+          "post_id": 7
+        },
+        "expected_target_revision": 0,
+        "before_sha256": "3163c0b54124e69ba78ab55560f696799964fc58d6307d8d3495e37c4d62ad5c",
+        "candidate_sha256": "141f8b36d1206786aa9c5b70b81ff560737f6815f65ec4bff58ca4bf4a643577",
+        "request_sha256": "93dcff11c5f320a600e5a2f4fcf6be1db0dc1bfad64b6de2b2169d6ad62eb25e",
+        "migration_sha256": "47a8e6e131e61db90e27f8f3493deac3605d2829a22cc932d4ab05b9a71542a1",
+        "profile_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "runtime_context_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "before_paths_sha256": "19c166806b7d1b19d5ca0134efa942992f7cda142a4ea1ba28b60363a5d80c2e",
+        "acf_schema_sha256": "09101b9fc78d35496863fb2376c4f2c045684c6ad1ffbd4b0eed9366216807c4",
+        "management_contract_sha256": "e164d4bc265096493e6650c0beed42e7d8acbbd013d261a70b63513f591500de",
+        "provider_source_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "installed_manifest_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "source_binding_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "created_at": 1700000000,
+        "expires_at": 1700000120,
+        "job_intent_ttl_seconds": 120
+      },
+      "management_context_sha256": "09f6bb461c71d0f8a11f526a95c5d5549af719c7bc840b64edaad537496c0bd1",
+      "capture_artifact_sha256": "642ac7f58c7b966e5f793ccf16671306c6865a8cfac76e2946aecb752d7f2630",
+      "measurement_record_sha256": "a6b75abb2750f5b85ebf8bcf280df10e4e2d7091eecb780a802ae6bcb30e4c02",
+      "parity_sha256": "7b176978cf6dea78ba9eca8fb7083b085f136b61dd96e20d0f28dcffee611b71",
+      "evidence_policy_epoch": 1,
+      "evidence_policy_sha256": "0d00da5140fb7d209f37b6764bfd4da1f28e6bef9129e6a7e2dee1bbb6c046a6"
+    },
+    "source_recipe_catalog_sha256": "0056c29fb10fbfb3d0140c407be29c58d75af7bac6b0549856530bb0a5d8733f"
+  },
+  "capture_claims": {
+    "schema": 1,
+    "issuer": "mrn-content-qualification",
+    "audience": "https://wpcontrol.mrndev.io",
+    "issued_at": 1700000000,
+    "expires_at": 1700000120,
+    "request_id": "22222222-2222-4222-8222-222222222222",
+    "nonce": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "context": {
+      "management": {
+        "binding": {
+          "schema": 1,
+          "adapter": "content-management-v1",
+          "qualification_job_id": "77777777-7777-4777-8777-777777777777",
+          "operation_id": "11111111-1111-4111-8111-111111111111",
+          "reviewed_digest": "94a40da5266454c31b3f3c5874615b2d7e0136025be87bb2841d26238c6c27a5",
+          "requester_binding_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+          "authorization_policy_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+          "site_id": 73,
+          "site_url": "https://fixture.example.invalid",
+          "target": {
+            "kind": "wordpress-content",
+            "post_type": "page",
+            "post_id": 7
+          },
+          "expected_target_revision": 0,
+          "before_sha256": "3163c0b54124e69ba78ab55560f696799964fc58d6307d8d3495e37c4d62ad5c",
+          "candidate_sha256": "141f8b36d1206786aa9c5b70b81ff560737f6815f65ec4bff58ca4bf4a643577",
+          "request_sha256": "93dcff11c5f320a600e5a2f4fcf6be1db0dc1bfad64b6de2b2169d6ad62eb25e",
+          "migration_sha256": "47a8e6e131e61db90e27f8f3493deac3605d2829a22cc932d4ab05b9a71542a1",
+          "profile_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "runtime_context_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "before_paths_sha256": "19c166806b7d1b19d5ca0134efa942992f7cda142a4ea1ba28b60363a5d80c2e",
+          "acf_schema_sha256": "09101b9fc78d35496863fb2376c4f2c045684c6ad1ffbd4b0eed9366216807c4",
+          "management_contract_sha256": "e164d4bc265096493e6650c0beed42e7d8acbbd013d261a70b63513f591500de",
+          "provider_source_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "installed_manifest_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "source_binding_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "created_at": 1700000000,
+          "expires_at": 1700000120,
+          "job_intent_ttl_seconds": 120
+        },
+        "management_context_sha256": "09f6bb461c71d0f8a11f526a95c5d5549af719c7bc840b64edaad537496c0bd1",
+        "capture_artifact_sha256": "642ac7f58c7b966e5f793ccf16671306c6865a8cfac76e2946aecb752d7f2630",
+        "measurement_record_sha256": "a6b75abb2750f5b85ebf8bcf280df10e4e2d7091eecb780a802ae6bcb30e4c02",
+        "parity_sha256": "7b176978cf6dea78ba9eca8fb7083b085f136b61dd96e20d0f28dcffee611b71",
+        "evidence_policy_epoch": 1,
+        "evidence_policy_sha256": "0d00da5140fb7d209f37b6764bfd4da1f28e6bef9129e6a7e2dee1bbb6c046a6"
+      },
+      "source_recipe_catalog_sha256": "0056c29fb10fbfb3d0140c407be29c58d75af7bac6b0549856530bb0a5d8733f"
+    },
+    "action": "capture-management-source"
+  },
+  "status_claims": {
+    "schema": 1,
+    "issuer": "mrn-content-qualification",
+    "audience": "https://wpcontrol.mrndev.io",
+    "issued_at": 1700000000,
+    "expires_at": 1700000120,
+    "request_id": "22222222-2222-4222-8222-222222222222",
+    "nonce": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "context": {
+      "management": {
+        "binding": {
+          "schema": 1,
+          "adapter": "content-management-v1",
+          "qualification_job_id": "77777777-7777-4777-8777-777777777777",
+          "operation_id": "11111111-1111-4111-8111-111111111111",
+          "reviewed_digest": "94a40da5266454c31b3f3c5874615b2d7e0136025be87bb2841d26238c6c27a5",
+          "requester_binding_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+          "authorization_policy_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+          "site_id": 73,
+          "site_url": "https://fixture.example.invalid",
+          "target": {
+            "kind": "wordpress-content",
+            "post_type": "page",
+            "post_id": 7
+          },
+          "expected_target_revision": 0,
+          "before_sha256": "3163c0b54124e69ba78ab55560f696799964fc58d6307d8d3495e37c4d62ad5c",
+          "candidate_sha256": "141f8b36d1206786aa9c5b70b81ff560737f6815f65ec4bff58ca4bf4a643577",
+          "request_sha256": "93dcff11c5f320a600e5a2f4fcf6be1db0dc1bfad64b6de2b2169d6ad62eb25e",
+          "migration_sha256": "47a8e6e131e61db90e27f8f3493deac3605d2829a22cc932d4ab05b9a71542a1",
+          "profile_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "runtime_context_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "before_paths_sha256": "19c166806b7d1b19d5ca0134efa942992f7cda142a4ea1ba28b60363a5d80c2e",
+          "acf_schema_sha256": "09101b9fc78d35496863fb2376c4f2c045684c6ad1ffbd4b0eed9366216807c4",
+          "management_contract_sha256": "e164d4bc265096493e6650c0beed42e7d8acbbd013d261a70b63513f591500de",
+          "provider_source_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "installed_manifest_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "source_binding_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "created_at": 1700000000,
+          "expires_at": 1700000120,
+          "job_intent_ttl_seconds": 120
+        },
+        "management_context_sha256": "09f6bb461c71d0f8a11f526a95c5d5549af719c7bc840b64edaad537496c0bd1",
+        "capture_artifact_sha256": "642ac7f58c7b966e5f793ccf16671306c6865a8cfac76e2946aecb752d7f2630",
+        "measurement_record_sha256": "a6b75abb2750f5b85ebf8bcf280df10e4e2d7091eecb780a802ae6bcb30e4c02",
+        "parity_sha256": "7b176978cf6dea78ba9eca8fb7083b085f136b61dd96e20d0f28dcffee611b71",
+        "evidence_policy_epoch": 1,
+        "evidence_policy_sha256": "0d00da5140fb7d209f37b6764bfd4da1f28e6bef9129e6a7e2dee1bbb6c046a6"
+      },
+      "source_recipe_catalog_sha256": "0056c29fb10fbfb3d0140c407be29c58d75af7bac6b0549856530bb0a5d8733f"
+    },
+    "action": "read-management-source-status"
+  },
+  "read_claims": {
+    "schema": 1,
+    "issuer": "mrn-content-qualification",
+    "audience": "https://wpcontrol.mrndev.io",
+    "issued_at": 1700000000,
+    "expires_at": 1700000120,
+    "request_id": "22222222-2222-4222-8222-222222222222",
+    "nonce": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "context": {
+      "management": {
+        "binding": {
+          "schema": 1,
+          "adapter": "content-management-v1",
+          "qualification_job_id": "77777777-7777-4777-8777-777777777777",
+          "operation_id": "11111111-1111-4111-8111-111111111111",
+          "reviewed_digest": "94a40da5266454c31b3f3c5874615b2d7e0136025be87bb2841d26238c6c27a5",
+          "requester_binding_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+          "authorization_policy_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+          "site_id": 73,
+          "site_url": "https://fixture.example.invalid",
+          "target": {
+            "kind": "wordpress-content",
+            "post_type": "page",
+            "post_id": 7
+          },
+          "expected_target_revision": 0,
+          "before_sha256": "3163c0b54124e69ba78ab55560f696799964fc58d6307d8d3495e37c4d62ad5c",
+          "candidate_sha256": "141f8b36d1206786aa9c5b70b81ff560737f6815f65ec4bff58ca4bf4a643577",
+          "request_sha256": "93dcff11c5f320a600e5a2f4fcf6be1db0dc1bfad64b6de2b2169d6ad62eb25e",
+          "migration_sha256": "47a8e6e131e61db90e27f8f3493deac3605d2829a22cc932d4ab05b9a71542a1",
+          "profile_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "runtime_context_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "before_paths_sha256": "19c166806b7d1b19d5ca0134efa942992f7cda142a4ea1ba28b60363a5d80c2e",
+          "acf_schema_sha256": "09101b9fc78d35496863fb2376c4f2c045684c6ad1ffbd4b0eed9366216807c4",
+          "management_contract_sha256": "e164d4bc265096493e6650c0beed42e7d8acbbd013d261a70b63513f591500de",
+          "provider_source_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "installed_manifest_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "source_binding_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "created_at": 1700000000,
+          "expires_at": 1700000120,
+          "job_intent_ttl_seconds": 120
+        },
+        "management_context_sha256": "09f6bb461c71d0f8a11f526a95c5d5549af719c7bc840b64edaad537496c0bd1",
+        "capture_artifact_sha256": "642ac7f58c7b966e5f793ccf16671306c6865a8cfac76e2946aecb752d7f2630",
+        "measurement_record_sha256": "a6b75abb2750f5b85ebf8bcf280df10e4e2d7091eecb780a802ae6bcb30e4c02",
+        "parity_sha256": "7b176978cf6dea78ba9eca8fb7083b085f136b61dd96e20d0f28dcffee611b71",
+        "evidence_policy_epoch": 1,
+        "evidence_policy_sha256": "0d00da5140fb7d209f37b6764bfd4da1f28e6bef9129e6a7e2dee1bbb6c046a6"
+      },
+      "source_recipe_catalog_sha256": "0056c29fb10fbfb3d0140c407be29c58d75af7bac6b0549856530bb0a5d8733f"
+    },
+    "action": "read-management-source",
+    "transfer_id": "33333333-3333-4333-8333-333333333333",
+    "transfer_manifest_sha256": "2f919dee3a79355d0269fdd5a6c0de2dd4f21ccc0631532c1cd21207565b8225",
+    "batch_index": 0
+  },
+  "capture_input": {
+    "signed_request": {
+      "key_id": "fixture-registrar",
+      "payload_base64": "eyJhY3Rpb24iOiJjYXB0dXJlLW1hbmFnZW1lbnQtc291cmNlIiwiYXVkaWVuY2UiOiJodHRwczovL3dwY29udHJvbC5tcm5kZXYuaW8iLCJjb250ZXh0Ijp7Im1hbmFnZW1lbnQiOnsiYmluZGluZyI6eyJhY2Zfc2NoZW1hX3NoYTI1NiI6IjA5MTAxYjlmYzc4ZDM1NDk2ODYzZmIyMzc2YzRmMmMwNDU2ODRjNmFkMWZmYmQ0YjBlZWQ5MzY2MjE2ODA3YzQiLCJhZGFwdGVyIjoiY29udGVudC1tYW5hZ2VtZW50LXYxIiwiYXV0aG9yaXphdGlvbl9wb2xpY3lfc2hhMjU2IjoiMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMyIsImJlZm9yZV9wYXRoc19zaGEyNTYiOiIxOWMxNjY4MDZiN2QxYjE5ZDVjYTAxMzRlZmE5NDI5OTJmN2NkYTE0MmE0ZWExYmEyOGI2MDM2M2E1ZDgwYzJlIiwiYmVmb3JlX3NoYTI1NiI6IjMxNjNjMGI1NDEyNGU2OWJhNzhhYjU1NTYwZjY5Njc5OTk2NGZjNThkNjMwN2Q4ZDM0OTVlMzdjNGQ2MmFkNWMiLCJjYW5kaWRhdGVfc2hhMjU2IjoiMTQxZjhiMzZkMTIwNjc4NmFhOWM1YjcwYjgxZmY1NjA3MzdmNjgxNWY2NWVjNGJmZjU4Y2E0YmY0YTY0MzU3NyIsImNyZWF0ZWRfYXQiOjE3MDAwMDAwMDAsImV4cGVjdGVkX3RhcmdldF9yZXZpc2lvbiI6MCwiZXhwaXJlc19hdCI6MTcwMDAwMDEyMCwiaW5zdGFsbGVkX21hbmlmZXN0X3NoYTI1NiI6ImNjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2MiLCJqb2JfaW50ZW50X3R0bF9zZWNvbmRzIjoxMjAsIm1hbmFnZW1lbnRfY29udHJhY3Rfc2hhMjU2IjoiZTE2NGQ0YmMyNjUwOTY0OTNlNjY1MGMwYmVlZDQyZTdkOGFjYmJkMDEzZDI2MWE3MGI2MzUxM2Y1OTE1MDBkZSIsIm1pZ3JhdGlvbl9zaGEyNTYiOiI0N2E4ZTZlMTMxZTYxZGI5MGUyN2Y4ZjM0OTNkZWFjMzYwNWQyODI5YTIyY2M5MzJkNGFiMDViOWE3MTU0MmExIiwib3BlcmF0aW9uX2lkIjoiMTExMTExMTEtMTExMS00MTExLTgxMTEtMTExMTExMTExMTExIiwicHJvZmlsZV9zaGEyNTYiOiJhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhIiwicHJvdmlkZXJfc291cmNlX3NoYSI6ImJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmIiLCJxdWFsaWZpY2F0aW9uX2pvYl9pZCI6Ijc3Nzc3Nzc3LTc3NzctNDc3Ny04Nzc3LTc3Nzc3Nzc3Nzc3NyIsInJlcXVlc3Rfc2hhMjU2IjoiOTNkY2ZmMTFjNWYzMjBhNjAwZTVhMmY0ZmNmNmJlMWRiMGRjMWJmYWQ2NGI2ZGUyYjIxNjlkNmFkNjJlYjI1ZSIsInJlcXVlc3Rlcl9iaW5kaW5nX3NoYTI1NiI6IjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIiLCJyZXZpZXdlZF9kaWdlc3QiOiI5NGE0MGRhNTI2NjQ1NGMzMWIzZjNjNTg3NDYxNWIyZDdlMDEzNjAyNWJlODdiYjI4NDFkMjYyMzhjNmMyN2E1IiwicnVudGltZV9jb250ZXh0X3NoYTI1NiI6ImJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmIiLCJzY2hlbWEiOjEsInNpdGVfaWQiOjczLCJzaXRlX3VybCI6Imh0dHBzOi8vZml4dHVyZS5leGFtcGxlLmludmFsaWQiLCJzb3VyY2VfYmluZGluZ19zaGEyNTYiOiJhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhIiwidGFyZ2V0Ijp7ImtpbmQiOiJ3b3JkcHJlc3MtY29udGVudCIsInBvc3RfaWQiOjcsInBvc3RfdHlwZSI6InBhZ2UifX0sImNhcHR1cmVfYXJ0aWZhY3Rfc2hhMjU2IjoiNjQyYWM3ZjU4YzdiOTY2ZTVmNzkzY2NmMTY2NzEzMDZjNjg2NWE4Y2ZhYzc2ZTI5NDZhZWNiNzUyZDdmMjYzMCIsImV2aWRlbmNlX3BvbGljeV9lcG9jaCI6MSwiZXZpZGVuY2VfcG9saWN5X3NoYTI1NiI6IjBkMDBkYTUxNDBmYjdkMjA5ZjM3YjY3NjRiZmQ0ZGExZjI4ZTZiZWY5MTI5ZTZhN2UyZGVlMWJiYjZjMDQ2YTYiLCJtYW5hZ2VtZW50X2NvbnRleHRfc2hhMjU2IjoiMDlmNmJiNDYxYzcxZDBmOGExMWY1MjZhOTVjNWQ1NTQ5YWY3MTljN2JjODQwYjY0ZWRhYWQ1Mzc0OTZjMGJkMSIsIm1lYXN1cmVtZW50X3JlY29yZF9zaGEyNTYiOiJhNmI3NWFiYjI3NTBmNWI4NWViZjhiY2YyODBkZjEwZTRlMmQ3MDkxZWVjYjc4MGE4MDJhZTZiY2IzMGU0YzAyIiwicGFyaXR5X3NoYTI1NiI6IjdiMTc2OTc4Y2Y2ZGVhNzhiYTllY2E4ZmI3MDgzYjA4NWYxMzZiNjFkZDk2ZTIwZDBmMjhkY2ZmZWU2MTFiNzEifSwic291cmNlX3JlY2lwZV9jYXRhbG9nX3NoYTI1NiI6IjAwNTZjMjlmYjEwZmJmYjNkMDE0MGM0MDdiZTI5YzU4ZDc1YWY3YmFjNmIwNTQ5ODU2NTMwYmIwYTVkODczM2YifSwiZXhwaXJlc19hdCI6MTcwMDAwMDEyMCwiaXNzdWVkX2F0IjoxNzAwMDAwMDAwLCJpc3N1ZXIiOiJtcm4tY29udGVudC1xdWFsaWZpY2F0aW9uIiwibm9uY2UiOiJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiIiwicmVxdWVzdF9pZCI6IjIyMjIyMjIyLTIyMjItNDIyMi04MjIyLTIyMjIyMjIyMjIyMiIsInNjaGVtYSI6MX0=",
+      "signature_base64": "8T4TYbnDFXb8ewftNNTcyPELfRl8JPDUxYO9YRVZk9gukRfbH9pBwRsSby33ZIUge3dNMZ13XvzUE0e6kaLKDw=="
+    },
+    "signed_source_catalog": {
+      "key_id": "fixture-recipe-root",
+      "payload_base64": "eyJhZGFwdGVyIjoiY29udGVudC1tYW5hZ2VtZW50LXNvdXJjZS1jYXRhbG9nLXYxIiwiYXJ0aWZhY3RzIjpbeyJhcmNoaXZlX2Zvcm1hdCI6InppcCIsImFyY2hpdmVfc2hhMjU2IjoiYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYSIsImFydGlmYWN0X2lkIjoiYXBwcm92ZWQtY2FjaGUtZml4dHVyZSIsIm1heGltdW1fYXJjaGl2ZV9ieXRlcyI6NTM2ODcwOTEyLCJyZWxhdGl2ZV9pbnZlbnRvcnlfc2hhMjU2IjoiY2MxNGQwYjdmM2ZlNTBjMGY0NWMzODlhYmNmNmNkNDRiODM1NmE2OTExZDQ3NjA0ZDk4MjI0OGZlYzc4ZDE3ZCIsInJvb3Rfa2luZCI6ImRpcmVjdG9yeSJ9XSwiY2F0YWxvZ19pZCI6IjExMTExMTExLTExMTEtNDExMS04MTExLTExMTExMTExMTExMSIsImV4cGlyZXNfYXQiOjE3MDAwMDAxMjAsImlzc3VlZF9hdCI6MTcwMDAwMDAwMCwibmF0aXZlX3JlYWRzIjp0cnVlLCJzY2hlbWEiOjF9",
+      "signature_base64": "wsLcmgEUXLa+CoibpQSkUx/zk4S5xpjC5NcRpzlZJiejxiG/uV1iTBEpq9DLnOT4V/yjbiMum7mHDpsu5AFsDA=="
+    }
+  },
+  "status_input": {
+    "signed_request": {
+      "key_id": "fixture-registrar",
+      "payload_base64": "eyJhY3Rpb24iOiJyZWFkLW1hbmFnZW1lbnQtc291cmNlLXN0YXR1cyIsImF1ZGllbmNlIjoiaHR0cHM6Ly93cGNvbnRyb2wubXJuZGV2LmlvIiwiY29udGV4dCI6eyJtYW5hZ2VtZW50Ijp7ImJpbmRpbmciOnsiYWNmX3NjaGVtYV9zaGEyNTYiOiIwOTEwMWI5ZmM3OGQzNTQ5Njg2M2ZiMjM3NmM0ZjJjMDQ1Njg0YzZhZDFmZmJkNGIwZWVkOTM2NjIxNjgwN2M0IiwiYWRhcHRlciI6ImNvbnRlbnQtbWFuYWdlbWVudC12MSIsImF1dGhvcml6YXRpb25fcG9saWN5X3NoYTI1NiI6IjMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMiLCJiZWZvcmVfcGF0aHNfc2hhMjU2IjoiMTljMTY2ODA2YjdkMWIxOWQ1Y2EwMTM0ZWZhOTQyOTkyZjdjZGExNDJhNGVhMWJhMjhiNjAzNjNhNWQ4MGMyZSIsImJlZm9yZV9zaGEyNTYiOiIzMTYzYzBiNTQxMjRlNjliYTc4YWI1NTU2MGY2OTY3OTk5NjRmYzU4ZDYzMDdkOGQzNDk1ZTM3YzRkNjJhZDVjIiwiY2FuZGlkYXRlX3NoYTI1NiI6IjE0MWY4YjM2ZDEyMDY3ODZhYTljNWI3MGI4MWZmNTYwNzM3ZjY4MTVmNjVlYzRiZmY1OGNhNGJmNGE2NDM1NzciLCJjcmVhdGVkX2F0IjoxNzAwMDAwMDAwLCJleHBlY3RlZF90YXJnZXRfcmV2aXNpb24iOjAsImV4cGlyZXNfYXQiOjE3MDAwMDAxMjAsImluc3RhbGxlZF9tYW5pZmVzdF9zaGEyNTYiOiJjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjIiwiam9iX2ludGVudF90dGxfc2Vjb25kcyI6MTIwLCJtYW5hZ2VtZW50X2NvbnRyYWN0X3NoYTI1NiI6ImUxNjRkNGJjMjY1MDk2NDkzZTY2NTBjMGJlZWQ0MmU3ZDhhY2JiZDAxM2QyNjFhNzBiNjM1MTNmNTkxNTAwZGUiLCJtaWdyYXRpb25fc2hhMjU2IjoiNDdhOGU2ZTEzMWU2MWRiOTBlMjdmOGYzNDkzZGVhYzM2MDVkMjgyOWEyMmNjOTMyZDRhYjA1YjlhNzE1NDJhMSIsIm9wZXJhdGlvbl9pZCI6IjExMTExMTExLTExMTEtNDExMS04MTExLTExMTExMTExMTExMSIsInByb2ZpbGVfc2hhMjU2IjoiYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYSIsInByb3ZpZGVyX3NvdXJjZV9zaGEiOiJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiIiwicXVhbGlmaWNhdGlvbl9qb2JfaWQiOiI3Nzc3Nzc3Ny03Nzc3LTQ3NzctODc3Ny03Nzc3Nzc3Nzc3NzciLCJyZXF1ZXN0X3NoYTI1NiI6IjkzZGNmZjExYzVmMzIwYTYwMGU1YTJmNGZjZjZiZTFkYjBkYzFiZmFkNjRiNmRlMmIyMTY5ZDZhZDYyZWIyNWUiLCJyZXF1ZXN0ZXJfYmluZGluZ19zaGEyNTYiOiIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyIiwicmV2aWV3ZWRfZGlnZXN0IjoiOTRhNDBkYTUyNjY0NTRjMzFiM2YzYzU4NzQ2MTViMmQ3ZTAxMzYwMjViZTg3YmIyODQxZDI2MjM4YzZjMjdhNSIsInJ1bnRpbWVfY29udGV4dF9zaGEyNTYiOiJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiIiwic2NoZW1hIjoxLCJzaXRlX2lkIjo3Mywic2l0ZV91cmwiOiJodHRwczovL2ZpeHR1cmUuZXhhbXBsZS5pbnZhbGlkIiwic291cmNlX2JpbmRpbmdfc2hhMjU2IjoiYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYSIsInRhcmdldCI6eyJraW5kIjoid29yZHByZXNzLWNvbnRlbnQiLCJwb3N0X2lkIjo3LCJwb3N0X3R5cGUiOiJwYWdlIn19LCJjYXB0dXJlX2FydGlmYWN0X3NoYTI1NiI6IjY0MmFjN2Y1OGM3Yjk2NmU1Zjc5M2NjZjE2NjcxMzA2YzY4NjVhOGNmYWM3NmUyOTQ2YWVjYjc1MmQ3ZjI2MzAiLCJldmlkZW5jZV9wb2xpY3lfZXBvY2giOjEsImV2aWRlbmNlX3BvbGljeV9zaGEyNTYiOiIwZDAwZGE1MTQwZmI3ZDIwOWYzN2I2NzY0YmZkNGRhMWYyOGU2YmVmOTEyOWU2YTdlMmRlZTFiYmI2YzA0NmE2IiwibWFuYWdlbWVudF9jb250ZXh0X3NoYTI1NiI6IjA5ZjZiYjQ2MWM3MWQwZjhhMTFmNTI2YTk1YzVkNTU0OWFmNzE5YzdiYzg0MGI2NGVkYWFkNTM3NDk2YzBiZDEiLCJtZWFzdXJlbWVudF9yZWNvcmRfc2hhMjU2IjoiYTZiNzVhYmIyNzUwZjViODVlYmY4YmNmMjgwZGYxMGU0ZTJkNzA5MWVlY2I3ODBhODAyYWU2YmNiMzBlNGMwMiIsInBhcml0eV9zaGEyNTYiOiI3YjE3Njk3OGNmNmRlYTc4YmE5ZWNhOGZiNzA4M2IwODVmMTM2YjYxZGQ5NmUyMGQwZjI4ZGNmZmVlNjExYjcxIn0sInNvdXJjZV9yZWNpcGVfY2F0YWxvZ19zaGEyNTYiOiIwMDU2YzI5ZmIxMGZiZmIzZDAxNDBjNDA3YmUyOWM1OGQ3NWFmN2JhYzZiMDU0OTg1NjUzMGJiMGE1ZDg3MzNmIn0sImV4cGlyZXNfYXQiOjE3MDAwMDAxMjAsImlzc3VlZF9hdCI6MTcwMDAwMDAwMCwiaXNzdWVyIjoibXJuLWNvbnRlbnQtcXVhbGlmaWNhdGlvbiIsIm5vbmNlIjoiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYiIsInJlcXVlc3RfaWQiOiIyMjIyMjIyMi0yMjIyLTQyMjItODIyMi0yMjIyMjIyMjIyMjIiLCJzY2hlbWEiOjF9",
+      "signature_base64": "Oj0X5hjfAELSRGkhcY23PO0ETYsDywxk7EjUmniaardvK+Q7B+e2jCb+5IIAXY1zQ9FhhoIRcY3C+kam6scDBw=="
+    }
+  },
+  "read_input": {
+    "signed_request": {
+      "key_id": "fixture-registrar",
+      "payload_base64": "eyJhY3Rpb24iOiJyZWFkLW1hbmFnZW1lbnQtc291cmNlIiwiYXVkaWVuY2UiOiJodHRwczovL3dwY29udHJvbC5tcm5kZXYuaW8iLCJiYXRjaF9pbmRleCI6MCwiY29udGV4dCI6eyJtYW5hZ2VtZW50Ijp7ImJpbmRpbmciOnsiYWNmX3NjaGVtYV9zaGEyNTYiOiIwOTEwMWI5ZmM3OGQzNTQ5Njg2M2ZiMjM3NmM0ZjJjMDQ1Njg0YzZhZDFmZmJkNGIwZWVkOTM2NjIxNjgwN2M0IiwiYWRhcHRlciI6ImNvbnRlbnQtbWFuYWdlbWVudC12MSIsImF1dGhvcml6YXRpb25fcG9saWN5X3NoYTI1NiI6IjMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMiLCJiZWZvcmVfcGF0aHNfc2hhMjU2IjoiMTljMTY2ODA2YjdkMWIxOWQ1Y2EwMTM0ZWZhOTQyOTkyZjdjZGExNDJhNGVhMWJhMjhiNjAzNjNhNWQ4MGMyZSIsImJlZm9yZV9zaGEyNTYiOiIzMTYzYzBiNTQxMjRlNjliYTc4YWI1NTU2MGY2OTY3OTk5NjRmYzU4ZDYzMDdkOGQzNDk1ZTM3YzRkNjJhZDVjIiwiY2FuZGlkYXRlX3NoYTI1NiI6IjE0MWY4YjM2ZDEyMDY3ODZhYTljNWI3MGI4MWZmNTYwNzM3ZjY4MTVmNjVlYzRiZmY1OGNhNGJmNGE2NDM1NzciLCJjcmVhdGVkX2F0IjoxNzAwMDAwMDAwLCJleHBlY3RlZF90YXJnZXRfcmV2aXNpb24iOjAsImV4cGlyZXNfYXQiOjE3MDAwMDAxMjAsImluc3RhbGxlZF9tYW5pZmVzdF9zaGEyNTYiOiJjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjIiwiam9iX2ludGVudF90dGxfc2Vjb25kcyI6MTIwLCJtYW5hZ2VtZW50X2NvbnRyYWN0X3NoYTI1NiI6ImUxNjRkNGJjMjY1MDk2NDkzZTY2NTBjMGJlZWQ0MmU3ZDhhY2JiZDAxM2QyNjFhNzBiNjM1MTNmNTkxNTAwZGUiLCJtaWdyYXRpb25fc2hhMjU2IjoiNDdhOGU2ZTEzMWU2MWRiOTBlMjdmOGYzNDkzZGVhYzM2MDVkMjgyOWEyMmNjOTMyZDRhYjA1YjlhNzE1NDJhMSIsIm9wZXJhdGlvbl9pZCI6IjExMTExMTExLTExMTEtNDExMS04MTExLTExMTExMTExMTExMSIsInByb2ZpbGVfc2hhMjU2IjoiYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYSIsInByb3ZpZGVyX3NvdXJjZV9zaGEiOiJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiIiwicXVhbGlmaWNhdGlvbl9qb2JfaWQiOiI3Nzc3Nzc3Ny03Nzc3LTQ3NzctODc3Ny03Nzc3Nzc3Nzc3NzciLCJyZXF1ZXN0X3NoYTI1NiI6IjkzZGNmZjExYzVmMzIwYTYwMGU1YTJmNGZjZjZiZTFkYjBkYzFiZmFkNjRiNmRlMmIyMTY5ZDZhZDYyZWIyNWUiLCJyZXF1ZXN0ZXJfYmluZGluZ19zaGEyNTYiOiIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyIiwicmV2aWV3ZWRfZGlnZXN0IjoiOTRhNDBkYTUyNjY0NTRjMzFiM2YzYzU4NzQ2MTViMmQ3ZTAxMzYwMjViZTg3YmIyODQxZDI2MjM4YzZjMjdhNSIsInJ1bnRpbWVfY29udGV4dF9zaGEyNTYiOiJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiIiwic2NoZW1hIjoxLCJzaXRlX2lkIjo3Mywic2l0ZV91cmwiOiJodHRwczovL2ZpeHR1cmUuZXhhbXBsZS5pbnZhbGlkIiwic291cmNlX2JpbmRpbmdfc2hhMjU2IjoiYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYSIsInRhcmdldCI6eyJraW5kIjoid29yZHByZXNzLWNvbnRlbnQiLCJwb3N0X2lkIjo3LCJwb3N0X3R5cGUiOiJwYWdlIn19LCJjYXB0dXJlX2FydGlmYWN0X3NoYTI1NiI6IjY0MmFjN2Y1OGM3Yjk2NmU1Zjc5M2NjZjE2NjcxMzA2YzY4NjVhOGNmYWM3NmUyOTQ2YWVjYjc1MmQ3ZjI2MzAiLCJldmlkZW5jZV9wb2xpY3lfZXBvY2giOjEsImV2aWRlbmNlX3BvbGljeV9zaGEyNTYiOiIwZDAwZGE1MTQwZmI3ZDIwOWYzN2I2NzY0YmZkNGRhMWYyOGU2YmVmOTEyOWU2YTdlMmRlZTFiYmI2YzA0NmE2IiwibWFuYWdlbWVudF9jb250ZXh0X3NoYTI1NiI6IjA5ZjZiYjQ2MWM3MWQwZjhhMTFmNTI2YTk1YzVkNTU0OWFmNzE5YzdiYzg0MGI2NGVkYWFkNTM3NDk2YzBiZDEiLCJtZWFzdXJlbWVudF9yZWNvcmRfc2hhMjU2IjoiYTZiNzVhYmIyNzUwZjViODVlYmY4YmNmMjgwZGYxMGU0ZTJkNzA5MWVlY2I3ODBhODAyYWU2YmNiMzBlNGMwMiIsInBhcml0eV9zaGEyNTYiOiI3YjE3Njk3OGNmNmRlYTc4YmE5ZWNhOGZiNzA4M2IwODVmMTM2YjYxZGQ5NmUyMGQwZjI4ZGNmZmVlNjExYjcxIn0sInNvdXJjZV9yZWNpcGVfY2F0YWxvZ19zaGEyNTYiOiIwMDU2YzI5ZmIxMGZiZmIzZDAxNDBjNDA3YmUyOWM1OGQ3NWFmN2JhYzZiMDU0OTg1NjUzMGJiMGE1ZDg3MzNmIn0sImV4cGlyZXNfYXQiOjE3MDAwMDAxMjAsImlzc3VlZF9hdCI6MTcwMDAwMDAwMCwiaXNzdWVyIjoibXJuLWNvbnRlbnQtcXVhbGlmaWNhdGlvbiIsIm5vbmNlIjoiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYiIsInJlcXVlc3RfaWQiOiIyMjIyMjIyMi0yMjIyLTQyMjItODIyMi0yMjIyMjIyMjIyMjIiLCJzY2hlbWEiOjEsInRyYW5zZmVyX2lkIjoiMzMzMzMzMzMtMzMzMy00MzMzLTgzMzMtMzMzMzMzMzMzMzMzIiwidHJhbnNmZXJfbWFuaWZlc3Rfc2hhMjU2IjoiMmY5MTlkZWUzYTc5MzU1ZDAyNjlmZGQ1YTZjMGRlMmRkNGYyMWNjYzA2MzE1MzJjMWNkMjEyMDc1NjViODIyNSJ9",
+      "signature_base64": "EC86qy56ZpMMpIDS+4b6qofGM05E2NzYGecTfizrLcWkgESjpRaG8QBWX1MmYV2Xom2jKlhQUJZLIvya0ieeAg=="
+    }
+  },
+  "transfer_manifest": {
+    "schema": 1,
+    "purpose": "mrn-content-management-source-transfer-v1",
+    "context": {
+      "management": {
+        "binding": {
+          "schema": 1,
+          "adapter": "content-management-v1",
+          "qualification_job_id": "77777777-7777-4777-8777-777777777777",
+          "operation_id": "11111111-1111-4111-8111-111111111111",
+          "reviewed_digest": "94a40da5266454c31b3f3c5874615b2d7e0136025be87bb2841d26238c6c27a5",
+          "requester_binding_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+          "authorization_policy_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+          "site_id": 73,
+          "site_url": "https://fixture.example.invalid",
+          "target": {
+            "kind": "wordpress-content",
+            "post_type": "page",
+            "post_id": 7
+          },
+          "expected_target_revision": 0,
+          "before_sha256": "3163c0b54124e69ba78ab55560f696799964fc58d6307d8d3495e37c4d62ad5c",
+          "candidate_sha256": "141f8b36d1206786aa9c5b70b81ff560737f6815f65ec4bff58ca4bf4a643577",
+          "request_sha256": "93dcff11c5f320a600e5a2f4fcf6be1db0dc1bfad64b6de2b2169d6ad62eb25e",
+          "migration_sha256": "47a8e6e131e61db90e27f8f3493deac3605d2829a22cc932d4ab05b9a71542a1",
+          "profile_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "runtime_context_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "before_paths_sha256": "19c166806b7d1b19d5ca0134efa942992f7cda142a4ea1ba28b60363a5d80c2e",
+          "acf_schema_sha256": "09101b9fc78d35496863fb2376c4f2c045684c6ad1ffbd4b0eed9366216807c4",
+          "management_contract_sha256": "e164d4bc265096493e6650c0beed42e7d8acbbd013d261a70b63513f591500de",
+          "provider_source_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "installed_manifest_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "source_binding_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "created_at": 1700000000,
+          "expires_at": 1700000120,
+          "job_intent_ttl_seconds": 120
+        },
+        "management_context_sha256": "09f6bb461c71d0f8a11f526a95c5d5549af719c7bc840b64edaad537496c0bd1",
+        "capture_artifact_sha256": "642ac7f58c7b966e5f793ccf16671306c6865a8cfac76e2946aecb752d7f2630",
+        "measurement_record_sha256": "a6b75abb2750f5b85ebf8bcf280df10e4e2d7091eecb780a802ae6bcb30e4c02",
+        "parity_sha256": "7b176978cf6dea78ba9eca8fb7083b085f136b61dd96e20d0f28dcffee611b71",
+        "evidence_policy_epoch": 1,
+        "evidence_policy_sha256": "0d00da5140fb7d209f37b6764bfd4da1f28e6bef9129e6a7e2dee1bbb6c046a6"
+      },
+      "source_recipe_catalog_sha256": "0056c29fb10fbfb3d0140c407be29c58d75af7bac6b0549856530bb0a5d8733f"
+    },
+    "transfer_id": "33333333-3333-4333-8333-333333333333",
+    "recipe_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "origins": [
+      {
+        "inventory_index": 0,
+        "origin": "cache",
+        "artifact_id": "approved-cache-fixture",
+        "bytes": null,
+        "native_frame_start": null,
+        "native_frame_count": 0
+      },
+      {
+        "inventory_index": 1,
+        "origin": "native",
+        "artifact_id": null,
+        "bytes": 3,
+        "native_frame_start": 0,
+        "native_frame_count": 1
+      }
+    ],
+    "native_files": 1,
+    "native_bytes": 3,
+    "native_frames": 1,
+    "full_source_verified": false,
+    "authority_verified": false,
+    "admitted": false
+  },
+  "capture_output": {
+    "schema": 1,
+    "context": {
+      "management": {
+        "binding": {
+          "schema": 1,
+          "adapter": "content-management-v1",
+          "qualification_job_id": "77777777-7777-4777-8777-777777777777",
+          "operation_id": "11111111-1111-4111-8111-111111111111",
+          "reviewed_digest": "94a40da5266454c31b3f3c5874615b2d7e0136025be87bb2841d26238c6c27a5",
+          "requester_binding_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+          "authorization_policy_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+          "site_id": 73,
+          "site_url": "https://fixture.example.invalid",
+          "target": {
+            "kind": "wordpress-content",
+            "post_type": "page",
+            "post_id": 7
+          },
+          "expected_target_revision": 0,
+          "before_sha256": "3163c0b54124e69ba78ab55560f696799964fc58d6307d8d3495e37c4d62ad5c",
+          "candidate_sha256": "141f8b36d1206786aa9c5b70b81ff560737f6815f65ec4bff58ca4bf4a643577",
+          "request_sha256": "93dcff11c5f320a600e5a2f4fcf6be1db0dc1bfad64b6de2b2169d6ad62eb25e",
+          "migration_sha256": "47a8e6e131e61db90e27f8f3493deac3605d2829a22cc932d4ab05b9a71542a1",
+          "profile_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "runtime_context_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "before_paths_sha256": "19c166806b7d1b19d5ca0134efa942992f7cda142a4ea1ba28b60363a5d80c2e",
+          "acf_schema_sha256": "09101b9fc78d35496863fb2376c4f2c045684c6ad1ffbd4b0eed9366216807c4",
+          "management_contract_sha256": "e164d4bc265096493e6650c0beed42e7d8acbbd013d261a70b63513f591500de",
+          "provider_source_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "installed_manifest_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "source_binding_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "created_at": 1700000000,
+          "expires_at": 1700000120,
+          "job_intent_ttl_seconds": 120
+        },
+        "management_context_sha256": "09f6bb461c71d0f8a11f526a95c5d5549af719c7bc840b64edaad537496c0bd1",
+        "capture_artifact_sha256": "642ac7f58c7b966e5f793ccf16671306c6865a8cfac76e2946aecb752d7f2630",
+        "measurement_record_sha256": "a6b75abb2750f5b85ebf8bcf280df10e4e2d7091eecb780a802ae6bcb30e4c02",
+        "parity_sha256": "7b176978cf6dea78ba9eca8fb7083b085f136b61dd96e20d0f28dcffee611b71",
+        "evidence_policy_epoch": 1,
+        "evidence_policy_sha256": "0d00da5140fb7d209f37b6764bfd4da1f28e6bef9129e6a7e2dee1bbb6c046a6"
+      },
+      "source_recipe_catalog_sha256": "0056c29fb10fbfb3d0140c407be29c58d75af7bac6b0549856530bb0a5d8733f"
+    },
+    "state": "complete",
+    "slot": {
+      "transfer_id": "33333333-3333-4333-8333-333333333333",
+      "transfer_manifest_sha256": "2f919dee3a79355d0269fdd5a6c0de2dd4f21ccc0631532c1cd21207565b8225",
+      "recipe_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "manifest_bytes": 2923,
+      "manifest_frames": 1,
+      "native_files": 1,
+      "native_bytes": 3,
+      "native_frames": 1,
+      "total_frames": 2,
+      "full_source_verified": false,
+      "authority_verified": false,
+      "admitted": false
+    }
+  },
+  "status_output": {
+    "schema": 1,
+    "context": {
+      "management": {
+        "binding": {
+          "schema": 1,
+          "adapter": "content-management-v1",
+          "qualification_job_id": "77777777-7777-4777-8777-777777777777",
+          "operation_id": "11111111-1111-4111-8111-111111111111",
+          "reviewed_digest": "94a40da5266454c31b3f3c5874615b2d7e0136025be87bb2841d26238c6c27a5",
+          "requester_binding_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+          "authorization_policy_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+          "site_id": 73,
+          "site_url": "https://fixture.example.invalid",
+          "target": {
+            "kind": "wordpress-content",
+            "post_type": "page",
+            "post_id": 7
+          },
+          "expected_target_revision": 0,
+          "before_sha256": "3163c0b54124e69ba78ab55560f696799964fc58d6307d8d3495e37c4d62ad5c",
+          "candidate_sha256": "141f8b36d1206786aa9c5b70b81ff560737f6815f65ec4bff58ca4bf4a643577",
+          "request_sha256": "93dcff11c5f320a600e5a2f4fcf6be1db0dc1bfad64b6de2b2169d6ad62eb25e",
+          "migration_sha256": "47a8e6e131e61db90e27f8f3493deac3605d2829a22cc932d4ab05b9a71542a1",
+          "profile_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "runtime_context_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "before_paths_sha256": "19c166806b7d1b19d5ca0134efa942992f7cda142a4ea1ba28b60363a5d80c2e",
+          "acf_schema_sha256": "09101b9fc78d35496863fb2376c4f2c045684c6ad1ffbd4b0eed9366216807c4",
+          "management_contract_sha256": "e164d4bc265096493e6650c0beed42e7d8acbbd013d261a70b63513f591500de",
+          "provider_source_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "installed_manifest_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "source_binding_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "created_at": 1700000000,
+          "expires_at": 1700000120,
+          "job_intent_ttl_seconds": 120
+        },
+        "management_context_sha256": "09f6bb461c71d0f8a11f526a95c5d5549af719c7bc840b64edaad537496c0bd1",
+        "capture_artifact_sha256": "642ac7f58c7b966e5f793ccf16671306c6865a8cfac76e2946aecb752d7f2630",
+        "measurement_record_sha256": "a6b75abb2750f5b85ebf8bcf280df10e4e2d7091eecb780a802ae6bcb30e4c02",
+        "parity_sha256": "7b176978cf6dea78ba9eca8fb7083b085f136b61dd96e20d0f28dcffee611b71",
+        "evidence_policy_epoch": 1,
+        "evidence_policy_sha256": "0d00da5140fb7d209f37b6764bfd4da1f28e6bef9129e6a7e2dee1bbb6c046a6"
+      },
+      "source_recipe_catalog_sha256": "0056c29fb10fbfb3d0140c407be29c58d75af7bac6b0549856530bb0a5d8733f"
+    },
+    "state": "complete",
+    "slot": {
+      "transfer_id": "33333333-3333-4333-8333-333333333333",
+      "transfer_manifest_sha256": "2f919dee3a79355d0269fdd5a6c0de2dd4f21ccc0631532c1cd21207565b8225",
+      "recipe_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "manifest_bytes": 2923,
+      "manifest_frames": 1,
+      "native_files": 1,
+      "native_bytes": 3,
+      "native_frames": 1,
+      "total_frames": 2,
+      "full_source_verified": false,
+      "authority_verified": false,
+      "admitted": false
+    },
+    "retry_capture_allowed": false,
+    "full_source_verified": false,
+    "admitted": false
+  },
+  "read_output": {
+    "schema": 1,
+    "context": {
+      "management": {
+        "binding": {
+          "schema": 1,
+          "adapter": "content-management-v1",
+          "qualification_job_id": "77777777-7777-4777-8777-777777777777",
+          "operation_id": "11111111-1111-4111-8111-111111111111",
+          "reviewed_digest": "94a40da5266454c31b3f3c5874615b2d7e0136025be87bb2841d26238c6c27a5",
+          "requester_binding_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+          "authorization_policy_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+          "site_id": 73,
+          "site_url": "https://fixture.example.invalid",
+          "target": {
+            "kind": "wordpress-content",
+            "post_type": "page",
+            "post_id": 7
+          },
+          "expected_target_revision": 0,
+          "before_sha256": "3163c0b54124e69ba78ab55560f696799964fc58d6307d8d3495e37c4d62ad5c",
+          "candidate_sha256": "141f8b36d1206786aa9c5b70b81ff560737f6815f65ec4bff58ca4bf4a643577",
+          "request_sha256": "93dcff11c5f320a600e5a2f4fcf6be1db0dc1bfad64b6de2b2169d6ad62eb25e",
+          "migration_sha256": "47a8e6e131e61db90e27f8f3493deac3605d2829a22cc932d4ab05b9a71542a1",
+          "profile_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "runtime_context_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "before_paths_sha256": "19c166806b7d1b19d5ca0134efa942992f7cda142a4ea1ba28b60363a5d80c2e",
+          "acf_schema_sha256": "09101b9fc78d35496863fb2376c4f2c045684c6ad1ffbd4b0eed9366216807c4",
+          "management_contract_sha256": "e164d4bc265096493e6650c0beed42e7d8acbbd013d261a70b63513f591500de",
+          "provider_source_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "installed_manifest_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "source_binding_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "created_at": 1700000000,
+          "expires_at": 1700000120,
+          "job_intent_ttl_seconds": 120
+        },
+        "management_context_sha256": "09f6bb461c71d0f8a11f526a95c5d5549af719c7bc840b64edaad537496c0bd1",
+        "capture_artifact_sha256": "642ac7f58c7b966e5f793ccf16671306c6865a8cfac76e2946aecb752d7f2630",
+        "measurement_record_sha256": "a6b75abb2750f5b85ebf8bcf280df10e4e2d7091eecb780a802ae6bcb30e4c02",
+        "parity_sha256": "7b176978cf6dea78ba9eca8fb7083b085f136b61dd96e20d0f28dcffee611b71",
+        "evidence_policy_epoch": 1,
+        "evidence_policy_sha256": "0d00da5140fb7d209f37b6764bfd4da1f28e6bef9129e6a7e2dee1bbb6c046a6"
+      },
+      "source_recipe_catalog_sha256": "0056c29fb10fbfb3d0140c407be29c58d75af7bac6b0549856530bb0a5d8733f"
+    },
+    "slot": {
+      "transfer_id": "33333333-3333-4333-8333-333333333333",
+      "transfer_manifest_sha256": "2f919dee3a79355d0269fdd5a6c0de2dd4f21ccc0631532c1cd21207565b8225",
+      "recipe_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "manifest_bytes": 2923,
+      "manifest_frames": 1,
+      "native_files": 1,
+      "native_bytes": 3,
+      "native_frames": 1,
+      "total_frames": 2,
+      "full_source_verified": false,
+      "authority_verified": false,
+      "admitted": false
+    },
+    "request_sha256": "4fdbf0a32435921fadaac685c09df71792de7e5f38a13c5d5f9047e897a898b3",
+    "batch_index": 0,
+    "frames": [
+      {
+        "index": 0,
+        "kind": "manifest",
+        "bytes": 2923,
+        "sha256": "2f919dee3a79355d0269fdd5a6c0de2dd4f21ccc0631532c1cd21207565b8225",
+        "data_base64": "eyJhZG1pdHRlZCI6ZmFsc2UsImF1dGhvcml0eV92ZXJpZmllZCI6ZmFsc2UsImNvbnRleHQiOnsibWFuYWdlbWVudCI6eyJiaW5kaW5nIjp7ImFjZl9zY2hlbWFfc2hhMjU2IjoiMDkxMDFiOWZjNzhkMzU0OTY4NjNmYjIzNzZjNGYyYzA0NTY4NGM2YWQxZmZiZDRiMGVlZDkzNjYyMTY4MDdjNCIsImFkYXB0ZXIiOiJjb250ZW50LW1hbmFnZW1lbnQtdjEiLCJhdXRob3JpemF0aW9uX3BvbGljeV9zaGEyNTYiOiIzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzIiwiYmVmb3JlX3BhdGhzX3NoYTI1NiI6IjE5YzE2NjgwNmI3ZDFiMTlkNWNhMDEzNGVmYTk0Mjk5MmY3Y2RhMTQyYTRlYTFiYTI4YjYwMzYzYTVkODBjMmUiLCJiZWZvcmVfc2hhMjU2IjoiMzE2M2MwYjU0MTI0ZTY5YmE3OGFiNTU1NjBmNjk2Nzk5OTY0ZmM1OGQ2MzA3ZDhkMzQ5NWUzN2M0ZDYyYWQ1YyIsImNhbmRpZGF0ZV9zaGEyNTYiOiIxNDFmOGIzNmQxMjA2Nzg2YWE5YzViNzBiODFmZjU2MDczN2Y2ODE1ZjY1ZWM0YmZmNThjYTRiZjRhNjQzNTc3IiwiY3JlYXRlZF9hdCI6MTcwMDAwMDAwMCwiZXhwZWN0ZWRfdGFyZ2V0X3JldmlzaW9uIjowLCJleHBpcmVzX2F0IjoxNzAwMDAwMTIwLCJpbnN0YWxsZWRfbWFuaWZlc3Rfc2hhMjU2IjoiY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjYyIsImpvYl9pbnRlbnRfdHRsX3NlY29uZHMiOjEyMCwibWFuYWdlbWVudF9jb250cmFjdF9zaGEyNTYiOiJlMTY0ZDRiYzI2NTA5NjQ5M2U2NjUwYzBiZWVkNDJlN2Q4YWNiYmQwMTNkMjYxYTcwYjYzNTEzZjU5MTUwMGRlIiwibWlncmF0aW9uX3NoYTI1NiI6IjQ3YThlNmUxMzFlNjFkYjkwZTI3ZjhmMzQ5M2RlYWMzNjA1ZDI4MjlhMjJjYzkzMmQ0YWIwNWI5YTcxNTQyYTEiLCJvcGVyYXRpb25faWQiOiIxMTExMTExMS0xMTExLTQxMTEtODExMS0xMTExMTExMTExMTEiLCJwcm9maWxlX3NoYTI1NiI6ImFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWEiLCJwcm92aWRlcl9zb3VyY2Vfc2hhIjoiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYiIsInF1YWxpZmljYXRpb25fam9iX2lkIjoiNzc3Nzc3NzctNzc3Ny00Nzc3LTg3NzctNzc3Nzc3Nzc3Nzc3IiwicmVxdWVzdF9zaGEyNTYiOiI5M2RjZmYxMWM1ZjMyMGE2MDBlNWEyZjRmY2Y2YmUxZGIwZGMxYmZhZDY0YjZkZTJiMjE2OWQ2YWQ2MmViMjVlIiwicmVxdWVzdGVyX2JpbmRpbmdfc2hhMjU2IjoiMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMiIsInJldmlld2VkX2RpZ2VzdCI6Ijk0YTQwZGE1MjY2NDU0YzMxYjNmM2M1ODc0NjE1YjJkN2UwMTM2MDI1YmU4N2JiMjg0MWQyNjIzOGM2YzI3YTUiLCJydW50aW1lX2NvbnRleHRfc2hhMjU2IjoiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYiIsInNjaGVtYSI6MSwic2l0ZV9pZCI6NzMsInNpdGVfdXJsIjoiaHR0cHM6Ly9maXh0dXJlLmV4YW1wbGUuaW52YWxpZCIsInNvdXJjZV9iaW5kaW5nX3NoYTI1NiI6ImFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWEiLCJ0YXJnZXQiOnsia2luZCI6IndvcmRwcmVzcy1jb250ZW50IiwicG9zdF9pZCI6NywicG9zdF90eXBlIjoicGFnZSJ9fSwiY2FwdHVyZV9hcnRpZmFjdF9zaGEyNTYiOiI2NDJhYzdmNThjN2I5NjZlNWY3OTNjY2YxNjY3MTMwNmM2ODY1YThjZmFjNzZlMjk0NmFlY2I3NTJkN2YyNjMwIiwiZXZpZGVuY2VfcG9saWN5X2Vwb2NoIjoxLCJldmlkZW5jZV9wb2xpY3lfc2hhMjU2IjoiMGQwMGRhNTE0MGZiN2QyMDlmMzdiNjc2NGJmZDRkYTFmMjhlNmJlZjkxMjllNmE3ZTJkZWUxYmJiNmMwNDZhNiIsIm1hbmFnZW1lbnRfY29udGV4dF9zaGEyNTYiOiIwOWY2YmI0NjFjNzFkMGY4YTExZjUyNmE5NWM1ZDU1NDlhZjcxOWM3YmM4NDBiNjRlZGFhZDUzNzQ5NmMwYmQxIiwibWVhc3VyZW1lbnRfcmVjb3JkX3NoYTI1NiI6ImE2Yjc1YWJiMjc1MGY1Yjg1ZWJmOGJjZjI4MGRmMTBlNGUyZDcwOTFlZWNiNzgwYTgwMmFlNmJjYjMwZTRjMDIiLCJwYXJpdHlfc2hhMjU2IjoiN2IxNzY5NzhjZjZkZWE3OGJhOWVjYThmYjcwODNiMDg1ZjEzNmI2MWRkOTZlMjBkMGYyOGRjZmZlZTYxMWI3MSJ9LCJzb3VyY2VfcmVjaXBlX2NhdGFsb2dfc2hhMjU2IjoiMDA1NmMyOWZiMTBmYmZiM2QwMTQwYzQwN2JlMjljNThkNzVhZjdiYWM2YjA1NDk4NTY1MzBiYjBhNWQ4NzMzZiJ9LCJmdWxsX3NvdXJjZV92ZXJpZmllZCI6ZmFsc2UsIm5hdGl2ZV9ieXRlcyI6MywibmF0aXZlX2ZpbGVzIjoxLCJuYXRpdmVfZnJhbWVzIjoxLCJvcmlnaW5zIjpbeyJhcnRpZmFjdF9pZCI6ImFwcHJvdmVkLWNhY2hlLWZpeHR1cmUiLCJieXRlcyI6bnVsbCwiaW52ZW50b3J5X2luZGV4IjowLCJuYXRpdmVfZnJhbWVfY291bnQiOjAsIm5hdGl2ZV9mcmFtZV9zdGFydCI6bnVsbCwib3JpZ2luIjoiY2FjaGUifSx7ImFydGlmYWN0X2lkIjpudWxsLCJieXRlcyI6MywiaW52ZW50b3J5X2luZGV4IjoxLCJuYXRpdmVfZnJhbWVfY291bnQiOjEsIm5hdGl2ZV9mcmFtZV9zdGFydCI6MCwib3JpZ2luIjoibmF0aXZlIn1dLCJwdXJwb3NlIjoibXJuLWNvbnRlbnQtbWFuYWdlbWVudC1zb3VyY2UtdHJhbnNmZXItdjEiLCJyZWNpcGVfc2hhMjU2IjoiY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjYyIsInNjaGVtYSI6MSwidHJhbnNmZXJfaWQiOiIzMzMzMzMzMy0zMzMzLTQzMzMtODMzMy0zMzMzMzMzMzMzMzMifQ=="
+      },
+      {
+        "index": 1,
+        "kind": "native",
+        "bytes": 3,
+        "sha256": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+        "data_base64": "YWJj"
+      }
+    ]
+  }
+}
