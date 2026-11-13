@@ -318,9 +318,12 @@
 @media (prefers-reduced-motion: reduce) { .has-comparison-frame .mrn-record--comparison-stack { position: static; transform: none !important; opacity: 1 !important; margin-bottom: 30px; } .has-comparison-frame .mrn-record--comparison-stack::after { display: none; } }
 
 /* Project peek carousel: one draggable row with a partial next card. Motion and autoplay live in presentation.js. */
-.has-project-carousel { overflow: hidden; --mrn-project-carousel-edge: max(var(--mrn-project-inner-gutter, 30px), calc((100vw - var(--mrn-project-carousel-edge-width, 1154px)) / 2)); --mrn-project-carousel-per-page: 2.3; }
+/* The current gutter follows the compact (1199px) and phone (767px) gutters the container uses; the edge never sits closer than the optional minimum. */
+.has-project-carousel { overflow: hidden; --mrn-project-carousel-gutter: var(--mrn-project-inner-gutter, 30px); --mrn-project-carousel-edge: max(var(--mrn-project-carousel-edge-min, var(--mrn-project-carousel-gutter)), calc((100vw - var(--mrn-project-carousel-edge-width, 1154px)) / 2)); --mrn-project-carousel-per-page: 2.3; }
+@media (max-width: 1199px) { .has-project-carousel { --mrn-project-carousel-gutter: var(--mrn-project-inner-gutter-compact, 15px); } }
+@media (max-width: 767px) { .has-project-carousel { --mrn-project-carousel-gutter: var(--mrn-project-inner-gutter-mobile, var(--mrn-project-inner-gutter-compact, 15px)); } }
 .has-project-carousel { --mrn-project-carousel-bleed: calc((100vw - min(100vw, var(--mrn-project-content-width, 100vw))) / 2); }
-.has-project-carousel .mrn-project-carousel { position: relative; margin-inline: calc(var(--mrn-project-carousel-edge) - var(--mrn-project-inner-gutter, 30px) - var(--mrn-project-carousel-bleed)) calc((var(--mrn-project-inner-gutter, 30px) + var(--mrn-project-carousel-bleed)) * -1); }
+.has-project-carousel .mrn-project-carousel { position: relative; min-width: 0; margin-inline: calc(var(--mrn-project-carousel-edge) - var(--mrn-project-carousel-gutter) - var(--mrn-project-carousel-bleed)) calc((var(--mrn-project-carousel-gutter) + var(--mrn-project-carousel-bleed)) * -1); }
 .has-project-carousel .mrn-project-carousel__track { overflow: hidden; }
 @media (scripting: none) { .has-project-carousel .mrn-project-carousel__track { overflow-x: auto; } }
 .has-project-carousel .mrn-content-list-row__items { display: flex; grid-template-columns: none; gap: var(--mrn-project-carousel-gap, 30px); will-change: transform; }
