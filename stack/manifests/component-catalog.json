@@ -1305,7 +1305,7 @@
         "state": "confirmed-symlinked"
       },
       "target_tier": "optional-shared",
-      "version": "0.4.11"
+      "version": "0.4.12"
     },
     {
       "classification": "integration-adapter",

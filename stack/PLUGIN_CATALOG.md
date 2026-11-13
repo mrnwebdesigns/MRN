@@ -95,7 +95,7 @@ No disposition in this section authorizes a code move, manifest change, deletion
 
 | Slug | Version | Current state | Decision needed |
 | --- | ---: | --- | --- |
-| `mrn-contextual-content-editor` | 0.4.11 | Catalog only | Removed from the bootstrap manifest on 2026-08-19 because it is not production ready. Source now lives in the independent `mrnwebdesigns/mrn-contextual-content-editor` repository; existing sites are unchanged. Re-entry requires a production-readiness review. |
+| `mrn-contextual-content-editor` | 0.4.12 | Catalog only | Removed from the bootstrap manifest on 2026-08-19 because it is not production ready. Source now lives in the independent `mrnwebdesigns/mrn-contextual-content-editor` repository; existing sites are unchanged. Re-entry requires a production-readiness review. |
 | `mrn-google-reviews` | 1.0.0 | Incubator/catalog only | Independent source verified at `mrnwebdesigns/mrn-google-reviews` (`9cea85e`); held out of the stack because the plugin is incomplete. Completion still requires secret-management, QA, and release-readiness review. |
 
 ## Archived Components
