@@ -12,6 +12,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+require_once __DIR__ . '/layout-library/preview-profiles.php';
+
 const MRN_ACTIVE_STYLE_GUIDE_LAYOUT_LIBRARY_OPTION = 'mrn_active_style_guide_layout_library';
 const MRN_ACTIVE_STYLE_GUIDE_LAYOUT_LIBRARY_FIXTURE_META = '_mrn_layout_library_fixture';
 const MRN_ACTIVE_STYLE_GUIDE_LAYOUT_LIBRARY_SUPPORT_META = '_mrn_layout_library_support';
@@ -73,7 +75,8 @@ function mrn_active_style_guide_get_layout_library_fingerprint(): string {
 	$colors = function_exists( 'mrn_site_colors_get_all' ) ? mrn_site_colors_get_all() : array();
 	$layouts = array_keys( mrn_active_style_guide_get_layout_library_catalog() );
 
-	return hash( 'sha256', wp_json_encode( array( 'styles' => $styles, 'colors' => $colors, 'layouts' => $layouts ) ) ?: '' );
+	$profile = mrn_active_style_guide_get_layout_preview_profile();
+	return hash( 'sha256', wp_json_encode( array( 'styles' => $styles, 'colors' => $colors, 'layouts' => $layouts, 'profile' => $profile ) ) ?: '' );
 }
 
 /**
@@ -110,7 +113,7 @@ function mrn_active_style_guide_find_layout_library_representative( string $layo
  * @param int                               $depth Recursion guard.
  * @return array<string, mixed>
  */
-function mrn_active_style_guide_get_layout_library_sample_values( array $fields, string $layout_name, int $depth = 0 ): array {
+function mrn_active_style_guide_get_layout_library_sample_values( array $fields, string $layout_name, array $profile, int $depth = 0 ): array {
 	if ( $depth > 4 ) {
 		return array();
 	}
@@ -128,11 +131,11 @@ function mrn_active_style_guide_get_layout_library_sample_values( array $fields,
 			case 'text':
 			case 'number':
 			case 'email':
-				$values[ $name ] = 'number' === $type ? 3 : sprintf( __( 'Example %s', 'mrn-active-style-guide' ), $label );
+				$values[ $name ] = 'number' === $type ? 3 : (string) ( $profile['copy']['heading'] ?? sprintf( __( 'Example %s', 'mrn-active-style-guide' ), $label ) );
 				break;
 			case 'textarea':
 			case 'wysiwyg':
-				$values[ $name ] = sprintf( __( '<p>Example content for the %1$s layout. This protected fixture is used only to generate a site-aware preview.</p>', 'mrn-active-style-guide' ), esc_html( $layout_name ) );
+				$values[ $name ] = (string) ( $profile['copy']['body'] ?? '' );
 				break;
 			case 'url':
 				$values[ $name ] = home_url( '/' );
@@ -142,10 +145,10 @@ function mrn_active_style_guide_get_layout_library_sample_values( array $fields,
 				break;
 			case 'image':
 			case 'file':
-				$values[ $name ] = mrn_active_style_guide_get_layout_library_sample_attachment_id();
+				$values[ $name ] = mrn_active_style_guide_get_layout_preview_asset_id( 'feature', $profile );
 				break;
 			case 'gallery':
-				$attachment_id = mrn_active_style_guide_get_layout_library_sample_attachment_id();
+				$attachment_id = mrn_active_style_guide_get_layout_preview_asset_id( 'feature', $profile );
 				$values[ $name ] = $attachment_id ? array( $attachment_id ) : array();
 				break;
 			case 'post_object':
@@ -171,10 +174,10 @@ function mrn_active_style_guide_get_layout_library_sample_values( array $fields,
 				$values[ $name ] = null === $choice ? array() : array( (string) $choice );
 				break;
 			case 'group':
-				$values[ $name ] = mrn_active_style_guide_get_layout_library_sample_values( $field['sub_fields'] ?? array(), $layout_name, $depth + 1 );
+				$values[ $name ] = mrn_active_style_guide_get_layout_library_sample_values( $field['sub_fields'] ?? array(), $layout_name, $profile, $depth + 1 );
 				break;
 			case 'repeater':
-				$item = mrn_active_style_guide_get_layout_library_sample_values( $field['sub_fields'] ?? array(), $layout_name, $depth + 1 );
+				$item = mrn_active_style_guide_get_layout_library_sample_values( $field['sub_fields'] ?? array(), $layout_name, $profile, $depth + 1 );
 				$values[ $name ] = empty( $item ) ? array() : array( $item, $item, $item );
 				break;
 			case 'flexible_content':
@@ -197,15 +200,47 @@ function mrn_active_style_guide_get_layout_library_sample_values( array $fields,
  * @param string $layout_name Layout machine name.
  * @return array<string, mixed>
  */
-function mrn_active_style_guide_get_layout_library_fixture_blueprint( string $layout_name ): array {
+function mrn_active_style_guide_get_layout_library_fixture_blueprint( string $layout_name, array $profile ): array {
+	$copy = isset( $profile['copy'] ) && is_array( $profile['copy'] ) ? $profile['copy'] : array();
+	$asset_id = mrn_active_style_guide_get_layout_preview_asset_id( 'feature', $profile );
+	$base = array(
+		'label' => (string) ( $copy['label'] ?? 'A considered example' ), 'label_tag' => 'p',
+		'heading' => (string) ( $copy['heading'] ?? 'Make the next step feel clear' ), 'heading_tag' => 'h2',
+		'subheading' => (string) ( $copy['subheading'] ?? '' ), 'subheading_tag' => 'p',
+		'content' => (string) ( $copy['body'] ?? '<p>Private preview content.</p>' ),
+		'section_width' => (string) ( $profile['presentation_defaults']['section_width'] ?? 'wide' ),
+	);
 	$body_row = array(
 		'acf_fc_layout' => 'body_text',
-		'heading'       => __( 'Example content heading', 'mrn-active-style-guide' ),
+		'heading'       => (string) ( $copy['heading'] ?? __( 'Example content heading', 'mrn-active-style-guide' ) ),
 		'heading_tag'   => 'h3',
 		'body_text'     => __( '<p>This is representative preview content. Editors replace it with their own content when they add the layout.</p>', 'mrn-active-style-guide' ),
 	);
 
+	$blueprints = isset( $profile['layouts'] ) && is_array( $profile['layouts'] ) ? $profile['layouts'] : array();
+	$override = isset( $blueprints[ $layout_name ] ) && is_array( $blueprints[ $layout_name ] ) ? $blueprints[ $layout_name ] : array();
 	switch ( $layout_name ) {
+		case 'card':
+			return array_merge( $base, array( 'cards_per_row' => 3, 'card_layout' => 'grid', 'card_items' => array(
+				array( 'card_label' => __( 'Plan', 'mrn-active-style-guide' ), 'link' => array( 'title' => __( 'Explore', 'mrn-active-style-guide' ), 'url' => home_url( '/' ), 'target' => '' ), 'card_rows' => array( $body_row ) ),
+				array( 'card_label' => __( 'Create', 'mrn-active-style-guide' ), 'link' => array( 'title' => __( 'Explore', 'mrn-active-style-guide' ), 'url' => home_url( '/' ), 'target' => '' ), 'card_rows' => array( array_merge( $body_row, array( 'heading' => __( 'Create with confidence', 'mrn-active-style-guide' ) ) ) ) ),
+				array( 'card_label' => __( 'Grow', 'mrn-active-style-guide' ), 'link' => array( 'title' => __( 'Explore', 'mrn-active-style-guide' ), 'url' => home_url( '/' ), 'target' => '' ), 'card_rows' => array( array_merge( $body_row, array( 'heading' => __( 'Keep momentum', 'mrn-active-style-guide' ) ) ) ) ),
+			) ), $override );
+		case 'slider':
+			return array_merge( $base, array( 'per_page' => 1, 'show_arrows' => 1, 'show_pagination' => 1, 'autoplay' => 0, 'slider_items' => array(
+				array( 'label' => __( 'First step', 'mrn-active-style-guide' ), 'heading' => __( 'Designed for a clear next move', 'mrn-active-style-guide' ), 'content' => (string) ( $copy['body'] ?? '' ), 'image' => $asset_id, 'link' => array( 'title' => (string) ( $copy['cta'] ?? 'Explore' ), 'url' => home_url( '/' ), 'target' => '' ) ),
+				array( 'label' => __( 'Second step', 'mrn-active-style-guide' ), 'heading' => __( 'Built to support your story', 'mrn-active-style-guide' ), 'content' => (string) ( $copy['body'] ?? '' ), 'image' => $asset_id, 'link' => array( 'title' => (string) ( $copy['cta'] ?? 'Explore' ), 'url' => home_url( '/' ), 'target' => '' ) ),
+			) ), $override );
+		case 'logos':
+			return array_merge( $base, array( 'display_mode' => 'wall', 'logo_items' => array( array( 'image' => $asset_id ), array( 'image' => $asset_id ), array( 'image' => $asset_id ), array( 'image' => $asset_id ) ) ), $override );
+		case 'showcase':
+			return array_merge( $base, array( 'showcase_presentation' => 'bento', 'showcase_items' => array( array( 'image' => $asset_id, 'image_alt_override' => __( 'Abstract preview artwork', 'mrn-active-style-guide' ), 'column_span' => '2', 'row_span' => '2' ), array( 'image' => $asset_id, 'image_alt_override' => __( 'Abstract preview artwork', 'mrn-active-style-guide' ), 'column_span' => '1', 'row_span' => '1' ), array( 'image' => $asset_id, 'image_alt_override' => __( 'Abstract preview artwork', 'mrn-active-style-guide' ), 'column_span' => '1', 'row_span' => '1' ) ) ), $override );
+		case 'image_content':
+			return array_merge( $base, array( 'image' => $asset_id, 'image_position' => 'top', 'image_size' => 'cover', 'image_alignment' => 'center' ), $override );
+		case 'grid':
+		case 'cta':
+		case 'cta_block':
+			return array_merge( $base, array( 'links' => array( array( 'link' => array( 'title' => (string) ( $copy['cta'] ?? 'Explore' ), 'url' => home_url( '/' ), 'target' => '' ), 'link_style' => 'button' ) ) ), $override );
 		case 'faq_jump_nav':
 			return array(
 				'jump_nav_source'  => 'manual',
@@ -230,7 +265,7 @@ function mrn_active_style_guide_get_layout_library_fixture_blueprint( string $la
 			);
 	}
 
-	return array();
+	return array_merge( $base, $override );
 }
 
 /** Return the private reusable block that backs the reusable-block preview. */
@@ -280,17 +315,6 @@ function mrn_active_style_guide_get_layout_library_wpforms_form_id(): int {
 	return absint( $form_id );
 }
 
-/** Return a reusable, existing site image for synthetic preview-only content. */
-function mrn_active_style_guide_get_layout_library_sample_attachment_id(): int {
-	static $attachment_id = null;
-	if ( null !== $attachment_id ) {
-		return $attachment_id;
-	}
-	$attachments = get_posts( array( 'post_type' => 'attachment', 'post_status' => 'inherit', 'post_mime_type' => 'image', 'posts_per_page' => 1, 'orderby' => 'date', 'order' => 'DESC', 'fields' => 'ids' ) );
-	$attachment_id = ! empty( $attachments ) ? absint( $attachments[0] ) : 0;
-	return $attachment_id;
-}
-
 /** Return an existing record compatible with an ACF relationship-style field. */
 function mrn_active_style_guide_get_layout_library_sample_post_id( array $field ): int {
 	$post_types = isset( $field['post_type'] ) ? (array) $field['post_type'] : array( 'page', 'post' );
@@ -332,20 +356,49 @@ function mrn_active_style_guide_get_layout_library_layout_fields( array $entry, 
 	return array();
 }
 
-/** Persist a fixture row, including nested ACF structures that need row context. */
-function mrn_active_style_guide_update_layout_library_fixture_row( string $field_key, string $field_name, array $row, array $fields, int $post_id ): void {
-	update_field( $field_key, array( $row ), $post_id );
-	if ( ! function_exists( 'update_sub_field' ) ) {
+/** Persist a nested field value using only unambiguous ACF keys. */
+function mrn_active_style_guide_update_layout_library_fixture_value( array $path, array $field, $value, int $post_id ): void {
+	$field_key = isset( $field['key'] ) ? (string) $field['key'] : '';
+	if ( '' === $field_key || ! function_exists( 'update_sub_field' ) ) { return; }
+	$path[] = $field_key;
+	$type = (string) ( $field['type'] ?? '' );
+	if ( in_array( $type, array( 'repeater', 'flexible_content' ), true ) && is_array( $value ) ) {
+		// Establish the row count first, then descend via field keys. This avoids
+		// duplicate names such as `image` being resolved against another layout.
+		update_sub_field( $path, $value, $post_id );
+		$children = 'flexible_content' === $type ? array() : ( $field['sub_fields'] ?? array() );
+		foreach ( $value as $index => $child_row ) {
+			if ( ! is_array( $child_row ) ) { continue; }
+			if ( 'flexible_content' === $type ) {
+				foreach ( (array) ( $field['layouts'] ?? array() ) as $layout ) {
+					if ( is_array( $layout ) && ( $layout['name'] ?? '' ) === ( $child_row['acf_fc_layout'] ?? '' ) ) { $children = $layout['sub_fields'] ?? array(); break; }
+				}
+			}
+			foreach ( $children as $child_field ) {
+				$name = is_array( $child_field ) ? (string) ( $child_field['name'] ?? '' ) : '';
+				if ( '' !== $name && array_key_exists( $name, $child_row ) ) {
+					mrn_active_style_guide_update_layout_library_fixture_value( array_merge( $path, array( (int) $index + 1 ) ), $child_field, $child_row[ $name ], $post_id );
+				}
+			}
+			}
 		return;
 	}
-	foreach ( $fields as $field ) {
-		if ( ! is_array( $field ) || empty( $field['name'] ) || ! isset( $row[ $field['name'] ] ) ) {
-			continue;
+	if ( 'group' === $type && is_array( $value ) ) {
+		foreach ( (array) ( $field['sub_fields'] ?? array() ) as $child_field ) {
+			$name = is_array( $child_field ) ? (string) ( $child_field['name'] ?? '' ) : '';
+			if ( '' !== $name && array_key_exists( $name, $value ) ) { mrn_active_style_guide_update_layout_library_fixture_value( $path, $child_field, $value[ $name ], $post_id ); }
 		}
-		// Saving from the row path makes ACF persist the full layout schema,
-		// including regular text fields and nested repeater metadata. A root
-		// flexible-content update alone drops both on some ACF versions.
-		update_sub_field( array( $field_name, 1, $field['name'] ), $row[ $field['name'] ], $post_id );
+		return;
+	}
+	update_sub_field( $path, $value, $post_id );
+}
+
+/** Persist a fixture row using exact root and descendant ACF field-key paths. */
+function mrn_active_style_guide_update_layout_library_fixture_row( string $field_key, array $row, array $fields, int $post_id ): void {
+	update_field( $field_key, array( array( 'acf_fc_layout' => $row['acf_fc_layout'] ?? '' ) ), $post_id );
+	foreach ( $fields as $field ) {
+		$name = is_array( $field ) ? (string) ( $field['name'] ?? '' ) : '';
+		if ( '' !== $name && array_key_exists( $name, $row ) ) { mrn_active_style_guide_update_layout_library_fixture_value( array( $field_key, 1 ), $field, $row[ $name ], $post_id ); }
 	}
 }
 
@@ -359,7 +412,11 @@ function mrn_active_style_guide_regenerate_layout_library_fixtures(): array {
 		return array( 'created' => array(), 'skipped' => array( 'acf-unavailable' ) );
 	}
 
-	$result = array( 'created' => array(), 'skipped' => array() );
+	$profile = mrn_active_style_guide_get_layout_preview_profile();
+	if ( absint( $profile['version'] ?? 0 ) !== MRN_ACTIVE_STYLE_GUIDE_LAYOUT_PREVIEW_PROFILE_VERSION ) {
+		return array( 'created' => array(), 'skipped' => array( 'invalid-preview-profile' ) );
+	}
+	$result = array( 'created' => array(), 'skipped' => array(), 'profile' => (string) ( $profile['id'] ?? 'unknown' ) );
 	foreach ( mrn_active_style_guide_get_layout_library_catalog() as $layout_name => $entry ) {
 		if ( mrn_active_style_guide_find_layout_library_representative( $layout_name ) > 0 ) {
 			continue;
@@ -397,7 +454,7 @@ function mrn_active_style_guide_regenerate_layout_library_fixtures(): array {
 
 		update_post_meta( $post_id, MRN_ACTIVE_STYLE_GUIDE_LAYOUT_LIBRARY_FIXTURE_META, $layout_name );
 		$layout_fields = mrn_active_style_guide_get_layout_library_layout_fields( $entry, $layout_name );
-		$blueprint = mrn_active_style_guide_get_layout_library_fixture_blueprint( $layout_name );
+		$blueprint = mrn_active_style_guide_get_layout_library_fixture_blueprint( $layout_name, $profile );
 		if ( 'reusable_block' === $layout_name ) {
 			$blueprint['block'] = mrn_active_style_guide_get_layout_library_reusable_block_id();
 		}
@@ -406,10 +463,10 @@ function mrn_active_style_guide_regenerate_layout_library_fixtures(): array {
 		}
 		$row = array_merge(
 			array( 'acf_fc_layout' => $layout_name ),
-			mrn_active_style_guide_get_layout_library_sample_values( $layout_fields, $layout_name ),
+			mrn_active_style_guide_get_layout_library_sample_values( $layout_fields, $layout_name, $profile ),
 			$blueprint
 		);
-		mrn_active_style_guide_update_layout_library_fixture_row( $field_key, $field_name, $row, $layout_fields, $post_id );
+		mrn_active_style_guide_update_layout_library_fixture_row( $field_key, $row, $layout_fields, $post_id );
 		$result['created'][ $layout_name ] = $post_id;
 	}
 
@@ -444,6 +501,13 @@ function mrn_active_style_guide_get_layout_library_capture_manifest(): array {
 				continue;
 			}
 			$targets[] = $preview;
+		} else {
+			$unavailable[] = array(
+				'layout' => $layout_name,
+				'label' => isset( $entry['layout']['label'] ) ? (string) $entry['layout']['label'] : $layout_name,
+				'source' => 'unavailable', 'post_id' => 0, 'markup' => '',
+				'reason' => __( 'No private fixture exists yet. Regenerate previews; if this persists, add a layout blueprint to the site preview profile.', 'mrn-active-style-guide' ),
+			);
 		}
 	}
 
@@ -517,6 +581,7 @@ function mrn_active_style_guide_render_layout_library_page(): void {
 	<div class="wrap mrn-layout-library">
 		<h1><?php esc_html_e( 'Layout Library', 'mrn-active-style-guide' ); ?></h1>
 		<p class="mrn-layout-library__intro"><?php esc_html_e( 'Choose a layout for your content. Each card uses this site’s current theme and shows the fields an editor can change.', 'mrn-active-style-guide' ); ?></p>
+		<p class="mrn-layout-library__private-note"><span class="dashicons dashicons-lock" aria-hidden="true"></span> <?php esc_html_e( 'Private preview fixtures only — demo copy and generated/local preview artwork are excluded from client pages and normal Media Library workflows.', 'mrn-active-style-guide' ); ?></p>
 		<?php if ( $is_stale ) : ?>
 			<div class="notice notice-warning"><p><?php esc_html_e( 'Layout previews need regeneration because the active site styles or layout catalog changed.', 'mrn-active-style-guide' ); ?></p></div>
 		<?php else : ?>
@@ -537,6 +602,7 @@ function mrn_active_style_guide_render_layout_library_page(): void {
 		<style>
 			.mrn-layout-library { max-width:1480px; color:#243842; }
 			.mrn-layout-library__intro { font-size:17px; max-width:900px; }
+			.mrn-layout-library__private-note { display:flex; gap:6px; align-items:center; max-width:900px; padding:10px 12px; border-left:4px solid #0a3e52; background:#edf5f7; }
 			.mrn-layout-library__tools { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin:24px 0; }
 			.mrn-layout-library__tools input { min-width:min(100%,300px); }
 			.mrn-layout-library-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr)); gap:24px; margin:20px 0; }
@@ -562,7 +628,7 @@ function mrn_active_style_guide_render_layout_library_page(): void {
 			$search = strtolower( $entry['layout']['label'] . ' ' . $layout_name . ' ' . $guide['description'] . ' ' . implode( ' ', $guide['keywords'] ) );
 			?>
 			<article class="mrn-layout-library-card" data-category="<?php echo esc_attr( $guide['category'] ); ?>" data-search="<?php echo esc_attr( $search ); ?>">
-				<?php if ( $preview && in_array( $preview, $manifest['targets'], true ) ) : ?><div class="mrn-layout-library-card__preview" aria-label="<?php echo esc_attr( sprintf( __( '%s layout preview', 'mrn-active-style-guide' ), $entry['layout']['label'] ) ); ?>"><div class="mrn-layout-library-card__preview-inner"><?php echo $preview['markup']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Stack renderer escapes its complete markup contract. ?></div></div><?php else : ?><div class="mrn-layout-library-card__unavailable"><?php esc_html_e( 'Regenerate to create this layout’s private HTML preview fixture.', 'mrn-active-style-guide' ); ?></div><?php endif; ?>
+				<?php if ( $preview && in_array( $preview, $manifest['targets'], true ) ) : ?><div class="mrn-layout-library-card__preview" aria-label="<?php echo esc_attr( sprintf( __( '%s layout preview', 'mrn-active-style-guide' ), $entry['layout']['label'] ) ); ?>"><div class="mrn-layout-library-card__preview-inner"><?php echo $preview['markup']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Stack renderer escapes its complete markup contract. ?></div></div><?php else : ?><div class="mrn-layout-library-card__unavailable"><?php echo esc_html( (string) ( $preview['reason'] ?? __( 'Fixture markup was empty. Regenerate it; if it remains empty, add a layout blueprint to the site preview profile.', 'mrn-active-style-guide' ) ) ); ?></div><?php endif; ?>
 				<div class="mrn-layout-library-card__copy"><p class="mrn-layout-library-card__category"><?php echo esc_html( $guide['category'] ); ?></p><h2 class="mrn-layout-library-card__title"><?php echo esc_html( $entry['layout']['label'] ); ?></h2><p><?php echo esc_html( $guide['description'] ); ?></p><details><summary><?php esc_html_e( 'Editable fields', 'mrn-active-style-guide' ); ?></summary><ul><?php foreach ( $fields as $field ) : ?><li><strong><?php echo esc_html( $field['label'] ); ?></strong><?php if ( 'repeater' === ( $field['type'] ?? '' ) ) : ?> — <?php esc_html_e( 'repeatable items', 'mrn-active-style-guide' ); ?><?php endif; ?></li><?php endforeach; ?></ul></details></div>
 			</article>
 		<?php endforeach; ?>
