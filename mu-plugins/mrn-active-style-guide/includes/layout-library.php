@@ -384,10 +384,10 @@ function mrn_active_style_guide_update_layout_library_fixture_value( array $path
 		return;
 	}
 	if ( 'group' === $type && is_array( $value ) ) {
-		foreach ( (array) ( $field['sub_fields'] ?? array() ) as $child_field ) {
-			$name = is_array( $child_field ) ? (string) ( $child_field['name'] ?? '' ) : '';
-			if ( '' !== $name && array_key_exists( $name, $value ) ) { mrn_active_style_guide_update_layout_library_fixture_value( $path, $child_field, $value[ $name ], $post_id ); }
-		}
+		// ACF group fields have no row selector in their storage path. Persist the
+		// complete group through its exact key; descending would create an odd
+		// selector array and can resolve an unrelated duplicate child name.
+		update_sub_field( $path, $value, $post_id );
 		return;
 	}
 	update_sub_field( $path, $value, $post_id );

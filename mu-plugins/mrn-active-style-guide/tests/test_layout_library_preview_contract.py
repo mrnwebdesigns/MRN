@@ -19,6 +19,7 @@ class LayoutLibraryPreviewContractTests(unittest.TestCase):
     def test_duplicate_names_are_written_by_key_paths(self):
         self.assertIn("$path[] = $field_key", LIBRARY)
         self.assertIn("array( $field_key, 1 )", LIBRARY)
+        self.assertIn("ACF group fields have no row selector", LIBRARY)
         self.assertNotIn("array( $field_name, 1, $field['name'] )", LIBRARY)
 
     def test_assets_are_private_and_not_recent_uploads(self):
