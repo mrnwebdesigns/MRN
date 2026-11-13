@@ -9244,3 +9244,7 @@ a.mrn-social-links__link:focus-visible svg {
 
 /* Framed stats and logo-slider rows: a full-width surface section already carries the row's vertical padding, so the row must not pad again. */
 :is(.mrn-content-builder__row--stats.has-stats-frame, .mrn-content-builder__row--logos.has-logos-slider-frame):has(> :is(.mrn-layout-section--stats, .mrn-layout-section--logos).mrn-layout-surface) { padding-top: 0; padding-bottom: 0; }
+
+/* Framed image-content rows with a full-width background: the row's padding belongs inside the painted surface. */
+.mrn-content-builder__row--image-content.has-image-frame:has(> .mrn-layout-section--image-content.mrn-layout-surface[style*="--mrn-image-content-row-bg"]) { padding: 0; }
+.mrn-content-builder__row--image-content.has-image-frame > .mrn-layout-section--image-content.mrn-layout-surface[style*="--mrn-image-content-row-bg"] { padding: var(--mrn-row-padding-top, 0px) var(--mrn-row-padding-right, 0px) var(--mrn-row-padding-bottom, 0px) var(--mrn-row-padding-left, 0px); }
