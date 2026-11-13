@@ -107,7 +107,7 @@ function mrn_base_stack_get_hero_frame_fields() {
 		'typography_mobile_breakpoint' => array( 'Small-Screen Typography Breakpoint', array( '' => 'Use Existing (767px)', '640' => '640px', '560' => '560px' ) ),
 		'padding_bottom_mobile_source' => array( 'Small-Screen Bottom Padding', array( '' => 'Use Preset Mobile Dimension', 'desktop' => 'Keep Preset Desktop Dimension' ) ),
 		'media_stack_breakpoint' => array( 'Media Stacking Breakpoint', array( '' => 'Use Existing (960px)', '900' => '900px', '767' => '767px' ) ),
-		'media_max_share' => array( 'Media Maximum Share of Inner Canvas', array( '' => 'Use Existing Grid', '40' => '40%', '50' => '50%' ) ),
+		'media_max_share' => array( 'Media Maximum Share of Inner Canvas', array( '' => 'Use Existing Grid', '40' => '40%', '50' => '50%', '60' => '60%' ) ),
 		'media_shadow' => array( 'Media Shadow', array( '' => 'Use Existing Shadow', 'none' => 'None' ) ),
 		'media_drift' => array( 'Media Scroll Drift', array( '' => 'None', 'scroll' => 'Drift With Scroll (0.08 speed, 36px maximum)' ) ),
 		'media_size' => array( 'Media Image Source', array( '' => 'Use Existing Hero Crop', 'full' => 'Original Aspect with Responsive Sources' ) ),
@@ -224,7 +224,7 @@ function mrn_base_stack_add_hero_media_frame_contract( array $row, array $result
 		if ( is_string( $value ) && in_array( $value, $choices, true ) ) { $result['classes'][] = 'has-hero-' . str_replace( '_', '-', $name ) . '-' . $value; }
 	}
 	$share = $row['hero_media_max_share'] ?? '';
-	if ( is_scalar( $share ) && in_array( (string) $share, array( '40', '50' ), true ) ) { $result['classes'][] = 'has-hero-media-max-share'; $result['styles'][] = '--mrn-hero-media-max-share:' . (string) $share . '%'; }
+	if ( is_scalar( $share ) && in_array( (string) $share, array( '40', '50', '60' ), true ) ) { $result['classes'][] = 'has-hero-media-max-share'; $result['styles'][] = '--mrn-hero-media-max-share:' . (string) $share . '%'; }
 	$ratio = $row['hero_media_ratio'] ?? '';
 	if ( is_string( $ratio ) && preg_match( '/^\s*(\d{1,5}(?:\.\d{1,4})?)\s*\/\s*(\d{1,5}(?:\.\d{1,4})?)\s*$/D', $ratio, $parts ) && min( (float) $parts[1], (float) $parts[2] ) >= 1 && max( (float) $parts[1], (float) $parts[2] ) <= 10000 ) { $result['styles'][] = '--mrn-hero-media-ratio:' . $parts[1] . ' / ' . $parts[2]; $result['classes'][] = 'has-hero-media-ratio'; }
 	foreach ( array( 'heading_size' => 'font-size', 'heading_line_height' => 'line-height' ) as $name => $property ) {
@@ -258,7 +258,7 @@ function mrn_base_stack_add_hero_media_frame_contract( array $row, array $result
 function mrn_base_stack_get_hero_media_image_attributes( array $row ) {
 	$attributes = function_exists( 'mrn_base_stack_get_hero_image_attributes' ) ? mrn_base_stack_get_hero_image_attributes() : array( 'loading' => 'eager', 'fetchpriority' => 'high', 'decoding' => 'async' );
 	$width = $row['hero_media_width'] ?? ''; $share = $row['hero_media_max_share'] ?? '';
-	if ( is_string( $width ) && preg_match( '/^(\d{1,4}(?:\.\d{1,4})?)px$/D', $width ) && (float) $width > 0 && is_scalar( $share ) && in_array( (string) $share, array( '40', '50' ), true ) ) {
+	if ( is_string( $width ) && preg_match( '/^(\d{1,4}(?:\.\d{1,4})?)px$/D', $width ) && (float) $width > 0 && is_scalar( $share ) && in_array( (string) $share, array( '40', '50', '60' ), true ) ) {
 		$breakpoint = $row['hero_media_stack_breakpoint'] ?? '';
 		$breakpoint = in_array( $breakpoint, array( '900', '767' ), true ) ? $breakpoint : '960';
 		$attributes['sizes'] = '(max-width: ' . $breakpoint . 'px) 100vw, min(' . $width . ', ' . (string) $share . 'vw)';
