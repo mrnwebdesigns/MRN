@@ -199,7 +199,7 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 								<?php endif; ?>
 							>
 						<?php endif; ?>
-						<?php echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image( $image, ! empty( $strip_contract['classes'] ) ? 'full' : 'mrn-gallery', array_merge( ! empty( $strip_contract['classes'] ) ? array( 'sizes' => '(max-width: 768px) 100vw, 50vw' ) : array(), '' !== $item['image_alt_override'] ? array( 'alt' => $item['image_alt_override'] ) : array() ) ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						<?php echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image( $image, ! empty( $strip_contract['classes'] ) ? 'full' : ( 'bento' === ( $row['showcase_presentation'] ?? '' ) ? 'mrn-content-media' : 'mrn-gallery' ), array_merge( ! empty( $strip_contract['classes'] ) ? array( 'sizes' => '(max-width: 768px) 100vw, 50vw' ) : array(), '' !== $item['image_alt_override'] ? array( 'alt' => $item['image_alt_override'] ) : array() ) ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 						<?php if ( '' !== $url && ! $use_overlay_link ) : ?>
 							</a>
 						<?php endif; ?>
