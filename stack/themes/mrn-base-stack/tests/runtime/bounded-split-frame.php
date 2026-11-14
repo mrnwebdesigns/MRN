@@ -37,7 +37,8 @@ try {
 	$expect( empty( mrn_base_stack_get_split_aside_contract( array_merge( $props, array( 'split_frame' => 'columns' ) ) )['attributes'] ), 'Bounded controls cannot alter ordinary ratio columns' );
 	$expect( array( 'has-split-columns-frame', 'split-stack-991' ) === mrn_base_stack_get_split_aside_contract( array( 'split_frame' => 'columns' ) )['classes'], 'Existing columns retain their 991px default' );
 	$expect( in_array( 'has-split-row-vertical-padding', mrn_base_stack_get_split_aside_contract( array( 'split_frame' => 'bounded', 'split_row_vertical_padding' => 1 ) )['classes'], true ), 'Selected bounded columns use saved row padding' );
-	$expect( ! in_array( 'has-split-row-vertical-padding', mrn_base_stack_get_split_aside_contract( array( 'split_frame' => 'aside', 'split_row_vertical_padding' => 1 ) )['classes'], true ), 'Aside spacing remains unchanged' );
+	$expect( in_array( 'has-split-row-vertical-padding', mrn_base_stack_get_split_aside_contract( array( 'split_frame' => 'aside', 'split_row_vertical_padding' => 1 ) )['classes'], true ), 'Selected aside frames use saved row padding' );
+	$expect( ! in_array( 'has-split-row-vertical-padding', mrn_base_stack_get_split_aside_contract( array( 'split_frame' => 'aside' ) )['classes'], true ), 'Unselected aside spacing remains unchanged' );
 } finally { wp_delete_post( $id, true ); }
 $expect( null === get_post( $id ), 'Owned bounded columns draft removed' );
 WP_CLI::line( wp_json_encode( array( 'result' => 'passed', 'count' => count( $checks ), 'checks' => $checks, 'candidate_only' => true ), JSON_PRETTY_PRINT ) );
