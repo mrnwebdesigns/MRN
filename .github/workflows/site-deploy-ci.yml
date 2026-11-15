@@ -47,10 +47,6 @@ jobs:
           python3 -m unittest discover -s tools/site-deploy/tests -v
           python3 -m unittest discover -s stack/tests -p test_dev_enrollment_bootstrap.py -v
           python3 -m unittest discover -s stack/tests -p test_bootstrap_readiness.py -v
-      - name: Install isolated source scanner
-        run: bash tools/site-deploy/install-qa-python.sh
-      - name: Scanner relocated-HOME regression
-        run: python3 tools/site-deploy/tests/semgrep_home_regression.py
       - name: Shared component artifact and WordPress loader tests
         env:
           MRN_COMPONENT_WP_ARCHIVE: ${{ runner.temp }}/wordpress-7.1.2.zip
@@ -64,6 +60,10 @@ jobs:
           python3 -m unittest discover -s tools/component-deploy/tests -v
           python3 -m unittest discover -s tools/site-deploy/tests -p test_release_v1_wordpress.py -v
           MRN_RELEASE_TEST_PLAYWRIGHT_ROOT="$GITHUB_WORKSPACE/tools/component-deploy" node --test tools/site-deploy/tests/release-v1-browser.test.mjs
+      - name: Install isolated source scanner
+        run: bash tools/site-deploy/install-qa-python.sh
+      - name: Scanner relocated-HOME regression
+        run: python3 tools/site-deploy/tests/semgrep_home_regression.py
       - name: Validate shared and caller workflows
         run: |
           sed -e 's/TOOLING_SHA/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/g' \
