@@ -38,7 +38,12 @@ class NativeTransportWorkflow(unittest.TestCase):
             self.assertEqual('DEPLOY_KEY_FILE=native-kinsta\n', (root / 'environment').read_text())
         consumers = [step for step in self.steps if any(name in step.get('run', '')
                      for name in ('/deploy.py', '/atomic_runner.py'))]
-        self.assertEqual(4, len(consumers))
+        self.assertEqual(
+            {step['name'] for step in consumers},
+            {'Preflight or deploy exact child-theme payload',
+             'Restore the prior release if browser acceptance fails',
+             'Restore the prior release if strict runtime acceptance fails'},
+        )
         for step in consumers:
             self.assertNotIn('DEPLOY_KEY_FILE', step.get('env', {}), step['name'])
 
