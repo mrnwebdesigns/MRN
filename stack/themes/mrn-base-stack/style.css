@@ -1670,8 +1670,10 @@ body[data-mrn-surface="dark"] .main-navigation.mrn-site-primary-navigation a:foc
 	padding-right: 0;
 }
 
-/* Content Builder rows own their spacing through Row Spacing, so the shell does not add a second section gap above the footer. */
-.site-main:has(> .mrn-content-builder) {
+/* Content Builder rows own their spacing through Row Spacing, so the shell does not add a second section gap above the footer.
+   A page whose builder output ends with its hero row (no content rows) is covered the same way. */
+.site-main:has(> .mrn-content-builder),
+.site-main:has(> .mrn-hero:last-child) {
 	padding-bottom: 0;
 }
 
