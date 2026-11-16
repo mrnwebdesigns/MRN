@@ -39,6 +39,13 @@ try {
 	$expect( array( 'classes' => array(), 'styles' => array() ) === mrn_base_stack_get_body_list_contract( array( 'list_columns' => '99', 'list_gap' => '2px; color:red' ) ), 'Invalid/unset column counts retain prior formatting' );
 	$unsafe = mrn_base_stack_get_body_list_contract( array( 'list_columns' => '2', 'list_columns_mobile' => 'bad', 'list_alignment' => 'bad"', 'list_flow' => 'bad', 'list_gap' => '2px; color:red' ) );
 	$expect( ! str_contains( implode( ' ', $unsafe['styles'] ), 'red' ) && in_array( '--mrn-list-columns-mobile:1', $unsafe['styles'], true ) && in_array( 'mrn-ui__text--list-align-start', $unsafe['classes'], true ), 'Malformed optional settings cannot escape into CSS or attributes' );
+	$hook = static function ( $contract, $list_row ) { if ( 'fixture-look' === ( $list_row['display_style'] ?? '' ) ) { $contract['classes'][] = 'has-list-item-size'; } return $contract; };
+	add_filter( 'mrn_base_stack_body_list_contract', $hook, 10, 2 );
+	$styled = mrn_base_stack_get_body_list_contract( array_replace( $row, array( 'display_style' => 'fixture-look' ) ) );
+	$plain  = mrn_base_stack_get_body_list_contract( $row );
+	$unset  = mrn_base_stack_get_body_list_contract( array( 'display_style' => 'fixture-look' ) );
+	remove_filter( 'mrn_base_stack_body_list_contract', $hook, 10 );
+	$expect( in_array( 'has-list-item-size', $styled['classes'], true ) && ! in_array( 'has-list-item-size', $plain['classes'], true ) && array( 'classes' => array(), 'styles' => array() ) === $unset, 'A Display Style can switch on list hooks only for a laid-out list' );
 	$default = array( 'acf_fc_layout' => 'body_text', 'body_text' => '<p>Prior content.</p><ul><li>Original list</li></ul>' );
 	ob_start(); mrn_base_stack_render_builder_row( $default, $id, 2 ); $default_html = ob_get_clean();
 	$expect( ! str_contains( $default_html, 'mrn-ui__text--list-' ) && ! str_contains( $default_html, '--mrn-list-' ), 'Unset controls leave the existing renderer contract unchanged' );

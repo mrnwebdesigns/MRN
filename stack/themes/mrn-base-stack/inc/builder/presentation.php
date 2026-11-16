@@ -528,7 +528,14 @@ function mrn_base_stack_get_body_list_contract( array $row ) {
 	$weight = $row['list_item_weight'] ?? ''; if ( is_scalar( $weight ) && in_array( (string) $weight, array_map( 'strval', range( 100, 900, 100 ) ), true ) ) { $styles[] = '--mrn-list-item-weight:' . $weight; $classes[] = 'has-list-item-weight'; }
 	if ( in_array( $row['list_item_font'] ?? '', array( 'body', 'heading' ), true ) ) { $classes[] = 'has-list-item-font-' . $row['list_item_font']; }
 	$color = mrn_base_stack_get_frame_palette_color( $row['list_item_color'] ?? '' ); if ( '' !== $color ) { $styles[] = '--mrn-list-item-color:' . $color; $classes[] = 'has-list-item-color'; }
-	return array( 'classes' => $classes, 'styles' => $styles );
+	/**
+	 * Filter a laid-out list's contract, for example so a row's Display Style can switch on list hooks whose values
+	 * live in theme CSS.
+	 *
+	 * @param array{classes: string[], styles: string[]} $contract List classes and inline style declarations.
+	 * @param array<string, mixed>                        $row      Body Text row.
+	 */
+	return (array) apply_filters( 'mrn_base_stack_body_list_contract', array( 'classes' => $classes, 'styles' => $styles ), $row );
 }
 
 /**
