@@ -126,7 +126,11 @@ def roster(repo):
     rows = []
     for item in catalog['components']:
         source = item.get('source') or {}
-        if (item['slug'] in retired or item.get('target_tier') in ('archived', 'review')
+        # A component under lifecycle review is catalog evidence only. It may
+        # retain a historical package for recovery, but must not become a Fleet
+        # source input or make unrelated publication wait on its mutable source.
+        if (item['slug'] in retired or item.get('lifecycle') == 'review'
+                or item.get('target_tier') in ('archived', 'review')
                 or not source.get('repository') or not source.get('path')):
             continue
         if item.get('runtime_type') not in ('standard-plugin', 'mu-component',
