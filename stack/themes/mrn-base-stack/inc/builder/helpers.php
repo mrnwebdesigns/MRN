@@ -13717,8 +13717,10 @@ function mrn_base_stack_get_two_column_column_layouts() {
 			$layout['max'] = -1;
 		}
 
-		// Column rows choose a named Display Style like top-level and card rows do.
-		if ( isset( $layout['sub_fields'] ) && is_array( $layout['sub_fields'] ) && function_exists( 'mrn_base_stack_ensure_builder_layout_display_style_fields' ) ) {
+		// Column rows choose a named Display Style like top-level and card rows do. Layouts that clone a reusable block's
+		// fields (CTA, FAQ) already carry that block's Display Style; a second field of the same name would duplicate it.
+		$clones_fields = isset( $layout['sub_fields'] ) && is_array( $layout['sub_fields'] ) && in_array( 'clone', array_column( $layout['sub_fields'], 'type' ), true );
+		if ( ! $clones_fields && isset( $layout['sub_fields'] ) && is_array( $layout['sub_fields'] ) && function_exists( 'mrn_base_stack_ensure_builder_layout_display_style_fields' ) ) {
 			$layout['sub_fields'] = mrn_base_stack_ensure_builder_layout_display_style_fields( $layout['sub_fields'], $layout_name, 'field_mrn_split_column_' . $layout_name . '_display' );
 		}
 
