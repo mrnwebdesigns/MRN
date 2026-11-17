@@ -167,7 +167,7 @@ def git_bytes(repo, *args):
     return subprocess.check_output(['git', '-C', str(repo), *args])
 
 
-def snapshot(repo, source):
+def snapshot(repo, source, migration_prefix=None):
     if git_bytes(repo, 'rev-parse', source + '^{commit}').strip().decode() != source:
         raise ValueError('Expected exact Git commit')
     entries = {}
@@ -175,11 +175,15 @@ def snapshot(repo, source):
         if not row:
             continue
         metadata, path = row.split(b'\t', 1)
+        name = path.decode().removeprefix(CONTENT + '/')
+        if migration_prefix is not None and not (
+                name == 'migrations.json' or name.startswith('media/')
+                or ('/' not in name and name.startswith(migration_prefix))):
+            continue
         mode, kind, oid, size = metadata.decode().split()
         if mode not in ('100644', '100755') or kind != 'blob':
             raise ValueError('Migration source must contain regular Git blobs')
-        name = path_name(path.decode().removeprefix(CONTENT + '/'))
-        entries[name] = (oid, int(size))
+        entries[path_name(name)] = (oid, int(size))
     return entries
 
 
@@ -189,14 +193,18 @@ def add(archive, name, body, size):
     archive.addfile(info, body)
 
 
-def pack(repo, source, code, output, limits=Limits()):
+def pack(repo, source, code, output, limits=Limits(), *, migration_prefix=None):
     match(source, r'[a-f0-9]{40}', 'source commit')
+    if migration_prefix is not None:
+        match(migration_prefix, r'v1-[a-z0-9-]{0,32}', 'mixed-layout migration prefix')
     with regular_file(code, MAX_CODE) as code_stream:
-        return pack_stream(repo, source, code_stream, output, limits)
+        return pack_stream(repo, source, code_stream, output, limits, migration_prefix)
 
 
-def pack_stream(repo, source, code, output, limits):
-    entries = snapshot(repo, source)
+def pack_stream(repo, source, code, output, limits, migration_prefix):
+    entries = snapshot(repo, source, migration_prefix)
+    if migration_prefix is not None and 'migrations.json' not in entries:
+        raise ValueError('Mixed-layout packaging requires scripts/content/migrations.json')
     if len(entries) > MAX_FILES + 1:
         raise ValueError('Migration bundle contains too many files')
 

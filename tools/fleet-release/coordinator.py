@@ -22,6 +22,7 @@ from common import (COMMIT, SHA256, ReleaseError, canonical, clean_main, digest,
                     file_hash, fleet, git, lock_tool, promotion, read,
                     relative, repository_name, roster, run, write)
 from qualify import qualify
+from site_release_package import FILENAME as SITE_RELEASE_RUNNER
 from launcher import service_environment
 
 REPOSITORY = 'mrnwebdesigns/MRN'
@@ -284,9 +285,11 @@ def publish(settings, repo, job, built, qualified, metadata, merged):
     write(Path(job) / 'qualification.json', qualified)
     transfer(settings, base, release, built['fleet'], Path(built['fleet']).name)
     transfer(settings, base, release, built['optional_archive'], 'optional-plugins.tar')
+    transfer(settings, base, release, built['site_release_runner'], SITE_RELEASE_RUNNER)
     transfer(settings, base, release, Path(job) / 'qualification.json', 'qualification.json')
     remote_host(settings, 'verify-artifact', release, Path(built['fleet']).name, file_hash(built['fleet']))
     remote_host(settings, 'verify-artifact', release, 'optional-plugins.tar', file_hash(built['optional_archive']))
+    remote_host(settings, 'verify-artifact', release, SITE_RELEASE_RUNNER, qualified['site_release_runner_sha256'])
     remote_host(settings, 'verify-artifact', release, 'qualification.json', file_hash(Path(job) / 'qualification.json'))
     parent = next(v for v in read(Path(repo) / 'stack/manifests/stack-release.lock.json')['themes']
                   if v['slug'] == 'mrn-base-stack')
@@ -448,6 +451,10 @@ def install_local_index(settings, repo, standalone, job, built, qualified, publi
              'publication_path': str(control / 'publication.json'),
              'publication_sha256': file_hash(control / 'publication.json'),
              'artifact_root': str(repo), 'site_adoption_verified': False, 'site_writes': False}
+    if 'site_release_runner' in built:
+        index['site_release_runner'] = {'version': 1, 'path': str(built['site_release_runner']),
+                                        'filename': SITE_RELEASE_RUNNER,
+                                        'sha256': qualified['site_release_runner_sha256']}
     index['held_defaults'] = holds
     write(Path(settings['canonical_repo']) / 'releases/fleet-ready/current.json', index)
     return index
@@ -466,6 +473,8 @@ def paths(value):
 def seal(job, value):
     """Resume only checksum-bound completed phases; never repeat uncertain writes."""
     files = [Path(value['built'][key]) for key in ('fleet', 'bootstrap_archive', 'optional_archive')]
+    if 'site_release_runner' in value['built']:
+        files.append(Path(value['built']['site_release_runner']))
     files += [Path(value['built']['bootstrap']) / 'bootstrap-bundle.json',
               Path(value['repo']) / 'stack/manifests/stack-release.lock.json']
     value['sealed'] = {str(p): file_hash(p) for p in files}
@@ -482,7 +491,9 @@ def verify_seal(value):
     if (proof.get('status') != 'pass' or proof['fleet_sha256'] != file_hash(built['fleet'])
             or proof['bootstrap_sha256'] != file_hash(built['bootstrap_archive'])
             or proof['optional_sha256'] != file_hash(built['optional_archive'])
-            or proof['lock_sha256'] != built['proof']['lock_sha256']):
+            or proof['lock_sha256'] != built['proof']['lock_sha256']
+            or ('site_release_runner' in built and
+                proof.get('site_release_runner_sha256') != file_hash(built['site_release_runner']))):
         raise ReleaseError('Completed qualification binding differs')
 
 
@@ -642,6 +653,8 @@ def once(settings):
         refs = metadata['snapshot']['refs']
         if 'MRN-qa-engine' not in refs and progress['phase'] != 'published':
             raise ReleaseError('superseded: qualification toolchain was not bound to accepted source')
+        if 'site_release_runner' not in progress['built'] and progress['phase'] != 'published':
+            raise ReleaseError('superseded: qualification did not include the Fleet site-release runner')
         if not settings['publish']:
             return {'status': 'qualified_rehearsal', 'job': str(job), 'site_writes': False}
         if progress['phase'] == 'qualified':
@@ -696,8 +709,8 @@ def once(settings):
 
 
 def deterministic(first, second):
-    if any(file_hash(first[key]) != file_hash(second[key])
-           for key in ('fleet', 'bootstrap_archive', 'optional_archive')):
+    keys = ('fleet', 'bootstrap_archive', 'optional_archive', 'site_release_runner')
+    if any(key not in first or key not in second or file_hash(first[key]) != file_hash(second[key]) for key in keys):
         raise ReleaseError('Independent deterministic rebuilds differ')
 
 

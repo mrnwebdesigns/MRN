@@ -17,6 +17,8 @@ from common import (ReleaseError, assembly, canonical, digest, distribution,
                     file_hash, fleet, git, lock_tool, promotion, read, relative, roster,
                     source_files, write, run, clean_main)
 
+from site_release_package import MEMBERS as RUNNER_FILES, PREFIX as RUNNER_PREFIX, build_runner
+
 BOOTSTRAP_FILES = (
     'scripts/site-bootstrap.sh', 'scripts/bootstrap-new-sites.sh',
     'scripts/bootstrap-dev-enrollment.sh', 'scripts/bootstrap_readiness.py',
@@ -219,8 +221,9 @@ def snapshot(repo, standalone, policy):
                  for name in BOOTSTRAP_FILES if name not in generated}
     # Accepted deployment/release helpers are also distributed source inputs.
     # Read tracked files only; caches and another task's work never participate.
+    runner_paths = {RUNNER_PREFIX + name for name in RUNNER_FILES}
     for name in git(repo, 'ls-files').splitlines():
-        if (promotion.is_deployment_contract(name)
+        if (name in runner_paths or promotion.is_deployment_contract(name)
                 or name.startswith(('stack/tests/', 'tools/fleet-release/', 'tools/cloudpanel/'))):
             contracts[name] = file_hash(repo / name)
     vendor = read(repo / 'stack/manifests/bootstrap-packages.lock.json')
@@ -557,6 +560,8 @@ def build_all(repo, standalone, job, suffix):
         records.append(record)
     write(additional / 'manifest.json', {'release_id': lock['release_id'], 'plugins': records})
     archive_tree(additional, job / ('optional-' + suffix + '.tar'))
-    return {'platform': platform, 'bootstrap': bootstrap, 'fleet': archive,
+    runner = job / ('site-release-v1-' + suffix + '.tar')
+    build_runner(repo, runner, archive_tree)
+    return {'platform': platform, 'bootstrap': bootstrap, 'fleet': archive, 'site_release_runner': runner,
             'bootstrap_archive': job / ('bootstrap-' + suffix + '.tar'),
             'optional': additional, 'optional_archive': job / ('optional-' + suffix + '.tar'), 'proof': proof}

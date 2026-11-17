@@ -157,6 +157,18 @@ class Controller:
     def fresh(self, backup):
         return 0 <= self.clock() - backup['verified_at'] <= self.backup_seconds
 
+    def plan(self, request, archive):
+        if request.target != self.target or self.adapter.authorize('preflight', request) is not True:
+            raise Blocked('Deployment owner, source and exact target authorization are required')
+        status = self.status()
+        if status['current_release'] is None:
+            raise Blocked('Cannot qualify an unverified target')
+        if archive is None:
+            raise Blocked('Planning requires the original immutable artifact')
+        with inspect(archive, request.artifact_sha256, request.source_sha, self.limits) as package:
+            preview = self.do_preflight(request, {}, status['current_release'], None, package)
+        return {**status, 'plan': preview}
+
     def run(self, phase, request, archive=None, *, confirmed_origin=None):
         if request.target != self.target:
             raise Blocked('Requested target differs from protected adapter configuration')

@@ -13,6 +13,13 @@ mrn-site-release inspect --archive release.tar --sha256 "$ARTIFACT_SHA256" --sou
 
 Pass the outer SHA-256 from the trusted build result to the deployment runner via its authenticated job or broker. Retain the exact artifact privately for resumed activation and migrations. The v1 tar contains `manifest.json`, `code.tar`, and private `migrations/` members. Only the code payload is passed to the code store. Content scripts and approved inputs stay outside the public tree.
 
+For a repository retaining a previous migration contract, the builder can
+reserve `migrations.json`, `media/` and top-level scripts beginning with an
+explicit `--migration-prefix v1-...` in `scripts/content/`. Every member of
+that scope must still be declared. Other paths stay with the legacy workflow.
+This changes build selection only. The output is the same v1 envelope and is
+verified by the original v1 runner.
+
 Keep all deployment inputs under `scripts/content/` in the site Git repository. Start with [the sample declaration](examples/migrations.json) and [WordPress migration](examples/hero-v1.php). Every listed script and image must be an exact regular Git blob. Each migration has an immutable ID, a same-named PHP script, an explicit environment allowlist, an image list and the exact public paths its edits affect. Preserve declaration order for dependent migrations. Use a new ID for a correction. A code-only release can omit the directory. Unreferenced files, symlinks, unsafe paths, duplicate members, invalid image content and limit violations block packaging or preflight. All image paths declared by a migration must be used through the supplied import function.
 
 Defaults are 8 MiB per image, 32 MiB total migration files, 4,096 pixels on either edge, and 16 million pixels per image. V1 accepts single-frame JPEG, PNG and WebP with matching extensions. Reports include file and bundle bytes, image dimensions, detected format and SHA-256. The default optimization suggestions are 500,000 bytes or 2,000 pixels on the longest edge. Use a JSON policy with keys such as `file_bytes`, `bundle_bytes`, `width`, `height`, `pixels`, `formats`, `recommend_bytes` and `recommend_edge` with `--limits` for build inspection. Set the receiving target's protected `Limits` independently. Hard ceilings are 32 MiB per image, 128 MiB per migration bundle, 8,192 pixels on either edge, 32 million pixels per image, 256 KiB per script and 512 content files.

@@ -49,6 +49,7 @@ def main(argv=None):
     build.add_argument('--repo', required=True)
     build.add_argument('--code', required=True)
     build.add_argument('--output', required=True)
+    build.add_argument('--migration-prefix', help='reserve a v1-* script prefix in mixed legacy content trees')
     inspect_parser = commands.add_parser('inspect', help='verify and report media without contacting a target')
     add_package_args(inspect_parser)
     inspect_parser.add_argument('--archive', required=True)
@@ -64,7 +65,8 @@ def main(argv=None):
     args = parser.parse_args(argv)
     try:
         if args.command == 'pack':
-            result = pack(args.repo, args.source_sha, args.code, args.output, limits_from(args.limits))
+            result = pack(args.repo, args.source_sha, args.code, args.output, limits_from(args.limits),
+                          migration_prefix=args.migration_prefix)
         elif args.command == 'inspect':
             with inspect(args.archive, args.sha256, args.source_sha, limits_from(args.limits)) as (_, manifest, report):
                 result = {**report, 'manifest': manifest}

@@ -53,6 +53,16 @@ class SourcePublication(unittest.TestCase):
                      'source_root': str(self.root), 'legacy_consumers_paused': True})
         self.store = host.SourceStore(self.root, self.depot)
 
+    def test_optional_runner_is_read_back_and_cannot_be_replaced(self):
+        runner = self.job / 'mrn-site-release-v1.tar'
+        runner.write_bytes(b'private runner')
+        self.proof['site_release_runner_sha256'] = host.sha(runner)
+        common.write(self.job / 'qualification.json', self.proof)
+        self.store.qualification(self.job, self.new, self.archive)
+        runner.write_bytes(b'changed private runner')
+        with self.assertRaisesRegex(host.PublicationError, 'readback differs'):
+            self.store.qualification(self.job, self.new, self.archive)
+
     def tearDown(self):
         self.temporary.cleanup()
 
@@ -530,7 +540,7 @@ class CoordinatorBoundaries(unittest.TestCase):
                 (bootstrap/'bootstrap-bundle.json').write_bytes(b'{}')
                 (bootstrap/'themes/mrn-base-stack.zip').write_bytes(b'ordinary parent fixture')
                 built={'bootstrap':bootstrap,'proof':{'lock_sha256':'a'*64}}
-                for key in ('bootstrap_archive','fleet','optional_archive'):
+                for key in ('bootstrap_archive','fleet','optional_archive','site_release_runner'):
                     built[key]=root/(key+'.tar');built[key].write_bytes(key.encode())
                 if serialized:
                     built={k:str(v) if isinstance(v,Path) else v for k,v in built.items()}
@@ -549,11 +559,12 @@ class CoordinatorBoundaries(unittest.TestCase):
                             (destination/name).write_bytes((job/name).read_bytes())
                     return ''
                 with patch.object(coordinator,'remote_host',side_effect=remote), \
-                     patch.object(coordinator,'assert_refs'),patch.object(coordinator,'transfer'), \
+                     patch.object(coordinator,'assert_refs'),patch.object(coordinator,'transfer') as transfer, \
                      patch.object(coordinator,'run',side_effect=command), \
                      patch.object(coordinator.subprocess,'run',return_value=type('Result',(),{'returncode':1})()):
                     result=coordinator.publish({'source_host':'mrndev-stack-manager'},repo,job,built,
-                                               {'status':'pass'},metadata,merged)
+                                               {'status':'pass','site_release_runner_sha256':common.file_hash(built['site_release_runner'])},metadata,merged)
+                self.assertIn(coordinator.SITE_RELEASE_RUNNER, [call.args[-1] for call in transfer.call_args_list])
                 self.assertEqual(result['status'],'published_verified')
                 publication=common.read(job/'publication.json')
                 self.assertEqual(publication['status'],'pass')
@@ -678,8 +689,8 @@ class CoordinatorBoundaries(unittest.TestCase):
             first=Path(temporary)/'a';second=Path(temporary)/'b'
             first.write_bytes(b'same');second.write_bytes(b'different')
             with self.assertRaises(common.ReleaseError):
-                coordinator.deterministic({'fleet':first,'bootstrap_archive':first,'optional_archive':first},
-                    {'fleet':first,'bootstrap_archive':first,'optional_archive':second})
+                coordinator.deterministic({'fleet':first,'bootstrap_archive':first,'optional_archive':first,'site_release_runner':first},
+                    {'fleet':first,'bootstrap_archive':first,'optional_archive':second,'site_release_runner':first})
 
     def test_superseded_worker_proposal_is_closed_but_foreign_proposal_is_preserved(self):
         for own in (True,False):
@@ -730,16 +741,17 @@ class CoordinatorBoundaries(unittest.TestCase):
             job=state/'jobs/example';job.mkdir(parents=True)
             repo=job/'repos/MRN';(repo/'stack/manifests').mkdir(parents=True)
             bootstrap=job/'bootstrap';bootstrap.mkdir()
-            for path in (job/'fleet.zip',job/'bootstrap.tar',job/'optional.tar',bootstrap/'bootstrap-bundle.json',repo/'stack/manifests/stack-release.lock.json'):
+            for path in (job/'fleet.zip',job/'bootstrap.tar',job/'optional.tar',job/'runner.tar',bootstrap/'bootstrap-bundle.json',repo/'stack/manifests/stack-release.lock.json'):
                 path.write_bytes(b'fixture')
             checksum=common.file_hash(job/'fleet.zip')
             progress={'phase':'qualified','repo':str(repo),'standalone':str(job/'repos/MRN-plugins'),
                       'metadata':{'snapshot':{'refs':{'MRN-qa-engine':'b'*40}},'release_id':'fixture'},
                       'built':{'fleet':str(job/'fleet.zip'),'bootstrap_archive':str(job/'bootstrap.tar'),
-                               'optional_archive':str(job/'optional.tar'),
+                               'optional_archive':str(job/'optional.tar'),'site_release_runner':str(job/'runner.tar'),
                                'bootstrap':str(bootstrap),'proof':{'lock_sha256':checksum}},
                       'qualified':{'status':'pass','fleet_sha256':checksum,'bootstrap_sha256':checksum,
-                                   'optional_sha256':checksum,'lock_sha256':checksum}}
+                                   'optional_sha256':checksum,'lock_sha256':checksum,
+                                   'site_release_runner_sha256':checksum}}
             coordinator.seal(job,progress);common.write(state/'active.json',{'job':str(job)})
             with patch.object(coordinator,'publish') as publish, patch.object(coordinator,'build_all') as build:
                 result=coordinator.once({'state_root':str(state),'qualification':{},'publish':False})
