@@ -77,6 +77,35 @@ class SourcePublication(unittest.TestCase):
             with self.subTest(path=name):
                 self.assertEqual(host.allowed(name).as_posix(), name)
 
+    def test_review_lifecycle_component_is_catalog_only_not_a_fleet_source(self):
+        repo = self.base / 'catalog-roster'
+        manifests = repo / 'stack' / 'manifests'
+        manifests.mkdir(parents=True)
+        component = {
+            'slug': 'mrn-held-example', 'version': '1.0.0',
+            'runtime_type': 'standard-plugin', 'target_tier': 'optional-shared',
+            'current_distribution': 'catalog-only', 'lifecycle': 'review',
+            'source': {
+                'repository': 'mrn-held-example',
+                'path': '/Users/example/Development/MRN-plugins/mrn-held-example',
+            },
+        }
+        included = {
+            'slug': 'mrn-supported-example', 'version': '1.0.0',
+            'runtime_type': 'standard-plugin', 'target_tier': 'optional-shared',
+            'current_distribution': 'catalog-only', 'lifecycle': 'active',
+            'source': {
+                'repository': 'mrn-supported-example',
+                'path': '/Users/example/Development/MRN-plugins/mrn-supported-example',
+            },
+        }
+        common.write(manifests / 'component-catalog.json', {
+            'catalog_updated': '2026-11-17', 'components': [component, included],
+        })
+        common.write(manifests / 'retired-capabilities.json', {'capabilities': []})
+
+        self.assertEqual([row['slug'] for row in common.roster(repo)], ['mrn-supported-example'])
+
     def test_bootstrap_script_dependencies_are_distributed(self):
         root = Path(__file__).resolve().parents[3] / 'stack'
         for name in build.BOOTSTRAP_FILES:
