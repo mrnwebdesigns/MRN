@@ -148,12 +148,25 @@ export class Operations {
     } catch (error) { this.store.audit(actor, target, '', 'content:read', 'failed'); throw error; }
     finally { await session.close(); }
   }
-  async inspectCode(actor, { website, environment, path }) {
-    requireThat(actor.identityProvider === 'google-oauth2', 'AUTH_REQUIRED', 'Use your MRN Google identity for code inspection.');
+  async inspectCode(actor, { website, environment, path, includeContent }) {
+    requireThat(actor.identityProvider === 'google-oauth2' && this.verifyStaff, 'AUTH_REQUIRED', 'Use your active MRN Google identity for code inspection.');
     await this.discovery?.refresh(actor);
     const target = this.registry.resolve(actor, website, environment);
-    const session = await this.session(actor, target, 'read');
-    try { return await codeInspection(session, path); } finally { await session.close(); }
+    const authorize = async () => {
+      this.registry.current(actor, target, 'read');
+      await this.verifyStaff(actor);
+    };
+    let session;
+    this.store.audit(actor, target, '', 'code:read', 'attempted');
+    try {
+      await authorize();
+      session = await this.session(actor, target, 'read');
+      const result = await codeInspection(session, path, { includeContent });
+      await authorize();
+      this.store.audit(actor, target, '', 'code:read', 'returned');
+      return result;
+    } catch (error) { this.store.audit(actor, target, '', 'code:read', 'failed'); throw error; }
+    finally { await session?.close(); }
   }
   async inspectContent(actor, { website, environment, target: contentTarget }) {
     requireThat(actor.identityProvider === 'google-oauth2', 'AUTH_REQUIRED', 'Use your verified MRN Google identity.');

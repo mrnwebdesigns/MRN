@@ -97,7 +97,8 @@ export function createMcp(service, actor, { publicUrl } = {}) {
     { ...editorial, ...coreEditFields }, false, args => service.prepareEditorial(actor, 'edit', args));
   register('prepare_content_status', 'Preview one explicit publish or return-to-draft transition in the disposable fixture, based on a fresh record snapshot. Does not approve or execute the transition.',
     { ...editorial, ...statusFields }, false, args => service.prepareEditorial(actor, 'status', args));
-  register('inspect_website_code', 'Inspect one exact UTF-8 file inside a provider-permitted theme/plugin root using your verified Google identity. Returns checksum and storage readiness; code-change QA and approval remain separate.', { ...target, path: codePath }, false, args => service.inspectCode(actor, args));
+  register('inspect_website_code', 'Inspect one exact file inside a provider-permitted theme/plugin root using your verified Google identity. Set includeContent to false for existence, size, checksum and storage readiness without fetching source. Code-change QA and approval remain separate.',
+    { ...target, path: codePath, includeContent: z.boolean().optional() }, false, args => service.inspectCode(actor, args));
   register('prepare_code_edit', 'Prepare one exact code-file candidate from its inspected checksum. Git sites create a scoped source PR; qualified snapshot sites start protected QA. Does not change the live website. No caller credentials or identity accepted.',
     { ...target, path: codePath, expectedSha256: sha, content: z.string().max(32768), reason: z.string().min(1).max(512), requestKey }, false, args => service.prepareCode(actor, args));
   register('approve_code_source', 'After explicit approval of the exact source preview, merge its PR subject to repository rules and run protected QA. This does not authorize a live website change; review the resulting prepared plan separately.',
