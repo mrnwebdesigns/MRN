@@ -4,7 +4,6 @@ function mrn_base_stack_get_labeled_logos_fields( $seed ) {
 	$fields = array(
 		array( 'key' => $seed . '_logos_presentation', 'name' => 'logos_presentation', 'label' => 'Logo Presentation', 'type' => 'select', 'choices' => array( '' => 'Use Existing Grid or Slider', 'labeled' => 'Labeled Logos', 'icons' => 'Icon Strip', 'auto-grid' => 'Adaptive Logo Grid' ), 'default_value' => '', 'instructions' => 'Labeled Logos keeps captions beside images. Icon Strip preserves a fixed-size row of optional linked icons. Adaptive Logo Grid fills the available width using a minimum column size. These presentations do not use a slider.' ),
 		array( 'key' => $seed . '_logos_description', 'name' => 'logos_description', 'label' => 'Description After Logos', 'type' => 'wysiwyg', 'tabs' => 'all', 'toolbar' => 'full', 'media_upload' => 0 ),
-		array( 'key' => $seed . '_logos_row_spacing_mobile_breakpoint', 'name' => 'logos_row_spacing_mobile_breakpoint', 'label' => 'Row Spacing Mobile Breakpoint', 'type' => 'select', 'choices' => array( '' => 'Site Default (782px)', '767' => '767px' ), 'default_value' => '', 'instructions' => 'Optional switch for the outer row spacing presets. The preset values remain editable in Row Spacing.' ),
 	);
 	$frame = mrn_base_stack_get_content_frame_fields( 'logos', $seed ); array_shift( $frame );
 	$fields = array_merge( $fields, $frame );

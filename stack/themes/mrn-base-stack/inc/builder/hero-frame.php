@@ -9,7 +9,6 @@
 function mrn_base_stack_get_hero_frame_fields() {
 	$labels = array(
 		'inner_gutter' => 'Inner Horizontal Gutter',
-		'inner_max_width' => 'Wide Inner Maximum Width',
 		'inner_gutter_mobile' => 'Small-Screen Inner Horizontal Gutter',
 		'content_width' => 'Content Maximum Width',
 		'content_width_mobile' => 'Small-Screen Content Maximum Width',
@@ -20,13 +19,9 @@ function mrn_base_stack_get_hero_frame_fields() {
 		'heading_space_after' => 'Space After Heading',
 		'heading_space_after_mobile' => 'Small-Screen Space After Heading',
 		'actions_space_before' => 'Space Before Actions',
-		'actions_space_before_mobile' => 'Small-Screen Space Before Actions',
-		'actions_primary_min_width_mobile' => 'Small-Screen First Action Minimum Width',
 		'actions_row_gap' => 'Space Between Action Rows',
 		'actions_column_gap' => 'Space Between Actions',
 		'action_icon_height' => 'Action Media Icon Height',
-		'action_line_height' => 'Action Line Height',
-		'media_space_after' => 'Space After Hero Media',
 		'heading_size' => 'Heading Font Size',
 		'heading_line_height' => 'Heading Line Height',
 		'text_size' => 'Body Font Size',
@@ -36,25 +31,7 @@ function mrn_base_stack_get_hero_frame_fields() {
 		'paragraph_space_after' => 'Space After Body Paragraphs',
 		'body_h2_space_before' => 'Space Before Body H2 Headings',
 		'body_h2_space_after' => 'Space After Body H2 Headings',
-		'inner_gutter_narrow' => 'Inner Gutter at 900px',
-		'inner_gutter_small' => 'Inner Gutter at 480px',
 		'media_width' => 'Media Column Maximum Width',
-		'media_column_gap' => 'Space Between Media Columns',
-		'media_row_gap' => 'Space Between Stacked Media Rows',
-		'media_radius' => 'Media Corner Radius',
-		'heading_size_narrow' => 'Narrow-Screen Heading Font Size',
-		'heading_size_mobile' => 'Small-Screen Heading Font Size',
-		'heading_line_height_mobile' => 'Small-Screen Heading Line Height',
-		'heading_line_height_narrow' => 'Narrow-Screen Heading Line Height',
-		'heading_space_after_narrow' => 'Narrow-Screen Space After Heading',
-		'actions_space_before_narrow' => 'Space Before Actions at 900px',
-		'actions_gap_narrow' => 'Space Between Actions at 900px',
-		'paragraph_space_before' => 'Space Between Consecutive Paragraphs',
-		'lead_size' => 'First Body Paragraph Font Size',
-		'lead_line_height' => 'First Body Paragraph Line Height',
-		'lead_size_mobile' => 'Small-Screen First Paragraph Font Size',
-		'lead_line_height_mobile' => 'Small-Screen First Paragraph Line Height',
-		'lead_space_after' => 'Space After First Body Paragraph',
 	);
 	$fields = array();
 	foreach ( $labels as $suffix => $label ) {
@@ -79,13 +56,6 @@ function mrn_base_stack_get_hero_frame_fields() {
 		'default_value' => '', 'wrapper' => array( 'width' => '50' ),
 		'instructions' => 'The smaller gutter applies at and below this viewport width. Content-width and typography breakpoints remain independent.',
 	);
-	$fields[] = array(
-		'key' => 'field_mrn_hero_basic_block_frame_row_spacing_mobile_breakpoint',
-		'name' => 'hero_row_spacing_mobile_breakpoint', 'label' => 'Row Spacing Mobile Breakpoint', 'type' => 'select',
-		'choices' => array( '' => 'Use Existing Breakpoint (782px)', '767' => '767px' ),
-		'default_value' => '', 'wrapper' => array( 'width' => '50' ),
-		'instructions' => 'Select when this Hero should keep desktop row margins and padding through 768px. All dimensions still come from the selected native spacing presets.',
-	);
 	$fields[] = array( 'key' => 'field_mrn_hero_basic_block_frame_content_fill_mobile', 'name' => 'hero_content_fill_mobile', 'label' => 'Fill Small-Screen Content Width', 'type' => 'true_false', 'ui' => 1, 'default_value' => 0, 'instructions' => 'At 767px and below, let direct Hero content and its list items wrap within the available column instead of preserving intrinsic minimum widths.' );
 	$fields[] = array(
 		'key' => 'field_mrn_hero_basic_block_frame_actions_mobile_flow',
@@ -102,22 +72,14 @@ function mrn_base_stack_get_hero_frame_fields() {
 		'instructions' => 'Optional. Keep the accessible pause and resume control while moving it out of the heading, text and action flow. Reserve bottom row padding through native Row Spacing.',
 	);
 	foreach ( array(
-		'padding_mobile_breakpoint' => array( 'Row Padding Breakpoint', array( '' => 'Use Existing Row Breakpoint', '900' => '900px', '640' => '640px (Vertical Padding Only)' ) ),
-		'heading_narrow_breakpoint' => array( 'Narrow-Screen Heading Breakpoint', array( '' => 'Use Existing (900px)', '1100' => '1100px' ) ),
-		'typography_mobile_breakpoint' => array( 'Small-Screen Typography Breakpoint', array( '' => 'Use Existing (767px)', '640' => '640px', '560' => '560px' ) ),
 		'padding_bottom_mobile_source' => array( 'Small-Screen Bottom Padding', array( '' => 'Use Preset Mobile Dimension', 'desktop' => 'Keep Preset Desktop Dimension' ) ),
-		'media_stack_breakpoint' => array( 'Media Stacking Breakpoint', array( '' => 'Use Existing (960px)', '900' => '900px', '767' => '767px' ) ),
 		'media_max_share' => array( 'Media Maximum Share of Inner Canvas', array( '' => 'Use Existing Grid', '40' => '40%', '50' => '50%', '60' => '60%' ) ),
-		'media_shadow' => array( 'Media Shadow', array( '' => 'Use Existing Shadow', 'none' => 'None' ) ),
 		'media_drift' => array( 'Media Scroll Drift', array( '' => 'None', 'scroll' => 'Drift With Scroll (0.08 speed, 36px maximum)' ) ),
 		'media_size' => array( 'Media Image Source', array( '' => 'Use Existing Hero Crop', 'full' => 'Original Aspect with Responsive Sources' ) ),
 		'actions_small_layout' => array( 'Actions at 480px', array( '' => 'Use Existing Wrapping', 'full-column' => 'Full-Width Column' ) ),
-		'lead_weight' => array( 'First Body Paragraph Font Weight', array( '' => 'Use Existing Weight' ) + array_combine( range( 100, 900, 100 ), range( 100, 900, 100 ) ) ),
-		'lead_transform' => array( 'First Body Paragraph Case', array( '' => 'Use Existing Case', 'uppercase' => 'Uppercase', 'none' => 'As Written' ) ),
 	) as $suffix => $config ) {
 		$fields[] = array( 'key' => 'field_mrn_hero_basic_block_frame_' . $suffix, 'name' => 'hero_' . $suffix, 'label' => $config[0], 'type' => 'select', 'choices' => $config[1], 'default_value' => '', 'wrapper' => array( 'width' => '50' ), 'instructions' => 'Optional; blank retains existing output. Outer spacing dimensions remain in native row presets. Media widths shrink to fit the canvas before stacking.' );
 	}
-	$fields[] = array( 'key' => 'field_mrn_hero_basic_block_frame_media_ratio', 'name' => 'hero_media_ratio', 'label' => 'Media Aspect Ratio', 'type' => 'text', 'default_value' => '', 'instructions' => 'Optional positive width / height, such as 4 / 3. Each number must be between 1 and 10000. Blank retains the source ratio.' );
 	$fields[] = array(
 		'key' => 'field_mrn_hero_basic_block_frame_body_h2_style',
 		'name' => 'hero_body_h2_style', 'label' => 'Body H2 Typography', 'type' => 'select',
@@ -131,7 +93,7 @@ function mrn_base_stack_get_hero_frame_fields() {
 		'choices' => array( '' => 'Use Existing Weight' ) + array_combine( range( 100, 900, 100 ), range( 100, 900, 100 ) ),
 		'default_value' => '', 'wrapper' => array( 'width' => '50' ),
 	);
-	foreach ( array( 'heading' => 'Heading Color', 'phrase' => 'Rotating Phrase Color', 'text' => 'Body Paragraph Color', 'lead' => 'First Body Paragraph Color' ) as $part => $label ) {
+	foreach ( array( 'heading' => 'Heading Color', 'text' => 'Body Paragraph Color' ) as $part => $label ) {
 		$field = mrn_base_stack_get_background_color_field( 'field_mrn_hero_basic_block_frame_' . $part . '_color' );
 		$field['name'] = 'hero_' . $part . '_color';
 		$field['label'] = $label;

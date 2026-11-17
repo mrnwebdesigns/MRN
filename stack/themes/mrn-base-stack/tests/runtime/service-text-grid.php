@@ -4,7 +4,7 @@ if ( ! defined( 'WP_CLI' ) || ! WP_CLI || home_url() !== getenv( 'MRN_STACK_TEST
 $checks = array(); $expect = static function ( $ok, $label ) use ( &$checks ) { if ( ! $ok ) { throw new RuntimeException( esc_html( $label ) ); } $checks[] = $label; };
 $layouts = array_column( acf_get_field( 'field_mrn_page_content_rows' )['layouts'], null, 'name' );
 $card_fields = array_column( $layouts['card']['sub_fields'], null, 'name' ); $item_fields = array_column( $card_fields['card_items']['sub_fields'], null, 'name' ); $nested = array_column( $item_fields['card_rows']['layouts'], null, 'name' );
-foreach ( array( 'card' => array( 'card_grid_row_gap_tablet', 'card_heading_size', 'card_heading_line_height', 'card_heading_size_tablet', 'card_heading_line_height_tablet', 'card_heading_size_mobile', 'card_heading_line_height_mobile', 'card_header_space_after_tablet', 'card_header_space_after_mobile', 'card_heading_weight', 'card_heading_color' ), 'body_text' => array( 'body_frame_breakpoints', 'body_text_space_before_mobile' ) ) as $layout => $names ) {
+foreach ( array( 'card' => array( 'card_heading_size', 'card_heading_line_height', 'card_heading_weight', 'card_heading_color' ), 'body_text' => array( 'body_text_space_before', 'body_text_space_before_tablet' ) ) as $layout => $names ) {
  $root_fields = array_column( $layouts[ $layout ]['sub_fields'], null, 'name' ); $nested_fields = 'card' === $layout ? array_column( mrn_base_stack_get_card_frame_fields( 'field_alternate_service_grid' ), null, 'name' ) : array_column( $nested[ $layout ]['sub_fields'], null, 'name' );
  foreach ( $names as $name ) { $expect( isset( $root_fields[ $name ], $nested_fields[ $name ] ) && $root_fields[ $name ]['key'] !== $nested_fields[ $name ]['key'], 'Registered root and supported nested/factory keys are isolated: ' . $name ); }
 }
@@ -13,11 +13,14 @@ $card = array( 'acf_fc_layout' => 'card', 'heading' => 'Editable section heading
 $id = wp_insert_post( array( 'post_type' => 'page', 'post_status' => 'draft', 'post_title' => 'Owned native service text grid proof' ), true ); $expect( ! is_wp_error( $id ) && $id > 0, 'Owned proof created' );
 try {
  update_field( 'field_mrn_page_content_rows', wp_slash( array( $card ) ), $id ); acf_flush_value_cache( $id, 'page_content_rows' ); $saved = get_field( 'page_content_rows', $id )[0];
- foreach ( $card as $key => $value ) { if ( str_starts_with( $key, 'card_' ) && 'card_items' !== $key ) { $expect( $value === $saved[ $key ], 'Selected Card control persists: ' . $key ); } }
- $text = $saved['card_items'][0]['card_rows'][0]; $expect( '991-600' === $text['body_frame_breakpoints'] && '16px' === $text['body_text_space_before_mobile'], 'Nested responsive text controls persist' );
+ $card_fields = array_column( $layouts['card']['sub_fields'], null, 'name' );
+ foreach ( $card as $key => $value ) { if ( str_starts_with( $key, 'card_' ) && 'card_items' !== $key && isset( $card_fields[ $key ] ) ) { $expect( $value === $saved[ $key ], 'Selected Card control persists: ' . $key ); } }
+ // Responsive sizes and breakpoints the theme's looks own are not fields; the contracts still honor them when passed directly.
+ $expect( ! isset( $card_fields['card_heading_size_tablet'], $card_fields['card_grid_row_gap_tablet'] ), 'Responsive Card sizes are not row fields' );
+ $saved = array_merge( $saved, array_diff_key( $card, $saved ) ); $saved['card_items'][0]['card_rows'][0] = array_merge( $saved['card_items'][0]['card_rows'][0], array_diff_key( $body, $saved['card_items'][0]['card_rows'][0] ) );
  $expect( $body['body_text'] === get_post_meta( $id, 'page_content_rows_0_card_items_0_card_rows_0_body_text', true ), 'Nested rich copy and complete query link stay exact' );
  ob_start(); mrn_base_stack_render_builder_rows( array( $saved ), $id, 'page_content_rows' ); $html = ob_get_clean();
- foreach ( array( 'has-card-grid-991-600', 'has-body-breakpoints-991-600', '--mrn-card-frame-heading-size:var(--site-text-h2-size)', '--mrn-card-frame-heading-line-height-tablet:46px', '--mrn-card-frame-heading-size-mobile:30px', '--mrn-card-frame-header-space-after-mobile:40px', '--mrn-card-frame-grid-row-gap-tablet:56px', '--mrn-body-frame-text-space-before-mobile:16px' ) as $part ) { $expect( str_contains( $html, $part ), 'Selected contract renders: ' . $part ); }
+ foreach ( array( 'has-card-grid-991-600', 'has-body-breakpoints-991-600', '--mrn-card-frame-heading-size:var(--site-text-h2-size)', '--mrn-card-frame-heading-line-height-tablet:46px', '--mrn-card-frame-heading-size-mobile:30px', '--mrn-card-frame-header-space-after-mobile:40px', '--mrn-card-frame-grid-row-gap-tablet:56px'  ) as $part ) { $expect( str_contains( $html, $part ), 'Selected contract renders: ' . $part ); }
  $expect( ! str_contains( $html, 'data-mrn-motion-effect' ) && str_contains( $html, 'href="/keep/?a=1&amp;b=2"' ), 'Static grid retains native links without new motion payload' );
  foreach ( array( '-1px', '1px;color:red', 'var(--unknown)', array( '12px' ) ) as $bad ) {
   $contract = mrn_base_stack_get_card_frame_contract( array_replace( $card, array( 'card_heading_size' => $bad, 'card_heading_weight' => $bad, 'card_heading_color' => $bad, 'card_header_space_after_mobile' => $bad ) ) ); $style = $contract['attributes']['style'] ?? '';

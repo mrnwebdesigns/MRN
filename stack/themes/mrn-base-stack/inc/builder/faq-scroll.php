@@ -15,16 +15,7 @@ function mrn_base_stack_get_faq_scroll_fields( $seed ) {
 		$make( 'presentation', 'select', array( 'choices' => array( '' => 'Use Existing Presentation', 'scroll-active' => 'Scroll-Active Answers with Heading Aside' ), 'instructions' => 'One answer follows scrolling on desktop. Native summaries remain keyboard accessible. Mobile/reduced-motion views start expanded and retain manual disclosure controls. Select Editorial Questions for additional question/answer typography controls.' ) ),
 		$make( 'mobile_expand_all', 'true_false', array( 'ui' => 1, 'default_value' => 1, 'label' => 'Start All Answers Open at 767px and Below' ) ),
 		$make( 'activation_ratio', 'number', array( 'default_value' => 0.45, 'min' => 0.1, 'max' => 0.9, 'step' => 0.05, 'instructions' => 'Fraction of the viewport height where the next answer becomes active.' ) ),
-		$make( 'features_color', 'color_picker', array( 'instructions' => 'Optional opaque color for answer lists. Does not modify Site Colors.' ) ),
-		$make( 'heading_letter_spacing', 'text', array( 'instructions' => 'Optional bounded letter spacing, including negative em/px values. Blank preserves the existing heading tracking.' ) ),
-		$make( 'heading_weight', 'select', array( 'choices' => array( '' => 'Use Existing Weight' ) + array_combine( range( 100, 900, 100 ), range( 100, 900, 100 ) ) ) ),
 	);
-	$color = mrn_base_stack_get_background_color_field( $seed . '_faq_heading_color' );
-	$color['name'] = 'faq_heading_color'; $color['label'] = 'FAQ Heading Color'; $fields[] = $color;
-	foreach ( mrn_base_stack_get_faq_scroll_dimensions() as $name ) {
-		if ( 'inner_gutter' === $name ) { continue; } // Reuse the existing editorial FAQ gutter field.
-		$fields[] = $make( $name, 'text', array( 'instructions' => 'Optional non-negative length or bounded clamp(). Type controls accept Site Text tokens. Compact values apply at 1199px, stacked heading values at 991px, mobile values at 767px. Outer spacing stays in row presets.', 'wrapper' => array( 'width' => '50' ) ) );
-	}
 	foreach ( $fields as &$field ) {
 		if ( 'faq_presentation' !== $field['name'] ) { $field['conditional_logic'] = array( array( array( 'field' => $seed . '_faq_presentation', 'operator' => '==', 'value' => 'scroll-active' ) ) ); }
 		// Stacked editorial FAQ rows share the same heading typography controls and the content width / compact gutter.

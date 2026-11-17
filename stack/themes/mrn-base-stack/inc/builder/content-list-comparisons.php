@@ -72,12 +72,7 @@ function mrn_base_stack_get_comparison_list_fields( $seed ) {
 	foreach ( array( 'title', 'tag' ) as $part ) {
 		$fields[] = $make( $part . '_weight', 'select', array( 'choices' => array( '' => 'Use Existing Weight' ) + array_combine( range( 100, 900, 100 ), range( 100, 900, 100 ) ) ) );
 	}
-	foreach ( array( 'card_surface', 'tag_text', 'tag_surface' ) as $part ) {
-		$field          = mrn_base_stack_get_background_color_field( $seed . '_comparison_' . $part . '_color' );
-		$field['name']  = 'comparison_' . $part . '_color';
-		$field['label'] = 'Comparison ' . ucwords( str_replace( '_', ' ', $part ) ) . ' Color';
-		$fields[]       = $field;
-	}
+
 	foreach ( $fields as &$field ) {
 		$field['conditional_logic'] = array( array( array( 'field' => $seed . '_record_presentation', 'operator' => '==', 'value' => 'comparisons' ) ) );
 	}

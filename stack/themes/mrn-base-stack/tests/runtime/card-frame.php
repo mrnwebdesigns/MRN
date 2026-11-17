@@ -36,6 +36,9 @@ try {
 		$name = $field['name'];
 		if ( array_key_exists( $name, $row ) ) { $expect( $row[ $name ] === $saved[ $name ], 'Native ACF retains exact ' . $name ); }
 	}
+	// Sizes and breakpoints the theme's looks own are not fields; the contract still honors them when passed directly.
+	$expect( ! array_intersect( array( 'card_heading_width', 'card_intro_size', 'card_item_padding', 'card_row_spacing_mobile_breakpoint', 'card_heading_size_tablet' ), array_keys( $fields ) ), 'Retired Card styling values are not editable fields' );
+	$saved = array_merge( $saved, array_diff_key( $row, $saved ) );
 	ob_start(); mrn_base_stack_render_builder_row( $saved, $id, 0 ); $html = ob_get_clean();
 	$expect( str_contains( $html, 'has-card-frame' ) && str_contains( $html, '--mrn-card-frame-inner-gutter:30px' ) && str_contains( $html, '--mrn-card-frame-inner-gutter-mobile:15px' ), 'Native renderer emits the validated frame contract' );
 	$expect( str_contains( $html, '--mrn-card-frame-cards-space-before:clamp(40px, 4vw + 0.5rem, 64px)' ), 'The exact positive fluid card spacing is emitted instead of silently discarded' );

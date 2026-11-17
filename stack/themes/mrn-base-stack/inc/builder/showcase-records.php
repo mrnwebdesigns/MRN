@@ -14,14 +14,10 @@ function mrn_base_stack_get_showcase_record_item_fields( $seed, $presentation_ke
 	return $fields;
 }
 
-/** Collection geometry is editable; outer section margin/padding stays in row presets. */
+/** Collection sizes, spacing and colors come from the theme's CSS; outer section spacing stays in row presets. */
 function mrn_base_stack_get_showcase_record_fields( $seed ) {
 	$fields = array();
-	foreach ( array( 'content_width', 'gutter', 'gutter_tablet', 'gutter_mobile', 'first_column_width', 'first_column_width_compact', 'column_gap', 'column_gap_compact', 'column_gap_tablet', 'column_gap_mobile', 'item_padding', 'item_padding_tablet', 'item_padding_mobile', 'content_gap', 'content_gap_tablet', 'content_gap_mobile', 'title_size', 'title_line_height', 'title_size_tablet', 'title_line_height_tablet', 'title_size_mobile', 'title_line_height_mobile', 'text_size', 'text_line_height', 'text_size_tablet', 'text_line_height_tablet', 'text_size_mobile', 'text_line_height_mobile', 'tag_gap_mobile', 'tag_font_size_mobile', 'tag_line_height_mobile', 'tag_padding_inline_mobile', 'tag_padding_block_mobile', 'button_size', 'button_line_height' ) as $part ) {
-		$fields[] = array( 'key' => $seed . '_records_' . $part, 'name' => 'records_' . $part, 'label' => 'Records ' . ucwords( str_replace( '_', ' ', $part ) ), 'type' => 'text', 'instructions' => 'Optional bounded length, clamp() or Site Text size/line token. Compact: 1199px; stacked/tablet: 991px; mobile: 600px. Section spacing uses row presets.' );
-	}
-	foreach ( array( 'title', 'text', 'divider', 'button', 'button_hover', 'button_text' ) as $part ) { $field = mrn_base_stack_get_background_color_field( $seed . '_records_' . $part . '_color' ); $field['name'] = 'records_' . $part . '_color'; $field['label'] = 'Records ' . ucwords( str_replace( '_', ' ', $part ) ) . ' Color'; $fields[] = $field; }
-	foreach ( mrn_base_stack_get_text_tag_fields( $seed . '_record_tags_style' ) as $field ) { if ( str_starts_with( $field['name'], 'tag_' ) || 'list_presentation' === $field['name'] ) { $fields[] = $field; } }
+	foreach ( mrn_base_stack_get_text_tag_fields( $seed . '_record_tags_style' ) as $field ) { if ( 'list_presentation' === $field['name'] ) { $fields[] = $field; } }
 	foreach ( $fields as &$field ) { $field['conditional_logic'] = array( array( array( 'field' => $seed . '_showcase_presentation', 'operator' => '==', 'value' => 'split-records' ) ) ); }
 	unset( $field );
 	return $fields;

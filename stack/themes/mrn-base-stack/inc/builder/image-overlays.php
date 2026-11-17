@@ -11,12 +11,8 @@ function mrn_base_stack_get_image_overlay_fields( $seed ) {
 		$make( 'image_action_alignment', 'select', array( 'choices' => array( '' => 'Use Existing Alignment', 'left' => 'Left', 'right' => 'Right' ) ) ),
 		$make( 'image_action_vertical_alignment', 'select', array( 'choices' => array( '' => 'Use Existing Position', 'top' => 'Top', 'bottom' => 'Bottom' ) ) ),
 		$make( 'image_action_icon_style', 'select', array( 'choices' => array( '' => 'Use Existing Outline Arrow', 'solid' => 'Solid Arrow' ) ) ),
-		$make( 'image_action_font_weight', 'select', array( 'choices' => array( '' => 'Use Existing Weight' ) + array_combine( range( 100, 900, 100 ), range( 100, 900, 100 ) ) ) ),
 		$make( 'image_caption_presentation', 'select', array( 'choices' => array( '' => 'Use Existing Caption', 'attribution' => 'Small Image Attribution' ), 'instructions' => 'Optional attribution uses the existing Inside Image caption and its complete editable caption text.' ) ),
-		$make( 'image_caption_font', 'select', array( 'choices' => array( '' => 'Use Existing Font', 'body' => 'Site Body', 'heading' => 'Site Heading', 'map' => 'Map Credit (Roboto / Arial)' ) ) ),
-		$make( 'image_caption_color', 'color_picker', array( 'instructions' => 'Optional opaque credit color; does not change Site Colors.' ) ),
 	);
-	foreach ( array( 'image_action_font_size', 'image_action_line_height', 'image_action_backdrop_blur', 'image_caption_offset_inline', 'image_caption_offset_block', 'image_caption_size', 'image_caption_line_height' ) as $name ) { $fields[] = $make( $name, 'text', array( 'instructions' => 'Optional validated length or Site Text token. Unitless values are accepted for line heights. Outer spacing stays in row presets.' ) ); }
 	$fields[] = $make( 'image_markers', 'repeater', array( 'min' => 0, 'max' => 30, 'layout' => 'block', 'button_label' => 'Add Image Marker', 'default_value' => array(), 'sub_fields' => array(
 		$make( 'marker_media', 'image', array( 'return_format' => 'id', 'required' => 1, 'preview_size' => 'thumbnail' ) ),
 		$make( 'position_x', 'number', array( 'min' => 0, 'max' => 100, 'step' => 0.1, 'default_value' => 50, 'append' => '%' ) ),

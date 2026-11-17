@@ -4,7 +4,7 @@ if ( ! defined( 'WP_CLI' ) || ! WP_CLI || home_url() !== getenv( 'MRN_STACK_TEST
 $checks = array(); $expect = static function ( $ok, $label ) use ( &$checks ) { if ( ! $ok ) { throw new RuntimeException( esc_html( $label ) ); } $checks[] = $label; };
 $layouts = array_column( acf_get_field( 'field_mrn_page_content_rows' )['layouts'], null, 'name' ); $fields = array_column( $layouts['image_content']['sub_fields'], null, 'name' );
 $expect( 'standard' === $fields['image_presentation']['default_value'] && isset( $fields['image_presentation']['choices']['framed-zoom'] ), 'Existing default remains Standard; framed zoom is optional' );
-$expect( '' === $fields['media_mobile_breakpoint']['default_value'] && isset( $fields['media_mobile_breakpoint']['choices']['767'] ), 'Existing 999px breakpoint stays default; 767px is editable' );
+$expect( ! isset( $fields['media_mobile_breakpoint'] ), 'The small-screen media breakpoint comes from theme CSS, not a row field; the 999px default stays' );
 $expect( '' === $fields['image_stage_sizing']['default_value'] && isset( $fields['image_stage_sizing']['choices']['cover'] ), 'Original proportions stay default; cover is explicitly editable' );
 $first = array_column( mrn_base_stack_get_presentation_fields( 'image_content', 'field_mrn_first_stage' ), 'key' ); $second = array_column( mrn_base_stack_get_presentation_fields( 'image_content', 'field_mrn_second_stage' ), 'key' );
 $expect( count( $first ) === count( array_unique( $first ) ) && ! array_intersect( $first, $second ), 'Root/nested stage field keys remain isolated' );
@@ -14,11 +14,11 @@ foreach ( array( 'scroll-zoom', 'tilted-gallery' ) as $mode ) { $attrs = mrn_bas
 $attrs = mrn_base_stack_get_image_stage_attributes( array( 'image_presentation' => 'framed-zoom', 'media_mobile_breakpoint' => '767" onclick="alert(1)', 'media_height' => '10px;color:red', 'media_height_mobile' => array( '340px' ) ) );
 $expect( ! str_contains( $attrs, 'onclick' ) && ! str_contains( $attrs, 'color:red' ) && ! str_contains( $attrs, '--mrn-media-height' ), 'Malformed dimensions and breakpoint cannot inject CSS or attributes' );
 $expect( '' === mrn_base_stack_get_image_stage_attributes( array( 'image_presentation' => 'standard' ) ), 'Standard image adds no stage attributes' );
-$expect( '' === $fields['image_row_spacing_mobile_breakpoint']['default_value'] && isset( $fields['image_row_spacing_mobile_breakpoint']['choices']['767'] ), 'Image row spacing keeps the 782px default and offers an independent 767px selection' );
+$expect( ! isset( $fields['image_row_spacing_mobile_breakpoint'] ), 'Image row spacing keeps the 782px default; a 767px switch comes from theme CSS, not a row field' );
 $expect( '' === $fields['gallery_mobile_behavior']['default_value'] && isset( $fields['gallery_mobile_behavior']['choices']['rail'], $fields['gallery_mobile_label'] ), 'Phone gallery rail is opt-in and has an editable accessible name' );
 $expect( '' === $fields['gallery_mobile_start']['default_value'] && isset( $fields['gallery_mobile_start']['choices']['center'] ), 'Phone gallery centering is an opt-in native setting' );
 $expect( 'id' === $fields['image_overlay_media']['return_format'], 'Overlay artwork is an optional editable attachment selection' );
-$expect( '' === $fields['gallery_desktop_behavior']['default_value'] && isset( $fields['gallery_desktop_behavior']['choices']['cropped-wall'], $fields['gallery_desktop_column_width'], $fields['gallery_desktop_image_height'], $fields['gallery_desktop_top_offset'], $fields['gallery_desktop_inline_offset'] ), 'Cropped desktop wall and its dimensions are opt-in native fields' );
+$expect( '' === $fields['gallery_desktop_behavior']['default_value'] && isset( $fields['gallery_desktop_behavior']['choices']['cropped-wall'] ) && ! isset( $fields['gallery_desktop_column_width'], $fields['gallery_desktop_image_height'] ), 'Cropped desktop wall is an opt-in native field; its dimensions use the built-in defaults or theme CSS' );
 $image = get_posts( array( 'post_type' => 'attachment', 'post_mime_type' => 'image', 'post_status' => 'inherit', 'numberposts' => 1, 'fields' => 'ids' ) )[0] ?? 0;
 $expect( $image > 0, 'Local image fixture exists' );
 foreach ( array( '', 'cover', 'unsafe" onclick="bad', array( 'cover' ) ) as $sizing ) {

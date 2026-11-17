@@ -20,36 +20,15 @@ function mrn_base_stack_get_cta_frame_fields( $seed ) {
 		'content_width' => 'Content Maximum Width',
 		'content_gap' => 'Space Between Content Elements',
 		'text_space_before' => 'Space Before Body Text',
-		'text_space_after' => 'Body Text Bottom Padding',
-		'text_space_after_narrow' => 'Small-Screen Body Text Bottom Padding',
-		'heading_space_after_narrow' => 'Space After Heading at 900px',
-		'action_border_width' => 'Button Border Width',
 		'paragraph_space_after' => 'Space After Body Paragraphs',
 		'actions_space_before' => 'Space Before Actions',
 		'action_min_width' => 'Action Minimum Width',
 		'action_icon_height' => 'Action Media Icon Height',
 		'heading_size' => 'Heading Font Size',
-		'heading_size_tablet' => 'Compact Heading Font Size (991px)',
-		'heading_size_mobile' => 'Small Heading Font Size (600px)',
 		'heading_line_height' => 'Heading Line Height',
 		'heading_space_after' => 'Space After Heading',
-		'heading_space_after_tablet' => 'Compact Space After Heading (991px)',
-		'heading_space_after_mobile' => 'Small Space After Heading (600px)',
-		'actions_gap' => 'Gap Between Actions',
-		'actions_gap_tablet' => 'Compact Gap Between Actions (991px)',
-		'actions_gap_mobile' => 'Small Gap Between Actions (600px)',
-		'action_padding_inline' => 'Button Horizontal Padding',
-		'action_padding_block' => 'Button Vertical Padding',
-		'action_padding_inline_mobile' => 'Small Button Horizontal Padding (600px)',
-		'action_padding_block_mobile' => 'Small Button Vertical Padding (600px)',
-		'action_radius' => 'Button Corner Radius',
-		'action_size' => 'Button Font Size',
-		'action_size_mobile' => 'Small Button Font Size (600px)',
-		'action_line_height' => 'Button Line Height',
-		'action_icon_width' => 'Button Media Icon Width',
 		'text_size' => 'Body Font Size',
-		'text_line_height' => 'Body Line Height',
-	) as $name => $label ) {
+		'text_line_height' => 'Body Line Height' ) as $name => $label ) {
 		$fields[] = array(
 			'key' => $seed . '_cta_' . $name, 'name' => 'cta_' . $name, 'label' => $label, 'type' => 'text',
 			'default_value' => '', 'wrapper' => array( 'width' => '50' ),
@@ -62,7 +41,6 @@ function mrn_base_stack_get_cta_frame_fields( $seed ) {
 		'choices' => array( '' => '767px (Default)', '600' => '600px', '767' => '767px', '960' => '960px', '1199' => '1199px' ),
 		'default_value' => '', 'wrapper' => array( 'width' => '50' ),
 	);
-	$fields[] = array( 'key' => $seed . '_cta_row_spacing_mobile_breakpoint', 'name' => 'cta_row_spacing_mobile_breakpoint', 'label' => 'Row Spacing Mobile Breakpoint', 'type' => 'select', 'choices' => array( '' => 'Site Default (782px)', '767' => '767px' ), 'default_value' => '' );
 	$fields[] = array( 'key' => $seed . '_cta_action_unclamped_mobile', 'name' => 'cta_action_unclamped_mobile', 'label' => 'Allow Button Minimum Width on Small Screens', 'type' => 'true_false', 'ui' => 1, 'default_value' => 0, 'instructions' => 'Use the selected button minimum width even when it exceeds the content column at 600px and below. Check the 320px layout before enabling.' );
 	$fields[] = array( 'key' => $seed . '_cta_action_alignment_small', 'name' => 'cta_action_alignment_small', 'label' => 'Button Alignment at 480px', 'type' => 'select', 'choices' => array( '' => 'Use Content Alignment', 'start' => 'Start', 'center' => 'Center', 'end' => 'End' ), 'default_value' => '', 'instructions' => 'Align only the button on narrow screens; heading and body alignment stay unchanged.' );
 	$fields[] = array(
@@ -70,16 +48,13 @@ function mrn_base_stack_get_cta_frame_fields( $seed ) {
 		'type' => 'select', 'choices' => array( '' => 'Start (Default)', 'start' => 'Start', 'center' => 'Center', 'end' => 'End' ),
 		'default_value' => '', 'wrapper' => array( 'width' => '50' ),
 	);
-	$fields[] = array( 'key' => $seed . '_cta_text_space_after_narrow_breakpoint', 'name' => 'cta_text_space_after_narrow_breakpoint', 'label' => 'Body Bottom Padding Breakpoint', 'type' => 'select', 'choices' => array( '' => '900px (Default)', '1199' => '1199px' ), 'default_value' => '' );
 	$fields[] = array( 'key' => $seed . '_cta_action_layout', 'name' => 'cta_action_layout', 'label' => 'Button Label and Icon Flow', 'type' => 'select', 'choices' => array( '' => 'Use Existing Flex Layout', 'inline' => 'Inline Text and Icon' ), 'default_value' => '', 'instructions' => 'Optional for Custom Button Frame. Inline flow keeps the icon with the final text line when a button wraps.' );
 	$fields[] = array( 'key' => $seed . '_cta_paragraph_typography', 'name' => 'cta_paragraph_typography', 'label' => 'Body Paragraph Typography', 'type' => 'select', 'choices' => array( '' => 'Use Existing Paragraph Rules', 'inherit-body' => 'Apply This Body Typography' ), 'default_value' => '', 'instructions' => 'Apply the selected body size and line height to direct body paragraphs, including paragraphs created by the editor. Blank preserves existing paragraph rules.' );
 	$fields[] = array( 'key' => $seed . '_cta_content_fill', 'name' => 'cta_content_fill', 'label' => 'Fill Parent and Align Actions at Bottom', 'type' => 'true_false', 'ui' => 1, 'default_value' => 0, 'instructions' => 'Fill an available parent height and align actions at the bottom. Space Before Actions remains their minimum spacing. Blank retains the current stacked flow.' );
 	$fields[] = array( 'key' => $seed . '_cta_heading_breaks_mobile', 'name' => 'cta_heading_breaks_mobile', 'label' => 'Hide Heading Line Breaks on Small Screens', 'type' => 'true_false', 'ui' => 1, 'default_value' => 0, 'instructions' => 'At 767px and below, allow the heading to wrap naturally instead of forcing authored line breaks. The words remain unchanged.' );
 	$fields[] = array( 'key' => $seed . '_cta_action_frame', 'name' => 'cta_action_frame', 'label' => 'Custom Button Frame', 'type' => 'true_false', 'default_value' => 0, 'ui' => 1, 'instructions' => 'Apply this row’s button dimensions, typography and Site Colors uniformly to button actions. Text links retain their own presentation.' );
-	$fields[] = array( 'key' => $seed . '_cta_action_font', 'name' => 'cta_action_font', 'label' => 'Button Font Family', 'type' => 'select', 'choices' => array( '' => 'Inherit', 'heading' => 'Heading', 'body' => 'Body' ), 'default_value' => '' );
-	$fields[] = array( 'key' => $seed . '_cta_action_weight', 'name' => 'cta_action_weight', 'label' => 'Button Font Weight', 'type' => 'select', 'choices' => array( '' => 'Inherit' ) + array_combine( range( 100, 900, 100 ), range( 100, 900, 100 ) ), 'default_value' => '' );
 	$fields[] = array( 'key' => $seed . '_cta_heading_weight', 'name' => 'cta_heading_weight', 'label' => 'Heading Font Weight', 'type' => 'select', 'choices' => array( '' => 'Use Existing Weight' ) + array_combine( range( 100, 900, 100 ), range( 100, 900, 100 ) ), 'default_value' => '' );
-	foreach ( array( 'heading', 'text', 'action_text', 'action_background', 'action_hover_background', 'action_border', 'action_hover_border' ) as $part ) {
+	foreach ( array( 'heading', 'text' ) as $part ) {
 		$field = mrn_base_stack_get_background_color_field( $seed . '_cta_' . $part . '_color' );
 		$field['name'] = 'cta_' . $part . '_color'; $field['label'] = ucwords( str_replace( '_', ' ', $part ) ) . ' Color'; $fields[] = $field;
 	}

@@ -4,7 +4,7 @@ if ( ! defined( 'WP_CLI' ) || ! WP_CLI || home_url() !== getenv( 'MRN_STACK_TEST
 $checks = array(); $expect = static function ( $ok, $message ) use ( &$checks ) { if ( ! $ok ) { throw new RuntimeException( esc_html( $message ) ); } $checks[] = $message; };
 $image = absint( explode( ',', getenv( 'MRN_CARD_TEST_IMAGE_IDS' ) ?: '' )[0] ); $expect( 'attachment' === get_post_type( $image ), 'Explicit local logo attachment exists' );
 $layouts = array_column( acf_get_field( 'field_mrn_page_content_rows' )['layouts'], null, 'name' ); $fields = array_column( $layouts['logos']['sub_fields'], null, 'name' );
-$expect( isset( $fields['logos_presentation']['choices']['labeled'], $fields['logos_description'], $fields['logos_section_gap_mobile'], $fields['logos_row_spacing_mobile_breakpoint']['choices']['767'] ), 'Native labeled presentation, rich description and responsive frame are registered' );
+$expect( isset( $fields['logos_presentation']['choices']['labeled'], $fields['logos_description'], $fields['logos_section_gap_mobile'] ) && ! isset( $fields['logos_row_spacing_mobile_breakpoint'] ), 'Native labeled presentation, rich description and responsive frame are registered; the row-spacing breakpoint comes from theme CSS' );
 $item_fields = array_column( $fields['logo_items']['sub_fields'], null, 'name' ); $expect( isset( $item_fields['item_label'], $item_fields['image'], $item_fields['links'] ), 'Native logo label preserves existing media/link fields' );
 $props = array( 'logos_content_width' => '1200px', 'logos_inner_gutter' => '24px', 'logos_section_gap' => '80px', 'logos_item_gap_tablet' => '64px', 'logos_label_gap_mobile' => '16px', 'logos_heading_size' => 'var(--site-text-h3-size)', 'logos_text_line_height' => 'var(--site-text-body-2-line)', 'logos_row_spacing_mobile_breakpoint' => '767' );
 $row = array_merge( $props, array( 'acf_fc_layout' => 'logos', 'logos_presentation' => 'labeled', 'display_mode' => 'slider', 'heading' => 'Editable logo comparison', 'logos_description' => '<p>Keep the <a href="/our-work/">description link</a>.</p>', 'logo_items' => array( array( 'item_label' => 'Original <script>literal</script>', 'image' => $image, 'links' => array( array( 'link' => array( 'url' => home_url( '/our-work/' ), 'title' => 'See the work', 'target' => '_blank' ) ) ) ), array( 'item_label' => 'Updated label only', 'image' => 0, 'links' => array() ) ) ) );
@@ -14,7 +14,8 @@ $preserve_parent = static fn( $connect, $attachment_id, $post_id ) => $id === (i
 add_filter( 'acf/connect_attachment_to_post', $preserve_parent, 10, 3 );
 try {
 	update_field( 'field_mrn_page_content_rows', wp_slash( array( $row ) ), $id ); acf_flush_value_cache( $id, 'page_content_rows' ); $saved = get_field( 'page_content_rows', $id )[0];
-	foreach ( $props as $name => $value ) { $expect( $value === $saved[ $name ], 'Native ACF retains ' . $name ); }
+	foreach ( $props as $name => $value ) { if ( isset( $fields[ $name ] ) ) { $expect( $value === $saved[ $name ], 'Native ACF retains ' . $name ); } }
+	$saved = array_merge( $saved, array_diff_key( $row, $saved ) ); // The contract still honors a breakpoint passed directly.
 	$expect( $row['logos_description'] === get_post_meta( $id, 'page_content_rows_0_logos_description', true ) && 2 === count( $saved['logo_items'] ), 'Rich description and ordered label/image items persist' );
 	ob_start(); mrn_base_stack_render_builder_row( $saved, $id, 0 ); $html = ob_get_clean();
 	$expect( str_contains( $html, '--mrn-logos-image-width:' ), 'Intrinsic logo geometry is reserved before lazy loading' );

@@ -23,7 +23,6 @@ foreach ( array( '-1px', '30px;color:red', 'var(--x)', array( '30px' ), '' ) as 
 	$expect( ! in_array( 'has-split-row-gap', $out['classes'], true ) && ! str_contains( $out['attributes']['style'] ?? '', 'row-gap' ), "Unsafe or blank row gap {$i} emits nothing" );
 }
 $fields = mrn_base_stack_get_split_aside_fields( 'field_split' ); $by = array_column( $fields, null, 'name' );
-$modes = array_map( static fn( $c ) => $c[0]['value'], $by['split_row_gap']['conditional_logic'] ?? array() );
-$expect( isset( $by['split_row_gap'] ) && 'text' === $by['split_row_gap']['type'] && array( 'columns', 'bounded' ) === array_column( array_map( static fn( $c ) => $c[0], $by['split_row_gap']['conditional_logic'] ), 'value' ), 'The field is registered for the columns and bounded frames only' );
+$expect( ! isset( $by['split_row_gap'] ), 'The row gap comes from theme CSS; it is not a row field (the contract still validates a gap passed directly)' );
 $expect( count( array_column( $fields, 'name' ) ) === count( array_unique( array_column( $fields, 'name' ) ) ) && count( array_column( $fields, 'key' ) ) === count( array_unique( array_column( $fields, 'key' ) ) ), 'Split field names and keys stay unique' );
 echo json_encode( array( 'result' => 'passed', 'assertions' => $checks ), JSON_PRETTY_PRINT ) . "\n";

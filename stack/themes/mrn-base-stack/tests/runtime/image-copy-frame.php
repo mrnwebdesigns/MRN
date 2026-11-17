@@ -2,7 +2,7 @@
 /** Opt-in responsive frame controls, safe dimensions and unchanged dormant defaults. */
 if ( ! defined( 'WP_CLI' ) || ! WP_CLI || home_url() !== getenv( 'MRN_STACK_TEST_HOME' ) || ! str_ends_with( (string) wp_parse_url( home_url(), PHP_URL_HOST ), '.localhost' ) || ! current_user_can( 'manage_options' ) ) { throw new RuntimeException( 'An explicitly selected local administrator runtime is required.' ); }
 $checks = array(); $expect = static function ( $ok, $label ) use ( &$checks ) { if ( ! $ok ) { throw new RuntimeException( esc_html( $label ) ); } $checks[] = $label; };
-foreach ( array( 'body_text' => array( 'body_inner_gutter_compact', 'body_heading_width', 'body_heading_space_before_mobile' ), 'image_content' => array( 'image_inner_gutter_compact' ) ) as $layout => $names ) {
+foreach ( array( 'body_text' => array( 'body_content_width', 'body_inner_gutter', 'body_heading_space_before' ), 'image_content' => array( 'image_inner_gutter' ) ) as $layout => $names ) {
 	$fields = array_column( mrn_base_stack_get_content_frame_fields( $layout, 'field_mrn_proof_first' ), null, 'name' ); $prefix = mrn_base_stack_get_content_frame_config( $layout )['prefix'];
 	$expect( '' === $fields[ $prefix . '_frame' ]['default_value'], 'Existing default remains dormant: ' . $layout );
 	$first = array_column( $fields, 'key' ); $second = array_column( mrn_base_stack_get_content_frame_fields( $layout, 'field_mrn_proof_second' ), 'key' );
@@ -14,6 +14,7 @@ foreach ( array( 'body_text' => array( 'body_inner_gutter_compact', 'body_headin
 		$expect( array( 'classes' => array(), 'attributes' => array() ) === mrn_base_stack_get_content_frame_contract( array( $name => '15px' ), $layout ), 'Unselected frame ignores dormant input: ' . $name );
 	}
 }
+foreach ( array( 'body_text' => array( 'body_inner_gutter_compact', 'body_heading_width', 'body_heading_space_before_mobile' ), 'image_content' => array( 'image_inner_gutter_compact' ) ) as $layout => $names ) { $expect( ! array_intersect( $names, array_column( mrn_base_stack_get_content_frame_fields( $layout, 'field_mrn_retired_proof' ), 'name' ) ), 'Compact gutters and responsive heading widths come from theme CSS, not row fields: ' . $layout ); }
 $image_fields = array_column( mrn_base_stack_get_content_frame_fields( 'image_content', 'field_mrn_natural_proof' ), null, 'name' );
 $expect( '' === $image_fields['image_media_sizing']['default_value'] && isset( $image_fields['image_media_sizing']['choices']['natural'] ), 'Original proportions are optional and editable' );
 foreach ( array( 'standard', 'scroll-drift' ) as $presentation ) { $contract = mrn_base_stack_get_content_frame_contract( array( 'image_frame' => 'contained', 'image_media_sizing' => 'natural', 'image_presentation' => $presentation ), 'image_content' ); $expect( in_array( 'has-image-natural-media', $contract['classes'], true ), 'Natural sizing supports ' . $presentation ); }

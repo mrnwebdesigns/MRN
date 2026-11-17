@@ -18,6 +18,11 @@ try {
 	$hero = array_column( acf_get_field( 'field_mrn_page_hero_rows' )['layouts'], null, 'name' );
 	$body = array_column( acf_get_field( 'field_mrn_page_content_rows' )['layouts'], null, 'name' );
 	$fields = array_column( $hero['basic_block']['sub_fields'], null, 'name' );
+	// Per-row sizes, spacing, colors and breakpoints the theme's looks now own are not Hero fields. The contract still
+	// honors such values passed in directly, which the render checks below cover by adding them back to saved rows.
+	$retired = array( 'hero_inner_max_width', 'hero_actions_space_before_mobile', 'hero_actions_primary_min_width_mobile', 'hero_action_line_height', 'hero_media_space_after', 'hero_inner_gutter_narrow', 'hero_inner_gutter_small', 'hero_media_column_gap', 'hero_media_row_gap', 'hero_media_radius', 'hero_heading_size_narrow', 'hero_heading_size_mobile', 'hero_heading_line_height_mobile', 'hero_heading_line_height_narrow', 'hero_heading_space_after_narrow', 'hero_actions_space_before_narrow', 'hero_actions_gap_narrow', 'hero_paragraph_space_before', 'hero_lead_size', 'hero_lead_line_height', 'hero_lead_size_mobile', 'hero_lead_line_height_mobile', 'hero_lead_space_after', 'hero_padding_mobile_breakpoint', 'hero_heading_narrow_breakpoint', 'hero_typography_mobile_breakpoint', 'hero_media_stack_breakpoint', 'hero_media_shadow', 'hero_lead_weight', 'hero_lead_transform', 'hero_media_ratio', 'hero_row_spacing_mobile_breakpoint', 'hero_phrase_color', 'hero_lead_color' );
+	$expect( ! array_intersect( $retired, array_keys( $fields ) ), 'Retired Hero styling values are not editable fields' );
+	$with_retired = static function ( $saved, $source ) use ( $retired ) { return array_merge( $saved, array_intersect_key( $source, array_flip( $retired ) ) ); };
 	foreach ( mrn_base_stack_get_hero_frame_fields() as $field ) {
 		$expect( isset( $fields[ $field['name'] ] ) && $fields[ $field['name'] ]['key'] === $field['key'], 'Native editable Hero control: ' . $field['name'] );
 	}
@@ -52,8 +57,9 @@ try {
 	update_field( 'field_mrn_page_hero_rows', array( $row ), $id );
 	$readback = get_field( 'page_hero_rows', $id )[0];
 	foreach ( $row as $name => $value ) {
-		if ( 0 === strpos( $name, 'hero_' ) ) { $expect( $value === $readback[ $name ], 'ACF save/readback preserves ' . $name ); }
+		if ( 0 === strpos( $name, 'hero_' ) && ! in_array( $name, $retired, true ) ) { $expect( $value === $readback[ $name ], 'ACF save/readback preserves ' . $name ); }
 	}
+	$readback = $with_retired( $readback, $row );
 	$render = static function ( $value ) use ( $id ) {
 		ob_start(); get_template_part( 'template-parts/builder/hero', null, array( 'row' => $value, 'post_id' => $id ) ); return ob_get_clean();
 	};
@@ -85,7 +91,8 @@ try {
 		'hero_paragraph_space_before' => '22px', 'hero_lead_size' => '15px', 'hero_lead_line_height' => '36px', 'hero_lead_space_after' => '14px', 'hero_lead_weight' => '600', 'hero_lead_transform' => 'uppercase',
 	) );
 	update_field( 'field_mrn_page_hero_rows', array( $media ), $id ); $saved_media = get_field( 'page_hero_rows', $id )[0];
-	foreach ( $media as $name => $value ) { if ( str_starts_with( $name, 'hero_' ) ) { $expect( $value === $saved_media[ $name ], 'Native media frame persists ' . $name ); } }
+	foreach ( $media as $name => $value ) { if ( str_starts_with( $name, 'hero_' ) && ! in_array( $name, $retired, true ) ) { $expect( $value === $saved_media[ $name ], 'Native media frame persists ' . $name ); } }
+	$saved_media = $with_retired( $saved_media, $media );
 	$media_html = $render( $saved_media );
 	$expect( str_contains( $media_html, 'has-hero-media-stack-breakpoint-900' ) && str_contains( $media_html, '--mrn-hero-media-max-share:40%' ) && str_contains( $media_html, '--mrn-hero-media-ratio:540 / 430' ), 'Native renderer consumes bounded media, ratio and stacking fields' );
 	$expect( str_contains( $media_html, 'font-size:var(--mrn-hero-current-heading-size, clamp(32px, 5vw, 64px))' ) && str_contains( $media_html, '--mrn-hero-heading-size-narrow:clamp(44px, 9vw, 64px)' ), 'Narrow heading override preserves the authored desktop inline fallback' );
@@ -97,7 +104,8 @@ try {
 	$expect( mrn_base_stack_get_hero_image_attributes() === mrn_base_stack_get_hero_media_image_attributes( array( 'hero_media_width' => '422px;bad', 'hero_media_max_share' => '40' ) ) && mrn_base_stack_get_hero_image_attributes() === mrn_base_stack_get_hero_media_image_attributes( array() ), 'Default and malformed media hints retain original priority attributes' );
 	$views = array_merge( $row, array( 'hero_heading_size' => '64px', 'hero_heading_line_height' => '80px', 'hero_heading_size_narrow' => '54px', 'hero_heading_line_height_narrow' => '66px', 'hero_heading_narrow_breakpoint' => '1100', 'hero_heading_size_mobile' => '38px', 'hero_heading_line_height_mobile' => '46px', 'hero_typography_mobile_breakpoint' => '640', 'hero_padding_mobile_breakpoint' => '640' ) );
 	update_field( 'field_mrn_page_hero_rows', array( $views ), $id ); $saved_views = get_field( 'page_hero_rows', $id )[0];
-	foreach ( $views as $name => $value ) { if ( str_starts_with( $name, 'hero_' ) ) { $expect( $value === $saved_views[ $name ], 'Responsive type view persists ' . $name ); } }
+	foreach ( $views as $name => $value ) { if ( str_starts_with( $name, 'hero_' ) && ! in_array( $name, $retired, true ) ) { $expect( $value === $saved_views[ $name ], 'Responsive type view persists ' . $name ); } }
+	$saved_views = $with_retired( $saved_views, $views );
 	$views_html = $render( $saved_views );
 	$expect( str_contains( $views_html, 'has-hero-heading-narrow-breakpoint-1100' ) && str_contains( $views_html, 'has-hero-typography-mobile-breakpoint-640' ) && str_contains( $views_html, 'has-hero-padding-mobile-breakpoint-640' ), 'Independent type and vertical-padding choices render only on the selected Hero' );
 	$expect( str_contains( $views_html, '--mrn-hero-heading-size-mobile:38px' ) && str_contains( $views_html, '--mrn-hero-heading-line-height-mobile:46px' ) && str_contains( $views_html, 'font-size:var(--mrn-hero-current-heading-size, 64px)' ) && ! str_contains( $views_html, 'var(--mrn-hero-current-heading-size, var(' ), 'Mobile and narrow overrides share one desktop inline fallback' );
