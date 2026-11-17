@@ -221,8 +221,8 @@ class Controller:
         if phase == 'proof':
             self.prove(request, state)
             return
-        if phase == 'activate':
-            self.require_backup(request, state['backup'], fresh=True)
+        if phase == 'activate' and not self.check_activation_backup(request, state):
+            raise Blocked('Verified backup is unavailable or expired; run backup before activation')
         if phase == 'migrate' and state['selected_migrations']:
             self.require_backup(request, state['backup'])
         if phase == 'migrate' and state['selected_migrations']:
@@ -279,10 +279,19 @@ class Controller:
                 'remote_verified': backup.get('remote_verified') is True, 'purpose': purpose,
                 'verified_at': backup['verified_at']}
 
+    def backup_available(self, request, backup, *, fresh=False):
+        return (backup is not None and (not fresh or self.fresh(backup))
+                and self.adapter.verify_backup(request, backup) is True)
+
     def require_backup(self, request, backup, *, fresh=False):
-        if (not backup or (fresh and not self.fresh(backup))
-                or self.adapter.verify_backup(request, backup) is not True):
+        if not self.backup_available(request, backup, fresh=fresh):
             raise Blocked('Verified backup is unavailable or expired; inspect the backup before proceeding')
+
+    def check_activation_backup(self, request, state):
+        if self.backup_available(request, state['backup'], fresh=True):
+            return True
+        self.event(state, 'backup', 'rejected', diagnostic='Backup unavailable or expired before activation')
+        return False
 
     def do_backup(self, request, state, current, fence, package):
         state['backup'] = self.backup_for(request, state, 'backup', 'deploy', fence)
@@ -386,6 +395,7 @@ class Controller:
         intents = {name: state['phases'][name] for name in interrupted}
         if self.adapter.quiescent(request, intents, current) is not True:
             raise Blocked('Provider work is still active or unknown; resolve it before recovery')
+        current = self.observed()
         phase = interrupted[-1] if interrupted else None
         if phase in ('activate', 'rollback'):
             expected = {state['baseline'], state['desired']}
@@ -394,8 +404,12 @@ class Controller:
         if current not in expected:
             raise Blocked('The current release is outside the recovery receipt; investigate target drift')
         if phase == 'activate':
-            self.require_backup(request, state['backup'])
-            result = 'passed' if current == state['desired'] else 'reconciled'
+            if current == state['baseline']:
+                self.check_activation_backup(request, state)
+                result = 'reconciled'
+            else:
+                self.require_backup(request, state['backup'])
+                result = 'passed'
             self.event(state, phase, result, observed_release=current, recovered=True)
         elif phase == 'rollback':
             # Selecting the baseline is only one part of rollback. Re-enter

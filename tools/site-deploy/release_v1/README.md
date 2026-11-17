@@ -62,7 +62,7 @@ Follow `next_command` in status, substituting the original trusted request and a
 | --- | --- |
 | Proof failed or throttled | Fix the proof condition or wait until the recorded `retry_not_before` Unix timestamp, then rerun `proof` with the same request. It needs no artifact. |
 | Stale lock or interrupted phase | The original run owner runs `recover --confirm-target <origin>` after checking provider jobs. Recovery keeps the lock ID. An already switched release proceeds to proof. |
-| Backup expired before activation | Run `backup` for the same request before activating. Before migration the original restore point must still be recoverable. |
+| Backup expired or disappeared before activation | Run `backup` for the same request before activating. After an interrupted activation, `recover` checks that the provider has settled and reads the active release again. The baseline can proceed with a new verified backup. An already switched release still requires its original restore point. |
 | Target drift or identity unavailable | Reconcile provider identity and the pointer against the retained receipts. The journal stays locked. |
 | Cancel before activation | Run `abort --confirm-target <origin>` once status shows no interrupted work. |
 | Rollback before any selected content attempt | Run `rollback --confirm-target <origin>`. It takes a fresh rollback backup, compare-and-switches to the retained release, refreshes scoped paths and verifies the previous release. |

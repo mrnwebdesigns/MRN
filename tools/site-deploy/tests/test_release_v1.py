@@ -12,6 +12,7 @@ import sys
 import tarfile
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from PIL import Image
 
@@ -137,6 +138,7 @@ class Adapter:
         self.calls = []
         self.prior_content = {}
         self.fail_proof = []
+        self.fail_before_switch = False
         self.fail_after_switch = False
         self.fail_after_restore = False
         self.unknown_provider_job = False
@@ -166,6 +168,8 @@ class Adapter:
 
     def activate(self, request, code, manifest, current, backup, fence):
         self.calls.append('activate')
+        if self.fail_before_switch:
+            raise SystemExit(12)
         self.release = manifest['code_sha256']
         if self.fail_after_switch:
             # Simulate an abrupt process exit, leaving the durable intent alone.
@@ -285,6 +289,64 @@ class Phases(Project):
         self.run_phase('proof')
         self.assertEqual(self.adapter.calls, ['preflight', 'backup:deploy', 'activate', 'proof'])
 
+    def test_interrupted_activation_at_baseline_can_replace_lost_backup(self):
+        self.run_phase('preflight')
+        receipt = self.run_phase('backup')
+        original_nonce = receipt['backup']['nonce']
+        self.adapter.fail_before_switch = True
+        with self.assertRaises(SystemExit):
+            self.run_phase('activate')
+        self.adapter.available_backup = False
+        self.assertEqual(self.controller.status()['next'], 'recover')
+        recovered = self.run_phase('recover', confirmed=self.target.origin)
+        self.assertEqual((recovered['current_release'], recovered['next']), (BASELINE, 'backup'))
+        self.assertEqual(recovered['lock_id'], receipt['lock_id'])
+        self.assertEqual(recovered['phases']['backup']['result'], 'rejected')
+        self.assertEqual(recovered['phases']['backup']['backup_nonce'], original_nonce)
+        with self.assertRaisesRegex(Blocked, 'backup phase first'):
+            self.run_phase('activate')
+        self.adapter.available_backup = True
+        replacement = self.run_phase('backup')
+        self.assertNotEqual(replacement['backup']['nonce'], original_nonce)
+        self.adapter.fail_before_switch = False
+        self.assertEqual(self.run_phase('activate')['next'], 'proof')
+
+    def test_interrupted_activation_after_switch_keeps_original_backup_gate(self):
+        self.run_phase('preflight')
+        original_nonce = self.run_phase('backup')['backup']['nonce']
+        self.adapter.fail_after_switch = True
+        with self.assertRaises(SystemExit):
+            self.run_phase('activate')
+        self.adapter.available_backup = False
+        with self.assertRaisesRegex(Blocked, 'Verified backup is unavailable'):
+            self.run_phase('recover', confirmed=self.target.origin)
+        with self.assertRaisesRegex(Blocked, 'requires recovery'):
+            self.run_phase('backup')
+        self.assertEqual(self.controller.status()['backup']['nonce'], original_nonce)
+        self.adapter.available_backup = True
+        self.assertEqual(self.run_phase('recover', confirmed=self.target.origin)['next'], 'proof')
+        self.assertEqual(self.adapter.calls.count('backup:deploy'), 1)
+
+    def test_recovery_reads_release_after_provider_finishes_switching(self):
+        self.run_phase('preflight')
+        self.run_phase('backup')
+        self.adapter.fail_before_switch = True
+        with self.assertRaises(SystemExit):
+            self.run_phase('activate')
+        self.adapter.available_backup = False
+
+        def finish_provider_job(request, intents, current):
+            self.assertEqual(current, BASELINE)
+            self.adapter.release = self.receipt['code_sha256']
+            return True
+
+        with patch.object(self.adapter, 'quiescent', side_effect=finish_provider_job):
+            with self.assertRaisesRegex(Blocked, 'Verified backup is unavailable'):
+                self.run_phase('recover', confirmed=self.target.origin)
+        status = self.controller.status()
+        self.assertEqual((status['current_release'], status['next']), (self.receipt['code_sha256'], 'recover'))
+        self.assertEqual(status['phases']['backup']['result'], 'passed')
+
     def test_stale_lock_preserves_owner_and_status_is_read_only(self):
         active = self.run_phase('preflight')
         self.advance(61)
@@ -357,6 +419,7 @@ class Phases(Project):
         with self.assertRaisesRegex(Blocked, 'Verified backup is unavailable'):
             self.run_phase('activate')
         self.assertNotIn('activate', self.adapter.calls)
+        self.assertEqual(self.controller.status()['next'], 'backup')
         receipt = json.loads(self.journal.active.read_text())
         receipt['data']['owner'] = 'other'
         self.journal.active.write_text(json.dumps(receipt))
