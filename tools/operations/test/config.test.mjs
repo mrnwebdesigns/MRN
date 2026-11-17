@@ -66,6 +66,17 @@ test('private callback configuration reuses Google and content authority without
   assert.equal(existsSync(f.config.stateDir), false);
 });
 
+test('read-only launch configuration rejects writes, raw REST and private worker setup before opening state', t => {
+  const f = fixture(t); f.config.readOnlySurface = true; f.save();
+  assert.equal(loadConfig(f.file).config.readOnlySurface, true);
+  assert.equal(f.run('main.mjs').status, 1, 'Missing Safe Mode must prevent startup.');
+  assert.equal(existsSync(f.config.stateDir), false);
+  for (const [key, value] of Object.entries({ writesEnabled: true, content: { restKeyEnv: 'FIXTURE_REST_TOKEN' }, contentAccess: true })) {
+    f.config[key] = value; f.save(); assert.throws(() => loadConfig(f.file)); delete f.config[key];
+  }
+  delete f.config.delegation; f.save(); assert.throws(() => loadConfig(f.file));
+});
+
 for (const failure of ['no-content', 'no-google', 'wrong-origin', 'non-boolean']) {
   test(`private callback ${failure} is rejected before startup creates state`, t => {
     const f = fixture(t, ['content']); f.config.contentAccess = true;

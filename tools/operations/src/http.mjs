@@ -3,7 +3,7 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import { createMcp } from './mcp.mjs';
 import { OpsError, requireThat, safeError } from './contracts.mjs';
 import { oauthChallenge } from './auth.mjs';
-import { operationsScopes } from './scopes.mjs';
+import { operationsScope, operationsScopes } from './scopes.mjs';
 import { accessVetoPath, managementAccessVetoPath } from './content-access.mjs';
 import { existingManagementAccessPath } from './existing-management-access.mjs';
 import { delegationCanonical, delegationIssuer } from './delegation.mjs';
@@ -27,6 +27,8 @@ async function readBody(req, { limit = 65536, canonical = false } = {}) {
 }
 export function createHttpServer({ service, authenticate, publicUrl, issuer, origins = [], accessVeto = null, managementAccessVeto = null, existingManagementAccessVeto = null, managementEvidence = null, managementWorker = null, existingManagementWorker = null, existingWorkerBootstrap = null, managementSource = null, managementSourceContext = null }) {
   const canonical = new URL(publicUrl); const rate = new Map(); let active = 0;
+  requireThat(!service?.readOnlySurface || !(accessVeto || managementAccessVeto || existingManagementAccessVeto || managementEvidence || managementWorker || existingManagementWorker || existingWorkerBootstrap || managementSource || managementSourceContext),
+    'AUTH_CONFIG', 'Private write and worker routes are excluded from the read-only launch.');
   requireThat(!(accessVeto || managementAccessVeto || existingManagementAccessVeto || managementEvidence || managementWorker || existingManagementWorker || existingWorkerBootstrap || managementSource || managementSourceContext) || canonical.origin === delegationIssuer, 'ACCESS_TRANSPORT', 'Private access callbacks require the fixed MRN gateway origin.');
   let controlActive = 0, controlCount = 0, controlUntil = 0;
   let evidenceActive = 0, evidenceCount = 0, evidenceUntil = 0;
@@ -43,7 +45,7 @@ export function createHttpServer({ service, authenticate, publicUrl, issuer, ori
       requireThat(req.headers.host === canonical.host, 'HOST_DENIED', 'Unexpected Host header.');
       requireThat(!req.headers.origin || origins.includes(req.headers.origin), 'ORIGIN_DENIED', 'Origin is not allowed.');
       if (req.method === 'GET' && ['/.well-known/oauth-protected-resource', '/.well-known/oauth-protected-resource/mcp'].includes(req.url)) {
-        return json(res, 200, { resource: publicUrl, authorization_servers: [issuer], scopes_supported: operationsScopes, bearer_methods_supported: ['header'] });
+        return json(res, 200, { resource: publicUrl, authorization_servers: [issuer], scopes_supported: service?.readOnlySurface ? [operationsScope] : operationsScopes, bearer_methods_supported: ['header'] });
       }
       if (req.method === 'GET' && req.url === '/healthz') return json(res, 200, { status: 'ok', version: '0.1.0' });
       if (managementSource && sourcePath(req.url)) {

@@ -9,6 +9,7 @@ export const detailSections = Object.freeze({
   backup_policy: toolNames.backupPolicy, deployment_agent: toolNames.deploymentAgent,
   stack_runtime: toolNames.runtime, stack_qualification: toolNames.qualify,
 });
+export const readOnlyDetailSections = Object.freeze(['plugins', 'themes', 'updates', 'security']);
 export const portfolioSections = Object.freeze({ sites: 'list_sites_v1', clients: 'list_clients_v1', client: 'get_client_v1', client_sites: 'get_client_sites_v1',
   client_costs: 'get_client_costs_v1', client_site_count: 'count_client_sites_v1', client_count: 'count_clients_v1',
   tags: 'list_tags_v1', tag: 'get_tag_v1', tag_sites: 'get_tag_sites_v1', tag_clients: 'get_tag_clients_v1', site_count: 'count_sites_v1',
@@ -103,15 +104,18 @@ export async function portfolioDetails(client, authorize, { section, recordId, p
         : 'Portfolio directory information. Site inventory and health require an exact-site fresh inspection.' };
 }
 
-export async function websiteDetails(session, section) {
+export async function websiteDetails(session, section, cached = false) {
   requireThat(Object.hasOwn(detailSections, section), 'CAPABILITY_DENIED', 'Choose one supported website detail section.');
-  const site = await session.fresh();
+  requireThat(!cached || readOnlyDetailSections.includes(section), 'CAPABILITY_DENIED', 'Choose an inventory section on the read-only release.');
+  const site = cached ? await session.resolveSite({ inventoryTimestamp: true }) : await session.fresh();
   const tool = detailSections[section];
   const provider = tool.startsWith('mrn_mainwp__');
   const args = section === 'ignored_updates' ? { site_ids_or_domains: [site.id] }
     : provider ? { site_id: site.id } : { site_id_or_domain: site.id };
   if (section === 'google_fonts') args.check_frontend = true;
   const raw = await session.call(tool, args);
+  if (cached) requireThat(raw?.site_id === site.id && (!raw.site_url || [site.url, site.url + '/'].includes(raw.site_url)),
+    'TARGET_MISMATCH', 'The Dashboard inventory returned a different site.');
   const data = section === 'updates' ? updateEvidence(raw, site.id, site.url) : withoutSecrets(raw);
-  return { site, section, observedAt: new Date().toISOString(), data };
+  return { site, section, observedAt: new Date().toISOString(), ...(cached ? { inventorySource: 'dashboard_cache' } : {}), data };
 }

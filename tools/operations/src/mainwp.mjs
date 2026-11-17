@@ -144,8 +144,8 @@ export async function connectMainwp(config, environment = process.env) {
 // This is the ONLY MainWP access surface given to workflow adapters. The service
 // credential's broad access never replaces the requesting person's permissions.
 export class MainwpSession {
-  constructor(client, registry, store, actor, target, { action = 'read', operation = '', onMutation = () => {}, checkAdmission = () => {} } = {}) {
-    Object.assign(this, { client, registry, store, actor, target, action, operation, onMutation, checkAdmission });
+  constructor(client, registry, store, actor, target, { action = 'read', operation = '', onMutation = () => {}, checkAdmission = () => {}, allowSync = true } = {}) {
+    Object.assign(this, { client, registry, store, actor, target, action, operation, onMutation, checkAdmission, allowSync });
     this.siteId = null; this.names = null;
   }
   authorize() { this.registry.current(this.actor, this.target, this.action); this.checkAdmission(); }
@@ -174,6 +174,8 @@ export class MainwpSession {
   async supports(name) { if (!this.names) await this.listTools(); return this.names.has(name); }
   async callTool(request, schema, options) {
     const { name, arguments: args } = request;
+    requireThat(this.allowSync || (readTools.has(name) && name !== toolNames.sync && name !== toolNames.qualify),
+      'CAPABILITY_DENIED', 'The read-only release does not sync inventory or dispatch qualification or changes.');
     requireThat(Object.values(toolNames).includes(name), 'CAPABILITY_DENIED', 'This downstream capability is not admitted by MRN Operations.');
     requireThat(await this.supports(name), 'CAPABILITY_MISSING', 'The connected MainWP service does not expose this required capability.');
     await this.readResource({ uri: 'mainwp://status' });
@@ -223,9 +225,10 @@ export class MainwpSession {
     return result;
   }
   async call(name, args, options) { return payload(await this.callTool({ name, arguments: args }, undefined, options)); }
-  async resolveSite() {
-    await this.call(toolNames.site, { site_id_or_domain: this.target.url, include_stats: false });
-    return { id: this.siteId, url: this.target.url };
+  async resolveSite({ inventoryTimestamp = false } = {}) {
+    const value = await this.call(toolNames.site, { site_id_or_domain: this.target.url, include_stats: false });
+    const at = Date.parse(value.last_sync);
+    return { id: this.siteId, url: this.target.url, ...(inventoryTimestamp ? { syncedAt: Number.isFinite(at) && at <= Date.now() + 60000 ? new Date(at).toISOString() : null } : {}) };
   }
   async fresh() {
     await this.resolveSite();

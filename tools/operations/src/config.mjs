@@ -17,7 +17,7 @@ export const configSchema = z.object({
   registryPath: absolute.optional(), policyPath: absolute, qualificationsPath: absolute, stateDir: absolute, repositoryRoot: absolute,
   discovery: z.object({ localHubRoots: z.array(absolute).max(10).default([]) }).strict().optional(),
   recoveryEvidencePath: absolute.optional(),
-  artifactRoots: z.array(absolute).min(1), writesEnabled: z.boolean().default(false),
+  artifactRoots: z.array(absolute).min(1), writesEnabled: z.boolean().default(false), readOnlySurface: z.boolean().default(false),
   sourceRepositories: z.record(z.string(), absolute),
   delegation: z.object({ keyId: z.string().regex(/^[A-Za-z0-9_-]{1,64}$/), privateKeyPath: absolute }).strict().optional(),
   content: z.object({ restKeyEnv: z.string().regex(/^[A-Z][A-Z0-9_]*$/) }).strict().optional(),
@@ -31,6 +31,9 @@ export const configSchema = z.object({
     envRefs: z.record(z.string(), z.object({ env: z.string() }).strict()) }).strict(),
   qa: z.object({ executable: absolute }).strict().optional(),
 }).strict().refine(config => config.auth.audience === config.publicUrl, { path: ['auth', 'audience'], message: 'The access-token audience must equal the published MCP resource URL.' })
+  .refine(config => !config.readOnlySurface || Boolean(config.auth.googleWorkspace && config.delegation && !config.writesEnabled
+    && !config.github && !config.contentAccess && !config.emailAudit && !config.content),
+  { path: ['readOnlySurface'], message: 'The read-only release needs signed individual Google delegation and excludes write, raw REST, audit-export and worker capabilities.' })
   .refine(config => Boolean(config.delegation) === Boolean(config.auth.googleWorkspace) && (!config.auth.googleWorkspace || config.auth.verifiedEmailClaims),
     { path: ['delegation'], message: 'Google-only membership and request delegation must be enabled together with verified resource-bound claims.' })
   .refine(config => !config.content || Boolean(config.auth.googleWorkspace),

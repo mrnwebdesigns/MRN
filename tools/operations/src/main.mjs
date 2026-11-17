@@ -9,7 +9,7 @@ import { QaAdapter } from './qa.mjs';
 import { createAuthenticator } from './auth.mjs';
 import { createHttpServer } from './http.mjs';
 import { Qualifications } from './qualification.mjs';
-import { readJson } from './contracts.mjs';
+import { readJson, requireThat } from './contracts.mjs';
 import { RecoveryEvidence } from './recovery.mjs';
 import { Discovery } from './discovery.mjs';
 import { IdentitySigner, readIdentityKey } from './delegation.mjs';
@@ -27,13 +27,15 @@ process.umask(0o077);
 let store, contentAccess;
 try {
   const { config, registry, workflowPolicies } = loadConfig(process.env.MRN_OPERATIONS_CONFIG || '/etc/mrn-operations/service.json');
+  requireThat(!config.readOnlySurface || process.env[config.mainwp.envRefs.MAINWP_SAFE_MODE?.env] === 'true',
+    'MAINWP_CONFIG', 'The read-only launch requires MainWP Safe Mode.');
+  const identity = config.delegation ? { ...config.delegation, privateKey: readIdentityKey(config.delegation.privateKeyPath) } : null;
+  const signer = identity ? new IdentitySigner({ ...identity, connectionId: config.auth.googleWorkspace.connectionId }) : null;
   store = new Store(join(config.stateDir, 'operations.sqlite'));
   const qualifications = new Qualifications(() => readJson(config.qualificationsPath));
   const fleet = new FleetAdapter({ root: config.repositoryRoot, stateDir: config.stateDir, artifactRoots: config.artifactRoots, sourceRepositories: config.sourceRepositories, publicProbe: probe, qualifications });
   const qa = config.qa ? new QaAdapter({ ...config.qa, stateDir: config.stateDir, registry, store }) : null;
   const recoveryEvidence = config.recoveryEvidencePath ? new RecoveryEvidence(() => readJson(config.recoveryEvidencePath)) : null;
-  const identity = config.delegation ? { ...config.delegation, privateKey: readIdentityKey(config.delegation.privateKeyPath) } : null;
-  const signer = identity ? new IdentitySigner({ ...identity, connectionId: config.auth.googleWorkspace.connectionId }) : null;
   const connect = async actor => {
     const client = await connectMainwp(config.mainwp);
     return signer ? new DelegatedMainwpClient(client, actor, signer) : client;
@@ -45,7 +47,8 @@ try {
   };
   const discovery = config.discovery ? new Discovery({ registry, store, connect, ...config.discovery }) : null;
   const content = config.content ? new NativeContentReader({ token: () => process.env[config.content.restKeyEnv] }) : null;
-  const service = new Operations({ registry, store, fleet, qa, recoveryEvidence, discovery, content, verifyStaff: signer ? verifyStaff : null, publicProbe: probe, writesEnabled: config.writesEnabled, connect });
+  const service = new Operations({ registry, store, fleet, qa, recoveryEvidence, discovery, content, verifyStaff: signer ? verifyStaff : null, publicProbe: probe,
+    writesEnabled: config.writesEnabled, readOnlySurface: config.readOnlySurface, connect });
   if (config.emailAudit) service.emailAudit = new EmailAuditWorkflow({ registry, store, connect, engine: await loadEmailAuditEngine(config.emailAudit) });
   if (config.github) {
     const github = new GithubApp({ ...config.github, privateKey: readGithubKey(config.github.privateKeyPath) });

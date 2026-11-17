@@ -20,9 +20,9 @@ export class Store {
   close() { this.db.close(); }
   audit(actor, target, operation, event, outcome) {
     // Never store tool arguments, response bodies, JWTs, passwords, confirmation tokens or backup receipts.
-    this.db.prepare('INSERT INTO audit(time,subject,target,operation,event,outcome,identity) VALUES(?,?,?,?,?,?,?)')
+    return this.db.prepare('INSERT INTO audit(time,subject,target,operation,event,outcome,identity) VALUES(?,?,?,?,?,?,?)')
       .run(new Date().toISOString(), actor.subject, targetKey(target), operation || '', event, outcome,
-        JSON.stringify(actor.identityProvider === 'google-oauth2' ? { googleSubject: actor.googleSubject, email: actor.verifiedEmail, provider: actor.identityProvider } : {}));
+        JSON.stringify(actor.identityProvider === 'google-oauth2' ? { googleSubject: actor.googleSubject, email: actor.verifiedEmail, provider: actor.identityProvider } : {})).lastInsertRowid;
   }
   get(id) { const row = this.db.prepare('SELECT body FROM records WHERE id=?').get(id); requireThat(row, 'NOT_FOUND', 'Record not found.'); return JSON.parse(row.body); }
   save(record) {

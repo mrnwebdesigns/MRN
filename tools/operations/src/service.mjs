@@ -11,15 +11,16 @@ import { acfScalar } from './content.mjs';
 import { managementCall } from './content-management-contract.mjs';
 
 export class Operations {
-  constructor({ registry, store, connect, fleet, publicProbe, writesEnabled = false, qa = null, recoveryEvidence = null, discovery = null, content = null, verifyStaff = null }) {
-    Object.assign(this, { registry, store, connect, fleet, publicProbe, writesEnabled, qa, recoveryEvidence, discovery, content, verifyStaff }); this.jobs = new Map();
+  constructor({ registry, store, connect, fleet, publicProbe, writesEnabled = false, readOnlySurface = false, qa = null, recoveryEvidence = null, discovery = null, content = null, verifyStaff = null }) {
+    requireThat(!readOnlySurface || (!writesEnabled && registry.approvedTeam && typeof verifyStaff === 'function'), 'AUTH_CONFIG', 'The read-only surface requires existing individual Google verification and disabled writes.');
+    Object.assign(this, { registry, store, connect, fleet, publicProbe, writesEnabled, readOnlySurface, qa, recoveryEvidence, discovery, content, verifyStaff }); this.jobs = new Map();
   }
   async session(actor, target, action, operation = '', onMutation, checkAdmission) {
     this.registry.current(actor, target, action);
     checkAdmission?.();
     requireThat(target.management === 'mainwp', 'ROUTE_UNAVAILABLE', 'This environment uses a documented dedicated route; MainWP is not required or used.');
     const client = await this.connect(actor);
-    return new MainwpSession(client, this.registry, this.store, actor, target, { action, operation, onMutation, checkAdmission });
+    return new MainwpSession(client, this.registry, this.store, actor, target, { action, operation, onMutation, checkAdmission, allowSync: !this.readOnlySurface });
   }
   view(record) {
     if (record.type === 'inspection') return { ...record, target: this.targetView(record.target) };
@@ -60,7 +61,12 @@ export class Operations {
         record.status === 'reconciled' ? 'Current code was reconciled; the original execution and backup are not retrospectively verified. Any new change needs a fresh plan and its normal gates.' : undefined };
   }
   targetView(t) { return { websiteId: t.websiteId, name: t.name, environment: t.environment, url: t.url }; }
-  get(actor, id) { const record = this.store.get(id); this.registry.authorize(actor, record.target, 'read'); return this.view(record); }
+  get(actor, id) {
+    const record = this.store.get(id);
+    this.registry.authorize(actor, record.target, 'read');
+    requireThat(!this.readOnlySurface || record.type === 'inspection', 'NOT_FOUND', 'Only saved inspections are exposed on this release.');
+    return this.view(record);
+  }
   async refreshOperation(actor, id) {
     const record = this.store.get(id);
     const authorize = async () => {
@@ -118,14 +124,14 @@ export class Operations {
     await this.discovery?.refresh(actor);
     const target = this.registry.resolve(actor, website, environment);
     const session = await this.session(actor, target, 'read');
-    try { return await websiteDetails(session, section); } finally { await session.close(); }
+    try { return await websiteDetails(session, section, this.readOnlySurface); } finally { await session.close(); }
   }
   async readContent(actor, { website, environment, kind, recordId, search, maximum, page, statuses }) {
     await this.discovery?.refresh(actor);
     const target = this.registry.resolve(actor, website, environment);
     const session = await this.session(actor, target, 'read');
     try {
-      const site = await session.fresh();
+      const site = this.readOnlySurface ? await session.resolveSite() : await session.fresh();
       this.store.audit(actor, target, '', 'content:read', 'attempted');
       const authorize = async () => { this.registry.current(actor, target, 'read'); await this.verifyStaff?.(actor); };
       let result;
@@ -136,7 +142,7 @@ export class Operations {
       } else {
         // Only absent capability permits the existing native REST reader. A
         // failed or denied management call never switches routes/credentials.
-        requireThat(this.content, 'CONTENT_UNAVAILABLE', 'The central MainWP content integration is not configured.');
+        requireThat(!this.readOnlySurface && this.content, 'CONTENT_UNAVAILABLE', 'The approved structured MainWP reader does not expose this content operation.');
         requireThat((page === undefined || page === 1) && statuses === undefined,
           'CAPABILITY_MISSING', 'Content pagination and status filters require the structured MainWP adapter.');
         result = recordId === undefined ? await this.content.search(site, kind, search, maximum, authorize)
@@ -161,7 +167,7 @@ export class Operations {
     try {
       await authorize();
       session = await this.session(actor, target, 'read');
-      const result = await codeInspection(session, path, { includeContent });
+      const result = await codeInspection(session, path, { includeContent: this.readOnlySurface ? false : includeContent });
       await authorize();
       this.store.audit(actor, target, '', 'code:read', 'returned');
       return result;
@@ -200,7 +206,7 @@ export class Operations {
   async history(actor, query, environment) {
     await this.discovery?.refresh(actor);
     const target = this.registry.resolve(actor, query, environment);
-    return this.store.history(target).map(r => this.view(r));
+    return this.store.history(target, this.readOnlySurface ? 'inspection' : undefined).map(r => this.view(r));
   }
   async inspect(actor, { website, environment }) {
     await this.discovery?.refresh(actor);
@@ -208,7 +214,7 @@ export class Operations {
     try {
       if (target.management === 'mainwp') session = await this.session(actor, target, 'read');
       const result = await inspectTarget({ target, session, catalog: this.fleet.catalog(), publicProbe: this.publicProbe,
-        authorize: () => this.registry.current(actor, target, 'read'), previous: this.store.history(target, 'inspection')[0] });
+        authorize: () => this.registry.current(actor, target, 'read'), previous: this.store.history(target, 'inspection')[0], cached: this.readOnlySurface });
       this.registry.current(actor, target, 'read');
       result.findings = result.findings.map(f => ({ ...f, id: randomUUID() }));
       const record = this.store.create('inspection', actor, target, result);

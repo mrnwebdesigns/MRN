@@ -2,6 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { generateKeyPairSync, randomBytes, randomUUID, verify } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
+import { createServer } from 'node:net';
+import { exportJWK, generateKeyPair, createLocalJWKSet, SignJWT } from 'jose';
 import { IdentitySigner, delegationDigest, delegationPrefix } from '../src/delegation.mjs';
 import { DelegatedMainwpClient, delegationTools, qualificationQueueTool } from '../src/delegated-mainwp.mjs';
 import { Store } from '../src/store.mjs';
@@ -9,6 +13,11 @@ import { accessRegistry } from './fixtures/access-registry.mjs';
 import { ContentAccessLedger } from '../src/content-access-store.mjs';
 import { ManagementAccessLedger } from '../src/content-management-access-store.mjs';
 import { managementAccessFixture } from './fixtures/management-access.mjs';
+import { setup } from './helpers.mjs';
+import { Operations } from '../src/service.mjs';
+import { createHttpServer } from '../src/http.mjs';
+import { createAuthenticator } from '../src/auth.mjs';
+import { digest } from '../src/contracts.mjs';
 
 const response = value => ({ content: [{ type: 'text', text: JSON.stringify(value) }] });
 function fixture() {
@@ -47,7 +56,7 @@ function fixture() {
       assert.equal(args.ability, claims.ability); assert.equal(delegationDigest(JSON.parse(args.arguments_json)), claims.arguments_sha256);
       state.dispatched.push({ person, ability: args.ability, args: JSON.parse(args.arguments_json) });
       const result = { schema: 1, request_id: claims.request_id, ability: args.ability, actor: person, result: { id: 85 }, policy_sha256: claims.policy_sha256 };
-      state.corrupt?.(result); return response(result);
+      state.corrupt?.(result, JSON.parse(args.arguments_json)); return response(result);
     },
   };
   return { state, actor, client, signer, delegated: id => new DelegatedMainwpClient(client, actor(id), signer) };
@@ -62,6 +71,119 @@ test('structured content reads use signed per-person read wrappers without grant
   assert.deepEqual(f.state.dispatched.map(row => row.ability), ['mrn-mainwp/list-content-records-v1', 'mrn-mainwp/read-content-record-v1']);
   assert.ok(!f.state.calls.includes(delegationTools.run));
   await assert.rejects(() => client.callTool({ name: 'mrn_mainwp__execute_content_edit_v1', arguments: {} }), { code: 'INSUFFICIENT_SCOPE' });
+});
+
+test('consolidated MCP uses the exact individual for reads and receipts without syncing or dispatching changes', async t => {
+  const f = fixture(), local = setup({ approvedTeam: true });
+  t.after(local.close);
+  const people = { a: f.actor('111'), b: f.actor('222') };
+  local.policy.members = Object.values(people).map(p => ({ subject: p.subject, enabled: true, grants: [] }));
+  const snapshots = JSON.parse(readFileSync(new URL('./fixtures/content-management-v1.json', import.meta.url))).cases[0].read;
+  const site = { id: 1, url: local.state.url };
+  Object.assign(snapshots.snapshot, { site_id: site.id, site_url: site.url });
+  snapshots.snapshot_sha256 = delegationDigest(snapshots.snapshot);
+  const update = { site_id: site.id, site_url: site.url, updates: [{ type: 'plugin', name: 'Fixture plugin', slug: 'fixture/fixture.php', current_version: '1.0', new_version: '1.1' }],
+    summary: { core: 0, plugins: 1, themes: 0, translations: 0, total: 1 } };
+  let dropContent = false, wrongPerson = false, oversize = false, wrongRecord = false, denyDuringChecksum = false;
+  const listed = f.client.listTools.bind(f.client);
+  f.client.listTools = async () => ({ tools: [...(await listed()).tools,
+    ...['get_site_v1', 'get_site_plugins_v1', 'get_site_themes_v1', 'get_site_updates_v1', 'get_site_security_v1',
+      'mrn_mainwp__inspect_code_file_v1', ...(!dropContent ? ['mrn_mainwp__list_content_records_v1', 'mrn_mainwp__read_content_record_v1'] : [])].map(name => ({ name }))] });
+  f.state.corrupt = (out, args) => {
+    if (out.ability === 'mainwp/get-site-v1') out.result = { ...site, status: 'connected', last_sync: '2026-11-01T12:00:00Z' };
+    else if (out.ability === 'mainwp/get-site-updates-v1') out.result = update;
+    else if (out.ability === 'mrn-mainwp/list-content-records-v1') out.result = { site_id: site.id, site_url: site.url, success: true,
+      page: args.page, per_page: args.per_page, total: 1, total_pages: 1, items: [{ post_id: 7, post_type: args.post_type,
+        post_title: 'Home', post_name: 'home', post_status: 'publish', modified_gmt: '2026-11-01 12:00:00' }] };
+    else if (out.ability === 'mrn-mainwp/read-content-record-v1') {
+      out.result = structuredClone(snapshots);
+      out.result.snapshot.post_type = args.post_type;
+      if (wrongRecord) out.result.snapshot.post_id++;
+      out.result.snapshot_sha256 = delegationDigest(out.result.snapshot);
+    } else if (out.ability === 'mrn-mainwp/inspect-code-file-v1') {
+      assert.equal(args.include_content, false);
+      const bytes = Buffer.from('source-bytes-must-not-leak');
+      out.result = { success: true, exists: true, bytes: oversize ? 32769 : bytes.length, sha256: digest(bytes), content_base64: bytes.toString('base64') };
+      if (wrongPerson) out.actor = { oauth_subject: people.b.subject, google_sub: people.b.googleSubject, email: people.b.verifiedEmail };
+      if (denyDuringChecksum) f.state.revoked.add(out.actor.google_sub);
+    } else out.result = { site_id: site.id, site_url: site.url, items: [] };
+  };
+  const connect = async person => new DelegatedMainwpClient(f.client, person, f.signer);
+  const verifyStaff = async person => { local.registry.member(person); return (await connect(person)).verifyStaff(); };
+  const service = new Operations({ ...local.service, connect, verifyStaff, writesEnabled: false, readOnlySurface: true,
+    content: { read() { assert.fail('No raw REST fallback'); } } });
+  const { privateKey, publicKey } = await generateKeyPair('ES256');
+  const issuer = 'https://oauth.example.invalid/', keySet = createLocalJWKSet({ keys: [await exportJWK(publicKey)] });
+  const reservation = createServer(); await new Promise(done => reservation.listen(0, '127.0.0.1', done));
+  const port = reservation.address().port; await new Promise(done => reservation.close(done));
+  const url = `http://127.0.0.1:${port}/mcp`, audience = url;
+  const headers = { 'content-type': 'application/json', accept: 'application/json, text/event-stream' };
+  const authenticate = createAuthenticator({ issuer, audience, verifiedEmailClaims: true, googleWorkspace: { connectionId: 'con_MRNGoogle' } }, keySet, verifyStaff);
+  assert.throws(() => createHttpServer({ service, authenticate, publicUrl: url, issuer, managementWorker: {} }), { code: 'AUTH_CONFIG' });
+  const server = createHttpServer({ service, authenticate, publicUrl: url, issuer });
+  await new Promise(done => server.listen(port, '127.0.0.1', done)); t.after(() => new Promise(done => server.close(done)));
+  const token = (person, changes = {}, exp = '5m') => new SignJWT({ scope: 'mrn:operations',
+    [`${audience}/email`]: person.verifiedEmail, [`${audience}/email_verified`]: true,
+    [`${audience}/google_sub`]: person.googleSubject, [`${audience}/identity_provider`]: 'google-oauth2', [`${audience}/google_connection`]: person.googleConnection,
+    ...changes }).setProtectedHeader({ alg: 'ES256' }).setIssuer(issuer).setAudience(audience).setSubject(person.subject).setIssuedAt().setExpirationTime(exp).sign(privateKey);
+  const a = await token(people.a), b = await token(people.b);
+  const wire = async (method, params, bearer) => {
+    const request = await fetch(url, { method: 'POST', headers: { ...headers, ...(bearer ? { authorization: 'Bearer ' + bearer } : {}) },
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }) });
+    return { code: request.status, body: await request.json() };
+  };
+  const call = async (name, args, bearer = a) => (await wire('tools/call', { name, arguments: args }, bearer)).body.result;
+  const metadata = await fetch(new URL('/.well-known/oauth-protected-resource/mcp', url));
+  assert.deepEqual((await metadata.json()).scopes_supported, ['mrn:operations']);
+  const args = { website: 'example' }, checksum = { ...args, path: 'wp-content/themes/example/style.css' };
+  const view = value => { assert.ok(!value.isError, value.content[0].text); return JSON.parse(value.content[0].text); };
+  const surface = (await wire('tools/list', {}, a)).body.result.tools;
+  assert.deepEqual(surface.map(x => x.name).sort(), ['get_operation', 'inspect_website', 'inspect_website_code', 'list_websites',
+    'read_website_content', 'read_website_details', 'search_website_content', 'website_history'].sort());
+  assert.ok(surface.every(x => x.securitySchemes[0].scopes.join() === 'mrn:operations' && x.inputSchema.additionalProperties === false));
+  assert.ok((await call('prepare_code_edit', checksum, await token(people.a, { scope: 'mrn:operations mrn:operations:write' }))).isError);
+  assert.ok((await call('inspect_website_code', { ...checksum, includeContent: true })).isError);
+  assert.ok((await call('inspect_website_code', { ...checksum, path: 'wp-content/themes/example/../private.css' })).isError);
+  assert.ok((await call('inspect_website_code', { ...checksum, path: 'wp-content/themes/example/package.json' })).isError);
+  const inventory = view(await call('read_website_details', { ...args, section: 'updates' }));
+  const inspection = view(await call('inspect_website', args));
+  assert.equal(inventory.site.syncedAt, '2026-11-01T12:00:00.000Z');
+  assert.equal(inventory.inventorySource, 'dashboard_cache');
+  assert.equal(inventory.data.updates[0].name, 'Fixture plugin');
+  assert.deepEqual(inventory.data.updates, inspection.evidence.find(x => x.source === 'mainwp:updates').updates);
+  assert.equal(view(await call('get_operation', { operationId: inspection.id })).id, inspection.id);
+  const hidden = local.store.create('operation', people.a, local.registry.resolve(people.a, 'example'), { workflow: 'code', plan: { content: 'retained-private-source' } });
+  assert.equal((await call('get_operation', { operationId: hidden.id })).isError, true);
+  assert.deepEqual(view(await call('website_history', args)).map(x => x.id), [inspection.id]);
+  assert.ok(view(await call('list_websites', {})).some(w => w.websiteId === 'example' && w.url === site.url));
+  for (const kind of ['pages', 'posts']) {
+    assert.equal(view(await call('search_website_content', { ...args, kind })).items[0].type, kind.slice(0, -1));
+    const result = view(await call('read_website_content', { ...args, kind, recordId: 7 }));
+    assert.deepEqual(result.acf.definitions, snapshots.snapshot.acf_definitions);
+    assert.deepEqual(result.acf.values.field_rows, snapshots.snapshot.acf_values.field_rows);
+    assert.equal(result.acf.values.field_rows[0].acf_fc_layout, 'body_text');
+  }
+  const [first, second] = (await Promise.all([call('inspect_website_code', checksum, a), call('inspect_website_code', checksum, b)])).map(view);
+  assert.ok(first.sha256 && first.content === null && second.content === null);
+  assert.notEqual(first.auditReceipt, second.auditReceipt);
+  const audit = new DatabaseSync(join(local.root, 'state/operations.sqlite'), { readOnly: true }); t.after(() => audit.close());
+  for (const [result, who] of [[first, people.a], [second, people.b]]) {
+    const row = audit.prepare('SELECT * FROM audit WHERE seq=?').get(Number(result.auditReceipt.split(':')[1]));
+    assert.equal(row.subject, who.subject); assert.equal(JSON.parse(row.identity).googleSubject, who.googleSubject);
+    assert.equal(row.target, site.url); assert.equal(row.event, 'readonly:inspect_website_code'); assert.equal(row.outcome, 'returned');
+    assert.ok(!JSON.stringify(row).includes('source-bytes-must-not-leak'));
+  }
+  assert.equal((await wire('tools/list', {}, null)).code, 401);
+  assert.equal((await wire('tools/list', {}, await token(people.a, {}, '-2m'))).code, 401);
+  assert.equal((await wire('tools/list', {}, await token(people.a, { [`${audience}/google_connection`]: 'con_other' }))).code, 401);
+  assert.equal((await wire('tools/list', {}, await token(people.a, { gty: 'client-credentials' }))).code, 401);
+  wrongRecord = true; assert.equal((await call('read_website_content', { ...args, kind: 'pages', recordId: 7 })).isError, true); wrongRecord = false;
+  wrongPerson = true; assert.equal((await call('inspect_website_code', checksum)).isError, true); wrongPerson = false;
+  oversize = true; assert.equal((await call('inspect_website_code', checksum)).isError, true); oversize = false;
+  dropContent = true; assert.match((await call('read_website_content', { ...args, kind: 'pages', recordId: 7 })).content[0].text, /CONTENT_UNAVAILABLE/);
+  denyDuringChecksum = true; const revoked = await call('inspect_website_code', checksum); assert.equal(revoked.isError, true); assert.ok(!revoked._meta?.['mrn/auditReceipt']);
+  assert.ok(f.state.calls.every(n => ![delegationTools.sync, delegationTools.run].includes(n)));
+  assert.equal(audit.prepare("SELECT count(*) AS n FROM audit WHERE event='readonly:inspect_website_code'").get().n, 2);
 });
 
 test('typed ACF writes retain per-person signed confirmation and closed management arguments', async () => {

@@ -25,7 +25,7 @@ export function runtimeEvidence(report) {
       sha256: /^[a-f0-9]{64}$/.test(c.sha256) ? c.sha256 : null, matchesRelease: c.matches_release === true })),
   };
 }
-export async function inspectTarget({ target, session, catalog, publicProbe, authorize, previous = null }) {
+export async function inspectTarget({ target, session, catalog, publicProbe, authorize, previous = null, cached = false }) {
   const evidence = []; const coverage = []; const findings = [];
   const add = (code, description, data, repairable = false) => findings.push({ code, description, confidence: 'confirmed', repairable, ...data });
   evidence.push({ source: 'mrn:website-knowledge', environment: target.environment, backup: target.backup,
@@ -33,7 +33,8 @@ export async function inspectTarget({ target, session, catalog, publicProbe, aut
   coverage.push({ check: 'website_knowledge', status: target.environment === 'unknown' || target.backup === 'unknown' || target.knowledgeIssues?.length ? 'incomplete' : 'recorded',
     interpretation: 'Saved facts describe intended configuration. Missing or conflicting write prerequisites do not prevent read-only inspection.' });
   if (target.management === 'mainwp') {
-    const site = await session.fresh(); evidence.push({ source: 'mainwp:exact-site-sync', ...site });
+    const site = cached ? await session.resolveSite({ inventoryTimestamp: true }) : await session.fresh();
+    evidence.push({ source: cached ? 'mainwp:dashboard-inventory' : 'mainwp:exact-site-sync', ...site });
     for (const [name, check] of [[toolNames.runtime, 'stack'], [toolNames.security, 'security'], [toolNames.updates, 'updates'], [toolNames.themes, 'themes'], [toolNames.changes, 'recent_changes']]) {
       if (!await session.supports(name)) { coverage.push({ check, status: 'unavailable', reason: 'Capability not exposed by the connected MainWP service.' }); continue; }
       try {
@@ -71,7 +72,7 @@ export async function inspectTarget({ target, session, catalog, publicProbe, aut
         }
       } catch (error) {
         if (fatal(error)) throw error;
-        if (check === 'stack' && error.code === 'STACK_REPORT_UNAVAILABLE' && await session.supports(toolNames.qualify)) {
+        if (!cached && check === 'stack' && error.code === 'STACK_REPORT_UNAVAILABLE' && await session.supports(toolNames.qualify)) {
           try {
             const qualification = qualificationEvidence(await session.qualification());
             evidence.push({ source: 'mainwp:stack-qualification', observedAt: new Date().toISOString(), ...qualification });
