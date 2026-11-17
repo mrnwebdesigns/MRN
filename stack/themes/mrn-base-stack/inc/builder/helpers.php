@@ -4575,6 +4575,28 @@ function mrn_base_stack_get_effects_tab_field_names() {
 		'enable_row_effects',
 		'hover_effect',
 		'tab_switch_effect',
+		// Motion and behavior toggles from the presentation builders. Values are keyed by
+		// field, so moving them out of Content changes only where an editor finds them.
+		'project_carousel_autoplay',
+		'autoplay_max_width',
+		'continuous_scroll',
+		'image_drift_speed',
+		'image_drift_maximum',
+		'image_zoom_viewport_inset',
+		'card_reveal_content',
+		'timeline_pin_tablet',
+		'timeline_scroll_pace',
+		'timeline_pin_position',
+		'timeline_pin_heading',
+		'video_playback',
+		'text_presentation',
+		'word_reveal_target',
+		'word_reveal_scope',
+		'word_reveal_from',
+		'word_reveal_to',
+		'strip_behavior',
+		'strip_scroll_pace',
+		'process_mobile_expand_all',
 	);
 }
 
