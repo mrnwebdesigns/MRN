@@ -9,7 +9,7 @@ import { syncBuiltinESMExports } from 'node:module';
 import { isIP } from 'node:net';
 
 const directory = dirname(fileURLToPath(import.meta.url));
-const { address, certificate } = JSON.parse(readFileSync(join(directory, 'gateway-network.json'), 'utf8'));
+const { address, certificate, readOnly = false } = JSON.parse(readFileSync(join(directory, 'gateway-network.json'), 'utf8'));
 assert.equal(isIP(address), 4);
 assert.match(address, /^(?:10\.|172\.(?:1[6-9]|2[0-9]|3[01])\.|192\.168\.)/);
 assert.equal(certificate, join(directory, 'tls.crt'));
@@ -34,8 +34,15 @@ globalThis.fetch = async (input, options = {}) => {
   const method = options.method || 'GET';
   const delegated = /\/mrn-mainwp\/(?:get-delegation-challenge|get-team-access|read-delegated-operation|sync-delegated-site|run-delegated-operation|queue-delegated-qualification|read-access-veto-query|read-management-access-veto-query)-v1\/run$/.test(url.pathname);
   if (delegated) { assert.equal(method, 'POST'); assert.equal(url.search, ''); }
+  if (readOnly) {
+    const readPost = /^\/wp-json\/wp-abilities\/v1\/abilities\/mrn-mainwp\/(?:get-delegation-challenge|get-team-access|read-delegated-operation)-v1\/run$/;
+    // The MCP connector needs only the abilities catalog and its POST-only delegation envelope.
+    const catalogGet = /^\/wp-json\/(?:wp-abilities\/v1\/(?:abilities|ability-categories)\/?|)$/;
+    assert.ok((method === 'GET' && catalogGet.test(url.pathname)) ||
+      (method === 'POST' && readPost.test(url.pathname) && !url.search), 'Fixture blocked non-read wire operation');
+  }
   const started = performance.now();
-  const response = await originalFetch(input, options);
+  const response = await originalFetch(input, readOnly ? { ...options, redirect: 'error' } : options);
   const response_headers_ms = Math.max(0, Math.min(300000, Math.ceil(performance.now() - started)));
   let errorCode;
   if (!response.ok) {
@@ -50,7 +57,7 @@ globalThis.fetch = async (input, options = {}) => {
     const envelope = JSON.parse(options.body)?.input?.delegation;
     if (envelope) {
       const claims = JSON.parse(Buffer.from(envelope.payload_base64, 'base64').toString('utf8'));
-      person = { subject: claims.oauth_subject, ability: claims.ability };
+      person = { subject: claims.oauth_subject, ability: claims.ability, ...(readOnly ? { requestId: claims.request_id } : {}) };
     }
   }
   appendFileSync(join(directory, 'gateway-network.jsonl'), `${JSON.stringify({ path: url.pathname, method, status: response.status, response_headers_ms, errorCode, ...person })}\n`, { mode: 0o600 });

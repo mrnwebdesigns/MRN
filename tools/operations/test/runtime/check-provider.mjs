@@ -16,14 +16,18 @@ import { createHttpServer } from '../../src/http.mjs';
 import { connectMainwp, payload } from '../../src/mainwp.mjs';
 import { Operations } from '../../src/service.mjs';
 import { Store } from '../../src/store.mjs';
+import { checkNativeRead } from './check-native-read.mjs';
 import { nativeFixture, checkNativeContent, nativeWriteFixture, checkNativeWriteWorkflows } from './native-content.mjs';
 
 process.umask(0o077);
-assert.equal(process.env.GITHUB_ACTIONS, 'true', 'This hook requires the disposable CI runtime');
 const [privateDirectory, certificate, runtimeCli, phase] = process.argv.slice(2);
+const readOnly = phase === 'read-only';
+assert.ok(process.env.GITHUB_ACTIONS === 'true' || (readOnly &&
+  process.env.MRN_DISPOSABLE_LOCAL === '1' &&
+  readFileSync('/etc/mrn-unified-qa-disposable', 'utf8').trim() === 'MRN_UNIFIED_QA_DISPOSABLE_V1'), 'Disposable runtime required');
 const writeWorkflows = phase === 'write-workflows';
 const native = phase === 'native' || writeWorkflows;
-assert.ok(privateDirectory && certificate && runtimeCli && process.argv.length === (native ? 6 : 5));
+assert.ok(privateDirectory && certificate && runtimeCli && process.argv.length === (native || readOnly ? 6 : 5));
 assert.equal(certificate, join(privateDirectory, 'tls.crt'));
 assert.equal(runtimeCli, join(privateDirectory, 'wp-fixture-cli'));
 const transportRoot = resolve(process.env.MRN_GATEWAY_MCP_SOURCE);
@@ -41,13 +45,14 @@ const homeDirectory = join(gatewayDirectory, 'home'); mkdirSync(homeDirectory, {
 const preload = join(gatewayDirectory, 'fixture-network.mjs');
 copyFileSync(new URL('./fixture-network.mjs', import.meta.url), preload);
 copyFileSync(certificate, join(gatewayDirectory, 'tls.crt'));
-writeFileSync(join(gatewayDirectory, 'gateway-network.json'), JSON.stringify({ address: readFileSync(join(privateDirectory, 'tls-ip'), 'utf8'), certificate: join(gatewayDirectory, 'tls.crt') }));
+writeFileSync(join(gatewayDirectory, 'gateway-network.json'), JSON.stringify({ address: readFileSync(join(privateDirectory, 'tls-ip'), 'utf8'), certificate: join(gatewayDirectory, 'tls.crt'), readOnly }));
 const network = () => { try { return readFileSync(join(gatewayDirectory, 'gateway-network.jsonl'), 'utf8').trim().split('\n').filter(Boolean).map(line => JSON.parse(line)); } catch (error) { if (error.code === 'ENOENT') return []; throw error; } };
 const writeReport = process.env.MRN_GATEWAY_NATIVE_WRITE_REPORT || join(privateDirectory, 'gateway-native-write-report.json');
 let fixture;
 try {
   fixture = writeWorkflows ? await nativeWriteFixture({ privateDirectory, certificate, runtimeCli }) : native ? nativeFixture({ privateDirectory, certificate, runtimeCli }) : null;
 } catch (error) {
+  if (readOnly && process.env.MRN_GATEWAY_NATIVE_READ_REPORT) writeFileSync(process.env.MRN_GATEWAY_NATIVE_READ_REPORT, JSON.stringify({ ...report, result: 'FAIL', blocker: error.message === 'NATIVE_READ_CHECKSUM_EXTENSION_REQUIRED' ? error.message : 'NATIVE_READ_FIXTURE_FAILED' }) + '\n');
   if (writeWorkflows) writeFileSync(writeReport, JSON.stringify({ ...report, result: 'BLOCKED',
     blocker: /\bNATIVE_[A-Z_]+\b/.exec(String(error.message))?.[0] || 'NATIVE_FIXTURE_PREFLIGHT_FAILED' }) + '\n');
   throw error;
@@ -61,7 +66,7 @@ const signer = new IdentitySigner({ keyId: 'disposable-identity-only', connectio
 const clients = new Set();
 const connect = async actor => {
   const raw = await connectMainwp(transportConfig, transportEnvironment); clients.add(raw);
-  const delegated = new DelegatedMainwpClient(raw, actor, signer);
+  const delegated = new DelegatedMainwpClient(raw, actor, signer, { readOnly });
   return fixture ? fixture.wrapClient(delegated) : delegated;
 };
 const policy = { version: 1, members: ['111111', '222222', '999999'].map(sub => ({ subject: `google-oauth2|${sub}`, enabled: true })), emailDomains: [] };
@@ -71,7 +76,7 @@ const verifyStaff = async actor => {
   registry.member(actor); const client = await connect(actor);
   try { return await client.verifyStaff(); } finally { await client.close(); }
 };
-const service = new Operations({ registry, store, connect, verifyStaff, writesEnabled: native, publicProbe: fixture?.publicProbe,
+const service = new Operations({ registry, store, connect, verifyStaff, writesEnabled: native, readOnlySurface: readOnly, publicProbe: fixture?.publicProbe,
   discovery: new Discovery({ registry, store, connect }) });
 fixture?.configure(service);
 const issuer = 'https://oauth.example.invalid/'; const audience = 'https://operations.mrnwebdesigns.com/mcp';
@@ -96,9 +101,11 @@ const call = async (bearer, method = 'tools/list', params = {}) => {
 };
 const toolResult = result => { assert.equal(result.status, 200); assert.equal(result.body.result?.isError, undefined, `Gateway tool error: ${result.body.result?.content?.[0]?.text}`); return JSON.parse(result.body.result.content[0].text); };
 try {
-  // The provider's preceding HTTP suite deliberately leaves Alice suspended.
-  fixtureOption('');
-  if (writeWorkflows) {
+  // Only legacy lanes leave Alice suspended before entering this hook.
+  if (!readOnly) fixtureOption('');
+  if (readOnly) {
+    await checkNativeRead({ privateDirectory, runtimeCli, token, call, toolResult, pass, network, store, report });
+  } else if (writeWorkflows) {
     await checkNativeWriteWorkflows({ fixture, token, call, toolResult, pass, service, network, store, report, fixtureOption });
   } else if (native) {
     await checkNativeContent({ fixture, token, call, toolResult, pass, service, network, store, report, fixtureOption });
@@ -156,20 +163,21 @@ try {
     assert.ok(!JSON.stringify(audit).includes(credentials.password));
     pass('Private gateway audit attributes completed reads to the verified Google person');
   }
-  const output = writeWorkflows ? writeReport
+  const output = readOnly ? (process.env.MRN_GATEWAY_NATIVE_READ_REPORT || join(privateDirectory, 'gateway-native-read-report.json')) : writeWorkflows ? writeReport
     : native ? process.env.MRN_GATEWAY_NATIVE_REPORT : process.env.MRN_GATEWAY_REPORT;
   assert.ok(output); writeFileSync(output, `${JSON.stringify({ ...report, result: 'PASS' }, null, 2)}\n`);
 } catch (error) {
+  if (readOnly && process.env.MRN_GATEWAY_NATIVE_READ_REPORT) writeFileSync(process.env.MRN_GATEWAY_NATIVE_READ_REPORT, JSON.stringify({ ...report, result: 'FAIL', blocker: error.message === 'NATIVE_READ_CHECKSUM_EXTENSION_REQUIRED' ? error.message : 'NATIVE_READ_FIXTURE_FAILED' }) + '\n');
   if (writeWorkflows) writeFileSync(writeReport, JSON.stringify({ ...report, result: 'BLOCKED',
     blocker: /\bNATIVE_[A-Z_]+\b/.exec(String(error.message))?.[0] || 'NATIVE_WRITE_WORKFLOW_FAILED' }) + '\n');
   // Test-only bounded diagnostics: known paths, status, symbolic error codes
   // and audit event names. Never emit arguments, receipts, keys or bodies.
-  process.stdout.write(`${JSON.stringify({ phase: writeWorkflows ? 'write-workflows' : native ? 'native' : 'authorization', lastTransport: network().slice(-12),
+  process.stdout.write(`${JSON.stringify({ phase: readOnly ? 'read-only' : writeWorkflows ? 'write-workflows' : native ? 'native' : 'authorization', lastTransport: network().slice(-12),
     lastAudit: store.db.prepare('SELECT event,outcome FROM audit ORDER BY rowid DESC LIMIT 12').all() })}\n`);
   throw error;
 } finally {
   await new Promise(resolve => server.close(resolve));
   await Promise.allSettled([...clients].map(client => client.close()));
   await fixture?.close?.();
-  store.close(); fixtureOption('');
+  store.close(); if (!readOnly) fixtureOption('');
 }
