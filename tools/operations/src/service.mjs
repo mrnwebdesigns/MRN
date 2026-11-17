@@ -11,9 +11,9 @@ import { acfScalar } from './content.mjs';
 import { managementCall } from './content-management-contract.mjs';
 
 export class Operations {
-  constructor({ registry, store, connect, fleet, publicProbe, writesEnabled = false, readOnlySurface = false, qa = null, recoveryEvidence = null, discovery = null, content = null, verifyStaff = null }) {
+  constructor({ registry, store, connect, fleet, publicProbe, writesEnabled = false, readOnlySurface = false, readOnlyCodeInspection = true, qa = null, recoveryEvidence = null, discovery = null, content = null, verifyStaff = null }) {
     requireThat(!readOnlySurface || (!writesEnabled && registry.approvedTeam && typeof verifyStaff === 'function'), 'AUTH_CONFIG', 'The read-only surface requires existing individual Google verification and disabled writes.');
-    Object.assign(this, { registry, store, connect, fleet, publicProbe, writesEnabled, readOnlySurface, qa, recoveryEvidence, discovery, content, verifyStaff }); this.jobs = new Map();
+    Object.assign(this, { registry, store, connect, fleet, publicProbe, writesEnabled, readOnlySurface, readOnlyCodeInspection, qa, recoveryEvidence, discovery, content, verifyStaff }); this.jobs = new Map();
   }
   async session(actor, target, action, operation = '', onMutation, checkAdmission) {
     this.registry.current(actor, target, action);
@@ -164,6 +164,7 @@ export class Operations {
     finally { await session.close(); }
   }
   async inspectCode(actor, { website, environment, path, includeContent }) {
+    requireThat(!this.readOnlySurface || this.readOnlyCodeInspection, 'CAPABILITY_DENIED', 'Exact-file inspection is unavailable on this publication.');
     requireThat(actor.identityProvider === 'google-oauth2' && this.verifyStaff, 'AUTH_REQUIRED', 'Use your active MRN Google identity for code inspection.');
     await this.discovery?.refresh(actor);
     const target = this.registry.resolve(actor, website, environment);

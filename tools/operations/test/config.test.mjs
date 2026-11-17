@@ -66,6 +66,17 @@ test('private callback configuration reuses Google and content authority without
   assert.equal(existsSync(f.config.stateDir), false);
 });
 
+test('checksum withholding is opt-in and limited to the read-only launch', t => {
+  const f = fixture(t);
+  assert.equal(loadConfig(f.file).config.readOnlyCodeInspection, true);
+  f.config.readOnlyCodeInspection = false;
+  f.save();
+  assert.throws(() => loadConfig(f.file), /withheld only on the read-only surface/);
+  f.config.readOnlySurface = true;
+  f.save();
+  assert.equal(loadConfig(f.file).config.readOnlyCodeInspection, false);
+});
+
 test('read-only launch configuration rejects writes, raw REST and private worker setup before opening state', t => {
   const f = fixture(t); f.config.readOnlySurface = true; f.save();
   assert.equal(loadConfig(f.file).config.readOnlySurface, true);

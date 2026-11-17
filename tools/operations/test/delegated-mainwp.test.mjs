@@ -151,6 +151,17 @@ test('consolidated MCP uses the exact individual for reads and receipts without 
   const surface = (await wire('tools/list', {}, a)).body.result.tools;
   assert.deepEqual(surface.map(x => x.name).sort(), ['get_operation', 'inspect_website', 'inspect_website_code', 'list_websites',
     'read_website_content', 'read_website_details', 'search_website_content', 'website_history'].sort());
+  service.readOnlyCodeInspection = false;
+  try {
+    const reduced = (await wire('tools/list', {}, a)).body.result.tools;
+    assert.deepEqual(reduced, surface.filter(tool => tool.name !== 'inspect_website_code'));
+    assert.ok((await call('inspect_website_code', checksum)).isError);
+    await assert.rejects(service.inspectCode(people.a, checksum), { code: 'CAPABILITY_DENIED' });
+    const workflowGuide = (await wire('resources/read', { uri: 'mrn-operations://guide' }, a)).body.result;
+    assert.doesNotMatch(workflowGuide.contents[0].text, /checksum/i);
+  } finally {
+    service.readOnlyCodeInspection = true;
+  }
   assert.ok(surface.every(x => x.securitySchemes[0].scopes.join() === 'mrn:operations' && x.inputSchema.additionalProperties === false));
   assert.ok((await call('prepare_code_edit', checksum, await token(people.a, { scope: 'mrn:operations mrn:operations:write' }))).isError);
   assert.ok((await call('inspect_website_code', { ...checksum, includeContent: true })).isError);
