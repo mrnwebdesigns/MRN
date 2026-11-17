@@ -1,6 +1,6 @@
 {
   "authority": "Checksum- and tree-locked standard-plugin releases available to explicit one-site Stack component plans. Registration never authorizes a site write or changes the immutable Stack release identity.",
-  "catalog_updated": "2026-11-13",
+  "catalog_updated": "2026-11-17",
   "releases": [
     {
       "current_distribution": "standard-bootstrap",
@@ -2149,6 +2149,93 @@
         "preserve_active_state": true
       },
       "version": "0.4.12"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-stack-deployment-agent-0.3.10-e5f84dea1665.zip",
+        "main_file": "mrn-stack-deployment-agent/mrn-stack-deployment-agent.php",
+        "path": "releases/stack-plugins/mrn-stack-deployment-agent-0.3.10-e5f84dea1665.zip",
+        "sha256": "997a70ac37ca0eac85e61aa19227e4174571a95dd77cda09b9782660e68212e6",
+        "size_bytes": 107882
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-stack-deployment-agent",
+      "source": {
+        "git_commit": "e5f84dea1665cc08c1c4d9f56b26669f329c2924",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-stack-deployment-agent",
+        "repository": "mrnwebdesigns/mrn-stack-deployment-agent"
+      },
+      "target_tier": "platform-required",
+      "tree": {
+        "file_count": 32,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "c64d72c368e4565686dda27003747c0b8e3e90f3dc7ad05c156ee1e55543d282"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.3.10"
+    },
+    {
+      "current_distribution": "standard-bootstrap",
+      "package": {
+        "filename": "mrn-recaptcha-enterprise-manager-0.2.5-39dd6d53473d.zip",
+        "main_file": "mrn-recaptcha-enterprise-manager/mrn-recaptcha-enterprise-manager.php",
+        "path": "releases/stack-plugins/mrn-recaptcha-enterprise-manager-0.2.5-39dd6d53473d.zip",
+        "sha256": "a68edfcf12338f786494c21ef8a016f6de64101444287e92e956176116119b93",
+        "size_bytes": 65975
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-recaptcha-enterprise-manager",
+      "source": {
+        "git_commit": "39dd6d53473d2dbb5d98af9d245f943f0074fe1a",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-recaptcha-enterprise-manager",
+        "repository": "mrnwebdesigns/mrn-recaptcha-enterprise-manager"
+      },
+      "target_tier": "optional-integration",
+      "tree": {
+        "file_count": 20,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "2e5c4c3128f2a073dc60d8e66b83173034de8e2a1d7d3cd3b0e6aeffe48cf5bc"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.2.5"
+    },
+    {
+      "current_distribution": "catalog-only",
+      "package": {
+        "filename": "mrn-mainwp-operations-api-0.13.20-29d5c5df312e.zip",
+        "main_file": "mrn-mainwp-operations-api/mrn-mainwp-operations-api.php",
+        "path": "releases/stack-plugins/mrn-mainwp-operations-api-0.13.20-29d5c5df312e.zip",
+        "sha256": "75fe4fe2d8732838d53418d5d8f785ef57a96cab9e143b11585b5a85811a7262",
+        "size_bytes": 161412
+      },
+      "runtime_type": "standard-plugin",
+      "slug": "mrn-mainwp-operations-api",
+      "source": {
+        "git_commit": "29d5c5df312e9cbc3520408c3904dd4fdb7eb4cb",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-mainwp-operations-api",
+        "repository": "mrnwebdesigns/mrn-mainwp-operations-api"
+      },
+      "target_tier": "dashboard-only",
+      "tree": {
+        "file_count": 35,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "c463cf8c294b13c0414ab497077ab02e7c988eb5e1376313b6765bd0505e258b"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "new_install": "requires-separate-owner-authorization-and-plan",
+        "preserve_active_state": true
+      },
+      "version": "0.13.20"
     }
   ],
   "schema_version": 1

@@ -1,8 +1,8 @@
 # Stack Version
 
 ## Candidate Release
-- Stack release: `2026.11.13-fleet-auto-675598f54235`
-- Release date: `2026-11-13`
+- Stack release: `2026.11.17-fleet-auto-c3ba26c0f00a`
+- Release date: `2026-11-17`
 - Status: `source snapshot; qualification/publication evidence establishes Fleet readiness; site rollout separate`
 
 ## Included MRN-Owned Components
@@ -36,7 +36,7 @@
 | `mrn-mega-menu` | `0.17.3` |
 | `mrn-public-security-hardening` | `0.4.4` |
 | `mrn-public-security-hardening-loader` | `0.4.4` |
-| `mrn-recaptcha-enterprise-manager` | `0.2.4` |
+| `mrn-recaptcha-enterprise-manager` | `0.2.5` |
 | `mrn-reusable-block-library` | `0.2.3` |
 | `mrn-schema-bridge` | `0.7.2` |
 | `mrn-schema-bridge-loader` | `0.7.0` |
@@ -45,7 +45,7 @@
 | `mrn-shared-runtime` | `1.0.0` |
 | `mrn-site-colors` | `0.1.39` |
 | `mrn-site-colors-loader` | `0.1.39` |
-| `mrn-stack-deployment-agent` | `0.3.7` |
+| `mrn-stack-deployment-agent` | `0.3.10` |
 | `mrn-template-inspector` | `0.2.7` |
 | `mrn-tokens` | `0.1.4` |
 | `mrn-universal-sticky-bar` | `1.3.0` |
