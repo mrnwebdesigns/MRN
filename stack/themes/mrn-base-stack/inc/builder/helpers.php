@@ -8578,7 +8578,7 @@ function mrn_base_stack_ensure_row_spacing_preset_field( array $fields, $key_see
 			$seed = $field_key;
 		}
 
-		if ( mrn_base_stack_is_row_spacing_selector_field_name( $field_name ) && 'select' === $field_type ) {
+		if ( ( mrn_base_stack_is_row_spacing_selector_field_name( $field_name ) || 'section_frame' === $field_name ) && 'select' === $field_type ) {
 			unset( $fields[ $index ] );
 			continue;
 		}
@@ -8625,6 +8625,22 @@ function mrn_base_stack_ensure_row_spacing_preset_field( array $fields, $key_see
 			$scope,
 			'',
 			'25'
+		);
+	}
+
+	// A theme-registered Section Frame (see mrn_base_stack_get_section_frames()); absent unless a theme registers one.
+	$section_frames = function_exists( 'mrn_base_stack_get_section_frames' ) ? mrn_base_stack_get_section_frames() : array();
+	if ( $section_frames ) {
+		$row_spacing_selector_fields[] = array(
+			'key'           => $seed . '_section_frame',
+			'name'          => 'section_frame',
+			'label'         => 'Section Frame',
+			'type'          => 'select',
+			'choices'       => array( '' => 'None' ) + $section_frames,
+			'default_value' => '',
+			'allow_null'    => 0,
+			'ui'            => 0,
+			'instructions'  => 'Optional side framing for this section, such as an inset band, defined by the theme. It sets the side margins and padding it needs and overrides the side presets above.',
 		);
 	}
 
@@ -10863,6 +10879,11 @@ function mrn_base_stack_get_builder_row_spacing_contract( array $row ) {
 		'classes'    => array(),
 		'attributes' => $attributes,
 	);
+
+	$section_frame = $row['section_frame'] ?? '';
+	if ( is_string( $section_frame ) && '' !== $section_frame && function_exists( 'mrn_base_stack_get_section_frames' ) && isset( mrn_base_stack_get_section_frames()[ $section_frame ] ) ) {
+		$contract['classes'][] = 'mrn-section-frame--' . sanitize_html_class( $section_frame );
+	}
 
 	/**
 	 * Filter the row-spacing frontend contract before it is merged on the row wrapper.

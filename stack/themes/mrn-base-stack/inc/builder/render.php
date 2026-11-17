@@ -650,6 +650,7 @@ function mrn_base_stack_get_reusable_block_builder_row( WP_Post $block, array $h
 		'include_in_faq_jump_nav',
 		'faq_jump_nav_label',
 		'section_width',
+		'section_frame',
 		'motion_settings',
 	);
 

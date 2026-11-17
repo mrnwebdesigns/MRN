@@ -394,6 +394,23 @@ function mrn_base_stack_normalize_builder_layout_display_style( $style, $layout_
 }
 
 /**
+ * Section frames a theme offers on every builder row: key => label. A frame is framing such as an inset band whose
+ * geometry lives in the theme's CSS, keyed on the row class mrn-section-frame--<key>.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_section_frames() {
+	$frames = array();
+	foreach ( (array) apply_filters( 'mrn_base_stack_section_frames', array() ) as $key => $label ) {
+		$key = sanitize_key( (string) $key );
+		if ( '' !== $key && is_scalar( $label ) && '' !== trim( (string) $label ) ) {
+			$frames[ $key ] = sanitize_text_field( (string) $label );
+		}
+	}
+	return $frames;
+}
+
+/**
  * Get the front-end display contract for a builder layout row.
  *
  * @param array<string, mixed> $row         Builder row.
