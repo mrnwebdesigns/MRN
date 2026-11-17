@@ -46,3 +46,17 @@ Trilliant local adoption: add an opt-in profile through its local child-theme or
 site-owned plugin, review the private cards at Appearance → Layout Library, then
 regenerate. This is a local-only validation step; it neither changes client pages
 nor authorizes Dev/Live deployment.
+
+## Illustrated preview cards
+
+The Layout Library card is an intentionally composited visual reference, not a
+miniature browser viewport. Bundled, private preview artwork and layout-specific
+composition rules make media, collection, form and interactive layouts legible at
+card size. The card does not write client pages or attach its artwork to the
+ordinary Media Library. Editors can expand **Inspect the rendered fixture** to
+compare the visual reference with the real private fixture and current renderer.
+
+Profiles may override a layout's `visual_previews` entry with the supported
+`variant`, `asset`, or `eyebrow` keys. The bundled artwork is deliberately
+text-free and brand-neutral; a site-owned profile can choose a compatible
+presentation without hardcoding client-facing copy into the Stack renderer.

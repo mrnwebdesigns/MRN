@@ -36,6 +36,14 @@ class LayoutLibraryPreviewContractTests(unittest.TestCase):
         self.assertIn("remove_filter( 'upload_mimes', $svg_mimes )", PROFILE)
         self.assertIn("mrn_active_style_guide_layout_preview_profile", PROFILE)
 
+    def test_cards_use_illustrated_references_and_retain_fixture_inspection(self):
+        self.assertIn("mrn_active_style_guide_render_layout_library_visual_preview", LIBRARY)
+        self.assertIn("mrn-layout-library-card__implementation", LIBRARY)
+        self.assertIn("Inspect the rendered fixture", LIBRARY)
+        self.assertIn('inert aria-hidden="true"', LIBRARY)
+        self.assertIn("assets/layout-library-preview", LIBRARY)
+        self.assertNotIn("mrn-layout-library-card__preview-inner", LIBRARY)
+
 
 if __name__ == "__main__":
     unittest.main()

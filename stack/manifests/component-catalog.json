@@ -408,7 +408,7 @@
         "state": "confirmed"
       },
       "target_tier": "platform-required",
-      "version": "0.2.4"
+      "version": "0.2.5"
     },
     {
       "classification": "platform-loader",
@@ -802,7 +802,7 @@
       },
       "lifecycle": "supported-development",
       "name": "MRN Active Style Guide",
-      "purpose": "Provides a logged-in design-system reference, site-aware Layout Library, and preview-fixture diagnostics.",
+      "purpose": "Provides a logged-in design-system reference, site-aware Layout Library, illustrative visual references, and preview-fixture diagnostics.",
       "runtime_type": "mu-component",
       "slug": "mrn-active-style-guide",
       "source": {
@@ -811,7 +811,7 @@
         "state": "confirmed"
       },
       "target_tier": "platform-required",
-      "version": "0.2.4"
+      "version": "0.2.5"
     },
     {
       "classification": "integration-adapter",

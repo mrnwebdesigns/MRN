@@ -555,6 +555,84 @@ function mrn_active_style_guide_get_layout_library_guide_metadata( string $layou
 	);
 }
 
+/**
+ * Return the intentional visual treatment for an editor-facing preview card.
+ *
+ * These are illustrations of a layout's possible composition, not screenshots
+ * and not client content. The real private fixture remains available below the
+ * card for implementation inspection.
+ *
+ * @param array<string, mixed> $profile Active preview profile.
+ * @return array<string, string>
+ */
+function mrn_active_style_guide_get_layout_library_visual_definition( string $layout_name, array $profile ): array {
+	$definitions = array(
+		'basic_block'      => array( 'variant' => 'feature', 'asset' => 'infrastructure-network', 'eyebrow' => __( 'Connected infrastructure', 'mrn-active-style-guide' ) ),
+		'body_text'        => array( 'variant' => 'editorial', 'asset' => 'field-implementation', 'eyebrow' => __( 'Editorial story', 'mrn-active-style-guide' ) ),
+		'card'             => array( 'variant' => 'cards', 'asset' => 'field-implementation', 'eyebrow' => __( 'Service portfolio', 'mrn-active-style-guide' ) ),
+		'content_lists'    => array( 'variant' => 'collection', 'asset' => 'network-operations', 'eyebrow' => __( 'Resource collection', 'mrn-active-style-guide' ) ),
+		'cta'              => array( 'variant' => 'feature', 'asset' => 'infrastructure-network', 'eyebrow' => __( 'Clear next step', 'mrn-active-style-guide' ) ),
+		'cta_block'        => array( 'variant' => 'feature', 'asset' => 'infrastructure-network', 'eyebrow' => __( 'Clear next step', 'mrn-active-style-guide' ) ),
+		'external_widget'  => array( 'variant' => 'data', 'asset' => 'network-operations', 'eyebrow' => __( 'Embedded experience', 'mrn-active-style-guide' ) ),
+		'faq'              => array( 'variant' => 'accordion', 'asset' => 'field-implementation', 'eyebrow' => __( 'Helpful answers', 'mrn-active-style-guide' ) ),
+		'faq_block'        => array( 'variant' => 'accordion', 'asset' => 'field-implementation', 'eyebrow' => __( 'Helpful answers', 'mrn-active-style-guide' ) ),
+		'faq_jump_nav'     => array( 'variant' => 'navigation', 'asset' => 'network-operations', 'eyebrow' => __( 'Find an answer', 'mrn-active-style-guide' ) ),
+		'grid'             => array( 'variant' => 'collection', 'asset' => 'network-operations', 'eyebrow' => __( 'Explore by topic', 'mrn-active-style-guide' ) ),
+		'image_content'    => array( 'variant' => 'media-split', 'asset' => 'field-implementation', 'eyebrow' => __( 'Built for the field', 'mrn-active-style-guide' ) ),
+		'logos'            => array( 'variant' => 'logos', 'asset' => 'infrastructure-network', 'eyebrow' => __( 'Trusted ecosystem', 'mrn-active-style-guide' ) ),
+		'reusable_block'   => array( 'variant' => 'editorial', 'asset' => 'network-operations', 'eyebrow' => __( 'Reusable message', 'mrn-active-style-guide' ) ),
+		'searchwp_form'    => array( 'variant' => 'navigation', 'asset' => 'network-operations', 'eyebrow' => __( 'Search the resource hub', 'mrn-active-style-guide' ) ),
+		'showcase'         => array( 'variant' => 'showcase', 'asset' => 'infrastructure-network', 'eyebrow' => __( 'Featured capabilities', 'mrn-active-style-guide' ) ),
+		'slider'           => array( 'variant' => 'showcase', 'asset' => 'field-implementation', 'eyebrow' => __( 'Stories in motion', 'mrn-active-style-guide' ) ),
+		'stats'            => array( 'variant' => 'statistics', 'asset' => 'network-operations', 'eyebrow' => __( 'Measured impact', 'mrn-active-style-guide' ) ),
+		'tabbed_layout'    => array( 'variant' => 'tabs', 'asset' => 'network-operations', 'eyebrow' => __( 'Explore the platform', 'mrn-active-style-guide' ) ),
+		'two_column_split' => array( 'variant' => 'media-split', 'asset' => 'infrastructure-network', 'eyebrow' => __( 'Technology with context', 'mrn-active-style-guide' ) ),
+		'video'            => array( 'variant' => 'feature', 'asset' => 'network-operations', 'eyebrow' => __( 'See the story', 'mrn-active-style-guide' ) ),
+		'wpforms'          => array( 'variant' => 'form', 'asset' => 'field-implementation', 'eyebrow' => __( 'Start a conversation', 'mrn-active-style-guide' ) ),
+	);
+	$definition = $definitions[ $layout_name ] ?? array( 'variant' => 'editorial', 'asset' => 'infrastructure-network', 'eyebrow' => __( 'Layout preview', 'mrn-active-style-guide' ) );
+	$overrides = isset( $profile['visual_previews'][ $layout_name ] ) && is_array( $profile['visual_previews'][ $layout_name ] ) ? $profile['visual_previews'][ $layout_name ] : array();
+
+	return array_merge( $definition, array_intersect_key( $overrides, $definition ) );
+}
+
+/** Return a bundled private-preview image URL by its approved logical name. */
+function mrn_active_style_guide_get_layout_library_visual_asset_url( string $asset_name ): string {
+	$assets = array(
+		'infrastructure-network' => 'infrastructure-network.webp',
+		'field-implementation'   => 'field-implementation.webp',
+		'network-operations'     => 'network-operations.webp',
+	);
+	$filename = $assets[ $asset_name ] ?? $assets['infrastructure-network'];
+	$path = trailingslashit( plugin_dir_path( dirname( __FILE__ ) ) ) . 'assets/layout-library-preview/' . $filename;
+
+	return is_readable( $path ) ? trailingslashit( plugin_dir_url( dirname( __FILE__ ) ) ) . 'assets/layout-library-preview/' . $filename : '';
+}
+
+/** Render an intentionally composited visual reference for one layout card. */
+function mrn_active_style_guide_render_layout_library_visual_preview( string $layout_name, array $profile ): string {
+	$definition = mrn_active_style_guide_get_layout_library_visual_definition( $layout_name, $profile );
+	$asset_url = mrn_active_style_guide_get_layout_library_visual_asset_url( (string) $definition['asset'] );
+	$title = (string) ( $profile['copy']['heading'] ?? __( 'A clear next step', 'mrn-active-style-guide' ) );
+	$cta = (string) ( $profile['copy']['cta'] ?? __( 'Explore', 'mrn-active-style-guide' ) );
+	$variant = sanitize_html_class( (string) $definition['variant'] );
+	$eyebrow = (string) $definition['eyebrow'];
+	$style = '' !== $asset_url ? ' style="--mrn-layout-preview-image:url(' . esc_url( $asset_url ) . ');"' : '';
+
+	ob_start();
+	?>
+	<div class="mrn-layout-library-visual mrn-layout-library-visual--<?php echo esc_attr( $variant ); ?>"<?php echo $style; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- assembled from an escaped local URL. ?> aria-hidden="true">
+		<div class="mrn-layout-library-visual__media"></div>
+		<div class="mrn-layout-library-visual__scrim"></div>
+		<div class="mrn-layout-library-visual__content"><span class="mrn-layout-library-visual__eyebrow"><?php echo esc_html( $eyebrow ); ?></span><strong><?php echo esc_html( $title ); ?></strong><span class="mrn-layout-library-visual__line"></span><span class="mrn-layout-library-visual__line mrn-layout-library-visual__line--short"></span><span class="mrn-layout-library-visual__button"><?php echo esc_html( $cta ); ?></span></div>
+		<div class="mrn-layout-library-visual__tiles"><i></i><i></i><i></i></div>
+		<div class="mrn-layout-library-visual__metrics"><i></i><i></i><i></i></div>
+		<div class="mrn-layout-library-visual__controls"><i></i><i></i><i></i></div>
+	</div>
+	<?php
+	return (string) ob_get_clean();
+}
+
 /** Render the admin Layout Library page. */
 function mrn_active_style_guide_render_layout_library_page(): void {
 	if ( ! current_user_can( 'edit_theme_options' ) ) {
@@ -566,6 +644,7 @@ function mrn_active_style_guide_render_layout_library_page(): void {
 	$fingerprint = mrn_active_style_guide_get_layout_library_fingerprint();
 	$is_stale = empty( $state['fingerprint'] ) || ! hash_equals( (string) $state['fingerprint'], $fingerprint );
 	$catalog = mrn_active_style_guide_get_layout_library_catalog();
+	$profile = mrn_active_style_guide_get_layout_preview_profile();
 	$manifest = mrn_active_style_guide_get_layout_library_capture_manifest();
 	$previews = array();
 	foreach ( array_merge( $manifest['targets'], $manifest['unavailable'] ) as $preview ) {
@@ -580,7 +659,7 @@ function mrn_active_style_guide_render_layout_library_page(): void {
 	?>
 	<div class="wrap mrn-layout-library">
 		<h1><?php esc_html_e( 'Layout Library', 'mrn-active-style-guide' ); ?></h1>
-		<p class="mrn-layout-library__intro"><?php esc_html_e( 'Choose a layout for your content. Each card uses this site’s current theme and shows the fields an editor can change.', 'mrn-active-style-guide' ); ?></p>
+		<p class="mrn-layout-library__intro"><?php esc_html_e( 'Choose a layout for your content. Each card is an illustrative, site-aware visual reference; it is not client content or a literal screenshot.', 'mrn-active-style-guide' ); ?></p>
 		<p class="mrn-layout-library__private-note"><span class="dashicons dashicons-lock" aria-hidden="true"></span> <?php esc_html_e( 'Private preview fixtures only — demo copy and generated/local preview artwork are excluded from client pages and normal Media Library workflows.', 'mrn-active-style-guide' ); ?></p>
 		<?php if ( $is_stale ) : ?>
 			<div class="notice notice-warning"><p><?php esc_html_e( 'Layout previews need regeneration because the active site styles or layout catalog changed.', 'mrn-active-style-guide' ); ?></p></div>
@@ -608,10 +687,30 @@ function mrn_active_style_guide_render_layout_library_page(): void {
 			.mrn-layout-library-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr)); gap:24px; margin:20px 0; }
 			.mrn-layout-library-card { background:#fff; border:1px solid #d1d9dd; border-radius:8px; overflow:hidden; }
 			.mrn-layout-library-card[hidden] { display:none; }
-			.mrn-layout-library-card__preview { aspect-ratio:3/2; overflow:hidden; position:relative; background:#f4f6f8; border-bottom:1px solid #e4e8ea; }
-			.mrn-layout-library-card__preview-inner { width:200%; min-height:200%; transform:scale(.5); transform-origin:top left; pointer-events:none; }
-			.mrn-layout-library-card__preview .mrn-content-builder { margin:0; }
-			.mrn-layout-library-card__preview .mrn-content-builder__row:first-child { margin-top:0; }
+			.mrn-layout-library-card__preview { aspect-ratio:3/2; overflow:hidden; position:relative; background:#092f42; border-bottom:1px solid #e4e8ea; }
+			.mrn-layout-library-visual { --mrn-layout-preview-ink:#fff; --mrn-layout-preview-accent:#f4b63b; --mrn-layout-preview-surface:#0a3e52; --mrn-layout-preview-image:none; position:relative; isolation:isolate; width:100%; height:100%; overflow:hidden; color:var(--mrn-layout-preview-ink); background:#092f42; font-family:inherit; }
+			.mrn-layout-library-visual__media { position:absolute; inset:0; background-image:var(--mrn-layout-preview-image); background-position:center; background-size:cover; filter:saturate(.86) contrast(1.04); transform:scale(1.01); }
+			.mrn-layout-library-visual__scrim { position:absolute; inset:0; background:linear-gradient(100deg,rgba(2,24,36,.94) 0%,rgba(2,24,36,.72) 43%,rgba(2,24,36,.08) 82%),linear-gradient(0deg,rgba(3,33,49,.48),transparent 55%); }
+			.mrn-layout-library-visual__content { position:absolute; z-index:2; inset:0 auto 0 0; display:flex; width:64%; padding:8% 7%; flex-direction:column; align-items:flex-start; justify-content:center; gap:7px; box-sizing:border-box; }
+			.mrn-layout-library-visual__eyebrow { color:var(--mrn-layout-preview-accent); font-size:8px; font-weight:700; letter-spacing:.13em; line-height:1.2; text-transform:uppercase; }
+			.mrn-layout-library-visual__content strong { max-width:220px; font-size:20px; line-height:1.02; letter-spacing:-.04em; }
+			.mrn-layout-library-visual__line { display:block; width:88%; height:4px; border-radius:99px; background:rgba(255,255,255,.74); }
+			.mrn-layout-library-visual__line--short { width:57%; background:rgba(255,255,255,.44); }
+			.mrn-layout-library-visual__button { display:inline-flex; margin-top:5px; padding:5px 8px; background:var(--mrn-layout-preview-accent); color:#092f42; font-size:8px; font-weight:700; }
+			.mrn-layout-library-visual__tiles { position:absolute; z-index:3; right:7%; bottom:9%; display:grid; width:38%; grid-template-columns:repeat(3,1fr); gap:5px; }
+			.mrn-layout-library-visual__tiles i { display:block; min-height:40px; border:1px solid rgba(255,255,255,.28); background:linear-gradient(145deg,rgba(255,255,255,.93),rgba(210,234,239,.72)); box-shadow:0 7px 18px rgba(0,0,0,.16); }
+			.mrn-layout-library-visual__metrics { position:absolute; z-index:3; right:7%; bottom:10%; display:none; width:44%; align-items:end; gap:8px; height:44%; }
+			.mrn-layout-library-visual__metrics i { display:block; flex:1; background:var(--mrn-layout-preview-accent); box-shadow:0 4px 12px rgba(0,0,0,.25); }
+			.mrn-layout-library-visual__metrics i:nth-child(1) { height:45%; } .mrn-layout-library-visual__metrics i:nth-child(2) { height:78%; background:#a6e2e7; } .mrn-layout-library-visual__metrics i:nth-child(3) { height:100%; }
+			.mrn-layout-library-visual__controls { position:absolute; z-index:3; right:7%; bottom:9%; display:none; width:40%; gap:5px; }
+			.mrn-layout-library-visual__controls i { display:block; height:24px; flex:1; border:1px solid rgba(255,255,255,.65); background:rgba(5,39,56,.66); }
+			.mrn-layout-library-visual--media-split .mrn-layout-library-visual__content { width:52%; background:rgba(4,35,51,.89); } .mrn-layout-library-visual--media-split .mrn-layout-library-visual__scrim { background:linear-gradient(90deg,rgba(0,0,0,.08),transparent); } .mrn-layout-library-visual--media-split .mrn-layout-library-visual__tiles { grid-template-columns:1fr; width:19%; right:6%; bottom:13%; } .mrn-layout-library-visual--media-split .mrn-layout-library-visual__tiles i { min-height:94px; }
+			.mrn-layout-library-visual--cards .mrn-layout-library-visual__content, .mrn-layout-library-visual--collection .mrn-layout-library-visual__content { width:100%; justify-content:flex-start; padding:7%; } .mrn-layout-library-visual--cards .mrn-layout-library-visual__scrim, .mrn-layout-library-visual--collection .mrn-layout-library-visual__scrim { background:linear-gradient(180deg,rgba(3,32,47,.9),rgba(3,32,47,.36)); } .mrn-layout-library-visual--cards .mrn-layout-library-visual__tiles, .mrn-layout-library-visual--collection .mrn-layout-library-visual__tiles { left:7%; right:7%; bottom:8%; width:auto; } .mrn-layout-library-visual--collection .mrn-layout-library-visual__tiles { grid-template-columns:repeat(2,1fr); } .mrn-layout-library-visual--collection .mrn-layout-library-visual__tiles i:last-child { display:none; }
+			.mrn-layout-library-visual--accordion .mrn-layout-library-visual__media, .mrn-layout-library-visual--navigation .mrn-layout-library-visual__media, .mrn-layout-library-visual--tabs .mrn-layout-library-visual__media, .mrn-layout-library-visual--form .mrn-layout-library-visual__media { opacity:.34; } .mrn-layout-library-visual--accordion .mrn-layout-library-visual__content, .mrn-layout-library-visual--navigation .mrn-layout-library-visual__content, .mrn-layout-library-visual--tabs .mrn-layout-library-visual__content, .mrn-layout-library-visual--form .mrn-layout-library-visual__content { width:100%; justify-content:flex-start; padding:7%; } .mrn-layout-library-visual--accordion .mrn-layout-library-visual__tiles, .mrn-layout-library-visual--navigation .mrn-layout-library-visual__tiles, .mrn-layout-library-visual--tabs .mrn-layout-library-visual__tiles, .mrn-layout-library-visual--form .mrn-layout-library-visual__tiles { left:7%; right:7%; bottom:8%; width:auto; grid-template-columns:1fr; gap:4px; } .mrn-layout-library-visual--accordion .mrn-layout-library-visual__tiles i, .mrn-layout-library-visual--navigation .mrn-layout-library-visual__tiles i, .mrn-layout-library-visual--tabs .mrn-layout-library-visual__tiles i, .mrn-layout-library-visual--form .mrn-layout-library-visual__tiles i { min-height:16px; background:rgba(255,255,255,.94); } .mrn-layout-library-visual--tabs .mrn-layout-library-visual__tiles { grid-template-columns:repeat(3,1fr); } .mrn-layout-library-visual--tabs .mrn-layout-library-visual__tiles i { min-height:22px; background:rgba(255,255,255,.3); border-bottom:3px solid var(--mrn-layout-preview-accent); }
+			.mrn-layout-library-visual--showcase .mrn-layout-library-visual__content { width:46%; } .mrn-layout-library-visual--showcase .mrn-layout-library-visual__tiles { grid-template-columns:repeat(2,1fr); right:6%; bottom:7%; width:45%; } .mrn-layout-library-visual--showcase .mrn-layout-library-visual__tiles i:first-child { grid-row:span 2; min-height:91px; }
+			.mrn-layout-library-visual--statistics .mrn-layout-library-visual__scrim, .mrn-layout-library-visual--data .mrn-layout-library-visual__scrim { background:linear-gradient(110deg,rgba(2,24,36,.95),rgba(2,24,36,.46)); } .mrn-layout-library-visual--statistics .mrn-layout-library-visual__metrics, .mrn-layout-library-visual--data .mrn-layout-library-visual__metrics { display:flex; } .mrn-layout-library-visual--statistics .mrn-layout-library-visual__tiles, .mrn-layout-library-visual--data .mrn-layout-library-visual__tiles { display:none; }
+			.mrn-layout-library-visual--logos .mrn-layout-library-visual__content { width:100%; justify-content:flex-start; padding:7%; } .mrn-layout-library-visual--logos .mrn-layout-library-visual__scrim { background:linear-gradient(180deg,rgba(2,24,36,.9),rgba(2,24,36,.28)); } .mrn-layout-library-visual--logos .mrn-layout-library-visual__tiles { left:7%; right:7%; bottom:8%; width:auto; grid-template-columns:repeat(4,1fr); } .mrn-layout-library-visual--logos .mrn-layout-library-visual__tiles i { min-height:34px; }
+			.mrn-layout-library-card__implementation { border-top:1px solid #e4e8ea; background:#f8fafb; } .mrn-layout-library-card__implementation summary { padding:10px 20px; cursor:pointer; font-weight:600; color:#0a3e52; } .mrn-layout-library-card__implementation-preview { max-height:360px; overflow:auto; pointer-events:none; } .mrn-layout-library-card__implementation-preview .mrn-content-builder { margin:0; }
 			.mrn-layout-library-card__unavailable { display:grid; min-height:220px; place-items:center; padding:20px; box-sizing:border-box; background:#f4f6f8; color:#53646b; text-align:center; }
 			.mrn-layout-library-card__copy { padding:20px; }
 			.mrn-layout-library-card__title { font-size:19px; line-height:1.3; color:#0a3e52; margin:8px 0 12px; }
@@ -628,8 +727,9 @@ function mrn_active_style_guide_render_layout_library_page(): void {
 			$search = strtolower( $entry['layout']['label'] . ' ' . $layout_name . ' ' . $guide['description'] . ' ' . implode( ' ', $guide['keywords'] ) );
 			?>
 			<article class="mrn-layout-library-card" data-category="<?php echo esc_attr( $guide['category'] ); ?>" data-search="<?php echo esc_attr( $search ); ?>">
-				<?php if ( $preview && in_array( $preview, $manifest['targets'], true ) ) : ?><div class="mrn-layout-library-card__preview" aria-label="<?php echo esc_attr( sprintf( __( '%s layout preview', 'mrn-active-style-guide' ), $entry['layout']['label'] ) ); ?>"><div class="mrn-layout-library-card__preview-inner"><?php echo $preview['markup']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Stack renderer escapes its complete markup contract. ?></div></div><?php else : ?><div class="mrn-layout-library-card__unavailable"><?php echo esc_html( (string) ( $preview['reason'] ?? __( 'Fixture markup was empty. Regenerate it; if it remains empty, add a layout blueprint to the site preview profile.', 'mrn-active-style-guide' ) ) ); ?></div><?php endif; ?>
+				<?php if ( $preview && in_array( $preview, $manifest['targets'], true ) ) : ?><div class="mrn-layout-library-card__preview" aria-label="<?php echo esc_attr( sprintf( __( '%s illustrative layout preview', 'mrn-active-style-guide' ), $entry['layout']['label'] ) ); ?>"><?php echo mrn_active_style_guide_render_layout_library_visual_preview( $layout_name, $profile ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Stack-owned illustrative markup. ?></div><?php else : ?><div class="mrn-layout-library-card__unavailable"><?php echo esc_html( (string) ( $preview['reason'] ?? __( 'No private fixture exists yet. Regenerate previews; if it persists, add a layout blueprint to the site preview profile.', 'mrn-active-style-guide' ) ) ); ?></div><?php endif; ?>
 				<div class="mrn-layout-library-card__copy"><p class="mrn-layout-library-card__category"><?php echo esc_html( $guide['category'] ); ?></p><h2 class="mrn-layout-library-card__title"><?php echo esc_html( $entry['layout']['label'] ); ?></h2><p><?php echo esc_html( $guide['description'] ); ?></p><details><summary><?php esc_html_e( 'Editable fields', 'mrn-active-style-guide' ); ?></summary><ul><?php foreach ( $fields as $field ) : ?><li><strong><?php echo esc_html( $field['label'] ); ?></strong><?php if ( 'repeater' === ( $field['type'] ?? '' ) ) : ?> — <?php esc_html_e( 'repeatable items', 'mrn-active-style-guide' ); ?><?php endif; ?></li><?php endforeach; ?></ul></details></div>
+				<?php if ( $preview && in_array( $preview, $manifest['targets'], true ) ) : ?><details class="mrn-layout-library-card__implementation"><summary><?php esc_html_e( 'Inspect the rendered fixture', 'mrn-active-style-guide' ); ?></summary><div class="mrn-layout-library-card__implementation-preview" inert aria-hidden="true"><?php echo $preview['markup']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Stack renderer escapes its complete markup contract. ?></div></details><?php endif; ?>
 			</article>
 		<?php endforeach; ?>
 		</div>
