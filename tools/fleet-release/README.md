@@ -78,6 +78,15 @@ that this administrative step happened. Provider administration needs its own
 exact target authorization. Publication keeps a private exact filesystem
 rollback archive; this does not replace a site's Updraft pre-write backup gate.
 
+The private release depot also receives `mrn-site-release-v1.tar`. Its
+manifest binds the runner and its dependencies to tracked merged source, and
+qualification and readback bind the packaged bytes to the Fleet release. The
+archive includes only runner code and examples. Operators install it into a
+private runner directory and supply a separately provisioned adapter and
+journal. Use `mrn fleet release plan` or `status` with the exact enrolled URL.
+The same command can run or resume individual authorized phases. Publishing the
+runner does not enroll targets or run site releases.
+
 Only the ordinary parent theme, release lock and checksums are GitHub release
 assets. Fleet and vendor/bootstrap ZIPs remain in the private source depot.
 `published-fleet-source.mjs` binds the later explicit Fleet command to the

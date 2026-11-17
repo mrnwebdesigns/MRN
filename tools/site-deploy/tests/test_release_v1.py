@@ -81,6 +81,23 @@ class Artifacts(Project):
         retry = self.root / 'retry.tar'
         self.assertEqual(built['artifact_sha256'], pack(self.repo, self.source, self.code, retry)['artifact_sha256'])
 
+    def test_mixed_layout_keeps_legacy_blobs_outside_the_closed_v1_scope(self):
+        script = self.content / 'v1-pilot.php'
+        (self.content / ROW['script']).rename(script)
+        row = {**ROW, 'id': 'v1-pilot', 'script': script.name}
+        (self.content / 'migrations.json').write_text(json.dumps({'schema': SCHEMA, 'migrations': [row]}))
+        (self.content / 'legacy.php').write_text('<?php return true;')
+        self.source = commit(self.repo)
+        with self.assertRaisesRegex(ValueError, 'unreferenced'):
+            self.package()
+        built = self.package(migration_prefix='v1-')
+        with inspect(self.archive, built['artifact_sha256'], self.source) as (_, manifest, _):
+            self.assertEqual(list(manifest['files']), ['media/hero.png', 'v1-pilot.php'])
+        (self.content / 'v1-unreferenced.php').write_text('<?php return true;')
+        self.source = commit(self.repo)
+        with self.assertRaisesRegex(ValueError, 'unreferenced'):
+            pack(self.repo, self.source, self.code, self.root / 'second.tar', migration_prefix='v1-')
+
     def test_missing_asset_is_rejected(self):
         (self.content / ROW['assets'][0]).unlink()
         self.source = commit(self.repo)
@@ -448,6 +465,15 @@ class Phases(Project):
         self.run_phase('backup')
         self.run_phase('activate')
         self.assertEqual(self.adapter.calls.count('backup:deploy'), 2)
+
+    def test_fleet_plan_checks_the_immutable_artifact_without_opening_journal(self):
+        plan = self.controller.plan(self.request, self.archive)
+        self.assertEqual(plan['plan']['selected_migrations'], ['hero-v1'])
+        self.assertEqual(plan['current_release'], BASELINE)
+        self.assertEqual(plan['next'], 'preflight')
+        self.assertEqual(list(self.journal.root.iterdir()), [])
+        with self.assertRaisesRegex(Blocked, 'exact target authorization'):
+            self.controller.plan(replace(self.request, target=replace(self.target, site_id='other')), self.archive)
 
     def test_cli_status_is_read_only_and_reports_actionable_next_command(self):
         script = self.root / 'fixture_adapter.py'

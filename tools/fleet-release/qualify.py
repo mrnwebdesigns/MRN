@@ -187,6 +187,7 @@ def qualify(repo, standalone, built, settings, evidence, selected):
                  'fleet_sha256': file_hash(built['fleet']),
                  'bootstrap_sha256': file_hash(built['bootstrap_archive']),
                  'optional_sha256': file_hash(built['optional_archive']),
+                 'site_release_runner_sha256': file_hash(built['site_release_runner']),
                  'coverage': ['source', 'contracts', 'installed-default-packages', 'no-woocommerce',
                               'installed-optional-packages',
                               'native-editor', 'native-wpforms', 'native-presentations', 'api', 'browser',

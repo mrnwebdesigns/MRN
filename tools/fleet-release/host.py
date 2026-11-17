@@ -170,7 +170,7 @@ class SourceStore:
 
     def verify_artifact(self, release, filename, checksum):
         if (not ID.fullmatch(release) or not HASH.fullmatch(checksum)
-                or not re.fullmatch(r'(mrn-stack-release-[A-Za-z0-9.-]+\.zip|qualification\.json|bootstrap\.tar|source\.tar|optional-plugins\.tar)', filename)):
+                or not re.fullmatch(r'(mrn-stack-release-[A-Za-z0-9.-]+\.zip|qualification\.json|bootstrap\.tar|source\.tar|optional-plugins\.tar|mrn-site-release-v1\.tar)', filename)):
             raise PublicationError('Artifact outside private source distribution scope')
         path = self.depot / release / filename
         if (path.is_symlink() or not path.is_file() or path.stat().st_uid != os.geteuid()
@@ -190,7 +190,7 @@ class SourceStore:
             temporary.unlink(missing_ok=True)
             return result
         # Validate the lexical name before touching any received bytes.
-        if not re.fullmatch(r'(mrn-stack-release-[A-Za-z0-9.-]+\.zip|qualification\.json|bootstrap\.tar|source\.tar|optional-plugins\.tar)', filename):
+        if not re.fullmatch(r'(mrn-stack-release-[A-Za-z0-9.-]+\.zip|qualification\.json|bootstrap\.tar|source\.tar|optional-plugins\.tar|mrn-site-release-v1\.tar)', filename):
             raise PublicationError('Invalid private artifact name')
         if (temporary.is_symlink() or not temporary.is_file()
                 or temporary.stat().st_uid != os.geteuid() or sha(temporary) != checksum
@@ -219,6 +219,9 @@ class SourceStore:
             raise PublicationError('Private Fleet artifact is ambiguous/missing')
         self.verify_artifact(manifest['release_id'], fleet[0].name, proof['fleet_sha256'])
         self.verify_artifact(manifest['release_id'], 'optional-plugins.tar', proof.get('optional_sha256', ''))
+        runner = proof.get('site_release_runner_sha256')
+        if runner is not None or (job / 'mrn-site-release-v1.tar').exists():
+            self.verify_artifact(manifest['release_id'], 'mrn-site-release-v1.tar', runner or '')
         return proof
 
     def enrollment(self):
