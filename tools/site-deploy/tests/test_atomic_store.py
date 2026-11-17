@@ -12,6 +12,7 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).parents[1]))
 from atomic_store import Store, inventory
 from deploy import digest
+from release_v1.host import AtomicCode
 import test_release as release_fixture
 TOOLS = release_fixture.TOOLS
 
@@ -75,6 +76,19 @@ class AtomicStoreContract(unittest.TestCase):
             self.assertTrue((self.content / new['public_path'] / 'style.min.css').is_file())
             self.assertEqual(self.before['style.min.css'], inventory(self.theme)['style.min.css'])
             self.assertEqual(0o755, (self.content / new['public_path']).stat().st_mode & 0o777)
+
+    def test_v1_adapter_reuses_atomic_activation_and_retained_rollback(self):
+        fixture = release_fixture.ReleaseArtifactContract
+        with self.store.locked_store():
+            old = self.adopt()
+        code = AtomicCode(self.store, '.')
+        manifest = {'code_sha256': fixture.expected, 'source_sha': fixture.sha}
+        self.assertEqual(code.check(fixture.archive, manifest)['artifact_sha256'], fixture.expected)
+        self.assertEqual(code.current(), old['release_id'])
+        code.activate(fixture.archive, manifest, old['release_id'])
+        self.assertEqual(code.current(), fixture.expected)
+        code.rollback(old['release_id'], fixture.expected)
+        self.assertEqual(code.current(), old['release_id'])
 
     def test_adoption_preserves_temporary_root_for_legacy_cleanup(self):
         with self.store.locked_store():

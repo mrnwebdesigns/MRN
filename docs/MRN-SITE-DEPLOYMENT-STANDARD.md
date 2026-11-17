@@ -9,6 +9,10 @@ activation, scoped HTML refresh, and public manifest/checksum verification.
 Keep target-specific source, backup, rollback, browser and runtime receipts in
 the site repository and operational record; incomplete adapters stay disabled.
 
+For adapter adoption with tracked WordPress content or media, see the
+[site release contract v1](../tools/site-deploy/release_v1/README.md) and the
+[MRN deployment update](MRN-DEPLOYMENT-UPDATE-V1.md).
+
 ## Daily workflow
 
 Use one source repository per site, one task branch/worktree per change, and a

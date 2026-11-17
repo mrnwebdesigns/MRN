@@ -1,0 +1,9 @@
+#!/usr/bin/env python3
+"""MRN site-release v1 command-line entry point."""
+import sys
+
+sys.dont_write_bytecode = True
+
+from release_v1.cli import main
+
+raise SystemExit(main())
