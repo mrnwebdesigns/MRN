@@ -122,6 +122,7 @@ test('MCP read scope can inspect CSS, PHP and JS metadata without requesting or 
   const audit = f.store.db.prepare('SELECT subject,outcome FROM audit WHERE event=?').all('code:read');
   assert.deepEqual(audit.map(row => row.outcome), ['attempted', 'returned', 'attempted', 'returned', 'attempted', 'returned', 'attempted', 'failed']);
   assert.ok(audit.every(row => row.subject === person.subject));
+  assert.deepEqual(f.state.calls, Array(4).fill(toolNames.site), 'Checksum requests must not sync inventory.');
   assert.equal(f.state.mutations, 0); assert.equal(f.state.backups, 0);
 });
 

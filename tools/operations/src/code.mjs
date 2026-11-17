@@ -8,7 +8,9 @@ export const codePath = z.string().max(512).regex(/^wp-content\/(?:themes|plugin
 export async function codeInspection(session, path, { includeContent = true } = {}) {
   codePath.parse(path);
   z.boolean().parse(includeContent);
-  const site = await session.fresh();
+  // Site binding is verified by the Dashboard; the signed file inspection
+  // itself is a current Child read. The checksum path never refreshes inventory.
+  const site = includeContent ? await session.fresh() : await session.resolveSite();
   const result = await session.call(toolNames.codeInspect, { site_id: site.id, site_url: site.url + '/', path, include_content: includeContent });
   const data = result.data || result;
   requireThat(data.success === true && typeof data.exists === 'boolean'

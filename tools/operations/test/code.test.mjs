@@ -19,6 +19,7 @@ test('code inspection preserves exact target and verifies bytes before returning
   f.service.verifyStaff = async () => {};
   const result = await f.service.inspectCode(person, { website: 'example', path });
   assert.equal(result.content, bytes.toString()); assert.equal(result.sha256, digest(bytes));
+  assert.deepEqual(f.state.calls, [toolNames.site, toolNames.sync, toolNames.site]);
   assert.equal(result.storage.backupReady, true);
   state.sha256 = 'a'.repeat(64);
   await assert.rejects(() => f.service.inspectCode(person, { website: 'example', path }), { code: 'CODE_PRECONDITION' });

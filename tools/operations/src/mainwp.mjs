@@ -223,8 +223,12 @@ export class MainwpSession {
     return result;
   }
   async call(name, args, options) { return payload(await this.callTool({ name, arguments: args }, undefined, options)); }
-  async fresh() {
+  async resolveSite() {
     await this.call(toolNames.site, { site_id_or_domain: this.target.url, include_stats: false });
+    return { id: this.siteId, url: this.target.url };
+  }
+  async fresh() {
+    await this.resolveSite();
     const start = Math.floor(Date.now() / 1000) * 1000;
     try { await this.call(toolNames.sync, { site_ids: [this.siteId] }); }
     catch (e) { if (e.code !== 'DOWNSTREAM_TIMEOUT') throw e; }
