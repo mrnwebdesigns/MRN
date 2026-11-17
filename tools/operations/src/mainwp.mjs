@@ -4,6 +4,7 @@ import { parseResourceResult, parseToolResult, normalizeSiteUrl } from '../../..
 import { OpsError, requireThat } from './contracts.mjs';
 
 export const toolNames = {
+  brandPalette: 'mrn_mainwp__read_stack_brand_palette_v1',
   site: 'get_site_v1', sync: 'sync_sites_v1', plugins: 'get_site_plugins_v1', themes: 'get_site_themes_v1',
   security: 'get_site_security_v1', updates: 'get_site_updates_v1', ignoredUpdates: 'list_ignored_updates_v1', changes: 'get_site_changes_v1',
   runtime: 'mrn_mainwp__get_stack_runtime_report_v1', qualify: 'mrn_mainwp__qualify_stack_site_v1',

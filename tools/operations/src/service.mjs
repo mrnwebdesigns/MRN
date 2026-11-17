@@ -124,7 +124,16 @@ export class Operations {
     await this.discovery?.refresh(actor);
     const target = this.registry.resolve(actor, website, environment);
     const session = await this.session(actor, target, 'read');
-    try { return await websiteDetails(session, section, this.readOnlySurface); } finally { await session.close(); }
+    const observe = async paletteProperty => {
+      const authorize = () => this.registry.current(actor, target, 'read');
+      await this.verifyStaff?.(actor);
+      try { return await this.publicProbe?.(target.url, authorize, { paletteProperty }); }
+      catch (error) {
+        if (['FORBIDDEN', 'AUTH_REQUIRED'].includes(error.code)) throw error;
+        return null;
+      }
+    };
+    try { return await websiteDetails(session, section, this.readOnlySurface, observe); } finally { await session.close(); }
   }
   async readContent(actor, { website, environment, kind, recordId, search, maximum, page, statuses }) {
     await this.discovery?.refresh(actor);

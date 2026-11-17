@@ -3,12 +3,13 @@ import { lookup } from 'node:dns/promises';
 import ipaddr from 'ipaddr.js';
 import { load } from 'cheerio';
 import { requireThat, digest } from './contracts.mjs';
+import { emittedPaletteDeclaration } from './configuration.mjs';
 
 export function publicAddress(address) {
   try { const parsed = ipaddr.process(address); return parsed.range() === 'unicast'; } catch { return false; }
 }
 export const htmlContentText = html => load(html, null, false).root().text().replace(/\s+/gu, ' ').trim();
-export function responseEvidence(url, status, body, timing, { references = [], checkRest = false, contentAssertions = [] } = {}) {
+export function responseEvidence(url, status, body, timing, { references = [], checkRest = false, contentAssertions = [], paletteProperty } = {}) {
   const html = body.toString('utf8');
   const linked = [...html.matchAll(/<(?:script|link)\b[^>]*\b(?:src|href)\s*=\s*["']([^"']+)["']/gi)].map(m => { try { return new URL(m[1], url).href; } catch { return ''; } });
   const result = { status, ...timing, bytes: body.length, contentSha256: digest(body),
@@ -34,6 +35,7 @@ export function responseEvidence(url, status, body, timing, { references = [], c
       return { selector: a.selector, matches: nodes.length, passed: nodes.length === 1 && nodes.text().replace(/\s+/gu, ' ').trim() === a.expectedText };
     });
   }
+  if (paletteProperty) result.paletteDeclaration = status === 200 ? emittedPaletteDeclaration(html, paletteProperty) : null;
   return result;
 }
 // Exact registry destinations only. Pin the DNS result to the TLS connection;

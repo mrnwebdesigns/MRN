@@ -18,11 +18,12 @@ export class Store {
   }
   transaction(fn) { this.db.exec('BEGIN IMMEDIATE'); try { const r = fn(); this.db.exec('COMMIT'); return r; } catch (e) { this.db.exec('ROLLBACK'); throw e; } }
   close() { this.db.close(); }
-  audit(actor, target, operation, event, outcome) {
+  audit(actor, target, operation, event, outcome, providerReadIds = []) {
     // Never store tool arguments, response bodies, JWTs, passwords, confirmation tokens or backup receipts.
     return this.db.prepare('INSERT INTO audit(time,subject,target,operation,event,outcome,identity) VALUES(?,?,?,?,?,?,?)')
       .run(new Date().toISOString(), actor.subject, targetKey(target), operation || '', event, outcome,
-        JSON.stringify(actor.identityProvider === 'google-oauth2' ? { googleSubject: actor.googleSubject, email: actor.verifiedEmail, provider: actor.identityProvider } : {})).lastInsertRowid;
+        JSON.stringify(actor.identityProvider === 'google-oauth2' ? { googleSubject: actor.googleSubject, email: actor.verifiedEmail,
+          provider: actor.identityProvider, ...(providerReadIds.length ? { providerReadIds } : {}) } : {})).lastInsertRowid;
   }
   get(id) { const row = this.db.prepare('SELECT body FROM records WHERE id=?').get(id); requireThat(row, 'NOT_FOUND', 'Record not found.'); return JSON.parse(row.body); }
   save(record) {

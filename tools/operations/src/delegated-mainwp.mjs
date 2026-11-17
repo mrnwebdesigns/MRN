@@ -8,6 +8,7 @@ import { managementSchemas } from './content-management-contract.mjs';
 import { validateDraftPreview } from './content-editorial.mjs';
 import { OriginalManagementAuthorizationLedger, originalQualificationAbility } from './original-management-authorization.mjs';
 import { originalReadinessObservation } from './original-authorization-transport.mjs';
+import { retainProviderRead } from './read-audit.mjs';
 
 export const qualificationQueueTool = 'mrn_mainwp__queue_delegated_qualification_v1';
 
@@ -20,7 +21,7 @@ const readAbilities = new Set([
   'count-sites', 'list-clients', 'count-clients', 'get-client', 'get-client-sites', 'count-client-sites', 'get-client-costs',
   'list-tags', 'get-tag', 'get-tag-sites', 'get-tag-clients', 'list-ignored-updates', 'list-updates', 'get-batch-job-status',
 ].map(name => `mainwp/${name}-v1`).concat([
-  'get-stack-runtime-report', 'qualify-stack-site', 'get-stack-deployment-agent-status', 'get-google-fonts-status',
+  'get-stack-runtime-report', 'read-stack-brand-palette', 'qualify-stack-site', 'get-stack-deployment-agent-status', 'get-google-fonts-status',
   'inspect-backup-retention-policy', 'inspect-code-file', 'get-code-operation',
   'get-content-policy', 'inspect-content', 'get-content-operation', 'get-content-migration',
   'list-content-records', 'read-content-record',
@@ -50,7 +51,7 @@ export function abilityName(tool) {
 // Construct one instance per verified actor. Nothing is written into the shared
 // MCP client's session, environment or Google lease; every dispatch is signed.
 export class DelegatedMainwpClient {
-  constructor(client, actor, signer) { Object.assign(this, { client, actor, signer }); }
+  constructor(client, actor, signer, { readOnly = false } = {}) { Object.assign(this, { client, actor, signer, readOnly }); }
   async ready() {
     validateStatus(await this.client.readResource({ uri: 'mainwp://status' }));
     const names = new Set(); const metadata = new Map(); const cursors = new Set(); let cursor;
@@ -91,6 +92,8 @@ export class DelegatedMainwpClient {
   }
   async callTool({ name, arguments: args = {} }, _schema, options) {
     const ability = abilityName(name);
+    requireThat(!this.readOnly || readAbilities.has(ability) && ability !== 'mrn-mainwp/qualify-stack-site-v1',
+      'CAPABILITY_DENIED', 'The read-only transport does not dispatch sync, qualification or write operations.');
     requireThat(readAbilities.has(ability) || writeAbilities.has(ability) || ability === 'mainwp/sync-sites-v1',
       'CAPABILITY_DENIED', 'No qualified delegated adapter exists for this operation.');
     if (writeAbilities.has(ability)) requireWriteScope(this.actor);
@@ -130,6 +133,7 @@ export class DelegatedMainwpClient {
     requireThat(result.ability === ability && result.request_id === claims.request_id
       && result.policy_sha256 === claims.policy_sha256 && identityMatches(result.actor, this.actor),
     'DELEGATION_MISMATCH', 'MainWP returned a result for a different request or verified person.');
+    if (wrapper === delegationTools.read) retainProviderRead(this.actor, result.request_id);
     return { content: [{ type: 'text', text: JSON.stringify(result.result) }] };
   }
   // Private source integration only: no workspace exposure or worker dispatch.

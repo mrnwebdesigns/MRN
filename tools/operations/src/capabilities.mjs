@@ -1,15 +1,17 @@
 import { requireThat, digest } from './contracts.mjs';
 import { toolNames, validateStatus, withoutSecrets, payload } from './mainwp.mjs';
 import { updateEvidence } from './updates.mjs';
+import { runtimeEvidence } from './inspect.mjs';
+import { paletteEvidence } from './configuration.mjs';
 
 export const detailSections = Object.freeze({
   plugins: toolNames.plugins, themes: toolNames.themes, updates: toolNames.updates, ignored_updates: toolNames.ignoredUpdates, security: toolNames.security,
   changes: toolNames.changes, abandoned_plugins: toolNames.abandonedPlugins, abandoned_themes: toolNames.abandonedThemes,
   client: toolNames.siteClient, costs: toolNames.siteCosts, google_fonts: toolNames.fonts,
   backup_policy: toolNames.backupPolicy, deployment_agent: toolNames.deploymentAgent,
-  stack_runtime: toolNames.runtime, stack_qualification: toolNames.qualify,
+  stack_runtime: toolNames.runtime, brand_palette: toolNames.brandPalette, stack_qualification: toolNames.qualify,
 });
-export const readOnlyDetailSections = Object.freeze(['plugins', 'themes', 'updates', 'security']);
+export const readOnlyDetailSections = Object.freeze(['plugins', 'themes', 'updates', 'security', 'stack_runtime', 'brand_palette']);
 export const portfolioSections = Object.freeze({ sites: 'list_sites_v1', clients: 'list_clients_v1', client: 'get_client_v1', client_sites: 'get_client_sites_v1',
   client_costs: 'get_client_costs_v1', client_site_count: 'count_client_sites_v1', client_count: 'count_clients_v1',
   tags: 'list_tags_v1', tag: 'get_tag_v1', tag_sites: 'get_tag_sites_v1', tag_clients: 'get_tag_clients_v1', site_count: 'count_sites_v1',
@@ -104,7 +106,7 @@ export async function portfolioDetails(client, authorize, { section, recordId, p
         : 'Portfolio directory information. Site inventory and health require an exact-site fresh inspection.' };
 }
 
-export async function websiteDetails(session, section, cached = false) {
+export async function websiteDetails(session, section, cached = false, observePalette) {
   requireThat(Object.hasOwn(detailSections, section), 'CAPABILITY_DENIED', 'Choose one supported website detail section.');
   requireThat(!cached || readOnlyDetailSections.includes(section), 'CAPABILITY_DENIED', 'Choose an inventory section on the read-only release.');
   const site = cached ? await session.resolveSite({ inventoryTimestamp: true }) : await session.fresh();
@@ -114,8 +116,14 @@ export async function websiteDetails(session, section, cached = false) {
     : provider ? { site_id: site.id } : { site_id_or_domain: site.id };
   if (section === 'google_fonts') args.check_frontend = true;
   const raw = await session.call(tool, args);
-  if (cached) requireThat(raw?.site_id === site.id && (!raw.site_url || [site.url, site.url + '/'].includes(raw.site_url)),
+  if (cached || section === 'brand_palette') requireThat(raw?.site_id === site.id && (!raw.site_url || [site.url, site.url + '/'].includes(raw.site_url)),
     'TARGET_MISMATCH', 'The Dashboard inventory returned a different site.');
+  if (section === 'stack_runtime' && cached) {
+    requireThat([site.url, site.url + '/'].includes(raw?.site_url) && raw?.report?.schema_version === 1
+      && Array.isArray(raw.report.components), 'TARGET_MISMATCH', 'The provider did not return an exact supported Stack runtime report.');
+    return { site, section, observedAt: new Date().toISOString(), data: runtimeEvidence(raw.report) };
+  }
+  if (section === 'brand_palette') return { site, section, observedAt: new Date().toISOString(), data: await paletteEvidence(raw, site, observePalette) };
   const data = section === 'updates' ? updateEvidence(raw, site.id, site.url) : withoutSecrets(raw);
   return { site, section, observedAt: new Date().toISOString(), ...(cached ? { inventorySource: 'dashboard_cache' } : {}), data };
 }

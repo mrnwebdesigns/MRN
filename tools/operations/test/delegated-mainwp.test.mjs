@@ -18,12 +18,13 @@ import { Operations } from '../src/service.mjs';
 import { createHttpServer } from '../src/http.mjs';
 import { createAuthenticator } from '../src/auth.mjs';
 import { digest } from '../src/contracts.mjs';
+import { responseEvidence } from '../src/probe.mjs';
 
 const response = value => ({ content: [{ type: 'text', text: JSON.stringify(value) }] });
 function fixture() {
   const { privateKey, publicKey } = generateKeyPairSync('ed25519');
   const signer = new IdentitySigner({ keyId: 'fixture-only', privateKey, connectionId: 'con_MRNGoogle' });
-  const state = { calls: [], dispatched: [], consumed: new Set(), challenges: new Map(), revoked: new Set(), corrupt: null };
+  const state = { calls: [], dispatched: [], receipts: new Map(), consumed: new Set(), challenges: new Map(), revoked: new Set(), corrupt: null };
   const actor = id => Object.freeze({ subject: `google-oauth2|${id}`, googleSubject: id, verifiedEmail: `staff${id}@mrnwebdesigns.com`, expiresAt: Date.now() + 300000, identityProvider: 'google-oauth2', googleConnection: 'con_MRNGoogle', hostedDomain: 'mrnwebdesigns.com', scopes: ['mrn:operations', 'mrn:operations:write'] });
   const client = {
     async readResource() { return { contents: [{ text: JSON.stringify({ connected: true, dashboardHost: 'wpcontrol.mrndev.io', abilitiesCount: 110 }) }] }; },
@@ -55,6 +56,7 @@ function fixture() {
       if (name === delegationTools.access) return response({ ...person, schema: 1, roles: ['reader', 'preparer', 'approver', 'executor'], portfolio_access: true, expires_at: claims.expires_at, policy_sha256: claims.policy_sha256 });
       assert.equal(args.ability, claims.ability); assert.equal(delegationDigest(JSON.parse(args.arguments_json)), claims.arguments_sha256);
       state.dispatched.push({ person, ability: args.ability, args: JSON.parse(args.arguments_json) });
+      state.receipts.set(claims.request_id, { person, ability: args.ability });
       const result = { schema: 1, request_id: claims.request_id, ability: args.ability, actor: person, result: { id: 85 }, policy_sha256: claims.policy_sha256 };
       state.corrupt?.(result, JSON.parse(args.arguments_json)); return response(result);
     },
@@ -84,14 +86,20 @@ test('consolidated MCP uses the exact individual for reads and receipts without 
   snapshots.snapshot_sha256 = delegationDigest(snapshots.snapshot);
   const update = { site_id: site.id, site_url: site.url, updates: [{ type: 'plugin', name: 'Fixture plugin', slug: 'fixture/fixture.php', current_version: '1.0', new_version: '1.1' }],
     summary: { core: 0, plugins: 1, themes: 0, translations: 0, total: 1 } };
-  let dropContent = false, wrongPerson = false, oversize = false, wrongRecord = false, denyDuringChecksum = false;
+  let dropContent = false, wrongPerson = false, oversize = false, wrongRecord = false, wrongPaletteSite = false, denyDuringChecksum = false;
   const listed = f.client.listTools.bind(f.client);
   f.client.listTools = async () => ({ tools: [...(await listed()).tools,
     ...['get_site_v1', 'get_site_plugins_v1', 'get_site_themes_v1', 'get_site_updates_v1', 'get_site_security_v1',
-      'mrn_mainwp__inspect_code_file_v1', ...(!dropContent ? ['mrn_mainwp__list_content_records_v1', 'mrn_mainwp__read_content_record_v1'] : [])].map(name => ({ name }))] });
+      'mrn_mainwp__get_stack_runtime_report_v1', 'mrn_mainwp__read_stack_brand_palette_v1', 'mrn_mainwp__inspect_code_file_v1', ...(!dropContent ? ['mrn_mainwp__list_content_records_v1', 'mrn_mainwp__read_content_record_v1'] : [])].map(name => ({ name }))] });
   f.state.corrupt = (out, args) => {
     if (out.ability === 'mainwp/get-site-v1') out.result = { ...site, status: 'connected', last_sync: '2026-11-01T12:00:00Z' };
     else if (out.ability === 'mainwp/get-site-updates-v1') out.result = update;
+    else if (out.ability === 'mrn-mainwp/get-stack-runtime-report-v1') out.result = { site_id: site.id, site_url: site.url, report: {
+      schema_version: 1, components: [{ slug: 'mrn-site-colors', version: '0.1.39', loaded: true, runtime_type: 'mu-component' }],
+      private_file: 'must-not-return' } };
+    else if (out.ability === 'mrn-mainwp/read-stack-brand-palette-v1') out.result = { site_id: site.id, site_url: wrongPaletteSite ? 'https://wrong.example.invalid' : site.url,
+      schema_version: 1, component_version: '0.1.39', source: 'site_styles_normalized_saved_palette',
+      colors: [{ slug: 'brand', hex: '#AABBCC', css_property: '--site-color-brand' }] };
     else if (out.ability === 'mrn-mainwp/list-content-records-v1') out.result = { site_id: site.id, site_url: site.url, success: true,
       page: args.page, per_page: args.per_page, total: 1, total_pages: 1, items: [{ post_id: 7, post_type: args.post_type,
         post_title: 'Home', post_name: 'home', post_status: 'publish', modified_gmt: '2026-11-01 12:00:00' }] };
@@ -108,10 +116,13 @@ test('consolidated MCP uses the exact individual for reads and receipts without 
       if (denyDuringChecksum) f.state.revoked.add(out.actor.google_sub);
     } else out.result = { site_id: site.id, site_url: site.url, items: [] };
   };
-  const connect = async person => new DelegatedMainwpClient(f.client, person, f.signer);
+  const connect = async person => new DelegatedMainwpClient(f.client, person, f.signer, { readOnly: true });
   const verifyStaff = async person => { local.registry.member(person); return (await connect(person)).verifyStaff(); };
   const service = new Operations({ ...local.service, connect, verifyStaff, writesEnabled: false, readOnlySurface: true,
-    content: { read() { assert.fail('No raw REST fallback'); } } });
+    publicProbe: async (url, authorize, options) => {
+      authorize(); assert.ok(url.startsWith(site.url));
+      return responseEvidence(url, 200, Buffer.from('<style id="mrn-site-colors-vars">:root{--site-color-brand:#DDEEFF;}</style>'), {}, options);
+    }, content: { read() { assert.fail('No raw REST fallback'); } } });
   const { privateKey, publicKey } = await generateKeyPair('ES256');
   const issuer = 'https://oauth.example.invalid/', keySet = createLocalJWKSet({ keys: [await exportJWK(publicKey)] });
   const reservation = createServer(); await new Promise(done => reservation.listen(0, '127.0.0.1', done));
@@ -150,6 +161,15 @@ test('consolidated MCP uses the exact individual for reads and receipts without 
   assert.equal(inventory.site.syncedAt, '2026-11-01T12:00:00.000Z');
   assert.equal(inventory.inventorySource, 'dashboard_cache');
   assert.equal(inventory.data.updates[0].name, 'Fixture plugin');
+  const runtime = view(await call('read_website_details', { ...args, section: 'stack_runtime' }));
+  assert.equal(runtime.data.components[0].version, '0.1.39');
+  assert.doesNotMatch(JSON.stringify(runtime), /must-not-return/);
+  const palette = view(await call('read_website_details', { ...args, section: 'brand_palette' }));
+  assert.equal(palette.data.colors[0].storedHex, '#AABBCC');
+  assert.equal(palette.data.frontend.declaredHex, '#DDEEFF');
+  assert.equal(palette.data.frontend.status, 'mismatch');
+  assert.equal(palette.data.frontend.computedHex, null);
+  wrongPaletteSite = true; assert.ok((await call('read_website_details', { ...args, section: 'brand_palette' })).isError); wrongPaletteSite = false;
   assert.deepEqual(inventory.data.updates, inspection.evidence.find(x => x.source === 'mainwp:updates').updates);
   assert.equal(view(await call('get_operation', { operationId: inspection.id })).id, inspection.id);
   const hidden = local.store.create('operation', people.a, local.registry.resolve(people.a, 'example'), { workflow: 'code', plan: { content: 'retained-private-source' } });
@@ -172,6 +192,10 @@ test('consolidated MCP uses the exact individual for reads and receipts without 
     assert.equal(row.subject, who.subject); assert.equal(JSON.parse(row.identity).googleSubject, who.googleSubject);
     assert.equal(row.target, site.url); assert.equal(row.event, 'readonly:inspect_website_code'); assert.equal(row.outcome, 'returned');
     assert.ok(!JSON.stringify(row).includes('source-bytes-must-not-leak'));
+    const ids = JSON.parse(row.identity).providerReadIds;
+    assert.ok(ids.length >= 2);
+    assert.ok(ids.every(id => f.state.receipts.get(id)?.person.google_sub === who.googleSubject));
+    assert.ok(ids.some(id => f.state.receipts.get(id)?.ability === 'mrn-mainwp/inspect-code-file-v1'));
   }
   assert.equal((await wire('tools/list', {}, null)).code, 401);
   assert.equal((await wire('tools/list', {}, await token(people.a, {}, '-2m'))).code, 401);

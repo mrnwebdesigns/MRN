@@ -38,7 +38,7 @@ try {
   const recoveryEvidence = config.recoveryEvidencePath ? new RecoveryEvidence(() => readJson(config.recoveryEvidencePath)) : null;
   const connect = async actor => {
     const client = await connectMainwp(config.mainwp);
-    return signer ? new DelegatedMainwpClient(client, actor, signer) : client;
+    return signer ? new DelegatedMainwpClient(client, actor, signer, { readOnly: config.readOnlySurface }) : client;
   };
   const verifyStaff = async actor => {
     registry.member(actor); // Explicit local revocations still override the domain grant.
