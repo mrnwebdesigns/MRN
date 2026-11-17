@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 // Invoked ONLY by the provider's disposable runtime hook, before its cleanup.
 // Real gateway/MCP/WordPress transport; ephemeral OAuth and Google Directory.
 import assert from 'node:assert/strict';
@@ -11,12 +12,13 @@ import { createAuthenticator } from '../../src/auth.mjs';
 import { Registry } from '../../src/contracts.mjs';
 import { IdentitySigner } from '../../src/delegation.mjs';
 import { DelegatedMainwpClient, delegationTools } from '../../src/delegated-mainwp.mjs';
+import { FleetAdapter } from '../../src/fleet.mjs';
 import { Discovery } from '../../src/discovery.mjs';
 import { createHttpServer } from '../../src/http.mjs';
 import { connectMainwp, payload } from '../../src/mainwp.mjs';
 import { Operations } from '../../src/service.mjs';
 import { Store } from '../../src/store.mjs';
-import { checkNativeRead } from './check-native-read.mjs';
+import { checkNativeRead, nativeReadProbe } from './check-native-read.mjs';
 import { nativeFixture, checkNativeContent, nativeWriteFixture, checkNativeWriteWorkflows } from './native-content.mjs';
 
 process.umask(0o077);
@@ -25,6 +27,7 @@ const readOnly = phase === 'read-only';
 assert.ok(process.env.GITHUB_ACTIONS === 'true' || (readOnly &&
   process.env.MRN_DISPOSABLE_LOCAL === '1' &&
   readFileSync('/etc/mrn-unified-qa-disposable', 'utf8').trim() === 'MRN_UNIFIED_QA_DISPOSABLE_V1'), 'Disposable runtime required');
+const readOnlyCodeInspection = !readOnly || process.env.MRN_GATEWAY_NATIVE_SEVEN_TOOLS !== '1';
 const writeWorkflows = phase === 'write-workflows';
 const native = phase === 'native' || writeWorkflows;
 assert.ok(privateDirectory && certificate && runtimeCli && process.argv.length === (native || readOnly ? 6 : 5));
@@ -34,7 +37,7 @@ const transportRoot = resolve(process.env.MRN_GATEWAY_MCP_SOURCE);
 const lock = JSON.parse(readFileSync(new URL('./sources.json', import.meta.url), 'utf8'));
 assert.equal(execFileSync('git', ['-C', transportRoot, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), lock.transport.commit);
 const report = { schema: 1, passed: [], source: lock, productionCredentials: false, liveGoogleVerified: false,
-  chatgptAcceptanceVerified: false, managedSites: native ? 1 : 0, contentWriteVerified: false, codeWriteVerified: false,
+  chatgptAcceptanceVerified: false, managedSites: native || readOnly ? 1 : 0, contentWriteVerified: false, codeWriteVerified: false,
   remoteBackupVerified: false, protectedQaVerified: false };
 const pass = label => { report.passed.push(label); process.stdout.write(`PASS ${label}\n`); };
 const fixtureOption = value => execFileSync(runtimeCli, ['option', 'update', 'mrn_fixture_suspended', value], { stdio: 'ignore', timeout: 30000 });
@@ -76,7 +79,9 @@ const verifyStaff = async actor => {
   registry.member(actor); const client = await connect(actor);
   try { return await client.verifyStaff(); } finally { await client.close(); }
 };
-const service = new Operations({ registry, store, connect, verifyStaff, writesEnabled: native, readOnlySurface: readOnly, publicProbe: fixture?.publicProbe,
+const readFleet = readOnly ? new FleetAdapter({ root: fileURLToPath(new URL('../../../../', import.meta.url)),
+  stateDir: gatewayDirectory, artifactRoots: [gatewayDirectory] }) : undefined;
+const service = new Operations({ registry, store, connect, verifyStaff, fleet: readFleet, writesEnabled: native, readOnlySurface: readOnly, readOnlyCodeInspection, publicProbe: readOnly ? nativeReadProbe(privateDirectory, certificate) : fixture?.publicProbe,
   discovery: new Discovery({ registry, store, connect }) });
 fixture?.configure(service);
 const issuer = 'https://oauth.example.invalid/'; const audience = 'https://operations.mrnwebdesigns.com/mcp';
@@ -104,7 +109,7 @@ try {
   // Only legacy lanes leave Alice suspended before entering this hook.
   if (!readOnly) fixtureOption('');
   if (readOnly) {
-    await checkNativeRead({ privateDirectory, runtimeCli, token, call, toolResult, pass, network, store, report });
+    await checkNativeRead({ privateDirectory, runtimeCli, token, call, toolResult, pass, network, store, report, readOnlyCodeInspection });
   } else if (writeWorkflows) {
     await checkNativeWriteWorkflows({ fixture, token, call, toolResult, pass, service, network, store, report, fixtureOption });
   } else if (native) {
