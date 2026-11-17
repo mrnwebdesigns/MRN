@@ -8289,6 +8289,23 @@ function mrn_base_stack_ensure_builder_layout_display_style_fields( array $field
 		$display_contract_fields[] = array( 'key' => sanitize_key( '' !== $key_seed ? $key_seed : 'field_mrn_' . $layout_name . '_display' ) . '_row_text_tracking', 'name' => 'row_text_tracking', 'label' => 'Text Letter Spacing', 'type' => 'select', 'choices' => array( '' => 'Use Existing Typography', 'normal' => 'Normal Within This Row' ), 'default_value' => '', 'instructions' => 'Optional normal letter spacing for this row and its contents. Explicit component typography controls retain priority. Blank preserves existing heading and body tracking.' );
 	}
 
+	// Content Lists: a theme-registered row look, separate from the item Display Style (absent unless a theme registers one).
+	$content_list_looks = $is_content_lists && function_exists( 'mrn_base_stack_get_content_list_look_choices' ) ? mrn_base_stack_get_content_list_look_choices() : array();
+	if ( $content_list_looks ) {
+		$display_contract_names[]  = 'row_look';
+		$display_contract_fields[] = array(
+			'key'           => sanitize_key( '' !== $key_seed ? $key_seed : 'field_mrn_' . $layout_name . '_display' ) . '_row_look',
+			'name'          => 'row_look',
+			'label'         => 'Section Look',
+			'type'          => 'select',
+			'choices'       => array( '' => 'None' ) + $content_list_looks,
+			'default_value' => '',
+			'allow_null'    => 0,
+			'ui'            => 0,
+			'instructions'  => 'Optional named look for this section, defined by the theme. Display Style above still chooses how each item renders.',
+		);
+	}
+
 	if ( empty( $mode_choices ) && empty( $style_choices ) && empty( $display_contract_fields ) ) {
 		return $fields;
 	}

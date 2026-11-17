@@ -367,6 +367,18 @@ function mrn_base_stack_get_builder_layout_display_style_choices( $layout_name, 
 }
 
 /**
+ * Section looks a theme registers for Content Lists rows: key => label. A Content Lists Display Style chooses how each
+ * listed item renders, so a row-level look is a separate Section Look choice.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_content_list_look_choices() {
+	$choices = mrn_base_stack_get_builder_layout_display_style_choices( 'content_lists' );
+	unset( $choices['default'] );
+	return $choices;
+}
+
+/**
  * Normalize a builder layout display style.
  *
  * @param string $style        Candidate style.

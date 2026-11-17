@@ -176,6 +176,18 @@ if ( '' !== $display_style ) {
 	$display_contract['attributes']['data-display-style'] = $display_style;
 }
 
+// A theme-registered Section Look; theme hooks attach through the same filter as other rows' Display Styles.
+$row_look = isset( $row['row_look'] ) && is_string( $row['row_look'] ) ? sanitize_key( $row['row_look'] ) : '';
+if ( '' !== $row_look && function_exists( 'mrn_base_stack_get_content_list_look_choices' ) && isset( mrn_base_stack_get_content_list_look_choices()[ $row_look ] ) ) {
+	$look_contract = (array) apply_filters(
+		'mrn_base_stack_builder_display_contract',
+		array( 'display_mode' => '', 'display_style' => $row_look, 'classes' => array( 'mrn-content-builder__row--content_lists-style-' . $row_look ), 'attributes' => array() ),
+		$row,
+		'content_lists'
+	);
+	$section_classes = mrn_base_stack_merge_builder_section_classes( $section_classes, array( 'classes' => is_array( $look_contract['classes'] ?? null ) ? $look_contract['classes'] : array(), 'attributes' => array() ) );
+}
+
 $accent_contract   = mrn_base_stack_get_builder_accent_contract( $bottom_accent, $accent_slug );
 $motion_contract   = mrn_base_stack_get_builder_motion_contract( $row );
 $section_classes   = mrn_base_stack_merge_builder_section_classes( $section_classes, $display_contract );
