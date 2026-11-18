@@ -269,7 +269,6 @@ def publish(settings, repo, job, built, qualified, metadata, merged):
     saved = remote_host(settings, 'receipt', metadata['release_id'])
     if saved['status'] == 'not_started':
         assert_refs({**metadata['snapshot']['refs'], 'MRN': merged})
-    preflight = remote_host(settings, 'preflight')
     release = metadata['release_id']
     # Immutable depot paths are fixed under the exact source-owner home. No
     # WordPress site directories, secrets, provider settings or sudo routes.
@@ -279,7 +278,7 @@ def publish(settings, repo, job, built, qualified, metadata, merged):
     transfer(settings, base, release, built['bootstrap_archive'], 'bootstrap.tar')
     manifest_sha = file_hash(bootstrap / 'bootstrap-bundle.json')
     archive_sha = file_hash(built['bootstrap_archive'])
-    remote_host(settings, 'stage', release, archive_sha, manifest_sha)
+    preflight = remote_host(settings, 'preflight-candidate', release, archive_sha, manifest_sha)
     # Private artifact distribution includes Fleet bytes and qualification. No
     # licensed bootstrap/Fleet payload is uploaded to the public GitHub repo.
     write(Path(job) / 'qualification.json', qualified)
