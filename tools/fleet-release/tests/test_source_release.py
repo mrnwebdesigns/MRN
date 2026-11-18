@@ -179,6 +179,32 @@ class SourcePublication(unittest.TestCase):
         self.assertEqual(self.store.preflight()['manifest_sha256'], self.previous)
         self.assertEqual(common.read(self.job / 'publication-receipt.json')['status'], 'rolled_back_verified')
 
+    def test_candidate_equivalent_source_drift_is_recorded_and_published(self):
+        (self.root / 'shared/runtime.php').write_bytes(b'new')
+        receipt = self.publish()
+        self.assertEqual(receipt['status'], 'published_verified')
+        self.assertEqual(receipt['candidate_equivalent_drift'], [{
+            'path': 'shared/runtime.php', 'previous_sha256': next(
+                row['sha256'] for row in self.old['files'] if row['path'] == 'shared/runtime.php'),
+            'candidate_sha256': host.sha(self.base / 'candidate' / 'shared/runtime.php'),
+        }])
+
+    def test_candidate_equivalent_drift_recovers_its_actual_prior_bytes(self):
+        (self.root / 'shared/runtime.php').write_bytes(b'new')
+        def fail(index, name):
+            if index == 0: raise RuntimeError('injected')
+        with self.assertRaises(RuntimeError): self.publish(fail)
+        self.assertEqual((self.root / 'shared/runtime.php').read_bytes(), b'new')
+        receipt = common.read(self.job / 'publication-receipt.json')
+        self.assertEqual(receipt['status'], 'rolled_back_verified')
+        with self.assertRaises(host.PublicationError): self.store.preflight()
+        self.assertEqual(self.store.preflight(self.new)['candidate_equivalent_drift'][0]['path'], 'shared/runtime.php')
+
+    def test_unqualified_source_drift_remains_blocked(self):
+        (self.root / 'shared/runtime.php').write_bytes(b'not the candidate')
+        with self.assertRaisesRegex(host.PublicationError, 'differs from qualification'):
+            self.publish()
+
     def test_verified_rollback_retries_without_replacing_recovery_archive(self):
         def fail(index, name):
             if index == 0: raise RuntimeError('injected')
@@ -577,7 +603,7 @@ class CoordinatorBoundaries(unittest.TestCase):
                                        'snapshot':{'refs':{'MRN':merged}}}
                 def remote(settings,operation,*args):
                     if operation=='receipt':return {'status':'not_started'}
-                    if operation=='preflight':return {'manifest_sha256':'c'*64}
+                    if operation=='preflight-candidate':return {'manifest_sha256':'c'*64}
                     if operation=='publish':return {'status':'published_verified','lock_sha256':'a'*64}
                     return {}
                 def command(arguments,**kwargs):
