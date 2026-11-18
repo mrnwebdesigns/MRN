@@ -61,6 +61,45 @@
 - This exception does not apply to externally reachable development/review
   sites such as `mrndev.io`, staging, or production.
 
+## Kinsta Native Provider Exception
+
+- This exception applies only to an exact MainWP site/environment pair that is
+  explicitly enrolled with the reviewed Kinsta native-backup provider. A
+  Kinsta tag, the Kinsta MU plugin, SSH access, or a manually created Kinsta
+  backup does not constitute enrollment.
+- Enrollment records the exact MainWP site URL, Kinsta site ID, Kinsta
+  environment ID, primary domain, environment class, and public-root identity.
+  The provider must verify that every value resolves to the intended target
+  before it can create a backup or issue a deployment receipt. Provider tokens
+  and SSH credentials remain in approved secret storage and are never written
+  to policy records, plans, receipts, command lines, or logs.
+- A Kinsta-enrolled environment uses a native Kinsta manual snapshot for its
+  pre-deployment gate. The snapshot covers files and database, is labeled with
+  the deployment/request identity, and must be created immediately before the
+  first remote write. The provider must poll Kinsta to successful completion
+  and bind a short-lived receipt to the exact site, environment, snapshot, and
+  request. A queued, failed, stale, mismatched, or externally created snapshot
+  cannot satisfy this gate.
+- Do not delete an existing Kinsta manual backup merely to make room for a
+  deployment. If Kinsta's manual-backup capacity is exhausted, stop and report
+  the named existing backups to the owner for a deliberate retention decision.
+- A Kinsta-enrolled environment must not also be configured for the Updraft
+  scheduled-backup or pre-deployment route. Its native snapshot is the sole
+  deployment gate for that environment; this prevents competing writers,
+  duplicate backup behavior, and one provider's receipt being used for another
+  provider's write.
+- Native Kinsta restores are emergency, owner-directed full-environment
+  recovery operations. Routine code rollback continues to use the qualified
+  immutable release/rollback mechanism and does not restore a database.
+- Before a Kinsta provider is enabled for production, it must pass a controlled
+  non-production qualification that proves identity validation, snapshot
+  creation and completion polling, receipt expiry/replay rejection, failed
+  snapshot handling, and recovery instructions. Each production enrollment
+  requires explicit owner approval after its exact target mapping is reviewed.
+- Until the reviewed Kinsta provider and the exact enrollment are available,
+  deployment is blocked for that environment. Do not silently fall back to
+  Updraft, direct SSH, a browser upload, or an unverified manual snapshot.
+
 ## Deployments
 
 - Before every non-dry-run write to a shared development, staging, or production
@@ -80,6 +119,10 @@
 - QA does not create the backup. QA reports whether the backup gate and runtime
   prerequisites are ready; the deployment job performs and verifies the backup
   immediately before its first remote write.
+- For an enrolled Kinsta environment, the Kinsta Native Provider Exception
+  replaces the database-only Updraft gate in this section. For every other
+  shared development, staging, or production environment, the Updraft gate
+  remains mandatory.
 
 ## Development Workflow
 
