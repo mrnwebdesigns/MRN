@@ -8476,6 +8476,8 @@ function mrn_base_stack_ensure_builder_layout_tab( array $fields, $layout_name =
 	);
 	$layout_contract_names  = mrn_base_stack_get_builder_layout_contract_field_names( $layout_name );
 	$existing_layout_fields = array();
+	$moved_layout_names     = mrn_base_stack_get_layout_tab_field_names();
+	$moved_layout_fields    = array();
 
 	foreach ( $fields as $field ) {
 		if ( ! is_array( $field ) ) {
@@ -8505,6 +8507,11 @@ function mrn_base_stack_ensure_builder_layout_tab( array $fields, $layout_name =
 			if ( ! isset( $existing_layout_fields[ $field_name ] ) ) {
 				$existing_layout_fields[ $field_name ] = $field;
 			}
+			continue;
+		}
+
+		if ( '' !== $field_name && in_array( $field_name, $moved_layout_names, true ) ) {
+			$moved_layout_fields[] = $field;
 			continue;
 		}
 
@@ -8583,7 +8590,7 @@ function mrn_base_stack_ensure_builder_layout_tab( array $fields, $layout_name =
 		$remaining_fields,
 		$insert_index,
 		0,
-		array_merge( array( $layout_tab ), $layout_contract_fields )
+		array_merge( array( $layout_tab ), $layout_contract_fields, $moved_layout_fields )
 	);
 
 	return array_values( $remaining_fields );
@@ -9841,14 +9848,18 @@ function mrn_base_stack_relocate_effect_fields( array $fields ) {
 	$has_tabs       = false;
 	$effects_fields = array();
 	$spacing_fields = array();
+	$layout_fields  = array();
 	$remaining      = array();
 	$spacing_tab    = false;
+	$layout_tab     = false;
 
 	foreach ( $processed_fields as $field ) {
-		if ( is_array( $field ) && 'tab' === ( $field['type'] ?? '' ) && 'spacing' === sanitize_title( (string) ( $field['label'] ?? '' ) ) ) {
-			$spacing_tab = true;
-			break;
+		if ( ! is_array( $field ) || 'tab' !== ( $field['type'] ?? '' ) ) {
+			continue;
 		}
+		$tab_name = sanitize_title( (string) ( $field['label'] ?? '' ) );
+		$spacing_tab = $spacing_tab || 'spacing' === $tab_name;
+		$layout_tab  = $layout_tab || 'layout' === $tab_name;
 	}
 
 	foreach ( $processed_fields as $field ) {
@@ -9879,10 +9890,16 @@ function mrn_base_stack_relocate_effect_fields( array $fields ) {
 			continue;
 		}
 
+		if ( $layout_tab && in_array( $field_name, mrn_base_stack_get_layout_tab_field_names(), true ) ) {
+			$layout_fields[] = $field;
+			continue;
+		}
+
 		$remaining[] = $field;
 	}
 
 	$remaining = mrn_base_stack_append_to_spacing_tab( $remaining, $spacing_fields );
+	$remaining = mrn_base_stack_append_to_layout_tab( $remaining, $layout_fields );
 
 	if ( ! $has_tabs || empty( $effects_fields ) ) {
 		return $remaining;
@@ -9909,34 +9926,87 @@ function mrn_base_stack_get_spacing_tab_field_names() {
 }
 
 /**
+ * Structure and arrangement choices that belong in the Layout tab rather than Content. Content keeps the copy,
+ * media, links, records and the basics they need (heading levels, accessible names, source fields).
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_layout_tab_field_names() {
+	return array(
+		// Two Column Split.
+		'split_frame', 'split_stack_breakpoint', 'split_column_order', 'split_mobile_action_after_columns', 'split_heading_alignment', 'column_rows_mode', 'column_alignment',
+		// Text lists and width.
+		'list_columns', 'list_columns_mobile', 'list_flow', 'list_alignment', 'body_frame', 'body_content_sizing',
+		// CTA.
+		'cta_frame', 'cta_content_alignment', 'cta_action_alignment_small', 'cta_action_unclamped_mobile', 'cta_content_fill', 'cta_action_layout',
+		// Image Content and galleries.
+		'image_frame', 'image_header_layout', 'image_media_sizing', 'image_stage_sizing', 'image_action_alignment', 'image_action_vertical_alignment', 'gallery_mobile_behavior', 'gallery_mobile_start', 'gallery_desktop_behavior',
+		// Video, forms, stats, tabs, FAQ.
+		'video_frame', 'video_content_sizing', 'form_frame', 'form_content_alignment', 'stats_frame', 'tab_frame', 'tab_mobile_behavior', 'faq_frame',
+		// Logos.
+		'logos_slider_frame', 'logos_slider_desktop_fit', 'slider_breakpoints',
+		// Content Lists.
+		'people_frame', 'people_grid_breakpoints', 'article_frame', 'article_gutter_mobile_breakpoint', 'project_layout', 'project_grid_breakpoint', 'project_columns', 'comparison_frame',
+		// Cards, timelines and process.
+		'card_frame', 'card_header_alignment', 'card_intro_alignment', 'card_section_link_alignment', 'card_caption_flow_breakpoint', 'card_equal_height_items', 'timeline_frame', 'timeline_skip_position', 'process_aside_sizing', 'process_aside_share', 'process_aside_minimum', 'process_list_columns',
+		// Showcase strip.
+		'strip_frame', 'strip_header_layout', 'strip_stagger',
+	);
+}
+
+/**
+ * Append fields to the end of a list's Layout tab. Callers move fields only from lists that have one; rows without
+ * a Layout tab (for example rows nested in Split columns) keep these choices where they are.
+ *
+ * @param array<int, mixed> $fields Field definitions without the moved fields.
+ * @param array<int, mixed> $moving Fields to append to the Layout tab.
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_append_to_layout_tab( array $fields, array $moving ) {
+	return mrn_base_stack_append_to_tab( $fields, $moving, 'layout' );
+}
+
+/**
  * Append fields to the end of a list's Spacing tab. Callers move fields only from lists that have one.
  *
- * @param array<int, mixed> $fields  Field definitions without the moved fields.
- * @param array<int, mixed> $moving  Fields to append to the Spacing tab.
+ * @param array<int, mixed> $fields Field definitions without the moved fields.
+ * @param array<int, mixed> $moving Fields to append to the Spacing tab.
  * @return array<int, mixed>
  */
 function mrn_base_stack_append_to_spacing_tab( array $fields, array $moving ) {
+	return mrn_base_stack_append_to_tab( $fields, $moving, 'spacing' );
+}
+
+/**
+ * Insert fields at the end of the named tab's segment, before the next tab.
+ *
+ * @param array<int, mixed> $fields Field definitions without the moved fields.
+ * @param array<int, mixed> $moving Fields to insert.
+ * @param string            $tab    Sanitized tab label, such as spacing or layout.
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_append_to_tab( array $fields, array $moving, $tab ) {
 	if ( empty( $moving ) ) {
 		return $fields;
 	}
 
-	$spacing_index = null;
-	$insert_at     = count( $fields );
+	$tab_index = null;
+	$insert_at = count( $fields );
 
 	foreach ( $fields as $index => $field ) {
 		if ( ! is_array( $field ) || 'tab' !== ( $field['type'] ?? '' ) ) {
 			continue;
 		}
 
-		if ( null === $spacing_index && 'spacing' === sanitize_title( (string) ( $field['label'] ?? '' ) ) ) {
-			$spacing_index = $index;
-		} elseif ( null !== $spacing_index ) {
+		if ( null === $tab_index && $tab === sanitize_title( (string) ( $field['label'] ?? '' ) ) ) {
+			$tab_index = $index;
+		} elseif ( null !== $tab_index ) {
 			$insert_at = $index;
 			break;
 		}
 	}
 
-	if ( null === $spacing_index ) {
+	if ( null === $tab_index ) {
 		return array_merge( $fields, $moving );
 	}
 
