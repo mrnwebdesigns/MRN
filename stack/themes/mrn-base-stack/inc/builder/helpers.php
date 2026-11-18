@@ -10077,8 +10077,9 @@ function mrn_base_stack_move_fields_to_existing_tabs( array $fields ) {
 }
 
 /**
- * Append fields to the end of a list's Layout tab. Callers move fields only from lists that have one; rows without
- * a Layout tab (for example rows nested in Split columns) keep these choices where they are.
+ * Append fields to the end of a list's Layout tab. Callers move fields only from lists that have one; a list without
+ * a Layout tab keeps these choices where they are. In the editor every builder row, including rows nested in Split
+ * columns, has one; WP-CLI skips the editor-only tab passes, so its field dumps show nested rows without it.
  *
  * @param array<int, mixed> $fields Field definitions without the moved fields.
  * @param array<int, mixed> $moving Fields to append to the Layout tab.
