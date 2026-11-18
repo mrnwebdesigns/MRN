@@ -135,7 +135,7 @@ export class Operations {
     };
     try { return await websiteDetails(session, section, this.readOnlySurface, observe); } finally { await session.close(); }
   }
-  async readContent(actor, { website, environment, kind, recordId, search, maximum, page, statuses }) {
+  async readContent(actor, { website, environment, kind, recordId, search, maximum, page, statuses, inspectionId, cursor, definitionLimit }) {
     await this.discovery?.refresh(actor);
     const target = this.registry.resolve(actor, website, environment);
     const session = await this.session(actor, target, 'read');
@@ -144,15 +144,17 @@ export class Operations {
       this.store.audit(actor, target, '', 'content:read', 'attempted');
       const authorize = async () => { this.registry.current(actor, target, 'read'); await this.verifyStaff?.(actor); };
       let result;
-      if (await session.supports(recordId === undefined ? toolNames.contentRecords : toolNames.contentRecord)) {
+      if (await session.supports(recordId === undefined ? toolNames.contentRecords : toolNames.contentRecord)
+        || recordId !== undefined && await session.supports(toolNames.contentInspection)) {
         requireThat(actor.identityProvider === 'google-oauth2' && this.verifyStaff, 'AUTH_REQUIRED', 'Structured content reads require live verified MRN Google membership.');
         await authorize();
-        result = await readManagedContent(session, site, { kind, recordId, search, maximum, page, statuses });
+        result = await readManagedContent(session, site, { kind, recordId, search, maximum, page, statuses, inspectionId, cursor, definitionLimit });
       } else {
         // Only absent capability permits the existing native REST reader. A
         // failed or denied management call never switches routes/credentials.
         requireThat(!this.readOnlySurface && this.content, 'CONTENT_UNAVAILABLE', 'The approved structured MainWP reader does not expose this content operation.');
-        requireThat((page === undefined || page === 1) && statuses === undefined,
+        requireThat((page === undefined || page === 1) && statuses === undefined
+          && inspectionId === undefined && cursor === undefined && definitionLimit === undefined,
           'CAPABILITY_MISSING', 'Content pagination and status filters require the structured MainWP adapter.');
         result = recordId === undefined ? await this.content.search(site, kind, search, maximum, authorize)
           : await this.content.read(site, kind, recordId, authorize);

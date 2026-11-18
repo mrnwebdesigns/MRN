@@ -22,7 +22,7 @@ test('email audit discovery distinguishes configured workflow from filtered nati
 });
 
 test('capability inventory distinguishes backend counts, connected workflows and unknown tools', async t => {
-  const f = setup(); t.after(f.close); f.state.contentManagement = true;
+  const f = setup(); t.after(f.close); f.state.contentManagement = true; f.state.contentInspection = true;
   const original = f.client.listTools.bind(f.client);
   f.client.listTools = async () => ({ tools: [...(await original()).tools, { name: 'future_mutator_v1', inputSchema: { type: 'object' }, annotations: { readOnlyHint: true } }] });
   const report = await f.service.capabilities(actor);

@@ -2,14 +2,17 @@ import { z } from 'zod';
 import { requireThat } from './contracts.mjs';
 import { managementSchemas, validateManagementRead } from './content-management-contract.mjs';
 import { toolNames } from './mainwp.mjs';
+import { readContentInspection } from './content-inspection.mjs';
 
 const kinds = z.enum(['posts', 'pages']);
-export async function readManagedContent(session, site, { kind, recordId, search = '', maximum = 20, page = 1, statuses }) {
+export async function readManagedContent(session, site, { kind, recordId, search = '', maximum = 20, page = 1, statuses, inspectionId, cursor, definitionLimit }) {
   kinds.parse(kind);
   const post_type = kind === 'pages' ? 'page' : 'post';
   const base = { site_id: site.id, site_url: site.url, post_type };
   if (recordId !== undefined) {
     z.number().int().positive().safe().parse(recordId);
+    if (await session.supports?.(toolNames.contentInspection)) return readContentInspection(session, site, { kind, recordId, inspectionId, cursor, definitionLimit });
+    requireThat(inspectionId === undefined && cursor === undefined && definitionLimit === undefined, 'CAPABILITY_MISSING', 'This provider does not expose bounded inspection continuation.');
     const args = managementSchemas['read-content-record-v1'].input.parse({ ...base, post_id: recordId });
     const result = validateManagementRead(await session.call(toolNames.contentRecord, args),
       { site, target: { kind: 'wordpress-content', post_type, post_id: recordId } });

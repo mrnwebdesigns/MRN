@@ -1,0 +1,651 @@
+{
+  "adapter": "content-inspection-v1",
+  "description": "Read-only definition pages. Never management/write snapshots or change authorization. Entries retain depth-first source order and exact native paths.",
+  "limits": {
+    "page_bytes": 196608,
+    "nodes": 20000,
+    "depth": 32,
+    "array_items": 1000,
+    "field_visits": 5000,
+    "field_depth": 12,
+    "maximum_entries": 100,
+    "cursor_seconds": 300,
+    "native_request_bytes": 60000
+  },
+  "abilities": {
+    "read-content-inspection-v1": {
+      "role": "reader",
+      "callback": "inspection",
+      "description": "Read one bounded, explicitly incomplete/complete definition page and the complete bounded record values; continuation is actor/site/record/request/snapshot bound. No sync or mutation.",
+      "input": {
+        "type": "object",
+        "properties": {
+          "site_id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "site_url": {
+            "type": "string",
+            "format": "uri",
+            "maxLength": 512
+          },
+          "post_type": {
+            "type": "string",
+            "enum": [
+              "post",
+              "page"
+            ]
+          },
+          "post_id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "inspection_id": {
+            "type": "string",
+            "maxLength": 36,
+            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+          },
+          "maximum": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "cursor": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          }
+        },
+        "required": [
+          "site_id",
+          "site_url",
+          "post_type",
+          "post_id",
+          "inspection_id",
+          "maximum"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "contract": {
+            "type": "string",
+            "enum": [
+              "content-inspection-v1"
+            ]
+          },
+          "record": {
+            "$ref": "#/$defs/record"
+          },
+          "snapshot_sha256": {
+            "type": "string",
+            "maxLength": 64,
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "definitions_sha256": {
+            "type": "string",
+            "maxLength": 64,
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "affected_paths": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 512,
+              "pattern": "^/(?!/)"
+            },
+            "maxItems": 100
+          },
+          "root_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "total_definitions": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "entries": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/$defs/entry"
+            }
+          },
+          "complete": {
+            "type": "boolean"
+          },
+          "inspection_id": {
+            "type": "string",
+            "maxLength": 36,
+            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+          },
+          "maximum": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "next_cursor": {
+            "oneOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "expires_at": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "source_schema_sha256": {
+            "type": "string",
+            "maxLength": 64,
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "success",
+          "contract",
+          "record",
+          "snapshot_sha256",
+          "definitions_sha256",
+          "affected_paths",
+          "root_count",
+          "total_definitions",
+          "offset",
+          "entries",
+          "complete",
+          "inspection_id",
+          "maximum",
+          "next_cursor",
+          "expires_at",
+          "source_schema_sha256"
+        ],
+        "additionalProperties": false,
+        "$defs": {
+          "raw_value": {
+            "oneOf": [
+              {
+                "type": "string",
+                "maxLength": 196608
+              },
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/raw_value"
+                },
+                "maxItems": 1000
+              },
+              {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string",
+                  "maxLength": 191,
+                  "pattern": "^(?!__proto__$|constructor$|prototype$)[ -~]+$"
+                },
+                "maxProperties": 1000,
+                "additionalProperties": {
+                  "$ref": "#/$defs/raw_value"
+                }
+              }
+            ]
+          },
+          "acf_values": {
+            "oneOf": [
+              {
+                "type": "array",
+                "maxItems": 0,
+                "items": {
+                  "type": "string",
+                  "maxLength": 0
+                }
+              },
+              {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string",
+                  "maxLength": 191,
+                  "pattern": "^(?:[A-Za-z][A-Za-z0-9]*_)*field_[A-Za-z0-9_-]+$"
+                },
+                "maxProperties": 1000,
+                "additionalProperties": {
+                  "$ref": "#/$defs/raw_value"
+                }
+              }
+            ]
+          },
+          "choice": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string",
+                "maxLength": 1000
+              },
+              "label": {
+                "type": "string",
+                "maxLength": 4000
+              }
+            },
+            "required": [
+              "key",
+              "label"
+            ],
+            "additionalProperties": false
+          },
+          "core": {
+            "type": "object",
+            "properties": {
+              "post_title": {
+                "type": "string",
+                "maxLength": 196608
+              },
+              "post_name": {
+                "type": "string",
+                "maxLength": 196608
+              },
+              "post_content": {
+                "type": "string",
+                "maxLength": 196608
+              },
+              "post_excerpt": {
+                "type": "string",
+                "maxLength": 196608
+              },
+              "post_status": {
+                "type": "string",
+                "maxLength": 30,
+                "enum": [
+                  "publish",
+                  "draft",
+                  "pending",
+                  "private",
+                  "future"
+                ]
+              }
+            },
+            "required": [
+              "post_title",
+              "post_name",
+              "post_content",
+              "post_excerpt",
+              "post_status"
+            ],
+            "additionalProperties": false
+          },
+          "runtime": {
+            "type": "object",
+            "properties": {
+              "wordpress": {
+                "type": "string",
+                "maxLength": 40
+              },
+              "php_minor": {
+                "type": "string",
+                "maxLength": 10,
+                "pattern": "^[0-9]+\\.[0-9]+$"
+              },
+              "acf": {
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 40
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "stylesheet": {
+                "type": "string",
+                "maxLength": 191
+              },
+              "template": {
+                "type": "string",
+                "maxLength": 191
+              },
+              "plugins_sha256": {
+                "type": "string",
+                "maxLength": 64,
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "wordpress",
+              "php_minor",
+              "acf",
+              "stylesheet",
+              "template",
+              "plugins_sha256"
+            ],
+            "additionalProperties": false
+          },
+          "field_metadata": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string",
+                "maxLength": 191,
+                "pattern": "^(?:[A-Za-z][A-Za-z0-9]*_)*field_[A-Za-z0-9_-]+$"
+              },
+              "name": {
+                "type": "string",
+                "maxLength": 191
+              },
+              "label": {
+                "type": "string",
+                "maxLength": 500
+              },
+              "type": {
+                "type": "string",
+                "maxLength": 100
+              },
+              "required": {
+                "oneOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                ]
+              },
+              "choices": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/choice"
+                },
+                "maxItems": 1000
+              },
+              "multiple": {
+                "oneOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                ]
+              },
+              "min": {
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ]
+              },
+              "max": {
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ]
+              },
+              "step": {
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ]
+              },
+              "default_value": {
+                "$ref": "#/$defs/raw_value"
+              },
+              "return_format": {
+                "type": "string",
+                "maxLength": 100
+              },
+              "new_lines": {
+                "type": "string",
+                "maxLength": 100
+              }
+            },
+            "required": [
+              "key",
+              "name",
+              "type"
+            ],
+            "additionalProperties": false
+          },
+          "layout_metadata": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string",
+                "maxLength": 191
+              },
+              "name": {
+                "type": "string",
+                "maxLength": 191
+              },
+              "label": {
+                "type": "string",
+                "maxLength": 500
+              },
+              "min": {
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                ]
+              },
+              "max": {
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                ]
+              }
+            },
+            "required": [
+              "key",
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "record": {
+            "type": "object",
+            "properties": {
+              "site_id": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "site_url": {
+                "type": "string",
+                "maxLength": 512,
+                "format": "uri"
+              },
+              "post_type": {
+                "type": "string",
+                "maxLength": 4,
+                "enum": [
+                  "post",
+                  "page"
+                ]
+              },
+              "post_id": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "core": {
+                "$ref": "#/$defs/core"
+              },
+              "acf_values": {
+                "$ref": "#/$defs/acf_values"
+              },
+              "unrelated_meta_sha256": {
+                "type": "string",
+                "maxLength": 64,
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "post_record_sha256": {
+                "type": "string",
+                "maxLength": 64,
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "runtime": {
+                "$ref": "#/$defs/runtime"
+              }
+            },
+            "required": [
+              "site_id",
+              "site_url",
+              "post_type",
+              "post_id",
+              "core",
+              "acf_values",
+              "unrelated_meta_sha256",
+              "post_record_sha256",
+              "runtime"
+            ],
+            "additionalProperties": false
+          },
+          "entry": {
+            "type": "object",
+            "properties": {
+              "ordinal": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9999
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "field",
+                  "layout"
+                ]
+              },
+              "path": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 51,
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 999
+                    },
+                    {
+                      "type": "string",
+                      "enum": [
+                        "sub_fields",
+                        "layouts"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "definition": {
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/field_metadata"
+                  },
+                  {
+                    "$ref": "#/$defs/layout_metadata"
+                  }
+                ]
+              },
+              "sub_fields": {
+                "oneOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "layouts": {
+                "oneOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "ordinal",
+              "kind",
+              "path",
+              "definition",
+              "sub_fields",
+              "layouts"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "annotations": {
+        "readonly": true,
+        "destructive": false,
+        "idempotent": true
+      }
+    }
+  }
+}

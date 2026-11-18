@@ -5,6 +5,7 @@ import { OpsError, requireThat } from './contracts.mjs';
 
 export const toolNames = {
   brandPalette: 'mrn_mainwp__read_stack_brand_palette_v1',
+  contentInspection: 'mrn_mainwp__read_content_inspection_v1',
   site: 'get_site_v1', sync: 'sync_sites_v1', plugins: 'get_site_plugins_v1', themes: 'get_site_themes_v1',
   security: 'get_site_security_v1', updates: 'get_site_updates_v1', ignoredUpdates: 'list_ignored_updates_v1', changes: 'get_site_changes_v1',
   runtime: 'mrn_mainwp__get_stack_runtime_report_v1', qualify: 'mrn_mainwp__qualify_stack_site_v1',
@@ -53,7 +54,6 @@ const providerBlockers = Object.freeze({
   mrn_content_profile: ['CONTENT_PROFILE_UNQUALIFIED', 'MRN services have not qualified the current rendering dependencies for this exact content target. This change remains blocked.'],
   mrn_content_ownership: ['CONTENT_OWNERSHIP', 'The content owner or rendering adapter is not qualified. ACF and builder content require their own supported workflow.'],
   mrn_content_target: ['CONTENT_TARGET_MISMATCH', 'The provider could not verify the exact content record or retained operation. Resolve and inspect the target again.'],
-  mrn_content_size: ['CONTENT_SIZE', 'The complete content request exceeds the qualified limit. No content was truncated.'],
   mrn_content_precondition: ['CONTENT_PRECONDITION', 'The current content no longer matches the reviewed snapshot. Inspect it again and prepare a fresh preview.'],
   mrn_content_qa: ['CONTENT_QA_REQUIRED', 'The exact content plan lacks a valid protected QA receipt. A new qualifying QA run is required.'],
   mrn_content_approval: ['CONTENT_APPROVAL', 'The provider could not verify the current operator, exact approval or required execution evidence. Inspect the operation before proceeding.'],
@@ -62,6 +62,8 @@ const providerBlockers = Object.freeze({
   mrn_content_consumed: ['CONTENT_CONSUMED', 'This operation or its evidence has already been consumed. Read its retained outcome; do not execute it again.'],
   mrn_content_uncertain: ['CONTENT_OUTCOME_UNVERIFIED', 'The provider could not verify the operation outcome. Retain its lock and rollback evidence; do not retry the change.'],
   mrn_content_unsupported: ['CONTENT_ADAPTER_UNAVAILABLE', 'The required typed MainWP content adapter is unavailable. MRN services must complete the integration.'],
+  mrn_content_cursor: ['CONTENT_INSPECTION_CURSOR', 'The read continuation is invalid, expired or belongs to another inspection. Start an explicitly new inspection; do not combine its pages.'],
+  mrn_content_stale: ['CONTENT_INSPECTION_STALE', 'The record or field definitions changed during inspection. Discard the partial sequence and begin a fresh inspection.'],
   mrn_content_fields: ['CONTENT_FIELDS_UNSUPPORTED', 'A complete supported content snapshot could not be produced from this record’s ACF definitions or values. Keep this operation blocked.'],
   mrn_content_size: ['CONTENT_SIZE_LIMIT', 'Content data exceeds the qualified operation limits. Keep this operation blocked.'],
   mrn_code_operation: ['OPERATION_STATUS_UNAVAILABLE', 'The retained MainWP operation is unavailable. Keep any uncertain outcome and lock until qualified reconciliation.'],
