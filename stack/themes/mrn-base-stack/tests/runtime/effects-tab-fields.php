@@ -45,6 +45,6 @@ foreach ( acf_get_field_groups() as $group ) {
 foreach ( array( 'image_content' => 'image_drift_speed', 'card' => 'timeline_pin_tablet', 'body_text' => 'text_presentation', 'showcase' => 'strip_behavior', 'video' => 'video_playback' ) as $layout => $name ) {
 	$expect( 'effects' === ( $layouts[ $layout ][ $name ][0] ?? '' ), "$layout: $name is registered in the Effects tab" );
 }
-$expect( 'content' === ( $layouts['image_content']['image_presentation'][0] ?? '' ), 'The media presentation select, which also chooses layouts, stays in Content' );
+$expect( 'display-styles' === ( $layouts['image_content']['image_presentation'][0] ?? '' ), 'The media presentation select sits in Display Styles; its conditional content fields still work across tabs' );
 
 WP_CLI::line( wp_json_encode( array( 'checks' => $checks, 'count' => count( $checks ), 'result' => 'passed', 'source_version' => _S_VERSION ), JSON_PRETTY_PRINT ) );

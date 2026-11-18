@@ -4598,6 +4598,19 @@ function mrn_base_stack_get_effects_tab_field_names() {
 		'strip_scroll_pace',
 		'process_mobile_expand_all',
 		'video_follow_color',
+		// Behavior choices moved out of Content (2026-11-18).
+		'faq_exclusive',
+		'faq_mobile_expand_all',
+		'faq_activation_ratio',
+		'process_activation_ratio',
+		'rotation_interval',
+		'image_action_follow_pointer',
+		'video_expand_start_width',
+		'video_follow_release',
+		'article_load_more',
+		'article_load_batch_size',
+		'project_filter_initial',
+		'project_filter_batch',
 	);
 }
 
@@ -8340,6 +8353,8 @@ function mrn_base_stack_ensure_builder_layout_display_style_fields( array $field
 	$display_mode_field  = null;
 	$display_style_field = null;
 	$remaining_fields    = array();
+	$moved_display_names  = mrn_base_stack_get_display_styles_tab_field_names();
+	$moved_display_fields = array();
 
 	foreach ( $fields as $field ) {
 		if ( ! is_array( $field ) ) {
@@ -8371,6 +8386,11 @@ function mrn_base_stack_ensure_builder_layout_display_style_fields( array $field
 		}
 
 		if ( '' !== $field_name && in_array( $field_name, $display_contract_names, true ) ) {
+			continue;
+		}
+
+		if ( '' !== $field_name && in_array( $field_name, $moved_display_names, true ) ) {
+			$moved_display_fields[] = $field;
 			continue;
 		}
 
@@ -8427,6 +8447,8 @@ function mrn_base_stack_ensure_builder_layout_display_style_fields( array $field
 		}
 	}
 
+	$display_fields = array_merge( $display_fields, $moved_display_fields );
+
 	$insert_index = count( $remaining_fields );
 	foreach ( $remaining_fields as $index => $field ) {
 		if ( ! is_array( $field ) ) {
@@ -8464,6 +8486,8 @@ function mrn_base_stack_ensure_builder_layout_tab( array $fields, $layout_name =
 	if ( function_exists( 'mrn_base_stack_ensure_presentation_fields' ) ) {
 		$fields = mrn_base_stack_ensure_presentation_fields( $fields, $layout_name, $seed );
 	}
+	// Presentation fields arrive after the Display Styles pass, so place them in the tabs this list already has.
+	$fields = mrn_base_stack_move_fields_to_existing_tabs( $fields );
 
 	$remaining_fields       = array();
 	$layout_tab             = null;
@@ -9850,8 +9874,12 @@ function mrn_base_stack_relocate_effect_fields( array $fields ) {
 	$spacing_fields = array();
 	$layout_fields  = array();
 	$remaining      = array();
+	$display_fields = array();
+	$configs_fields = array();
 	$spacing_tab    = false;
 	$layout_tab     = false;
+	$display_tab    = false;
+	$configs_tab    = false;
 
 	foreach ( $processed_fields as $field ) {
 		if ( ! is_array( $field ) || 'tab' !== ( $field['type'] ?? '' ) ) {
@@ -9860,6 +9888,8 @@ function mrn_base_stack_relocate_effect_fields( array $fields ) {
 		$tab_name = sanitize_title( (string) ( $field['label'] ?? '' ) );
 		$spacing_tab = $spacing_tab || 'spacing' === $tab_name;
 		$layout_tab  = $layout_tab || 'layout' === $tab_name;
+		$display_tab = $display_tab || 'display-styles' === $tab_name;
+		$configs_tab = $configs_tab || 'configs' === $tab_name;
 	}
 
 	foreach ( $processed_fields as $field ) {
@@ -9895,11 +9925,23 @@ function mrn_base_stack_relocate_effect_fields( array $fields ) {
 			continue;
 		}
 
+		if ( $display_tab && in_array( $field_name, mrn_base_stack_get_display_styles_tab_field_names(), true ) ) {
+			$display_fields[] = $field;
+			continue;
+		}
+
+		if ( $configs_tab && in_array( $field_name, mrn_base_stack_get_configs_tab_field_names(), true ) ) {
+			$configs_fields[] = $field;
+			continue;
+		}
+
 		$remaining[] = $field;
 	}
 
 	$remaining = mrn_base_stack_append_to_spacing_tab( $remaining, $spacing_fields );
 	$remaining = mrn_base_stack_append_to_layout_tab( $remaining, $layout_fields );
+	$remaining = mrn_base_stack_append_to_tab( $remaining, $display_fields, 'display-styles' );
+	$remaining = mrn_base_stack_append_to_tab( $remaining, $configs_fields, 'configs' );
 
 	if ( ! $has_tabs || empty( $effects_fields ) ) {
 		return $remaining;
@@ -9952,6 +9994,86 @@ function mrn_base_stack_get_layout_tab_field_names() {
 		// Showcase strip.
 		'strip_frame', 'strip_header_layout', 'strip_stagger',
 	);
+}
+
+/**
+ * Visual treatments and presentation pickers that belong in the Display Styles tab rather than Content. A
+ * presentation picker can still reveal content fields; ACF conditional logic works across tabs.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_display_styles_tab_field_names() {
+	return array(
+		// FAQ.
+		'faq_presentation', 'faq_icon_style', 'faq_item_border',
+		// Text.
+		'list_presentation', 'list_markers', 'list_item_style', 'list_link_trailing_icon', 'heading_link_icon', 'body_lead_style', 'body_quote_mark', 'body_heading_breaks',
+		// CTA.
+		'cta_paragraph_typography', 'cta_heading_breaks_mobile', 'cta_action_frame',
+		// Image Content.
+		'image_presentation', 'image_overlay', 'image_caption_style', 'image_caption_presentation', 'image_action_icon_style', 'image_action_marker',
+		// Video, forms, jump nav, stats, logos, tabs.
+		'video_presentation', 'form_style', 'jump_nav_presentation', 'stats_presentation', 'logos_presentation', 'logos_slider_image_treatment', 'tab_inactive_icon_filter',
+		// Cards, timelines and process.
+		'card_presentation', 'card_image_mobile_sizing', 'card_intro_lead_style', 'card_heading_breaks_mobile', 'card_item_heading_breaks_mobile', 'timeline_step_style', 'timeline_step_action_icon', 'process_aside_divider', 'process_list_style', 'process_toggle_icon',
+		// Showcase and Content Lists.
+		'showcase_presentation', 'record_presentation', 'project_action_frame', 'article_excerpt_lines',
+	);
+}
+
+/**
+ * Technical settings that belong in the Configs tab rather than Content.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_configs_tab_field_names() {
+	return array( 'card_image_loading', 'people_image_size', 'project_image_size', 'form_modal_id' );
+}
+
+/**
+ * Move listed fields into the Display Styles, Configs, Spacing and Effects tabs a flat field list already has. Fields
+ * stay where they are when their tab is missing. Used where fields are added after the tab contracts ran, such as
+ * the reusable block groups that CTA, FAQ, Content Lists and Partner rows clone.
+ *
+ * @param array<int, mixed> $fields Field definitions.
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_move_fields_to_existing_tabs( array $fields ) {
+	$targets = array(
+		'display-styles' => mrn_base_stack_get_display_styles_tab_field_names(),
+		'configs'        => mrn_base_stack_get_configs_tab_field_names(),
+		'spacing'        => mrn_base_stack_get_spacing_tab_field_names(),
+		'effects'        => mrn_base_stack_get_effects_tab_field_names(),
+	);
+	$present = array();
+	$tab     = '';
+	$current = array();
+	foreach ( $fields as $index => $field ) {
+		if ( is_array( $field ) && 'tab' === ( $field['type'] ?? '' ) ) {
+			$tab             = sanitize_title( (string) ( $field['label'] ?? '' ) );
+			$present[ $tab ] = true;
+		}
+		$current[ $index ] = $tab;
+	}
+
+	$moving    = array_fill_keys( array_keys( $targets ), array() );
+	$remaining = array();
+	foreach ( $fields as $index => $field ) {
+		$name = is_array( $field ) ? (string) ( $field['name'] ?? '' ) : '';
+		foreach ( $targets as $target => $names ) {
+			if ( '' !== $name && isset( $present[ $target ] ) && $current[ $index ] !== $target && in_array( $name, $names, true ) ) {
+				$moving[ $target ][] = $field;
+				continue 2;
+			}
+		}
+		$remaining[] = $field;
+	}
+
+	foreach ( $moving as $target => $moved ) {
+		$remaining = mrn_base_stack_append_to_tab( $remaining, $moved, $target );
+	}
+
+	return $remaining;
 }
 
 /**

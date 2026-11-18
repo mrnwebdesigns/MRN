@@ -49,7 +49,7 @@ foreach ( array( 'two_column_split' => array( 'split_frame', 'split_stack_breakp
 		$expect( 'layout' === ( $layouts[ $layout ][ $name ][0] ?? '' ), "$layout: $name is registered in the Layout tab" );
 	}
 }
-foreach ( array( 'two_column_split' => 'heading', 'cta' => 'heading', 'content_lists' => 'record_presentation' ) as $layout => $name ) {
+foreach ( array( 'two_column_split' => 'heading', 'cta' => 'heading', 'content_lists' => 'list_count_mode' ) as $layout => $name ) {
 	$expect( 'content' === ( $layouts[ $layout ][ $name ][0] ?? '' ), "$layout: $name stays in Content" );
 }
 
