@@ -62,6 +62,8 @@ const providerBlockers = Object.freeze({
   mrn_content_consumed: ['CONTENT_CONSUMED', 'This operation or its evidence has already been consumed. Read its retained outcome; do not execute it again.'],
   mrn_content_uncertain: ['CONTENT_OUTCOME_UNVERIFIED', 'The provider could not verify the operation outcome. Retain its lock and rollback evidence; do not retry the change.'],
   mrn_content_unsupported: ['CONTENT_ADAPTER_UNAVAILABLE', 'The required typed MainWP content adapter is unavailable. MRN services must complete the integration.'],
+  mrn_content_fields: ['CONTENT_FIELDS_UNSUPPORTED', 'A complete supported content snapshot could not be produced from this record’s ACF definitions or values. Keep this operation blocked.'],
+  mrn_content_size: ['CONTENT_SIZE_LIMIT', 'Content data exceeds the qualified operation limits. Keep this operation blocked.'],
   mrn_code_operation: ['OPERATION_STATUS_UNAVAILABLE', 'The retained MainWP operation is unavailable. Keep any uncertain outcome and lock until qualified reconciliation.'],
   mrn_code_directory_inactive: ['STAFF_ACCESS_DENIED', 'The Google Workspace account is inactive, revoked or no longer matches the verified MRN identity. Access is denied.'],
   mrn_code_directory_unavailable: ['STAFF_VERIFICATION_UNAVAILABLE', 'Current Google Workspace membership could not be verified. Access remains blocked until verification is available.'],

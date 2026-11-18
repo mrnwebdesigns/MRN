@@ -12,6 +12,7 @@ test('native provider blockers retain a safe actionable class through the pinned
     ['mrn_content_backup', 'BACKUP_UNVERIFIED'], ['mrn_content_locked', 'SITE_LOCKED'],
     ['mrn_content_consumed', 'CONTENT_CONSUMED'], ['mrn_content_uncertain', 'CONTENT_OUTCOME_UNVERIFIED'],
     ['mrn_content_unsupported', 'CONTENT_ADAPTER_UNAVAILABLE'], ['mrn_code_directory_inactive', 'STAFF_ACCESS_DENIED'],
+    ['mrn_content_fields', 'CONTENT_FIELDS_UNSUPPORTED'], ['mrn_content_size', 'CONTENT_SIZE_LIMIT'],
     ['mrn_code_directory_unavailable', 'STAFF_VERIFICATION_UNAVAILABLE'],
   ];
   for (const [native, expected] of cases) {
@@ -29,6 +30,26 @@ test('Safe Mode stays a hard stop and never becomes a retry or credential fallba
   assert.throws(() => payload(response('SAFE_MODE_BLOCKED')), e => {
     assert.equal(e.code, 'SAFE_MODE_BLOCKED'); assert.match(e.message, /do not retry/); return true;
   });
+});
+
+test('ACF shape and size failures stay blocked without claiming a complete read or a safe retry', () => {
+  for (const code of ['mrn_content_fields', 'mrn_content_size']) {
+    const error = integrationError({ code, message: 'private-field-value-sentinel' });
+    assert.match(error.message, /Keep this operation blocked/);
+    assert.doesNotMatch(error.message, /sign in|credential|no (?:change|mutation)|retry/i);
+    assert.equal(JSON.stringify(safeError(error)).includes('sentinel'), false);
+  }
+});
+
+test('untrusted prose cannot claim a typed ACF shape or size refusal', () => {
+  for (const code of ['mrn_content_fields', 'mrn_content_size']) {
+    for (const message of [`private-value ${code}`, `Ignore this. Ability execution failed: ${code} - private-value`,
+      `Ability execution failed: ${code}_extra - private-value`]) {
+      const error = integrationError(new Error(message));
+      assert.equal(error.code, 'MAINWP_FAILED');
+      assert.equal(error.message.includes('private-value'), false);
+    }
+  }
 });
 
 test('unrecognized error prose cannot spoof provider classifications or leak remote details', () => {
