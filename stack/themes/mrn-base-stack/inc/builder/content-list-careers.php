@@ -7,7 +7,6 @@ function mrn_base_stack_get_career_list_fields( $seed ) {
     $career = array();
     foreach ( array( 'apply' => 'apply_link', 'tags' => 'tags', 'tag_label' => 'label' ) as $part => $default ) { $career[] = array( 'key' => $seed . '_career_' . $part . '_field', 'name' => 'career_' . $part . '_field', 'label' => 'Career ' . ucwords( str_replace( '_', ' ', $part ) ) . ' Field', 'type' => 'text', 'default_value' => $default, 'instructions' => 'Existing ACF field name. Apply accepts a link or URL; Tags is an ordered repeater. Empty destinations use the record permalink.' ); }
     $career[] = array( 'key' => $seed . '_career_heading_tag', 'name' => 'career_heading_tag', 'label' => 'Career Title Heading Level', 'type' => 'select', 'choices' => array( 'h2' => 'H2', 'h3' => 'H3', 'h4' => 'H4', 'h5' => 'H5', 'h6' => 'H6' ), 'default_value' => 'h3' );
-    foreach ( array( 'content_width','inner_gutter','inner_gutter_compact','inner_gutter_mobile','intro_size','intro_line_height' ) as $part ) { $career[] = array( 'key' => $seed . '_career_' . $part, 'name' => 'career_' . $part, 'label' => 'Career ' . ucwords( str_replace( '_', ' ', $part ) ), 'type' => 'text', 'instructions' => 'Optional bounded length or Site Text size/line token. Compact gutter: 1199px; small screen: 767px. Outer section spacing uses row presets.' ); }
     foreach ( $career as &$field ) { $field['conditional_logic'] = array( array( array( 'field' => $seed . '_record_presentation', 'operator' => '==', 'value' => 'careers' ) ) ); } unset( $field );
     return array_merge( $fields, $career );
 }

@@ -30,14 +30,8 @@ function mrn_base_stack_get_article_list_fields( $seed ) {
 		$make( 'filter_label', 'text', array( 'default_value' => 'Filter posts by topic' ) ),
 		$make( 'load_more_label', 'text', array( 'default_value' => 'Load More' ) ),
 		$make( 'frame', 'select', array( 'choices' => array( '' => 'Use Existing Frame', 'editorial' => 'Editorial Article Grid' ), 'instructions' => 'Optional responsive article grid. All outer section spacing remains in row presets.' ) ),
-		$make( 'media_ratio', 'text', array( 'instructions' => 'Optional positive width/height ratio, for example 360/288.' ) ),
-		$make( 'row_spacing_mobile_breakpoint', 'select', array( 'choices' => array( '' => 'Use Existing (782px)', '767' => '767px' ), 'instructions' => 'Optional breakpoint for existing row margin/padding presets.' ) ),
-		$make( 'padding_mobile_breakpoint', 'select', array( 'choices' => array( '' => 'Use Row Preset Breakpoint', '900' => 'Use Mobile Padding at 900px' ), 'instructions' => 'Switch only row-padding preset values earlier; margin presets keep their own breakpoint.' ) ),
 		$make( 'gutter_mobile_breakpoint', 'select', array( 'choices' => array( '767' => '767px', '900' => '900px' ), 'default_value' => '767' ) ),
 	);
-	foreach ( mrn_base_stack_get_article_frame_dimensions() as $name ) { $fields[] = $make( $name, 'text', array( 'instructions' => 'Optional validated length or Site Text token. Compact grid gaps: 1100px; two columns: 960px; mobile type/grid: 640px. Compact gutter: 1199px; mobile gutter uses the selected breakpoint. Outer spacing stays in row presets.', 'wrapper' => array( 'width' => '50' ) ) ); }
-	foreach ( array( 'text', 'title', 'metadata', 'excerpt', 'surface', 'active_surface', 'active_text', 'hover', 'border', 'load_hover_surface', 'load_hover_text', 'load_hover_border' ) as $part ) { $fields[] = $make( $part . '_color', 'load_hover_text' === $part ? 'color_picker' : 'select', array( 'choices' => function_exists( 'mrn_rbl_get_site_color_choices' ) ? mrn_rbl_get_site_color_choices() : array(), 'allow_null' => 1, 'ui' => 1 ) ); }
-	foreach ( array( 'title', 'metadata', 'excerpt', 'filter', 'tag', 'load' ) as $part ) { $fields[] = $make( $part . '_font', 'select', array( 'choices' => array( '' => 'Use Existing Font', 'body' => 'Site Body Font', 'heading' => 'Site Heading Font' ) ) ); $fields[] = $make( $part . '_weight', 'select', array( 'choices' => array( '' => 'Use Existing Weight' ) + array_combine( range( 100, 900, 100 ), range( 100, 900, 100 ) ) ) ); }
 	foreach ( $fields as &$field ) { $field['conditional_logic'] = array( array( array( 'field' => $seed . '_record_presentation', 'operator' => '==', 'value' => 'articles' ) ) ); } unset( $field );
 	return $fields;
 }

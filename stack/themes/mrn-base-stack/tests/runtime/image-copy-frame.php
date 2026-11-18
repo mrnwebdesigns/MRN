@@ -8,9 +8,8 @@ foreach ( array( 'body_text' => array( 'body_content_width', 'body_inner_gutter'
 	$first = array_column( $fields, 'key' ); $second = array_column( mrn_base_stack_get_content_frame_fields( $layout, 'field_mrn_proof_second' ), 'key' );
 	$expect( count( $first ) === count( array_unique( $first ) ) && ! array_intersect( $first, $second ), 'Root and nested field keys are isolated: ' . $layout );
 	foreach ( $names as $name ) {
-		$expect( isset( $fields[ $name ]['conditional_logic'] ), 'Native conditional control exists: ' . $name );
-		foreach ( array( '0px', '15px', 'clamp(15px, 2vw, 30px)' ) as $value ) { $row = array( $prefix . '_frame' => 'contained', $name => $value ); $style = mrn_base_stack_get_content_frame_contract( $row, $layout )['attributes']['style']; $expect( str_contains( $style, ':' . $value ), 'Valid bounded dimension: ' . $name . '/' . $value ); }
-		foreach ( array( '-1px', '15px;color:red', 'var(--unknown)', array( '15px' ) ) as $value ) { $row = array( $prefix . '_frame' => 'contained', $name => $value ); $contract = mrn_base_stack_get_content_frame_contract( $row, $layout ); $expect( empty( $contract['attributes'] ), 'Invalid dimension cannot emit CSS: ' . $name ); }
+		$expect( ! isset( $fields[ $name ] ), 'Content widths, gutters and heading space come from theme CSS, not row fields: ' . $name );
+		foreach ( array( '0px', '15px', 'clamp(15px, 2vw, 30px)', '-1px', '15px;color:red', 'var(--unknown)', array( '15px' ) ) as $value ) { $row = array( $prefix . '_frame' => 'contained', $name => $value ); $contract = mrn_base_stack_get_content_frame_contract( $row, $layout ); $expect( empty( $contract['attributes'] ), 'A stray row dimension emits no per-row CSS: ' . $name ); }
 		$expect( array( 'classes' => array(), 'attributes' => array() ) === mrn_base_stack_get_content_frame_contract( array( $name => '15px' ), $layout ), 'Unselected frame ignores dormant input: ' . $name );
 	}
 }

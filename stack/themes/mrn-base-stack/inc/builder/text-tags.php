@@ -10,15 +10,6 @@ function mrn_base_stack_get_text_tag_fields( $seed ) {
 		) ),
 	);
 	$fields[] = array( 'key' => $seed . '_heading_link_icon', 'name' => 'heading_link_icon', 'label' => 'Heading Action Treatment', 'type' => 'select', 'choices' => array( '' => 'Use Existing Link Style', 'arrow-reveal' => 'Reveal Arrow on Hover or Focus', 'arrow' => 'Always Show Arrow' ), 'default_value' => '' );
-	foreach ( array( 'size', 'gap' ) as $part ) { $fields[] = array( 'key' => $seed . '_heading_link_icon_' . $part, 'name' => 'heading_link_icon_' . $part, 'label' => 'Heading Action Icon ' . ucfirst( $part ), 'type' => 'text', 'instructions' => 'Optional non-negative CSS length.' ); }
-	$field = mrn_base_stack_get_background_color_field( $seed . '_heading_link_hover_color' ); $field['name'] = 'heading_link_hover_color'; $field['label'] = 'Heading Action Hover/Focus Color'; $fields[] = $field;
-	foreach ( array( 'gap' => 'Space Between Tags', 'space_before' => 'Space Before Tags', 'padding_inline' => 'Tag Horizontal Padding', 'padding_block' => 'Tag Vertical Padding', 'radius' => 'Tag Corner Radius', 'line_height' => 'Tag Line Height', 'font_size' => 'Tag Font Size', 'font_size_mobile' => 'Small-Screen Tag Font Size (767px)' ) as $name => $label ) {
-		$fields[] = array( 'key' => $seed . '_tag_' . $name, 'name' => 'tag_' . $name, 'label' => $label, 'type' => 'text', 'instructions' => 'Optional non-negative CSS length or clamp(). Section spacing uses row presets.', 'wrapper' => array( 'width' => '50' ) );
-	}
-	foreach ( array( 'text', 'background' ) as $part ) {
-		$field = mrn_base_stack_get_background_color_field( $seed . '_tag_' . $part . '_color' );
-		$field['name'] = 'tag_' . $part . '_color'; $field['label'] = 'Tag ' . ucfirst( $part ) . ' Color'; $fields[] = $field;
-	}
 	return $fields;
 }
 

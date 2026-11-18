@@ -59,19 +59,6 @@ function mrn_base_stack_get_comparison_list_fields( $seed ) {
 			)
 		),
 	);
-	foreach ( mrn_base_stack_get_comparison_dimensions() as $name ) {
-		$fields[] = $make(
-			$name,
-			'text',
-			array(
-				'instructions' => 'Optional bounded dimension or Site Text size/line token.',
-				'wrapper'      => array( 'width' => '50' ),
-			)
-		);
-	}
-	foreach ( array( 'title', 'tag' ) as $part ) {
-		$fields[] = $make( $part . '_weight', 'select', array( 'choices' => array( '' => 'Use Existing Weight' ) + array_combine( range( 100, 900, 100 ), range( 100, 900, 100 ) ) ) );
-	}
 
 	foreach ( $fields as &$field ) {
 		$field['conditional_logic'] = array( array( array( 'field' => $seed . '_record_presentation', 'operator' => '==', 'value' => 'comparisons' ) ) );

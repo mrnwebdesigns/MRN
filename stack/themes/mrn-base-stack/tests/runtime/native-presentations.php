@@ -195,8 +195,6 @@ try {
 			'image'               => $attachments[0],
 			'image_presentation'  => 'tilted-gallery',
 			'gallery_columns'     => $columns,
-			'media_height'        => '600px',
-			'media_height_mobile' => '340px',
 			'image_overlay'       => 1,
 		),
 		array(
@@ -204,8 +202,6 @@ try {
 			'heading'             => 'Scroll zoom',
 			'image'               => $attachments[1],
 			'image_presentation'  => 'scroll-zoom',
-			'media_height'        => '500px',
-			'media_height_mobile' => '340px',
 		),
 		array(
 			'acf_fc_layout'         => 'showcase',
@@ -267,7 +263,7 @@ try {
 	mrn_presentation_expect( count( $saved ) === count( $rows ), 'Every authored presentation row survives native ACF save' );
 	mrn_presentation_expect( 11 === count( $saved[0]['rotating_phrases_one'] ) && 11 === count( $saved[0]['rotating_phrases_two'] ), 'CTA retains both complete eleven-phrase collections' );
 	mrn_presentation_expect( 5 === count( $saved[1]['gallery_columns'] ) && 5 === count( $saved[1]['gallery_columns'][4]['images'] ), 'Rotated gallery preserves five ordered columns of five images' );
-	mrn_presentation_expect( '600px' === $saved[1]['media_height'] && '340px' === $saved[1]['media_height_mobile'], 'Desktop and mobile media heights round trip as content fields' );
+	mrn_presentation_expect( ! array_intersect( array( 'media_height', 'media_height_mobile' ), array_column( $layouts['image_content']['sub_fields'], 'name' ) ), 'Desktop and mobile media heights come from theme CSS, not row fields' );
 	$bad_gallery                                    = $rows;
 	$bad_gallery[1]['gallery_columns'][0]['images'] = array_fill( 0, 31, $attachments[0] );
 	$bad_gallery[0]['heading']                      = 'Must not persist';

@@ -8,6 +8,7 @@ $expect( isset( $fields['link_icon_position']['choices']['only'] ), 'Shared icon
 $layouts = array_column( acf_get_field( 'field_mrn_page_content_rows' )['layouts'], null, 'name' );
 $cta = array_column( $layouts['cta']['sub_fields'], null, 'name' );
 $link_fields = array_column( $cta['links']['sub_fields'], null, 'name' );
+$expect( ! isset( $cta['cta_action_icon_height'] ), 'CTA action icon height comes from theme CSS, not a row field' );
 $expect( isset( $link_fields['link_icon_position']['choices']['only'] ), 'Cloned reusable CTA field choices accept icon-only through the native write guard' );
 $unrelated = array( 'key' => 'field_client_position', 'type' => 'select', 'choices' => array( 'left' => 'Left', 'right' => 'Right' ) );
 $expect( $unrelated === mrn_base_stack_extend_link_icon_position_field( $unrelated ), 'A client-owned field with the same name retains its original choices' );
@@ -20,14 +21,14 @@ $expect( esc_html( $label ) . $icon === mrn_base_stack_get_compact_link_label_ma
 $id = wp_insert_post( array( 'post_type' => 'page', 'post_status' => 'draft', 'post_title' => 'Owned native icon-only qualification' ), true );
 if ( is_wp_error( $id ) ) { throw new RuntimeException( 'Owned draft creation failed.' ); }
 try {
-	$row = array( 'acf_fc_layout' => 'cta', 'heading' => 'Read the document', 'cta_frame' => 'stacked', 'cta_action_icon_height' => '10px', 'links' => array( array( 'link' => array( 'title' => 'Read the document', 'url' => home_url( '/document.pdf' ), 'target' => '_blank' ), 'is_button' => 1, 'link_icon_source' => 'dashicons', 'link_icon_dashicon' => 'dashicons-arrow-right-alt', 'link_icon_position' => 'only', 'link_icon_gap' => 0 ) ) );
+	$row = array( 'acf_fc_layout' => 'cta', 'heading' => 'Read the document', 'cta_frame' => 'stacked', 'links' => array( array( 'link' => array( 'title' => 'Read the document', 'url' => home_url( '/document.pdf' ), 'target' => '_blank' ), 'is_button' => 1, 'link_icon_source' => 'dashicons', 'link_icon_dashicon' => 'dashicons-arrow-right-alt', 'link_icon_position' => 'only', 'link_icon_gap' => 0 ) ) );
 	update_field( 'field_mrn_page_content_rows', array( $row ), $id );
 	acf_flush_value_cache( $id, 'page_content_rows' ); $saved = get_field( 'page_content_rows', $id )[0];
-	$expect( 'only' === $saved['links'][0]['link_icon_position'] && '10px' === $saved['cta_action_icon_height'], 'Native ACF retains the optional icon-only choice and CTA media icon height' );
+	$expect( 'only' === $saved['links'][0]['link_icon_position'], 'Native ACF retains the optional icon-only choice' );
 	$render = static function ( $value ) use ( $id ) { ob_start(); mrn_base_stack_render_builder_rows( array( $value ), $id, 'page_content_rows' ); return ob_get_clean(); };
 	$html = $render( $saved );
 	$expect( str_contains( $html, '<span class="screen-reader-text">Read the document</span>' ) && str_contains( $html, 'mrn-ui__link-icon--only' ), 'Reusable CTA uses the shared label helper without a plugin override' );
-	$expect( str_contains( $html, 'target="_blank"' ) && str_contains( $html, 'rel="noopener noreferrer"' ) && str_contains( $html, '--mrn-cta-frame-action-icon-height:10px' ), 'Destination target safety and selected icon height survive rendering' );
+	$expect( str_contains( $html, 'target="_blank"' ) && str_contains( $html, 'rel="noopener noreferrer"' ) && ! str_contains( $html, '--mrn-cta-frame-action-icon-height' ), 'Destination target safety survives rendering; icon height comes from theme CSS' );
 	$missing = $saved; $missing['links'][0]['link_icon_source'] = ''; $missing['links'][0]['link_icon_dashicon'] = '';
 	$expect( ! str_contains( $render( $missing ), '<span class="screen-reader-text">Read the document</span>' ), 'No glyph cannot silently hide the action name in a rendered CTA' );
 } finally { wp_delete_post( $id, true ); }

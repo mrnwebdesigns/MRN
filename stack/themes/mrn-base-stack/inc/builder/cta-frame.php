@@ -14,33 +14,6 @@ function mrn_base_stack_get_cta_frame_fields( $seed ) {
 			'instructions' => 'Stacked Content places content and actions in one column. The outer row owns margin, padding and motion once; use the row spacing presets for section spacing.',
 		),
 	);
-	foreach ( array(
-		'inner_gutter' => 'Inner Horizontal Gutter',
-		'inner_gutter_mobile' => 'Small-Screen Inner Horizontal Gutter',
-		'content_width' => 'Content Maximum Width',
-		'content_gap' => 'Space Between Content Elements',
-		'text_space_before' => 'Space Before Body Text',
-		'paragraph_space_after' => 'Space After Body Paragraphs',
-		'actions_space_before' => 'Space Before Actions',
-		'action_min_width' => 'Action Minimum Width',
-		'action_icon_height' => 'Action Media Icon Height',
-		'heading_size' => 'Heading Font Size',
-		'heading_line_height' => 'Heading Line Height',
-		'heading_space_after' => 'Space After Heading',
-		'text_size' => 'Body Font Size',
-		'text_line_height' => 'Body Line Height' ) as $name => $label ) {
-		$fields[] = array(
-			'key' => $seed . '_cta_' . $name, 'name' => 'cta_' . $name, 'label' => $label, 'type' => 'text',
-			'default_value' => '', 'wrapper' => array( 'width' => '50' ),
-			'instructions' => 'Optional non-negative CSS length, clamp(minimum, preferred, maximum), or Site Text size/line token for typography. Button controls apply only with Custom Button Frame. Width accepts none; line heights accept unitless numbers. Blank retains the stacked frame default. Paragraph spacing includes the last paragraph.',
-		);
-	}
-	$fields[] = array(
-		'key' => $seed . '_cta_inner_gutter_mobile_breakpoint', 'name' => 'cta_inner_gutter_mobile_breakpoint',
-		'label' => 'Small-Screen Gutter Breakpoint', 'type' => 'select',
-		'choices' => array( '' => '767px (Default)', '600' => '600px', '767' => '767px', '960' => '960px', '1199' => '1199px' ),
-		'default_value' => '', 'wrapper' => array( 'width' => '50' ),
-	);
 	$fields[] = array( 'key' => $seed . '_cta_action_unclamped_mobile', 'name' => 'cta_action_unclamped_mobile', 'label' => 'Allow Button Minimum Width on Small Screens', 'type' => 'true_false', 'ui' => 1, 'default_value' => 0, 'instructions' => 'Use the selected button minimum width even when it exceeds the content column at 600px and below. Check the 320px layout before enabling.' );
 	$fields[] = array( 'key' => $seed . '_cta_action_alignment_small', 'name' => 'cta_action_alignment_small', 'label' => 'Button Alignment at 480px', 'type' => 'select', 'choices' => array( '' => 'Use Content Alignment', 'start' => 'Start', 'center' => 'Center', 'end' => 'End' ), 'default_value' => '', 'instructions' => 'Align only the button on narrow screens; heading and body alignment stay unchanged.' );
 	$fields[] = array(
@@ -53,11 +26,6 @@ function mrn_base_stack_get_cta_frame_fields( $seed ) {
 	$fields[] = array( 'key' => $seed . '_cta_content_fill', 'name' => 'cta_content_fill', 'label' => 'Fill Parent and Align Actions at Bottom', 'type' => 'true_false', 'ui' => 1, 'default_value' => 0, 'instructions' => 'Fill an available parent height and align actions at the bottom. Space Before Actions remains their minimum spacing. Blank retains the current stacked flow.' );
 	$fields[] = array( 'key' => $seed . '_cta_heading_breaks_mobile', 'name' => 'cta_heading_breaks_mobile', 'label' => 'Hide Heading Line Breaks on Small Screens', 'type' => 'true_false', 'ui' => 1, 'default_value' => 0, 'instructions' => 'At 767px and below, allow the heading to wrap naturally instead of forcing authored line breaks. The words remain unchanged.' );
 	$fields[] = array( 'key' => $seed . '_cta_action_frame', 'name' => 'cta_action_frame', 'label' => 'Custom Button Frame', 'type' => 'true_false', 'default_value' => 0, 'ui' => 1, 'instructions' => 'Apply this row’s button dimensions, typography and Site Colors uniformly to button actions. Text links retain their own presentation.' );
-	$fields[] = array( 'key' => $seed . '_cta_heading_weight', 'name' => 'cta_heading_weight', 'label' => 'Heading Font Weight', 'type' => 'select', 'choices' => array( '' => 'Use Existing Weight' ) + array_combine( range( 100, 900, 100 ), range( 100, 900, 100 ) ), 'default_value' => '' );
-	foreach ( array( 'heading', 'text' ) as $part ) {
-		$field = mrn_base_stack_get_background_color_field( $seed . '_cta_' . $part . '_color' );
-		$field['name'] = 'cta_' . $part . '_color'; $field['label'] = ucwords( str_replace( '_', ' ', $part ) ) . ' Color'; $fields[] = $field;
-	}
 
 	foreach ( $fields as &$field ) {
 		if ( 'cta_frame' !== $field['name'] ) {

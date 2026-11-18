@@ -6,13 +6,7 @@ function mrn_base_stack_get_image_action_fields( $seed ) {
 		array( 'key' => $seed . '_image_action_label', 'name' => 'image_action_label', 'label' => 'Image Action Accessible Name', 'type' => 'text', 'instructions' => 'Describe the destination when the action has no visible label. Blank uses its link title or image alternative text; an unnamed action is not rendered.' ),
 		array( 'key' => $seed . '_image_action_marker', 'name' => 'image_action_marker', 'label' => 'Image Action Marker', 'type' => 'true_false', 'ui' => 1, 'default_value' => 0 ),
 	);
-	foreach ( array( 'offset_inline' => 'Marker Horizontal Offset', 'offset_block' => 'Marker Bottom Offset', 'padding_inline' => 'Marker Horizontal Padding', 'padding_block' => 'Marker Vertical Padding', 'radius' => 'Marker Corner Radius', 'offset_inline_mobile' => 'Small-Screen Horizontal Offset (1199px)', 'offset_block_mobile' => 'Small-Screen Bottom Offset (1199px)', 'padding_block_mobile' => 'Mobile Vertical Padding (767px)' ) as $name => $label ) {
-		$fields[] = array( 'key' => $seed . '_image_action_' . $name, 'name' => 'image_action_' . $name, 'label' => $label, 'type' => 'text', 'instructions' => 'Optional non-negative CSS length. Applies to the marker inside the media, not section spacing.', 'wrapper' => array( 'width' => '50' ) );
-	}
 	$fields[] = array( 'key' => $seed . '_image_action_follow_pointer', 'name' => 'image_action_follow_pointer', 'label' => 'Follow Pointer with Marker', 'type' => 'true_false', 'ui' => 1, 'default_value' => 0, 'instructions' => 'Decorative marker follows fine hover pointers only. Keyboard, touch, reduced-motion and no-script use the fixed marker; the full image remains the link.' );
-	$fields[] = array( 'key' => $seed . '_image_action_follow_inset', 'name' => 'image_action_follow_inset', 'label' => 'Pointer Marker Edge Inset', 'type' => 'number', 'min' => 0, 'max' => 100, 'step' => 1, 'default_value' => 18, 'append' => 'px' );
-	foreach ( array( 'text', 'background', 'hover_background' ) as $part ) { $field = mrn_base_stack_get_background_color_field( $seed . '_image_action_' . $part . '_color' ); $field['name'] = 'image_action_' . $part . '_color'; $field['label'] = 'Marker ' . ucwords( str_replace( '_', ' ', $part ) ) . ' Color'; $fields[] = $field; }
-	$fields[] = array( 'key' => $seed . '_image_action_background_opacity', 'name' => 'image_action_background_opacity', 'label' => 'Marker Background Opacity', 'type' => 'number', 'min' => 0, 'max' => 100, 'step' => 1, 'default_value' => '', 'append' => '%' );
 	return $fields;
 }
 

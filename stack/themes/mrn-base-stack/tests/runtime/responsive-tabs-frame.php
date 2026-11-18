@@ -12,6 +12,8 @@ foreach ( array( 'body_text', 'stats', 'image_content' ) as $layout ) {
 $expect( ! in_array( 'has-stats-divider-color', mrn_base_stack_get_content_frame_contract( array( 'stats_frame' => 'contained', 'stats_divider_color' => 'light-gray' ), 'stats' )['classes'], true ) && ! in_array( 'stats_divider_color', array_column( mrn_base_stack_get_content_frame_fields( 'stats', 'field_mrn_divider_proof' ), 'name' ), true ), 'Stats divider color comes from theme CSS, not a row field' );
 $fields = array_column( $layouts['tabbed_layout']['sub_fields'], null, 'name' );
 foreach ( mrn_base_stack_get_tabs_frame_fields( 'fixture' ) as $field ) { $expect( isset( $fields[ $field['name'] ] ), 'Registered Tabs field: ' . $field['name'] ); }
+$expect( ! array_intersect( array( 'tab_mobile_breakpoint', 'tab_content_width', 'tab_inner_gutter', 'tab_inner_gutter_mobile', 'tab_panel_space_before' ), array_keys( $fields ) ), 'Tabs accordion breakpoint, widths, gutters and panel spacing come from theme CSS, not row fields' );
+$body_fields = array_column( $layouts['body_text']['sub_fields'], null, 'name' ); $expect( ! array_intersect( array( 'body_heading_size', 'body_heading_color', 'body_label_weight' ), array_keys( $body_fields ) ), 'Body heading and label typography come from theme CSS, not row fields' );
 foreach ( array( 'url(bad)', 'var(--unknown-size)', '-4px', '1px;color:red', array( '12px' ) ) as $bad ) {
 	$contract = mrn_base_stack_get_content_frame_contract( array( 'body_frame' => 'contained', 'body_heading_size' => $bad, 'body_heading_color' => $bad, 'body_label_weight' => $bad ), 'body_text' );
 	$expect( empty( $contract['attributes'] ), 'Unsafe typography rejected: ' . wp_json_encode( $bad ) );
@@ -23,13 +25,13 @@ for ( $i = 1; $i <= 4; ++$i ) { $panels[] = array( 'tab_label' => 'Panel ' . $i,
 $id = wp_insert_post( array( 'post_type' => 'page', 'post_status' => 'draft', 'post_title' => 'Owned responsive Tabs frame proof' ), true );
 $expect( ! is_wp_error( $id ) && $id > 0, 'Owned draft created' );
 try {
-	$row = array( 'acf_fc_layout' => 'tabbed_layout', 'tabs' => $panels, 'tab_frame' => 'contained', 'tab_mobile_behavior' => 'accordion', 'tab_mobile_breakpoint' => '767', 'tab_content_width' => '1200px', 'tab_inner_gutter' => '30px', 'tab_inner_gutter_mobile' => '15px', 'tab_panel_space_before' => 'clamp(28px, 4vw, 54px)', 'tab_switch_effect' => 'slide' );
+	$row = array( 'acf_fc_layout' => 'tabbed_layout', 'tabs' => $panels, 'tab_frame' => 'contained', 'tab_mobile_behavior' => 'accordion', 'tab_switch_effect' => 'slide' );
 	update_field( 'field_mrn_page_content_rows', array( $row ), $id ); acf_flush_value_cache( $id, 'page_content_rows' ); $saved = get_field( 'page_content_rows', $id )[0];
-	foreach ( array( 'tab_frame', 'tab_mobile_behavior', 'tab_mobile_breakpoint', 'tab_panel_space_before' ) as $name ) { $expect( $row[ $name ] === $saved[ $name ], 'Native ACF retains ' . $name ); }
+	foreach ( array( 'tab_frame', 'tab_mobile_behavior' ) as $name ) { $expect( $row[ $name ] === $saved[ $name ], 'Native ACF retains ' . $name ); }
 	ob_start(); mrn_base_stack_render_builder_row( $saved, $id, 0 ); $html = ob_get_clean();
 	$expect( 4 === substr_count( $html, '<details ' ) && 4 === substr_count( $html, '<summary ' ) && 1 === substr_count( $html, 'data-mrn-tab-drawer open' ), 'Without JavaScript, four disclosures and exactly one initially open panel' );
 	$expect( ! str_contains( $html, 'splide__slide' ) && str_contains( $html, 'mrn-tabbed-layout--transition-instant' ) && 'slide' === $saved['tab_switch_effect'], 'Responsive mode uses instant switching without overwriting saved animation choice' );
-	$expect( 4 === substr_count( $html, 'role="region"' ) && str_contains( $html, 'data-mrn-tab-accordion="767"' ), 'Fallback regions and bounded responsive breakpoint render' );
+	$expect( 4 === substr_count( $html, 'role="region"' ) && str_contains( $html, 'data-mrn-tab-accordion="767"' ), 'Fallback regions and the default 767px responsive breakpoint render' );
 	for ( $i = 1; $i <= 4; ++$i ) { $expect( 1 === substr_count( $html, 'Unique copy ' . $i ), 'Panel ' . $i . ' content renders once' ); }
 	preg_match_all( '/\bid="([^"]+)"/', $html, $ids );
 	$expect( count( $ids[1] ) === count( array_unique( $ids[1] ) ), 'Desktop and disclosure controls have unique IDs' );

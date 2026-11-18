@@ -14,19 +14,8 @@ function mrn_base_stack_get_people_frame_fields( $seed ) {
 	$fields = array(
 		$make( 'frame', 'select', array( 'choices' => array( '' => 'Use Existing Frame', 'aside' => 'Heading Beside Collection', 'stacked' => 'Heading Above Collection' ), 'instructions' => 'Optional collection framing. Sources, selected records and order stay in Content Lists. Outer spacing stays in row presets.' ) ),
 		$make( 'grid_breakpoints', 'select', array( 'choices' => array( '999-599' => '3 / 2 / 1 at 999px / 599px', '640-420' => '3 / 2 / 1 at 640px / 420px' ), 'default_value' => '999-599' ) ),
-		$make( 'aside_breakpoint', 'select', array( 'choices' => array( '991' => 'Stack Heading at 991px', '767' => 'Stack Heading at 767px' ), 'default_value' => '991' ) ),
 		$make( 'image_size', 'select', array( 'choices' => array( '' => 'Use Existing Image Size', 'medium_large' => 'Medium Large', 'large' => 'Large', 'full' => 'Full' ), 'instructions' => 'Keep the existing attachment and WordPress responsive-image attributes while choosing its image size.' ) ),
-		$make( 'media_ratio', 'text', array( 'instructions' => 'Optional positive width/height ratio, for example 261/306.' ) ),
-		$make( 'media_background_color', 'color_picker', array( 'instructions' => 'Optional opaque background behind portraits and empty media. Does not recolor images.' ) ),
 	);
-	foreach ( mrn_base_stack_get_people_frame_dimensions() as $name ) {
-		$fields[] = $make( $name, 'text', array( 'instructions' => 'Optional non-negative length or bounded clamp(). Type controls also accept Site Text tokens. Compact gutters/aside width apply at 1199px, medium type/gaps at 991px, and mobile controls at the selected grid breakpoint.', 'wrapper' => array( 'width' => '50' ) ) );
-	}
-	foreach ( array( 'heading', 'name', 'designation' ) as $part ) {
-		$fields[] = $make( $part . '_font', 'select', array( 'choices' => array( '' => 'Use Existing Font', 'heading' => 'Site Heading Font', 'body' => 'Site Body Font' ) ) );
-		$fields[] = $make( $part . '_weight', 'select', array( 'choices' => array( '' => 'Use Existing Weight' ) + array_combine( range( 100, 900, 100 ), range( 100, 900, 100 ) ) ) );
-		$fields[] = $make( $part . '_color', 'select', array( 'choices' => function_exists( 'mrn_rbl_get_site_color_choices' ) ? mrn_rbl_get_site_color_choices() : array(), 'allow_null' => 1, 'ui' => 1 ) );
-	}
 	foreach ( $fields as &$field ) {
 		$field['conditional_logic'] = array( array( array( 'field' => $seed . '_record_presentation', 'operator' => '==', 'value' => 'people' ) ) );
 		if ( 'people_frame' !== $field['name'] ) { $field['conditional_logic'][0][] = array( 'field' => $seed . '_people_frame', 'operator' => '!=', 'value' => '' ); }

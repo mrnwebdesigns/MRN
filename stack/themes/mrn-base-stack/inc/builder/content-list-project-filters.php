@@ -64,7 +64,6 @@ function mrn_base_stack_get_project_filter_fields( $seed ) {
 		$make( 'initial', 'number', array( 'min' => 1, 'max' => 1000, 'step' => 1, 'default_value' => 9, 'instructions' => 'Records shown before Load More.' ) ),
 		$make( 'batch', 'number', array( 'min' => 1, 'max' => 1000, 'step' => 1, 'default_value' => 6 ) ),
 		$make( 'more_label', 'text', array( 'default_value' => 'Load More' ) ),
-		$make( 'media_ratio', 'text', array( 'name' => 'project_media_ratio', 'key' => $seed . '_project_media_ratio', 'label' => 'Project Media Ratio', 'instructions' => 'Optional positive width/height ratio, for example 360/420. Replaces the fixed media height.' ) ),
 	);
 	foreach ( $fields as &$field ) {
 		$field['conditional_logic'] = array( array( array( 'field' => $seed . '_record_presentation', 'operator' => '==', 'value' => 'projects' ) ) );

@@ -8,29 +8,6 @@
 /** Return optional controls for basic Heroes, never body layouts. */
 function mrn_base_stack_get_hero_frame_fields() {
 	$labels = array(
-		'inner_gutter' => 'Inner Horizontal Gutter',
-		'inner_gutter_mobile' => 'Small-Screen Inner Horizontal Gutter',
-		'content_width' => 'Content Maximum Width',
-		'content_width_mobile' => 'Small-Screen Content Maximum Width',
-		'heading_width' => 'Heading Maximum Width',
-		'heading_width_mobile' => 'Small-Screen Heading Maximum Width',
-		'text_width' => 'Body Maximum Width',
-		'content_gap' => 'Space Between Content Elements',
-		'heading_space_after' => 'Space After Heading',
-		'heading_space_after_mobile' => 'Small-Screen Space After Heading',
-		'actions_space_before' => 'Space Before Actions',
-		'actions_row_gap' => 'Space Between Action Rows',
-		'actions_column_gap' => 'Space Between Actions',
-		'action_icon_height' => 'Action Media Icon Height',
-		'heading_size' => 'Heading Font Size',
-		'heading_line_height' => 'Heading Line Height',
-		'text_size' => 'Body Font Size',
-		'text_size_mobile' => 'Small-Screen Body Font Size',
-		'text_line_height' => 'Body Line Height',
-		'text_line_height_mobile' => 'Small-Screen Body Line Height',
-		'paragraph_space_after' => 'Space After Body Paragraphs',
-		'body_h2_space_before' => 'Space Before Body H2 Headings',
-		'body_h2_space_after' => 'Space After Body H2 Headings',
 		'media_width' => 'Media Column Maximum Width',
 	);
 	$fields = array();
@@ -48,13 +25,6 @@ function mrn_base_stack_get_hero_frame_fields() {
 		'choices' => array( '' => 'None', 'gentle-rise' => 'Gentle Rise on Load' ),
 		'default_value' => '', 'wrapper' => array( 'width' => '50' ),
 		'instructions' => 'Optional 700ms fade and short rise on page load. Respects reduced motion and is inactive while Row Effects are enabled. Applies only to the main Hero heading.',
-	);
-	$fields[] = array(
-		'key' => 'field_mrn_hero_basic_block_frame_inner_gutter_mobile_breakpoint',
-		'name' => 'hero_inner_gutter_mobile_breakpoint', 'label' => 'Small-Screen Gutter Breakpoint', 'type' => 'select',
-		'choices' => array( '' => 'Use Existing Breakpoint (767px)', '767' => '767px', '960' => '960px', '1199' => '1199px' ),
-		'default_value' => '', 'wrapper' => array( 'width' => '50' ),
-		'instructions' => 'The smaller gutter applies at and below this viewport width. Content-width and typography breakpoints remain independent.',
 	);
 	$fields[] = array( 'key' => 'field_mrn_hero_basic_block_frame_content_fill_mobile', 'name' => 'hero_content_fill_mobile', 'label' => 'Fill Small-Screen Content Width', 'type' => 'true_false', 'ui' => 1, 'default_value' => 0, 'instructions' => 'At 767px and below, let direct Hero content and its list items wrap within the available column instead of preserving intrinsic minimum widths.' );
 	$fields[] = array(
@@ -87,18 +57,6 @@ function mrn_base_stack_get_hero_frame_fields() {
 		'default_value' => '', 'wrapper' => array( 'width' => '50' ),
 		'instructions' => 'Keep semantic H2 headings while choosing the existing H3 type scale. This does not change heading levels or other headings.',
 	);
-	$fields[] = array(
-		'key' => 'field_mrn_hero_basic_block_frame_heading_weight',
-		'name' => 'hero_heading_weight', 'label' => 'Heading Font Weight', 'type' => 'select',
-		'choices' => array( '' => 'Use Existing Weight' ) + array_combine( range( 100, 900, 100 ), range( 100, 900, 100 ) ),
-		'default_value' => '', 'wrapper' => array( 'width' => '50' ),
-	);
-	foreach ( array( 'heading' => 'Heading Color', 'text' => 'Body Paragraph Color' ) as $part => $label ) {
-		$field = mrn_base_stack_get_background_color_field( 'field_mrn_hero_basic_block_frame_' . $part . '_color' );
-		$field['name'] = 'hero_' . $part . '_color';
-		$field['label'] = $label;
-		$fields[] = $field;
-	}
 	return $fields;
 }
 

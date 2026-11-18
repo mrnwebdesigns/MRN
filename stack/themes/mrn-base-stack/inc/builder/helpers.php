@@ -4597,6 +4597,7 @@ function mrn_base_stack_get_effects_tab_field_names() {
 		'strip_behavior',
 		'strip_scroll_pace',
 		'process_mobile_expand_all',
+		'video_follow_color',
 	);
 }
 
@@ -8306,9 +8307,8 @@ function mrn_base_stack_ensure_builder_layout_display_style_fields( array $field
 		: array();
 
 	if ( in_array( $layout_name, array( 'hero', 'basic_block', 'body_text', 'card', 'cta', 'cta_block', 'content_lists' ), true ) ) {
-		$display_contract_names = array_merge( $display_contract_names, array( 'row_text_tracking', 'row_text_color' ) );
+		$display_contract_names = array_merge( $display_contract_names, array( 'row_text_color' ) );
 		$text_color = mrn_base_stack_get_background_color_field( sanitize_key( '' !== $key_seed ? $key_seed : 'field_mrn_' . $layout_name . '_display' ) . '_row_text_color' ); $text_color['name'] = 'row_text_color'; $text_color['label'] = 'Row Text Color'; $text_color['instructions'] = 'Optional inherited foreground color from Site Colors. Explicit component colors retain priority; blank preserves existing colors.'; $display_contract_fields[] = $text_color;
-		$display_contract_fields[] = array( 'key' => sanitize_key( '' !== $key_seed ? $key_seed : 'field_mrn_' . $layout_name . '_display' ) . '_row_text_tracking', 'name' => 'row_text_tracking', 'label' => 'Text Letter Spacing', 'type' => 'select', 'choices' => array( '' => 'Use Existing Typography', 'normal' => 'Normal Within This Row' ), 'default_value' => '', 'instructions' => 'Optional normal letter spacing for this row and its contents. Explicit component typography controls retain priority. Blank preserves existing heading and body tracking.' );
 	}
 
 	// Content Lists: a theme-registered row look, separate from the item Display Style (absent unless a theme registers one).
@@ -9840,7 +9840,16 @@ function mrn_base_stack_relocate_effect_fields( array $fields ) {
 
 	$has_tabs       = false;
 	$effects_fields = array();
+	$spacing_fields = array();
 	$remaining      = array();
+	$spacing_tab    = false;
+
+	foreach ( $processed_fields as $field ) {
+		if ( is_array( $field ) && 'tab' === ( $field['type'] ?? '' ) && 'spacing' === sanitize_title( (string) ( $field['label'] ?? '' ) ) ) {
+			$spacing_tab = true;
+			break;
+		}
+	}
 
 	foreach ( $processed_fields as $field ) {
 		if ( ! is_array( $field ) ) {
@@ -9865,8 +9874,15 @@ function mrn_base_stack_relocate_effect_fields( array $fields ) {
 			continue;
 		}
 
+		if ( $spacing_tab && in_array( $field_name, mrn_base_stack_get_spacing_tab_field_names(), true ) ) {
+			$spacing_fields[] = $field;
+			continue;
+		}
+
 		$remaining[] = $field;
 	}
+
+	$remaining = mrn_base_stack_append_to_spacing_tab( $remaining, $spacing_fields );
 
 	if ( ! $has_tabs || empty( $effects_fields ) ) {
 		return $remaining;
@@ -9881,6 +9897,52 @@ function mrn_base_stack_relocate_effect_fields( array $fields ) {
 	$remaining[] = mrn_base_stack_get_effects_tab_field( $effects_tab_key );
 
 	return array_merge( $remaining, $effects_fields );
+}
+
+/**
+ * Row spacing values an editor still sets per row, shown in the Spacing tab beside the row presets.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_spacing_tab_field_names() {
+	return array( 'slider_gap', 'split_row_vertical_padding', 'split_row_horizontal_padding' );
+}
+
+/**
+ * Append fields to the end of a list's Spacing tab. Callers move fields only from lists that have one.
+ *
+ * @param array<int, mixed> $fields  Field definitions without the moved fields.
+ * @param array<int, mixed> $moving  Fields to append to the Spacing tab.
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_append_to_spacing_tab( array $fields, array $moving ) {
+	if ( empty( $moving ) ) {
+		return $fields;
+	}
+
+	$spacing_index = null;
+	$insert_at     = count( $fields );
+
+	foreach ( $fields as $index => $field ) {
+		if ( ! is_array( $field ) || 'tab' !== ( $field['type'] ?? '' ) ) {
+			continue;
+		}
+
+		if ( null === $spacing_index && 'spacing' === sanitize_title( (string) ( $field['label'] ?? '' ) ) ) {
+			$spacing_index = $index;
+		} elseif ( null !== $spacing_index ) {
+			$insert_at = $index;
+			break;
+		}
+	}
+
+	if ( null === $spacing_index ) {
+		return array_merge( $fields, $moving );
+	}
+
+	array_splice( $fields, $insert_at, 0, $moving );
+
+	return $fields;
 }
 
 /**

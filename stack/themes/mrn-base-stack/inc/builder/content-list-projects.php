@@ -43,11 +43,6 @@ function mrn_base_stack_get_project_list_fields( $seed ) {
 		$make( 'grid_breakpoint', 'select', array( 'choices' => array( '576' => 'One Column at 576px', '767' => 'One Column at 767px', '991' => 'One Column at 991px' ), 'default_value' => '767' ) ),
 		$make( 'columns', 'select', array( 'choices' => array( '1' => 'One', '2' => 'Two', '3' => 'Three', '4' => 'Four' ), 'default_value' => '3' ) ),
 	);
-	foreach ( mrn_base_stack_get_project_frame_dimensions() as $name ) { $fields[] = $make( $name, 'text', array( 'instructions' => 'Optional bounded dimension or Site Text size/line token. Outer section spacing uses native row presets.', 'wrapper' => array( 'width' => '50' ) ) ); }
-	foreach ( array( 'heading', 'title', 'subtitle', 'tag', 'action' ) as $part ) {
-		$fields[] = $make( $part . '_weight', 'select', array( 'choices' => array( '' => 'Use Existing Weight' ) + array_combine( range( 100, 900, 100 ), range( 100, 900, 100 ) ) ) );
-	}
-	foreach ( array( 'heading', 'title', 'title_hover', 'subtitle', 'tag', 'tag_surface', 'action_text', 'action_background', 'action_hover_background' ) as $part ) { $field = mrn_base_stack_get_background_color_field( $seed . '_project_' . $part . '_color' ); $field['name'] = 'project_' . $part . '_color'; $field['label'] = 'Project ' . ucwords( str_replace( '_', ' ', $part ) ) . ' Color'; $fields[] = $field; }
 	$fields = array_merge( $fields, mrn_rbl_get_content_link_fields( $seed . '_project_links', 'Project Actions', 'project_links', 1 ) );
 	foreach ( $fields as &$field ) { $field['conditional_logic'] = array( array( array( 'field' => $seed . '_record_presentation', 'operator' => '==', 'value' => 'projects' ) ) ); } unset( $field );
 	return array_merge( $fields, function_exists( 'mrn_base_stack_get_project_filter_fields' ) ? mrn_base_stack_get_project_filter_fields( $seed ) : array() );

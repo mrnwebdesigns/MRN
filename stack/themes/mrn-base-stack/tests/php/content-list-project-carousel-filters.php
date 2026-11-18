@@ -70,7 +70,7 @@ $expect( $query === mrn_base_stack_get_project_collection_query( array( 'record_
 $fields = mrn_base_stack_get_project_list_fields( 'field_projects' );
 $expect( count( $fields ) === count( array_unique( array_column( $fields, 'key' ) ) ) && count( $fields ) === count( array_unique( array_column( $fields, 'name' ) ) ), 'Project, carousel and filter fields keep unique keys and names' );
 $expect( ! array_filter( $fields, static fn( $field ) => $field['conditional_logic'] !== $fields[0]['conditional_logic'] ), 'Every project field stays scoped to the project presentation' );
-$expect( in_array( 'project_filters', array_column( $fields, 'name' ), true ) && in_array( 'project_layout', array_column( $fields, 'name' ), true ) && in_array( 'project_media_ratio', array_column( $fields, 'name' ), true ), 'Layout, filter and ratio fields are registered' );
+$expect( in_array( 'project_filters', array_column( $fields, 'name' ), true ) && in_array( 'project_layout', array_column( $fields, 'name' ), true ) && ! in_array( 'project_media_ratio', array_column( $fields, 'name' ), true ) && ! in_array( 'project_carousel_gap', array_column( $fields, 'name' ), true ), 'Layout and filter fields are registered; styling fields are not' );
 
 // Media ratio.
 foreach ( array( '360/420' => '360 / 420', ' 4 / 3 ' => '4 / 3', '1.5/1' => '1.5 / 1' ) as $raw => $expected ) { $expect( $expected === mrn_base_stack_get_project_media_ratio( array( 'project_media_ratio' => $raw ) ), 'Ratio ' . trim( $raw ) . ' is accepted' ); }
