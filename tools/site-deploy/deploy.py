@@ -14,6 +14,7 @@ import time
 import urllib.request
 import urllib.error
 from host_paths import activation_environment
+from public_http import open_public, USER_AGENT
 
 EXCLUDED = {"tests", "docs", "scripts", "qa", "node_modules", "vendor", "AGENTS.md", "README.md",
             "composer.json", "composer.lock", "package.json", "package-lock.json", "phpunit.xml.dist"}
@@ -284,7 +285,7 @@ def git_destination(c, before, source):
 def require_http_denied(url):
     # Never read response bodies, particularly for provider/Git private files.
     try:
-        request = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (compatible; MRN-Deployment/1.0)'})
+        request = urllib.request.Request(url, headers={'User-Agent': USER_AGENT})
         with urllib.request.urlopen(request, timeout=30):
             pass
     except urllib.error.HTTPError as error:
@@ -317,8 +318,7 @@ def verify_git_privacy(c, before):
 
 
 def http_check(url, rest=False):
-    request = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (compatible; MRN-Deployment/1.0)'})
-    with urllib.request.urlopen(request, timeout=30) as response:
+    with open_public(url) as response:
         if response.status != 200 or response.url.rstrip('/') != url.rstrip('/'):
             raise RuntimeError('Public URL failed exact-target HTTP verification')
         body = response.read(8 * 1024 * 1024)
@@ -469,7 +469,8 @@ def deploy(args, c):
         result = activate(plan, c)
         Path(args.receipt).write_text(json.dumps(result, indent=2) + '\n')
         if result['status'] != 'public-verified':
-            raise RuntimeError('Activation failed; inspect the deployment and recovery receipt')
+            phase = 'Preflight' if result['status'] == 'preflight-failed' else 'Deployment'
+            raise RuntimeError(phase + ' failed; inspect the retained deployment receipt')
         print(json.dumps({'status': result['status'], 'current': result['current'],
                           'runtime_qa_required': True}))
 

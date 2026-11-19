@@ -108,7 +108,7 @@ def resolve(config_path, request):
     provision = 'new_site_identity' in config
     if provision and 'deploy_private_key' in config['references']:
         raise ValueError('Choose an existing identity reference or new-site provisioning')
-    names = ('github_token', 'qa_engine_token') if provision else ('github_token', 'qa_engine_token', 'deploy_private_key')
+    names = ('github_token', 'qa_engine_token', 'deployment_notification_token') if provision else ('github_token', 'qa_engine_token', 'deployment_notification_token', 'deploy_private_key')
     for name in names:
         reference = config['references'][name].format(domain=request['domain'], site_user=request['site_user'])
         if not reference.startswith('op://' + vault + '/') or any(ord(c) < 32 for c in reference):

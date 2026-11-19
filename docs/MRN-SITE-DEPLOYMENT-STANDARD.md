@@ -9,6 +9,10 @@ activation, scoped HTML refresh, and public manifest/checksum verification.
 Keep target-specific source, backup, rollback, browser and runtime receipts in
 the site repository and operational record; incomplete adapters stay disabled.
 
+For adapter adoption with tracked WordPress content or media, see the
+[site release contract v1](../tools/site-deploy/release_v1/README.md) and the
+[MRN deployment update](MRN-DEPLOYMENT-UPDATE-V1.md).
+
 ## Daily workflow
 
 Use one source repository per site, one task branch/worktree per change, and a
@@ -125,6 +129,9 @@ in the site PR. Do not let dispatch inputs choose arbitrary filesystem paths.
 
 Both reusable QA jobs install Semgrep 1.179.0 into a private runner-temporary
 Python 3.11 virtual environment through `tools/site-deploy/install-qa-python.sh`.
+The deployment job and its representative browser qualification job pin
+`ubuntu-24.04`, the runner qualified for the pinned Playwright 1.60 toolchain;
+they must not use the moving `ubuntu-latest` label.
 The QA Engine deliberately changes `HOME` while scanning. A user-site Python
 installation becomes invisible after that change and previously failed with
 `ModuleNotFoundError: No module named 'semgrep'`. Dependency setup now checks the
@@ -141,6 +148,46 @@ change, rearm after merging, then test with an ordinary new source push. Verify
 source QA, backup, deployed SHA, asset checksums and runtime evidence from that
 new run before calling automatic Dev operational. No site theme, content or
 shared Stack plugin update is required for this dependency repair.
+
+## Deployment failure emails
+
+Each participating repository installs the separate
+`.github/workflows/site-deploy-failure.yml` observer from
+`tools/site-deploy/site-deploy-failure.yml.template`. Pin both its reusable
+`site-deploy-notify.yml` reference and `tooling_ref` to one reviewed MRN commit.
+Existing deployments may retain their qualified deployment pins; notification
+adoption does not require changing a provider adapter or releasing site code.
+
+Completed **Deploy site** failures, including source QA, build, startup, and
+runtime failures, email **mrn-developer@mrnwebdesigns.com** from
+**deployments@mrnwebdesigns.com**. Success, intentional cancellation, and skipped
+runs send nothing. The email contains repository/commit metadata, failed job and
+step names, and the original run link. It never includes source files, logs,
+credentials, or upstream artifact contents. A failure does not establish whether
+a runtime write occurred; inspect the deployment and rollback receipts.
+
+The repository-level Actions secret `MRN_DEPLOY_NOTIFY_POSTMARK_TOKEN` uses the
+dedicated **MRN Deployment Notifications** Postmark server. Keep its canonical
+token only in the MRN business 1Password enrollment vault. New-site enrollment
+requires the broker reference `deployment_notification_token`, provisions the
+secret at repository scope, and installs the observer. Never use an account API
+token or a client's transactional server token in a project workflow.
+
+For existing repositories, record their current main/phase policy and activation
+cutoffs, pause armed `MRN_AUTO_DEV_AFTER` and `MRN_RELEASE_REQUESTS_AFTER`, add only
+the observer and its scoped secret, and preserve existing wrappers, secrets and
+readiness. Wait for the setup source signal to register, then restore only the
+previously armed policies with a later current UTC cutoff. Setup must not release
+pending site work or enable an unarmed destination. Check installation runs and
+retain the before/after policy receipts.
+
+The notification run retains `deployment-failure-email.json` with the failed
+run/attempt and Postmark MessageID. `provider-accepted` is not recipient-server
+delivery or inbox placement. Verify delivery through that exact provider message.
+The sender performs one POST, refuses notification reruns, and does not retry an
+unknown outcome. Reconcile the provider's original message before any explicit
+resend. A missing credential or rejected notification fails visibly in the
+notification workflow while preserving the original deployment failure.
 
 ## Automatic Dev adoption
 
@@ -364,6 +411,26 @@ asset manifest. Undeclared paths still require `style.css`. HTML and browser
 checks require an applied stylesheet from the declared alternatives and verify
 its normal public URL and exact bytes; a preload alone does not qualify.
 
+Optional `stylesheet_contexts`, `stylesheet_subsets`, and `stylesheet_bundles`
+extend that existing route declaration. A context names required and absent
+WordPress body classes. A subset removes only selectors proven impossible by
+a positive, absent body class in the leftmost compound; descendant classes,
+negations, interactive states, uncertain syntax, declarations and retained rule
+order stay intact. Sites must establish that the declared classes are body-owned,
+not arbitrary component/state classes. Unknown contexts keep their full sheet.
+`mrn_site_release_stylesheet_matches_body()` checks the immutable context against
+the current `get_body_class()` result; it does not select a route automatically.
+
+Bundles concatenate declared CSS sources in order, within the same directory,
+so relative dependency URLs keep their meaning. Imports, charset directives,
+missing sources, existing-file collisions and unsafe paths fail the build.
+Generated editable-form derivatives, minified counterparts, checksums and the
+context declaration travel in one immutable artifact. The original full CSS
+remains available. A site adopting a bundle must preserve native dependency and
+inline-style ordering, qualify fallback behavior, and compare full-page and
+interactive rendering at phone, tablet and desktop widths. This contract does
+not permit purging CSS from initial-load coverage or asynchronous overlay styles.
+
 The Dev adapter snapshots the original child theme and changes only its public
 `functions.php` to a stable loader. Original public assets remain byte-for-byte
 unchanged. New code is stored privately; new static assets use immutable public
@@ -422,7 +489,15 @@ blocks this v1 adapter. No object-cache flush, transient deletion, static-asset
 purge, or cache operation against another hostname is permitted.
 
 An edge that retains affected HTML must serve the released asset references
-within the bounded public verification window. The controller retries ordinary
+within the bounded public verification window. Public HTTP checks pace requests
+to each origin at one per second, retaining separate first/warm reads and exact
+manifest checksums. HTTP 429 alone receives up to four attempts and 120 seconds
+of total backoff: a valid numeric or HTTP-date `Retry-After` is honored in full,
+otherwise waits are 15, 30 and 60 seconds. A delay beyond the remaining budget
+fails closed rather than retrying early. Exhaustion is not restarted by the
+cache-propagation loop. Failure/recovery receipts retain safe URL, status and
+Cloudflare identifiers without response bodies, cookies or query secrets.
+The controller retries ordinary
 public requests for up to 120 seconds; it never treats cache-busting queries or a
 CAPTCHA/challenge response as release proof. A failed verification restores the
 previous code selection and refreshes the same HTML scope. Prior immutable asset

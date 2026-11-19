@@ -38,6 +38,7 @@ class LocalQualification(unittest.TestCase):
         sha = acceptance.git('rev-parse', 'HEAD')
         report = f'commit: {sha}\n- Mode: release\n**Release QA Result: 100% SUCCESS**\n'
         report += '\n'.join(f'| {row} | Ran | Pass | fixture | passed |' for row in acceptance.REQUIRED_ROWS)
+        report += '\n| PHPUnit | Ran | Pass | fixture | passed |'
         self.report = Path('qa/release-acceptance/local-release.md')
         self.report.parent.mkdir(parents=True, exist_ok=True)
         self.report.write_text(report)
@@ -93,6 +94,12 @@ class LocalQualification(unittest.TestCase):
         self.write_proof()
         with self.assertRaises(ValueError):
             acceptance.qualify(self.env)
+
+    def test_explicit_no_phpunit_suite_is_accepted(self):
+        self.report.write_text(self.report.read_text().replace('| PHPUnit | Ran | Pass |', '| PHPUnit | Skipped | Pass |'))
+        self.proof['report_sha256'] = hashlib.sha256(self.report.read_bytes()).hexdigest()
+        self.write_proof()
+        self.assertEqual(acceptance.qualify(self.env)['status'], 'locally-qualified-awaiting-live-readback')
         self.proof['qualified_at'] = now()
         self.report.write_text(self.report.read_text().replace('| PHPStan | Ran | Pass |', '| PHPStan | Skipped | Pass |'))
         self.proof['report_sha256'] = hashlib.sha256(self.report.read_bytes()).hexdigest()
@@ -153,12 +160,12 @@ class LiveReadback(unittest.TestCase):
         redirected = acceptance.ArtifactRedirect().redirect_request(request, None, 302, 'Found', {}, 'https://storage.example/artifact')
         self.assertIsNone(redirected.get_header('Authorization'))
 
-    def test_workflow_defaults_remain_hosted_and_failures_keep_rollback(self):
+    def test_workflow_uses_runtime_qa_for_local_acceptance_and_keeps_rollback(self):
         workflow = (Path(__file__).parents[3] / '.github/workflows/site-deploy-target.yml').read_text()
-        for section in ['Verify browser-loaded assets and responsive layout contracts', 'Run runtime QA']:
-            step = workflow.split('      - name: ' + section + '\n')[1].split('      - name:')[0]
-            self.assertIn("inputs.local_qa_acceptance == ''", step)
-        self.assertIn("steps.local_readback.outcome == 'failure'", workflow)
+        runtime = workflow.split('      - name: Run runtime QA\n')[1].split('      - name:')[0]
+        self.assertNotIn("inputs.local_qa_acceptance == ''", runtime)
+        self.assertIn('--run-smoke always --run-accessibility always', runtime)
+        self.assertIn("steps.runtime.outcome == 'failure'", workflow)
         self.assertIn('--rollback-receipt "$RUNNER_TEMP/site-deployment.json"', workflow)
 
 

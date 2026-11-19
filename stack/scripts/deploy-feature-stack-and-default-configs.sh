@@ -66,6 +66,8 @@ LOCAL_THEME_DIR="${REPO_ROOT}/stack/themes/mrn-base-stack"
 LOCAL_STACK_MU_DIR="${REPO_ROOT}/stack/mu-plugins"
 LOCAL_STACK_RELEASE_LOCK="${REPO_ROOT}/stack/manifests/stack-release.lock.json"
 LOCAL_SITE_BOOTSTRAP="${REPO_ROOT}/stack/scripts/site-bootstrap.sh"
+LOCAL_PREVIEWSHARE_CONFIG="${REPO_ROOT}/stack/scripts/configure-previewshare.php"
+LOCAL_PREVIEWSHARE_VERIFY="${REPO_ROOT}/stack/scripts/verify-previewshare.php"
 LOCAL_STACK_EXPORT_IMPORTER="${REPO_ROOT}/stack/configs/importers/stack-export-importer.sh"
 LOCAL_IMPORTERS_MANIFEST="${REPO_ROOT}/stack/manifests/importers.txt"
 LOCAL_MU_SOURCE_ROOT="${REPO_ROOT}/mu-plugins"
@@ -133,7 +135,7 @@ for required in python3 rsync ssh; do
 	fi
 done
 
-for required_file in "${LOCAL_SITE_BOOTSTRAP}" "${LOCAL_STACK_EXPORT_IMPORTER}" "${LOCAL_IMPORTERS_MANIFEST}"; do
+for required_file in "${LOCAL_SITE_BOOTSTRAP}" "${LOCAL_PREVIEWSHARE_CONFIG}" "${LOCAL_PREVIEWSHARE_VERIFY}" "${LOCAL_STACK_EXPORT_IMPORTER}" "${LOCAL_IMPORTERS_MANIFEST}"; do
 	if [[ ! -f "${required_file}" ]]; then
 		echo "Required bootstrap source not found: ${required_file}" >&2
 		exit 1
@@ -266,6 +268,9 @@ fi
 run_rsync \
 	"${LOCAL_SITE_BOOTSTRAP}" \
 	"${SSH_HOST}:${STACK_ROOT_REMOTE}/scripts/site-bootstrap.sh"
+for previewshare_script in "${LOCAL_PREVIEWSHARE_CONFIG}" "${LOCAL_PREVIEWSHARE_VERIFY}"; do
+	run_rsync "${previewshare_script}" "${SSH_HOST}:${STACK_ROOT_REMOTE}/scripts/$(basename "${previewshare_script}")"
+done
 for helper in bootstrap-new-sites.sh bootstrap-dev-enrollment.sh; do
 	run_rsync "${REPO_ROOT}/stack/scripts/${helper}" "${SSH_HOST}:${STACK_ROOT_REMOTE}/scripts/${helper}"
 	if [[ "${DRY_RUN}" -eq 0 ]]; then
@@ -281,8 +286,10 @@ run_rsync \
 	"${SSH_HOST}:${STACK_ROOT_REMOTE}/manifests/importers.txt"
 
 if [[ "${DRY_RUN}" -eq 0 ]]; then
-	run_remote "${SSH_HOST}" "chmod 750 '${STACK_ROOT_REMOTE}/scripts/site-bootstrap.sh' '${STACK_ROOT_REMOTE}/configs/importers/stack-export-importer.sh' && chmod 640 '${STACK_ROOT_REMOTE}/manifests/importers.txt'"
+	run_remote "${SSH_HOST}" "chmod 750 '${STACK_ROOT_REMOTE}/scripts/site-bootstrap.sh' '${STACK_ROOT_REMOTE}/configs/importers/stack-export-importer.sh' && chmod 640 '${STACK_ROOT_REMOTE}/scripts/configure-previewshare.php' '${STACK_ROOT_REMOTE}/scripts/verify-previewshare.php' '${STACK_ROOT_REMOTE}/manifests/importers.txt'"
 	verify_remote_file_sha256 "${LOCAL_SITE_BOOTSTRAP}" "${STACK_ROOT_REMOTE}/scripts/site-bootstrap.sh"
+	verify_remote_file_sha256 "${LOCAL_PREVIEWSHARE_CONFIG}" "${STACK_ROOT_REMOTE}/scripts/configure-previewshare.php"
+	verify_remote_file_sha256 "${LOCAL_PREVIEWSHARE_VERIFY}" "${STACK_ROOT_REMOTE}/scripts/verify-previewshare.php"
 	verify_remote_file_sha256 "${LOCAL_STACK_EXPORT_IMPORTER}" "${STACK_ROOT_REMOTE}/configs/importers/stack-export-importer.sh"
 	verify_remote_file_sha256 "${LOCAL_IMPORTERS_MANIFEST}" "${STACK_ROOT_REMOTE}/manifests/importers.txt"
 	if [[ "${BOOTSTRAP_CONTRACT_ONLY}" -eq 0 ]]; then

@@ -5,10 +5,14 @@ on:
       - stack/scripts/*bootstrap*.sh
       - stack/tests/test_dev_enrollment_bootstrap.py
       - tools/site-deploy/**
+      - tools/cloudpanel/**
+      - stack/scripts/bootstrap_readiness.py
+      - stack/tests/test_bootstrap_readiness.py
       - tools/component-deploy/**
       - .github/workflows/site-deploy-target.yml
       - .github/workflows/site-deploy.yml
       - .github/workflows/site-source-qa.yml
+      - .github/workflows/site-deploy-notify.yml
       - .github/workflows/site-deploy-ci.yml
       - .github/workflows/site-release-build.yml
   workflow_dispatch:
@@ -16,13 +20,15 @@ permissions:
   contents: read
 jobs:
   contract:
-    runs-on: ubuntu-latest
+    # Match the browser runtime used by the reusable deployment workflow.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
-          extensions: sqlite3, pdo_sqlite, zip, opcache
+          extensions: sqlite3, pdo_sqlite, zip, opcache, gd
+          tools: wp-cli:2.12.0
       - uses: actions/setup-go@v5
         with:
           go-version: '1.24'
@@ -37,13 +43,10 @@ jobs:
         run: npm ci --ignore-scripts && npm test
       - name: Deployment failure-path tests
         run: |
-          python3 -m pip install -r tools/site-deploy/requirements-test.txt -r tools/site-deploy/requirements-enrollment.txt
+          python3 -m pip install -r tools/site-deploy/requirements-test.txt -r tools/site-deploy/requirements-enrollment.txt -r tools/site-deploy/release_v1/requirements.txt
           python3 -m unittest discover -s tools/site-deploy/tests -v
           python3 -m unittest discover -s stack/tests -p test_dev_enrollment_bootstrap.py -v
-      - name: Install isolated source scanner
-        run: bash tools/site-deploy/install-qa-python.sh
-      - name: Scanner relocated-HOME regression
-        run: python3 tools/site-deploy/tests/semgrep_home_regression.py
+          python3 -m unittest discover -s stack/tests -p test_bootstrap_readiness.py -v
       - name: Shared component artifact and WordPress loader tests
         env:
           MRN_COMPONENT_WP_ARCHIVE: ${{ runner.temp }}/wordpress-7.1.2.zip
@@ -55,6 +58,12 @@ jobs:
           curl --fail --silent --show-error --location https://wordpress.org/wordpress-7.1.2.zip --output "$MRN_COMPONENT_WP_ARCHIVE"
           curl --fail --silent --show-error --location https://downloads.wordpress.org/plugin/sqlite-database-integration.3.0.2.zip --output "$MRN_COMPONENT_SQLITE_ARCHIVE"
           python3 -m unittest discover -s tools/component-deploy/tests -v
+          python3 -m unittest discover -s tools/site-deploy/tests -p test_release_v1_wordpress.py -v
+          MRN_RELEASE_TEST_PLAYWRIGHT_ROOT="$GITHUB_WORKSPACE/tools/component-deploy" node --test tools/site-deploy/tests/release-v1-browser.test.mjs
+      - name: Install isolated source scanner
+        run: bash tools/site-deploy/install-qa-python.sh
+      - name: Scanner relocated-HOME regression
+        run: python3 tools/site-deploy/tests/semgrep_home_regression.py
       - name: Validate shared and caller workflows
         run: |
           sed -e 's/TOOLING_SHA/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/g' \
@@ -65,4 +74,8 @@ jobs:
             .github/workflows/site-deploy-target.yml .github/workflows/site-deploy-ci.yml \
             .github/workflows/site-release-build.yml .github/workflows/site-deploy.yml \
             .github/workflows/site-source-qa.yml \
+            .github/workflows/site-deploy-notify.yml \
             "$RUNNER_TEMP/site-deploy.yml" tools/site-deploy/site-push.yml.template
+          sed 's/TOOLING_SHA/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/g' \
+            tools/site-deploy/site-deploy-failure.yml.template > "$RUNNER_TEMP/site-deploy-failure.yml"
+          go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12 -shellcheck= "$RUNNER_TEMP/site-deploy-failure.yml"

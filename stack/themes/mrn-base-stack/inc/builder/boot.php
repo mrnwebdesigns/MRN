@@ -6,12 +6,17 @@
  */
 
 require_once __DIR__ . '/admin.php';
+require_once __DIR__ . '/editor-save-integrity.php';
 
 require_once __DIR__ . '/layout-allowlist.php';
 
 require_once __DIR__ . '/acf-field-finalization.php';
 
 require_once __DIR__ . '/helpers.php';
+
+require_once __DIR__ . '/list-pagination.php';
+
+require_once __DIR__ . '/list-pagination-seo.php';
 
 require_once __DIR__ . '/presentation.php';
 
@@ -51,5 +56,7 @@ require_once __DIR__ . '/performance.php';
 require_once __DIR__ . '/repeater-limits.php';
 
 require_once __DIR__ . '/render.php';
+
+require_once __DIR__ . '/seopress-analysis.php';
 
 require_once __DIR__ . '/field-groups.php';

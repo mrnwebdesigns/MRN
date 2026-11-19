@@ -1,8 +1,8 @@
 # New-site Stack bootstrap release
 
-Platform candidate: `2026.10.21-fleet-auto-67aeab7ebc8c`; plugin input bundle: `2026.10.21-fleet-auto-67aeab7ebc8c`. Scope: qualified source installation inputs; site deployment remains separate.
+Plugin-input candidate: `2026.10.30-mail-media-security-candidate`. Source preparation only: full release qualification, immutable platform lock and publication remain pending. Site deployment remains separate.
 
-The Stack profile selects **33 standard plugins**. The plain profile selects **32**, excluding only Reusable Block Library. Community versions are pinned in `plugins.txt`; every plugin archive is checksum-bound in `manifests/bootstrap-packages.lock.json`. The MRN platform lock separately covers the parent/child pair, MU components and shared runtime.
+The Stack profile selects **36 standard plugins**. The plain profile selects **36**, excluding only Reusable Block Library. Community versions are pinned in `plugins.txt`; every plugin archive is checksum-bound in `manifests/bootstrap-packages.lock.json`. The MRN platform lock separately covers the parent/child pair, MU components and shared runtime.
 
 ## Standard plugins
 
@@ -13,22 +13,25 @@ The Stack profile selects **33 standard plugins**. The plain profile selects **3
 | AME Branding Add-on (`ame-branding-add-on`) | 1.3.13 | all |
 | Classic Editor (`classic-editor`) | 1.7.0 | all |
 | Enable Media Replace (`enable-media-replace`) | 4.2.2 | all |
-| Post SMTP (`post-smtp`) | 4.0.2 | all |
+| FluentSMTP (`fluent-smtp`) | 2.4.1 | all |
+| Converter for Media (`webp-converter-for-media`) | 6.7.0 | all |
+| Wordfence Security (`wordfence`) | 9.0.2 | all |
 | HappyFiles Pro (`happyfiles-pro`) | 1.9.1 | all |
 | MRN ACF Focal Point (`mrn-acf-focal-point`) | 1.1.2 | all |
 | MRN Announcements (`mrn-announcements`) | 1.8.2 | all |
 | MRN Comment Management (`mrn-comment-management`) | 1.3.0 | all |
 | MRN Font Awesome Profile Manager (`mrn-fontawesome-profile-manager`) | 0.5.1 | all |
 | MRN Google Fonts (`mrn-google-fonts`) | 1.0.7 | all |
-| MRN Config Helper (`mrn-config-helper`) | 0.1.74 | all |
+| MRN Config Helper (`mrn-config-helper`) | 0.1.75 | all |
 | MRN Media Tools (`mrn-media-bulk-tools`) | 0.13.1 | all |
 | MRN Mega Menu (`mrn-mega-menu`) | 0.17.3 | all |
-| MRN reCAPTCHA Enterprise Manager (`mrn-recaptcha-enterprise-manager`) | 0.2.3 | all |
-| MRN Stack Deployment Agent (`mrn-stack-deployment-agent`) | 0.3.2 | all |
+| MRN reCAPTCHA Enterprise Manager (`mrn-recaptcha-enterprise-manager`) | 0.2.5 | all |
+| MRN Stack Deployment Agent (`mrn-stack-deployment-agent`) | 0.3.10 | all |
 | MRN Template Inspector (`mrn-template-inspector`) | 0.2.7 | all |
-| MRN Reusable Block Library (`mrn-reusable-block-library`) | 0.2.2 | stack |
+| MRN Reusable Block Library (`mrn-reusable-block-library`) | 0.2.3 | stack |
 | MRN Universal Sticky Bar (`mrn-universal-sticky-bar`) | 1.3.0 | all |
 | Post Duplicator (`post-duplicator`) | 3.0.16 | all |
+| PreviewShare (`previewshare`) | 1.1.0 | all |
 | Post Types Order (`post-types-order`) | 2.5.6 | all |
 | Relevanssi (`relevanssi`) | 4.28.4 | all |
 | Relevanssi Live Ajax Search (`relevanssi-live-ajax-search`) | 2.6 | all |
@@ -38,23 +41,28 @@ The Stack profile selects **33 standard plugins**. The plain profile selects **3
 | WPForms (`wpforms`) | 1.10.2.1 | all |
 | SEOPress (`wp-seopress`) | 10.3 | all |
 | SEOPress PRO (`wp-seopress-pro`) | 10.3 | all |
+| MRN Form Success (`mrn-form-success`) | 0.1.2 | all |
 | MRN Hierarchical Menu Taxonomies (`mrn-hierarchical-menu-taxonomies`) | 0.1.1 | all |
 | MRN Layout Import/Export (`mrn-layout-import-export`) | 0.1.3 | all |
 | MRN Tokens (`mrn-tokens`) | 0.1.4 | all |
 
 ## Environment and ownership
 
-- Activate the MRN Base Stack Child 1.1.0 over parent 1.6.9. Child content remains site-owned.
+- Activate the MRN Base Stack Child 1.1.0 over parent 1.6.14. Child content remains site-owned.
 - Keep SEOPress Free/PRO 10.3 active for native editing. Development disables indexing, tracking and external jobs.
-- Post SMTP 4.0.2 is installed and inactive in development. Provider configuration and verified delivery belong to launch.
-- reCAPTCHA uses qualified 0.1.4. The 0.2.2 Gloves pilot source is accepted, but generic native-controller qualification and broader adoption remain gated.
+- FluentSMTP 2.4.1 is installed and remains inactive throughout development bootstrap. Provider configuration and verified delivery belong to launch. Post SMTP is excluded from new defaults; existing mail settings and logs are retained for a separately approved cutover.
+- Converter for Media uses its native WebP/new-upload defaults and preserves originals. Host rewrite/codec support and real HTTP image delivery require verification before bulk conversion. AVIF is a separately licensed option.
+- Wordfence Free is the baseline, with Premium supported per site. New CloudPanel bootstraps use the Cloudflare preset; set `STACK_WORDFENCE_PROFILE=standalone` for a confirmed non-Cloudflare site. Both presets use vendor automatic IP detection until host verification; licensing/terms, firewall learning/optimization, 2FA enrollment, alert delivery and MainWP readback remain launch gates. See [configuration and migration](MAIL-MEDIA-SECURITY.md).
+- reCAPTCHA Manager uses the qualified source package pinned in the bootstrap lock. Provider credentials, assessment and any site cutover remain separately verified operations.
 - The MRN MU loader supplies the 12 documented platform components plus wrapper/shared support.
 - Premium licenses, reCAPTCHA/UptimeRobot credentials and backup destination settings stay in the existing secure manager configuration; no credentials are shipped in the release archive.
 - Development scheduled backups remain manual. Shared-runtime writes still require the established fresh remote database-backup gate.
+- Form Success is installed with tracking inactive. Configure the site’s own lead forms in Settings → MRN Form Success; existing consent and GTM/GA4 rules own analytics delivery.
+- PreviewShare is active and configured with a six-hour default preview-link expiry. See [PreviewShare configuration and release verification](PREVIEWSHARE.md) for the site-level post-type allow-list, per-item overrides, revocation, and migration boundary.
 
 ## Excluded defaults
 
-SmartCrawl, SEO Helper, ACF Character Count, AI Assist, Editor Enhancements, MRN Cookie Consent, MRN GTM Injector, FluentSMTP, SendGrid Provisioning and Background Video Pop-Out Disabler are excluded. Prior source and settings remain recoverable; this release does not uninstall anything on existing sites. See [recovery procedure](RESTORING-RETIRED-CAPABILITIES.md).
+SmartCrawl, SEO Helper, ACF Character Count, AI Assist, Editor Enhancements, MRN Cookie Consent, MRN GTM Injector, Post SMTP, SendGrid Provisioning and Background Video Pop-Out Disabler are excluded. Prior source and settings remain recoverable; this release does not uninstall anything on existing sites. See [recovery procedure](RESTORING-RETIRED-CAPABILITIES.md).
 
 ## Acceptance and handoff
 

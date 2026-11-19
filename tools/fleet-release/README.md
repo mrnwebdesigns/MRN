@@ -18,9 +18,13 @@ unchanged. Unrelated repository documents remain outside the release material.
 
 `launcher.py` fetches the current accepted controller into its own clean mirror.
 `install.py` installs an owner-local LaunchAgent at five minute intervals. It
-runs with Standard launchd scheduling to give native browser timing qualification
-regular CPU and I/O scheduling. Existing Background definitions must be preserved
-and reinstalled once; the installer refuses to overwrite a different definition.
+runs with Interactive launchd scheduling so the owner's native browser timing
+qualification has the same CPU and I/O policy as an explicitly requested app
+task. macOS still throttles Standard jobs. The worker remains serialized; timing
+thresholds, PHP execution limits and diagnostic gates are unchanged. Existing
+Standard or Background definitions must be preserved and reinstalled once; the
+installer refuses to overwrite a different definition. See
+`docs/releases/2026.10.26-fleet-qualification-scheduling.md` for the measured comparison.
 The service runs while the owner is logged in and this Mac is awake. Its GitHub CLI account
 and business 1Password SSH agent must remain available; authentication failure
 blocks publication without credential fallback. This is not an always-on hosted
@@ -45,6 +49,25 @@ Qualified plugin ZIPs are retained in the private immutable local cache before
 their promotion records merge, so a superseding release can recover those exact
 inputs. Caching inputs does not advance the Fleet-ready index.
 
+New candidate release IDs and promotion branches bind both the distributable
+content fingerprint and the accepted Git source vector. A newer source snapshot
+with identical package bytes therefore cannot reuse an earlier candidate's
+branch or immutable release ID. Existing candidates, tags, locks, artifacts and
+ownership checks remain intact. Once published, unchanged material still uses
+the existing distribution rather than generating a release for unrelated commits.
+
+The static publisher names individual bootstrap helpers, configuration files
+and guides explicitly. A contract test checks every `BOOTSTRAP_FILES` input
+against that allowlist; nearby unlisted paths, credentials, traversal and unsafe
+ownership remain blocked.
+
+PreviewShare's configuration helper, verification helper and guide are part of
+the bootstrap bundle. Native qualification executes those bundled helpers and
+records its installed activation, six-hour expiry, post/page selection and
+registered robots protection before browser QA. A contract check also verifies
+that every static Stack script referenced by a published bootstrap script is
+included, so adding a bootstrap call cannot silently omit its helper.
+
 The host publisher accepts only the canonical source-owner/root/depot. It
 requires one-time source-lease enrollment before replacing the bootstrap bundle.
 Pause legacy source consumers and verify no installer is running before that
@@ -54,6 +77,15 @@ and is owner controlled. The worker does not pause/resume system cron or assert
 that this administrative step happened. Provider administration needs its own
 exact target authorization. Publication keeps a private exact filesystem
 rollback archive; this does not replace a site's Updraft pre-write backup gate.
+
+The private release depot also receives `mrn-site-release-v1.tar`. Its
+manifest binds the runner and its dependencies to tracked merged source, and
+qualification and readback bind the packaged bytes to the Fleet release. The
+archive includes only runner code and examples. Operators install it into a
+private runner directory and supply a separately provisioned adapter and
+journal. Use `mrn fleet release plan` or `status` with the exact enrolled URL.
+The same command can run or resume individual authorized phases. Publishing the
+runner does not enroll targets or run site releases.
 
 Only the ordinary parent theme, release lock and checksums are GitHub release
 assets. Fleet and vendor/bootstrap ZIPs remain in the private source depot.
@@ -92,6 +124,32 @@ Required diagnostics, native editor, API, whole-page AA, timing and CWV failures
 block source publication. Site-specific contrast/content/provider failures and
 holds remain rollout blockers in their own evidence.
 
+The cumulative presentation fixture explicitly uses `max_input_vars=10000` and
+`max_execution_time=120` to save its large synthetic ACF form and its native
+revision copy. The parent rejects a truncated native editor submission before
+WordPress changes saved content. Automatic browser coverage checks rejection of
+an incomplete submission and complete public readback after a valid save,
+including six legacy Text Swipe panels. These fixture settings do not configure
+client hosts; installed site QA must use their actual capacity.
+
+Native editor reloads require HTTP 200, a visible form, an enabled save control,
+an initialized ACF content-row model and persisted field values. Background
+editor requests need not become network-idle. Navigation timeouts and the
+separate runtime timing/Core Web Vitals gates remain unchanged.
+
+Wordfence's optional remote NTP is disabled only in the disposable offline
+fixtures. Their known loopback address is seeded into Wordfence's DNS cache;
+Wordfence 9.0.2 otherwise sends the loopback URL's port to DNS and exceeds PHP's
+normal execution limit. This does not qualify provider time synchronization,
+production DNS or visitor-IP detection. Runtime diagnostics, PHP execution limits
+and every browser/API/accessibility/performance gate remain unchanged.
+
+The additional-plugin fixture initializes FluentSMTP's seven-day mail-log
+retention through its native settings API before activating Database Retention.
+This is the existing Stack policy. Database Retention's change audit logging and
+reconciliation remain enabled, and a subsequent no-change reconciliation is
+verified against the native fixture. No diagnostic output is filtered or cleared.
+
 Each native fixture retains `php-diagnostics.json` with counts and plugin-relative
 early-translation origins. `php-diagnostics.log` and `translation-trace.log` stay
 in the private evidence directory after the disposable runtime is removed.
@@ -108,3 +166,15 @@ Run the offline publication/recovery tests with:
 python3 -m unittest discover -s tools/fleet-release/tests -v
 node --test tools/fleet-release/tests/published-source.test.mjs
 ```
+
+## Form Success default
+
+Form Success is part of the new-site plugin set and stays inactive until a site
+configures its own lead forms. The coordinator checks inactive defaults, native
+admin accessibility, real WPForms acceptance and rejection, one-use receipt
+redemption, and metadata-only events without WooCommerce or external delivery.
+Executable test fixtures remain in its source repository and are excluded from
+plugin archives. The exact locked Git archive can be rebuilt when it is absent
+from historical vendor inputs; different bytes or an unchanged-version source
+change still fail. Provider tags, consent setup and site configuration remain
+separate onboarding steps.

@@ -1,8 +1,8 @@
 # Stack Version
 
 ## Candidate Release
-- Stack release: `2026.10.21-fleet-auto-67aeab7ebc8c`
-- Release date: `2026-10-21`
+- Stack release: `2026.11.18-fleet-auto-f3775ef0f852`
+- Release date: `2026-11-18`
 - Status: `source snapshot; qualification/publication evidence establishes Fleet readiness; site rollout separate`
 
 ## Included MRN-Owned Components
@@ -10,16 +10,16 @@
 | Component | Version |
 | --- | --- |
 | `mrn-acf-focal-point` | `1.1.2` |
-| `mrn-active-style-guide` | `0.1.7` |
-| `mrn-active-style-guide-loader` | `0.1.7` |
+| `mrn-active-style-guide` | `0.2.5` |
+| `mrn-active-style-guide-loader` | `0.2.5` |
 | `mrn-admin-data-post-types` | `0.3.0` |
 | `mrn-admin-data-post-types-loader` | `0.3.0` |
 | `mrn-admin-ui-css` | `3.2.4` |
 | `mrn-announcements` | `1.8.2` |
-| `mrn-base-stack` | `1.6.9` |
+| `mrn-base-stack` | `1.6.14` |
 | `mrn-base-stack-child` | `1.1.0` |
 | `mrn-comment-management` | `1.3.0` |
-| `mrn-config-helper` | `0.1.74` |
+| `mrn-config-helper` | `0.1.75` |
 | `mrn-dashboard-support` | `1.3.0` |
 | `mrn-disable-comments` | `1.2.5` |
 | `mrn-editor-lockdown` | `1.0.34` |
@@ -27,6 +27,7 @@
 | `mrn-environment-runtime` | `0.6.1` |
 | `mrn-environment-runtime-loader` | `0.6.1` |
 | `mrn-fontawesome-profile-manager` | `0.5.1` |
+| `mrn-form-success` | `0.1.2` |
 | `mrn-google-fonts` | `1.0.7` |
 | `mrn-hierarchical-menu-taxonomies` | `0.1.1` |
 | `mrn-layout-import-export` | `0.1.3` |
@@ -35,21 +36,21 @@
 | `mrn-mega-menu` | `0.17.3` |
 | `mrn-public-security-hardening` | `0.4.4` |
 | `mrn-public-security-hardening-loader` | `0.4.4` |
-| `mrn-recaptcha-enterprise-manager` | `0.2.3` |
-| `mrn-reusable-block-library` | `0.2.2` |
-| `mrn-schema-bridge` | `0.7.0` |
+| `mrn-recaptcha-enterprise-manager` | `0.2.5` |
+| `mrn-reusable-block-library` | `0.2.3` |
+| `mrn-schema-bridge` | `0.7.2` |
 | `mrn-schema-bridge-loader` | `0.7.0` |
 | `mrn-shared-assets` | `0.2.2` |
 | `mrn-shared-assets-loader` | `0.2.2` |
 | `mrn-shared-runtime` | `1.0.0` |
 | `mrn-site-colors` | `0.1.39` |
 | `mrn-site-colors-loader` | `0.1.39` |
-| `mrn-stack-deployment-agent` | `0.3.2` |
+| `mrn-stack-deployment-agent` | `0.3.10` |
 | `mrn-template-inspector` | `0.2.7` |
 | `mrn-tokens` | `0.1.4` |
 | `mrn-universal-sticky-bar` | `1.3.0` |
 | `mrn-updraft-backup-policy-loader` | `0.6.1` |
-| `mrn-updraft-local-retention` | `0.7.0` |
+| `mrn-updraft-local-retention` | `0.8.11` |
 
 ## Stack Manifests
 - Plugins manifest: [`manifests/plugins.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/plugins.txt)

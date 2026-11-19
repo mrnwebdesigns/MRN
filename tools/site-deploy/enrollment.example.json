@@ -15,6 +15,16 @@
   "credential_command": [
     "/opt/mrn-site-deploy/venv/bin/python3",
     "/opt/mrn-site-deploy/MRN/tools/site-deploy/enrollment_credentials.py",
-    "--config", "/etc/mrn/dev-enrollment-credentials.json"
-  ]
+    "--config",
+    "/etc/mrn/dev-enrollment-credentials.json"
+  ],
+  "certificate_command": [
+    "python3",
+    "/opt/mrn-site-deploy/MRN/tools/cloudpanel/cert_sync.py"
+  ],
+  "onboarding_state_root": "/home/mrndev-stack-manager/stack/runtime/onboarding",
+  "notifications": {
+    "email": "wordpress_admin@mrnwebdesigns.com",
+    "slack_webhook_file": "/home/mrndev-stack-manager/stack/secrets/slack-webhook-url.txt"
+  }
 }

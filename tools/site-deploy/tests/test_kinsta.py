@@ -82,3 +82,52 @@ class NativeBackupIdentity(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError,'native Live'):
                     adapter.connect(config)
                 self.assertEqual(1,api.call_count)
+
+
+class NativeEdgeInvalidation(unittest.TestCase):
+    def setUp(self):
+        self.adapter = kinsta.Kinsta('test-token', 'a'*36, 'b'*36)
+        self.operation = 'edge-cache:clear-12345678-1234-1234-1234-123456789abc'
+
+    def test_exact_url_completion_is_required_without_descendants_or_full_cache(self):
+        responses = [{'status':202,'operation_id':self.operation}, {'status':202}, {'status':200},
+                     {'status':202,'operation_id':self.operation}, {'status':200}]
+        pages = ['https://example.org/', 'https://example.org/page/']
+        with patch.object(self.adapter, 'api', side_effect=responses) as api, patch.object(kinsta.time, 'sleep'):
+            receipt = self.adapter.refresh_edge_html('https://example.org', pages)
+        self.assertEqual('exact-html-edge-purge-verified', receipt['status'])
+        self.assertEqual(pages, [row['url'] for row in receipt['operations']])
+        requests = [call.args for call in api.call_args_list if len(call.args) == 2]
+        self.assertEqual([('/sites/edge-caching/clear', {'environment_id':'b'*36,
+                          'clear_subdirectories':False, 'url':page}) for page in pages], requests)
+        self.assertNotIn('test-token', str(receipt))
+
+    def test_all_paths_are_validated_before_any_purge(self):
+        for path in ['//other.org/', '/wp-admin/', '/wp-content/x.css', '/file.js',
+                     '/page/?q=1', '/page/#part', '/wild*', '/encoded%2f', '/a/../b']:
+            page = 'https://other.org/' if path.startswith('//') else 'https://example.org'+path
+            with self.subTest(path=path), patch.object(self.adapter, 'api') as api:
+                with self.assertRaises(ValueError):
+                    self.adapter.refresh_edge_html('https://example.org', ['https://example.org/',page])
+                api.assert_not_called()
+
+    def test_missing_malformed_or_failed_operation_is_not_success(self):
+        for response in [{}, {'status':200}, {'status':202,'operation_id':'wrong'},
+                         {'status':202,'operation_id':'edge-cache:clear-not-a-uuid'},
+                         {'status':202,'operation_id':'backups:add-manual-12345678-1234-1234-1234-123456789abc'}]:
+            with patch.object(self.adapter,'api',return_value=response):
+                with self.assertRaises(RuntimeError):self.adapter.refresh_edge_html('https://example.org',['https://example.org/'])
+        with patch.object(self.adapter,'api',side_effect=[{'status':202,'operation_id':self.operation},{'status':500}]):
+            with self.assertRaisesRegex(RuntimeError,'failed'):self.adapter.refresh_edge_html('https://example.org',['https://example.org/'])
+
+    def test_documented_legacy_spelling_also_uses_returned_opaque_job_id(self):
+        operation = self.operation.replace('edge-cache:', 'edgeCache:')
+        with patch.object(self.adapter,'api',side_effect=[{'status':202,'operation_id':operation},{'status':200}]) as api:
+            self.adapter.refresh_edge_html('https://example.org',['https://example.org/'])
+        self.assertEqual('/operations/'+operation,api.call_args_list[1].args[0])
+
+    def test_pending_operation_is_polled_without_a_second_post(self):
+        with patch.object(self.adapter,'api',side_effect=[{'status':202,'operation_id':self.operation}]+[{'status':202}]*60) as api, patch.object(kinsta.time,'sleep'):
+            with self.assertRaisesRegex(RuntimeError,'still pending'):
+                self.adapter.refresh_edge_html('https://example.org',['https://example.org/'])
+            self.assertEqual(1,sum(len(call.args)==2 for call in api.call_args_list))

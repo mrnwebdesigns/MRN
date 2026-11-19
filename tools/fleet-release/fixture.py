@@ -78,7 +78,8 @@ def extract(archive, destination, *, expected=None, prefix=None):
 
 
 class WordPressFixture:
-    def __init__(self, bootstrap, root, settings, *, additional=None):
+    def __init__(self, bootstrap, root, settings, *, additional=None, max_input_vars=1000,
+                 max_execution_time=120):
         self.bootstrap, self.root, self.settings = Path(bootstrap), Path(root), settings
         self.public = self.root / 'wordpress'
         self.content = self.public / 'wp-content'
@@ -89,6 +90,16 @@ class WordPressFixture:
         self.database_log = None
         self.password = secrets.token_urlsafe(32)
         self.additional = Path(additional) if additional else None
+        if not isinstance(max_input_vars, int) or not 1000 <= max_input_vars <= 10000:
+            raise ReleaseError('Invalid native fixture input capacity')
+        self.max_input_vars = max_input_vars
+        # This is a disposable test runtime only.  The cumulative ACF fixture
+        # deliberately exercises a large native save and its revision copy;
+        # the host default of 30 seconds can expire while private MySQL is
+        # under qualification load.  Do not project this setting onto sites.
+        if not isinstance(max_execution_time, int) or not 30 <= max_execution_time <= 300:
+            raise ReleaseError('Invalid native fixture execution capacity')
+        self.max_execution_time = max_execution_time
         with socket.socket() as probe:
             probe.bind(('127.0.0.1', 0))
             self.port = probe.getsockname()[1]
@@ -169,6 +180,8 @@ class WordPressFixture:
             "define('DB_PASSWORD', '');", "define('DB_CHARSET', 'utf8mb4');",
             "define('DB_HOST', " + repr('localhost:' + str(self.database_socket)) + ');',
             "define('WP_HTTP_BLOCK_EXTERNAL', true);", "define('DISABLE_WP_CRON', true);",
+            # Remote clock qualification is outside this disposable offline runtime.
+            "define('WORDFENCE_LS_DISABLE_NTP', true);",
             "define('WP_AUTO_UPDATE_CORE', false);", "define('AUTOMATIC_UPDATER_DISABLED', true);",
             "define('WP_ENVIRONMENT_TYPE', 'local');", "define('MRN_SITE_PROFILE', 'stack');",
             "define('WP_DEBUG', true);", "define('WP_DEBUG_DISPLAY', false);",
@@ -237,9 +250,24 @@ add_action('doing_it_wrong_run', static function ($function) {
         entries = json.dumps([item['main_file'] for item in packages])
         activation = self.php("require_once ABSPATH.'wp-admin/includes/plugin.php';$errors=[];"
                               + 'foreach(json_decode(' + repr(entries) + ') as $plugin){'
+                              # The cumulative fixture starts with Stack's existing
+                              # seven-day mail-log policy. Retention reconciliation
+                              # remains enabled; its intentional change audit logs
+                              # and every PHP diagnostic are left intact.
+                              + "if($plugin==='mrn-database-retention/mrn-database-retention.php'"
+                              + "&&function_exists('fluentMailGetSettings')&&function_exists('fluentMailSetSettings')){"
+                              + "$mail=fluentMailGetSettings();"
+                              + "if(!is_array($mail))throw new RuntimeException('Invalid FluentSMTP fixture settings');"
+                              + "if(!isset($mail['misc'])||!is_array($mail['misc']))$mail['misc']=[];"
+                              + "$mail['misc']['log_saved_interval_days']='7';fluentMailSetSettings($mail);}"
                               + "$result=activate_plugin($plugin,'',false,false);"
                               + 'if(is_wp_error($result))$errors[$plugin]=$result->get_error_code();}'
                               + "switch_theme('mrn-base-stack-child');"
+                              # Wordfence 9.0.2 sends home_url's port to dns_get_record.
+                              # Cache this fixture's actual IP before another request;
+                              # no external DNS response or production address is invented.
+                              + "if(class_exists('wfConfig'))wfConfig::set('serverDNS',"
+                              + "time().';86400;'.wp_parse_url(home_url(),PHP_URL_HOST));"
                               + "echo json_encode(['errors'=>$errors,'active'=>count(get_option('active_plugins',[])),"
                               + "'woocommerce'=>class_exists('WooCommerce')]);")
         if activation['errors'] or activation['active'] != len(packages) or activation['woocommerce']:
@@ -248,6 +276,17 @@ add_action('doing_it_wrong_run', static function ($function) {
         # onboarding. This is the same narrow cleanup as the accepted bootstrap.
         self.php("delete_option('post_smtp_activation_redirect');echo json_encode(['cleared'=>true]);",
                  skip_smtp=True)
+        # Exercise the helpers from the built distribution, not the source
+        # checkout: a missing bootstrap helper must fail qualification.
+        previewshare_config = "putenv('STACK_PREVIEWSHARE_POST_TYPES=post,page');putenv('STACK_PREVIEWSHARE_DEFAULT_TTL_HOURS=6');"
+        self.php(previewshare_config + 'require ' + repr(str(
+            self.bootstrap / 'scripts/configure-previewshare.php')) + ';')
+        previewshare = self.php(previewshare_config + 'require ' + repr(str(
+            self.bootstrap / 'scripts/verify-previewshare.php')) + ';')
+        if (previewshare.get('active') is not True or previewshare.get('default_ttl_hours') != 6
+                or previewshare.get('post_types') != ['post', 'page']):
+            raise ReleaseError('Installed PreviewShare defaults differ from the bootstrap contract')
+        write(self.root / 'previewshare.json', previewshare)
         seed = (Path(__file__).with_name('fixture-seed.php')).read_text()
         self.ids = self.php(seed.removeprefix('<?php\n'))
         self.inventory = self.php("require_once ABSPATH.'wp-admin/includes/plugin.php';"
@@ -265,7 +304,9 @@ add_action('doing_it_wrong_run', static function ($function) {
                                + "if(is_file(__DIR__.'/wordpress'.$path))return false;"
                                + "require __DIR__.'/wordpress/index.php';\n")
         self.log = (self.root / 'http.log').open('w')
-        self.process = subprocess.Popen([self.settings['php'], '-S', '127.0.0.1:' + str(self.port),
+        self.process = subprocess.Popen([self.settings['php'], '-d', 'max_input_vars=' + str(self.max_input_vars),
+                                         '-d', 'max_execution_time=' + str(self.max_execution_time),
+                                         '-S', '127.0.0.1:' + str(self.port),
                                          '-t', str(self.public), str(self.router)],
                                         stdout=self.log, stderr=self.log)
         for _ in range(100):
@@ -289,6 +330,7 @@ add_action('doing_it_wrong_run', static function ($function) {
     def browser_input(self):
         return {'url': self.url, 'username': 'fleet-admin', 'password': self.password,
                 'dashboard': 'mainwp/mainwp.php' in self.inventory['plugins'],
+                'form_success': 'mrn-form-success/mrn-form-success.php' in self.inventory['plugins'],
                 'login_url': self.inventory['login_url'],
                 'ids': self.ids, 'engine_root': self.settings['qa_engine_root'],
                 'output': str(self.root / 'browser.json')}

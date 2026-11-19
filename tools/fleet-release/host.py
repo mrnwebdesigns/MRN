@@ -6,6 +6,7 @@ tests; production callers cannot supply an arbitrary remote destination.
 from __future__ import annotations
 
 import fcntl
+import copy
 import hashlib
 import io
 import json
@@ -27,17 +28,20 @@ HASH = re.compile(r'^[a-f0-9]{64}$')
 COVERAGE = {'source', 'contracts', 'installed-default-packages', 'installed-optional-packages', 'no-woocommerce',
             'native-editor', 'native-wpforms', 'api', 'browser', 'accessibility',
             'performance', 'core-web-vitals', 'distribution'}
-ALLOWED_FILES = {'BOOTSTRAP_RELEASE.md', 'STACK_VERSION.md',
+ALLOWED_FILES = {'BOOTSTRAP_RELEASE.md', 'MAIL-MEDIA-SECURITY.md', 'PREVIEWSHARE.md', 'STACK_VERSION.md',
                  'RESTORING-RETIRED-CAPABILITIES.md', 'bootstrap-bundle.json'}
-ALLOWED_CONFIGS = {'configs/importers/stack-export-importer.sh',
+ALLOWED_CONFIGS = {'configs/wordfence/cloudflare.json', 'configs/wordfence/standalone.json',
+                   'configs/importers/stack-export-importer.sh',
                    'configs/site-owner-authorized-key.pub',
                    'configs/exports/ame-config-container.json',
                    'configs/exports/ame-toolbar-editor.settings.json',
                    'configs/exports/platform-Advanced-Editor-Tools-settings.json',
                    'configs/exports/MRN-Login.png', 'configs/exports/mrn-logo-png.png',
                    'configs/exports/mrn-logo.svg'}
-SCRIPTS = {'scripts/site-bootstrap.sh', 'scripts/bootstrap-new-sites.sh',
-           'scripts/bootstrap-dev-enrollment.sh', 'scripts/source-distribution-lease.sh'}
+SCRIPTS = {'scripts/site-bootstrap.sh', 'scripts/configure-wordfence.php',
+           'scripts/configure-previewshare.php', 'scripts/verify-previewshare.php',
+           'scripts/bootstrap_readiness.py', 'scripts/bootstrap-new-sites.sh',
+           'scripts/bootstrap-dev-enrollment.sh', 'scripts/source-distribution-lease.sh', 'scripts/bootstrap_readiness.py'}
 MANIFESTS = {'plugins.txt', 'themes.txt', 'licenses.txt', 'importers.txt',
              'credential-files.txt', 'license-exemptions.txt', 'stack-release.lock.json',
              'bootstrap-packages.lock.json', 'component-catalog.json', 'retired-capabilities.json'}
@@ -119,23 +123,41 @@ def record(path, value):
     replace(path, (json.dumps(value, sort_keys=True, indent=2) + '\n').encode(), 0o600)
 
 
-def verify(base, manifest):
+def manifest_rows(manifest):
     files = manifest.get('files')
     if not isinstance(files, list) or not 1 <= len(files) <= 20000:
         raise PublicationError('Invalid source manifest file count')
     seen = set()
     for row in files:
-        name = row['path']
-        if name in seen or name == 'bootstrap-bundle.json' or not HASH.fullmatch(row['sha256']):
+        if not isinstance(row, dict):
+            raise PublicationError('Invalid source file record')
+        name = row.get('path')
+        if (not isinstance(name, str) or name in seen or name == 'bootstrap-bundle.json'
+                or not HASH.fullmatch(row.get('sha256', ''))
+                or not isinstance(row.get('size'), int) or row['size'] < 0
+                or row.get('mode') not in (0o644, 0o750)):
             raise PublicationError('Invalid/duplicate source file record')
         seen.add(name)
+    if not HASH.fullmatch(manifest.get('release_lock_sha256', '')):
+        raise PublicationError('Invalid source release lock record')
+    return {row['path']: row for row in files}
+
+
+def matches(path, row):
+    return (path.is_file() and sha(path) == row['sha256']
+            and path.stat().st_size == row['size']
+            and (path.stat().st_mode & 0o777) == row['mode'])
+
+
+def verify(base, manifest):
+    rows = manifest_rows(manifest)
+    for name, row in rows.items():
         path = safe(base, name)
-        if (not path.is_file() or sha(path) != row['sha256'] or path.stat().st_size != row['size']
-                or row['mode'] not in (0o644, 0o750)):
+        if not matches(path, row):
             raise PublicationError('Source file differs from qualification')
     if sha(safe(base, 'manifests/stack-release.lock.json')) != manifest['release_lock_sha256']:
         raise PublicationError('Published source lock differs')
-    return len(files)
+    return len(rows)
 
 
 class SourceStore:
@@ -146,13 +168,38 @@ class SourceStore:
                 raise PublicationError('Source root/depot ownership is invalid')
         self.lock_path = self.root.parent / '.mrn-source-publication.lock'
 
-    def preflight(self):
+    def preflight(self, candidate=None):
         path = safe(self.root, 'bootstrap-bundle.json')
         manifest = json.loads(path.read_text())
-        count = verify(self.root, manifest)
+        if candidate is None:
+            count = verify(self.root, manifest)
+            effective = manifest
+            reconciled = []
+        else:
+            old_rows = manifest_rows(manifest)
+            candidate_rows = manifest_rows(candidate)
+            effective = copy.deepcopy(manifest)
+            effective_rows = {row['path']: row for row in effective['files']}
+            reconciled = []
+            for name, row in old_rows.items():
+                source = safe(self.root, name)
+                if matches(source, row):
+                    continue
+                replacement = candidate_rows.get(name)
+                if replacement is None or not matches(source, replacement):
+                    raise PublicationError('Source file differs from qualification')
+                effective_rows[name].update(replacement)
+                reconciled.append({'path': name, 'previous_sha256': row['sha256'],
+                                   'candidate_sha256': replacement['sha256']})
+            lock = effective_rows.get('manifests/stack-release.lock.json')
+            if lock is None:
+                raise PublicationError('Source manifest does not declare release lock')
+            effective['release_lock_sha256'] = lock['sha256']
+            count = verify(self.root, effective)
         return {'status': 'pass', 'release_id': manifest['release_id'],
                 'manifest_sha256': sha(path), 'lock_sha256': manifest['release_lock_sha256'],
-                'files_checked': count, 'scope': 'static source only'}
+                'files_checked': count, 'scope': 'static source only',
+                'candidate_equivalent_drift': reconciled, 'effective_manifest': effective}
 
     def receipt(self, release):
         if not ID.fullmatch(release):
@@ -167,7 +214,7 @@ class SourceStore:
 
     def verify_artifact(self, release, filename, checksum):
         if (not ID.fullmatch(release) or not HASH.fullmatch(checksum)
-                or not re.fullmatch(r'(mrn-stack-release-[A-Za-z0-9.-]+\.zip|qualification\.json|bootstrap\.tar|source\.tar|optional-plugins\.tar)', filename)):
+                or not re.fullmatch(r'(mrn-stack-release-[A-Za-z0-9.-]+\.zip|qualification\.json|bootstrap\.tar|source\.tar|optional-plugins\.tar|mrn-site-release-v1\.tar)', filename)):
             raise PublicationError('Artifact outside private source distribution scope')
         path = self.depot / release / filename
         if (path.is_symlink() or not path.is_file() or path.stat().st_uid != os.geteuid()
@@ -187,7 +234,7 @@ class SourceStore:
             temporary.unlink(missing_ok=True)
             return result
         # Validate the lexical name before touching any received bytes.
-        if not re.fullmatch(r'(mrn-stack-release-[A-Za-z0-9.-]+\.zip|qualification\.json|bootstrap\.tar|source\.tar|optional-plugins\.tar)', filename):
+        if not re.fullmatch(r'(mrn-stack-release-[A-Za-z0-9.-]+\.zip|qualification\.json|bootstrap\.tar|source\.tar|optional-plugins\.tar|mrn-site-release-v1\.tar)', filename):
             raise PublicationError('Invalid private artifact name')
         if (temporary.is_symlink() or not temporary.is_file()
                 or temporary.stat().st_uid != os.geteuid() or sha(temporary) != checksum
@@ -216,6 +263,9 @@ class SourceStore:
             raise PublicationError('Private Fleet artifact is ambiguous/missing')
         self.verify_artifact(manifest['release_id'], fleet[0].name, proof['fleet_sha256'])
         self.verify_artifact(manifest['release_id'], 'optional-plugins.tar', proof.get('optional_sha256', ''))
+        runner = proof.get('site_release_runner_sha256')
+        if runner is not None or (job / 'mrn-site-release-v1.tar').exists():
+            self.verify_artifact(manifest['release_id'], 'mrn-site-release-v1.tar', runner or '')
         return proof
 
     def enrollment(self):
@@ -230,7 +280,7 @@ class SourceStore:
         # bundle is installed. Later calls verify the actual guarded entry points.
         if value.get('legacy_consumers_paused') is True:
             return
-        for name in SCRIPTS - {'scripts/bootstrap-dev-enrollment.sh'}:
+        for name in ('scripts/site-bootstrap.sh', 'scripts/bootstrap-new-sites.sh', 'scripts/source-distribution-lease.sh'):
             path = safe(self.root, name)
             if not path.is_file() or 'mrn_source_distribution_lease' not in path.read_text():
                 raise PublicationError('Bootstrap entry point is not source-lease guarded')
@@ -285,6 +335,11 @@ class SourceStore:
         if sha(backup) != receipt['rollback_sha256']:
             raise PublicationError('Recovery archive differs')
         previous = json.loads((job / 'previous-manifest.json').read_text())
+        effective_path = job / 'effective-previous-manifest.json'
+        if (effective_path.is_symlink() or not effective_path.is_file()
+                or sha(effective_path) != receipt.get('effective_previous_manifest_sha256')):
+            raise PublicationError('Effective recovery manifest differs')
+        effective = json.loads(effective_path.read_text())
         # Validate the entire recovery boundary before restoring even one file.
         for row in receipt['before']:
             path = safe(self.root, row['path'])
@@ -301,7 +356,7 @@ class SourceStore:
                 else:
                     item = archive.getmember(row['path'])
                     replace(path, archive.extractfile(item).read(), row['mode'])
-        verify(self.root, previous)
+        verify(self.root, effective)
         receipt['status'] = 'rolled_back_verified'
         record(job / 'publication-receipt.json', receipt)
         return receipt
@@ -334,7 +389,7 @@ class SourceStore:
                         or receipt['previous_manifest_sha256'] != previous_sha):
                     raise PublicationError('Retry source identity differs')
                 retry = receipt
-            old = self.preflight()
+            old = self.preflight(manifest)
             if old['manifest_sha256'] != previous_sha:
                 raise PublicationError('Previous qualified source pointer changed')
             # Existing installations must first receive the shared-lease guard.
@@ -362,10 +417,18 @@ class SourceStore:
                     self.backup(selected, candidate, new_rows, old_rows, archive, before)
             backup.chmod(0o600)
             record(job / 'previous-manifest.json', old_manifest)
+            effective_path = job / 'effective-previous-manifest.json'
+            if retry:
+                if sha(effective_path) != retry.get('effective_previous_manifest_sha256'):
+                    raise PublicationError('Retry effective recovery manifest differs')
+            else:
+                record(effective_path, old['effective_manifest'])
             receipt = {'schema_version': 1, 'status': 'started', 'release_id': release,
                        'previous_release_id': old['release_id'], 'previous_manifest_sha256': previous_sha,
                        'archive_sha256': archive_sha, 'manifest_sha256': manifest_sha,
                        'rollback_sha256': sha(backup), 'before': before,
+                       'effective_previous_manifest_sha256': sha(effective_path),
+                       'candidate_equivalent_drift': old['candidate_equivalent_drift'],
                        'source_vector_sha256': proof['source_vector_sha256'],
                        'scope': 'static source only; no WordPress/provider/site writes'}
             record(receipt_path, receipt)
@@ -413,12 +476,17 @@ def main(argv):
     store = SourceStore(ROOT, DEPOT)
     if argv == ['preflight']:
         result = store.preflight()
+        result.pop('effective_manifest')
     elif len(argv) == 2 and argv[0] == 'receipt':
         result = store.receipt(argv[1])
     elif len(argv) == 4 and argv[0] == 'stage':
         job, candidate, manifest = store.stage(*argv[1:])
         result = {'status': 'staged_verified', 'release_id': manifest['release_id'],
                   'files_checked': len(manifest['files'])}
+    elif len(argv) == 4 and argv[0] == 'preflight-candidate':
+        job, candidate, manifest = store.stage(*argv[1:])
+        result = store.preflight(manifest)
+        result.pop('effective_manifest')
     elif len(argv) == 5 and argv[0] == 'publish':
         result = store.publish(*argv[1:])
         result = {k: v for k, v in result.items() if k != 'before'}

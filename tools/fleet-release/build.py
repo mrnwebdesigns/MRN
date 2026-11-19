@@ -17,12 +17,17 @@ from common import (ReleaseError, assembly, canonical, digest, distribution,
                     file_hash, fleet, git, lock_tool, promotion, read, relative, roster,
                     source_files, write, run, clean_main)
 
+from site_release_package import MEMBERS as RUNNER_FILES, PREFIX as RUNNER_PREFIX, build_runner
+
 BOOTSTRAP_FILES = (
     'scripts/site-bootstrap.sh', 'scripts/bootstrap-new-sites.sh',
-    'scripts/bootstrap-dev-enrollment.sh',
-    'scripts/source-distribution-lease.sh',
+    'scripts/bootstrap-dev-enrollment.sh', 'scripts/bootstrap_readiness.py',
+    'scripts/source-distribution-lease.sh', 'scripts/configure-wordfence.php',
+    'scripts/configure-previewshare.php', 'scripts/verify-previewshare.php',
+    'configs/wordfence/cloudflare.json', 'configs/wordfence/standalone.json',
     'configs/importers/stack-export-importer.sh', 'configs/site-owner-authorized-key.pub',
-    'BOOTSTRAP_RELEASE.md', 'STACK_VERSION.md', 'RESTORING-RETIRED-CAPABILITIES.md',
+    'BOOTSTRAP_RELEASE.md', 'MAIL-MEDIA-SECURITY.md', 'PREVIEWSHARE.md', 'STACK_VERSION.md',
+    'RESTORING-RETIRED-CAPABILITIES.md',
     'manifests/plugins.txt', 'manifests/themes.txt', 'manifests/licenses.txt',
     'manifests/importers.txt', 'manifests/credential-files.txt',
     'manifests/license-exemptions.txt', 'manifests/stack-release.lock.json',
@@ -216,9 +221,10 @@ def snapshot(repo, standalone, policy):
                  for name in BOOTSTRAP_FILES if name not in generated}
     # Accepted deployment/release helpers are also distributed source inputs.
     # Read tracked files only; caches and another task's work never participate.
+    runner_paths = {RUNNER_PREFIX + name for name in RUNNER_FILES}
     for name in git(repo, 'ls-files').splitlines():
-        if (promotion.is_deployment_contract(name)
-                or name.startswith(('stack/tests/', 'tools/fleet-release/'))):
+        if (name in runner_paths or promotion.is_deployment_contract(name)
+                or name.startswith(('stack/tests/', 'tools/fleet-release/', 'tools/cloudpanel/'))):
             contracts[name] = file_hash(repo / name)
     vendor = read(repo / 'stack/manifests/bootstrap-packages.lock.json')
     packages = [{key: item.get(key) for key in ('slug', 'version', 'sha256', 'package', 'source')}
@@ -272,6 +278,14 @@ def default_packages(repo, standalone, policy, inputs, output, registry_inputs=N
             prior = Path(inputs) / str(relative(item['package']))
             known = prior.is_file() and file_hash(prior) == item['sha256']
             same = known and package_files(prior, slug) == files
+            if item['version'] == version and not prior.exists() and not prior.is_symlink():
+                # A newly enrolled Git package need not exist in the historic
+                # vendor input directory. Rebuild only the exact accepted lock;
+                # unknown bytes and same-version source changes still fail.
+                fleet.deterministic_zip(destination, {slug + '/' + k: v for k, v in files.items()})
+                if (file_hash(destination) == item['sha256']
+                        and destination.stat().st_size == item['size_bytes']):
+                    continue
             if item['version'] == version and not same:
                 raise ReleaseError('Changed package source requires a version bump: ' + slug)
             if same and item['version'] == version:
@@ -313,6 +327,12 @@ def default_packages(repo, standalone, policy, inputs, output, registry_inputs=N
     return packages
 
 
+def release_identity(selected):
+    """Bind an immutable candidate to its bytes and accepted Git source vector."""
+    return digest(canonical({key: selected[key] for key in
+                             ('material_sha256', 'source_vector_sha256')}))[:12]
+
+
 def prepare_metadata(repo, standalone, policy, inputs, job, selected, registry_inputs=None):
     """Generate metadata; runtime source stays byte-identical to accepted refs."""
     repo, standalone, job = Path(repo), Path(standalone), Path(job)
@@ -331,7 +351,7 @@ def prepare_metadata(repo, standalone, policy, inputs, job, selected, registry_i
                         'show', '-s', '--format=%ct', sha))
                 for name, sha in selected['refs'].items())
     date = dt.datetime.fromtimestamp(epoch, dt.timezone.utc).date().isoformat()
-    release_id = date.replace('-', '.') + '-fleet-auto-' + selected['material_sha256'][:12]
+    release_id = date.replace('-', '.') + '-fleet-auto-' + release_identity(selected)
     previous = {r['slug']: r for r in old_lock['components'] + old_lock['themes']}
     rows = {r['slug']: r for r in roster(repo)}
     for entry in catalog['components']:
@@ -370,6 +390,10 @@ def prepare_metadata(repo, standalone, policy, inputs, job, selected, registry_i
     write(repo / 'stack/manifests/bootstrap-packages.lock.json', packages)
     bootstrap_doc = repo / 'stack/BOOTSTRAP_RELEASE.md'
     bootstrap_text = bootstrap_doc.read_text()
+    bootstrap_text = re.sub(
+        r'The Stack profile selects \*\*\d+ standard plugins\*\*\. The plain profile selects \*\*\d+\*\*',
+        f'The Stack profile selects **{packages["stack_plugin_count"]} standard plugins**. '
+        f'The plain profile selects **{packages["plain_plugin_count"]}**', bootstrap_text)
     bootstrap_text = re.sub(r'^Platform candidate: .*',
         'Platform candidate: `' + release_id + '`; plugin input bundle: `' + release_id
         + '`. Scope: qualified source installation inputs; site deployment remains separate.',
@@ -385,6 +409,13 @@ def prepare_metadata(repo, standalone, policy, inputs, job, selected, registry_i
         + ' over parent ' + theme_versions['mrn-base-stack'] + '. Child content remains site-owned.',
         bootstrap_text, flags=re.M)
     bootstrap_doc.write_text(bootstrap_text)
+    catalog_doc = repo / 'stack/PLUGIN_CATALOG.md'
+    catalog_text = catalog_doc.read_text()
+    for item in catalog['components']:
+        pattern = r'^(\| `' + re.escape(item['slug']) + r'` \| )[^|]+(\|)'
+        catalog_text = re.sub(pattern, lambda match, version=item['version']:
+                              match[1] + version + ' ' + match[2], catalog_text, flags=re.M)
+    catalog_doc.write_text(catalog_text)
     version_path = repo / 'stack/STACK_VERSION.md'
     version_text = version_path.read_text()
     version_text = re.sub(r'^- Stack release: `[^`]+`',
@@ -529,6 +560,8 @@ def build_all(repo, standalone, job, suffix):
         records.append(record)
     write(additional / 'manifest.json', {'release_id': lock['release_id'], 'plugins': records})
     archive_tree(additional, job / ('optional-' + suffix + '.tar'))
-    return {'platform': platform, 'bootstrap': bootstrap, 'fleet': archive,
+    runner = job / ('site-release-v1-' + suffix + '.tar')
+    build_runner(repo, runner, archive_tree)
+    return {'platform': platform, 'bootstrap': bootstrap, 'fleet': archive, 'site_release_runner': runner,
             'bootstrap_archive': job / ('bootstrap-' + suffix + '.tar'),
             'optional': additional, 'optional_archive': job / ('optional-' + suffix + '.tar'), 'proof': proof}

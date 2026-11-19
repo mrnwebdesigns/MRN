@@ -22,6 +22,30 @@ final class MRN_Updraft_MainWP_Policy {
 	/** Register only the post-authentication MainWP Child hook. */
 	public static function init() {
 		add_filter( 'mainwp_child_extra_execution', array( __CLASS__, 'dispatch' ), 20, 2 );
+		add_filter( 'updraft_backupnow_options', array( __CLASS__, 'mainwp_backup_options' ), 9, 2 );
+	}
+
+	/**
+	 * Preserve the fixed MRN label when MainWP Child omits Updraft's request argument.
+	 *
+	 * This filter starts no backup and grants no permission. MainWP authenticates
+	 * backup_now before Updraft invokes it. Never relabel existing backup history.
+	 *
+	 * @param array $options Native options for the new backup.
+	 * @param array $request Native Updraft request (empty in MainWP Child 6.2.1).
+	 * @return array
+	 */
+	public static function mainwp_backup_options( $options, $request ) {
+		if ( ! is_array( $options ) || array() !== $request || isset( $options['label'] ) || empty( $options['use_nonce'] ) || ! is_string( $options['use_nonce'] ) || ! preg_match( '/^[0-9a-f]{12}$/D', $options['use_nonce'] ) || ! array_key_exists( 'nocloud', $options ) || false !== $options['nocloud'] ) {
+			return $options;
+		}
+		$fields = array_fill_keys( array( 'function', 'mwp_action', 'backupnow_nofiles', 'backupnow_label', 'mainwpsignature', 'backupnow_nodb', 'backupnow_nocloud', 'onlythisfileentity', 'onlythesetableentities' ), true );
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Existing signed MainWP backup flow invokes this metadata-only filter; it cannot start a backup. Never copy unrelated upload payloads.
+		$post = wp_unslash( array_intersect_key( $_POST, $fields ) );
+		if ( 'updraftplus' === ( $post['function'] ?? '' ) && 'backup_now' === ( $post['mwp_action'] ?? '' ) && '1' === ( $post['backupnow_nofiles'] ?? '' ) && 'MRN MainWP database-only backup' === ( $post['backupnow_label'] ?? '' ) && ! empty( $post['mainwpsignature'] ) && is_string( $post['mainwpsignature'] ) && empty( $post['backupnow_nodb'] ) && empty( $post['backupnow_nocloud'] ) && empty( $post['onlythisfileentity'] ) && empty( $post['onlythesetableentities'] ) ) {
+			$options['label'] = 'MRN MainWP database-only backup';
+		}
+		return $options;
 	}
 
 	/**
@@ -204,6 +228,8 @@ final class MRN_Updraft_MainWP_Policy {
 			'storage' => self::public_storage(), 'history_count' => count( $history ),
 			'backups' => $rows, 'next_offset' => $offset + count( $rows ) < count( $history ) ? $offset + count( $rows ) : null,
 			'remote_objects_verified' => false,
+			'maintenance_file_diagnostics' => class_exists( 'MRN_Updraft_MainWP_Maintenance', false ) ? MRN_Updraft_MainWP_Maintenance::file_diagnostics() : null,
+			'maintenance_runtime_log_policy' => class_exists( 'MRN_Updraft_MainWP_Maintenance', false ) ? MRN_Updraft_MainWP_Maintenance::runtime_log_policy() : null,
 		);
 	}
 
@@ -544,7 +570,7 @@ final class MRN_Updraft_MainWP_Policy {
 		return $plan;
 	}
 
-	/** @return object|WP_Error Updraft's existing S3 engine, scoped to one reviewed instance. */
+	/** @return array{object: object, settings: array}|WP_Error Existing S3 engine and its reviewed instance settings. */
 	private static function provider( $id, $expected_path = null ) {
 		$storage = UpdraftPlus_Storage_Methods_Interface::get_storage_objects_and_ids( array( 's3' ) );
 		$object = $storage['s3']['object'] ?? null;
@@ -569,10 +595,48 @@ final class MRN_Updraft_MainWP_Policy {
 		// Use Updraft's own S3 client. Unlike listfiles(), getBucket distinguishes
 		// a successful empty listing from an authentication/network failure.
 		$client = $provider['object']->getS3( $settings['accesskey'], $settings['secretkey'], mrn_updraft_backup_policy_get_option( 'updraft_ssl_useservercerts', false ), false, false, null, ! empty( $settings['server_side_encryption'] ), $settings['sessiontoken'] ?? null );
-		if ( is_wp_error( $client ) || ! is_object( $client ) || ! method_exists( $client, 'getBucket' ) ) {
+		if ( is_wp_error( $client ) || ! is_object( $client ) || ( ! is_a( $client, 'UpdraftPlus_S3' ) && ! is_a( $client, 'UpdraftPlus_S3_Compat' ) ) ) {
 			return self::failure( 'remote_inventory_unavailable' );
 		}
-		$list = $client->getBucket( $parts[0], $prefix . $stem, null, 1000 );
+		$compat  = is_a( $client, 'UpdraftPlus_S3_Compat' );
+		$methods = array( 'getBucket', 'getBucketLocation', 'setSSL', 'setSSLAuth', 'setExceptions', 'setRegion' );
+		if ( ! $compat ) {
+			$methods = array_merge( $methods, array( 'setEndpoint', 'setSignatureVersion' ) );
+		}
+		foreach ( $methods as $method ) {
+			if ( ! is_callable( array( $client, $method ) ) ) {
+				return self::failure( 'remote_inventory_unavailable' );
+			}
+		}
+		try {
+			// getS3() alone has not initialized certificate verification or bucket region.
+			// Avoid get_bucket_access(): its native fallback can attempt to create a bucket.
+			$client->setSSL( true, true );
+			$client->setSSLAuth( null, null, 'system' );
+			$client->setExceptions( true );
+			$region = $client->getBucketLocation( $parts[0] );
+			if ( false === $region ) {
+				return self::failure( 'remote_region_unavailable' );
+			}
+			$region = in_array( $region, array( null, '', 'US' ), true ) ? 'us-east-1' : ( 'EU' === $region ? 'eu-west-1' : $region );
+			if ( ! is_string( $region ) || ! preg_match( '/^(?:af|ap|ca|cn|eu|il|me|mx|sa|us)(?:-[a-z0-9]+){1,3}-[1-9][0-9]*$/D', $region ) ) {
+				return self::failure( 'remote_region_unavailable' );
+			}
+			$client->setRegion( $region );
+			// Compat's SDK v3 routes with @region; its legacy endpoint setter is unsupported.
+			if ( ! $compat ) {
+				$endpoint = 's3.' . $region . ( 0 === strpos( $region, 'cn-' ) ? '.amazonaws.com.cn' : '.amazonaws.com' );
+				$client->setEndpoint( $endpoint );
+				$client->setSignatureVersion( 'v4' );
+			}
+			$list = $client->getBucket( $parts[0], $prefix . $stem, null, 1000 );
+		} catch ( Throwable $error ) {
+			// Native exception text can contain signed requests or provider details.
+			unset( $error );
+			return self::failure( 'remote_inventory_unavailable' );
+		} finally {
+			$client->setExceptions( false );
+		}
 		if ( ! is_array( $list ) || count( $list ) >= 1000 ) {
 			return self::failure( 'remote_inventory_unavailable' );
 		}
@@ -616,6 +680,55 @@ final class MRN_Updraft_MainWP_Policy {
 			return true;
 		}
 		return self::failure( 'recent_labeled_database_backup_required' );
+	}
+
+	/**
+	 * Prove a native labeled DB-only recovery point without returning logs or storage secrets.
+	 *
+	 * @param string $nonce Exact Updraft nonce.
+	 * @return array|WP_Error
+	 */
+	public static function maintenance_backup( $nonce ) {
+		$valid = self::verify_backup( $nonce );
+		if ( is_wp_error( $valid ) ) {
+			return $valid;
+		}
+		global $updraftplus;
+		if ( ! is_object( $updraftplus ) || ! is_callable( array( $updraftplus, 'backups_dir_location' ) ) ) {
+			return self::failure( 'maintenance_backup_log_unavailable' );
+		}
+		$file = trailingslashit( $updraftplus->backups_dir_location() ) . 'log.' . $nonce . '.txt';
+		if ( is_link( $file ) || ! is_file( $file ) || ! is_readable( $file ) || filesize( $file ) < 1 || filesize( $file ) > 8388608 ) {
+			return self::failure( 'maintenance_backup_log_unavailable' );
+		}
+		// Bound the read even if another process appends after the size check.
+		$log = file_get_contents( $file, false, null, 0, 8388609 );
+		if ( ! is_string( $log ) || strlen( $log ) > 8388608 || ! preg_match( '/The backup succeeded and is now complete/i', $log ) || ! preg_match( '/Recording as successfully uploaded:[^\r\n]+/i', $log ) || preg_match( '/\b(error|warning):|backup failed|fatal error|errors have occurred|failed to upload|more services to follow/i', $log ) ) {
+			return self::failure( 'maintenance_backup_not_complete' );
+		}
+		unset( $log );
+		$history = self::history();
+		if ( is_wp_error( $history ) ) {
+			return $history;
+		}
+		foreach ( $history as $timestamp => $record ) {
+			$row = self::record( $timestamp, $record );
+			if ( $row['nonce'] !== $nonce || 'MRN MainWP database-only backup' !== $row['label'] || $row['incremental'] ) {
+				continue;
+			}
+			if ( ! is_int( $timestamp ) || $timestamp > time() || time() - $timestamp >= 2 * HOUR_IN_SECONDS ) {
+				return self::failure( 'maintenance_backup_expired' );
+			}
+			return array(
+				'provider'        => 'updraftplus',
+				'nonce'           => $nonce,
+				'database_only'   => true,
+				'remote_verified' => true,
+				'completed_at'    => $timestamp * 1000,
+				'expires_at'      => ( $timestamp + 2 * HOUR_IN_SECONDS ) * 1000,
+			);
+		}
+		return self::failure( 'maintenance_backup_label_required' );
 	}
 
 	/** Exact component deletion through Updraft's S3 engine, then history readback. */

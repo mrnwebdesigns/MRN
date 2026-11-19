@@ -1,6 +1,6 @@
 <?php
 /** Native Image drift: saved root/nested fields, safe markup and conditional assets. */
-if ( ! defined( 'WP_CLI' ) || ! WP_CLI || home_url() !== getenv( 'MRN_STACK_TEST_HOME' ) || ! str_ends_with( (string) wp_parse_url( home_url(), PHP_URL_HOST ), '.localhost' ) || ! current_user_can( 'manage_options' ) ) { throw new RuntimeException( 'An explicitly selected local administrator runtime is required.' ); }
+if ( ! defined( 'WP_CLI' ) || ! WP_CLI || home_url() !== getenv( 'MRN_STACK_TEST_HOME' ) || ( '127.0.0.1' !== wp_parse_url( home_url(), PHP_URL_HOST ) && ! str_ends_with( (string) wp_parse_url( home_url(), PHP_URL_HOST ), '.localhost' ) ) || ! current_user_can( 'manage_options' ) ) { throw new RuntimeException( 'An explicitly selected local administrator runtime is required.' ); }
 $checks = array(); $expect = static function ( $ok, $label ) use ( &$checks ) { if ( ! $ok ) { throw new RuntimeException( esc_html( $label ) ); } $checks[] = $label; };
 $image = absint( explode( ',', getenv( 'MRN_CARD_TEST_IMAGE_IDS' ) ?: '' )[0] ); $expect( 'attachment' === get_post_type( $image ), 'Explicit local fixture image exists' );
 $layouts = array_column( acf_get_field( 'field_mrn_page_content_rows' )['layouts'], null, 'name' );
@@ -29,6 +29,9 @@ try {
 		$dimensions = mrn_base_stack_get_attachment_image_src( $image, 'mrn-content-media' );
 		$expect( str_contains( $framed_html, sprintf( 'aspect-ratio:auto %d / %d', $dimensions[1], $dimensions[2] ) ), 'Native image-only frame reserves the attachment ratio with WordPress auto-sizes: ' . $mode );
 		$expect( ! str_contains( $framed_html, 'class="mrn-image-stage__overlay"' ), 'Dormant crop overlay cannot activate on the intrinsic image frame: ' . $mode );
+		$framed['heading'] = 'Authored heading beside the framed image';
+		ob_start(); mrn_base_stack_render_builder_row( $framed, $id, 2 ); $headed_html = ob_get_clean();
+		$expect( str_contains( $headed_html, sprintf( 'aspect-ratio:auto %d / %d', $dimensions[1], $dimensions[2] ) ), 'A framed image with text also reserves its attachment ratio: ' . $mode );
 	}
 	ob_start(); mrn_base_stack_render_builder_row( $plain, $id, 3 ); $plain_html = ob_get_clean();
 	$expect( ! str_contains( $plain_html, 'aspect-ratio:auto ' ), 'Ordinary Image layouts retain their existing markup' );

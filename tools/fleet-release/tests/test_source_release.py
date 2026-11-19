@@ -5,11 +5,13 @@ import io
 import json
 import os
 from pathlib import Path
+import re
 import sys
 import tarfile
 import tempfile
 import unittest
 from unittest.mock import patch
+from types import SimpleNamespace
 import zipfile
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -51,6 +53,16 @@ class SourcePublication(unittest.TestCase):
                      'source_root': str(self.root), 'legacy_consumers_paused': True})
         self.store = host.SourceStore(self.root, self.depot)
 
+    def test_optional_runner_is_read_back_and_cannot_be_replaced(self):
+        runner = self.job / 'mrn-site-release-v1.tar'
+        runner.write_bytes(b'private runner')
+        self.proof['site_release_runner_sha256'] = host.sha(runner)
+        common.write(self.job / 'qualification.json', self.proof)
+        self.store.qualification(self.job, self.new, self.archive)
+        runner.write_bytes(b'changed private runner')
+        with self.assertRaisesRegex(host.PublicationError, 'readback differs'):
+            self.store.qualification(self.job, self.new, self.archive)
+
     def tearDown(self):
         self.temporary.cleanup()
 
@@ -69,6 +81,67 @@ class SourcePublication(unittest.TestCase):
 
     def publish(self, fault=None):
         return self.store.publish(self.release, self.archive, self.manifest, self.previous, fault=fault)
+
+    def test_every_bootstrap_input_has_an_explicit_publication_scope(self):
+        for name in build.BOOTSTRAP_FILES:
+            with self.subTest(path=name):
+                self.assertEqual(host.allowed(name).as_posix(), name)
+
+    def test_review_lifecycle_component_is_catalog_only_not_a_fleet_source(self):
+        repo = self.base / 'catalog-roster'
+        manifests = repo / 'stack' / 'manifests'
+        manifests.mkdir(parents=True)
+        component = {
+            'slug': 'mrn-held-example', 'version': '1.0.0',
+            'runtime_type': 'standard-plugin', 'target_tier': 'optional-shared',
+            'current_distribution': 'catalog-only', 'lifecycle': 'review',
+            'source': {
+                'repository': 'mrn-held-example',
+                'path': '/Users/example/Development/MRN-plugins/mrn-held-example',
+            },
+        }
+        included = {
+            'slug': 'mrn-supported-example', 'version': '1.0.0',
+            'runtime_type': 'standard-plugin', 'target_tier': 'optional-shared',
+            'current_distribution': 'catalog-only', 'lifecycle': 'active',
+            'source': {
+                'repository': 'mrn-supported-example',
+                'path': '/Users/example/Development/MRN-plugins/mrn-supported-example',
+            },
+        }
+        common.write(manifests / 'component-catalog.json', {
+            'catalog_updated': '2026-11-17', 'components': [component, included],
+        })
+        common.write(manifests / 'retired-capabilities.json', {'capabilities': []})
+
+        self.assertEqual([row['slug'] for row in common.roster(repo)], ['mrn-supported-example'])
+
+    def test_bootstrap_script_dependencies_are_distributed(self):
+        root = Path(__file__).resolve().parents[3] / 'stack'
+        for name in build.BOOTSTRAP_FILES:
+            if not name.startswith('scripts/') or not name.endswith('.sh'):
+                continue
+            dependencies = re.findall(r'\$\{STACK_ROOT\}/(scripts/[A-Za-z0-9._-]+)',
+                                      (root / name).read_text())
+            for dependency in dependencies:
+                with self.subTest(script=name, dependency=dependency):
+                    self.assertIn(dependency, build.BOOTSTRAP_FILES)
+
+    def test_previewshare_bootstrap_includes_configuration_and_verification(self):
+        for name in ('scripts/configure-previewshare.php', 'scripts/verify-previewshare.php',
+                     'PREVIEWSHARE.md'):
+            with self.subTest(path=name):
+                self.assertIn(name, build.BOOTSTRAP_FILES)
+                self.assertEqual(host.allowed(name).as_posix(), name)
+
+    def test_new_bootstrap_scopes_do_not_admit_unrelated_paths(self):
+        for name in ('configs/wordfence/unknown.json', 'configs/wordfence/private.php',
+                     'scripts/unknown.php', 'scripts/configure-wordfence.php/extra',
+                     'scripts/configure-previewshare.php/extra', 'scripts/verify-previewshare.sh',
+                     'PREVIEWSHARE.php',
+                     'MAIL-MEDIA-SECURITY.php', 'configs/wordfence/../private.json'):
+            with self.subTest(path=name), self.assertRaises(host.PublicationError):
+                host.allowed(name)
 
     def test_publication_readback_idempotence_and_retained_recovery(self):
         receipt = self.publish()
@@ -105,6 +178,32 @@ class SourcePublication(unittest.TestCase):
         with self.assertRaises(RuntimeError): self.publish(fail)
         self.assertEqual(self.store.preflight()['manifest_sha256'], self.previous)
         self.assertEqual(common.read(self.job / 'publication-receipt.json')['status'], 'rolled_back_verified')
+
+    def test_candidate_equivalent_source_drift_is_recorded_and_published(self):
+        (self.root / 'shared/runtime.php').write_bytes(b'new')
+        receipt = self.publish()
+        self.assertEqual(receipt['status'], 'published_verified')
+        self.assertEqual(receipt['candidate_equivalent_drift'], [{
+            'path': 'shared/runtime.php', 'previous_sha256': next(
+                row['sha256'] for row in self.old['files'] if row['path'] == 'shared/runtime.php'),
+            'candidate_sha256': host.sha(self.base / 'candidate' / 'shared/runtime.php'),
+        }])
+
+    def test_candidate_equivalent_drift_recovers_its_actual_prior_bytes(self):
+        (self.root / 'shared/runtime.php').write_bytes(b'new')
+        def fail(index, name):
+            if index == 0: raise RuntimeError('injected')
+        with self.assertRaises(RuntimeError): self.publish(fail)
+        self.assertEqual((self.root / 'shared/runtime.php').read_bytes(), b'new')
+        receipt = common.read(self.job / 'publication-receipt.json')
+        self.assertEqual(receipt['status'], 'rolled_back_verified')
+        with self.assertRaises(host.PublicationError): self.store.preflight()
+        self.assertEqual(self.store.preflight(self.new)['candidate_equivalent_drift'][0]['path'], 'shared/runtime.php')
+
+    def test_unqualified_source_drift_remains_blocked(self):
+        (self.root / 'shared/runtime.php').write_bytes(b'not the candidate')
+        with self.assertRaisesRegex(host.PublicationError, 'differs from qualification'):
+            self.publish()
 
     def test_verified_rollback_retries_without_replacing_recovery_archive(self):
         def fail(index, name):
@@ -157,6 +256,49 @@ class SourcePublication(unittest.TestCase):
 
 
 class QualificationContracts(unittest.TestCase):
+    def test_candidate_identity_separates_source_history_without_payload_changes(self):
+        first = {'material_sha256': 'a' * 64, 'source_vector_sha256': 'b' * 64}
+        newer = {**first, 'source_vector_sha256': 'c' * 64}
+        changed = {**first, 'material_sha256': 'd' * 64}
+        self.assertEqual(build.release_identity(first), build.release_identity(dict(first)))
+        self.assertNotEqual(build.release_identity(first), build.release_identity(newer))
+        self.assertNotEqual(build.release_identity(first), build.release_identity(changed))
+        self.assertRegex(build.release_identity(first), r'^[a-f0-9]{12}$')
+
+    def test_same_material_new_source_does_not_reuse_the_old_promotion_branch(self):
+        branches = []
+        with tempfile.TemporaryDirectory() as temporary:
+            for vector in ('b' * 64, 'c' * 64):
+                metadata = {'release_id': '2026.11.12-fleet-auto-123456abcdef',
+                            'snapshot': {'material_sha256': 'a' * 64,
+                                         'source_vector_sha256': vector}}
+                with patch.object(coordinator, 'git', return_value='d' * 40), \
+                     patch.object(coordinator, 'run', side_effect=['[]', 'https://github.com/mrnwebdesigns/MRN/pull/426']), \
+                     patch.object(coordinator, 'git_network') as push:
+                    self.assertEqual(coordinator.propose(Path('.'), Path(temporary), metadata), 426)
+                    branches.append(push.call_args.args[-1])
+            self.assertNotEqual(branches[0], branches[1])
+            self.assertNotIn(':refs/heads/codex/fleet-promotion-' + 'a' * 12, branches[0])
+
+    def test_candidate_retry_requires_the_same_source_marker_and_head(self):
+        snapshot = {'material_sha256': 'a' * 64, 'source_vector_sha256': 'b' * 64}
+        metadata = {'snapshot': snapshot}
+        original = {'number': 426, 'state': 'OPEN', 'headRefOid': 'c' * 40,
+                    'body': 'MRN_FLEET_SOURCE_VECTOR=' + 'b' * 64}
+        for replacement in ({}, {'headRefOid': 'd' * 40}, {'body': 'foreign source'},
+                            {'number': 427, 'body': ''}):
+            existing = {**original, **replacement}
+            with self.subTest(replacement=replacement), \
+                 patch.object(coordinator, 'git', return_value='c' * 40), \
+                 patch.object(coordinator, 'run', return_value=json.dumps([existing])), \
+                 patch.object(coordinator, 'git_network') as push:
+                if replacement:
+                    with self.assertRaisesRegex(common.ReleaseError, 'ownership/source identity'):
+                        coordinator.propose(Path('.'), Path('.'), metadata)
+                else:
+                    self.assertEqual(coordinator.propose(Path('.'), Path('.'), metadata), 426)
+                push.assert_not_called()
+
     def test_accepted_qa_engine_revision_is_a_source_and_material_input(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary); repo = root / 'MRN'; repo.mkdir()
@@ -298,6 +440,24 @@ class QualificationContracts(unittest.TestCase):
             report.write_text('**Release QA Result: 100% SUCCESS**\n| Accessibility smoke | Skipped | Pass |\n')
             with self.assertRaises(common.ReleaseError): qualify.require_engine_pass(report, runtime=True)
 
+    def test_form_success_rejects_enabled_new_site_before_submitting_or_running_qa(self):
+        native = SimpleNamespace(
+            inventory={'plugins': {'mrn-form-success/mrn-form-success.php': '0.1.2'}},
+            url='http://127.0.0.1:12345',
+            php=lambda body: {'settings': {'enabled': True, 'diagnostics': False, 'forms': []},
+                              'script': False, 'woocommerce': False})
+        with patch.object(qualify, 'execute') as execute:
+            with self.assertRaisesRegex(common.ReleaseError, 'inactive'):
+                qualify.qualify_form_success(native, '.', {}, '.', {})
+            execute.assert_not_called()
+
+    def test_form_success_rejects_remote_fixture_before_any_runtime_access(self):
+        native = SimpleNamespace(
+            inventory={'plugins': {'mrn-form-success/mrn-form-success.php': '0.1.2'}},
+            url='https://example.invalid')
+        with self.assertRaisesRegex(common.ReleaseError, 'loopback'):
+            qualify.qualify_form_success(native, '.', {}, '.', {})
+
     def test_deterministic_build_mismatch_blocks(self):
         with tempfile.TemporaryDirectory() as temporary:
             first = Path(temporary) / 'first'; first.write_bytes(b'first')
@@ -344,6 +504,27 @@ class QualificationContracts(unittest.TestCase):
                     archive.writestr('example/plugin.php',b'second')
                 self.assertTrue(observed)
             with self.assertRaises(common.ReleaseError): build.package_files(path,'example')
+
+    def test_new_git_default_rebuild_requires_exact_locked_bytes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            files = {'example.php': b'<?php /* Plugin Name: Example\nVersion: 1.0.0 */'}
+            archive = root / 'locked.zip'
+            build.fleet.deterministic_zip(archive, {'example/' + k: v for k, v in files.items()})
+            lock = {'plugins': [{'slug': 'example', 'version': '1.0.0', 'package': 'example.zip',
+                                 'main_file': 'example/example.php', 'source': {'type': 'git'},
+                                 'sha256': common.file_hash(archive), 'size_bytes': archive.stat().st_size}]}
+            def read(path): return lock if Path(path).name == 'bootstrap-packages.lock.json' else {'releases': []}
+            with patch.object(build, 'read', side_effect=read), \
+                 patch.object(build, 'roster', return_value=[{'slug': 'example', 'repository': 'MRN', 'relative_source': '.'}]), \
+                 patch.object(build, 'git_files', return_value=files), \
+                 patch.object(build.lock_tool, 'read_header_version', return_value='1.0.0'):
+                result = build.default_packages(root, root, {'held_defaults': {}}, root / 'absent', root / 'out')
+                self.assertEqual(result, lock)
+                self.assertEqual((root / 'out/example.zip').read_bytes(), archive.read_bytes())
+                files['example.php'] += b' changed without a version bump'
+                with self.assertRaises(common.ReleaseError):
+                    build.default_packages(root, root, {'held_defaults': {}}, root / 'absent', root / 'changed')
 
     def test_changed_same_version_package_is_rejected(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -414,7 +595,7 @@ class CoordinatorBoundaries(unittest.TestCase):
                 (bootstrap/'bootstrap-bundle.json').write_bytes(b'{}')
                 (bootstrap/'themes/mrn-base-stack.zip').write_bytes(b'ordinary parent fixture')
                 built={'bootstrap':bootstrap,'proof':{'lock_sha256':'a'*64}}
-                for key in ('bootstrap_archive','fleet','optional_archive'):
+                for key in ('bootstrap_archive','fleet','optional_archive','site_release_runner'):
                     built[key]=root/(key+'.tar');built[key].write_bytes(key.encode())
                 if serialized:
                     built={k:str(v) if isinstance(v,Path) else v for k,v in built.items()}
@@ -422,7 +603,7 @@ class CoordinatorBoundaries(unittest.TestCase):
                                        'snapshot':{'refs':{'MRN':merged}}}
                 def remote(settings,operation,*args):
                     if operation=='receipt':return {'status':'not_started'}
-                    if operation=='preflight':return {'manifest_sha256':'c'*64}
+                    if operation=='preflight-candidate':return {'manifest_sha256':'c'*64}
                     if operation=='publish':return {'status':'published_verified','lock_sha256':'a'*64}
                     return {}
                 def command(arguments,**kwargs):
@@ -433,11 +614,12 @@ class CoordinatorBoundaries(unittest.TestCase):
                             (destination/name).write_bytes((job/name).read_bytes())
                     return ''
                 with patch.object(coordinator,'remote_host',side_effect=remote), \
-                     patch.object(coordinator,'assert_refs'),patch.object(coordinator,'transfer'), \
+                     patch.object(coordinator,'assert_refs'),patch.object(coordinator,'transfer') as transfer, \
                      patch.object(coordinator,'run',side_effect=command), \
                      patch.object(coordinator.subprocess,'run',return_value=type('Result',(),{'returncode':1})()):
                     result=coordinator.publish({'source_host':'mrndev-stack-manager'},repo,job,built,
-                                               {'status':'pass'},metadata,merged)
+                                               {'status':'pass','site_release_runner_sha256':common.file_hash(built['site_release_runner'])},metadata,merged)
+                self.assertIn(coordinator.SITE_RELEASE_RUNNER, [call.args[-1] for call in transfer.call_args_list])
                 self.assertEqual(result['status'],'published_verified')
                 publication=common.read(job/'publication.json')
                 self.assertEqual(publication['status'],'pass')
@@ -562,8 +744,8 @@ class CoordinatorBoundaries(unittest.TestCase):
             first=Path(temporary)/'a';second=Path(temporary)/'b'
             first.write_bytes(b'same');second.write_bytes(b'different')
             with self.assertRaises(common.ReleaseError):
-                coordinator.deterministic({'fleet':first,'bootstrap_archive':first,'optional_archive':first},
-                    {'fleet':first,'bootstrap_archive':first,'optional_archive':second})
+                coordinator.deterministic({'fleet':first,'bootstrap_archive':first,'optional_archive':first,'site_release_runner':first},
+                    {'fleet':first,'bootstrap_archive':first,'optional_archive':second,'site_release_runner':first})
 
     def test_superseded_worker_proposal_is_closed_but_foreign_proposal_is_preserved(self):
         for own in (True,False):
@@ -614,16 +796,17 @@ class CoordinatorBoundaries(unittest.TestCase):
             job=state/'jobs/example';job.mkdir(parents=True)
             repo=job/'repos/MRN';(repo/'stack/manifests').mkdir(parents=True)
             bootstrap=job/'bootstrap';bootstrap.mkdir()
-            for path in (job/'fleet.zip',job/'bootstrap.tar',job/'optional.tar',bootstrap/'bootstrap-bundle.json',repo/'stack/manifests/stack-release.lock.json'):
+            for path in (job/'fleet.zip',job/'bootstrap.tar',job/'optional.tar',job/'runner.tar',bootstrap/'bootstrap-bundle.json',repo/'stack/manifests/stack-release.lock.json'):
                 path.write_bytes(b'fixture')
             checksum=common.file_hash(job/'fleet.zip')
             progress={'phase':'qualified','repo':str(repo),'standalone':str(job/'repos/MRN-plugins'),
                       'metadata':{'snapshot':{'refs':{'MRN-qa-engine':'b'*40}},'release_id':'fixture'},
                       'built':{'fleet':str(job/'fleet.zip'),'bootstrap_archive':str(job/'bootstrap.tar'),
-                               'optional_archive':str(job/'optional.tar'),
+                               'optional_archive':str(job/'optional.tar'),'site_release_runner':str(job/'runner.tar'),
                                'bootstrap':str(bootstrap),'proof':{'lock_sha256':checksum}},
                       'qualified':{'status':'pass','fleet_sha256':checksum,'bootstrap_sha256':checksum,
-                                   'optional_sha256':checksum,'lock_sha256':checksum}}
+                                   'optional_sha256':checksum,'lock_sha256':checksum,
+                                   'site_release_runner_sha256':checksum}}
             coordinator.seal(job,progress);common.write(state/'active.json',{'job':str(job)})
             with patch.object(coordinator,'publish') as publish, patch.object(coordinator,'build_all') as build:
                 result=coordinator.once({'state_root':str(state),'qualification':{},'publish':False})

@@ -1,5 +1,5 @@
 {
-  "plain_plugin_count": 32,
+  "plain_plugin_count": 36,
   "plugins": [
     {
       "main_file": "admin-menu-editor-pro/menu-editor.php",
@@ -77,19 +77,49 @@
       "version": "4.2.2"
     },
     {
-      "main_file": "post-smtp/postman-smtp.php",
-      "manifest_source": "post-smtp",
-      "name": "Post SMTP",
-      "package": "post-smtp.4.0.2.zip",
+      "main_file": "fluent-smtp/fluent-smtp.php",
+      "manifest_source": "fluent-smtp",
+      "name": "FluentSMTP",
+      "package": "fluent-smtp.2.4.1.zip",
       "profile": "all",
-      "sha256": "7aec4c927e063416ee580558882cd3b6b712d09794f817c196b7d24ce87a685e",
-      "size_bytes": 21177304,
-      "slug": "post-smtp",
+      "sha256": "4932248e0fae299842ca0bd6b8dc71de7efef9b0302ffd7f29df39028673553f",
+      "size_bytes": 2523922,
+      "slug": "fluent-smtp",
       "source": {
         "type": "wordpress.org",
-        "url": "https://downloads.wordpress.org/plugin/post-smtp.4.0.2.zip"
+        "url": "https://downloads.wordpress.org/plugin/fluent-smtp.2.4.1.zip"
       },
-      "version": "4.0.2"
+      "version": "2.4.1"
+    },
+    {
+      "main_file": "webp-converter-for-media/webp-converter-for-media.php",
+      "manifest_source": "webp-converter-for-media",
+      "name": "Converter for Media",
+      "package": "webp-converter-for-media.6.7.0.zip",
+      "profile": "all",
+      "sha256": "3cb15f61afd391ec632bd06fdfe0f57a9315ca31a337932a7e7fd101293217dd",
+      "size_bytes": 377283,
+      "slug": "webp-converter-for-media",
+      "source": {
+        "type": "wordpress.org",
+        "url": "https://downloads.wordpress.org/plugin/webp-converter-for-media.6.7.0.zip"
+      },
+      "version": "6.7.0"
+    },
+    {
+      "main_file": "wordfence/wordfence.php",
+      "manifest_source": "wordfence",
+      "name": "Wordfence Security",
+      "package": "wordfence.9.0.2.zip",
+      "profile": "all",
+      "sha256": "4124ae2a5d7cff8faadf04c222583fa06f78e8e9c791e50447383e5e12ab5fb6",
+      "size_bytes": 8370918,
+      "slug": "wordfence",
+      "source": {
+        "type": "wordpress.org",
+        "url": "https://downloads.wordpress.org/plugin/wordfence.9.0.2.zip"
+      },
+      "version": "9.0.2"
     },
     {
       "main_file": "happyfiles-pro/happyfiles-pro.php",
@@ -192,15 +222,15 @@
       "name": "MRN Config Helper",
       "package": "mrn-config-helper.zip",
       "profile": "all",
-      "sha256": "cdee274d8465a0f22d242ad4cfaff8c333d1f2ab8a26080b5ccbb039a26f77c1",
-      "size_bytes": 121641,
+      "sha256": "34e1f1e0706886fef47956ee6409aed73d96e7c2033be592646b0548178ebb12",
+      "size_bytes": 128809,
       "slug": "mrn-config-helper",
       "source": {
-        "commit": "eb167abaa68efd75c28593598d6a5d0b8dc1152c",
+        "commit": "f949c18d223d9256e3790958a8671a62d08afe02",
         "repository": "mrn-config-helper",
         "type": "git"
       },
-      "version": "0.1.74"
+      "version": "0.1.75"
     },
     {
       "main_file": "mrn-media-bulk-tools/mrn-media-bulk-tools.php",
@@ -240,15 +270,15 @@
       "name": "MRN reCAPTCHA Enterprise Manager",
       "package": "mrn-recaptcha-enterprise-manager.zip",
       "profile": "all",
-      "sha256": "a31c33740ac80e06fc08fdca556c7aa3019b5531c7b27f7e417bf60c1d0d44fb",
-      "size_bytes": 60382,
+      "sha256": "a68edfcf12338f786494c21ef8a016f6de64101444287e92e956176116119b93",
+      "size_bytes": 65975,
       "slug": "mrn-recaptcha-enterprise-manager",
       "source": {
-        "commit": "1bc4e4424b1736ec85743b4f67a8b8add0f26220",
+        "commit": "39dd6d53473d2dbb5d98af9d245f943f0074fe1a",
         "repository": "mrn-recaptcha-enterprise-manager",
         "type": "git"
       },
-      "version": "0.2.3"
+      "version": "0.2.5"
     },
     {
       "main_file": "mrn-stack-deployment-agent/mrn-stack-deployment-agent.php",
@@ -256,15 +286,15 @@
       "name": "MRN Stack Deployment Agent",
       "package": "mrn-stack-deployment-agent.zip",
       "profile": "all",
-      "sha256": "834e1716a2ba74fccfe3205d8944fcfac4a8b685e1edfd1366ae9b42da5f766f",
-      "size_bytes": 62383,
+      "sha256": "997a70ac37ca0eac85e61aa19227e4174571a95dd77cda09b9782660e68212e6",
+      "size_bytes": 107882,
       "slug": "mrn-stack-deployment-agent",
       "source": {
-        "commit": "e1d0dc07e8abc81640b76bd04883456900dc7d01",
+        "commit": "e5f84dea1665cc08c1c4d9f56b26669f329c2924",
         "repository": "mrn-stack-deployment-agent",
         "type": "git"
       },
-      "version": "0.3.2"
+      "version": "0.3.10"
     },
     {
       "main_file": "mrn-template-inspector/mrn-template-inspector.php",
@@ -288,15 +318,15 @@
       "name": "MRN Reusable Block Library",
       "package": "mrn-reusable-block-library.zip",
       "profile": "stack",
-      "sha256": "4a87845f8e95810b35ba0dc178f1c0e99199ad2782bf288c994444cc710f4cd8",
-      "size_bytes": 60655,
+      "sha256": "d82e9efaba7d86cc612961e72be2ad6684e9ac3b596d2a910b5a5f0161ba8c3e",
+      "size_bytes": 63544,
       "slug": "mrn-reusable-block-library",
       "source": {
-        "commit": "d491628c5e9366721ae56d8383d3b05cd9e95f78",
+        "commit": "689bd39e1fa38809c6f5afad6b19e2369b189ff6",
         "repository": "mrn-reusable-block-library",
         "type": "git"
       },
-      "version": "0.2.2"
+      "version": "0.2.3"
     },
     {
       "main_file": "mrn-universal-sticky-bar/mrn-universal-sticky-bar.php",
@@ -328,6 +358,21 @@
         "url": "https://downloads.wordpress.org/plugin/post-duplicator.3.0.16.zip"
       },
       "version": "3.0.16"
+    },
+    {
+      "main_file": "previewshare/previewshare.php",
+      "manifest_source": "previewshare",
+      "name": "PreviewShare",
+      "package": "previewshare.1.1.0.zip",
+      "profile": "all",
+      "sha256": "1ed6551614eb784b001f338d2a60df057c10217ebc63d7b36b84632160488b40",
+      "size_bytes": 710941,
+      "slug": "previewshare",
+      "source": {
+        "type": "wordpress.org",
+        "url": "https://downloads.wordpress.org/plugin/previewshare.1.1.0.zip"
+      },
+      "version": "1.1.0"
     },
     {
       "main_file": "post-types-order/post-types-order.php",
@@ -511,10 +556,26 @@
         "type": "git"
       },
       "version": "0.1.4"
+    },
+    {
+      "main_file": "mrn-form-success/mrn-form-success.php",
+      "manifest_source": "/home/mrndev-stack-manager/stack/packages/mrn-form-success.zip",
+      "name": "MRN Form Success",
+      "package": "mrn-form-success.zip",
+      "profile": "all",
+      "sha256": "f2c5ff3314efc3b895ab201a892e8cda26f7071627d52cdbcf73cabcb368e75d",
+      "size_bytes": 13733,
+      "slug": "mrn-form-success",
+      "source": {
+        "commit": "5cae307336c5d8867b04a463a0cb6d970826fd0d",
+        "repository": "mrn-form-success",
+        "type": "git"
+      },
+      "version": "0.1.2"
     }
   ],
-  "release_id": "2026.10.21-fleet-auto-67aeab7ebc8c",
+  "release_id": "2026.11.18-fleet-auto-f3775ef0f852",
   "schema_version": 1,
   "scope": "new-site-bootstrap-inputs",
-  "stack_plugin_count": 33
+  "stack_plugin_count": 36
 }

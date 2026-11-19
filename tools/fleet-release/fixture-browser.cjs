@@ -133,6 +133,22 @@ const { createRequire } = require('node:module');
     await page.locator('#wpforms-field-1').click();
     await expect(formLabel).toHaveValue('Fixture message qualified');
     checks.push('native WPForms builder AJAX save/reload persists field labels without WooCommerce');
+    if (input.form_success) {
+      const settings = await page.goto(`${input.url}/wp-admin/options-general.php?page=mrn-form-success`,
+        {waitUntil: 'networkidle'});
+      assert.equal(settings.status(), 200);
+      await expect(page.getByRole('heading', {name: 'MRN Form Success', exact: true})).toBeVisible();
+      await expect(page.getByRole('checkbox', {name: 'Enable configured forms', exact: true})).not.toBeChecked();
+      await expect(page.locator('#mrn-fs-forms')).toHaveValue('[]');
+      await page.locator('#mrn-fs-forms').focus();
+      await page.keyboard.press('Tab');
+      await expect(page.getByRole('button', {name: 'Save Changes', exact: true})).toBeFocused();
+      const result = await new AxeBuilder({page}).include('#wpbody-content .wrap')
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
+      scans.push({route: 'Form Success settings', violations: result.violations});
+      assert.equal(result.violations.length, 0, 'Form Success settings WCAG A/AA must pass');
+      checks.push('native Form Success settings, inactive defaults, labels and keyboard access');
+    }
     if (input.dashboard) {
       const dashboard = await page.goto(`${input.url}/wp-admin/admin.php?page=mainwp_tab`,
         {waitUntil: 'domcontentloaded'});
@@ -160,6 +176,10 @@ const { createRequire } = require('node:module');
       for (const route of ['/', '/contact/']) {
         const response = await publicPage.goto(input.url + route, { waitUntil: 'networkidle' });
         assert.equal(response.status(), 200);
+        if (input.form_success) {
+          assert.equal(await publicPage.locator('script[src*="/mrn-form-success/"]').count(), 0,
+            'unconfigured Form Success must not load frontend tracking');
+        }
         assert.equal(await publicPage.locator('h1').count(), 1, 'one page heading');
         const result = await new AxeBuilder({ page: publicPage }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
         scans.push({ route, width, violations: result.violations });

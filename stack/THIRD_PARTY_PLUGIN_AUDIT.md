@@ -34,6 +34,7 @@ Scope: non-custom plugins and package zips referenced by `stack/manifests/plugin
 | Post SMTP | `post-smtp` slug | latest at install | 4.0.2 (site evidence) | Replaces FluentSMTP; provider credentials and a delivery test remain site-specific go-live gates. |
 | HappyFiles Pro | `happyfiles-pro.zip` | 1.9.1 | not confirmed; vendor changelog is dynamic/account-gated | Unchanged at 1.9.1. No license mapping exists and its licensing model is unconfirmed. |
 | Post Duplicator | `post-duplicator` slug | latest at install | 3.0.15 | Current via WordPress.org. |
+| PreviewShare | `previewshare` slug | 1.1.0 | 1.1.0 | Required Stack preview-sharing plugin. The checksum-locked WordPress.org release supports Classic Editor and Gutenberg, per-item expiry overrides, link revocation, and preview robots protections. |
 | Post Types Order | `post-types-order` slug | latest at install | 2.4.8 | Current via WordPress.org. |
 | SearchWP | removed from stack manifest | 4.6.1 legacy package | 4.6.1 | Removed 2026-08-19; replaced stack-wide by Relevanssi. Package retained on the stack manager, unreferenced. |
 | SearchWP Live Ajax Search | removed from stack manifest | n/a | n/a | Removed 2026-08-19 with SearchWP core. |

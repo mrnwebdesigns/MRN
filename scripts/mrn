@@ -10,7 +10,7 @@ Commands:
   pull-site      Pull a live site into Local (uploads/database).
   deploy-site    Deploy from Local with site-vs-stack scope.
   nightly-pull   Pull all discovered .mrndev.io sites into Local.
-  fleet          Run guarded Fleet operations (currently: selective update).
+  fleet          Run guarded Fleet operations (update or release).
   local-hub      Start the MRN Local Hub browser UI.
   completion     Print shell completion script (zsh|bash).
   install-completion
@@ -233,6 +233,10 @@ case "${COMMAND}" in
 		;;
 	fleet)
 		shift
+		if [[ "${1:-}" == release ]]; then
+			shift
+			exec "${MRN_FLEET_PYTHON:-python3}" -B "${REPO_ROOT}/tools/site-deploy/fleet_release.py" "$@"
+		fi
 		[[ -f "${FLEET_UPDATE_SCRIPT}" ]] || {
 			echo "FAIL: Missing Fleet workflow helper: ${FLEET_UPDATE_SCRIPT}" >&2
 			exit 1

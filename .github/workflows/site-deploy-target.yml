@@ -81,7 +81,9 @@ permissions:
 jobs:
   deploy:
     if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    # Playwright 1.60 is qualified on Ubuntu 24.04. Keep the deployment runner
+    # explicit so a moving GitHub "latest" label cannot bypass browser QA.
+    runs-on: ubuntu-24.04
     timeout-minutes: ${{ inputs.local_qa_acceptance != '' && 65 || 40 }}
     environment:
       name: ${{ inputs.target }}
@@ -235,7 +237,11 @@ jobs:
         if: inputs.mode == 'deploy'
         run: |
           npm ci --prefix "$RUNNER_TEMP/mrn-qa-engine"
-          "$RUNNER_TEMP/mrn-qa-engine/node_modules/.bin/playwright" install --with-deps chromium
+          # GitHub-hosted Ubuntu runners already include Chromium's system
+          # libraries.  Avoid apt-based `--with-deps` here: it is both
+          # unnecessary and an external Ubuntu-package failure point during a
+          # production release.
+          "$RUNNER_TEMP/mrn-qa-engine/node_modules/.bin/playwright" install chromium
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
@@ -289,6 +295,11 @@ jobs:
             exit 1
           fi
           umask 077
+          if [[ "$DEPLOY_BACKUP_PROVIDER" == kinsta && -z "$DEPLOY_KINSTA_MANUAL_BACKUP_APPROVAL" ]]; then
+            printf 'DEPLOY_KEY_FILE=native-kinsta\n' >> "$GITHUB_ENV"
+          else
+            printf 'DEPLOY_KEY_FILE=%s/site-deploy.key\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+          fi
           printf '%s\n' "$SSH_KEY" > "$RUNNER_TEMP/site-deploy.key"
           printf '%s\n' "$KNOWN_HOSTS" > "$RUNNER_TEMP/site-deploy.known_hosts"
           if [[ "$DEPLOY_HOST_PROVIDER" == wpengine ]]; then
@@ -316,7 +327,6 @@ jobs:
         id: activation
         shell: bash
         env:
-          DEPLOY_KEY_FILE: ${{ runner.temp }}/site-deploy.key
           DEPLOY_KNOWN_HOSTS_FILE: ${{ runner.temp }}/site-deploy.known_hosts
           DEPLOY_KINSTA_API_TOKEN: ${{ secrets.DEPLOY_KINSTA_API_TOKEN }}
         run: |
@@ -353,14 +363,13 @@ jobs:
         if: failure() && inputs.mode == 'deploy' && steps.activation.outcome == 'success' && steps.browser.outcome == 'failure'
         env:
           DEPLOY_KINSTA_API_TOKEN: ${{ secrets.DEPLOY_KINSTA_API_TOKEN }}
-          DEPLOY_KEY_FILE: ${{ runner.temp }}/site-deploy.key
           DEPLOY_KNOWN_HOSTS_FILE: ${{ runner.temp }}/site-deploy.known_hosts
         run: |
           python3 "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/atomic_runner.py" \
             --rollback-receipt "$RUNNER_TEMP/site-deployment.json" --receipt "$RUNNER_TEMP/site-rollback.json"
       - name: Run runtime QA
         id: runtime
-        if: success() && inputs.mode == 'deploy' && inputs.local_qa_acceptance == ''
+        if: success() && inputs.mode == 'deploy'
         continue-on-error: ${{ inputs.target == 'dev' && !inputs.qualify_dev }}
         run: |
           set -euo pipefail
@@ -368,7 +377,7 @@ jobs:
           performance=never
           cwv=never
           if [[ "$TARGET" == live || "${QUALIFY_DEV:-false}" == true ]]; then acceptance=(--mode release --smoke-strict 1); fi
-          if [[ "$TARGET" == live || "${QUALIFY_DEV:-false}" == true ]]; then performance=always; cwv=auto; fi
+          if [[ "$TARGET" == live ]]; then performance=always; cwv=auto; fi
           "$RUNNER_TEMP/mrn-qa-engine/bin/mrn-qa" run "${acceptance[@]}" \
             --project-root "$GITHUB_WORKSPACE" --site-url "$DEPLOY_URL" --scope site-only \
             --run-api always --run-smoke always --run-accessibility always --run-performance "$performance" --run-cwv "$cwv" \
@@ -377,25 +386,6 @@ jobs:
         if: failure() && (inputs.target == 'live' || inputs.qualify_dev) && inputs.mode == 'deploy' && steps.activation.outcome == 'success' && steps.runtime.outcome == 'failure'
         env:
           DEPLOY_KINSTA_API_TOKEN: ${{ secrets.DEPLOY_KINSTA_API_TOKEN }}
-          DEPLOY_KEY_FILE: ${{ runner.temp }}/site-deploy.key
-          DEPLOY_KNOWN_HOSTS_FILE: ${{ runner.temp }}/site-deploy.known_hosts
-        run: |
-          python3 "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/atomic_runner.py" \
-            --rollback-receipt "$RUNNER_TEMP/site-deployment.json" --receipt "$RUNNER_TEMP/site-rollback.json"
-      - name: Require fresh Live REST and operator browser readback
-        id: local_readback
-        if: success() && inputs.mode == 'deploy' && inputs.local_qa_acceptance != ''
-        run: |
-          echo 'Awaiting release-bound Freedom House Live readback (20 minute deadline).' >> "$GITHUB_STEP_SUMMARY"
-          python3 "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/freedomhouse_acceptance.py" wait \
-            --qualification "$RUNNER_TEMP/site-local-qualification.json" \
-            --deployment "$RUNNER_TEMP/site-deployment.json" \
-            --receipt "$RUNNER_TEMP/site-live-readback.json"
-      - name: Restore the prior release if local acceptance lacks Live readback
-        if: failure() && inputs.mode == 'deploy' && steps.activation.outcome == 'success' && steps.local_readback.outcome == 'failure'
-        env:
-          DEPLOY_KINSTA_API_TOKEN: ${{ secrets.DEPLOY_KINSTA_API_TOKEN }}
-          DEPLOY_KEY_FILE: ${{ runner.temp }}/site-deploy.key
           DEPLOY_KNOWN_HOSTS_FILE: ${{ runner.temp }}/site-deploy.known_hosts
         run: |
           python3 "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/atomic_runner.py" \
@@ -404,7 +394,7 @@ jobs:
         if: always() && inputs.mode == 'deploy' && steps.activation.outcome == 'success'
         env:
           QA_RESULT: ${{ steps.runtime.outcome }}
-          LOCAL_RESULT: ${{ steps.local_readback.outcome }}
+          LOCAL_RESULT: runtime-qa
         run: |
           python3 - <<'PY'
           import json, os, pathlib

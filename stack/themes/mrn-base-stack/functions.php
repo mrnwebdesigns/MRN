@@ -9,7 +9,7 @@
 
 if ( ! defined( '_S_VERSION' ) ) {
 	// Replace the version number of the theme on each release.
-	define( '_S_VERSION', '1.6.9' );
+	define( '_S_VERSION', '1.6.14' );
 }
 
 /**
@@ -2457,6 +2457,8 @@ require_once get_template_directory() . '/inc/events.php';
  * Load field-ready content post type registrations.
  */
 require_once get_template_directory() . '/inc/content-post-types.php';
+
+require_once get_template_directory() . '/inc/landing-pages.php';
 require_once get_template_directory() . '/inc/locations.php';
 
 /**

@@ -1,0 +1,37 @@
+name: MRN deployment failure email
+on:
+  workflow_call:
+    inputs:
+      tooling_ref:
+        description: Reviewed immutable MRN notification tooling revision
+        type: string
+        required: true
+    secrets:
+      POSTMARK_SERVER_TOKEN:
+        required: true
+permissions:
+  contents: read
+  actions: read
+jobs:
+  email:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out pinned notification tooling only
+        uses: actions/checkout@v4
+        with:
+          repository: mrnwebdesigns/MRN
+          ref: ${{ inputs.tooling_ref }}
+          persist-credentials: false
+      - name: Email the failed deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          POSTMARK_SERVER_TOKEN: ${{ secrets.POSTMARK_SERVER_TOKEN }}
+        run: python3 tools/site-deploy/notify_failure.py --receipt "$RUNNER_TEMP/deployment-failure-email.json"
+      - name: Preserve notification outcome
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-failure-email-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/deployment-failure-email.json
+          if-no-files-found: warn

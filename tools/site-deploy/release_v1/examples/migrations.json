@@ -1,0 +1,12 @@
+{
+  "schema": "mrn.site-release/v1",
+  "migrations": [
+    {
+      "id": "hero-v1",
+      "script": "hero-v1.php",
+      "assets": ["media/approved-hero.webp"],
+      "environments": ["local", "dev", "staging"],
+      "paths": ["/about/"]
+    }
+  ]
+}

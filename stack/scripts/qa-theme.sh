@@ -110,8 +110,22 @@ else
 fi
 
 echo
-echo "8. PHPStan (shared MRN config)"
-if [[ -x "${REPO_ROOT}/vendor/bin/phpstan" && -f "${REPO_ROOT}/phpstan.neon.dist" ]]; then
+echo "8. PHPStan"
+# A site-owned child theme can provide project stubs (for example, SearchWP)
+# that are not available to the shared Stack configuration. Walk upward from
+# the target theme so its nearest project configuration wins; Stack themes
+# continue to resolve to the shared repository configuration and binary.
+PHPSTAN_CONFIG_ROOT="${REPO_ROOT}"
+phpstan_candidate="${THEME_DIR}"
+while [[ "${phpstan_candidate}" != "/" ]]; do
+	if [[ -f "${phpstan_candidate}/phpstan.neon.dist" ]]; then
+		PHPSTAN_CONFIG_ROOT="${phpstan_candidate}"
+		break
+	fi
+	phpstan_candidate="$(dirname "${phpstan_candidate}")"
+done
+
+if [[ -x "${REPO_ROOT}/vendor/bin/phpstan" && -f "${PHPSTAN_CONFIG_ROOT}/phpstan.neon.dist" ]]; then
 	phpstan_paths=()
 	while IFS= read -r -d '' phpstan_file; do
 		phpstan_paths+=( "${phpstan_file}" )
@@ -124,14 +138,14 @@ if [[ -x "${REPO_ROOT}/vendor/bin/phpstan" && -f "${REPO_ROOT}/phpstan.neon.dist
 	if [[ "${#phpstan_paths[@]}" -eq 0 ]]; then
 		echo "Skipping PHPStan; no runtime PHP files found."
 	elif ! php "${REPO_ROOT}/vendor/bin/phpstan" analyse \
-		--configuration="${REPO_ROOT}/phpstan.neon.dist" \
+		--configuration="${PHPSTAN_CONFIG_ROOT}/phpstan.neon.dist" \
 		--memory-limit=2G \
 		--no-progress \
 		"${phpstan_paths[@]}"; then
 		mark_failure "PHPStan"
 	fi
 else
-	echo "Skipping PHPStan; install root Composer dev tools first."
+	echo "Skipping PHPStan; install Composer dev tools first."
 fi
 
 echo

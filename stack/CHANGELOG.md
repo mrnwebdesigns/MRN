@@ -1,5 +1,202 @@
 # Stack Changelog
 
+## 2026.11.18-fleet-auto-f3775ef0f852
+
+- Automatic cumulative release from accepted source vector `0b3a91f273d0816d345b15d2fb109f5aee307b5b38edbd5bb23fcfaa32ec6259`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.11.18-fleet-auto-b1f633147c44
+
+- Automatic cumulative release from accepted source vector `fdad9f7c47635d7037a2ea52670cc40bfc080a8a91d1be875169708dcb976169`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.11.17-fleet-auto-dab525f941a9
+
+- Automatic cumulative release from accepted source vector `877d86b24acafca0b9a11946a061f303e903f7b4defddeee94812b96b6deb378`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.11.17-fleet-auto-c3ba26c0f00a
+
+- Automatic cumulative release from accepted source vector `0086de09cd0c465afe361ba07d37496f532d4a680569235317bbea5d5d994ab6`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.11.13-fleet-auto-675598f54235
+
+- Automatic cumulative release from accepted source vector `ef6064a1ace87746637ecebf94c9b14648a48777b32aa6cc03b505a8dc056301`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.11.12-fleet-auto-85fe5ef4ece6
+
+- Automatic cumulative release from accepted source vector `97101f3135e553d1f4d9f46c2f170a9f3cd5d405b6870a3dde7876dc28c4c1b8`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.11.12-fleet-auto-a4a460e2aeff
+
+- Automatic cumulative release from accepted source vector `8b88f19ded22734d57ffaa02953989a90cf49d2648548655616b79d227e99102`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.11.12-fleet-auto-ed17214ce31d
+
+- Automatic cumulative release from accepted source vector `f602159b380958a103ade382e5bf046e2897e21bf774b044eaa7e5315115d9b1`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.11.10-fleet-auto-fcafc64aa483
+
+- Automatic cumulative release from accepted source vector `060952bfdcdcd9663ac6482d5b53e528f6517e7eee43afa282ca231346a98e62`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.11.06-fleet-auto-91cab98ff8c5
+
+- Automatic cumulative release from accepted source vector `5142f663211cefce06f8543f8960883e583fd07981fc8d3211564624e4e6645a`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.11.06-fleet-auto-6ee0e5a826d9
+
+- Automatic cumulative release from accepted source vector `a4793d35513274095f707b8d0d605e886ce0e137bad95fd088fade31ac103d34`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.11.05-fleet-auto-b7db7deeb1d1
+
+- Automatic cumulative release from accepted source vector `a156f8a54eebc2a3bc0451947efbf67ca3de3050570b491a45639bee76fae794`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.11.03-fleet-auto-dbc6bfe6e00d
+
+- Automatic cumulative release from accepted source vector `feb4406d82315f399dc50b726c81498b467f0e8b0b16056aaf92129aab2a97e6`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.11.03-fleet-auto-0ffd5a2deb82
+
+- Automatic cumulative release from accepted source vector `1a7c301145f37e3d81b962bea90617aa560133c82a86108e1fe6cd88f0a5f138`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.11.02-fleet-auto-fa5a9a88410f
+
+- Automatic cumulative release from accepted source vector `c140967e721cb78a645f8e293be891452ea80796e3a514bcea18120fe544fc3c`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## Unreleased — immutable maintenance packages
+
+- MRN Updraft Backup Policy 0.8.11 retains the exact inspected maintenance ZIP in bounded owner-only temporary storage outside the web root. Preview, confirmation and the native updater revalidate those same bytes, while current offers, site/state identity, remote backups and activation protections remain enforced.
+- Missing or changed pins fail closed; consumed and expired packages are removed. Existing closed diagnostic codes and the deployed MainWP contract remain compatible.
+
+## 2026.10.30-fleet-auto-1d673da5c895
+
+- Automatic cumulative release from accepted source vector `ab2aea50a762193e47e0be3f9e9a7e7bef077b83b91ea28ef78ac0c576c2e94f`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.10.30-fleet-auto-9a9b4219e141
+
+- Automatic cumulative release from accepted source vector `5ea819c94729f74eabb27ce0b1161580cb281d6371a8b5be7eb045d9d34e6131`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## Unreleased — mail, media and security defaults
+
+- Replace new-site Post SMTP with pinned FluentSMTP 2.4.1; keep transport inactive throughout development bootstrap. Existing-site cutovers preserve mail settings and require delivery verification.
+- Add Converter for Media 6.7.0 and Wordfence 9.0.2. Wordfence Free is the baseline with two non-secret presets; Premium is supported per site. Preserve Application Password integrations and verify IP detection, firewall optimization, 2FA, MainWP management and host image delivery separately.
+- Include the exact-host Wordfence configuration helper and both presets in bootstrap distributions. Package hashes are input evidence, not runtime qualification or Fleet publication.
+
+
+## 2026.10.29-fleet-auto-830e63125027
+
+- Automatic cumulative release from accepted source vector `7a17dedcdc606630093b416eb92b58259910d4858be6df861ac80b7b736718b9`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.10.28-fleet-auto-090b6de3b3ea
+
+- Automatic cumulative release from accepted source vector `80d57b96be1a170e60ab277b098dc0f9a572407456b25aedeaa3e3fe94d61ba0`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.10.28-fleet-auto-c2ee2f8fa219
+
+- Automatic cumulative release from accepted source vector `fbdff0577906a9255a397269da80b2c7e041323db7f52f9a1a5912d3a4531718`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.10.28-fleet-auto-0950607598f0
+
+- Automatic cumulative release from accepted source vector `3b83c24f81cbf7122282a0cad027c814116280c30f334588f7071551c2583dd0`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.10.27-fleet-auto-6380c95191f8
+
+- Automatic cumulative release from accepted source vector `d5a43ac2e5a9d50f3c6b6ab76fc9a8bd4c9a95469e82eb8eac8d7784611aa0c8`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.10.27-fleet-auto-fa11a42cb289
+
+- Automatic cumulative release from accepted source vector `92d6975a763e236844288aaa7f89182f613c165d21aff45b615c726be76a8bbb`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.10.26-fleet-auto-d4f28f4d7cf4
+
+- Automatic cumulative release from accepted source vector `296869413806a3a73e6f56d0c8819d56b1d8761e29dace8ad9aa7ce3e6047e96`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.10.26-fleet-auto-c3fb3aad731f
+
+- Automatic cumulative release from accepted source vector `c4ac5086239d93ee20f1ed610f0d60bcbfdefe2e12cae27b54883c8aa7bbbed3`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.10.26-fleet-auto-a32c6ce9617d
+
+- Automatic cumulative release from accepted source vector `0d76e74294e3c15bdb0191c4fac9c50e98e33bca74f481a3d0aa5b894fb6b920`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.10.26-fleet-auto-b2a69f405ae5
+
+- Automatic cumulative release from accepted source vector `8225a31096000389021398cd27abc829f6d23d162394404796a6a8baee8a1683`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.10.23-fleet-auto-ff9049738de4
+
+- Automatic cumulative release from accepted source vector `e39a60e3218cd606af928cfc294830a21760bf742987dc5225600f38b6556695`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.10.23-fleet-auto-e5a6aa620209
+
+- Automatic cumulative release from accepted source vector `b938038a7618ffa16c12b083742045cd039adf98e6fdd0360ee6ebac64bfa90c`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.10.23-fleet-auto-29209e3ed8de
+
+- Automatic cumulative release from accepted source vector `7ad48596ac6d64a00fd326c50aedacca402b473c5baa2607e1f9c987a15ea67a`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.10.22-fleet-auto-c8adffac26e5
+
+- Automatic cumulative release from accepted source vector `16e7b921121645027e78724d3d37aaaf5bc78832acfe2e4389927b0da77c0aa3`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.10.22-fleet-auto-fb4939587e24
+
+- Automatic cumulative release from accepted source vector `7d40a1b35718e3191f8ab77f67ff020aa0eb1db1b8042e30957dc9afeb3f2c43`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.10.22-fleet-auto-134539eef4d3
+
+- Automatic cumulative release from accepted source vector `00f9fbf977966e4f7e6193e4f5b32c56e8c5cc73492cf4bb5e31a7e214f1b2d0`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.10.21-fleet-auto-f573d57c8792
+
+- Automatic cumulative release from accepted source vector `8ab41942af8e5de192261a85accc547b6bc8d50dc64476115c5bfff96721c172`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.10.21-fleet-auto-fda507ac7427
+
+- Automatic cumulative release from accepted source vector `1d120f01c77fbcd72e30fdd7f106ccef2a574d60ca976daa244eb7d706afb29b`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.10.21-fleet-auto-5965b859044a
+
+- Automatic cumulative release from accepted source vector `4c5eb193bbbb104b7a67caa9e930393e6fbaa5fa178efbba4a56cb723b8ae6f8`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
+## 2026.10.21-fleet-auto-a78cc0c471b6
+
+- Automatic cumulative release from accepted source vector `a63bbcdc3ed1e2bcd1035632eda24020e750bd0f68ee5ad41b914ffd72c9d752`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
 ## 2026.10.21-fleet-auto-67aeab7ebc8c
 
 - Automatic cumulative release from accepted source vector `dd19a03ed79a7466d0ac1885ecfe8c41a26498ffd0ff196195318793f13be6cd`.

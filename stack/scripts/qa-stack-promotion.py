@@ -33,6 +33,8 @@ DEPLOYABLE_ROOTS = (
     "stack/themes/",
 )
 DEPLOYMENT_CONTRACT_PREFIXES = (
+    "tools/cloudpanel/",
+    "tools/site-deploy/release_v1/",
     "stack/configs/",
     "stack/scripts/",
     "stack/server-config/",
@@ -40,6 +42,9 @@ DEPLOYMENT_CONTRACT_PREFIXES = (
 DEPLOYMENT_CONTRACT_PATHS = {
     # Installed into site-owned child functions.php by the shared deployer.
     "tools/site-deploy/release-bootstrap.php",
+    "tools/site-deploy/mrn-site-release",
+    "tools/site-deploy/fleet_release.py",
+    "scripts/mrn",
 }
 RELEASE_METADATA_PATHS = {
     "stack/CHANGELOG.md",

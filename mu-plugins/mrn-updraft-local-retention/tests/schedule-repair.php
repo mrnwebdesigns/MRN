@@ -27,9 +27,12 @@ $mrn_test_backup_hostname = getenv('MRN_TEST_BACKUP_HOSTNAME');
 $mrn_test_history = array();
 $mrn_test_s3_filename = '';
 $mrn_test_s3_delete_calls = 0;
+$mrn_test_transients = array();
 if (false !== $mrn_test_backup_hostname) {
 	define('MRN_UPDRAFT_BACKUP_HOSTNAME', $mrn_test_backup_hostname);
 }
+
+function trailingslashit(string $value): string { return rtrim($value, '/') . '/'; }
 
 function wp_get_environment_type(): string {
 	global $mrn_test_environment;
@@ -62,6 +65,10 @@ function has_filter(string $hook) {
 function get_option(string $name, $default = false) {
 	global $mrn_test_intervals;
 	return $mrn_test_intervals[$name] ?? $default;
+}
+
+function get_transient(string $key) {
+	return $GLOBALS['mrn_test_transients'][$key] ?? false;
 }
 
 function update_option(string $name, $value, $autoload = null): bool {
@@ -128,11 +135,19 @@ final class UpdraftPlus_Storage_Methods_Interface {
 }
 
 final class MRN_Test_S3_Client {
+	public function setSSL($ssl, $verify = true): void {}
+	public function setSSLAuth($cert = null, $key = null, $ca = null): void {}
+	public function setExceptions($enabled = true): void {}
+	public function setRegion($region): void {}
+	public function setEndpoint($host): void {}
+	public function setSignatureVersion($version): void {}
+	public function getBucketLocation($bucket): string { return 'US'; }
 	public function getBucket(string $bucket, string $prefix, $marker, int $limit): array {
 		global $mrn_test_s3_filename;
 		return array(array('name' => 'sites/' . mrn_updraft_backup_policy_get_sanitized_hostname() . '/' . $mrn_test_s3_filename, 'size' => 1));
 	}
 }
+class_alias(MRN_Test_S3_Client::class, 'UpdraftPlus_S3');
 
 final class MRN_Test_S3_Storage {
 	public function set_options(array $settings, bool $use_settings, string $instance_id): void {}
@@ -227,6 +242,39 @@ $mrn_test_intervals['updraft_s3'] = array(
 );
 
 $report = mrn_updraft_backup_policy_add_runtime_report(array('ok' => true));
+if (MRN_UPDRAFT_LOCAL_RETENTION_VERSION !== $report['backup_policy']['plugin_version']) {
+	throw new RuntimeException('Reported guard version differs from its release constant.');
+}
+$diagnostic_files = array('admin.php' => hash('sha256', 'fixture-code-hash-only'));
+$mrn_test_transients[MRN_Updraft_MainWP_Maintenance::FILE_DIAGNOSTIC_KEY] = array(
+	'schema_version' => 1, 'site_id' => 17, 'request_sha256' => hash('sha256', 'fixture-request'),
+	'recorded_at' => time(), 'sha256' => MRN_Updraft_MainWP_Maintenance::digest($diagnostic_files),
+	'files' => $diagnostic_files, 'last_change' => null,
+);
+$inspection_request = array(
+	'protocol' => 1, 'operation' => 'inspect',
+	'expected_host' => wp_parse_url(home_url('/'), PHP_URL_HOST),
+	'request_ref' => null, 'payload' => array('offset' => 0, 'limit' => 1),
+);
+$settings_before_inspection = $mrn_test_intervals;
+$inspection = MRN_Updraft_MainWP_Policy::dispatch(array(), array(
+	'function' => 'extra_execution',
+	MRN_Updraft_MainWP_Policy::REQUEST_KEY => wp_json_encode($inspection_request, JSON_UNESCAPED_SLASHES),
+));
+if (empty($inspection['ok']) || 17 !== ($inspection['data']['maintenance_file_diagnostics']['site_id'] ?? null) || isset($inspection['data']['maintenance_file_diagnostics']['files']) || $settings_before_inspection !== $mrn_test_intervals) {
+	throw new RuntimeException('Existing policy inspection did not expose bounded read-only diagnostics.');
+}
+if (($inspection['data']['maintenance_runtime_log_policy'] ?? null) !== MRN_Updraft_MainWP_Maintenance::runtime_log_policy() || 'wp-admin/php_errorlog' !== $inspection['data']['maintenance_runtime_log_policy']['path']) {
+	throw new RuntimeException('Existing authenticated policy inspection did not expose the explicit fixed runtime-log policy.');
+}
+$inspection_request['expected_host'] = 'wrong.example';
+$wrong_inspection = MRN_Updraft_MainWP_Policy::dispatch(array(), array(
+	'function' => 'extra_execution',
+	MRN_Updraft_MainWP_Policy::REQUEST_KEY => wp_json_encode($inspection_request, JSON_UNESCAPED_SLASHES),
+));
+if (false !== ($wrong_inspection['ok'] ?? null) || isset($wrong_inspection['data'])) {
+	throw new RuntimeException('Wrong-site policy inspection gained diagnostic access.');
+}
 if (empty($report['backup_policy']['compliant'])) {
 	fwrite(STDERR, "The MainWP runtime report did not expose a compliant backup policy.\n");
 	exit(1);
@@ -394,6 +442,41 @@ $mrn_test_history = array($backup_timestamp => array(
 	'service_instance_ids' => array('s3' => array('instance')),
 	'native' => true,
 ));
+// Exercise the new maintenance proof using the actual policy adapter and bounded log reader.
+$maintenance_logs = sys_get_temp_dir() . '/mrn-maintenance-test-' . bin2hex(random_bytes(8));
+mkdir($maintenance_logs, 0700);
+$updraftplus = new class($maintenance_logs) {
+	private $directory;
+	public function __construct($directory) { $this->directory = $directory; }
+	public function backups_dir_location() { return $this->directory; }
+};
+$maintenance_log = $maintenance_logs . '/log.' . $nonce . '.txt';
+$complete_log = 'Recording as successfully uploaded: ' . $mrn_test_s3_filename . "\nThe backup succeeded and is now complete\n";
+$maintenance_check = static function ($ok, $label) {
+	if (!$ok) { fwrite(STDERR, 'Maintenance backup regression: ' . $label . "\n"); exit(1); }
+};
+$maintenance_check(is_wp_error(MRN_Updraft_MainWP_Policy::maintenance_backup($nonce)), 'missing log');
+file_put_contents($maintenance_log, 'Backup apparently succeeded');
+$maintenance_check(is_wp_error(MRN_Updraft_MainWP_Policy::maintenance_backup($nonce)), 'generic success is insufficient');
+file_put_contents($maintenance_log, $complete_log);
+$proof = MRN_Updraft_MainWP_Policy::maintenance_backup($nonce);
+$maintenance_check(is_array($proof) && true === $proof['remote_verified'] && $proof['expires_at'] === ($backup_timestamp + 7200) * 1000, 'remote proof with history expiry');
+file_put_contents($maintenance_log, $complete_log . "Warning: incomplete archive\n");
+$maintenance_check(is_wp_error(MRN_Updraft_MainWP_Policy::maintenance_backup($nonce)), 'warning refused');
+file_put_contents($maintenance_log, $complete_log);
+$saved_filename = $mrn_test_s3_filename;
+$mrn_test_s3_filename = 'absent-remote-object';
+$maintenance_check(is_wp_error(MRN_Updraft_MainWP_Policy::maintenance_backup($nonce)), 'missing remote archive');
+$mrn_test_s3_filename = $saved_filename;
+$saved_history = $mrn_test_history;
+$mrn_test_history = array(time() - 7201 => reset($saved_history));
+$maintenance_check(is_wp_error(MRN_Updraft_MainWP_Policy::maintenance_backup($nonce)), 'expiry cannot renew on status read');
+$mrn_test_history = $saved_history;
+$mrn_test_history[$backup_timestamp]['label'] = 'unrelated backup';
+$maintenance_check(is_wp_error(MRN_Updraft_MainWP_Policy::maintenance_backup($nonce)), 'exact deployment label');
+$mrn_test_history = $saved_history;
+unlink($maintenance_log);
+rmdir($maintenance_logs);
 $preview_request['payload'] = array();
 $preview_request['request_ref'] = null;
 $preview_request['operation'] = 'preview_decommission';

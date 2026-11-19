@@ -158,90 +158,18 @@ case "${SITE_PROFILE}" in
 esac
 
 send_notification() {
-  local subject body
-  subject="$1"
-  body="$2"
-  if [[ -z "${NOTIFY_EMAIL}" ]]; then
-    echo "Email notification skipped: no recipient configured."
-    return 0
-  fi
-  if command -v mail >/dev/null 2>&1; then
-    if printf '%s\n' "${body}" | mail -s "${subject}" "${NOTIFY_EMAIL}"; then
-      echo "Email notification sent via mail to ${NOTIFY_EMAIL}: ${subject}"
-    else
-      echo "WARNING: Email notification failed via mail to ${NOTIFY_EMAIL}: ${subject}" >&2
-    fi
-    return 0
-  fi
-  if command -v sendmail >/dev/null 2>&1; then
-    if {
-      printf 'To: %s\n' "${NOTIFY_EMAIL}"
-      printf 'Subject: %s\n' "${subject}"
-      printf '\n'
-      printf '%s\n' "${body}"
-    } | sendmail -t; then
-      echo "Email notification sent via sendmail to ${NOTIFY_EMAIL}: ${subject}"
-    else
-      echo "WARNING: Email notification failed via sendmail to ${NOTIFY_EMAIL}: ${subject}" >&2
-    fi
-    return 0
-  fi
-  echo "WARNING: Email notification skipped because neither mail nor sendmail is available." >&2
+  local status="pending"
+  case "$1" in *FAILED*|*FAILURE*) status="failed" ;; esac
+  # One durable event delivers both channels; do not claim remote email receipt.
+  printf '%s\n' "$2" | STACK_NOTIFY_EMAIL="${NOTIFY_EMAIL}" \
+    STACK_SLACK_WEBHOOK_URL="${SLACK_WEBHOOK_URL}" \
+    STACK_SLACK_WEBHOOK_URL_FILE="${SLACK_WEBHOOK_URL_FILE}" \
+    python3 "${STACK_ROOT}/scripts/bootstrap_readiness.py" --site-path "${SITE_PATH:-/notification-test}" \
+      --stage wordpress-installation --status "${status}" --notify
 }
 
-json_escape() {
-  local value="${1:-}"
-  value="${value//\\/\\\\}"
-  value="${value//\"/\\\"}"
-  value="${value//$'\n'/\\n}"
-  value="${value//$'\r'/\\r}"
-  value="${value//$'\t'/\\t}"
-  printf '%s' "${value}"
-}
-
-send_slack_notification() {
-  local title="$1"
-  local body="$2"
-  local color="${3:-#1f6feb}"
-  local domain channel_field payload
-
-  if [[ -z "${SLACK_WEBHOOK_URL}" ]]; then
-    echo "Slack notification skipped: webhook URL is not configured."
-    return 0
-  fi
-  if ! command -v curl >/dev/null 2>&1; then
-    echo "WARNING: Slack notification skipped because curl is not available." >&2
-    return 0
-  fi
-
-  domain="$(basename "${SITE_PATH:-unknown}")"
-  if [[ -n "${SLACK_CHANNEL}" ]]; then
-    channel_field="\"channel\":\"$(json_escape "${SLACK_CHANNEL}")\","
-  else
-    channel_field=""
-  fi
-
-  payload='{
-    '"${channel_field}"'
-    "username":"'"$(json_escape "${SLACK_USERNAME}")"'",
-    "icon_emoji":"'"$(json_escape "${SLACK_ICON_EMOJI}")"'",
-    "attachments":[
-      {
-        "color":"'"$(json_escape "${color}")"'",
-        "title":"'"$(json_escape "${title}")"'",
-        "text":"'"$(json_escape "${body}")"'",
-        "footer":"MRN Stack Bootstrap",
-        "ts":'"$(date +%s)"'
-      }
-    ]
-  }'
-
-  if curl -sS -X POST -H 'Content-type: application/json' --data "${payload}" "${SLACK_WEBHOOK_URL}" >/dev/null; then
-    echo "Slack notification sent: ${title}"
-  else
-    echo "WARNING: Slack notification failed: ${title}" >&2
-  fi
-}
+# Retained call sites do not send a second copy: send_notification owns delivery.
+send_slack_notification() { return 0; }
 
 notify_failure() {
   local code line cmd domain body
@@ -259,7 +187,6 @@ Domain: ${domain}
 Site user: ${SITE_USER}
 Exit code: ${code}
 Line: ${line}
-Command: ${cmd}
 EOF
   )
   send_notification "MRN Bootstrap FAILED: ${domain}" "${body}"
@@ -859,7 +786,7 @@ install_plugins() {
         add_warning "Failed to install plugin package/source: ${source}"
         continue
       fi
-      if ! run_wp plugin is-active "${installed_slug}" >/dev/null 2>&1; then
+      if [[ "${installed_slug}" != "fluent-smtp" ]] && ! run_wp plugin is-active "${installed_slug}" >/dev/null 2>&1; then
         if ! run_wp plugin activate "${installed_slug}"; then
           add_warning "Installed but failed to activate plugin slug '${installed_slug}' from source: ${source}"
         fi
@@ -894,13 +821,23 @@ install_plugins() {
       fi
     fi
 
-    if ! run_wp plugin is-active "${slug}" >/dev/null 2>&1; then
+    if [[ "${slug}" != "fluent-smtp" ]] && ! run_wp plugin is-active "${slug}" >/dev/null 2>&1; then
       if ! run_wp plugin activate "${slug}"; then
         add_warning "Installed but failed to activate plugin: ${slug}"
       fi
     fi
     clear_post_smtp_activation_redirect "${slug}"
   done < "${PLUGINS_FILE}"
+}
+
+configure_wordfence_defaults() {
+  local profile="${STACK_WORDFENCE_PROFILE:-cloudflare}" site_host
+  case "${profile}" in
+    cloudflare|standalone) ;;
+    *) echo "Invalid STACK_WORDFENCE_PROFILE: ${profile}" >&2; return 1 ;;
+  esac
+  site_host="$(run_wp eval 'echo wp_parse_url(home_url(), PHP_URL_HOST);')"
+  run_wp eval-file "${STACK_ROOT}/scripts/configure-wordfence.php" "${profile}" "${site_host}" apply
 }
 
 reset_standard_plugins() {
@@ -983,6 +920,8 @@ ensure_all_plugins_active() {
   for plugin_slug in "${inactive_plugins[@]}"; do
     plugin_slug="$(printf '%s' "${plugin_slug}" | xargs)"
     [[ -z "${plugin_slug}" ]] && continue
+    # Fresh bootstraps are development; never briefly enable mail transport.
+    [[ "${plugin_slug}" == "fluent-smtp" ]] && continue
     if ! run_wp plugin activate "${plugin_slug}" >/dev/null 2>&1; then
       add_warning "Failed to activate plugin before licenses/imports: ${plugin_slug}"
       continue
@@ -1021,6 +960,27 @@ echo "Configured Post Types Order defaults and marked CPT_configured=TRUE\n";'
   fi
 
   echo "Auto-configured Post Types Order settings."
+}
+
+configure_previewshare() {
+  local post_types ttl_hours output
+
+  if ! run_wp plugin is-active previewshare >/dev/null 2>&1; then
+    add_warning "PreviewShare is not active; its Stack configuration was not applied."
+    return 0
+  fi
+
+  post_types="${STACK_PREVIEWSHARE_POST_TYPES:-post,page}"
+  ttl_hours="${STACK_PREVIEWSHARE_DEFAULT_TTL_HOURS:-6}"
+  if ! output="$(sudo -u "${SITE_USER}" env \
+    STACK_PREVIEWSHARE_POST_TYPES="${post_types}" \
+    STACK_PREVIEWSHARE_DEFAULT_TTL_HOURS="${ttl_hours}" \
+    wp --path="${WP_PATH}" eval-file "${STACK_ROOT}/scripts/configure-previewshare.php" 2>&1)"; then
+    add_warning "Failed to configure PreviewShare: ${output}"
+    return 0
+  fi
+
+  echo "Configured PreviewShare: ${output}"
 }
 
 apply_licenses() {
@@ -2241,13 +2201,20 @@ main() {
   # one complete bundle throughout bootstrap, including its package/lock files.
   source "${STACK_ROOT}/scripts/source-distribution-lease.sh"
   mrn_source_distribution_lease "${STACK_ROOT}"
+  # Reject a bad security profile before the destructive fresh-install reset.
+  case "${STACK_WORDFENCE_PROFILE:-cloudflare}" in
+    cloudflare|standalone) ;;
+    *) echo "Invalid STACK_WORDFENCE_PROFILE" >&2; return 1 ;;
+  esac
   echo "Bootstrapping site: ${SITE_PATH} (owner: ${SITE_USER}, profile: ${SITE_PROFILE})"
   ensure_site_owner_direct_ssh
   reset_standard_plugins
   remove_retired_stack_plugins
   install_plugins
   ensure_all_plugins_active
+  configure_wordfence_defaults
   configure_post_types_order
+  configure_previewshare
   apply_licenses
   sync_mu_plugins
   sync_shared_runtime
@@ -2267,7 +2234,7 @@ main() {
   domain="$(basename "${SITE_PATH}")"
   body=$(
     cat <<EOF
-MRN bootstrap completed successfully.
+WordPress installation completed. SSL and Dev deployment qualification are pending.
 
 Site path: ${SITE_PATH}
 WordPress path: ${WP_PATH}
@@ -2304,14 +2271,8 @@ EOF
     fi
   fi
 
-  # WordPress is complete. Enrollment has independent state and retries; a
-  # GitHub failure must never rerun destructive plugin/theme bootstrap steps.
-  if ! bash "${STACK_ROOT}/scripts/bootstrap-dev-enrollment.sh" --enqueue --site-path "${WP_PATH}"; then
-    add_warning "Dev deployment enrollment is pending; inspect the separate enrollment state."
-  fi
-
-  send_notification "MRN Bootstrap Success: ${domain}" "${body}"
-  send_slack_notification "MRN Bootstrap Success: ${domain}" "${body}" "#1f883d"
+  send_notification "MRN WordPress installed; Dev pending: ${domain}" "${body}"
+  send_slack_notification "MRN WordPress installed; Dev pending: ${domain}" "${body}" "#1f883d"
 
   if [[ "${#BOOTSTRAP_WARNINGS[@]}" -gt 0 ]]; then
     local warning_lines warning_body
@@ -2332,6 +2293,13 @@ EOF
     send_notification "MRN Bootstrap WARNINGS: ${domain}" "${warning_body}"
     send_slack_notification "MRN Bootstrap WARNINGS: ${domain}" "${warning_body}" "#d29922"
   fi
+  # WordPress is complete. Enrollment has independent state and retries; a
+  # GitHub failure must never rerun destructive plugin/theme bootstrap steps.
+  if ! bash "${STACK_ROOT}/scripts/bootstrap-dev-enrollment.sh" --enqueue --site-path "${WP_PATH}"; then
+    add_warning "Dev deployment enrollment is pending; inspect the separate enrollment state."
+  fi
+
+
 }
 
 main "$@"

@@ -16,7 +16,7 @@ from verify_release import verify
 from host_paths import activation_environment
 
 TOOLS = Path(__file__).resolve().parent
-HOST_FILES = ('host_controller.py', 'atomic_store.py', 'cache_policy.py', 'deploy.py',
+HOST_FILES = ('host_controller.py', 'atomic_store.py', 'cache_policy.py', 'deploy.py', 'public_http.py',
               'verify_release.py', 'verify_public_assets.py', 'backup.php', 'release-bootstrap.php',
               'host_paths.py', 'html_cache.php', 'kinsta.py', 'kinsta_html_cache.php',
               'deployment_request.py', 'release_request.py', 'resolve_source.py', 'promoted_store.py')
@@ -137,6 +137,8 @@ def run(plan, c):
     if len(receipts) != 1:
         raise RuntimeError('Host controller failed without a receipt; inspect the retained private job ' + job)
     receipt = {**receipts[0], 'transfer_backup': backup, 'private_job': job}
+    receipt['request_binding'] = {key: remote_plan.get(key) for key in
+        ('repository', 'environment', 'url', 'root', 'slug', 'source_sha', 'expected_current', 'deployment_order')}
     return receipt
 
 

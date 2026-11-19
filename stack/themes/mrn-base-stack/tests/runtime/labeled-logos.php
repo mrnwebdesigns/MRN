@@ -1,6 +1,6 @@
 <?php
 /** Native labeled logos retain relationships without changing existing sliders. */
-if ( ! defined( 'WP_CLI' ) || ! WP_CLI || home_url() !== getenv( 'MRN_STACK_TEST_HOME' ) || ! str_ends_with( (string) wp_parse_url( home_url(), PHP_URL_HOST ), '.localhost' ) || ! current_user_can( 'manage_options' ) ) { throw new RuntimeException( 'Requires the explicitly selected local administrator runtime.' ); }
+if ( ! defined( 'WP_CLI' ) || ! WP_CLI || home_url() !== getenv( 'MRN_STACK_TEST_HOME' ) || ( '127.0.0.1' !== wp_parse_url( home_url(), PHP_URL_HOST ) && ! str_ends_with( (string) wp_parse_url( home_url(), PHP_URL_HOST ), '.localhost' ) ) || ! current_user_can( 'manage_options' ) ) { throw new RuntimeException( 'Requires the explicitly selected local administrator runtime.' ); }
 $checks = array(); $expect = static function ( $ok, $message ) use ( &$checks ) { if ( ! $ok ) { throw new RuntimeException( esc_html( $message ) ); } $checks[] = $message; };
 $image = absint( explode( ',', getenv( 'MRN_CARD_TEST_IMAGE_IDS' ) ?: '' )[0] ); $expect( 'attachment' === get_post_type( $image ), 'Explicit local logo attachment exists' );
 $layouts = array_column( acf_get_field( 'field_mrn_page_content_rows' )['layouts'], null, 'name' ); $fields = array_column( $layouts['logos']['sub_fields'], null, 'name' );
@@ -32,7 +32,12 @@ try {
 		$expect( empty( $contract['attributes'] ), 'Unsafe labeled dimensions and palette cannot emit styles' );
 	}
 	$expect( array( 'classes' => array(), 'attributes' => array() ) === mrn_base_stack_get_labeled_logos_contract( $props ), 'Dormant labeled controls preserve existing rows' );
-	$empty = array( 'acf_fc_layout' => 'logos', 'logos_presentation' => 'labeled' ); ob_start(); mrn_base_stack_render_builder_row( $empty, $id, 2 ); $html = ob_get_clean(); $expect( '' === $html, 'Entirely empty labeled Logos does not create a section' );
+	set_error_handler( static function ( $severity, $message ) { throw new RuntimeException( esc_html( $message ) ); } );
+	try {
+		$empty = array( 'acf_fc_layout' => 'logos', 'logos_presentation' => 'labeled' ); ob_start(); mrn_base_stack_render_builder_row( $empty, $id, 2 ); $html = ob_get_clean(); $expect( '' === $html, 'Entirely empty labeled Logos does not create a section or warning' );
+		$empty['logo_items'] = array( array( 'image' => $image ) ); ob_start(); mrn_base_stack_render_builder_row( $empty, $id, 2 ); $html = ob_get_clean();
+		$expect( 1 === substr_count( $html, '<img ' ), 'A logo with unset optional label and description renders without warnings' );
+	} finally { restore_error_handler(); }
 } finally { remove_filter( 'acf/connect_attachment_to_post', $preserve_parent, 10 ); wp_delete_post( $id, true ); }
 $expect( null === get_post( $id ), 'Owned labeled logo draft removed' );
 $expect( $reference_before === hash( 'sha256', serialize( array( get_post( $image )->to_array(), get_post_meta( $image ) ) ) ), 'Selected attachment remains exact' );

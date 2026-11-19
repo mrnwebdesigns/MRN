@@ -6,6 +6,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {build, transform, version as esbuildVersion} from 'esbuild';
 import {validateStylesheetRoutes} from './stylesheet-routes.mjs';
+import {deriveStylesheets} from './stylesheet-derivatives.mjs';
 
 const hash = data => createHash('sha256').update(data).digest('hex');
 const staticExtensions = new Set(['.css', '.js', '.mjs', '.svg', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.avif', '.ico', '.woff', '.woff2', '.ttf', '.otf', '.eot']);
@@ -28,9 +29,15 @@ export async function buildAssets({theme, output, slug, sourceSha, excludedDirec
   if (output === theme || output.startsWith(theme + path.sep)) throw new Error('Build output must be outside the theme');
   const files = await inventory(theme, '', excludedDirectories), bodies = new Map(), entries = {};
   for (const file of files) bodies.set(file, await readFile(path.join(theme, file)));
+  let declaration = {};
+  try {
+    declaration = JSON.parse(await readFile(path.join(theme, 'mrn-asset-routes.json'), 'utf8'));
+    if (declaration.schema !== 1) throw new Error('Invalid asset route schema');
+  } catch (error) { if (error.code !== 'ENOENT') throw error; }
+  const {contexts, generated} = deriveStylesheets(bodies, declaration);
   // Always regenerate a minified sibling when its editable source exists.
   // Vendor-only minified files remain exact, versioned dependencies.
-  for (const file of files) {
+  for (const file of [...bodies.keys()]) {
     if (!/\.(css|js|mjs)$/.test(file) || /\.min\.(css|js|mjs)$/.test(file)) continue;
     const ext = path.extname(file), emitted = file.slice(0, -ext.length) + '.min' + ext;
     const result = await transform(bodies.get(file).toString('utf8'), {
@@ -62,12 +69,8 @@ export async function buildAssets({theme, output, slug, sourceSha, excludedDirec
     }
   }
   let stylesheetRoutes;
-  try {
-    const declaration = JSON.parse(await readFile(path.join(theme, 'mrn-asset-routes.json'), 'utf8'));
-    if (declaration.schema !== 1) throw new Error('Invalid asset route schema');
+  if (declaration.stylesheet_routes !== undefined) {
     stylesheetRoutes = validateStylesheetRoutes(declaration.stylesheet_routes, entries);
-  } catch (error) {
-    if (error.code !== 'ENOENT') throw error;
   }
   const staticFiles = Object.fromEntries([...bodies].sort(([a],[b]) => a < b ? -1 : 1).map(([file, bytes]) => [file, {sha256: hash(bytes), bytes: bytes.length}]));
   const generation = hash(JSON.stringify(staticFiles));
@@ -79,13 +82,16 @@ export async function buildAssets({theme, output, slug, sourceSha, excludedDirec
     await writeFile(destination, bytes, {flag: 'wx'});
   }
   const manifest = {schema: 1, scope: 'child-theme', slug, source_sha: sourceSha,
-    toolchain: {esbuild: esbuildVersion}, generation, public_path: publicPath,
+    toolchain: {esbuild: esbuildVersion, ...(generated.size ? {stylesheet_derivatives: 1,
+      ...Object.fromEntries(Object.entries(JSON.parse(await readFile(new URL('./package.json', import.meta.url), 'utf8')).dependencies)
+        .filter(([name]) => ['postcss', 'postcss-selector-parser'].includes(name)))} : {})}, generation, public_path: publicPath,
     assets: Object.fromEntries(Object.entries(entries).sort(([a],[b]) => a < b ? -1 : 1)), static_files: staticFiles,
-    ...(stylesheetRoutes ? {stylesheet_routes: stylesheetRoutes} : {})};
+    ...(stylesheetRoutes ? {stylesheet_routes: stylesheetRoutes} : {}),
+    ...(Object.keys(contexts).length ? {stylesheet_contexts: contexts} : {})};
   await mkdir(path.join(output, 'theme'), {recursive: true});
   // Minified siblings shipped in the theme are generated from this same build.
   for (const [file, bytes] of bodies) {
-    if (!/\.min\.(css|js|mjs)$/.test(file)) continue;
+    if (!/\.min\.(css|js|mjs)$/.test(file) && !generated.has(file)) continue;
     const destination = path.join(output, 'theme', file);
     await mkdir(path.dirname(destination), {recursive: true});
     await writeFile(destination, bytes, {flag: 'wx'});

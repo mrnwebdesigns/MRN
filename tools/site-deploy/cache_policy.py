@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 from urllib.parse import urlsplit
 import urllib.request
+from public_http import open_public
 
 
 def canonical_pages(site_url, pages):
@@ -38,8 +39,7 @@ def verify_cloudpanel_origin(settings_path, wordpress):
 
 
 def head(url):
-    request = urllib.request.Request(url, method='GET', headers={'User-Agent': 'Mozilla/5.0 (compatible; MRN-Deployment/1.0)'})
-    with urllib.request.urlopen(request, timeout=30) as response:
+    with open_public(url) as response:
         if response.status != 200 or response.url != url:
             raise ValueError('Canonical HTML cache check returned a redirect or error')
         retained = {'content-type', 'cache-control', 'cf-cache-status', 'age', 'x-cache',

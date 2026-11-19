@@ -10,12 +10,15 @@
 /home/mrndev-stack-manager/stack/packages/ame-branding-add-on.zip
 classic-editor|1.7.0
 enable-media-replace|4.2.2
-post-smtp|4.0.2
+fluent-smtp|2.4.1
+webp-converter-for-media|6.7.0
+wordfence|9.0.2
 /home/mrndev-stack-manager/stack/packages/happyfiles-pro.zip
 /home/mrndev-stack-manager/stack/packages/mrn-acf-focal-point.zip
 /home/mrndev-stack-manager/stack/packages/mrn-announcements.zip
 /home/mrndev-stack-manager/stack/packages/mrn-comment-management.zip
 /home/mrndev-stack-manager/stack/packages/mrn-fontawesome-profile-manager.zip
+/home/mrndev-stack-manager/stack/packages/mrn-form-success.zip
 /home/mrndev-stack-manager/stack/packages/mrn-google-fonts.zip
 /home/mrndev-stack-manager/stack/packages/mrn-config-helper.zip
 /home/mrndev-stack-manager/stack/packages/mrn-media-bulk-tools.zip
@@ -26,6 +29,7 @@ post-smtp|4.0.2
 /home/mrndev-stack-manager/stack/packages/mrn-reusable-block-library.zip|stack
 /home/mrndev-stack-manager/stack/packages/mrn-universal-sticky-bar.zip
 post-duplicator|3.0.16
+previewshare|1.1.0
 post-types-order|2.5.6
 relevanssi|4.28.4
 relevanssi-live-ajax-search|2.6

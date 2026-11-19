@@ -125,7 +125,14 @@ clear_bootstrap_status() {
   write_bootstrap_status "0" "0" "0" "" "" "idle"
 }
 
-trap 'clear_bootstrap_status' EXIT
+# Final scanner outcome is independent of whether the process is still running.
+SCAN_STATE="idle"
+finish_bootstrap_status() {
+  local code="$?"
+  if [[ "$code" -ne 0 ]]; then SCAN_STATE="failed"; fi
+  write_bootstrap_status "0" "0" "0" "" "" "${SCAN_STATE}"
+}
+trap 'finish_bootstrap_status' EXIT
 
 scan_and_bootstrap() {
   local site_user_dir domain_dir marker
@@ -223,9 +230,10 @@ scan_and_bootstrap() {
     fi
   done
 
-  clear_bootstrap_status
+  SCAN_STATE="complete"
 
   if [[ "${failed_count}" -gt 0 ]]; then
+    SCAN_STATE="failed"
     echo "Bootstrap scan completed with ${failed_count} failed site(s)." >&2
     return 1
   fi
