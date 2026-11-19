@@ -86,7 +86,13 @@ export async function checkContentInspection({ privateDirectory, runtimeCli, tok
     assert.equal(hash.digest('hex'), expected.definitions_sha256);
     if (name === 'combined') {
       assert.ok(Buffer.byteLength(delegationCanonical(all)) > 1000000);
-      assert.equal(all.length, 507);
+      assert.equal(all.length, 513);
+      // The pre-existing native group applies to every page. Its six entries
+      // are part of the complete manifest, in addition to the new 507.
+      const existingKeys = ['field_mrn_native_rows', 'layout_mrn_native_row', 'field_mrn_native_group',
+        'field_mrn_native_copy', 'field_mrn_native_keep', 'field_mrn_native_other'];
+      assert.deepEqual(all.filter(node => existingKeys.includes(node.definition.key))
+        .map(node => node.definition.key), existingKeys);
       const rows = values.field_sanitized_combined_rows;
       assert.equal(rows.length, 2);
       for (const [index, row] of rows.entries()) {
