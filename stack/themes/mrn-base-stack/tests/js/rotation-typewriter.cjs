@@ -24,7 +24,7 @@ const clock = () => {
 	try {
 		const page = await browser.newPage({ viewport: { width: 1200, height: 900 } });
 		await page.route('**/*', (route) => route.abort()); await page.setContent(shell); await page.evaluate(clock); await page.addScriptTag({ content: controller });
-		const text = (id) => page.$eval('#' + id + ' .mrn-rotate__visual', (e) => e.textContent);
+		const text = (id) => page.locator('#' + id + ' .mrn-rotate__visual').textContent();
 		const tick = (ms) => page.evaluate((m) => window.__tick(m), ms);
 		await page.waitForFunction(() => document.querySelector('#typed .mrn-rotate__visual').textContent === '');
 		expect(true, 'Coming into view clears the first phrase and starts typing');
@@ -51,7 +51,7 @@ const clock = () => {
 		const swaps = []; for (let i = 0; i < 12; i++) { await tick(1000); swaps.push(await text('swapped')); }
 		const changes = swaps.filter((value, i) => i && value !== swaps[i - 1]).length;
 		expect(swaps.every((value) => value === 'one' || value === 'two') && changes === 2, 'Unset effect keeps the existing whole-phrase swap every interval: ' + swaps.join('|'));
-		expect(await page.$$eval('#typed .mrn-rotate__size', (e) => e.length) === 0 && await page.$eval('#typed .mrn-rotate', (e) => getComputedStyle(e).display) === 'inline-block', 'A fitted phrase sits inline without reserved width');
+		expect(await page.locator('#typed .mrn-rotate__size').count() === 0 && await page.locator('#typed .mrn-rotate').evaluate((e) => getComputedStyle(e).display) === 'inline-block', 'A fitted phrase sits inline without reserved width');
 		await page.evaluate(() => window.__restore());
 		await page.addScriptTag({ content: axe.source });
 		const result = await page.evaluate(() => axe.run(document.querySelector('main'), { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] } }));

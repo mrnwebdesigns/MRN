@@ -15,22 +15,14 @@ function mrn_base_stack_get_pricing_item_fields( $seed, $presentation_key ) {
 	return $fields;
 }
 
-/** Optional bounded presentation controls; outer section spacing uses row presets. */
+/** Pricing has no per-row presentation fields: plan spacing, type and color come from theme CSS and looks. */
 function mrn_base_stack_get_pricing_fields( $seed ) {
-	$fields = array();
-	foreach ( $fields as &$field ) { $field['conditional_logic'] = array( array( array( 'field' => $seed . '_card_presentation', 'operator' => '==', 'value' => 'pricing' ) ) ); }
-	unset( $field );
-	return $fields;
+	unset( $seed );
+	return array();
 }
 
-/** Selected values only; unknown palette slugs and arbitrary CSS cannot emit styles. */
+/** Pricing emits no per-row CSS; stray values from retired styling fields are ignored. */
 function mrn_base_stack_get_pricing_styles( array $row ) {
-	if ( 'pricing' !== ( $row['card_presentation'] ?? '' ) ) { return array(); }
-	$styles = array();
-	foreach ( mrn_base_stack_get_pricing_fields( 'field_mrn_pricing_styles' ) as $field ) {
-		$name = $field['name']; $raw = $row[ $name ] ?? '';
-		$value = str_ends_with( $name, '_color' ) ? mrn_base_stack_get_frame_palette_color( $raw ) : mrn_base_stack_get_content_frame_dimension( $raw, $name );
-		if ( '' !== $value ) { $styles[] = '--mrn-' . str_replace( '_', '-', $name ) . ':' . $value; }
-	}
-	return $styles;
+	unset( $row );
+	return array();
 }
