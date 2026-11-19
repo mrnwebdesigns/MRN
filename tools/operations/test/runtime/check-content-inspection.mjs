@@ -110,6 +110,9 @@ export async function checkContentInspection({ privateDirectory, runtimeCli, tok
   }
   pass('Complete cloned and page-20-equivalent nested schemas retrieved in bounded pages without omissions, duplication or reordering');
   pass('Licensed Flexible Content values, disabled rows, custom labels and outside siblings independently verified');
+  report.inspection = { contract: 'content-inspection-v1', cases, staleSchemaRejected: false, cursorCasesComplete: false,
+    fullTraversalVerified: true, responseBytesMaximum: 196608, nodeLimit: 20000,
+    productionDataUsed: false, guardedWritesQualified: false };
   const fresh = toolResult(await request(alice, { ...input(manifest.records.combined), definitionLimit: 50 }));
   const follow = { ...input(manifest.records.combined), inspectionId: fresh.inspection.inspectionId,
     cursor: fresh.inspection.nextCursor, definitionLimit: 50 };
@@ -130,6 +133,7 @@ export async function checkContentInspection({ privateDirectory, runtimeCli, tok
     else assert.equal(packets.length, 0);
   }
   pass('Cross-identity, cross-request, cross-record, cross-site, altered-limit and malformed/tampered cursors fail closed');
+  report.inspection.cursorCasesComplete = true;
   const child = readFileSync(join(privateDirectory, 'inspection-child-container'), 'utf8').trim();
   assert.match(child, /^mrn-api-[0-9]+-[0-9]+-child-wp$/);
   try {
@@ -163,7 +167,7 @@ export async function checkContentInspection({ privateDirectory, runtimeCli, tok
   assert.equal(new Set(bindings.map(row => row.request_id)).size, bindings.length);
   writeFileSync(join(privateDirectory, 'native-audit-bindings.json'), JSON.stringify(bindings) + '\n', { mode: 0o600, flag: 'wx' });
   pass('Every native Child-read request independently bound to its provider audit, exact site and Google identity hash');
-  report.inspection = { contract: 'content-inspection-v1', cases, staleSchemaRejected: true,
+  report.inspection = { contract: 'content-inspection-v1', cases, staleSchemaRejected: true, cursorCasesComplete: true,
     fullTraversalVerified: true, responseBytesMaximum: 196608, nodeLimit: 20000,
     productionDataUsed: false, guardedWritesQualified: false };
 }
