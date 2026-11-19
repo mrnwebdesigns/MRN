@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { createHash, randomUUID } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { delegationCanonical } from '../../src/delegation.mjs';
 import { payload } from '../../src/mainwp.mjs';
@@ -143,6 +143,26 @@ export async function checkContentInspection({ privateDirectory, runtimeCli, tok
   }
   pass('Actual changed registered schema rejects the previous cursor without WordPress content/meta mutation');
   assert.ok(network().every(row => row.method === 'GET' || /\/(get-delegation-challenge|get-team-access|read-delegated-operation)-v1\/run$/.test(row.path)));
+  // Independently read every native Child-read receipt, including expected
+  // failures. Export only request binding and identity hashes for the observer.
+  const abilities = new Set(['mrn-mainwp/list-content-records-v1', 'mrn-mainwp/read-content-record-v1',
+    'mrn-mainwp/read-content-inspection-v1', 'mrn-mainwp/get-stack-runtime-report-v1', 'mrn-mainwp/read-stack-brand-palette-v1']);
+  const hash = value => createHash('sha256').update(value).digest('hex');
+  const site = JSON.parse(readFileSync(join(privateDirectory, 'native-site.json'), 'utf8'));
+  const text = String(site.site_id), siteHash = hash(`V${Buffer.byteLength(text)}:${hash(text)};`);
+  const bindings = [];
+  for (const packet of network().filter(row => row.path.endsWith('/read-delegated-operation-v1/run') && abilities.has(row.ability))) {
+    assert.match(packet.requestId, /^[a-f0-9-]{36}$/);
+    const provider = JSON.parse(execFileSync(runtimeCli, ['option', 'get', 'mrn_delegation_audit_' + packet.requestId, '--format=json'], { encoding: 'utf8', timeout: 15000 }));
+    assert.equal(provider.actor.oauth_subject, packet.subject);
+    assert.equal(provider.ability, packet.ability);
+    assert.equal(provider.state, packet.status === 200 ? 'returned' : 'failed');
+    assert.deepEqual(provider.targets, { [site.site_id]: website });
+    bindings.push({ request_id: packet.requestId, ability: packet.ability, actor_sha256: hash(packet.subject), site_cell_sha256: siteHash });
+  }
+  assert.equal(new Set(bindings.map(row => row.request_id)).size, bindings.length);
+  writeFileSync(join(privateDirectory, 'native-audit-bindings.json'), JSON.stringify(bindings) + '\n', { mode: 0o600, flag: 'wx' });
+  pass('Every native Child-read request independently bound to its provider audit, exact site and Google identity hash');
   report.inspection = { contract: 'content-inspection-v1', cases, staleSchemaRejected: true,
     fullTraversalVerified: true, responseBytesMaximum: 196608, nodeLimit: 20000,
     productionDataUsed: false, guardedWritesQualified: false };
