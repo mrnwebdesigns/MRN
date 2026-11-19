@@ -109,6 +109,45 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 				'default_value' => 4000,
 			)
 		);
+		$fields[] = $make(
+			'rotation_effect',
+			'Phrase Effect',
+			'select',
+			array(
+				'choices'       => array(
+					''           => 'Swap Phrases',
+					'typewriter' => 'Type and Erase',
+				),
+				'default_value' => '',
+				'instructions'  => 'Type and Erase types each phrase, holds it for the Phrase Interval, then erases it.',
+			)
+		);
+		$fields[] = $make(
+			'rotation_width',
+			'Phrase Width',
+			'select',
+			array(
+				'choices'       => array(
+					''     => 'Reserve the Longest Phrase',
+					'flow' => 'Fit Each Phrase',
+				),
+				'default_value' => '',
+				'instructions'  => 'Reserving keeps the rest of the heading still. Fit Each Phrase lets the heading close up around the current phrase.',
+			)
+		);
+		$fields[] = $make(
+			'rotation_control',
+			'Pause Control',
+			'select',
+			array(
+				'choices'       => array(
+					''     => 'Text Button',
+					'icon' => 'Icon Button',
+				),
+				'default_value' => '',
+				'instructions'  => 'Moving text always offers a pause control. The icon button keeps its accessible name.',
+			)
+		);
 		if ( in_array( $layout, array( 'cta', 'cta_block' ), true ) ) {
 			$fields = array_merge( $fields, mrn_base_stack_get_cta_frame_fields( $seed ) );
 		}
@@ -602,8 +641,9 @@ function mrn_base_stack_get_rotating_heading_markup( array $row, $heading ) {
 		$has_rotation = $has_rotation || count( $phrases ) > 1;
 		$markup       = esc_html( $phrases[0] );
 		if ( count( $phrases ) > 1 ) {
-			$markup = '<span class="mrn-rotate" data-mrn-phrases="' . esc_attr( wp_json_encode( $phrases ) ) . '"><span class="screen-reader-text">' . esc_html( $phrases[0] ) . '</span><span class="mrn-rotate__visual" aria-hidden="true">' . esc_html( $phrases[0] ) . '</span>';
-			foreach ( $phrases as $phrase ) {
+			$flow   = 'flow' === ( $row['rotation_width'] ?? '' );
+			$markup = '<span class="mrn-rotate' . ( $flow ? ' mrn-rotate--flow' : '' ) . '" data-mrn-phrases="' . esc_attr( wp_json_encode( $phrases ) ) . '"><span class="screen-reader-text">' . esc_html( $phrases[0] ) . '</span><span class="mrn-rotate__visual" aria-hidden="true">' . esc_html( $phrases[0] ) . '</span>';
+			foreach ( $flow ? array() : $phrases as $phrase ) {
 				$markup .= '<span class="mrn-rotate__size" aria-hidden="true">' . esc_html( $phrase ) . '</span>';
 			}
 			$markup .= '</span>';
@@ -629,7 +669,9 @@ function mrn_base_stack_get_rotating_heading_markup( array $row, $heading ) {
 	}
 	mrn_base_stack_enqueue_presentation();
 	$interval = max( 1500, min( 30000, (int) ( $row['rotation_interval'] ?? 4000 ) ) );
-	return '<span data-mrn-rotation-group data-interval="' . esc_attr( $interval ) . '" data-pause-label="' . esc_attr__( 'Pause rotating text', 'mrn-base-stack' ) . '" data-resume-label="' . esc_attr__( 'Resume rotating text', 'mrn-base-stack' ) . '">' . $html . '</span>';
+	$effect   = 'typewriter' === ( $row['rotation_effect'] ?? '' ) ? ' data-effect="typewriter"' : '';
+	$control  = 'icon' === ( $row['rotation_control'] ?? '' ) ? ' data-control="icon"' : '';
+	return '<span data-mrn-rotation-group data-interval="' . esc_attr( $interval ) . '"' . $effect . $control . ' data-pause-label="' . esc_attr__( 'Pause rotating text', 'mrn-base-stack' ) . '" data-resume-label="' . esc_attr__( 'Resume rotating text', 'mrn-base-stack' ) . '">' . $html . '</span>';
 }
 
 /**

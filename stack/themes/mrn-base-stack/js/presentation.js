@@ -48,35 +48,90 @@
 		const slots = Array.from( group.querySelectorAll( '[data-mrn-phrases]' ) ).map( ( element ) => {
 			let phrases;
 			try { phrases = JSON.parse( element.dataset.mrnPhrases ); } catch ( error ) { return null; }
-			return Array.isArray( phrases ) && phrases.length ? { element, phrases, index: 0 } : null;
-		} ).filter( Boolean );
+			return Array.isArray( phrases ) && phrases.length ? { element, phrases, index: 0, visual: element.querySelector( '.mrn-rotate__visual' ) } : null;
+		} ).filter( ( slot ) => slot && slot.visual );
 		if ( ! slots.some( ( slot ) => slot.phrases.length > 1 ) ) { return; }
 		const button = document.createElement( 'button' );
 		button.type = 'button';
-		button.className = 'mrn-rotation-toggle';
+		button.className = 'mrn-rotation-toggle' + ( 'icon' === group.dataset.control ? ' mrn-rotation-toggle--icon' : '' );
 		button.textContent = group.dataset.pauseLabel;
 		button.setAttribute( 'aria-pressed', 'false' );
 		group.parentElement.insertAdjacentElement( 'afterend', button );
+		const interval = Math.max( 1500, Math.min( 30000, Number( group.dataset.interval ) || 4000 ) );
+		const typewriter = 'typewriter' === group.dataset.effect;
+		const moving = slots.filter( ( slot ) => slot.phrases.length > 1 );
 		let timer = null;
+		let timeouts = [];
+		let running = false;
 		let paused = false;
 		let visible = ! ( 'IntersectionObserver' in window );
-		const stop = () => { window.clearInterval( timer ); timer = null; };
+		const later = ( callback, delay ) => { timeouts.push( window.setTimeout( callback, delay ) ); };
+		const showWhole = () => { slots.forEach( ( slot ) => { slot.visual.textContent = slot.phrases[ slot.index ]; } ); };
+		const stop = () => {
+			window.clearInterval( timer );
+			timer = null;
+			timeouts.forEach( window.clearTimeout );
+			timeouts = [];
+			if ( running ) { showWhole(); }
+			running = false;
+		};
+		// Type a phrase a letter at a time, hold it for the interval, erase it, then type the next.
+		const typeSlot = ( slot, whole, onTyped ) => {
+			let length = whole ? slot.phrases[ slot.index ].length : 0;
+			const erase = () => {
+				slot.visual.textContent = slot.phrases[ slot.index ].slice( 0, length );
+				if ( length > 0 ) { length--; later( erase, 80 ); return; }
+				slot.index = ( slot.index + 1 ) % slot.phrases.length;
+				later( type, 300 );
+			};
+			const type = () => {
+				const phrase = slot.phrases[ slot.index ];
+				slot.visual.textContent = phrase.slice( 0, length );
+				if ( length < phrase.length ) { length++; later( type, 140 ); return; }
+				if ( onTyped ) { const typed = onTyped; onTyped = null; typed(); }
+				later( erase, interval );
+			};
+			if ( whole ) { later( erase, interval ); } else { type(); }
+		};
+		const start = ( resume ) => {
+			running = true;
+			if ( ! typewriter ) {
+				timer = window.setInterval( () => {
+					slots.forEach( ( slot ) => {
+						slot.index = ( slot.index + 1 ) % slot.phrases.length;
+						slot.visual.textContent = slot.phrases[ slot.index ];
+					} );
+				}, interval );
+				return;
+			}
+			if ( resume ) {
+				moving.forEach( ( slot ) => typeSlot( slot, true ) );
+				return;
+			}
+			// Coming into view starts again from the first phrase; later slots follow the first one's typing.
+			moving.forEach( ( slot ) => { slot.index = 0; } );
+			const [ first, ...rest ] = moving;
+			typeSlot( first, false, () => rest.forEach( ( slot ) => later( () => typeSlot( slot, false ), 400 ) ) );
+		};
+		let resumeNext = false;
 		const refresh = () => {
-			stop();
 			button.hidden = reduced.matches;
 			if ( reduced.matches ) {
+				stop();
 				slots.forEach( ( slot ) => {
 					slot.index = 0;
-					slot.element.querySelector( '.mrn-rotate__visual' ).textContent = slot.phrases[0];
+					slot.visual.textContent = slot.phrases[0];
 				} );
+				return;
 			}
-			if ( reduced.matches || paused || ! visible || document.hidden ) { return; }
-			timer = window.setInterval( () => {
-				slots.forEach( ( slot ) => {
-					slot.index = ( slot.index + 1 ) % slot.phrases.length;
-					slot.element.querySelector( '.mrn-rotate__visual' ).textContent = slot.phrases[ slot.index ];
-				} );
-			}, Math.max( 1500, Math.min( 30000, Number( group.dataset.interval ) || 4000 ) ) );
+			const shouldRun = ! paused && visible && ! document.hidden;
+			if ( shouldRun && ! running ) {
+				start( resumeNext );
+				resumeNext = false;
+			} else if ( ! shouldRun && running ) {
+				stop();
+				resumeNext = paused;
+			}
 		};
 		button.addEventListener( 'click', () => {
 			paused = ! paused;

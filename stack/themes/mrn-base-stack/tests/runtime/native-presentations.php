@@ -308,6 +308,13 @@ try {
 	mrn_presentation_expect( ! str_contains( $unsafe, '<script' ) && ! str_contains( $unsafe, '<img' ) && ! str_contains( $unsafe, 'onerror' ), 'Rotating headings escape text, JSON attributes and authored HTML' );
 	mrn_presentation_expect( 'Stay clear' === mrn_base_stack_get_rotating_heading_markup( array( 'rotating_phrases_one' => array( array( 'text' => 'clear' ) ) ), 'Stay {phrase_one}' ), 'A single phrase renders plain text without CSS-dependent duplicate spans' );
 	mrn_presentation_expect( mrn_base_stack_format_heading_inline_html( 'Ordinary heading' ) === mrn_base_stack_get_rotating_heading_markup( array(), 'Ordinary heading' ), 'Unset phrase collections preserve the existing heading formatter' );
+	$two_phrases = array( 'rotating_phrases_one' => array( array( 'text' => 'work' ), array( 'text' => 'solutions' ) ) );
+	$swap        = mrn_base_stack_get_rotating_heading_markup( $two_phrases, 'Like the {phrase_one}' );
+	mrn_presentation_expect( 2 === substr_count( $swap, 'mrn-rotate__size' ) && ! str_contains( $swap, 'data-effect' ) && ! str_contains( $swap, 'data-control' ) && ! str_contains( $swap, 'mrn-rotate--flow' ), 'Unset phrase effect, width and control keep the existing swap markup' );
+	$typed = mrn_base_stack_get_rotating_heading_markup( $two_phrases + array( 'rotation_effect' => 'typewriter', 'rotation_width' => 'flow', 'rotation_control' => 'icon' ), 'Like the {phrase_one}' );
+	mrn_presentation_expect( str_contains( $typed, 'data-effect="typewriter"' ) && str_contains( $typed, 'data-control="icon"' ) && str_contains( $typed, 'mrn-rotate mrn-rotate--flow' ) && ! str_contains( $typed, 'mrn-rotate__size' ) && str_contains( $typed, '<span class="screen-reader-text">work</span>' ), 'Type and Erase, fitted width and the icon control are opt-in and keep the readable first phrase' );
+	$unknown = mrn_base_stack_get_rotating_heading_markup( $two_phrases + array( 'rotation_effect' => '"bad', 'rotation_width' => 'x', 'rotation_control' => '<b>' ), 'Like the {phrase_one}' );
+	mrn_presentation_expect( $unknown === $swap, 'Unknown phrase effect, width and control values fall back to the existing swap markup' );
 	$unsafe_stage = mrn_base_stack_get_image_stage_attributes(
 		array(
 			'image_presentation' => 'scroll-zoom',
