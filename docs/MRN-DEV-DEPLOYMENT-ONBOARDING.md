@@ -123,8 +123,11 @@ fixtures or explicitly qualified production targets, not Dev.
 
 ## Ownership and boundaries
 
-- `stack/scripts/site-bootstrap.sh` queues only a newly bootstrapped site after
-  its required license gate. Existing bootstrap markers do not enroll old sites.
+- `stack/scripts/site-bootstrap.sh` queues only a newly bootstrapped site, after
+  the bootstrap marker is written. Bootstrap applies no premium licenses, so a
+  license problem cannot block enrollment; licenses are delivered afterwards
+  ([plugin license delivery](MRN-PLUGIN-LICENSE-DELIVERY.md)). Existing
+  bootstrap markers do not enroll old sites.
 - `stack/scripts/bootstrap-dev-enrollment.sh` is a thin adapter with a private,
   operator-owned durable queue. It creates no GitHub workflows or deployment
   logic itself. Missing host configuration leaves existing bootstrap behavior
