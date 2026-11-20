@@ -17,8 +17,10 @@ $expect( ! is_wp_error( $id ) && $id > 0, 'Owned local draft created' );
 try {
 	$layouts = array_column( acf_get_field( 'field_mrn_page_content_rows' )['layouts'], null, 'name' );
 	$fields = array_column( $layouts['cta']['sub_fields'], null, 'name' );
+	$expect( 4 === $fields['links']['max'], 'Native CTA editor matches four rendered action slots' );
 	$names = array_column( mrn_base_stack_get_cta_frame_fields( 'fixture' ), 'name' );
 	foreach ( $names as $name ) { $expect( isset( $fields[ $name ] ), 'Native editable CTA field: ' . $name ); }
+	$expect( ! array_intersect( array( 'cta_inner_gutter', 'cta_inner_gutter_mobile', 'cta_inner_gutter_mobile_breakpoint', 'cta_content_width', 'cta_content_gap', 'cta_text_space_before', 'cta_paragraph_space_after', 'cta_actions_space_before', 'cta_action_min_width' ), array_merge( $names, array_keys( $fields ) ) ), 'CTA gutters, widths and content spacing come from theme CSS, not row fields (the contract still validates values passed directly)' );
 	$expect( ! in_array( 'cta_frame', array_column( $layouts['basic_block']['sub_fields'], 'name' ), true ), 'CTA frame does not leak into Basic rows' );
 	$split_fields = array_column( $layouts['two_column_split']['sub_fields'], null, 'name' );
 	$nested = array_column( $split_fields['left_column_rows']['layouts'], null, 'name' );
@@ -36,11 +38,10 @@ try {
 	}
 	$row = array(
 		'acf_fc_layout' => 'cta', 'heading' => 'Native CTA heading', 'heading_tag' => 'h2', 'content' => '<p>First paragraph.</p><p>Last paragraph.</p>',
-		'cta_frame' => 'stacked', 'cta_inner_gutter' => '30px', 'cta_inner_gutter_mobile' => '15px', 'cta_inner_gutter_mobile_breakpoint' => '1199',
-		'cta_content_width' => '1280px', 'cta_content_gap' => '0px', 'cta_text_space_before' => '32px', 'cta_paragraph_space_after' => '30px',
-		'cta_actions_space_before' => '0px', 'cta_action_min_width' => '200px', 'cta_content_alignment' => 'center',
+		'cta_frame' => 'stacked', 'cta_content_alignment' => 'center',
 		'links' => array( array( 'link' => array( 'title' => 'Exact action', 'url' => home_url( '/?first=1&second=2' ), 'target' => '_blank' ), 'is_button' => 1 ) ),
 	);
+	$row = array_merge( $row, array( 'cta_text_space_after' => '40px', 'cta_text_space_after_narrow' => '20px', 'cta_text_space_after_narrow_breakpoint' => '1199', 'cta_heading_space_after_narrow' => '14px', 'cta_paragraph_typography' => 'inherit-body', 'cta_content_fill' => true, 'cta_action_layout' => 'inline', 'cta_action_border_width' => '1px' ) );
 	foreach ( array( 'margin', 'padding' ) as $kind ) {
 		foreach ( array( 'top', 'right', 'bottom', 'left' ) as $side ) { $row[ 'row_spacing_' . $kind . '_' . $side . '_preset' ] = '0px'; }
 	}
@@ -49,14 +50,30 @@ try {
 	foreach ( array_intersect( $names, array_keys( $row ) ) as $name ) { $expect( $row[ $name ] === $readback[ $name ], 'ACF persistence preserves ' . $name ); }
 	$render = static function ( $value ) use ( $id ) { ob_start(); mrn_base_stack_render_builder_row( $value, $id, 0 ); return ob_get_clean(); };
 	$html = $render( $readback );
-	$expect( str_contains( $html, 'has-cta-frame' ) && str_contains( $html, 'has-cta-gutter-at-1199' ) && str_contains( $html, '--mrn-cta-frame-content-gap:0px' ), 'Saved native frame and responsive values reach the wrapper' );
+	$expect( str_contains( $html, 'has-cta-frame' ) && ! str_contains( $html, 'has-cta-gutter-at-' ) && ! str_contains( $html, '--mrn-cta-frame-content-gap' ), 'Saved native frame reaches the wrapper; gutters and content spacing come from theme CSS' );
 	$expect( 1 === substr_count( $html, 'data-mrn-row-spacing=' ), 'Spacing is emitted once on the outer native row' );
 	$expect( str_contains( $html, 'Last paragraph.' ) && str_contains( $html, 'second=2' ) && str_contains( $html, 'target="_blank"' ) && 1 === substr_count( $html, '<h2 ' ), 'Rich copy, complete action and semantic heading survive rendering' );
+
+	$custom = array_merge( $row, array( 'cta_action_frame' => 1, 'cta_action_font' => 'heading', 'cta_action_weight' => '500', 'cta_action_size' => 'var(--site-text-button-3-size)', 'cta_action_size_mobile' => 'var(--site-text-body-4-size)', 'cta_action_line_height' => 'var(--site-text-button-3-line)', 'cta_heading_size_tablet' => '30px', 'cta_heading_size_mobile' => '26px', 'cta_heading_space_after_tablet' => '48px', 'cta_heading_space_after_mobile' => '32px', 'cta_actions_gap' => '32px', 'cta_actions_gap_tablet' => '16px', 'cta_actions_gap_mobile' => '12px', 'cta_action_padding_inline' => '24px', 'cta_action_padding_block' => '17px', 'cta_action_padding_inline_mobile' => '18px', 'cta_action_padding_block_mobile' => '12px', 'cta_action_radius' => '999px', 'cta_action_icon_width' => '18px' ) );
+	$custom['cta_heading_breaks_mobile'] = 1;
+	update_field( 'field_mrn_page_content_rows', $custom ? array( $custom ) : array(), $id ); acf_flush_value_cache( $id, 'page_content_rows' ); $custom_saved = get_field( 'page_content_rows', $id )[0];
+	foreach ( array_diff_key( $custom, $row ) as $name => $value ) { if ( isset( $fields[ $name ] ) ) { $expect( (string) $value === (string) $custom_saved[ $name ], 'Custom responsive CTA control survives ACF: ' . $name ); } }
+	// Button sizes, colors and breakpoints the theme's looks own are not fields; the contract still honors them when passed directly.
+	$expect( ! array_intersect( array( 'cta_action_font', 'cta_action_size', 'cta_action_background_color', 'cta_row_spacing_mobile_breakpoint' ), array_keys( $fields ) ), 'Retired CTA styling values are not editable fields' );
+	$custom_saved = array_merge( $custom_saved, array_diff_key( $custom, $custom_saved ) );
+	$custom_html = $render( $custom_saved );
+	$expect( str_contains( $custom_html, 'has-cta-heading-breaks-mobile' ) && str_contains( $custom_html, 'has-cta-action-frame' ) && ! str_contains( $custom_html, 'has-cta-gutter-at-' ) && ! str_contains( $custom_html, '--mrn-cta-frame-action-size' ), 'Explicit button frame reaches the escaped wrapper; button sizes and gutters come from theme CSS' );
+	foreach ( array( 'var(--site-text-button-3-size);position:fixed', 'var(--untrusted-size)', array( 'var(--site-text-body-4-size)' ), '-8px' ) as $value ) { $contract = mrn_base_stack_get_cta_frame_contract( array( 'cta_frame' => 'stacked', 'cta_action_size' => $value, 'cta_action_frame' => array( 1 ) ) ); $expect( array( 'classes' => array( 'has-cta-frame' ), 'attributes' => array() ) === $contract, 'Malformed button/token data stays inert: ' . wp_json_encode( $value ) ); }
 	$default = $row; foreach ( $names as $name ) { unset( $default[ $name ] ); }
 	$old = $render( $default );
 	$expect( ! str_contains( $old, 'has-cta-frame' ) && ! str_contains( $old, '--mrn-cta-frame-' ) && 1 === substr_count( $old, 'data-mrn-row-spacing=' ), 'Unconfigured CTA retains its existing wrapper and reusable contracts' );
 	$alias = $row; $alias['acf_fc_layout'] = 'cta_block';
 	$expect( str_contains( $render( $alias ), 'has-cta-frame' ) && 1 === substr_count( $render( $alias ), 'data-mrn-row-spacing=' ), 'Compatibility CTA layout uses the same optional single-owner contract' );
+	$detail = mrn_base_stack_get_cta_frame_contract( $row );
+	$expect( in_array( 'has-cta-paragraph-body-typography', $detail['classes'], true ) && in_array( 'has-cta-content-fill', $detail['classes'], true ) && in_array( 'has-cta-text-space-after-at-1199', $detail['classes'], true ) && in_array( 'has-cta-action-layout-inline', $detail['classes'], true ), 'Explicit paragraph, fill and layout options resolve through the native contract' );
+	$bad_detail = mrn_base_stack_get_cta_frame_contract( array( 'cta_frame' => 'stacked', 'cta_text_space_after' => '-1px', 'cta_action_border_width' => 'url(bad)', 'cta_paragraph_typography' => array( 'inherit-body' ), 'cta_content_fill' => '1;bad', 'cta_action_border_color' => 'unknown' ) );
+	$expect( array( 'has-cta-frame' ) === $bad_detail['classes'] && ! $bad_detail['attributes'], 'Unsafe optional paragraph, border and fill values retain defaults' );
+	$expect( ! in_array( 'has-cta-heading-breaks-mobile', mrn_base_stack_get_cta_frame_contract( array( 'cta_frame' => 'stacked', 'cta_heading_breaks_mobile' => '1;bad' ) )['classes'], true ), 'Malformed responsive break selection stays inert' );
 } finally { wp_delete_post( $id, true ); }
 $expect( null === get_post( $id ), 'Owned fixture removed' );
 WP_CLI::line( wp_json_encode( array( 'checks' => $checks, 'count' => count( $checks ), 'result' => 'passed', 'source_version' => _S_VERSION ), JSON_PRETTY_PRINT ) );

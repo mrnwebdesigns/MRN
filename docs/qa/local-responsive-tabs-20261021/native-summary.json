@@ -1,0 +1,22 @@
+{
+  "legacy_batch_checks": 307,
+  "frame_batch": [
+    [
+      "responsive-tabs-frame",
+      74
+    ],
+    [
+      "faq-aside-frame",
+      48
+    ],
+    [
+      "text-tags-image-actions",
+      26
+    ],
+    [
+      "card-frame",
+      32
+    ]
+  ],
+  "frame_batch_checks": 180
+}

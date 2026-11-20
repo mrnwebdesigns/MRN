@@ -25,12 +25,15 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 		);
 	};
 	if ( in_array( $layout, array( 'faq', 'faq_block' ), true ) ) { return mrn_base_stack_get_faq_frame_fields( $seed ); }
+	if ( 'faq_jump_nav' === $layout ) { return mrn_base_stack_get_jump_nav_frame_fields( $seed ); }
 	if ( 'tabbed_layout' === $layout ) { return mrn_base_stack_get_tabs_frame_fields( $seed ); }
-	if ( 'stats' === $layout ) { return mrn_base_stack_get_content_frame_fields( $layout, $seed ); }
+	if ( 'wpforms' === $layout ) { return mrn_base_stack_get_content_frame_fields( $layout, $seed ); }
+	if ( 'stats' === $layout ) {
+		return array_merge( array( array( 'key' => $seed . '_stats_presentation', 'name' => 'stats_presentation', 'label' => 'Stats Presentation', 'type' => 'select', 'choices' => array( '' => 'Standard', 'inline-pair' => 'Inline Value and Label' ), 'default_value' => '', 'instructions' => 'Pairs each value and label on one line, stacking the pairs below 768px. Use the Content Frame for the inner width, gaps and type.' ) ), mrn_base_stack_get_content_frame_fields( $layout, $seed ) );
+	}
 	if ( 'two_column_split' === $layout ) {
 		return array_merge( mrn_base_stack_get_split_aside_fields( $seed ), array(
 			$make( 'column_rows_mode', 'Column Content', 'select', array( 'choices' => array( 'single' => 'First Row (Existing Behavior)', 'stack' => 'Stacked Rows' ), 'default_value' => 'single', 'instructions' => 'Stacked Rows displays up to ten rows in each column. Existing rows retain first-row rendering until this is selected.' ) ),
-			$make( 'column_content_gap', 'Space Between Column Rows', 'text', array( 'instructions' => 'Optional non-negative CSS length between stacked children. Each child uses its own row margin and padding fields.' ) ),
 			$make( 'column_alignment', 'Column Vertical Alignment', 'select', array( 'choices' => array( '' => 'Use Existing Alignment', 'start' => 'Top', 'center' => 'Center', 'end' => 'Bottom' ), 'default_value' => '' ) ),
 		) );
 	}
@@ -39,16 +42,11 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 			$make( 'list_columns', 'List Columns', 'select', array( 'choices' => array( '' => 'Use Existing Formatting', '1' => 'One', '2' => 'Two', '3' => 'Three' ), 'default_value' => '', 'instructions' => 'Optional layout for top-level ordered and unordered lists in Body Text. Nested lists retain their formatting.' ) ),
 			$make( 'list_columns_mobile', 'List Columns on Small Screens', 'select', array( 'choices' => array( '1' => 'One', '2' => 'Two', '3' => 'Three' ), 'default_value' => '1' ) ),
 			$make( 'list_flow', 'List Reading Flow', 'select', array( 'choices' => array( 'rows' => 'Across Rows', 'columns' => 'Down Columns' ), 'default_value' => 'rows', 'instructions' => 'Down Columns keeps the authored order flowing down the first column, then the next.' ) ),
-			$make( 'list_markers', 'List Markers', 'select', array( 'choices' => array( 'default' => 'Use Existing Markers', 'plain' => 'Hide Markers' ), 'default_value' => 'default' ) ),
+			$make( 'list_markers', 'List Markers', 'select', array( 'choices' => array( 'default' => 'Use Existing Markers', 'plain' => 'Hide Markers', 'cross' => 'Circled Cross Markers' ), 'default_value' => 'default' ) ),
+			$make( 'list_item_style', 'List Item Presentation', 'select', array( 'choices' => array( '' => 'Use Existing Treatment', 'text' => 'Plain Text Items' ), 'default_value' => '', 'instructions' => 'Plain Text Items removes inherited card-chip padding, borders and surfaces while preserving the selected list typography and item spacing.' ) ),
 			$make( 'list_alignment', 'List Alignment', 'select', array( 'choices' => array( 'start' => 'Start', 'end' => 'End', 'end-start' => 'End, Start on Small Screens' ), 'default_value' => 'start' ) ),
-			$make( 'list_gap', 'Space Between List Columns', 'text', array( 'instructions' => 'Optional non-negative CSS length, for example 30px. Does not change row margin or padding.' ) ),
 		);
-		foreach ( array( 'space_before' => 'Space Before List', 'space_after' => 'Space After List', 'item_space_after' => 'Space After List Items', 'following_paragraph_space_before' => 'Space Before Paragraphs After a List', 'item_size' => 'List Item Font Size', 'item_line_height' => 'List Item Line Height' ) as $name => $label ) {
-			$fields[] = $make( 'list_' . $name, $label, 'text', array( 'instructions' => 'Optional non-negative CSS length. Font size and line height also accept Site Text tokens. Applies only to top-level lists; section spacing stays in row presets.' ) );
-		}
-		$fields[] = $make( 'list_item_weight', 'List Item Weight', 'select', array( 'choices' => array( '' => 'Use Existing Weight' ) + array_combine( range( 100, 900, 100 ), range( 100, 900, 100 ) ), 'default_value' => '' ) );
-		$fields[] = $make( 'list_item_font', 'List Item Font', 'select', array( 'choices' => array( '' => 'Use Existing Font', 'body' => 'Site Body Font', 'heading' => 'Site Heading Font' ), 'default_value' => '' ) );
-		$color = mrn_base_stack_get_background_color_field( $seed . '_list_item_color' ); $color['name'] = 'list_item_color'; $color['label'] = 'List Item Color'; $fields[] = $color;
+		$fields[] = $make( 'list_link_trailing_icon', 'List Link Trailing Icon', 'select', array( 'choices' => array( '' => 'No Icon', 'arrow' => 'Decorative Arrow on Hover and Focus' ), 'default_value' => '', 'instructions' => 'Reserves icon width beside linked list labels while keeping the arrow decorative. Applies only to top-level list links.' ) );
 		foreach ( $fields as &$field ) {
 			if ( 'list_columns' !== $field['name'] ) {
 				$field['conditional_logic'] = array( array( array( 'field' => $seed . '_list_columns', 'operator' => '!=', 'value' => '' ) ) );
@@ -59,6 +57,9 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 	}
 	if ( 'logos' === $layout ) {
 		return array_merge( mrn_base_stack_get_labeled_logos_fields( $seed ), array(
+			$make( 'logos_slider_frame', 'Slider Frame', 'select', array( 'choices' => array( '' => 'Use Existing Slider', 'contained' => 'Contained Logo Strip' ), 'default_value' => '', 'instructions' => 'Optional inner width and logo height for sliders. Outer spacing stays in row presets.' ) ),
+			$make( 'logos_slider_desktop_fit', 'Desktop Logo Fit', 'select', array( 'choices' => array( '' => 'Use Existing Slide Widths', 'natural' => 'Distribute Natural Logo Widths' ), 'default_value' => '', 'instructions' => 'For a short desktop logo set, distributes original logo widths across the track. Smaller responsive views keep their selected logo count.' ) ),
+			$make( 'logos_slider_image_treatment', 'Logo Color Treatment', 'select', array( 'choices' => array( '' => 'Original Colors', 'muted' => 'Muted Until Hover or Focus' ), 'default_value' => '' ) ),
 			$make( 'slider_breakpoints', 'Responsive Logo Views', 'repeater', array(
 				'max' => 4, 'layout' => 'row', 'button_label' => 'Add Viewport',
 				'instructions' => 'Optional overrides at or below each viewport width. Leave empty for the existing responsive views.',
@@ -108,13 +109,52 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 				'default_value' => 4000,
 			)
 		);
+		$fields[] = $make(
+			'rotation_effect',
+			'Phrase Effect',
+			'select',
+			array(
+				'choices'       => array(
+					''           => 'Swap Phrases',
+					'typewriter' => 'Type and Erase',
+				),
+				'default_value' => '',
+				'instructions'  => 'Type and Erase types each phrase, holds it for the Phrase Interval, then erases it.',
+			)
+		);
+		$fields[] = $make(
+			'rotation_width',
+			'Phrase Width',
+			'select',
+			array(
+				'choices'       => array(
+					''     => 'Reserve the Longest Phrase',
+					'flow' => 'Fit Each Phrase',
+				),
+				'default_value' => '',
+				'instructions'  => 'Reserving keeps the rest of the heading still. Fit Each Phrase lets the heading close up around the current phrase.',
+			)
+		);
+		$fields[] = $make(
+			'rotation_control',
+			'Pause Control',
+			'select',
+			array(
+				'choices'       => array(
+					''     => 'Text Button',
+					'icon' => 'Icon Button',
+				),
+				'default_value' => '',
+				'instructions'  => 'Moving text always offers a pause control. The icon button keeps its accessible name.',
+			)
+		);
 		if ( in_array( $layout, array( 'cta', 'cta_block' ), true ) ) {
 			$fields = array_merge( $fields, mrn_base_stack_get_cta_frame_fields( $seed ) );
 		}
 		return $fields;
 	}
 	if ( 'image_content' === $layout ) {
-		return array_merge( mrn_base_stack_get_content_frame_fields( $layout, $seed ), mrn_base_stack_get_image_action_fields( $seed ), array(
+		return array_merge( mrn_base_stack_get_content_frame_fields( $layout, $seed ), mrn_base_stack_get_image_action_fields( $seed ), mrn_base_stack_get_image_overlay_fields( $seed ), array(
 			$make(
 				'image_presentation',
 				'Image Presentation',
@@ -123,6 +163,7 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 					'choices'       => array(
 						'standard'       => 'Standard',
 						'scroll-zoom'    => 'Scroll Zoom',
+						'framed-zoom'    => 'Framed Viewport Zoom',
 						'scroll-drift'   => 'Scroll Drift',
 						'tilted-gallery' => 'Rotated Column Gallery',
 					),
@@ -131,8 +172,12 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 			),
 			$make( 'image_drift_speed', 'Scroll Drift Speed', 'number', array( 'min' => 0.01, 'max' => 0.15, 'step' => 0.01, 'default_value' => 0.08, 'instructions' => 'Fraction of the distance between the section center and viewport center. Runs only with a fine hover pointer at 768px and above; reduced motion stays still.', 'conditional_logic' => array( array( array( 'field' => $seed . '_image_presentation', 'operator' => '==', 'value' => 'scroll-drift' ) ) ) ) ),
 			$make( 'image_drift_maximum', 'Maximum Scroll Drift (px)', 'number', array( 'min' => 1, 'max' => 100, 'step' => 1, 'default_value' => 36, 'instructions' => 'Maximum travel in either direction. A nested image follows its nearest Split section. Image size and section spacing stay unchanged.', 'conditional_logic' => array( array( array( 'field' => $seed . '_image_presentation', 'operator' => '==', 'value' => 'scroll-drift' ) ) ) ) ),
-			$make( 'media_height', 'Media Height', 'text', array( 'instructions' => 'Optional CSS length, such as 52rem or 80vh. Applies to the media, not row spacing.' ) ),
-			$make( 'media_height_mobile', 'Mobile Media Height', 'text', array( 'instructions' => 'Optional CSS length for narrow screens.' ) ),
+			$make( 'image_zoom_viewport_inset', 'Zoom Viewport Inset (px)', 'number', array( 'min' => 0, 'max' => 240, 'step' => 1, 'default_value' => 0, 'instructions' => 'Framed zoom peaks at viewport width minus this total inset, then returns to original proportions. Reduced motion stays still.', 'conditional_logic' => array( array( array( 'field' => $seed . '_image_presentation', 'operator' => '==', 'value' => 'framed-zoom' ) ) ) ) ),
+			$make( 'image_stage_sizing', 'Framed Image Sizing', 'select', array( 'choices' => array( '' => 'Original Proportions', 'cover' => 'Fill Stage (Crop)' ), 'default_value' => '', 'instructions' => 'Optional fixed-stage crop for Framed Viewport Zoom. Outer spacing stays in the row presets.', 'conditional_logic' => array( array( array( 'field' => $seed . '_image_presentation', 'operator' => '==', 'value' => 'framed-zoom' ) ) ) ) ),
+			$make( 'gallery_mobile_behavior', 'Column Gallery on Phones', 'select', array( 'choices' => array( '' => 'Rotated Columns', 'rail' => 'Horizontal Swipe Rail' ), 'default_value' => '', 'instructions' => 'Optional phone presentation for a Rotated Column Gallery. Keeps the selected columns and images in their saved order.', 'conditional_logic' => array( array( array( 'field' => $seed . '_image_presentation', 'operator' => '==', 'value' => 'tilted-gallery' ) ) ) ) ),
+			$make( 'gallery_mobile_label', 'Phone Gallery Accessible Name', 'text', array( 'instructions' => 'Name the horizontal image gallery for keyboard and screen-reader users.', 'conditional_logic' => array( array( array( 'field' => $seed . '_gallery_mobile_behavior', 'operator' => '==', 'value' => 'rail' ) ) ) ) ),
+			$make( 'gallery_mobile_start', 'Phone Gallery Starting Position', 'select', array( 'choices' => array( '' => 'First Column', 'center' => 'Center Column' ), 'default_value' => '', 'instructions' => 'Optional initial scroll position. Every selected column remains reachable by swiping or keyboard.', 'conditional_logic' => array( array( array( 'field' => $seed . '_gallery_mobile_behavior', 'operator' => '==', 'value' => 'rail' ) ) ) ) ),
+			$make( 'gallery_desktop_behavior', 'Column Gallery on Larger Screens', 'select', array( 'choices' => array( '' => 'Existing Rotated Grid', 'cropped-wall' => 'Cropped Project Wall' ), 'default_value' => '', 'instructions' => 'Optional cropped gallery presentation above 767px. Inner gallery sizing is independent of section spacing.', 'conditional_logic' => array( array( array( 'field' => $seed . '_image_presentation', 'operator' => '==', 'value' => 'tilted-gallery' ) ) ) ) ),
 			$make(
 				'image_overlay',
 				'Image Overlay',
@@ -142,6 +187,7 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 					'default_value' => 0,
 				)
 			),
+			$make( 'image_overlay_media', 'Overlay Artwork', 'image', array( 'return_format' => 'id', 'preview_size' => 'thumbnail', 'instructions' => 'Optional decorative artwork across the image stage. The existing gradient remains when no artwork is selected.', 'conditional_logic' => array( array( array( 'field' => $seed . '_image_overlay', 'operator' => '==', 'value' => '1' ) ) ) ) ),
 			$make(
 				'gallery_columns',
 				'Gallery Columns',
@@ -169,7 +215,7 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 		) );
 	}
 	if ( 'showcase' === $layout ) {
-		return array_merge( mrn_base_stack_get_showcase_bento_fields( $seed ), array(
+		return array_merge( mrn_base_stack_get_showcase_bento_fields( $seed ), mrn_base_stack_get_showcase_record_fields( $seed ), mrn_base_stack_get_strip_frame_fields( $seed ), array(
 			$make(
 				'showcase_presentation',
 				'Gallery Presentation',
@@ -179,6 +225,7 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 						'standard'     => 'Standard',
 						'scroll-strip' => 'Scroll-driven Horizontal Strip',
 						'bento' => 'Bento Image Gallery',
+						'split-records' => 'Split Records with Image and Copy',
 					),
 					'default_value' => 'standard',
 				)
@@ -196,17 +243,18 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 						'standard' => 'Standard',
 						'timeline' => 'Step Timeline',
 						'image-overlay' => 'Image with Overlay or Caption',
+						'pricing' => 'Pricing Plans',
+						'process' => 'Process Overview and Details',
 					),
 					'default_value' => 'standard',
 				)
 			),
 			$make( 'card_intro', 'Introduction', 'wysiwyg', array( 'tabs' => 'all', 'toolbar' => 'full', 'media_upload' => 0 ) ),
 			$make( 'card_reveal_content', 'Reveal Description on Hover or Focus', 'true_false', array( 'ui' => 1, 'default_value' => 0, 'instructions' => 'Image presentation only. Off shows a caption below the image. On overlays the heading and reveals its Body Text description on hover or keyboard focus. Touch screens and reduced motion show the full caption.' ) ),
-			$make( 'card_image_ratio', 'Card Image Aspect Ratio', 'text', array( 'instructions' => 'Image presentation only. Optional positive ratio, for example 4/3 or 1/1.' ) ),
+			$make( 'card_caption_flow_breakpoint', 'Caption Placement on Smaller Screens', 'select', array( 'choices' => array( '' => 'Keep Current Placement', '1199' => 'Below Image at 1199px and Narrower' ), 'default_value' => '', 'instructions' => 'Image presentation only. Keeps the desktop overlay and stacks the image above its caption on tablet and phone.' ) ),
+			$make( 'card_image_mobile_sizing', 'Card Image Sizing on Phone', 'select', array( 'choices' => array( '' => 'Keep Aspect Ratio', 'natural' => 'Use Natural Image Proportions at 767px' ), 'default_value' => '', 'instructions' => 'Image presentation only. Use with a caption below the image when the full image should remain visible on phones.' ) ),
 			$make( 'card_image_loading', 'Card Image Loading', 'select', array( 'choices' => array( 'lazy' => 'Lazy (Below the Fold)', 'eager' => 'Immediate (Above the Fold)' ), 'default_value' => 'lazy', 'instructions' => 'Use Immediate when these images appear in the initial viewport.' ) ),
-			$make( 'card_gap', 'Space Between Image Cards', 'text', array( 'instructions' => 'Image presentation only. Optional non-negative CSS length. Row spacing uses its existing fields.' ) ),
-			$make( 'card_caption_padding', 'Image Caption Padding', 'text', array( 'instructions' => 'Image presentation only. Optional non-negative CSS length.' ) ),
-			$make( 'card_caption_gap', 'Space Between Caption Heading and Copy', 'text', array( 'instructions' => 'Image presentation only. Optional non-negative CSS length.' ) ),
+			$make( 'card_section_link_alignment', 'Section Link Alignment', 'select', array( 'choices' => array( '' => 'Keep Current Alignment', 'start' => 'Start', 'center' => 'Center', 'end' => 'End' ), 'default_value' => '', 'instructions' => 'Image presentation only. Aligns section links beneath the image cards.' ) ),
 			$make(
 				'timeline_image',
 				'Timeline Image',
@@ -217,19 +265,25 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 				)
 			),
 			$make( 'timeline_skip_label', 'Timeline Skip Link', 'text', array( 'default_value' => 'Skip timeline' ) ),
+			$make( 'timeline_pin_tablet', 'Pin Timeline on Tablet', 'true_false', array( 'ui' => 1, 'default_value' => 0, 'instructions' => 'Opt in to the two-column pinned timeline at 768px and wider. Phones and reduced-motion visitors see every step in document order.' ) ),
+			$make( 'timeline_scroll_pace', 'Timeline Scroll Pace', 'select', array( 'choices' => array( '' => 'Standard', 'viewport' => '55% of Viewport Height per Step' ), 'default_value' => '', 'instructions' => 'Optional longer scroll journey for pinned timelines. Each step uses at least 320px of page scroll.' ) ),
+			$make( 'timeline_pin_position', 'Timeline Pin Position', 'select', array( 'choices' => array( '' => 'Below Site Header', 'center' => 'Centered in Viewport' ), 'default_value' => '', 'instructions' => 'Where the pinned image and steps hold while the timeline scrolls. Centered never sits under the site header.' ) ),
+			$make( 'timeline_pin_heading', 'Pin Heading with Timeline', 'true_false', array( 'ui' => 1, 'default_value' => 0, 'instructions' => 'Keep the section heading and introduction on screen with the pinned image and steps. Phones and reduced-motion visitors see them in document order.' ) ),
 		);
 		foreach ( $fields as &$field ) {
-			if ( in_array( $field['name'], array( 'card_reveal_content', 'card_image_ratio', 'card_image_loading', 'card_gap', 'card_caption_padding', 'card_caption_gap' ), true ) ) {
+			if ( in_array( $field['name'], array( 'card_reveal_content', 'card_image_ratio', 'card_caption_flow_breakpoint', 'card_image_mobile_sizing', 'card_image_loading', 'card_gap', 'card_caption_padding', 'card_caption_padding_mobile', 'card_caption_gap', 'card_section_link_space_before', 'card_section_link_alignment', 'card_section_link_size', 'card_section_link_line_height', 'card_section_link_color' ), true ) ) {
 				$field['conditional_logic'] = array( array( array( 'field' => $seed . '_card_presentation', 'operator' => '==', 'value' => 'image-overlay' ) ) );
+			} elseif ( in_array( $field['name'], array( 'timeline_image', 'timeline_skip_label', 'timeline_pin_tablet', 'timeline_scroll_pace', 'timeline_pin_position', 'timeline_pin_heading' ), true ) ) {
+				$field['conditional_logic'] = array( array( array( 'field' => $seed . '_card_presentation', 'operator' => '==', 'value' => 'timeline' ) ) );
 			} elseif ( 'card_intro' === $field['name'] ) {
 				$field['conditional_logic'] = array( array( array( 'field' => $seed . '_card_presentation', 'operator' => '!=', 'value' => 'timeline' ) ) );
 			}
 		}
 		unset( $field );
-		return array_merge( $fields, mrn_base_stack_get_card_frame_fields( $seed ) );
+		return array_merge( $fields, mrn_base_stack_get_timeline_frame_fields( $seed ), mrn_base_stack_get_card_frame_fields( $seed ), mrn_base_stack_get_pricing_fields( $seed ), mrn_base_stack_get_process_card_fields( $seed ) );
 	}
 	if ( 'content_lists' === $layout ) {
-		return array(
+		return array_merge( array(
 			$make(
 				'record_presentation',
 				'Record Presentation',
@@ -239,15 +293,20 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 						'standard'    => 'Standard',
 						'people'      => 'People with Optional Hover Video',
 						'comparisons' => 'Before / After Comparison Stack',
+						'careers'     => 'Careers with Application Links and Tags',
+						'articles'    => 'Articles with Categories and Reading Time',
+						'projects'    => 'Project Cards with Features and Optional Hover Video',
 					),
 					'default_value' => 'standard',
 					'instructions'  => 'People use designation and hover_video. Comparisons use before_image, after_image and tags. Sources, selection, order and pagination remain controlled by Content Lists.',
 				)
 			),
-		);
+		), mrn_base_stack_get_career_list_fields( $seed ), function_exists( 'mrn_base_stack_get_people_frame_fields' ) ? mrn_base_stack_get_people_frame_fields( $seed ) : array(), mrn_base_stack_get_article_list_fields( $seed ), function_exists( 'mrn_base_stack_get_project_list_fields' ) ? mrn_base_stack_get_project_list_fields( $seed ) : array(), function_exists( 'mrn_base_stack_get_comparison_list_fields' ) ? mrn_base_stack_get_comparison_list_fields( $seed ) : array() );
 	}
 	if ( 'video' === $layout ) {
-		return array(
+		return array_merge( array(
+			$make( 'video_playback', 'Inline Video Playback', 'select', array( 'choices' => array( '' => 'Standard Video Controls', 'muted-loop' => 'Muted Loop with Pause Control' ), 'default_value' => '', 'instructions' => 'For an uploaded inline video with a selected poster. The video loops silently with a visible Pause control. Reduced motion and data-saving views keep the poster.' ) ),
+			$make( 'video_poster', 'Inline Video Poster', 'image', array( 'return_format' => 'id', 'preview_size' => 'medium', 'library' => 'all', 'instructions' => 'Optional still for inline video. Required for muted looping playback and shown when the video cannot play.' ) ),
 			$make(
 				'video_presentation',
 				'Video Presentation',
@@ -261,6 +320,18 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 				)
 			),
 			$make(
+				'video_expand_start_width',
+				'Expand Start Width',
+				'number',
+				array(
+					'min'          => 320,
+					'max'          => 2400,
+					'step'         => 1,
+					'append'       => 'px',
+					'instructions' => 'Optional, for Expand on Scroll. The video starts at this width (or its own width when narrower) and grows from its bottom edge to the full row width as the row scrolls in, with square corners. Once it has scrolled past the top, the row background fades to the following section color. Leave empty for the standard expand.',
+				)
+			),
+			$make(
 				'video_follow_color',
 				'Following Section Transition Color',
 				'select',
@@ -270,9 +341,38 @@ function mrn_base_stack_get_presentation_fields( $layout, $seed ) {
 					'ui'         => 1,
 				)
 			),
-		);
+			$make(
+				'video_follow_release',
+				'Following Section Transition End',
+				'select',
+				array(
+					'choices'       => array(
+						''        => 'Keep the Color',
+						'release' => 'Return to the Original Color as the Section Arrives',
+					),
+					'default_value' => '',
+					'instructions'  => 'Return fades the following section back to its own color as it scrolls into view. While the transition color shows, its text switches to the light follow colors.',
+				)
+			),
+		), mrn_base_stack_get_content_frame_fields( $layout, $seed ) );
 	}
 	return array();
+}
+
+/** Optional bounded slider geometry independent of the labeled/grid logo frame. */
+function mrn_base_stack_get_logos_slider_frame_contract( array $row, $item_count ) {
+	$result = array( 'classes' => array(), 'attributes' => array() );
+	if ( 'contained' !== ( $row['logos_slider_frame'] ?? '' ) ) { return $result; }
+	$result['classes'][] = 'has-logos-slider-frame';
+	if ( 'natural' === ( $row['logos_slider_desktop_fit'] ?? '' ) && $item_count > 0 && $item_count <= (int) ( $row['per_page'] ?? 6 ) ) { $result['classes'][] = 'has-logos-slider-natural-desktop'; }
+	if ( 'muted' === ( $row['logos_slider_image_treatment'] ?? '' ) ) { $result['classes'][] = 'has-logos-slider-muted'; }
+	$styles = array();
+	foreach ( array( 'content_width', 'inner_gutter', 'inner_gutter_compact', 'height' ) as $name ) {
+		$value = mrn_base_stack_validate_hero_frame_dimension( $row[ 'logos_slider_' . $name ] ?? '' );
+		if ( '' !== $value ) { $styles[] = '--mrn-logos-slider-' . str_replace( '_', '-', $name ) . ':' . $value; }
+	}
+	if ( $styles ) { $result['attributes']['style'] = implode( ';', $styles ); }
+	return $result;
 }
 
 /** Optional scroll-bound word color, independent of timed entrance effects. */
@@ -336,10 +436,40 @@ function mrn_base_stack_ensure_presentation_fields( array $fields, $layout, $see
 	if ( ! empty( $fields[0]['key'] ) ) {
 		$seed = sanitize_key( $fields[0]['key'] ) . '_presentation';
 	}
+	if ( in_array( $layout, array( 'cta', 'cta_block' ), true ) ) {
+		// Match the existing reusable CTA renderer's four independent action slots.
+		foreach ( $fields as &$field ) { if ( 'links' === ( $field['name'] ?? '' ) && 'repeater' === ( $field['type'] ?? '' ) ) { $field['max'] = 4; } }
+		unset( $field );
+	}
+	if ( 'showcase' === $layout ) {
+		foreach ( $fields as &$field ) {
+			if ( 'showcase_items' !== ( $field['name'] ?? '' ) || 'repeater' !== ( $field['type'] ?? '' ) ) { continue; }
+			$names = array_column( $field['sub_fields'] ?? array(), 'name' );
+			$extra = array_values( array_filter( mrn_base_stack_get_showcase_record_item_fields( $field['key'] . '_record', $seed . '_showcase_presentation' ), static function ( $item ) use ( $names ) { return ! in_array( $item['name'], $names, true ); } ) );
+			$at = count( $field['sub_fields'] ); foreach ( $field['sub_fields'] as $index => $item ) { if ( 'tab' === ( $item['type'] ?? '' ) && 'configs' === strtolower( $item['label'] ?? '' ) ) { $at = $index; break; } }
+			array_splice( $field['sub_fields'], $at, 0, $extra );
+		}
+		unset( $field );
+	}
 	if ( 'card' === $layout ) {
 		foreach ( $fields as &$field ) {
+			if ( 'card_items' === ( $field['name'] ?? '' ) && 'repeater' === ( $field['type'] ?? '' ) ) {
+				$existing_names = array_column( $field['sub_fields'] ?? array(), 'name' );
+				foreach ( mrn_base_stack_get_pricing_item_fields( $field['key'], $seed . '_card_presentation' ) as $pricing_field ) { if ( ! in_array( $pricing_field['name'], $existing_names, true ) ) { $field['sub_fields'][] = $pricing_field; } }
+				foreach ( mrn_base_stack_get_process_card_item_fields( $field['key'], $seed . '_card_presentation' ) as $process_field ) { if ( ! in_array( $process_field['name'], $existing_names, true ) ) { $field['sub_fields'][] = $process_field; } }
+			}
 			if ( 'card_items' === ( $field['name'] ?? '' ) && 'repeater' === ( $field['type'] ?? '' ) && ! in_array( 'image', array_column( $field['sub_fields'] ?? array(), 'name' ), true ) ) {
 				array_splice( $field['sub_fields'], 1, 0, array( array( 'key' => $field['key'] . '_image', 'name' => 'image', 'label' => 'Card Image', 'type' => 'image', 'return_format' => 'id', 'preview_size' => 'medium', 'instructions' => 'Optional media for the Image with Overlay or Caption presentation.' ) ) );
+			}
+			if ( 'card_items' === ( $field['name'] ?? '' ) && 'repeater' === ( $field['type'] ?? '' ) ) {
+				$field['instructions'] = 'Standard cards hold one builder row. Pricing Plans use the structured plan fields. Process uses its structured detail fields and reuses the label for both headings; Overview Only keeps the overview label. Saved card order is preserved.';
+				foreach ( $field['sub_fields'] as &$item_field ) { if ( in_array( $item_field['name'] ?? '', array( 'card_rows', 'image', 'link', 'background_color', 'link_icon', 'link_icon_position' ), true ) ) { $item_field['conditional_logic'] = array( array( array( 'field' => $seed . '_card_presentation', 'operator' => '!=', 'value' => 'pricing' ) ) ); } }
+				unset( $item_field );
+				foreach ( $field['sub_fields'] as &$item_field ) {
+					if ( in_array( $item_field['name'] ?? '', array( 'image', 'link', 'background_color', 'link_icon', 'link_icon_position' ), true ) ) { $item_field['conditional_logic'][0][] = array( 'field' => $seed . '_card_presentation', 'operator' => '!=', 'value' => 'process' ); }
+					if ( 'card_rows' === ( $item_field['name'] ?? '' ) ) { $item_field['conditional_logic'][0][] = array( 'field' => $seed . '_card_presentation', 'operator' => '!=', 'value' => 'process' ); }
+				}
+				unset( $item_field );
 			}
 		}
 		unset( $field );
@@ -393,19 +523,29 @@ function mrn_base_stack_get_body_list_contract( array $row ) {
 	if ( 'plain' === ( $row['list_markers'] ?? '' ) ) {
 		$classes[] = 'mrn-ui__text--list-plain';
 	}
+	if ( 'cross' === ( $row['list_markers'] ?? '' ) ) { $classes[] = 'mrn-ui__text--list-cross'; }
+	if ( 'text' === ( $row['list_item_style'] ?? '' ) ) { $classes[] = 'has-list-text-items'; }
+	if ( 'arrow' === ( $row['list_link_trailing_icon'] ?? '' ) ) { $classes[] = 'has-list-link-trailing-arrow'; }
 	$styles = array( '--mrn-list-columns:' . $columns, '--mrn-list-columns-mobile:' . $mobile );
 	$gap = mrn_base_stack_validate_media_height( (string) ( $row['list_gap'] ?? '' ) );
 	if ( '' !== $gap ) {
 		$styles[] = '--mrn-list-column-gap:' . $gap;
 	}
-	foreach ( array( 'space_before', 'space_after', 'item_space_after', 'following_paragraph_space_before', 'item_size', 'item_line_height' ) as $name ) {
+	foreach ( array( 'space_before', 'space_after', 'item_space_after', 'item_padding_block', 'following_paragraph_space_before', 'item_size', 'item_line_height', 'item_size_mobile', 'item_line_height_mobile', 'padding_inline_start', 'padding_inline_start_mobile' ) as $name ) {
 		$value = mrn_base_stack_get_content_frame_dimension( $row[ 'list_' . $name ] ?? '', $name );
 		if ( '' !== $value ) { $styles[] = '--mrn-list-' . str_replace( '_', '-', $name ) . ':' . $value; $classes[] = 'has-list-' . str_replace( '_', '-', $name ); }
 	}
 	$weight = $row['list_item_weight'] ?? ''; if ( is_scalar( $weight ) && in_array( (string) $weight, array_map( 'strval', range( 100, 900, 100 ) ), true ) ) { $styles[] = '--mrn-list-item-weight:' . $weight; $classes[] = 'has-list-item-weight'; }
 	if ( in_array( $row['list_item_font'] ?? '', array( 'body', 'heading' ), true ) ) { $classes[] = 'has-list-item-font-' . $row['list_item_font']; }
 	$color = mrn_base_stack_get_frame_palette_color( $row['list_item_color'] ?? '' ); if ( '' !== $color ) { $styles[] = '--mrn-list-item-color:' . $color; $classes[] = 'has-list-item-color'; }
-	return array( 'classes' => $classes, 'styles' => $styles );
+	/**
+	 * Filter a laid-out list's contract, for example so a row's Display Style can switch on list hooks whose values
+	 * live in theme CSS.
+	 *
+	 * @param array{classes: string[], styles: string[]} $contract List classes and inline style declarations.
+	 * @param array<string, mixed>                        $row      Body Text row.
+	 */
+	return (array) apply_filters( 'mrn_base_stack_body_list_contract', array( 'classes' => $classes, 'styles' => $styles ), $row );
 }
 
 /**
@@ -423,6 +563,26 @@ function mrn_base_stack_get_image_card_styles( array $row ) {
 	foreach ( array( 'card_gap' => '--mrn-card-row-gap', 'card_caption_padding' => '--mrn-card-caption-padding', 'card_caption_gap' => '--mrn-card-caption-gap' ) as $name => $property ) {
 		$value = mrn_base_stack_validate_media_height( (string) ( $row[ $name ] ?? '' ) );
 		if ( '' !== $value ) { $styles[] = $property . ':' . $value; }
+	}
+	$link_space = mrn_base_stack_validate_card_frame_dimension( $row['card_section_link_space_before'] ?? '' );
+	if ( '' !== $link_space ) { $styles[] = '--mrn-card-section-link-space-before:' . $link_space; }
+	foreach ( array( 'card_section_link_size' => '--mrn-card-section-link-size', 'card_section_link_line_height' => '--mrn-card-section-link-line-height' ) as $name => $property ) {
+		$value = mrn_base_stack_validate_card_frame_dimension( $row[ $name ] ?? '' );
+		if ( '' !== $value ) { $styles[] = $property . ':' . $value; }
+	}
+	$link_color = function_exists( 'mrn_base_stack_get_frame_palette_color' ) ? mrn_base_stack_get_frame_palette_color( $row['card_section_link_color'] ?? '' ) : '';
+	if ( '' !== $link_color ) { $styles[] = '--mrn-card-section-link-color:' . $link_color; }
+	$link_alignment = $row['card_section_link_alignment'] ?? '';
+	if ( in_array( $link_alignment, array( 'start', 'center', 'end' ), true ) ) { $styles[] = '--mrn-card-section-link-alignment:' . $link_alignment; }
+	$mobile_padding = $row['card_caption_padding_mobile'] ?? '';
+	if ( is_string( $mobile_padding ) && strlen( $mobile_padding ) <= 96 ) {
+		$parts = preg_split( '/\s+/', trim( $mobile_padding ) );
+		if ( 1 <= count( $parts ) && 4 >= count( $parts ) ) {
+			$values = array_map( 'mrn_base_stack_validate_media_height', $parts );
+			if ( ! in_array( '', $values, true ) ) {
+				$styles[] = '--mrn-card-caption-padding-mobile:' . implode( ' ', $values );
+			}
+		}
 	}
 	return $styles;
 }
@@ -481,8 +641,9 @@ function mrn_base_stack_get_rotating_heading_markup( array $row, $heading ) {
 		$has_rotation = $has_rotation || count( $phrases ) > 1;
 		$markup       = esc_html( $phrases[0] );
 		if ( count( $phrases ) > 1 ) {
-			$markup = '<span class="mrn-rotate" data-mrn-phrases="' . esc_attr( wp_json_encode( $phrases ) ) . '"><span class="screen-reader-text">' . esc_html( $phrases[0] ) . '</span><span class="mrn-rotate__visual" aria-hidden="true">' . esc_html( $phrases[0] ) . '</span>';
-			foreach ( $phrases as $phrase ) {
+			$flow   = 'flow' === ( $row['rotation_width'] ?? '' );
+			$markup = '<span class="mrn-rotate' . ( $flow ? ' mrn-rotate--flow' : '' ) . '" data-mrn-phrases="' . esc_attr( wp_json_encode( $phrases ) ) . '"><span class="screen-reader-text">' . esc_html( $phrases[0] ) . '</span><span class="mrn-rotate__visual" aria-hidden="true">' . esc_html( $phrases[0] ) . '</span>';
+			foreach ( $flow ? array() : $phrases as $phrase ) {
 				$markup .= '<span class="mrn-rotate__size" aria-hidden="true">' . esc_html( $phrase ) . '</span>';
 			}
 			$markup .= '</span>';
@@ -508,7 +669,9 @@ function mrn_base_stack_get_rotating_heading_markup( array $row, $heading ) {
 	}
 	mrn_base_stack_enqueue_presentation();
 	$interval = max( 1500, min( 30000, (int) ( $row['rotation_interval'] ?? 4000 ) ) );
-	return '<span data-mrn-rotation-group data-interval="' . esc_attr( $interval ) . '" data-pause-label="' . esc_attr__( 'Pause rotating text', 'mrn-base-stack' ) . '" data-resume-label="' . esc_attr__( 'Resume rotating text', 'mrn-base-stack' ) . '">' . $html . '</span>';
+	$effect   = 'typewriter' === ( $row['rotation_effect'] ?? '' ) ? ' data-effect="typewriter"' : '';
+	$control  = 'icon' === ( $row['rotation_control'] ?? '' ) ? ' data-control="icon"' : '';
+	return '<span data-mrn-rotation-group data-interval="' . esc_attr( $interval ) . '"' . $effect . $control . ' data-pause-label="' . esc_attr__( 'Pause rotating text', 'mrn-base-stack' ) . '" data-resume-label="' . esc_attr__( 'Resume rotating text', 'mrn-base-stack' ) . '">' . $html . '</span>';
 }
 
 /**
@@ -541,9 +704,12 @@ function mrn_base_stack_get_image_stage_attributes( array $row ) {
 		mrn_base_stack_enqueue_presentation();
 		return mrn_base_stack_get_html_attributes( array( 'data-mrn-image-drift' => wp_json_encode( $values ) ) );
 	}
-	if ( ! in_array( $mode, array( 'scroll-zoom', 'tilted-gallery' ), true ) ) {
+	if ( ! in_array( $mode, array( 'scroll-zoom', 'tilted-gallery', 'framed-zoom' ), true ) ) {
 		return '';
 	}
+	$inset = $row['image_zoom_viewport_inset'] ?? 0;
+	if ( '' === $inset ) { $inset = 0; }
+	if ( 'framed-zoom' === $mode && ( ! is_scalar( $inset ) || is_bool( $inset ) || ! is_numeric( $inset ) || ! is_finite( (float) $inset ) || $inset < 0 || $inset > 240 || (float) $inset !== (float) (int) $inset ) ) { return ''; }
 	mrn_base_stack_enqueue_presentation();
 	$styles = array();
 	foreach ( array(
@@ -559,6 +725,8 @@ function mrn_base_stack_get_image_stage_attributes( array $row ) {
 	return mrn_base_stack_get_html_attributes(
 		array(
 			'data-mrn-image-stage' => $mode,
+			'data-mrn-media-breakpoint' => '767' === ( $row['media_mobile_breakpoint'] ?? '' ) ? '767' : null,
+			'data-mrn-image-zoom-inset' => 'framed-zoom' === $mode ? (string) (int) $inset : null,
 			'style'                => implode( ';', $styles ),
 		)
 	);
@@ -589,7 +757,36 @@ function mrn_base_stack_get_column_gallery_markup( array $row ) {
 		}
 		$columns .= '<div class="mrn-column-gallery__column">' . $images . '</div>';
 	}
-	return '' !== $columns ? '<div class="mrn-column-gallery">' . $columns . '</div>' : '';
+	if ( '' === $columns ) { return ''; }
+	$rail = 'rail' === ( $row['gallery_mobile_behavior'] ?? '' );
+	$wall = 'cropped-wall' === ( $row['gallery_desktop_behavior'] ?? '' );
+	if ( ! $rail && ! $wall ) { return '<div class="mrn-column-gallery">' . $columns . '</div>'; }
+	$raw_name = $row['gallery_mobile_label'] ?? '';
+	$name = is_scalar( $raw_name ) ? sanitize_text_field( (string) $raw_name ) : '';
+	if ( '' === $name ) { $name = __( 'Image gallery', 'mrn-base-stack' ); }
+	$styles = array();
+	if ( $wall ) {
+		foreach ( array(
+			'gallery_desktop_column_width' => array( '--mrn-gallery-column-width', 100, 800, 370 ),
+			'gallery_desktop_image_height' => array( '--mrn-gallery-image-height', 100, 800, 250 ),
+			'gallery_desktop_top_offset' => array( '--mrn-gallery-top-offset', 0, 500, 140 ),
+			'gallery_desktop_inline_offset' => array( '--mrn-gallery-inline-offset', -500, 500, -100 ),
+		) as $field => $rule ) {
+			$value = $row[ $field ] ?? $rule[3];
+			if ( ! is_scalar( $value ) || is_bool( $value ) || ! is_numeric( $value ) || ! is_finite( (float) $value ) || (float) $value !== (float) (int) $value || $value < $rule[1] || $value > $rule[2] ) { $value = $rule[3]; }
+			$styles[] = $rule[0] . ':' . (int) $value . 'px';
+		}
+	}
+	return '<div ' . mrn_base_stack_get_html_attributes( array(
+		'class' => 'mrn-column-gallery',
+		'data-mrn-gallery-mobile' => $rail ? 'rail' : null,
+		'data-mrn-gallery-start' => $rail && 'center' === ( $row['gallery_mobile_start'] ?? '' ) ? 'center' : null,
+		'data-mrn-gallery-desktop' => $wall ? 'cropped-wall' : null,
+		'role' => $rail ? 'region' : null,
+		'tabindex' => $rail ? '0' : null,
+		'aria-label' => $rail ? $name : null,
+		'style' => implode( ';', $styles ),
+	) ) . '>' . $columns . '</div>';
 }
 
 /**
@@ -667,7 +864,8 @@ function mrn_base_stack_render_record_presentation( WP_Post $post, array $args )
 	$media  = '';
 	$detail = '';
 	if ( 'people' === $profile ) {
-		$media = get_the_post_thumbnail( $post, 'mrn-content-media', array( 'loading' => 'lazy' ) );
+		$people_settings = is_array( $args['people_settings'] ?? null ) ? $args['people_settings'] : array();
+		$media = get_the_post_thumbnail( $post, function_exists( 'mrn_base_stack_get_people_image_size' ) ? mrn_base_stack_get_people_image_size( $people_settings ) : 'mrn-content-media', array( 'loading' => 'lazy' ) );
 		$video = $data['hover_video'] ?? '';
 		$video = is_array( $video ) ? ( $video['url'] ?? '' ) : ( is_numeric( $video ) ? wp_get_attachment_url( (int) $video ) : $video );
 		if ( is_string( $video ) && '' !== esc_url( $video, array( 'http', 'https' ) ) ) {

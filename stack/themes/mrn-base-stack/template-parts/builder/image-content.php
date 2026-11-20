@@ -56,6 +56,9 @@ if ( ! in_array( $image_caption_style, array( 'under', 'inside' ), true ) ) {
 $has_image     = function_exists( 'mrn_base_stack_image_has_content' ) ? mrn_base_stack_image_has_content( $image ) : false;
 $column_gallery_markup = mrn_base_stack_get_column_gallery_markup( $row );
 $image_stage_attributes = mrn_base_stack_get_image_stage_attributes( $row );
+$overlay_media_raw = $row['image_overlay_media'] ?? 0;
+$overlay_media_id = is_scalar( $overlay_media_raw ) && ctype_digit( (string) $overlay_media_raw ) ? (int) $overlay_media_raw : 0;
+$overlay_media_url = $overlay_media_id > 0 && 'attachment' === get_post_type( $overlay_media_id ) && str_starts_with( (string) get_post_mime_type( $overlay_media_id ), 'image/' ) ? wp_get_attachment_url( $overlay_media_id ) : '';
 $has_image = $has_image || '' !== $column_gallery_markup;
 $image_caption = '';
 
@@ -99,6 +102,8 @@ $section_classes = array(
 	'mrn-content-builder__row--image-content-align-' . sanitize_html_class( $image_alignment ),
 );
 
+if ( '767' === ( $row['image_row_spacing_mobile_breakpoint'] ?? '' ) ) { $section_classes[] = 'has-image-row-spacing-at-767'; }
+
 $section_styles = array();
 if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' ) ) {
 	$section_styles[] = '--mrn-image-content-row-bg: var(' . mrn_site_colors_get_css_var( $background_color ) . ')';
@@ -124,14 +129,22 @@ $section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' 
 $section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
 $frame_contract = mrn_base_stack_get_content_frame_contract( $row, 'image_content' );
 $section_classes = mrn_base_stack_merge_builder_section_classes( $section_classes, $frame_contract );
-if ( in_array( 'has-image-frame', $section_classes, true ) && '' === $label && '' === $heading && '' === $subheading && '' === trim( wp_strip_all_tags( $content ) ) && empty( $content_links ) ) { $section_classes[] = 'has-image-only-frame'; }
+if ( 'framed-zoom' === ( $row['image_presentation'] ?? '' ) && '' !== $image_stage_attributes ) { $section_classes[] = 'has-framed-image-stage'; }
+if ( in_array( 'has-framed-image-stage', $section_classes, true ) && 'cover' === ( $row['image_stage_sizing'] ?? '' ) ) { $section_classes[] = 'has-image-stage-cover'; }
+if ( ( in_array( 'has-image-frame', $section_classes, true ) || in_array( 'has-framed-image-stage', $section_classes, true ) ) && '' === $label && '' === $heading && '' === $subheading && '' === trim( wp_strip_all_tags( $content ) ) && empty( $content_links ) ) { $section_classes[] = 'has-image-only-frame'; }
+$image_source_size = ( in_array( 'has-image-fill-media', $section_classes, true ) || in_array( 'has-image-natural-media', $section_classes, true ) || in_array( 'has-framed-image-stage', $section_classes, true ) ) ? 'full' : 'mrn-content-media';
 $image_attributes = array();
-if ( in_array( 'has-image-frame', $section_classes, true ) && in_array( $row['image_presentation'] ?? 'standard', array( 'standard', 'scroll-drift' ), true ) ) {
+if ( ( in_array( 'has-image-frame', $section_classes, true ) || in_array( 'has-image-only-frame', $section_classes, true ) || in_array( 'has-image-natural-media', $section_classes, true ) ) && in_array( $row['image_presentation'] ?? 'standard', array( 'standard', 'scroll-drift', 'framed-zoom' ), true ) ) {
 	// Keep WordPress auto-sizes containment proportional to the requested media.
-	$dimensions = mrn_base_stack_get_attachment_image_src( $image, 'mrn-content-media' );
+	$dimensions = mrn_base_stack_get_attachment_image_src( $image, $image_source_size );
 	if ( is_array( $dimensions ) && (int) $dimensions[1] > 0 && (int) $dimensions[2] > 0 ) { $image_attributes['style'] = sprintf( 'aspect-ratio:auto %d / %d', (int) $dimensions[1], (int) $dimensions[2] ); }
 }
 $section_attrs = mrn_base_stack_merge_builder_attributes( $section_attrs, $frame_contract['attributes'] );
+$attribution_contract = mrn_base_stack_get_image_attribution_contract( $row );
+$section_classes = mrn_base_stack_merge_builder_section_classes( $section_classes, $attribution_contract );
+$section_attrs = mrn_base_stack_merge_builder_attributes( $section_attrs, $attribution_contract['attributes'] );
+$image_markers_markup = $has_image ? mrn_base_stack_get_image_markers_markup( $row ) : '';
+if ( '' !== $image_markers_markup ) { $figure_classes[] = 'has-image-markers'; }
 $section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';
 $surface_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $section_styles ) : implode( '; ', $section_styles );
 $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
@@ -215,9 +228,10 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 				<?php if ( $has_image ) : ?>
 					<div class="mrn-layout-content mrn-layout-content--media mrn-layout-content--media-stack-media mrn-image-content-row__media mrn-ui__media">
 						<figure class="<?php echo esc_attr( implode( ' ', $figure_classes ) ); ?>" <?php echo $image_stage_attributes; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped attribute helper. ?>>
-							<?php echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_wrap_image_action( mrn_base_stack_get_attachment_image( $image, 'mrn-content-media', $image_attributes ), $row, $image ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+							<?php echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_wrap_image_action( mrn_base_stack_get_attachment_image( $image, $image_source_size, $image_attributes ), $row, $image ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+							<?php echo $image_markers_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Marker media and attributes are escaped by the shared helper. ?>
 							<?php echo $column_gallery_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Gallery images escaped by the Stack image helper. ?>
-							<?php if ( ! empty( $row['image_overlay'] ) && '' !== $image_stage_attributes && in_array( $row['image_presentation'] ?? '', array( 'scroll-zoom', 'tilted-gallery' ), true ) ) : ?><span class="mrn-image-stage__overlay" aria-hidden="true"></span><?php endif; ?>
+							<?php if ( ! empty( $row['image_overlay'] ) && '' !== $image_stage_attributes && in_array( $row['image_presentation'] ?? '', array( 'scroll-zoom', 'tilted-gallery' ), true ) ) : ?><span class="mrn-image-stage__overlay<?php echo $overlay_media_url ? ' mrn-image-stage__overlay--media' : ''; ?>" aria-hidden="true"><?php if ( $overlay_media_url ) : ?><img src="<?php echo esc_url( $overlay_media_url ); ?>" alt="" loading="eager" decoding="async"><?php endif; ?></span><?php endif; ?>
 							<?php if ( '' !== $image_caption_markup ) : ?>
 								<figcaption class="mrn-image-content-row__caption"><?php echo $image_caption_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></figcaption>
 							<?php endif; ?>

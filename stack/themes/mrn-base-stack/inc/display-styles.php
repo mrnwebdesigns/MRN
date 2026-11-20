@@ -367,6 +367,18 @@ function mrn_base_stack_get_builder_layout_display_style_choices( $layout_name, 
 }
 
 /**
+ * Section looks a theme registers for Content Lists rows: key => label. A Content Lists Display Style chooses how each
+ * listed item renders, so a row-level look is a separate Section Look choice.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_content_list_look_choices() {
+	$choices = mrn_base_stack_get_builder_layout_display_style_choices( 'content_lists' );
+	unset( $choices['default'] );
+	return $choices;
+}
+
+/**
  * Normalize a builder layout display style.
  *
  * @param string $style        Candidate style.
@@ -394,6 +406,23 @@ function mrn_base_stack_normalize_builder_layout_display_style( $style, $layout_
 }
 
 /**
+ * Section frames a theme offers on every builder row: key => label. A frame is framing such as an inset band whose
+ * geometry lives in the theme's CSS, keyed on the row class mrn-section-frame--<key>.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_section_frames() {
+	$frames = array();
+	foreach ( (array) apply_filters( 'mrn_base_stack_section_frames', array() ) as $key => $label ) {
+		$key = sanitize_key( (string) $key );
+		if ( '' !== $key && is_scalar( $label ) && '' !== trim( (string) $label ) ) {
+			$frames[ $key ] = sanitize_text_field( (string) $label );
+		}
+	}
+	return $frames;
+}
+
+/**
  * Get the front-end display contract for a builder layout row.
  *
  * @param array<string, mixed> $row         Builder row.
@@ -406,6 +435,12 @@ function mrn_base_stack_get_builder_display_contract( array $row, $layout_name )
 	$display_style = mrn_base_stack_normalize_builder_layout_display_style( $row['display_style'] ?? '', $layout_name, $display_mode, 'default' );
 	$classes       = array();
 	$attributes    = array();
+	if ( in_array( $layout_name, array( 'hero', 'basic_block', 'body_text', 'card', 'cta', 'cta_block', 'content_lists' ), true ) && 'normal' === ( $row['row_text_tracking'] ?? '' ) ) { $classes[] = 'has-row-normal-tracking'; }
+
+	if ( in_array( $layout_name, array( 'hero', 'basic_block', 'body_text', 'card', 'cta', 'cta_block', 'content_lists' ), true ) && function_exists( 'mrn_base_stack_get_frame_palette_color' ) ) {
+		$text_color = mrn_base_stack_get_frame_palette_color( $row['row_text_color'] ?? '' );
+		if ( '' !== $text_color ) { $classes[] = 'has-row-text-color'; $attributes['style'] = '--mrn-row-text-color:' . $text_color; }
+	}
 
 	if ( '' !== $display_mode ) {
 		$classes[]                       = 'mrn-content-builder__row--display-mode-' . sanitize_html_class( $display_mode );

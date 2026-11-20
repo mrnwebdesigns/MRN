@@ -1,0 +1,244 @@
+{
+  "scope": "Compiled local candidate, one-copy native Tabs and explicit frame fields; authored homepage unchanged",
+  "checks": [
+    {
+      "mode": "mrn-tabbed-layout mrn-tabbed-layout--orientation-horizontal mrn-tabbed-layout--position-top-left mrn-tabbed-layout--tab-style-underline-track mrn-tabbed-layout--transition-instant has-tab-mobile-accordion is-desktop-tabs",
+      "overflow": -15,
+      "panels": [
+        {
+          "height": 433.2265625,
+          "hidden": false,
+          "role": "tabpanel"
+        },
+        {
+          "height": 0,
+          "hidden": true,
+          "role": "tabpanel"
+        },
+        {
+          "height": 0,
+          "hidden": true,
+          "role": "tabpanel"
+        },
+        {
+          "height": 0,
+          "hidden": true,
+          "role": "tabpanel"
+        }
+      ],
+      "selected": [
+        "true",
+        "false",
+        "false",
+        "false"
+      ],
+      "width": 1280
+    },
+    {
+      "mode": "mrn-tabbed-layout mrn-tabbed-layout--orientation-horizontal mrn-tabbed-layout--position-top-left mrn-tabbed-layout--tab-style-underline-track mrn-tabbed-layout--transition-instant has-tab-mobile-accordion is-desktop-tabs",
+      "overflow": -15,
+      "panels": [
+        {
+          "height": 0,
+          "hidden": true,
+          "role": "tabpanel"
+        },
+        {
+          "height": 590.0078125,
+          "hidden": false,
+          "role": "tabpanel"
+        },
+        {
+          "height": 0,
+          "hidden": true,
+          "role": "tabpanel"
+        },
+        {
+          "height": 0,
+          "hidden": true,
+          "role": "tabpanel"
+        }
+      ],
+      "selected": [
+        "false",
+        "true",
+        "false",
+        "false"
+      ],
+      "width": 1280
+    },
+    {
+      "mode": "mrn-tabbed-layout mrn-tabbed-layout--orientation-horizontal mrn-tabbed-layout--position-top-left mrn-tabbed-layout--tab-style-underline-track mrn-tabbed-layout--transition-instant has-tab-mobile-accordion is-desktop-tabs",
+      "overflow": -15,
+      "panels": [
+        {
+          "height": 0,
+          "hidden": true,
+          "role": "tabpanel"
+        },
+        {
+          "height": 0,
+          "hidden": true,
+          "role": "tabpanel"
+        },
+        {
+          "height": 534.4140625,
+          "hidden": false,
+          "role": "tabpanel"
+        },
+        {
+          "height": 0,
+          "hidden": true,
+          "role": "tabpanel"
+        }
+      ],
+      "selected": [
+        "false",
+        "false",
+        "true",
+        "false"
+      ],
+      "width": 1280
+    },
+    {
+      "mode": "mrn-tabbed-layout mrn-tabbed-layout--orientation-horizontal mrn-tabbed-layout--position-top-left mrn-tabbed-layout--tab-style-underline-track mrn-tabbed-layout--transition-instant has-tab-mobile-accordion is-desktop-tabs",
+      "overflow": -15,
+      "panels": [
+        {
+          "height": 0,
+          "hidden": true,
+          "role": "tabpanel"
+        },
+        {
+          "height": 0,
+          "hidden": true,
+          "role": "tabpanel"
+        },
+        {
+          "height": 0,
+          "hidden": true,
+          "role": "tabpanel"
+        },
+        {
+          "height": 551.828125,
+          "hidden": false,
+          "role": "tabpanel"
+        }
+      ],
+      "selected": [
+        "false",
+        "false",
+        "false",
+        "true"
+      ],
+      "width": 1280
+    },
+    {
+      "focus": "mrn-tabbed-layout-14602-0-1tab-1",
+      "test": "Home key"
+    },
+    {
+      "focus": "mrn-tabbed-layout-14602-0-1tab-2",
+      "test": "Right arrow"
+    },
+    {
+      "focus": "mrn-tabbed-layout-14602-0-1tab-4",
+      "test": "End key"
+    },
+    {
+      "focus": "mrn-tabbed-layout-14602-0-1drawer-4",
+      "open": [
+        false,
+        false,
+        false,
+        true
+      ],
+      "test": "Desktop to mobile retains selected panel and moves focus",
+      "width": 767
+    },
+    {
+      "focus": "mrn-tabbed-layout-14602-0-1drawer-1",
+      "image": [
+        {
+          "h": 360,
+          "w": 345
+        }
+      ],
+      "open": [
+        true,
+        false,
+        false,
+        false
+      ],
+      "overflow": -15,
+      "test": "Mobile keyboard activation",
+      "width": 390
+    },
+    {
+      "focus": "mrn-tabbed-layout-14602-0-1drawer-2",
+      "image": [
+        {
+          "h": 360,
+          "w": 345
+        }
+      ],
+      "open": [
+        false,
+        true,
+        false,
+        false
+      ],
+      "overflow": -15,
+      "test": "Mobile keyboard activation",
+      "width": 390
+    },
+    {
+      "focus": "mrn-tabbed-layout-14602-0-1drawer-3",
+      "image": [
+        {
+          "h": 360,
+          "w": 345
+        }
+      ],
+      "open": [
+        false,
+        false,
+        true,
+        false
+      ],
+      "overflow": -15,
+      "test": "Mobile keyboard activation",
+      "width": 390
+    },
+    {
+      "focus": "mrn-tabbed-layout-14602-0-1drawer-4",
+      "image": [
+        {
+          "h": 360,
+          "w": 345
+        }
+      ],
+      "open": [
+        false,
+        false,
+        false,
+        true
+      ],
+      "overflow": -15,
+      "test": "Mobile keyboard activation",
+      "width": 390
+    },
+    {
+      "focus": "mrn-tabbed-layout-14602-0-1tab-4",
+      "root": "mrn-tabbed-layout mrn-tabbed-layout--orientation-horizontal mrn-tabbed-layout--position-top-left mrn-tabbed-layout--tab-style-underline-track mrn-tabbed-layout--transition-instant has-tab-mobile-accordion is-desktop-tabs",
+      "test": "Mobile to desktop focus and selection",
+      "width": 768
+    },
+    {
+      "columns": "458px 458px",
+      "overflow": -15,
+      "test": "Tablet columns",
+      "width": 991
+    }
+  ]
+}

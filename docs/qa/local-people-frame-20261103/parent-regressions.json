@@ -1,0 +1,352 @@
+[
+  {
+    "php": "/opt/homebrew/opt/php@8.2/bin/php",
+    "file": "acf-cloned-ajax-fields.php",
+    "exit": 0,
+    "stdout": "PASS: Cloned ACF AJAX field registration and reusable-block query contracts.\nPASS: After Content public, admin, AJAX and integration field contracts.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/opt/php@8.2/bin/php",
+    "file": "acf-select-field-finalization.php",
+    "exit": 0,
+    "stdout": "PASS: ACF builder field finalization regression.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/opt/php@8.2/bin/php",
+    "file": "business-information-defaults.php",
+    "exit": 0,
+    "stdout": "PASS: Business information defaults without ACF.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/opt/php@8.2/bin/php",
+    "file": "business-information-memoization.php",
+    "exit": 0,
+    "stdout": "PASS: Business information memoization and schema contracts.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/opt/php@8.2/bin/php",
+    "file": "content-toc.php",
+    "exit": 0,
+    "stdout": "PASS: Content TOC contract.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/opt/php@8.2/bin/php",
+    "file": "editor-startup.php",
+    "exit": 0,
+    "stdout": "PASS: ownership, saved values, nested rows, opt-outs, public reads and requested templates.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/opt/php@8.2/bin/php",
+    "file": "events-cpt-contract.php",
+    "exit": 0,
+    "stdout": "PASS: Events CPT and ACF field contract are registered.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/opt/php@8.2/bin/php",
+    "file": "frontend-asset-meta-index.php",
+    "exit": 0,
+    "stdout": "Frontend asset meta-index tests passed.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/opt/php@8.2/bin/php",
+    "file": "frontend-component-assets.php",
+    "exit": 0,
+    "stdout": "PASS: Front-end component assets and critical preload.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/opt/php@8.2/bin/php",
+    "file": "header-utility-message-schedule.php",
+    "exit": 0,
+    "stdout": "PASS: Header Utility Message time zones, DST, ACF validation and master switch.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/opt/php@8.2/bin/php",
+    "file": "image-priority-loading.php",
+    "exit": 0,
+    "stdout": "PASS: Image priority and lazy-loading contracts.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/opt/php@8.2/bin/php",
+    "file": "layout-classes.php",
+    "exit": 0,
+    "stdout": "Builder layout-class tests passed.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/opt/php@8.2/bin/php",
+    "file": "lazy-layouts.php",
+    "exit": 0,
+    "stdout": "PASS: saved rows, repeater templates, unrelated fields, nested requests, defaults, and non-editor contexts.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/opt/php@8.2/bin/php",
+    "file": "locations.php",
+    "exit": 0,
+    "stdout": "PASS: Location fields, independent inheritance and retained custom values.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/opt/php@8.2/bin/php",
+    "file": "mobile-navigation-breakpoint.php",
+    "exit": 0,
+    "stdout": "Mobile navigation breakpoint tests passed.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/opt/php@8.2/bin/php",
+    "file": "motion-assets.php",
+    "exit": 0,
+    "stdout": "PASS 22 Motion asset contracts\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/opt/php@8.2/bin/php",
+    "file": "motion-target-choices.php",
+    "exit": 0,
+    "stdout": "Contextual motion target and tab animation choice tests passed.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/opt/php@8.2/bin/php",
+    "file": "not-found-lazy-layouts.php",
+    "exit": 0,
+    "stdout": "Lazy 404 builder layout tests passed.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/opt/php@8.2/bin/php",
+    "file": "people-frame.php",
+    "exit": 0,
+    "stdout": "{\n    \"result\": \"passed\",\n    \"count\": 77,\n    \"checks\": [\n        \"Unselected or unrelated presentation stays byte-empty: 0\",\n        \"Unselected or unrelated presentation stays byte-empty: 1\",\n        \"Unselected or unrelated presentation stays byte-empty: 2\",\n        \"Unselected or unrelated presentation stays byte-empty: 3\",\n        \"Unselected or unrelated presentation stays byte-empty: 4\",\n        \"Explicit frame, heading and grid breakpoints are independent\",\n        \"Editable safe value appears: content-width:1200px\",\n        \"Editable safe value appears: heading-width:286px\",\n        \"Editable safe value appears: inner-gutter:30px\",\n        \"Editable safe value appears: media-ratio:261/306\",\n        \"Editable safe value appears: media-background-color:#DCDCDC\",\n        \"Editable safe value appears: heading-font:var(--site-font-heading)\",\n        \"Editable safe value appears: name-weight:400\",\n        \"Editable safe value appears: designation-size:var(--site-text-body-4-size)\",\n        \"Editable safe value appears: designation-line-height:1\",\n        \"Editable safe value appears: name-color:var(--site-color-ink)\",\n        \"All forty-one controls have unique native keys\",\n        \"Cloned factories receive independent field keys\",\n        \"Editor condition stays on its exact frame/profile: people_frame\",\n        \"Editor condition stays on its exact frame/profile: people_grid_breakpoints\",\n        \"Editor condition stays on its exact frame/profile: people_aside_breakpoint\",\n        \"Editor condition stays on its exact frame/profile: people_image_size\",\n        \"Editor condition stays on its exact frame/profile: people_media_ratio\",\n        \"Editor condition stays on its exact frame/profile: people_media_background_color\",\n        \"Editor condition stays on its exact frame/profile: people_content_width\",\n        \"Editor condition stays on its exact frame/profile: people_inner_gutter\",\n        \"Editor condition stays on its exact frame/profile: people_inner_gutter_compact\",\n        \"Editor condition stays on its exact frame/profile: people_inner_gutter_mobile\",\n        \"Editor condition stays on its exact frame/profile: people_heading_width\",\n        \"Editor condition stays on its exact frame/profile: people_heading_width_compact\",\n        \"Editor condition stays on its exact frame/profile: people_frame_gap\",\n        \"Editor condition stays on its exact frame/profile: people_frame_gap_tablet\",\n        \"Editor condition stays on its exact frame/profile: people_column_gap\",\n        \"Editor condition stays on its exact frame/profile: people_column_gap_mobile\",\n        \"Editor condition stays on its exact frame/profile: people_row_gap\",\n        \"Editor condition stays on its exact frame/profile: people_row_gap_tablet\",\n        \"Editor condition stays on its exact frame/profile: people_row_gap_mobile\",\n        \"Editor condition stays on its exact frame/profile: people_media_space_after\",\n        \"Editor condition stays on its exact frame/profile: people_media_space_after_mobile\",\n        \"Editor condition stays on its exact frame/profile: people_heading_size\",\n        \"Editor condition stays on its exact frame/profile: people_heading_line_height\",\n        \"Editor condition stays on its exact frame/profile: people_heading_size_tablet\",\n        \"Editor condition stays on its exact frame/profile: people_heading_size_mobile\",\n        \"Editor condition stays on its exact frame/profile: people_name_size\",\n        \"Editor condition stays on its exact frame/profile: people_name_line_height\",\n        \"Editor condition stays on its exact frame/profile: people_name_size_tablet\",\n        \"Editor condition stays on its exact frame/profile: people_name_line_height_tablet\",\n        \"Editor condition stays on its exact frame/profile: people_name_space_after\",\n        \"Editor condition stays on its exact frame/profile: people_designation_size\",\n        \"Editor condition stays on its exact frame/profile: people_designation_line_height\",\n        \"Editor condition stays on its exact frame/profile: people_heading_font\",\n        \"Editor condition stays on its exact frame/profile: people_heading_weight\",\n        \"Editor condition stays on its exact frame/profile: people_heading_color\",\n        \"Editor condition stays on its exact frame/profile: people_name_font\",\n        \"Editor condition stays on its exact frame/profile: people_name_weight\",\n        \"Editor condition stays on its exact frame/profile: people_name_color\",\n        \"Editor condition stays on its exact frame/profile: people_designation_font\",\n        \"Editor condition stays on its exact frame/profile: people_designation_weight\",\n        \"Editor condition stays on its exact frame/profile: people_designation_color\",\n        \"Unsafe or unresolved field cannot emit a variable: people_heading_width\",\n        \"Unsafe or unresolved field cannot emit a variable: people_column_gap\",\n        \"Unsafe or unresolved field cannot emit a variable: people_heading_font\",\n        \"Unsafe or unresolved field cannot emit a variable: people_name_weight\",\n        \"Unsafe or unresolved field cannot emit a variable: people_name_color\",\n        \"Unsafe or unresolved field cannot emit a variable: people_media_background_color\",\n        \"Unsafe or unresolved field cannot emit a variable: people_designation_size\",\n        \"Invalid media ratio is ignored: 0\",\n        \"Invalid media ratio is ignored: 1\",\n        \"Invalid media ratio is ignored: 2\",\n        \"Invalid media ratio is ignored: 3\",\n        \"Invalid media ratio is ignored: 4\",\n        \"Invalid media ratio is ignored: 5\",\n        \"Invalid media ratio is ignored: 6\",\n        \"Site Text size and line tokens cannot cross property types\",\n        \"Only an explicitly selected People frame changes the image size\",\n        \"An unregistered image size cannot reach the renderer\",\n        \"Stacked heading and alternate breakpoints remain reusable\"\n    ]\n}\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/opt/php@8.2/bin/php",
+    "file": "read-time.php",
+    "exit": 0,
+    "stdout": "PASS: Read-time contract.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/opt/php@8.2/bin/php",
+    "file": "rendered-social-link-asset-needs.php",
+    "exit": 0,
+    "stdout": "PASS: Rendered social-link asset needs.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/opt/php@8.2/bin/php",
+    "file": "resource-featured-image-support.php",
+    "exit": 0,
+    "stdout": "PASS: Resource CPT keeps featured-image support in admin/data-only mode.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/opt/php@8.2/bin/php",
+    "file": "row-spacing-meta-index.php",
+    "exit": 0,
+    "stdout": "OK: row-spacing meta index hydration handles skipped flexible-content rows.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/opt/php@8.2/bin/php",
+    "file": "search-form-contract.php",
+    "exit": 0,
+    "stdout": "PASS: Search form contract.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/opt/php@8.2/bin/php",
+    "file": "tab-switch-renderer.php",
+    "exit": 0,
+    "stdout": "Saved tab animation choices reach the real renderer; unknown values switch instantly.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/bin/php",
+    "file": "acf-cloned-ajax-fields.php",
+    "exit": 0,
+    "stdout": "PASS: Cloned ACF AJAX field registration and reusable-block query contracts.\nPASS: After Content public, admin, AJAX and integration field contracts.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/bin/php",
+    "file": "acf-select-field-finalization.php",
+    "exit": 0,
+    "stdout": "PASS: ACF builder field finalization regression.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/bin/php",
+    "file": "business-information-defaults.php",
+    "exit": 0,
+    "stdout": "PASS: Business information defaults without ACF.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/bin/php",
+    "file": "business-information-memoization.php",
+    "exit": 0,
+    "stdout": "PASS: Business information memoization and schema contracts.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/bin/php",
+    "file": "content-toc.php",
+    "exit": 0,
+    "stdout": "PASS: Content TOC contract.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/bin/php",
+    "file": "editor-startup.php",
+    "exit": 0,
+    "stdout": "PASS: ownership, saved values, nested rows, opt-outs, public reads and requested templates.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/bin/php",
+    "file": "events-cpt-contract.php",
+    "exit": 0,
+    "stdout": "PASS: Events CPT and ACF field contract are registered.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/bin/php",
+    "file": "frontend-asset-meta-index.php",
+    "exit": 0,
+    "stdout": "Frontend asset meta-index tests passed.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/bin/php",
+    "file": "frontend-component-assets.php",
+    "exit": 0,
+    "stdout": "PASS: Front-end component assets and critical preload.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/bin/php",
+    "file": "header-utility-message-schedule.php",
+    "exit": 0,
+    "stdout": "PASS: Header Utility Message time zones, DST, ACF validation and master switch.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/bin/php",
+    "file": "image-priority-loading.php",
+    "exit": 0,
+    "stdout": "PASS: Image priority and lazy-loading contracts.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/bin/php",
+    "file": "layout-classes.php",
+    "exit": 0,
+    "stdout": "Builder layout-class tests passed.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/bin/php",
+    "file": "lazy-layouts.php",
+    "exit": 0,
+    "stdout": "PASS: saved rows, repeater templates, unrelated fields, nested requests, defaults, and non-editor contexts.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/bin/php",
+    "file": "locations.php",
+    "exit": 0,
+    "stdout": "PASS: Location fields, independent inheritance and retained custom values.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/bin/php",
+    "file": "mobile-navigation-breakpoint.php",
+    "exit": 0,
+    "stdout": "Mobile navigation breakpoint tests passed.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/bin/php",
+    "file": "motion-assets.php",
+    "exit": 0,
+    "stdout": "PASS 22 Motion asset contracts\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/bin/php",
+    "file": "motion-target-choices.php",
+    "exit": 0,
+    "stdout": "Contextual motion target and tab animation choice tests passed.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/bin/php",
+    "file": "not-found-lazy-layouts.php",
+    "exit": 0,
+    "stdout": "Lazy 404 builder layout tests passed.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/bin/php",
+    "file": "people-frame.php",
+    "exit": 0,
+    "stdout": "{\n    \"result\": \"passed\",\n    \"count\": 77,\n    \"checks\": [\n        \"Unselected or unrelated presentation stays byte-empty: 0\",\n        \"Unselected or unrelated presentation stays byte-empty: 1\",\n        \"Unselected or unrelated presentation stays byte-empty: 2\",\n        \"Unselected or unrelated presentation stays byte-empty: 3\",\n        \"Unselected or unrelated presentation stays byte-empty: 4\",\n        \"Explicit frame, heading and grid breakpoints are independent\",\n        \"Editable safe value appears: content-width:1200px\",\n        \"Editable safe value appears: heading-width:286px\",\n        \"Editable safe value appears: inner-gutter:30px\",\n        \"Editable safe value appears: media-ratio:261/306\",\n        \"Editable safe value appears: media-background-color:#DCDCDC\",\n        \"Editable safe value appears: heading-font:var(--site-font-heading)\",\n        \"Editable safe value appears: name-weight:400\",\n        \"Editable safe value appears: designation-size:var(--site-text-body-4-size)\",\n        \"Editable safe value appears: designation-line-height:1\",\n        \"Editable safe value appears: name-color:var(--site-color-ink)\",\n        \"All forty-one controls have unique native keys\",\n        \"Cloned factories receive independent field keys\",\n        \"Editor condition stays on its exact frame/profile: people_frame\",\n        \"Editor condition stays on its exact frame/profile: people_grid_breakpoints\",\n        \"Editor condition stays on its exact frame/profile: people_aside_breakpoint\",\n        \"Editor condition stays on its exact frame/profile: people_image_size\",\n        \"Editor condition stays on its exact frame/profile: people_media_ratio\",\n        \"Editor condition stays on its exact frame/profile: people_media_background_color\",\n        \"Editor condition stays on its exact frame/profile: people_content_width\",\n        \"Editor condition stays on its exact frame/profile: people_inner_gutter\",\n        \"Editor condition stays on its exact frame/profile: people_inner_gutter_compact\",\n        \"Editor condition stays on its exact frame/profile: people_inner_gutter_mobile\",\n        \"Editor condition stays on its exact frame/profile: people_heading_width\",\n        \"Editor condition stays on its exact frame/profile: people_heading_width_compact\",\n        \"Editor condition stays on its exact frame/profile: people_frame_gap\",\n        \"Editor condition stays on its exact frame/profile: people_frame_gap_tablet\",\n        \"Editor condition stays on its exact frame/profile: people_column_gap\",\n        \"Editor condition stays on its exact frame/profile: people_column_gap_mobile\",\n        \"Editor condition stays on its exact frame/profile: people_row_gap\",\n        \"Editor condition stays on its exact frame/profile: people_row_gap_tablet\",\n        \"Editor condition stays on its exact frame/profile: people_row_gap_mobile\",\n        \"Editor condition stays on its exact frame/profile: people_media_space_after\",\n        \"Editor condition stays on its exact frame/profile: people_media_space_after_mobile\",\n        \"Editor condition stays on its exact frame/profile: people_heading_size\",\n        \"Editor condition stays on its exact frame/profile: people_heading_line_height\",\n        \"Editor condition stays on its exact frame/profile: people_heading_size_tablet\",\n        \"Editor condition stays on its exact frame/profile: people_heading_size_mobile\",\n        \"Editor condition stays on its exact frame/profile: people_name_size\",\n        \"Editor condition stays on its exact frame/profile: people_name_line_height\",\n        \"Editor condition stays on its exact frame/profile: people_name_size_tablet\",\n        \"Editor condition stays on its exact frame/profile: people_name_line_height_tablet\",\n        \"Editor condition stays on its exact frame/profile: people_name_space_after\",\n        \"Editor condition stays on its exact frame/profile: people_designation_size\",\n        \"Editor condition stays on its exact frame/profile: people_designation_line_height\",\n        \"Editor condition stays on its exact frame/profile: people_heading_font\",\n        \"Editor condition stays on its exact frame/profile: people_heading_weight\",\n        \"Editor condition stays on its exact frame/profile: people_heading_color\",\n        \"Editor condition stays on its exact frame/profile: people_name_font\",\n        \"Editor condition stays on its exact frame/profile: people_name_weight\",\n        \"Editor condition stays on its exact frame/profile: people_name_color\",\n        \"Editor condition stays on its exact frame/profile: people_designation_font\",\n        \"Editor condition stays on its exact frame/profile: people_designation_weight\",\n        \"Editor condition stays on its exact frame/profile: people_designation_color\",\n        \"Unsafe or unresolved field cannot emit a variable: people_heading_width\",\n        \"Unsafe or unresolved field cannot emit a variable: people_column_gap\",\n        \"Unsafe or unresolved field cannot emit a variable: people_heading_font\",\n        \"Unsafe or unresolved field cannot emit a variable: people_name_weight\",\n        \"Unsafe or unresolved field cannot emit a variable: people_name_color\",\n        \"Unsafe or unresolved field cannot emit a variable: people_media_background_color\",\n        \"Unsafe or unresolved field cannot emit a variable: people_designation_size\",\n        \"Invalid media ratio is ignored: 0\",\n        \"Invalid media ratio is ignored: 1\",\n        \"Invalid media ratio is ignored: 2\",\n        \"Invalid media ratio is ignored: 3\",\n        \"Invalid media ratio is ignored: 4\",\n        \"Invalid media ratio is ignored: 5\",\n        \"Invalid media ratio is ignored: 6\",\n        \"Site Text size and line tokens cannot cross property types\",\n        \"Only an explicitly selected People frame changes the image size\",\n        \"An unregistered image size cannot reach the renderer\",\n        \"Stacked heading and alternate breakpoints remain reusable\"\n    ]\n}\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/bin/php",
+    "file": "read-time.php",
+    "exit": 0,
+    "stdout": "PASS: Read-time contract.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/bin/php",
+    "file": "rendered-social-link-asset-needs.php",
+    "exit": 0,
+    "stdout": "PASS: Rendered social-link asset needs.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/bin/php",
+    "file": "resource-featured-image-support.php",
+    "exit": 0,
+    "stdout": "PASS: Resource CPT keeps featured-image support in admin/data-only mode.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/bin/php",
+    "file": "row-spacing-meta-index.php",
+    "exit": 0,
+    "stdout": "OK: row-spacing meta index hydration handles skipped flexible-content rows.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/bin/php",
+    "file": "search-form-contract.php",
+    "exit": 0,
+    "stdout": "PASS: Search form contract.\n",
+    "stderr": ""
+  },
+  {
+    "php": "/opt/homebrew/bin/php",
+    "file": "tab-switch-renderer.php",
+    "exit": 0,
+    "stdout": "Saved tab animation choices reach the real renderer; unknown values switch instantly.\n",
+    "stderr": ""
+  }
+]

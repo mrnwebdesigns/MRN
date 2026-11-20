@@ -15,12 +15,13 @@ try {
 	$fields = array_column( $layouts['body_text']['sub_fields'], null, 'name' );
 	$nested = mrn_base_stack_get_two_column_nested_layouts();
 	$nested_fields = array_column( mrn_base_stack_ensure_presentation_fields( $nested['layout_mrn_nested_body_text']['sub_fields'], 'body_text', 'field_mrn_nested_body_text' ), null, 'name' );
-	foreach ( array( 'list_columns', 'list_columns_mobile', 'list_flow', 'list_markers', 'list_alignment', 'list_gap' ) as $name ) {
+	foreach ( array( 'list_columns', 'list_columns_mobile', 'list_flow', 'list_markers', 'list_alignment' ) as $name ) {
 		$expect( isset( $fields[ $name ], $nested_fields[ $name ] ) && $fields[ $name ]['key'] !== $nested_fields[ $name ]['key'], 'Root/nested unique editable field: ' . $name );
 	}
+	$expect( ! isset( $fields['list_gap'] ) && ! isset( $nested_fields['list_gap'] ), 'The list gap comes from theme CSS; it is not a root or nested row field' );
 	$expect( $fields['list_columns']['key'] === $fields['list_flow']['conditional_logic'][0][0]['field'] && $nested_fields['list_columns']['key'] === $nested_fields['list_flow']['conditional_logic'][0][0]['field'], 'Root/nested conditional controls reference their own opt-in selector' );
 	$expect( array( '', 1, 2, 3 ) === array_keys( $fields['list_columns']['choices'] ), 'List columns are bounded and existing formatting remains the default' );
-	$row = array( 'acf_fc_layout' => 'body_text', 'heading' => 'Choose your services', 'heading_tag' => 'h2', 'body_text' => '<ul><li><a href="/first/?a=1&amp;b=2">First service</a></li><li>Second service<ul><li>Nested detail</li></ul></li><li>Third service</li><li>Fourth service</li><li>Fifth service</li><li>Sixth service</li></ul>', 'list_columns' => '2', 'list_columns_mobile' => '2', 'list_flow' => 'columns', 'list_markers' => 'plain', 'list_alignment' => 'end-start', 'list_gap' => '30px' );
+	$row = array( 'acf_fc_layout' => 'body_text', 'heading' => 'Choose your services', 'heading_tag' => 'h2', 'body_text' => '<ul><li><a href="/first/?a=1&amp;b=2">First service</a></li><li>Second service<ul><li>Nested detail</li></ul></li><li>Third service</li><li>Fourth service</li><li>Fifth service</li><li>Sixth service</li></ul>', 'list_columns' => '2', 'list_columns_mobile' => '2', 'list_flow' => 'columns', 'list_markers' => 'plain', 'list_alignment' => 'end-start' );
 	foreach ( array( 'margin', 'padding' ) as $dimension ) {
 		foreach ( array( 'top', 'right', 'bottom', 'left' ) as $side ) {
 			$row[ 'row_spacing_' . $dimension . '_' . $side . '_preset' ] = '0px';
@@ -32,13 +33,20 @@ try {
 	$expect( '2' === $readback[0]['list_columns'] && 'columns' === $readback[1]['right_column_rows'][0]['list_flow'], 'Actual ACF root and nested write/readback retains list settings' );
 	$expect( str_contains( $readback[0]['body_text'], 'Nested detail' ) && str_contains( $readback[0]['body_text'], '/first/?a=1&amp;b=2' ), 'Native WYSIWYG retains nested content and query links' );
 	ob_start(); mrn_base_stack_render_builder_row( $readback[0], $id, 0 ); $html = ob_get_clean();
-	$expect( str_contains( $html, 'mrn-ui__text--list-flow-columns' ) && str_contains( $html, 'mrn-ui__text--list-align-end-start' ) && str_contains( $html, '--mrn-list-columns:2' ) && str_contains( $html, '--mrn-list-column-gap:30px' ), 'Renderer emits only bounded native classes and styles' );
+	$expect( str_contains( $html, 'mrn-ui__text--list-flow-columns' ) && str_contains( $html, 'mrn-ui__text--list-align-end-start' ) && str_contains( $html, '--mrn-list-columns:2' ) && ! str_contains( $html, '--mrn-list-column-gap' ), 'Renderer emits only bounded native classes and styles' );
 	$expect( str_contains( $html, '<ul>' ) && str_contains( $html, '<li>' ), 'Output keeps semantic ordered/unordered list markup' );
 	ob_start(); mrn_base_stack_render_builder_row( $readback[1], $id, 1 ); $split_html = ob_get_clean();
 	$expect( str_contains( $split_html, 'mrn-ui__text--list-flow-columns' ), 'Actual nested Split renderer uses native list controls' );
 	$expect( array( 'classes' => array(), 'styles' => array() ) === mrn_base_stack_get_body_list_contract( array( 'list_columns' => '99', 'list_gap' => '2px; color:red' ) ), 'Invalid/unset column counts retain prior formatting' );
 	$unsafe = mrn_base_stack_get_body_list_contract( array( 'list_columns' => '2', 'list_columns_mobile' => 'bad', 'list_alignment' => 'bad"', 'list_flow' => 'bad', 'list_gap' => '2px; color:red' ) );
 	$expect( ! str_contains( implode( ' ', $unsafe['styles'] ), 'red' ) && in_array( '--mrn-list-columns-mobile:1', $unsafe['styles'], true ) && in_array( 'mrn-ui__text--list-align-start', $unsafe['classes'], true ), 'Malformed optional settings cannot escape into CSS or attributes' );
+	$hook = static function ( $contract, $list_row ) { if ( 'fixture-look' === ( $list_row['display_style'] ?? '' ) ) { $contract['classes'][] = 'has-list-item-size'; } return $contract; };
+	add_filter( 'mrn_base_stack_body_list_contract', $hook, 10, 2 );
+	$styled = mrn_base_stack_get_body_list_contract( array_replace( $row, array( 'display_style' => 'fixture-look' ) ) );
+	$plain  = mrn_base_stack_get_body_list_contract( $row );
+	$unset  = mrn_base_stack_get_body_list_contract( array( 'display_style' => 'fixture-look' ) );
+	remove_filter( 'mrn_base_stack_body_list_contract', $hook, 10 );
+	$expect( in_array( 'has-list-item-size', $styled['classes'], true ) && ! in_array( 'has-list-item-size', $plain['classes'], true ) && array( 'classes' => array(), 'styles' => array() ) === $unset, 'A Display Style can switch on list hooks only for a laid-out list' );
 	$default = array( 'acf_fc_layout' => 'body_text', 'body_text' => '<p>Prior content.</p><ul><li>Original list</li></ul>' );
 	ob_start(); mrn_base_stack_render_builder_row( $default, $id, 2 ); $default_html = ob_get_clean();
 	$expect( ! str_contains( $default_html, 'mrn-ui__text--list-' ) && ! str_contains( $default_html, '--mrn-list-' ), 'Unset controls leave the existing renderer contract unchanged' );

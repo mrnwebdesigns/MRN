@@ -1,0 +1,14 @@
+(node:86289) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:86295) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:86295) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(node:86295) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chromium] › tests/playwright/accessibility.spec.mjs:452:3 › accessibility smoke: / (5.6s)
+  ✓  2 [chromium] › tests/playwright/accessibility.spec.mjs:452:3 › accessibility smoke: /stack-local-tabs-preview-20261021/tabs.html (3.0s)
+
+  2 passed (9.8s)

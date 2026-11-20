@@ -49,6 +49,7 @@ function mrn_image_test_assert( $condition, $message ) {
 }
 
 require dirname( __DIR__, 2 ) . '/inc/image-helpers.php';
+require dirname( __DIR__, 2 ) . '/inc/builder/hero-frame.php';
 
 $hero_attributes = mrn_base_stack_get_hero_image_attributes();
 mrn_image_test_assert( 'eager' === $hero_attributes['loading'], 'Hero media is explicitly eager.' );
@@ -64,6 +65,10 @@ mrn_image_test_assert( 'async' === $GLOBALS['mrn_image_test_thumbnail_attrs']['d
 
 $hero_source = file_get_contents( dirname( __DIR__, 2 ) . '/template-parts/builder/hero.php' );
 mrn_image_test_assert( false !== strpos( $hero_source, "'mrn-hero'" ), 'Hero uses the registered responsive image size.' );
-mrn_image_test_assert( 2 === substr_count( $hero_source, '? mrn_base_stack_get_hero_image_attributes' ), 'Both hero image paths use the shared priority contract.' );
+mrn_image_test_assert( false !== strpos( $hero_source, '? mrn_base_stack_get_hero_image_attributes' ) && false !== strpos( $hero_source, 'mrn_base_stack_get_hero_media_image_attributes( $row )' ), 'Background and content media both use native priority helpers.' );
+$bounded = mrn_base_stack_get_hero_media_image_attributes( array( 'hero_media_width' => '422px', 'hero_media_max_share' => '40', 'hero_media_stack_breakpoint' => '900' ) );
+mrn_base_stack_get_attachment_image( 42, 'full', $bounded );
+mrn_image_test_assert( 'eager' === $GLOBALS['mrn_image_test_attachment_attrs']['loading'] && 'high' === $GLOBALS['mrn_image_test_attachment_attrs']['fetchpriority'] && '(max-width: 900px) 100vw, min(422px, 40vw)' === $GLOBALS['mrn_image_test_attachment_attrs']['sizes'], 'Bounded responsive content media reaches the native attachment renderer with Hero priority.' );
+mrn_image_test_assert( $hero_attributes === mrn_base_stack_get_hero_media_image_attributes( array() ) && $hero_attributes === mrn_base_stack_get_hero_media_image_attributes( array( 'hero_media_width' => '1px;bad', 'hero_media_max_share' => '40' ) ), 'Default and malformed bounded image hints retain the original priority contract.' );
 
 echo "PASS: Image priority and lazy-loading contracts.\n";

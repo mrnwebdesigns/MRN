@@ -18,13 +18,6 @@ function mrn_base_stack_get_labeled_logos_fields( $seed ) {
 		elseif ( str_ends_with( $field['name'], '_mobile' ) ) { $field['instructions'] = 'Optional override at 560px and below. Logos stack vertically at 640px.'; }
 	}
 	unset( $field );
-	foreach ( array( 'size' => 'Icon Size', 'gap' => 'Space Between Icons', 'space_before' => 'Space Before Icon Strip' ) as $name => $label ) {
-		$fields[] = array( 'key' => $seed . '_logos_icon_' . $name, 'name' => 'logos_icon_' . $name, 'label' => $label, 'type' => 'text', 'instructions' => 'Optional non-negative CSS length. Outer section spacing stays in row presets.', 'conditional_logic' => array( array( array( 'field' => $seed . '_logos_presentation', 'operator' => '==', 'value' => 'icons' ) ) ) );
-	}
-	foreach ( array( 'min_width' => 'Minimum Logo Column Width', 'column_gap' => 'Space Between Logo Columns', 'row_gap' => 'Space Between Logo Rows', 'image_max_width' => 'Maximum Logo Image Width' ) as $name => $label ) {
-		$fields[] = array( 'key' => $seed . '_logos_grid_' . $name, 'name' => 'logos_grid_' . $name, 'label' => $label, 'type' => 'text', 'instructions' => 'Optional non-negative CSS length. Outer section spacing stays in row presets.', 'conditional_logic' => array( array( array( 'field' => $seed . '_logos_presentation', 'operator' => '==', 'value' => 'auto-grid' ) ) ) );
-	}
-	$fields[] = array( 'key' => $seed . '_logos_heading_font', 'name' => 'logos_heading_font', 'label' => 'Logo Heading Font', 'type' => 'select', 'choices' => array( '' => 'Use Existing Font', 'body' => 'Site Body Font', 'heading' => 'Site Heading Font' ), 'default_value' => '', 'conditional_logic' => array( array( array( 'field' => $seed . '_logos_presentation', 'operator' => '==', 'value' => 'auto-grid' ) ) ) );
 	return $fields;
 }
 
@@ -50,5 +43,7 @@ function mrn_base_stack_get_labeled_logos_contract( array $row ) {
 	}
 	if ( 'labeled' !== ( $row['logos_presentation'] ?? '' ) ) { return array( 'classes' => array(), 'attributes' => array() ); }
 	$contract = mrn_base_stack_get_content_frame_contract( array_merge( $row, array( 'logos_frame' => 'contained' ) ), 'logos' );
-	$contract['classes'][] = 'has-labeled-logos'; return $contract;
+	$contract['classes'][] = 'has-labeled-logos';
+	if ( '767' === (string) ( $row['logos_row_spacing_mobile_breakpoint'] ?? '' ) ) { $contract['classes'][] = 'has-logos-row-spacing-at-767'; }
+	return $contract;
 }

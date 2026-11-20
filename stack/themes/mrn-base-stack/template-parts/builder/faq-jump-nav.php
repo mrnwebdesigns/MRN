@@ -43,14 +43,18 @@ $motion_contract   = function_exists( 'mrn_base_stack_get_builder_motion_contrac
 	'classes'    => array(),
 	'attributes' => array(),
 );
+$frame_contract = mrn_base_stack_get_jump_nav_frame_contract( $row );
+$section_classes = mrn_base_stack_merge_builder_section_classes( $section_classes, $frame_contract );
 $section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $display_contract ) : $section_classes;
 $section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $motion_contract ) : $section_classes;
 $section_attrs     = isset( $display_contract['attributes'] ) && is_array( $display_contract['attributes'] ) ? $display_contract['attributes'] : array();
 $section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
+$section_attrs = mrn_base_stack_merge_builder_attributes( $section_attrs, $frame_contract['attributes'] );
 $section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';
 $heading_id        = 'mrn-faq-jump-nav-heading-' . absint( $builder_post_id ) . '-' . absint( $row_index );
 $nav_label         = 'manual' === ( $row['jump_nav_source'] ?? '' ) ? __( 'Page sections', 'mrn-base-stack' ) : __( 'FAQ sections', 'mrn-base-stack' );
-$nav_attrs         = '' !== $heading ? ' aria-labelledby="' . esc_attr( $heading_id ) . '"' : ' aria-label="' . esc_attr( $nav_label ) . '"';
+$authored_label = is_string( $row['jump_nav_aria_label'] ?? null ) ? trim( wp_strip_all_tags( $row['jump_nav_aria_label'] ) ) : '';
+$nav_attrs = '' !== $authored_label ? ' aria-label="' . esc_attr( $authored_label ) . '"' : ( '' !== $heading ? ' aria-labelledby="' . esc_attr( $heading_id ) . '"' : ' aria-label="' . esc_attr( $nav_label ) . '"' );
 
 echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_stack_get_builder_anchor_markup( $row ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Anchor markup is escaped in the helper.
 ?>

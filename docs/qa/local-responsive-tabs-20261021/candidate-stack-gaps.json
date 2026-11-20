@@ -1,0 +1,11 @@
+{
+  "case-study-tab-action-presentation": [
+    {
+      "id": 12,
+      "slug": "front-page",
+      "row_index": 8,
+      "legacy_layout": "tab_section",
+      "requirement": "Responsive accordion and native field geometry are available in the local candidate. Saved Tabs still has muted inactive logos, a decorated heading action and viewport-specific pointer-follow image action. These native controls and their full-page/editor qualification remain required; do not mark the row visually accepted."
+    }
+  ]
+}

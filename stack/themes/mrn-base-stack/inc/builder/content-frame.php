@@ -1,11 +1,14 @@
 <?php
 /** Optional editable frames for composed text, metrics and image rows. */
+require_once __DIR__ . '/frame-spacing.php';
 function mrn_base_stack_get_content_frame_config( $layout ) {
 	$configs = array(
-		'logos' => array( 'prefix' => 'logos', 'dimensions' => array( 'content_width', 'inner_gutter', 'inner_gutter_compact', 'heading_width', 'heading_size', 'heading_line_height', 'heading_size_tablet', 'heading_size_mobile', 'heading_line_height_mobile', 'label_size', 'label_line_height', 'label_line_height_mobile', 'text_width', 'text_size', 'text_line_height', 'text_size_mobile', 'text_line_height_mobile', 'paragraph_space_after', 'section_gap', 'section_gap_tablet', 'section_gap_mobile', 'item_gap', 'item_gap_tablet', 'item_gap_medium', 'item_gap_mobile', 'label_gap', 'label_gap_mobile' ), 'weights' => array( 'heading_weight', 'label_weight', 'text_weight' ), 'colors' => array( 'heading_color', 'label_color', 'text_color' ), 'transforms' => array( 'label_transform' ) ),
-		'body_text' => array( 'prefix' => 'body', 'dimensions' => array( 'content_width', 'inner_gutter', 'label_size', 'label_line_height', 'label_space_after', 'heading_size', 'heading_line_height', 'heading_space_after', 'heading_space_after_mobile', 'heading_space_before', 'text_size', 'text_line_height', 'text_space_before', 'text_space_after', 'heading_size_tablet', 'heading_line_height_tablet', 'heading_size_mobile', 'heading_line_height_mobile', 'text_space_before_tablet', 'paragraph_space_after' ), 'weights' => array( 'label_weight', 'heading_weight' ), 'colors' => array( 'label_color', 'heading_color', 'text_color' ), 'transforms' => array( 'label_transform' ) ),
-		'stats' => array( 'prefix' => 'stats', 'dimensions' => array( 'content_width', 'inner_gutter', 'value_size', 'value_line_height', 'label_size', 'label_line_height', 'item_gap' ), 'weights' => array( 'value_weight', 'label_weight' ), 'colors' => array( 'value_color', 'label_color' ), 'transforms' => array( 'label_transform' ) ),
-		'image_content' => array( 'prefix' => 'image', 'dimensions' => array( 'content_width', 'inner_gutter', 'height', 'height_mobile', 'media_max_width', 'media_max_height_mobile' ), 'weights' => array(), 'colors' => array(), 'transforms' => array() ),
+		'wpforms' => array( 'prefix' => 'form', 'dimensions' => array(), 'weights' => array(), 'colors' => array(), 'transforms' => array() ),
+		'logos' => array( 'prefix' => 'logos', 'dimensions' => array(), 'weights' => array(), 'colors' => array(), 'transforms' => array() ),
+		'body_text' => array( 'prefix' => 'body', 'dimensions' => array(), 'weights' => array(), 'colors' => array(), 'transforms' => array() ),
+		'stats' => array( 'prefix' => 'stats', 'dimensions' => array(), 'weights' => array(), 'colors' => array(), 'transforms' => array() ),
+		'video' => array( 'prefix' => 'video', 'dimensions' => array(), 'weights' => array(), 'colors' => array(), 'transforms' => array() ),
+		'image_content' => array( 'prefix' => 'image', 'dimensions' => array(), 'weights' => array(), 'colors' => array(), 'transforms' => array() ),
 	);
 	return $configs[ $layout ] ?? array();
 }
@@ -15,30 +18,41 @@ function mrn_base_stack_get_content_frame_fields( $layout, $seed ) {
 	$config = mrn_base_stack_get_content_frame_config( $layout );
 	if ( ! $config ) { return array(); }
 	$prefix = $config['prefix'];
-	$fields = array( array( 'key' => $seed . '_' . $prefix . '_frame', 'name' => $prefix . '_frame', 'label' => 'Content Frame', 'type' => 'select', 'choices' => array( '' => 'Use Existing Frame', 'contained' => 'Contained Content' ), 'default_value' => '', 'instructions' => 'Optional inner geometry and typography. Outer section spacing stays in row presets. Blank preserves existing output.' ) );
+	$fields = array( array( 'key' => $seed . '_' . $prefix . '_frame', 'name' => $prefix . '_frame', 'label' => 'Content Frame', 'type' => 'select', 'choices' => array( '' => 'Use Existing Frame', 'contained' => 'Contained Content' ), 'default_value' => '', 'instructions' => 'Contained Content turns on the options below. Sizes and typography come from the selected look, and section spacing from the Spacing tab. Blank preserves existing output.' ) );
 	foreach ( $config['dimensions'] as $name ) {
 		$fields[] = array( 'key' => $seed . '_' . $prefix . '_' . $name, 'name' => $prefix . '_' . $name, 'label' => ucwords( str_replace( '_', ' ', $name ) ), 'type' => 'text', 'wrapper' => array( 'width' => '50' ), 'instructions' => 'Optional non-negative CSS length or clamp(). Content width accepts none. Font sizes/line heights also accept existing Site Text tokens, such as var(--site-text-body-3-size) or var(--site-text-h3-line). Small-screen image height applies at 767px.' );
 	}
 	foreach ( $config['weights'] as $name ) { $fields[] = array( 'key' => $seed . '_' . $prefix . '_' . $name, 'name' => $prefix . '_' . $name, 'label' => ucwords( str_replace( '_', ' ', $name ) ), 'type' => 'select', 'choices' => array( '' => 'Use Existing Weight' ) + array_combine( range( 100, 900, 100 ), range( 100, 900, 100 ) ), 'default_value' => '' ); }
 	foreach ( $config['transforms'] as $name ) { $fields[] = array( 'key' => $seed . '_' . $prefix . '_' . $name, 'name' => $prefix . '_' . $name, 'label' => ucwords( str_replace( '_', ' ', $name ) ), 'type' => 'select', 'choices' => array( '' => 'Use Existing Case', 'none' => 'As Entered', 'uppercase' => 'Uppercase' ), 'default_value' => '' ); }
 	foreach ( $config['colors'] as $name ) { $field = mrn_base_stack_get_background_color_field( $seed . '_' . $prefix . '_' . $name ); $field['name'] = $prefix . '_' . $name; $field['label'] = ucwords( str_replace( '_', ' ', $name ) ); $fields[] = $field; }
+	if ( 'wpforms' === $layout ) { $fields[] = array( 'key' => $seed . '_form_style', 'name' => 'form_style', 'label' => 'Form Style', 'type' => 'select', 'choices' => array( '' => 'Use Existing Form Styles', 'underline' => 'Underlined Fields with Floating Labels' ), 'default_value' => '', 'instructions' => 'Underlined fields that lift their label when filled, a styled dropdown panel, and a submit button that fills once every required field has a value. Keyboard focus stays visible.' ); }
+	if ( 'wpforms' === $layout ) { $fields[] = array( 'key' => $seed . '_form_content_alignment', 'name' => 'form_content_alignment', 'label' => 'Content Alignment in Canvas', 'type' => 'select', 'choices' => array( '' => 'Leading Edge', 'center' => 'Center', 'end' => 'Trailing Edge' ), 'default_value' => '', 'instructions' => 'Aligns the bounded heading/form group inside its canvas. Section margins and padding remain in row presets.' ); }
+	if ( 'wpforms' === $layout ) { $fields[] = array( 'key' => $seed . '_form_heading_mobile', 'name' => 'form_heading_mobile', 'label' => 'Small-Screen Heading', 'type' => 'select', 'choices' => array( '' => 'Visible', 'screen-reader' => 'Visually Hidden, Available to Screen Readers' ), 'default_value' => '', 'instructions' => 'Optional at 767px and below. The semantic heading remains available to assistive technology.' ); }
+	if ( 'video' === $layout ) { $fields[] = array( 'key' => $seed . '_video_content_sizing', 'name' => 'video_content_sizing', 'label' => 'Video Content Width', 'type' => 'select', 'choices' => array( '' => 'Use Existing Width', 'fill' => 'Fill Available Row Width' ), 'default_value' => '', 'instructions' => 'Let the video fill the width available after native row side padding instead of the default wide canvas cap.' ); }
 	if ( 'body_text' === $layout ) {
-		$fields[] = array( 'key' => $seed . '_body_heading_font', 'name' => 'body_heading_font', 'label' => 'Heading Font', 'type' => 'select', 'choices' => array( '' => 'Use Existing Font', 'heading' => 'Site Heading Font', 'body' => 'Site Body Font' ), 'default_value' => '' );
-		foreach ( array( 'text_size_mobile', 'text_line_height_mobile' ) as $name ) { $fields[] = array( 'key' => $seed . '_body_' . $name, 'name' => 'body_' . $name, 'label' => ucwords( str_replace( '_', ' ', $name ) ), 'type' => 'text' ); }
-		$fields[] = array( 'key' => $seed . '_body_text_mobile_breakpoint', 'name' => 'body_text_mobile_breakpoint', 'label' => 'Small-Screen Text Breakpoint', 'type' => 'select', 'choices' => array( '560' => '560px', '600' => '600px', '767' => '767px' ), 'default_value' => '560' );
-		$fields[] = array( 'key' => $seed . '_body_text_weight', 'name' => 'body_text_weight', 'label' => 'Text Weight', 'type' => 'select', 'choices' => array( '' => 'Use Existing Weight' ) + array_combine( range( 100, 900, 100 ), range( 100, 900, 100 ) ), 'default_value' => '' );
+		$fields[] = array( 'key' => $seed . '_body_content_sizing', 'name' => 'body_content_sizing', 'label' => 'Content Group Width', 'type' => 'select', 'choices' => array( '' => 'Use Existing Width', 'fit' => 'Fit Content Within Canvas', 'fill' => 'Fill Available Canvas Width' ), 'default_value' => '', 'instructions' => 'Set a naturally sized content group or let the heading fill the available canvas, including narrow columns. Outer section spacing remains in row presets.' );
+		$fields[] = array( 'key' => $seed . '_body_lead_style', 'name' => 'body_lead_style', 'label' => 'First Body Paragraph Style', 'type' => 'select', 'choices' => array( '' => 'Use Existing Paragraph Style', 'label' => 'Use Label Typography' ), 'default_value' => '', 'instructions' => 'Apply this row’s Label typography and spacing to the first direct body paragraph without changing its editable rich text.' );
 		$fields[] = array( 'key' => $seed . '_body_text_semantics', 'name' => 'body_text_semantics', 'label' => 'Text Semantics', 'type' => 'select', 'choices' => array( '' => 'Standard Text', 'quote' => 'Quotation' ), 'default_value' => '', 'instructions' => 'Quotation uses a semantic blockquote. Keep attribution in editable content alongside the quotation.' );
 		$fields[] = array( 'key' => $seed . '_body_quote_mark', 'name' => 'body_quote_mark', 'label' => 'Quotation Mark', 'type' => 'select', 'choices' => array( '' => 'None', 'opening' => 'Opening Mark' ), 'default_value' => '' );
-		foreach ( array( 'quote_mark_width', 'quote_mark_gap' ) as $name ) { $fields[] = array( 'key' => $seed . '_body_' . $name, 'name' => 'body_' . $name, 'label' => ucwords( str_replace( '_', ' ', $name ) ), 'type' => 'text', 'instructions' => 'Optional non-negative CSS length. The mark is decorative and does not add spoken text.' ); }
-		$field = mrn_base_stack_get_background_color_field( $seed . '_body_quote_mark_color' ); $field['name'] = 'body_quote_mark_color'; $field['label'] = 'Quotation Mark Color'; $fields[] = $field;
-		foreach ( array( 'label_letter_spacing', 'text_letter_spacing', 'text_letter_spacing_mobile' ) as $name ) { $fields[] = array( 'key' => $seed . '_body_' . $name, 'name' => 'body_' . $name, 'label' => ucwords( str_replace( '_', ' ', $name ) ), 'type' => 'text', 'instructions' => 'Optional letter spacing from -1em to 1em, or -10px to 10px. Mobile applies at 560px and below.' ); }
 		$fields[] = array( 'key' => $seed . '_body_heading_breaks', 'name' => 'body_heading_breaks', 'label' => 'Heading Line Breaks', 'type' => 'select', 'choices' => array( '' => 'Use Existing Formatting', 'preserve' => 'Preserve Entered Line Breaks' ), 'default_value' => '' );
-		foreach ( $fields as &$field ) { if ( 'body_heading_space_after_mobile' === $field['name'] ) { $field['instructions'] = 'Optional heading space at 767px and below; blank preserves the desktop value.'; } elseif ( str_ends_with( $field['name'], '_tablet' ) ) { $field['instructions'] = 'Optional override at 900px and below; blank preserves the desktop value. Existing Site Text size/line tokens are accepted.'; } elseif ( str_ends_with( $field['name'], '_mobile' ) ) { $field['instructions'] = 'Optional override at 560px and below; blank preserves the larger-screen value.'; } } unset( $field );
+		foreach ( $fields as &$field ) { if ( in_array( $field['name'], array( 'body_heading_space_before_mobile', 'body_heading_space_after_mobile' ), true ) ) { $field['instructions'] = 'Optional heading space at 767px and below; blank preserves the desktop value.'; } elseif ( str_ends_with( $field['name'], '_tablet' ) ) { $field['instructions'] = 'Optional override at 900px and below; blank preserves the desktop value. Existing Site Text size/line tokens are accepted.'; } elseif ( str_ends_with( $field['name'], '_mobile' ) ) { $field['instructions'] = 'Optional override at 560px and below; blank preserves the larger-screen value.'; } } unset( $field );
 	}
+	if ( 'image_content' === $layout ) { $fields[] = array( 'key' => $seed . '_image_header_layout', 'name' => 'image_header_layout', 'label' => 'Header Layout', 'type' => 'select', 'choices' => array( '' => 'Stacked', 'inline-action' => 'Heading with Action Beside It' ), 'default_value' => '', 'instructions' => 'Place the first action at the trailing edge of the heading row. Stacks again at 575px and below. Header Gap and Header Space After use the dimensions below.' ); }
+	if ( 'image_content' === $layout ) { $fields[] = array( 'key' => $seed . '_image_media_sizing', 'name' => 'image_media_sizing', 'label' => 'Image Proportions', 'type' => 'select', 'choices' => array( '' => 'Use Existing Sizing', 'natural' => 'Original Proportions', 'cover-frame' => 'Fill Declared Frame' ), 'default_value' => '', 'instructions' => 'For Standard or Scroll Drift media, retain original attachment proportions without the default height cap. Responsive image sources remain enabled. Fixed-height media stages keep their own sizing.' ); }
+	foreach ( $fields as &$field ) { if ( $prefix . '_inner_gutter_compact' === $field['name'] ) { $field['instructions'] = 'Optional inner gutter at 1199px and below; blank keeps the desktop gutter. Outer spacing stays in row presets.'; } } unset( $field );
 	foreach ( $fields as &$field ) { if ( $prefix . '_frame' !== $field['name'] ) { $field['conditional_logic'] = array( array( array( 'field' => $fields[0]['key'], 'operator' => '==', 'value' => 'contained' ) ) ); } }
 	if ( 'body_text' === $layout ) { foreach ( $fields as &$field ) { if ( str_starts_with( $field['name'], 'body_quote_' ) ) { $field['conditional_logic'][0][] = array( 'field' => $seed . '_body_text_semantics', 'operator' => '==', 'value' => 'quote' ); } } }
 	unset( $field );
+	if ( 'wpforms' === $layout ) {
+		$fields[] = array( 'key' => $seed . '_form_modal_id', 'name' => 'form_modal_id', 'label' => 'Open as Modal From Links To', 'type' => 'text', 'default_value' => '', 'instructions' => 'Optional anchor ID such as audit-modal. The form then stays hidden in an accessible dialog and opens when a visitor activates a link whose address is # followed by this ID. Without JavaScript the same link still shows the dialog. Lowercase letters, numbers and hyphens only; leave blank to show the form in the page.' );
+	}
 	return $fields;
+}
+
+/** The validated anchor ID that turns a WPForms row into a link-opened dialog, or an empty string. */
+function mrn_base_stack_get_form_modal_id( array $row ) {
+	$id = $row['form_modal_id'] ?? '';
+	return is_string( $id ) && preg_match( '/^[a-z][a-z0-9-]{0,62}$/D', $id ) ? $id : '';
 }
 
 /** Typography may reference only the bounded existing Site Text token namespace. */
@@ -62,7 +76,25 @@ function mrn_base_stack_get_content_frame_contract( array $row, $layout ) {
 	foreach ( $config['weights'] as $name ) { $value = $row[ $prefix . '_' . $name ] ?? ''; if ( is_scalar( $value ) && in_array( (string) $value, array_map( 'strval', range( 100, 900, 100 ) ), true ) ) { $styles[] = '--mrn-' . $prefix . '-frame-' . str_replace( '_', '-', $name ) . ':' . $value; $result['classes'][] = 'has-' . $prefix . '-' . str_replace( '_', '-', $name ); } }
 	foreach ( $config['transforms'] as $name ) { $value = $row[ $prefix . '_' . $name ] ?? ''; if ( in_array( $value, array( 'none', 'uppercase' ), true ) ) { $styles[] = '--mrn-' . $prefix . '-frame-' . str_replace( '_', '-', $name ) . ':' . $value; $result['classes'][] = 'has-' . $prefix . '-' . str_replace( '_', '-', $name ); } }
 	foreach ( $config['colors'] as $name ) { $value = mrn_base_stack_get_frame_palette_color( $row[ $prefix . '_' . $name ] ?? '' ); if ( '' !== $value ) { $styles[] = '--mrn-' . $prefix . '-frame-' . str_replace( '_', '-', $name ) . ':' . $value; $result['classes'][] = 'has-' . $prefix . '-' . str_replace( '_', '-', $name ); } }
+	if ( 'image_content' === $layout && 'inline-action' === ( $row['image_header_layout'] ?? '' ) ) { $result['classes'][] = 'has-image-header-inline-action'; if ( function_exists( 'mrn_base_stack_enqueue_presentation' ) ) { mrn_base_stack_enqueue_presentation(); } }
+	if ( 'wpforms' === $layout && 'underline' === ( $row['form_style'] ?? '' ) ) { $result['classes'][] = 'has-form-underline'; $result['attributes']['data-mrn-underline-form'] = '1'; if ( function_exists( 'mrn_base_stack_enqueue_presentation' ) ) { mrn_base_stack_enqueue_presentation(); } }
+	if ( 'wpforms' === $layout && in_array( $row['form_content_alignment'] ?? '', array( 'center', 'end' ), true ) ) { $result['classes'][] = 'has-form-content-align-' . $row['form_content_alignment']; }
+	if ( 'wpforms' === $layout && 'screen-reader' === ( $row['form_heading_mobile'] ?? '' ) ) { $result['classes'][] = 'has-form-heading-mobile-sr'; }
+	if ( 'video' === $layout && 'fill' === ( $row['video_content_sizing'] ?? '' ) ) { $result['classes'][] = 'has-video-content-fill'; }
+	if ( 'stats' === $layout ) {
+		if ( in_array( $row['stats_value_font'] ?? '', array( 'heading', 'body' ), true ) ) { $result['classes'][] = 'has-stats-value-font-' . $row['stats_value_font']; }
+		$tracking = mrn_base_stack_get_frame_letter_spacing( $row['stats_label_letter_spacing'] ?? '' );
+		if ( '' !== $tracking ) { $styles[] = '--mrn-stats-frame-label-letter-spacing:' . $tracking; $result['classes'][] = 'has-stats-label-letter-spacing'; }
+	}
 	if ( 'body_text' === $layout ) {
+		$spacing = mrn_base_stack_get_frame_spacing_contract( $row, 'body' );
+		$result['classes'] = array_merge( $result['classes'], $spacing['classes'] );
+		$styles = array_merge( $styles, $spacing['styles'] );
+		if ( 'fit' === ( $row['body_content_sizing'] ?? '' ) ) { $result['classes'][] = 'has-body-content-fit'; }
+		if ( 'fill' === ( $row['body_content_sizing'] ?? '' ) ) { $result['classes'][] = 'has-body-content-fill'; }
+		if ( 'label' === ( $row['body_lead_style'] ?? '' ) ) { $result['classes'][] = 'has-body-lead-label'; }
+		if ( in_array( $row['body_link_decoration'] ?? '', array( 'none', 'underline' ), true ) ) { $result['classes'][] = 'has-body-link-decoration'; $styles[] = '--mrn-body-frame-link-decoration:' . $row['body_link_decoration']; }
+		if ( '991-600' === ( $row['body_frame_breakpoints'] ?? '' ) ) { $result['classes'][] = 'has-body-breakpoints-991-600'; }
 		if ( in_array( $row['body_heading_font'] ?? '', array( 'heading', 'body' ), true ) ) { $result['classes'][] = 'has-body-heading-font-' . $row['body_heading_font']; }
 		foreach ( array( 'text_size_mobile', 'text_line_height_mobile', 'quote_mark_width', 'quote_mark_gap' ) as $name ) {
 			if ( str_starts_with( $name, 'quote_' ) && 'quote' !== ( $row['body_text_semantics'] ?? '' ) ) { continue; }
@@ -76,9 +108,11 @@ function mrn_base_stack_get_content_frame_contract( array $row, $layout ) {
 			$result['classes'][] = 'has-body-quote-mark'; $color = mrn_base_stack_get_frame_palette_color( $row['body_quote_mark_color'] ?? '' );
 			if ( '' !== $color ) { $styles[] = '--mrn-body-frame-quote-mark-color:' . $color; }
 		}
-		foreach ( array( 'label_letter_spacing', 'text_letter_spacing', 'text_letter_spacing_mobile' ) as $name ) { $value = mrn_base_stack_get_frame_letter_spacing( $row[ 'body_' . $name ] ?? '' ); if ( '' !== $value ) { $styles[] = '--mrn-body-frame-' . str_replace( '_', '-', $name ) . ':' . $value; $result['classes'][] = 'has-body-' . str_replace( '_', '-', $name ); } }
+		foreach ( array( 'label_letter_spacing', 'heading_letter_spacing', 'text_letter_spacing', 'text_letter_spacing_mobile' ) as $name ) { $value = mrn_base_stack_get_frame_letter_spacing( $row[ 'body_' . $name ] ?? '' ); if ( '' !== $value ) { $styles[] = '--mrn-body-frame-' . str_replace( '_', '-', $name ) . ':' . $value; $result['classes'][] = 'has-body-' . str_replace( '_', '-', $name ); } }
 		if ( 'preserve' === ( $row['body_heading_breaks'] ?? '' ) ) { $result['classes'][] = 'has-body-heading-breaks'; }
 	}
+	if ( 'image_content' === $layout && 'cover-frame' === ( $row['image_media_sizing'] ?? '' ) ) { $result['classes'][] = 'has-image-fill-media'; }
+	if ( 'image_content' === $layout && 'natural' === ( $row['image_media_sizing'] ?? '' ) && in_array( $row['image_presentation'] ?? 'standard', array( '', 'standard', 'scroll-drift' ), true ) ) { $result['classes'][] = 'has-image-natural-media'; }
 	if ( $styles ) { $result['attributes']['style'] = implode( ';', $styles ); }
 	return $result;
 }

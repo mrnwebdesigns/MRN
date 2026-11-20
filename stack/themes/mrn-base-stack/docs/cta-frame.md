@@ -24,3 +24,26 @@ Classic Editor and complete-page acceptance before converting content.
 
 Run `tests/runtime/cta-frame.php` through WP-CLI in an explicitly selected guarded
 localhost administrator runtime. It creates and removes only its owned draft.
+
+## Optional responsive heading and button frame
+
+The CTA editor now accepts four links, matching the existing reusable renderer's
+primary through quaternary action slots. Existing one/two-link rows keep their
+order and output. Page-specific and nested compatibility CTAs use isolated keys;
+Basic row capacity is unchanged.
+
+Stacked Content adds heading size/trailing-space overrides at 991px and 600px,
+responsive inter-action gaps and an optional 600px inner-gutter breakpoint. Blank
+controls retain the existing frame. Typography accepts bounded lengths or
+allowlisted Site Text heading, body, label and button size/line tokens.
+
+**Custom Button Frame** explicitly opts button links into editable padding,
+small-screen padding/font size, corner radius, font family/weight, Site Colors,
+hover/focus background and media-icon width. The existing media-icon height and
+per-link icon position/gap controls remain available. Text links retain their
+presentation. Existing focus indicators remain visible; no animation or JavaScript
+is added. Section margins/padding still belong exclusively to row presets.
+
+This source is qualified in the isolated local migration candidate. It is not a
+package/version change or managed-site adoption. Full-page and Classic Editor
+acceptance still apply to each site's use.

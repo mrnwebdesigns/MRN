@@ -1,0 +1,299 @@
+id,slug,post_type,source_status,row_index,legacy_layout,candidate,gap_codes,converter_blockers,active_source,converter_status,status
+12,front-page,page,publish,0,front_slider,page_hero_rows.basic_block,,,True,mapped,mapping-implemented
+12,front-page,page,publish,1,full_width_image,basic_block / two_column_split,,,True,mapped,mapping-implemented
+12,front-page,page,publish,2,features,card,,,True,mapped,mapping-implemented
+12,front-page,page,publish,3,logos_slider,logos,,,True,mapped,mapping-implemented
+12,front-page,page,publish,4,video_section,video,,,True,mapped,mapping-implemented
+12,front-page,page,publish,5,three_column_cta_section,card or grid,,,True,mapped,mapping-implemented
+12,front-page,page,publish,6,three_column_cta_with_image,card,,Image Cards curve requires a verified native Graphic Element configuration.,True,blocked,converter-work
+12,front-page,page,publish,7,consultation_section,two_column_split + basic_block,,,True,mapped,mapping-implemented
+12,front-page,page,publish,8,tab_section,tabbed_layout,case-study-tab-action-presentation,"Presentation review: Native mobile accordion and editable framing are encoded; complete-page comparison, remaining action/typography differences and editor qualification are still required.",True,mapped-review,stack-review
+12,front-page,page,publish,9,our_work,showcase + body_text,,,True,mapped,mapping-implemented
+12,front-page,page,publish,10,timeline_section,two_column_split + card/body_text,,,True,mapped,mapping-implemented
+12,front-page,page,publish,11,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+308,website-design-and-development,page,publish,0,hero_inner_section,page_hero_rows.basic_block or content.basic_block,,,True,mapped,mapping-implemented
+308,website-design-and-development,page,publish,1,horizontal_gallery,showcase or slider,,Unsupported legacy layout: horizontal_gallery,True,blocked,converter-work
+308,website-design-and-development,page,publish,2,grid_layouts,grid or card,,Unsupported legacy layout: grid_layouts,True,blocked,converter-work
+308,website-design-and-development,page,publish,3,informational_block,two_column_split + card,,Unsupported legacy layout: informational_block,True,blocked,converter-work
+308,website-design-and-development,page,publish,4,two_column_split,two_column_split,,Unsupported legacy layout: two_column_split,True,blocked,converter-work
+308,website-design-and-development,page,publish,5,text_block,body_text or image_content,,,True,mapped,mapping-implemented
+308,website-design-and-development,page,publish,6,text_block,body_text or image_content,,,True,mapped,mapping-implemented
+308,website-design-and-development,page,publish,7,success_stories_section,card,,Unsupported legacy layout: success_stories_section,True,blocked,converter-work
+308,website-design-and-development,page,publish,8,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+308,website-design-and-development,page,publish,9,three_column_cta_section,card or grid,,,True,mapped,mapping-implemented
+308,website-design-and-development,page,publish,10,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+400,about-mrn,page,publish,0,hero_inner_section,page_hero_rows.basic_block or content.basic_block,,,True,mapped,mapping-implemented
+400,about-mrn,page,publish,1,full_width_image,basic_block / two_column_split,,Unresolved target choice: section_width=container,True,blocked,converter-work
+400,about-mrn,page,publish,2,text_block,body_text or image_content,,,True,mapped,mapping-implemented
+400,about-mrn,page,publish,3,consultation_section,two_column_split + basic_block,,,True,mapped,mapping-implemented
+400,about-mrn,page,publish,4,three_column_cta_with_image,card,,,True,mapped,mapping-implemented
+400,about-mrn,page,publish,5,text_block,body_text or image_content,,,True,mapped,mapping-implemented
+400,about-mrn,page,publish,6,text_block,body_text or image_content,,,True,mapped,mapping-implemented
+611,site-maintenance-and-support,page,publish,0,hero_inner_section,page_hero_rows.basic_block or content.basic_block,,,True,mapped,mapping-implemented
+611,site-maintenance-and-support,page,publish,1,logos_slider,logos,,"Legacy color has no exact existing Site Color: rgb(255,255,255)",True,blocked,converter-work
+611,site-maintenance-and-support,page,publish,2,left_content_with_accordion,two_column_split + faq,,Unsupported legacy layout: left_content_with_accordion,True,blocked,converter-work
+611,site-maintenance-and-support,page,publish,3,three_column_cta_with_image,card,,Image Cards curve requires a verified native Graphic Element configuration.,True,blocked,converter-work
+611,site-maintenance-and-support,page,publish,4,testimonial,basic_block,,Unsupported legacy layout: testimonial,True,blocked,converter-work
+611,site-maintenance-and-support,page,publish,5,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+611,site-maintenance-and-support,page,publish,6,consultation_section,two_column_split + basic_block,,,True,mapped,mapping-implemented
+611,site-maintenance-and-support,page,publish,7,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+611,site-maintenance-and-support,page,publish,8,three_column_cta_section,card or grid,,,True,mapped,mapping-implemented
+611,site-maintenance-and-support,page,publish,9,logos_section,logos + body_text,,Unsupported legacy layout: logos_section,True,blocked,converter-work
+653,our-work,page,publish,0,hero_inner_section,page_hero_rows.basic_block or content.basic_block,,,True,mapped,mapping-implemented
+653,our-work,page,publish,1,featured_case_studies,content_lists(case_study),,Unsupported legacy layout: featured_case_studies,True,blocked,converter-work
+653,our-work,page,publish,2,our_projects,content_lists(case_study) with site query adapter,,Unsupported legacy layout: our_projects,True,blocked,converter-work
+653,our-work,page,publish,3,before_and_after_gallery,basic_block,,Unsupported legacy layout: before_and_after_gallery,True,blocked,converter-work
+653,our-work,page,publish,4,cta,cta,,Presentation review: Native CTA frame is encoded; individual complete-page and editor acceptance are still required before authored conversion.,True,mapped-review,presentation-review
+673,contact-us,page,publish,0,hero_inner_section,page_hero_rows.basic_block or content.basic_block,,,True,mapped,mapping-implemented
+673,contact-us,page,publish,1,contact_us,two_column_split + wpforms + basic_block,,Unsupported legacy layout: contact_us,True,blocked,converter-work
+673,contact-us,page,publish,2,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+673,contact-us,page,publish,3,google_map_image,basic_block,,Unsupported legacy layout: google_map_image,True,blocked,converter-work
+774,landing,page,publish,0,hero_inner_section,page_hero_rows.basic_block or content.basic_block,,Audit modal requires the retained site adapter.,True,blocked,converter-work
+774,landing,page,publish,1,text_block,body_text or image_content,,,True,mapped,mapping-implemented
+774,landing,page,publish,2,two_column_split,two_column_split,,Unsupported legacy layout: two_column_split,True,blocked,converter-work
+774,landing,page,publish,3,three_column_cta_with_image,card,,Audit modal requires the retained site adapter.,True,blocked,converter-work
+774,landing,page,publish,4,full_image_with_below_content,basic_block,,Unsupported legacy layout: full_image_with_below_content,True,blocked,converter-work
+774,landing,page,publish,5,get_your_free_site_audit_form,two_column_split + wpforms + basic_block,,Unsupported legacy layout: get_your_free_site_audit_form,True,blocked,converter-work
+774,landing,page,publish,6,cta,cta,,Audit modal requires the retained site adapter.,True,blocked,converter-work
+1017,social-media,page,publish,0,hero_inner_section,page_hero_rows.basic_block or content.basic_block,,,True,mapped,mapping-implemented
+1017,social-media,page,publish,1,text_block,body_text or image_content,,,True,mapped,mapping-implemented
+1017,social-media,page,publish,2,left_content_with_accordion,two_column_split + faq,,Unsupported legacy layout: left_content_with_accordion,True,blocked,converter-work
+1017,social-media,page,publish,3,three_column_cta_with_image,card,,,True,mapped,mapping-implemented
+1017,social-media,page,publish,4,timeline_section,two_column_split + card/body_text,,,True,mapped,mapping-implemented
+1017,social-media,page,publish,5,pricing_plans,card with approved child display styles,,Unsupported legacy layout: pricing_plans,True,blocked,converter-work
+1017,social-media,page,publish,6,consultation_section,two_column_split + basic_block,,,True,mapped,mapping-implemented
+1017,social-media,page,publish,7,cta,cta,,"Legacy color has no exact existing Site Color: rgb(255,255,255)",True,blocked,converter-work
+1017,social-media,page,publish,8,three_column_cta_section,card or grid,,,True,mapped,mapping-implemented
+1017,social-media,page,publish,9,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+1124,frequently-asked-questions,page,publish,0,hero_inner_section,page_hero_rows.basic_block or content.basic_block,,,True,mapped,mapping-implemented
+1124,frequently-asked-questions,page,publish,1,faq,faq + cta,,Presentation review: FAQ question typography and adjacent Split/CTA frame require native presentation qualification; all questions remain preserved.,True,mapped-review,presentation-review
+1142,seo-ai-search-optimization,page,publish,0,hero_inner_section,page_hero_rows.basic_block or content.basic_block,,,True,mapped,mapping-implemented
+1142,seo-ai-search-optimization,page,publish,1,stats_row,stats,,,True,mapped,mapping-implemented
+1142,seo-ai-search-optimization,page,publish,2,text_block,body_text or image_content,,,True,mapped,mapping-implemented
+1142,seo-ai-search-optimization,page,publish,3,three_column_cta_with_image,card,,,True,mapped,mapping-implemented
+1142,seo-ai-search-optimization,page,publish,4,text_block,body_text or image_content,,Compact-list presentation needs an explicit native setting.,True,blocked,converter-work
+1142,seo-ai-search-optimization,page,publish,5,left_content_with_accordion,two_column_split + faq,,Unsupported legacy layout: left_content_with_accordion,True,blocked,converter-work
+1142,seo-ai-search-optimization,page,publish,6,left_content_with_accordion,two_column_split + faq,,Unsupported legacy layout: left_content_with_accordion,True,blocked,converter-work
+1142,seo-ai-search-optimization,page,publish,7,consultation_section,two_column_split + basic_block,,,True,mapped,mapping-implemented
+1142,seo-ai-search-optimization,page,publish,8,timeline_section,two_column_split + card/body_text,,,True,mapped,mapping-implemented
+1142,seo-ai-search-optimization,page,publish,9,cta,cta,,Presentation review: Native CTA frame is encoded; individual complete-page and editor acceptance are still required before authored conversion.,True,mapped-review,presentation-review
+1142,seo-ai-search-optimization,page,publish,10,pricing_plans,card with approved child display styles,,Unsupported legacy layout: pricing_plans,True,blocked,converter-work
+1142,seo-ai-search-optimization,page,publish,11,testimonial,basic_block,,Unsupported legacy layout: testimonial,True,blocked,converter-work
+1142,seo-ai-search-optimization,page,publish,12,cta,cta,,Presentation review: Native CTA frame is encoded; individual complete-page and editor acceptance are still required before authored conversion.,True,mapped-review,presentation-review
+1142,seo-ai-search-optimization,page,publish,13,faq,faq + cta,,,True,mapped,mapping-implemented
+1142,seo-ai-search-optimization,page,publish,14,three_column_cta_section,card or grid,,,True,mapped,mapping-implemented
+1142,seo-ai-search-optimization,page,publish,15,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+1191,google-business-tools,page,publish,0,hero_inner_section,page_hero_rows.basic_block or content.basic_block,,,True,mapped,mapping-implemented
+1191,google-business-tools,page,publish,1,three_column_cta_with_image,card,,,True,mapped,mapping-implemented
+1191,google-business-tools,page,publish,2,two_column_split,two_column_split,,Unsupported legacy layout: two_column_split,True,blocked,converter-work
+1191,google-business-tools,page,publish,3,what_we_offer_section,card or grid,,Unsupported legacy layout: what_we_offer_section,True,blocked,converter-work
+1191,google-business-tools,page,publish,4,pricing_plans,card with approved child display styles,,Unsupported legacy layout: pricing_plans,True,blocked,converter-work
+1191,google-business-tools,page,publish,5,cta,cta,,Presentation review: Native CTA frame is encoded; individual complete-page and editor acceptance are still required before authored conversion.,True,mapped-review,presentation-review
+1191,google-business-tools,page,publish,6,three_column_cta_section,card or grid,,,True,mapped,mapping-implemented
+1191,google-business-tools,page,publish,7,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+1210,blog-writing,page,publish,0,hero_inner_section,page_hero_rows.basic_block or content.basic_block,,,True,mapped,mapping-implemented
+1210,blog-writing,page,publish,1,text_block,body_text or image_content,,,True,mapped,mapping-implemented
+1210,blog-writing,page,publish,2,what_we_do_section,card,,Unsupported legacy layout: what_we_do_section,True,blocked,converter-work
+1210,blog-writing,page,publish,3,three_column_cta_with_image,card,,,True,mapped,mapping-implemented
+1210,blog-writing,page,publish,4,consultation_section,two_column_split + basic_block,,,True,mapped,mapping-implemented
+1210,blog-writing,page,publish,5,text_block,body_text or image_content,,Compact-list presentation needs an explicit native setting.,True,blocked,converter-work
+1210,blog-writing,page,publish,6,pricing_plans,card with approved child display styles,,Unsupported legacy layout: pricing_plans,True,blocked,converter-work
+1210,blog-writing,page,publish,7,cta,cta,,Presentation review: Native CTA frame is encoded; individual complete-page and editor acceptance are still required before authored conversion.,True,mapped-review,presentation-review
+1210,blog-writing,page,publish,8,three_column_cta_section,card or grid,,,True,mapped,mapping-implemented
+1210,blog-writing,page,publish,9,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+1223,graphic-design,page,publish,0,hero_inner_section,page_hero_rows.basic_block or content.basic_block,,,True,mapped,mapping-implemented
+1223,graphic-design,page,publish,1,service_blocks_section,card,,Unsupported legacy layout: service_blocks_section,True,blocked,converter-work
+1223,graphic-design,page,publish,2,cta,cta,,Presentation review: Native CTA frame is encoded; individual complete-page and editor acceptance are still required before authored conversion.,True,mapped-review,presentation-review
+1223,graphic-design,page,publish,3,our_work,showcase + body_text,,,True,mapped,mapping-implemented
+1236,our-team,page,publish,0,hero_inner_section,page_hero_rows.basic_block or content.basic_block,,,True,mapped,mapping-implemented
+1236,our-team,page,publish,1,team_section,content_lists(mrn_team) with site adapter,,Unsupported legacy layout: team_section,True,blocked,converter-work
+1236,our-team,page,publish,2,social_follow_section,grid + basic_block links,,Unsupported legacy layout: social_follow_section,True,blocked,converter-work
+1236,our-team,page,publish,3,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+1304,national-aphasia-association,case_study,publish,0,hero_inner_section,page_hero_rows.basic_block or content.basic_block,,,True,mapped,mapping-implemented
+1304,national-aphasia-association,case_study,publish,1,video_section,video,,,True,mapped,mapping-implemented
+1304,national-aphasia-association,case_study,publish,2,case_study_overview,two_column_split + body_text,,Unsupported legacy layout: case_study_overview,True,blocked,converter-work
+1304,national-aphasia-association,case_study,publish,3,case_study_problem,body_text,,Unsupported legacy layout: case_study_problem,True,blocked,converter-work
+1304,national-aphasia-association,case_study,publish,4,case_study_solutions,card or body_text sequence,,Unsupported legacy layout: case_study_solutions,True,blocked,converter-work
+1304,national-aphasia-association,case_study,publish,5,case_study_logo_comparison,body_text + logos,,Unsupported legacy layout: case_study_logo_comparison,True,blocked,converter-work
+1304,national-aphasia-association,case_study,publish,6,case_study_image_gallery,showcase or slider,,Unsupported legacy layout: case_study_image_gallery,True,blocked,converter-work
+1304,national-aphasia-association,case_study,publish,7,case_study_testimonial,basic_block,,Unsupported legacy layout: case_study_testimonial,True,blocked,converter-work
+1304,national-aphasia-association,case_study,publish,8,cta,cta,,Incomplete link.,True,blocked,converter-work
+1304,national-aphasia-association,case_study,publish,9,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+1307,amish-mike,case_study,publish,0,hero_inner_section,page_hero_rows.basic_block or content.basic_block,,,True,mapped,mapping-implemented
+1307,amish-mike,case_study,publish,1,full_width_image,basic_block / two_column_split,,,True,mapped,mapping-implemented
+1307,amish-mike,case_study,publish,2,case_study_overview,two_column_split + body_text,,Unsupported legacy layout: case_study_overview,True,blocked,converter-work
+1307,amish-mike,case_study,publish,3,case_study_problem,body_text,,Unsupported legacy layout: case_study_problem,True,blocked,converter-work
+1307,amish-mike,case_study,publish,4,case_study_solutions,card or body_text sequence,,Unsupported legacy layout: case_study_solutions,True,blocked,converter-work
+1307,amish-mike,case_study,publish,5,case_study_image_gallery,showcase or slider,,Unsupported legacy layout: case_study_image_gallery,True,blocked,converter-work
+1307,amish-mike,case_study,publish,6,case_study_testimonial,basic_block,,Unsupported legacy layout: case_study_testimonial,True,blocked,converter-work
+1307,amish-mike,case_study,publish,7,case_study_logo_comparison,body_text + logos,,Unsupported legacy layout: case_study_logo_comparison,True,blocked,converter-work
+1307,amish-mike,case_study,publish,8,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+1307,amish-mike,case_study,publish,9,video_section,video,,,True,mapped,mapping-implemented
+1309,nc-council-on-the-holocaust,case_study,publish,0,full_width_image,basic_block / two_column_split,,,True,mapped,mapping-implemented
+1309,nc-council-on-the-holocaust,case_study,publish,1,case_study_testimonial,basic_block,,Unsupported legacy layout: case_study_testimonial,True,blocked,converter-work
+1309,nc-council-on-the-holocaust,case_study,publish,2,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+1443,careers,page,publish,0,hero_inner_section,page_hero_rows.basic_block or content.basic_block,,,True,mapped,mapping-implemented
+1443,careers,page,publish,1,horizontal_gallery,showcase or slider,,Unsupported legacy layout: horizontal_gallery,True,blocked,converter-work
+1443,careers,page,publish,2,careers_section,content_lists(mrn_career),,Unsupported legacy layout: careers_section,True,blocked,converter-work
+9287,insights,page,publish,0,hero_inner_section,page_hero_rows.basic_block or content.basic_block,,,True,mapped,mapping-implemented
+9287,insights,page,publish,1,blog_list,content_lists(post),,Unsupported legacy layout: blog_list,True,blocked,converter-work
+9287,insights,page,publish,2,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+9555,e-commerce,page,publish,0,hero_inner_section,page_hero_rows.basic_block or content.basic_block,,,True,mapped,mapping-implemented
+9555,e-commerce,page,publish,1,left_content_with_accordion,two_column_split + faq,,Unsupported legacy layout: left_content_with_accordion,True,blocked,converter-work
+9555,e-commerce,page,publish,2,featured_case_studies,content_lists(case_study),,Unsupported legacy layout: featured_case_studies,True,blocked,converter-work
+9555,e-commerce,page,publish,3,three_column_cta_with_image,card,,,True,mapped,mapping-implemented
+9555,e-commerce,page,publish,4,consultation_section,two_column_split + basic_block,,,True,mapped,mapping-implemented
+9555,e-commerce,page,publish,5,timeline_section,two_column_split + card/body_text,,,True,mapped,mapping-implemented
+9555,e-commerce,page,publish,6,testimonial,basic_block,,Unsupported legacy layout: testimonial,True,blocked,converter-work
+9555,e-commerce,page,publish,7,cta,cta,,Presentation review: Native CTA frame is encoded; individual complete-page and editor acceptance are still required before authored conversion.,True,mapped-review,presentation-review
+9555,e-commerce,page,publish,8,three_column_cta_section,card or grid,,,True,mapped,mapping-implemented
+9555,e-commerce,page,publish,9,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+9562,pay-per-click,page,publish,0,hero_inner_section,page_hero_rows.basic_block or content.basic_block,,,True,mapped,mapping-implemented
+9562,pay-per-click,page,publish,1,consultation_section,two_column_split + basic_block,,,True,mapped,mapping-implemented
+9562,pay-per-click,page,publish,2,two_column_split,two_column_split,,Unsupported legacy layout: two_column_split,True,blocked,converter-work
+9562,pay-per-click,page,publish,3,what_we_do_section,card,,Unsupported legacy layout: what_we_do_section,True,blocked,converter-work
+9562,pay-per-click,page,publish,4,timeline_section,two_column_split + card/body_text,,,True,mapped,mapping-implemented
+9562,pay-per-click,page,publish,5,cta,cta,,Presentation review: Native CTA frame is encoded; individual complete-page and editor acceptance are still required before authored conversion.,True,mapped-review,presentation-review
+9562,pay-per-click,page,publish,6,three_column_cta_section,card or grid,,,True,mapped,mapping-implemented
+9562,pay-per-click,page,publish,7,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+9565,before-and-after,page,publish,0,hero_inner_section,page_hero_rows.basic_block or content.basic_block,,,True,mapped,mapping-implemented
+9565,before-and-after,page,publish,1,before_after_projects,site data renderer adapted to Stack composition,,Unsupported legacy layout: before_after_projects,True,blocked,converter-work
+9565,before-and-after,page,publish,2,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+10223,website-audits,page,publish,0,hero_inner_section,page_hero_rows.basic_block or content.basic_block,,Audit modal requires the retained site adapter.,True,blocked,converter-work
+10223,website-audits,page,publish,1,text_block,body_text or image_content,,,True,mapped,mapping-implemented
+10223,website-audits,page,publish,2,three_column_cta_with_image,card,,Audit modal requires the retained site adapter.,True,blocked,converter-work
+10223,website-audits,page,publish,3,two_column_split,two_column_split,,Unsupported legacy layout: two_column_split,True,blocked,converter-work
+10223,website-audits,page,publish,4,get_your_free_site_audit_form,two_column_split + wpforms + basic_block,,Unsupported legacy layout: get_your_free_site_audit_form,True,blocked,converter-work
+10223,website-audits,page,publish,5,cta,cta,,Audit modal requires the retained site adapter.,True,blocked,converter-work
+10223,website-audits,page,publish,6,three_column_cta_section,card or grid,,,True,mapped,mapping-implemented
+10223,website-audits,page,publish,7,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+10308,nc-board-of-dietetics-nutrition,case_study,publish,0,hero_inner_section,page_hero_rows.basic_block or content.basic_block,,,True,mapped,mapping-implemented
+10308,nc-board-of-dietetics-nutrition,case_study,publish,1,full_width_image,basic_block / two_column_split,,,True,mapped,mapping-implemented
+10308,nc-board-of-dietetics-nutrition,case_study,publish,2,video_section,video,,,True,mapped,mapping-implemented
+10308,nc-board-of-dietetics-nutrition,case_study,publish,3,case_study_overview,two_column_split + body_text,,Unsupported legacy layout: case_study_overview,True,blocked,converter-work
+10308,nc-board-of-dietetics-nutrition,case_study,publish,4,case_study_problem,body_text,,Unsupported legacy layout: case_study_problem,True,blocked,converter-work
+10308,nc-board-of-dietetics-nutrition,case_study,publish,5,case_study_solutions,card or body_text sequence,,Unsupported legacy layout: case_study_solutions,True,blocked,converter-work
+10308,nc-board-of-dietetics-nutrition,case_study,publish,6,case_study_logo_comparison,body_text + logos,,Unsupported legacy layout: case_study_logo_comparison,True,blocked,converter-work
+10308,nc-board-of-dietetics-nutrition,case_study,publish,7,case_study_image_gallery,showcase or slider,,Unsupported legacy layout: case_study_image_gallery,True,blocked,converter-work
+10308,nc-board-of-dietetics-nutrition,case_study,publish,8,case_study_testimonial,basic_block,,Unsupported legacy layout: case_study_testimonial,True,blocked,converter-work
+10308,nc-board-of-dietetics-nutrition,case_study,publish,9,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+10308,nc-board-of-dietetics-nutrition,case_study,publish,10,cta,cta,,Presentation review: Native CTA frame is encoded; individual complete-page and editor acceptance are still required before authored conversion.,True,mapped-review,presentation-review
+10376,quantumbloom,case_study,publish,0,full_width_image,basic_block / two_column_split,,,True,mapped,mapping-implemented
+10376,quantumbloom,case_study,publish,1,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+10377,morgan-development,case_study,publish,0,full_width_image,basic_block / two_column_split,,,True,mapped,mapping-implemented
+10377,morgan-development,case_study,publish,1,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+10378,abilitations,case_study,publish,0,full_width_image,basic_block / two_column_split,,,True,mapped,mapping-implemented
+10378,abilitations,case_study,publish,1,case_study_logo_comparison,body_text + logos,,Unsupported legacy layout: case_study_logo_comparison,True,blocked,converter-work
+10378,abilitations,case_study,publish,2,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+10379,bleeding-disorders-nc,case_study,publish,0,full_width_image,basic_block / two_column_split,,,True,mapped,mapping-implemented
+10379,bleeding-disorders-nc,case_study,publish,1,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+10380,2468-cigars,case_study,publish,0,full_width_image,basic_block / two_column_split,,,True,mapped,mapping-implemented
+10380,2468-cigars,case_study,publish,1,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+10381,big-r-foundation,case_study,publish,0,case_study_logo_comparison,body_text + logos,,Unsupported legacy layout: case_study_logo_comparison,True,blocked,converter-work
+10381,big-r-foundation,case_study,publish,1,full_width_image,basic_block / two_column_split,,,True,mapped,mapping-implemented
+10381,big-r-foundation,case_study,publish,2,case_study_logo_comparison,body_text + logos,,Unsupported legacy layout: case_study_logo_comparison,True,blocked,converter-work
+10381,big-r-foundation,case_study,publish,3,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+10381,big-r-foundation,case_study,publish,4,hero_inner_section,page_hero_rows.basic_block or content.basic_block,,Nonleading Hero requires an order-preserving review.,True,blocked,converter-work
+10381,big-r-foundation,case_study,publish,5,video_section,video,,,True,mapped,mapping-implemented
+10381,big-r-foundation,case_study,publish,6,case_study_overview,two_column_split + body_text,,Unsupported legacy layout: case_study_overview,True,blocked,converter-work
+10381,big-r-foundation,case_study,publish,7,case_study_problem,body_text,,Unsupported legacy layout: case_study_problem,True,blocked,converter-work
+10381,big-r-foundation,case_study,publish,8,case_study_solutions,card or body_text sequence,,Unsupported legacy layout: case_study_solutions,True,blocked,converter-work
+10381,big-r-foundation,case_study,publish,9,case_study_image_gallery,showcase or slider,,Unsupported legacy layout: case_study_image_gallery,True,blocked,converter-work
+10381,big-r-foundation,case_study,publish,10,case_study_testimonial,basic_block,,Unsupported legacy layout: case_study_testimonial,True,blocked,converter-work
+10381,big-r-foundation,case_study,publish,11,cta,cta,,Presentation review: Native CTA frame is encoded; individual complete-page and editor acceptance are still required before authored conversion.,True,mapped-review,presentation-review
+10382,artisan-quality-roofing,case_study,publish,0,full_width_image,basic_block / two_column_split,,,True,mapped,mapping-implemented
+10382,artisan-quality-roofing,case_study,publish,1,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+10383,peritia,case_study,publish,0,full_width_image,basic_block / two_column_split,,,True,mapped,mapping-implemented
+10383,peritia,case_study,publish,1,case_study_image_gallery,showcase or slider,,Unsupported legacy layout: case_study_image_gallery,True,blocked,converter-work
+10383,peritia,case_study,publish,2,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+10384,ct-wilson,case_study,publish,0,full_width_image,basic_block / two_column_split,,,True,mapped,mapping-implemented
+10384,ct-wilson,case_study,publish,1,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+10385,csi-radios,case_study,draft,0,full_width_image,basic_block / two_column_split,,,True,mapped,mapping-implemented
+10385,csi-radios,case_study,draft,1,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+10386,dynamic-mechanical,case_study,publish,0,full_width_image,basic_block / two_column_split,,,True,mapped,mapping-implemented
+10386,dynamic-mechanical,case_study,publish,1,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+10387,elixian-global,case_study,publish,0,full_width_image,basic_block / two_column_split,,,True,mapped,mapping-implemented
+10387,elixian-global,case_study,publish,1,case_study_image_gallery,showcase or slider,,Unsupported legacy layout: case_study_image_gallery,True,blocked,converter-work
+10387,elixian-global,case_study,publish,2,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+10388,eloghomes,case_study,publish,0,case_study_image_gallery,showcase or slider,,Unsupported legacy layout: case_study_image_gallery,True,blocked,converter-work
+10388,eloghomes,case_study,publish,1,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+10389,family-paws,case_study,publish,0,full_width_image,basic_block / two_column_split,,,True,mapped,mapping-implemented
+10389,family-paws,case_study,publish,1,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+10392,glamorama,case_study,publish,0,case_study_image_gallery,showcase or slider,,Unsupported legacy layout: case_study_image_gallery,True,blocked,converter-work
+10392,glamorama,case_study,publish,1,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+10397,freedom-house,case_study,publish,0,hero_inner_section,page_hero_rows.basic_block or content.basic_block,,,True,mapped,mapping-implemented
+10397,freedom-house,case_study,publish,1,video_section,video,,,True,mapped,mapping-implemented
+10397,freedom-house,case_study,publish,2,case_study_overview,two_column_split + body_text,,Unsupported legacy layout: case_study_overview,True,blocked,converter-work
+10397,freedom-house,case_study,publish,3,case_study_problem,body_text,,Unsupported legacy layout: case_study_problem,True,blocked,converter-work
+10397,freedom-house,case_study,publish,4,case_study_solutions,card or body_text sequence,,Unsupported legacy layout: case_study_solutions,True,blocked,converter-work
+10397,freedom-house,case_study,publish,5,case_study_logo_comparison,body_text + logos,,Unsupported legacy layout: case_study_logo_comparison,True,blocked,converter-work
+10397,freedom-house,case_study,publish,6,case_study_image_gallery,showcase or slider,,Unsupported legacy layout: case_study_image_gallery,True,blocked,converter-work
+10397,freedom-house,case_study,publish,7,case_study_testimonial,basic_block,,Unsupported legacy layout: case_study_testimonial,True,blocked,converter-work
+10397,freedom-house,case_study,publish,8,cta,cta,,Presentation review: Native CTA frame is encoded; individual complete-page and editor acceptance are still required before authored conversion.,True,mapped-review,presentation-review
+10401,the-aphasia-project,case_study,publish,0,full_width_image,basic_block / two_column_split,,,True,mapped,mapping-implemented
+10403,capital-area-workforce-development,case_study,publish,0,full_width_image,basic_block / two_column_split,,,True,mapped,mapping-implemented
+10403,capital-area-workforce-development,case_study,publish,1,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+10442,the-carying-place,case_study,publish,0,full_width_image,basic_block / two_column_split,,,True,mapped,mapping-implemented
+10442,the-carying-place,case_study,publish,1,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+10482,digital-marketing,page,publish,0,hero_inner_section,page_hero_rows.basic_block or content.basic_block,,,True,mapped,mapping-implemented
+10482,digital-marketing,page,publish,1,service_blocks_section,card,,Unsupported legacy layout: service_blocks_section,True,blocked,converter-work
+10482,digital-marketing,page,publish,2,cta,cta,,Presentation review: Native CTA frame is encoded; individual complete-page and editor acceptance are still required before authored conversion.,True,mapped-review,presentation-review
+10482,digital-marketing,page,publish,3,our_work,showcase + body_text,,,True,mapped,mapping-implemented
+10496,website-services,page,publish,0,hero_inner_section,page_hero_rows.basic_block or content.basic_block,,,True,mapped,mapping-implemented
+10496,website-services,page,publish,1,service_blocks_section,card,,Unsupported legacy layout: service_blocks_section,True,blocked,converter-work
+10496,website-services,page,publish,2,cta,cta,,Presentation review: Native CTA frame is encoded; individual complete-page and editor acceptance are still required before authored conversion.,True,mapped-review,presentation-review
+10496,website-services,page,publish,3,our_work,showcase + body_text,,,True,mapped,mapping-implemented
+10498,privacy-center,page,publish,0,hero_inner_section,page_hero_rows.basic_block or content.basic_block,,,True,mapped,mapping-implemented
+10498,privacy-center,page,publish,1,jump_links,body_text or basic_block,,Unsupported legacy layout: jump_links,True,blocked,converter-work
+10498,privacy-center,page,publish,2,text_block,body_text or image_content,,,True,mapped,mapping-implemented
+10498,privacy-center,page,publish,3,text_block,body_text or image_content,,,True,mapped,mapping-implemented
+10498,privacy-center,page,publish,4,text_block,body_text or image_content,,,True,mapped,mapping-implemented
+10498,privacy-center,page,publish,5,text_block,body_text or image_content,,,True,mapped,mapping-implemented
+10498,privacy-center,page,publish,6,text_block,body_text or image_content,,,True,mapped,mapping-implemented
+10498,privacy-center,page,publish,7,text_block,body_text or image_content,,,True,mapped,mapping-implemented
+10498,privacy-center,page,publish,8,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+10531,thank-you,page,publish,0,hero_inner_section,page_hero_rows.basic_block or content.basic_block,,,True,mapped,mapping-implemented
+10531,thank-you,page,publish,1,three_column_cta_section,card or grid,,,True,mapped,mapping-implemented
+10531,thank-you,page,publish,2,three_column_cta_section,card or grid,,,True,mapped,mapping-implemented
+10531,thank-you,page,publish,3,text_block,body_text or image_content,,,True,mapped,mapping-implemented
+10531,thank-you,page,publish,4,blog_list,content_lists(post),,Unsupported legacy layout: blog_list,True,blocked,converter-work
+10650,welcome-federal-credit-union,case_study,publish,0,hero_inner_section,page_hero_rows.basic_block or content.basic_block,,,True,mapped,mapping-implemented
+10650,welcome-federal-credit-union,case_study,publish,1,full_width_image,basic_block / two_column_split,,,True,mapped,mapping-implemented
+10650,welcome-federal-credit-union,case_study,publish,2,case_study_overview,two_column_split + body_text,,Unsupported legacy layout: case_study_overview,True,blocked,converter-work
+10650,welcome-federal-credit-union,case_study,publish,3,case_study_problem,body_text,,Unsupported legacy layout: case_study_problem,True,blocked,converter-work
+10650,welcome-federal-credit-union,case_study,publish,4,case_study_solutions,card or body_text sequence,,Unsupported legacy layout: case_study_solutions,True,blocked,converter-work
+10650,welcome-federal-credit-union,case_study,publish,5,case_study_image_gallery,showcase or slider,,Unsupported legacy layout: case_study_image_gallery,True,blocked,converter-work
+10650,welcome-federal-credit-union,case_study,publish,6,case_study_testimonial,basic_block,,Unsupported legacy layout: case_study_testimonial,True,blocked,converter-work
+10650,welcome-federal-credit-union,case_study,publish,7,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+10650,welcome-federal-credit-union,case_study,publish,8,case_study_logo_comparison,body_text + logos,,Unsupported legacy layout: case_study_logo_comparison,True,blocked,converter-work
+10650,welcome-federal-credit-union,case_study,publish,9,cta,cta,,Presentation review: Native CTA frame is encoded; individual complete-page and editor acceptance are still required before authored conversion.,True,mapped-review,presentation-review
+10650,welcome-federal-credit-union,case_study,publish,10,video_section,video,,,True,mapped,mapping-implemented
+10694,unfinished-furniture-outlet,case_study,publish,0,full_width_image,basic_block / two_column_split,,,True,mapped,mapping-implemented
+10694,unfinished-furniture-outlet,case_study,publish,1,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+10699,iqms-an-instantgmp-company,case_study,publish,0,full_width_image,basic_block / two_column_split,,,True,mapped,mapping-implemented
+10699,iqms-an-instantgmp-company,case_study,publish,1,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+10710,instantgmp,case_study,publish,0,full_width_image,basic_block / two_column_split,,,True,mapped,mapping-implemented
+10710,instantgmp,case_study,publish,1,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+10716,southwest-community-care-partners,case_study,publish,0,full_width_image,basic_block / two_column_split,,,True,mapped,mapping-implemented
+10716,southwest-community-care-partners,case_study,publish,1,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+10729,broadview-solutions,case_study,publish,0,full_width_image,basic_block / two_column_split,,,True,mapped,mapping-implemented
+10729,broadview-solutions,case_study,publish,1,case_study_logo_comparison,body_text + logos,,Unsupported legacy layout: case_study_logo_comparison,True,blocked,converter-work
+10729,broadview-solutions,case_study,publish,2,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+10734,caribbean-pools-spas,case_study,publish,0,full_width_image,basic_block / two_column_split,,,True,mapped,mapping-implemented
+10734,caribbean-pools-spas,case_study,publish,1,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+10740,carolina-cigar-distributors,case_study,publish,0,full_width_image,basic_block / two_column_split,,,True,mapped,mapping-implemented
+10740,carolina-cigar-distributors,case_study,publish,1,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+10747,central-city-neighborhood-partners,case_study,publish,0,full_width_image,basic_block / two_column_split,,,True,mapped,mapping-implemented
+10747,central-city-neighborhood-partners,case_study,publish,1,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+10754,communities-in-schools,case_study,publish,0,full_width_image,basic_block / two_column_split,,,True,mapped,mapping-implemented
+10754,communities-in-schools,case_study,publish,1,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+10759,confero,case_study,publish,0,full_width_image,basic_block / two_column_split,,,True,mapped,mapping-implemented
+10759,confero,case_study,publish,1,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+10767,gwtt,case_study,publish,0,full_width_image,basic_block / two_column_split,,,True,mapped,mapping-implemented
+10767,gwtt,case_study,publish,1,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+10777,lloyd-grading-utilities-inc,case_study,publish,0,full_width_image,basic_block / two_column_split,,,True,mapped,mapping-implemented
+10777,lloyd-grading-utilities-inc,case_study,publish,1,reusable_block,reusable_block,,,True,mapped,mapping-implemented
+11561,rsvp,page,publish,0,hero_inner_section,page_hero_rows.basic_block or content.basic_block,,,False,existing-native-review,existing-native-review
+11561,rsvp,page,publish,1,text_block,body_text or image_content,,,False,existing-native-review,existing-native-review
+11567,rsvp-confirmation,page,publish,0,hero_inner_section,page_hero_rows.basic_block or content.basic_block,,,False,existing-native-review,existing-native-review
+11578,rsvp-confirmation-virtual,page,publish,0,hero_inner_section,page_hero_rows.basic_block or content.basic_block,,,False,converted-source-retained,converted-source-retained

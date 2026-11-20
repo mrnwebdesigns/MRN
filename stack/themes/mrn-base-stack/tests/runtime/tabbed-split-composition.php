@@ -28,12 +28,13 @@ try {
 	$expect( isset( $panels['two_column_split'] ) && ! isset( $panels['tabbed_layout'] ) && 1 === $tab_item_fields['panel_rows']['max'], 'Tabs offer one finite Split panel rather than a recursive builder' );
 	$panel_split_fields = array_column( $panels['two_column_split']['sub_fields'], null, 'name' );
 	$expect( $panel_split_fields['column_rows_mode']['key'] !== $split_fields['column_rows_mode']['key'], 'Cloned Split presentation keys are isolated in Tabs' );
+	$expect( ! isset( $split_fields['column_content_gap'] ) && ! isset( $panel_split_fields['column_content_gap'] ), 'The space between stacked column rows comes from theme CSS, not a root or Tabs Split field' );
 	$zero = array();
 	foreach ( array( 'margin', 'padding' ) as $dimension ) {
 		foreach ( array( 'top', 'right', 'bottom', 'left' ) as $side ) { $zero[ 'row_spacing_' . $dimension . '_' . $side . '_preset' ] = '0px'; }
 	}
 	$split = array_merge( $zero, array(
-		'acf_fc_layout' => 'two_column_split', 'column_rows_mode' => 'stack', 'column_content_gap' => '24px', 'column_alignment' => 'center',
+		'acf_fc_layout' => 'two_column_split', 'column_rows_mode' => 'stack', 'column_alignment' => 'center',
 		'left_column_rows' => array(
 			array_merge( $zero, array( 'acf_fc_layout' => 'body_text', 'heading' => 'Editable panel title', 'heading_tag' => 'h2', 'body_text' => '<p>First component.</p>' ) ),
 			array_merge( $zero, array( 'acf_fc_layout' => 'stats', 'stat_items' => array( array( 'value' => '175%', 'item_label' => 'More qualified traffic', 'animate_value' => 0 ) ), 'show_dividers' => 0 ) ),
@@ -51,14 +52,14 @@ try {
 	$loaded_split = $readback['tabs'][0]['panel_rows'][0];
 	$expect( 4 === count( $loaded_split['left_column_rows'] ) && 'stats' === $loaded_split['left_column_rows'][1]['acf_fc_layout'], 'Native ACF roundtrip retains every nested child in authored order' );
 	$expect( '175%' === $loaded_split['left_column_rows'][1]['stat_items'][0]['value'] && 'More qualified traffic' === $loaded_split['left_column_rows'][1]['stat_items'][0]['item_label'], 'Nested Stats preserve metric and label through ACF' );
-	$expect( 'First client results' === $readback['tabs'][0]['tab_accessible_label'] && '24px' === $loaded_split['column_content_gap'], 'Native ACF retains accessible name and authored internal gap' );
+	$expect( 'First client results' === $readback['tabs'][0]['tab_accessible_label'] && 'center' === $loaded_split['column_alignment'], 'Native ACF retains accessible name and authored column alignment' );
 	ob_start(); mrn_base_stack_render_builder_row( $readback, $id, 3 ); $html = ob_get_clean();
 	foreach ( array( 'Editable panel title', '175%', 'More qualified traffic', 'Rich copy after the metric.', 'Last column action', 'Right column content', 'Second panel content' ) as $copy ) {
 		$expect( str_contains( $html, $copy ), 'Native render retains ' . $copy );
 	}
 	$expect( str_contains( html_entity_decode( $html, ENT_QUOTES | ENT_HTML5, 'UTF-8' ), 'href="' . home_url( '/contact-us/?first=1&second=2' ) . '"' ) && str_contains( $html, 'rel="noopener noreferrer"' ), 'Final child action renders its complete query URL and safe target' );
 	$expect( str_contains( $html, '<span class="screen-reader-text">First client results</span>' ) && ! str_contains( $html, 'Ignored conflicting name' ), 'Icon-only naming works and visible names retain label-in-name' );
-	$expect( str_contains( $html, '--mrn-split-content-gap: 24px' ) && str_contains( $html, 'align-items: center' ), 'Authored native gap and alignment control composition geometry' );
+	$expect( ! str_contains( $html, '--mrn-split-content-gap' ) && str_contains( $html, 'align-items: center' ), 'Authored native alignment controls composition geometry; the gap comes from theme CSS' );
 	preg_match_all( '/\bid="([^"]+)"/', $html, $ids );
 	$expect( count( $ids[1] ) === count( array_unique( $ids[1] ) ), 'Nested composition has no duplicate HTML IDs' );
 	$single = $split; unset( $single['column_rows_mode'] );

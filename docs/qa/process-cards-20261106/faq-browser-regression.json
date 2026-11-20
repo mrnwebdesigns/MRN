@@ -1,0 +1,22 @@
+{
+  "result": "passed",
+  "count": 16,
+  "checks": [
+    "No-script native markup exposes all five answers",
+    "Desktop starts with the first service",
+    "Desktop uses editable aside width and column gap",
+    "Scrolling to 45 percent activates the correct service",
+    "Scrolling never closes an answer around focused content",
+    "Enter opens a chosen answer and closes its unfocused sibling",
+    "Space preserves native disclosure semantics",
+    "All five answers open on entry to mobile",
+    "Mobile features use one column",
+    "Mobile heading no longer sticks",
+    "Mobile manual collapse survives subsequent scroll events",
+    "Resizing back to desktop restores scroll-active selection",
+    "Reduced motion expands all answers without scroll-driven changes",
+    "Reduced motion removes sticky heading movement",
+    "Reduced-motion scrolling keeps every answer visible",
+    "No horizontal overflow at 390px"
+  ]
+}

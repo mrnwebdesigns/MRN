@@ -1,0 +1,34 @@
+<?php
+/** Native rich Body Text optional typography, safety and root/nested persistence. */
+if ( ! defined( 'WP_CLI' ) || ! WP_CLI || home_url() !== getenv( 'MRN_STACK_TEST_HOME' ) || ! str_ends_with( (string) wp_parse_url( home_url(), PHP_URL_HOST ), '.localhost' ) || ! current_user_can( 'manage_options' ) ) { throw new RuntimeException( 'An explicitly selected local administrator runtime is required.' ); }
+$checks = array(); $expect = static function ( $ok, $label ) use ( &$checks ) { if ( ! $ok ) { throw new RuntimeException( esc_html( $label ) ); } $checks[] = $label; };
+$layouts = array_column( acf_get_field( 'field_mrn_page_content_rows' )['layouts'], null, 'name' ); $fields = array_column( $layouts['body_text']['sub_fields'], null, 'name' );
+$palette = mrn_site_colors_get_all(); $slug = $palette[0]['slug'];
+$props = array( 'row_text_color' => $slug, 'body_content_sizing' => 'fit', 'body_lead_style' => 'label' );
+foreach ( $props as $name => $value ) { $expect( isset( $fields[ $name ] ), 'Registered native Body Text control: ' . $name ); }
+$expect( ! array_intersect( array( 'body_link_decoration', 'body_link_weight', 'body_link_color', 'body_link_hover_color' ), array_keys( $fields ) ), 'Body link styling comes from theme CSS, not row fields' );
+$expect( ! array_intersect( array( 'row_text_tracking', 'body_label_size', 'body_label_line_height', 'body_label_weight', 'body_label_transform', 'body_label_space_after' ), array_keys( $fields ) ), 'Row tracking and Body label typography come from theme CSS, not row fields' );
+$expect( ! in_array( 'body_lead_style', array_column( $layouts['wpforms']['sub_fields'], 'name' ), true ), 'Rich body controls do not enter unrelated form schema' );
+$empty = array( 'classes' => array(), 'attributes' => array() ); $expect( $empty === mrn_base_stack_get_content_frame_contract( $props, 'body_text' ), 'Dormant optional values cannot activate an unselected frame' );
+$zero = array(); foreach ( array( 'margin', 'padding' ) as $kind ) { foreach ( array( 'top', 'right', 'bottom', 'left' ) as $side ) { $zero[ 'row_spacing_' . $kind . '_' . $side . '_preset' ] = '0px'; } }
+$row = array_merge( $zero, $props, array( 'acf_fc_layout' => 'body_text', 'body_frame' => 'contained', 'heading' => 'Keep the heading', 'body_text' => "<p class=\"retained-source-class\">Keep this label.</p>\r\n<p><a href=\"/insights/\">Keep this link <span aria-hidden=\"true\">→</span></a></p>" ) );
+$id = wp_insert_post( array( 'post_type' => 'page', 'post_status' => 'draft', 'post_title' => 'Owned native rich text proof' ), true ); $expect( ! is_wp_error( $id ) && $id > 0, 'Owned local draft created' );
+try {
+ $nested_row = $row; unset( $nested_row['row_text_color'] );
+ $split = array_merge( $zero, array( 'acf_fc_layout' => 'two_column_split', 'column_rows_mode' => 'stack', 'left_column_rows' => array(), 'right_column_rows' => array( $nested_row ) ) );
+ update_field( 'field_mrn_page_content_rows', wp_slash( array( $row, $split ) ), $id ); acf_flush_value_cache( $id, 'page_content_rows' ); $saved = get_field( 'page_content_rows', $id );
+ foreach ( $props as $name => $value ) { $expect( $value === $saved[0][ $name ] && ( 'row_text_color' === $name ? ! isset( $saved[1]['right_column_rows'][0][ $name ] ) : $value === $saved[1]['right_column_rows'][0][ $name ] ), 'ACF preserves selected root text color and root/nested Body Text controls: ' . $name ); }
+ $expect( $row['body_text'] === get_post_meta( $id, 'page_content_rows_0_body_text', true ), 'Raw rich text, source class, arrow and CRLF remain exact' );
+ $render = static function ( $r ) use ( $id ) { ob_start(); mrn_base_stack_render_builder_row( $r, $id, 0 ); return ob_get_clean(); }; $html = $render( $saved[0] );
+ $expect( ! str_contains( $html, 'has-row-normal-tracking' ), 'Saved rows add no per-row tracking' );
+ foreach ( array( 'has-row-text-color', '--mrn-row-text-color:var(', 'has-body-content-fit', 'has-body-lead-label' ) as $fragment ) { $expect( str_contains( $html, $fragment ), 'Saved native presentation reaches the escaped row: ' . $fragment ); }
+ $expect( 1 === substr_count( $html, 'data-mrn-row-spacing=' ) && 1 === substr_count( $html, 'Keep this label.' ) && 1 === substr_count( $html, 'href="/insights/"' ), 'One outer spacing owner and no duplicate text/action' );
+ $normalized = mrn_base_stack_ensure_builder_layout_display_style_fields( $layouts['body_text']['sub_fields'], 'body_text' ); $expect( 1 === count( array_filter( $normalized, static fn( $f ) => 'row_text_color' === ( $f['name'] ?? '' ) ) ) && ! array_filter( $normalized, static fn( $f ) => 'row_text_tracking' === ( $f['name'] ?? '' ) ), 'Repeated native schema normalization does not duplicate row text color or restore row tracking' );
+ $plain = $row; foreach ( $props as $name => $value ) { unset( $plain[ $name ] ); } $old = $render( $plain ); $expect( ! str_contains( $old, 'has-body-content-fit' ) && ! str_contains( $old, 'has-body-lead-label' ) && ! str_contains( $old, '--mrn-body-frame-link-' ), 'Existing unconfigured contained body retains prior output contract' );
+ foreach ( array( array( 'fit' ), 'fit;position:fixed', '-1px', 'url(bad)' ) as $bad ) {
+  $display = mrn_base_stack_get_builder_display_contract( array( 'row_text_tracking' => $bad, 'row_text_color' => $bad ), 'body_text' ); $expect( ! in_array( 'has-row-normal-tracking', $display['classes'], true ) && ! in_array( 'has-row-text-color', $display['classes'], true ) && ! str_contains( $display['attributes']['style'] ?? '', '--mrn-row-text-color' ), 'Malformed tracking and palette cannot activate a row override' );
+ $unsafe = array_fill_keys( array_keys( $props ), $bad ); $unsafe['body_frame'] = 'contained'; $expect( array( 'classes' => array( 'has-body-frame' ), 'attributes' => array() ) === mrn_base_stack_get_content_frame_contract( $unsafe, 'body_text' ), 'Malformed options cannot emit any presentation: ' . wp_json_encode( $bad ) );
+ }
+ $missing = $row; $missing['body_frame'] = ''; $expect( ! str_contains( $render( $missing ), 'has-body-frame' ), 'Empty frame keeps all optional controls dormant' );
+} finally { wp_delete_post( $id, true ); }
+$expect( null === get_post( $id ), 'Owned draft removed' ); WP_CLI::line( wp_json_encode( array( 'result' => 'passed', 'assertions' => count( $checks ), 'checks' => $checks ), JSON_PRETTY_PRINT ) );

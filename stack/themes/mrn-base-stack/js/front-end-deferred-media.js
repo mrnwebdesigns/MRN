@@ -90,6 +90,28 @@
 				}
 
 				mediaElement.appendChild( video );
+				if ( isBackgroundVideo ) {
+					var toggle = mediaElement.querySelector( '[data-mrn-video-toggle]' );
+					if ( toggle ) {
+						var syncToggle = function() {
+							var paused = video.paused;
+							toggle.textContent = paused ? toggle.getAttribute( 'data-resume-label' ) : toggle.getAttribute( 'data-pause-label' );
+							toggle.setAttribute( 'aria-pressed', paused ? 'true' : 'false' );
+						};
+						toggle.hidden = false;
+						toggle.addEventListener( 'click', function() {
+							if ( video.paused ) {
+								video.play().catch( syncToggle );
+							} else {
+								video.pause();
+							}
+						} );
+						video.addEventListener( 'play', syncToggle );
+						video.addEventListener( 'pause', syncToggle );
+						video.play().catch( syncToggle );
+						syncToggle();
+					}
+				}
 			} else {
 				var iframe = document.createElement( 'iframe' );
 				iframe.className = 'mrn-deferred-media__frame';

@@ -1,0 +1,96 @@
+{
+  "scope": "Matching first panel data proof; geometry differences block migration",
+  "measurements": [
+    {
+      "document_overflow": false,
+      "legacy_heading": {
+        "font": "35.84px",
+        "line": "43.008px"
+      },
+      "legacy_height": 644.2265625,
+      "legacy_mobile_drawers": 0,
+      "legacy_title": "National Aphasia Association",
+      "native_active": "National Aphasia Association",
+      "native_heading": {
+        "font": "28px",
+        "line": "35px"
+      },
+      "native_height": 673.8828125,
+      "native_mobile_drawers": 0,
+      "width": 1280
+    },
+    {
+      "document_overflow": false,
+      "legacy_heading": {
+        "font": "27.776px",
+        "line": "33.3312px"
+      },
+      "legacy_height": 679.6015625,
+      "legacy_mobile_drawers": 0,
+      "legacy_title": "National Aphasia Association",
+      "native_active": "National Aphasia Association",
+      "native_heading": {
+        "font": "28px",
+        "line": "35px"
+      },
+      "native_height": 742.8671875,
+      "native_mobile_drawers": 0,
+      "width": 992
+    },
+    {
+      "document_overflow": false,
+      "legacy_heading": {
+        "font": "22.96px",
+        "line": "27.552px"
+      },
+      "legacy_height": 679.984375,
+      "legacy_mobile_drawers": 0,
+      "legacy_title": "National Aphasia Association",
+      "native_active": "National Aphasia Association",
+      "native_heading": {
+        "font": "28px",
+        "line": "35px"
+      },
+      "native_height": 1162.8828125,
+      "native_mobile_drawers": 0,
+      "width": 820
+    },
+    {
+      "document_overflow": false,
+      "legacy_heading": {
+        "font": "22px",
+        "line": "26.4px"
+      },
+      "legacy_height": 1167.796875,
+      "legacy_mobile_drawers": 4,
+      "legacy_title": "National Aphasia Association",
+      "native_active": "National Aphasia Association",
+      "native_heading": {
+        "font": "24px",
+        "line": "30px"
+      },
+      "native_height": 2071.8828125,
+      "native_mobile_drawers": 0,
+      "width": 767
+    },
+    {
+      "document_overflow": false,
+      "legacy_heading": {
+        "font": "22px",
+        "line": "26.4px"
+      },
+      "legacy_height": 1258.328125,
+      "legacy_mobile_drawers": 4,
+      "legacy_title": "National Aphasia Association",
+      "native_active": "National Aphasia Association",
+      "native_heading": {
+        "font": "24px",
+        "line": "30px"
+      },
+      "native_height": 2312.8515625,
+      "native_mobile_drawers": 0,
+      "width": 390
+    }
+  ],
+  "keyboard_arrow_right": "selects second panel and moves focus"
+}

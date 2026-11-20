@@ -2296,6 +2296,7 @@ function mrn_base_stack_showcase_item_row_has_content( $row ) {
 		'link',
 		'background_color',
 		'enable_row_effects',
+		'record_heading_tag',
 	);
 
 	foreach ( $row as $key => $value ) {
@@ -3255,6 +3256,14 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 		return $pre_rendered_markup;
 	}
 
+	if ( 'projects' === ( $args['record_presentation'] ?? '' ) ) { return mrn_base_stack_render_project_list_item( $item_post, $args ); }
+
+	if ( 'articles' === ( $args['record_presentation'] ?? '' ) && function_exists( 'mrn_base_stack_render_article_list_item' ) ) { return mrn_base_stack_render_article_list_item( $item_post, $args ); }
+
+	if ( 'careers' === ( $args['record_presentation'] ?? '' ) ) { return mrn_base_stack_render_career_list_item( $item_post, $args ); }
+
+	if ( 'comparisons' === ( $args['record_presentation'] ?? '' ) && mrn_base_stack_is_comparison_frame( is_array( $args['comparison_settings'] ?? null ) ? $args['comparison_settings'] : array() ) ) { return mrn_base_stack_render_comparison_stack_item( $item_post, $args ); }
+
 	if ( in_array( $args['record_presentation'] ?? '', array( 'people', 'comparisons' ), true ) && function_exists( 'mrn_base_stack_render_record_presentation' ) ) {
 		return mrn_base_stack_render_record_presentation( $item_post, $args );
 	}
@@ -3418,6 +3427,7 @@ function mrn_base_stack_get_content_list_orderby_choices() {
 		'modified'      => 'Modified Date',
 		'title'         => 'Title',
 		'menu_order'    => 'Menu Order',
+		'menu_order_date' => 'Menu Order Ascending, then Newest Date',
 		'comment_count' => 'Comment Count',
 		'rand'          => 'Random',
 	);
@@ -4565,6 +4575,45 @@ function mrn_base_stack_get_effects_tab_field_names() {
 		'enable_row_effects',
 		'hover_effect',
 		'tab_switch_effect',
+		// Motion and behavior toggles from the presentation builders. Values are keyed by
+		// field, so moving them out of Content changes only where an editor finds them.
+		'project_carousel_autoplay',
+		'autoplay_max_width',
+		'continuous_scroll',
+		'image_drift_speed',
+		'image_drift_maximum',
+		'image_zoom_viewport_inset',
+		'card_reveal_content',
+		'timeline_pin_tablet',
+		'timeline_scroll_pace',
+		'timeline_pin_position',
+		'timeline_pin_heading',
+		'video_playback',
+		'text_presentation',
+		'word_reveal_target',
+		'word_reveal_scope',
+		'word_reveal_from',
+		'word_reveal_to',
+		'strip_behavior',
+		'strip_scroll_pace',
+		'process_mobile_expand_all',
+		'video_follow_color',
+		// Behavior choices moved out of Content (2026-11-18).
+		'faq_exclusive',
+		'faq_mobile_expand_all',
+		'faq_activation_ratio',
+		'process_activation_ratio',
+		'rotation_interval',
+		'rotation_effect',
+		'rotation_width',
+		'rotation_control',
+		'image_action_follow_pointer',
+		'video_expand_start_width',
+		'video_follow_release',
+		'article_load_more',
+		'article_load_batch_size',
+		'project_filter_initial',
+		'project_filter_batch',
 	);
 }
 
@@ -8273,6 +8322,28 @@ function mrn_base_stack_ensure_builder_layout_display_style_fields( array $field
 		? mrn_base_stack_get_builder_display_styles_contract_fields( $layout_name, '' !== $key_seed ? $key_seed : 'field_mrn_' . $layout_name . '_display' )
 		: array();
 
+	if ( in_array( $layout_name, array( 'hero', 'basic_block', 'body_text', 'card', 'cta', 'cta_block', 'content_lists' ), true ) ) {
+		$display_contract_names = array_merge( $display_contract_names, array( 'row_text_color' ) );
+		$text_color = mrn_base_stack_get_background_color_field( sanitize_key( '' !== $key_seed ? $key_seed : 'field_mrn_' . $layout_name . '_display' ) . '_row_text_color' ); $text_color['name'] = 'row_text_color'; $text_color['label'] = 'Row Text Color'; $text_color['instructions'] = 'Optional inherited foreground color from Site Colors. Explicit component colors retain priority; blank preserves existing colors.'; $display_contract_fields[] = $text_color;
+	}
+
+	// Content Lists: a theme-registered row look, separate from the item Display Style (absent unless a theme registers one).
+	$content_list_looks = $is_content_lists && function_exists( 'mrn_base_stack_get_content_list_look_choices' ) ? mrn_base_stack_get_content_list_look_choices() : array();
+	if ( $content_list_looks ) {
+		$display_contract_names[]  = 'row_look';
+		$display_contract_fields[] = array(
+			'key'           => sanitize_key( '' !== $key_seed ? $key_seed : 'field_mrn_' . $layout_name . '_display' ) . '_row_look',
+			'name'          => 'row_look',
+			'label'         => 'Section Look',
+			'type'          => 'select',
+			'choices'       => array( '' => 'None' ) + $content_list_looks,
+			'default_value' => '',
+			'allow_null'    => 0,
+			'ui'            => 0,
+			'instructions'  => 'Optional named look for this section, defined by the theme. Display Style above still chooses how each item renders.',
+		);
+	}
+
 	if ( empty( $mode_choices ) && empty( $style_choices ) && empty( $display_contract_fields ) ) {
 		return $fields;
 	}
@@ -8285,6 +8356,8 @@ function mrn_base_stack_ensure_builder_layout_display_style_fields( array $field
 	$display_mode_field  = null;
 	$display_style_field = null;
 	$remaining_fields    = array();
+	$moved_display_names  = mrn_base_stack_get_display_styles_tab_field_names();
+	$moved_display_fields = array();
 
 	foreach ( $fields as $field ) {
 		if ( ! is_array( $field ) ) {
@@ -8316,6 +8389,11 @@ function mrn_base_stack_ensure_builder_layout_display_style_fields( array $field
 		}
 
 		if ( '' !== $field_name && in_array( $field_name, $display_contract_names, true ) ) {
+			continue;
+		}
+
+		if ( '' !== $field_name && in_array( $field_name, $moved_display_names, true ) ) {
+			$moved_display_fields[] = $field;
 			continue;
 		}
 
@@ -8372,6 +8450,8 @@ function mrn_base_stack_ensure_builder_layout_display_style_fields( array $field
 		}
 	}
 
+	$display_fields = array_merge( $display_fields, $moved_display_fields );
+
 	$insert_index = count( $remaining_fields );
 	foreach ( $remaining_fields as $index => $field ) {
 		if ( ! is_array( $field ) ) {
@@ -8409,6 +8489,8 @@ function mrn_base_stack_ensure_builder_layout_tab( array $fields, $layout_name =
 	if ( function_exists( 'mrn_base_stack_ensure_presentation_fields' ) ) {
 		$fields = mrn_base_stack_ensure_presentation_fields( $fields, $layout_name, $seed );
 	}
+	// Presentation fields arrive after the Display Styles pass, so place them in the tabs this list already has.
+	$fields = mrn_base_stack_move_fields_to_existing_tabs( $fields );
 
 	$remaining_fields       = array();
 	$layout_tab             = null;
@@ -8421,6 +8503,8 @@ function mrn_base_stack_ensure_builder_layout_tab( array $fields, $layout_name =
 	);
 	$layout_contract_names  = mrn_base_stack_get_builder_layout_contract_field_names( $layout_name );
 	$existing_layout_fields = array();
+	$moved_layout_names     = mrn_base_stack_get_layout_tab_field_names();
+	$moved_layout_fields    = array();
 
 	foreach ( $fields as $field ) {
 		if ( ! is_array( $field ) ) {
@@ -8450,6 +8534,11 @@ function mrn_base_stack_ensure_builder_layout_tab( array $fields, $layout_name =
 			if ( ! isset( $existing_layout_fields[ $field_name ] ) ) {
 				$existing_layout_fields[ $field_name ] = $field;
 			}
+			continue;
+		}
+
+		if ( '' !== $field_name && in_array( $field_name, $moved_layout_names, true ) ) {
+			$moved_layout_fields[] = $field;
 			continue;
 		}
 
@@ -8528,7 +8617,7 @@ function mrn_base_stack_ensure_builder_layout_tab( array $fields, $layout_name =
 		$remaining_fields,
 		$insert_index,
 		0,
-		array_merge( array( $layout_tab ), $layout_contract_fields )
+		array_merge( array( $layout_tab ), $layout_contract_fields, $moved_layout_fields )
 	);
 
 	return array_values( $remaining_fields );
@@ -8562,7 +8651,7 @@ function mrn_base_stack_ensure_row_spacing_preset_field( array $fields, $key_see
 			$seed = $field_key;
 		}
 
-		if ( mrn_base_stack_is_row_spacing_selector_field_name( $field_name ) && 'select' === $field_type ) {
+		if ( ( mrn_base_stack_is_row_spacing_selector_field_name( $field_name ) || 'section_frame' === $field_name ) && 'select' === $field_type ) {
 			unset( $fields[ $index ] );
 			continue;
 		}
@@ -8609,6 +8698,22 @@ function mrn_base_stack_ensure_row_spacing_preset_field( array $fields, $key_see
 			$scope,
 			'',
 			'25'
+		);
+	}
+
+	// A theme-registered Section Frame (see mrn_base_stack_get_section_frames()); absent unless a theme registers one.
+	$section_frames = function_exists( 'mrn_base_stack_get_section_frames' ) ? mrn_base_stack_get_section_frames() : array();
+	if ( $section_frames ) {
+		$row_spacing_selector_fields[] = array(
+			'key'           => $seed . '_section_frame',
+			'name'          => 'section_frame',
+			'label'         => 'Section Frame',
+			'type'          => 'select',
+			'choices'       => array( '' => 'None' ) + $section_frames,
+			'default_value' => '',
+			'allow_null'    => 0,
+			'ui'            => 0,
+			'instructions'  => 'Optional side framing for this section, such as an inset band, defined by the theme. It sets the side margins and padding it needs and overrides the side presets above.',
 		);
 	}
 
@@ -9769,7 +9874,26 @@ function mrn_base_stack_relocate_effect_fields( array $fields ) {
 
 	$has_tabs       = false;
 	$effects_fields = array();
+	$spacing_fields = array();
+	$layout_fields  = array();
 	$remaining      = array();
+	$display_fields = array();
+	$configs_fields = array();
+	$spacing_tab    = false;
+	$layout_tab     = false;
+	$display_tab    = false;
+	$configs_tab    = false;
+
+	foreach ( $processed_fields as $field ) {
+		if ( ! is_array( $field ) || 'tab' !== ( $field['type'] ?? '' ) ) {
+			continue;
+		}
+		$tab_name = sanitize_title( (string) ( $field['label'] ?? '' ) );
+		$spacing_tab = $spacing_tab || 'spacing' === $tab_name;
+		$layout_tab  = $layout_tab || 'layout' === $tab_name;
+		$display_tab = $display_tab || 'display-styles' === $tab_name;
+		$configs_tab = $configs_tab || 'configs' === $tab_name;
+	}
 
 	foreach ( $processed_fields as $field ) {
 		if ( ! is_array( $field ) ) {
@@ -9794,8 +9918,33 @@ function mrn_base_stack_relocate_effect_fields( array $fields ) {
 			continue;
 		}
 
+		if ( $spacing_tab && in_array( $field_name, mrn_base_stack_get_spacing_tab_field_names(), true ) ) {
+			$spacing_fields[] = $field;
+			continue;
+		}
+
+		if ( $layout_tab && in_array( $field_name, mrn_base_stack_get_layout_tab_field_names(), true ) ) {
+			$layout_fields[] = $field;
+			continue;
+		}
+
+		if ( $display_tab && in_array( $field_name, mrn_base_stack_get_display_styles_tab_field_names(), true ) ) {
+			$display_fields[] = $field;
+			continue;
+		}
+
+		if ( $configs_tab && in_array( $field_name, mrn_base_stack_get_configs_tab_field_names(), true ) ) {
+			$configs_fields[] = $field;
+			continue;
+		}
+
 		$remaining[] = $field;
 	}
+
+	$remaining = mrn_base_stack_append_to_spacing_tab( $remaining, $spacing_fields );
+	$remaining = mrn_base_stack_append_to_layout_tab( $remaining, $layout_fields );
+	$remaining = mrn_base_stack_append_to_tab( $remaining, $display_fields, 'display-styles' );
+	$remaining = mrn_base_stack_append_to_tab( $remaining, $configs_fields, 'configs' );
 
 	if ( ! $has_tabs || empty( $effects_fields ) ) {
 		return $remaining;
@@ -9810,6 +9959,186 @@ function mrn_base_stack_relocate_effect_fields( array $fields ) {
 	$remaining[] = mrn_base_stack_get_effects_tab_field( $effects_tab_key );
 
 	return array_merge( $remaining, $effects_fields );
+}
+
+/**
+ * Row spacing values an editor still sets per row, shown in the Spacing tab beside the row presets.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_spacing_tab_field_names() {
+	return array( 'slider_gap', 'split_row_vertical_padding', 'split_row_horizontal_padding' );
+}
+
+/**
+ * Structure and arrangement choices that belong in the Layout tab rather than Content. Content keeps the copy,
+ * media, links, records and the basics they need (heading levels, accessible names, source fields).
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_layout_tab_field_names() {
+	return array(
+		// Two Column Split.
+		'split_frame', 'split_stack_breakpoint', 'split_column_order', 'split_mobile_action_after_columns', 'split_heading_alignment', 'column_rows_mode', 'column_alignment',
+		// Text lists and width.
+		'list_columns', 'list_columns_mobile', 'list_flow', 'list_alignment', 'body_frame', 'body_content_sizing',
+		// CTA.
+		'cta_frame', 'cta_content_alignment', 'cta_action_alignment_small', 'cta_action_unclamped_mobile', 'cta_content_fill', 'cta_action_layout',
+		// Image Content and galleries.
+		'image_frame', 'image_header_layout', 'image_media_sizing', 'image_stage_sizing', 'image_action_alignment', 'image_action_vertical_alignment', 'gallery_mobile_behavior', 'gallery_mobile_start', 'gallery_desktop_behavior',
+		// Video, forms, stats, tabs, FAQ.
+		'video_frame', 'video_content_sizing', 'form_frame', 'form_content_alignment', 'stats_frame', 'tab_frame', 'tab_mobile_behavior', 'faq_frame',
+		// Logos.
+		'logos_slider_frame', 'logos_slider_desktop_fit', 'slider_breakpoints',
+		// Content Lists.
+		'people_frame', 'people_grid_breakpoints', 'article_frame', 'article_gutter_mobile_breakpoint', 'project_layout', 'project_grid_breakpoint', 'project_columns', 'comparison_frame',
+		// Cards, timelines and process.
+		'card_frame', 'card_header_alignment', 'card_intro_alignment', 'card_section_link_alignment', 'card_caption_flow_breakpoint', 'card_equal_height_items', 'timeline_frame', 'timeline_skip_position', 'process_aside_sizing', 'process_aside_share', 'process_aside_minimum', 'process_list_columns',
+		// Showcase strip.
+		'strip_frame', 'strip_header_layout', 'strip_stagger',
+	);
+}
+
+/**
+ * Visual treatments and presentation pickers that belong in the Display Styles tab rather than Content. A
+ * presentation picker can still reveal content fields; ACF conditional logic works across tabs.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_display_styles_tab_field_names() {
+	return array(
+		// FAQ.
+		'faq_presentation', 'faq_icon_style', 'faq_item_border',
+		// Text.
+		'list_presentation', 'list_markers', 'list_item_style', 'list_link_trailing_icon', 'heading_link_icon', 'body_lead_style', 'body_quote_mark', 'body_heading_breaks',
+		// CTA.
+		'cta_paragraph_typography', 'cta_heading_breaks_mobile', 'cta_action_frame',
+		// Image Content.
+		'image_presentation', 'image_overlay', 'image_caption_style', 'image_caption_presentation', 'image_action_icon_style', 'image_action_marker',
+		// Video, forms, jump nav, stats, logos, tabs.
+		'video_presentation', 'form_style', 'jump_nav_presentation', 'stats_presentation', 'logos_presentation', 'logos_slider_image_treatment', 'tab_inactive_icon_filter',
+		// Cards, timelines and process.
+		'card_presentation', 'card_image_mobile_sizing', 'card_intro_lead_style', 'card_heading_breaks_mobile', 'card_item_heading_breaks_mobile', 'timeline_step_style', 'timeline_step_action_icon', 'process_aside_divider', 'process_list_style', 'process_toggle_icon',
+		// Showcase and Content Lists.
+		'showcase_presentation', 'record_presentation', 'project_action_frame', 'article_excerpt_lines',
+	);
+}
+
+/**
+ * Technical settings that belong in the Configs tab rather than Content.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_configs_tab_field_names() {
+	return array( 'card_image_loading', 'people_image_size', 'project_image_size', 'form_modal_id' );
+}
+
+/**
+ * Move listed fields into the Display Styles, Configs, Spacing and Effects tabs a flat field list already has. Fields
+ * stay where they are when their tab is missing. Used where fields are added after the tab contracts ran, such as
+ * the reusable block groups that CTA, FAQ, Content Lists and Partner rows clone.
+ *
+ * @param array<int, mixed> $fields Field definitions.
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_move_fields_to_existing_tabs( array $fields ) {
+	$targets = array(
+		'display-styles' => mrn_base_stack_get_display_styles_tab_field_names(),
+		'configs'        => mrn_base_stack_get_configs_tab_field_names(),
+		'spacing'        => mrn_base_stack_get_spacing_tab_field_names(),
+		'effects'        => mrn_base_stack_get_effects_tab_field_names(),
+	);
+	$present = array();
+	$tab     = '';
+	$current = array();
+	foreach ( $fields as $index => $field ) {
+		if ( is_array( $field ) && 'tab' === ( $field['type'] ?? '' ) ) {
+			$tab             = sanitize_title( (string) ( $field['label'] ?? '' ) );
+			$present[ $tab ] = true;
+		}
+		$current[ $index ] = $tab;
+	}
+
+	$moving    = array_fill_keys( array_keys( $targets ), array() );
+	$remaining = array();
+	foreach ( $fields as $index => $field ) {
+		$name = is_array( $field ) ? (string) ( $field['name'] ?? '' ) : '';
+		foreach ( $targets as $target => $names ) {
+			if ( '' !== $name && isset( $present[ $target ] ) && $current[ $index ] !== $target && in_array( $name, $names, true ) ) {
+				$moving[ $target ][] = $field;
+				continue 2;
+			}
+		}
+		$remaining[] = $field;
+	}
+
+	foreach ( $moving as $target => $moved ) {
+		$remaining = mrn_base_stack_append_to_tab( $remaining, $moved, $target );
+	}
+
+	return $remaining;
+}
+
+/**
+ * Append fields to the end of a list's Layout tab. Callers move fields only from lists that have one; a list without
+ * a Layout tab keeps these choices where they are. In the editor every builder row, including rows nested in Split
+ * columns, has one; WP-CLI skips the editor-only tab passes, so its field dumps show nested rows without it.
+ *
+ * @param array<int, mixed> $fields Field definitions without the moved fields.
+ * @param array<int, mixed> $moving Fields to append to the Layout tab.
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_append_to_layout_tab( array $fields, array $moving ) {
+	return mrn_base_stack_append_to_tab( $fields, $moving, 'layout' );
+}
+
+/**
+ * Append fields to the end of a list's Spacing tab. Callers move fields only from lists that have one.
+ *
+ * @param array<int, mixed> $fields Field definitions without the moved fields.
+ * @param array<int, mixed> $moving Fields to append to the Spacing tab.
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_append_to_spacing_tab( array $fields, array $moving ) {
+	return mrn_base_stack_append_to_tab( $fields, $moving, 'spacing' );
+}
+
+/**
+ * Insert fields at the end of the named tab's segment, before the next tab.
+ *
+ * @param array<int, mixed> $fields Field definitions without the moved fields.
+ * @param array<int, mixed> $moving Fields to insert.
+ * @param string            $tab    Sanitized tab label, such as spacing or layout.
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_append_to_tab( array $fields, array $moving, $tab ) {
+	if ( empty( $moving ) ) {
+		return $fields;
+	}
+
+	$tab_index = null;
+	$insert_at = count( $fields );
+
+	foreach ( $fields as $index => $field ) {
+		if ( ! is_array( $field ) || 'tab' !== ( $field['type'] ?? '' ) ) {
+			continue;
+		}
+
+		if ( null === $tab_index && $tab === sanitize_title( (string) ( $field['label'] ?? '' ) ) ) {
+			$tab_index = $index;
+		} elseif ( null !== $tab_index ) {
+			$insert_at = $index;
+			break;
+		}
+	}
+
+	if ( null === $tab_index ) {
+		return array_merge( $fields, $moving );
+	}
+
+	array_splice( $fields, $insert_at, 0, $moving );
+
+	return $fields;
 }
 
 /**
@@ -10847,6 +11176,11 @@ function mrn_base_stack_get_builder_row_spacing_contract( array $row ) {
 		'classes'    => array(),
 		'attributes' => $attributes,
 	);
+
+	$section_frame = $row['section_frame'] ?? '';
+	if ( is_string( $section_frame ) && '' !== $section_frame && function_exists( 'mrn_base_stack_get_section_frames' ) && isset( mrn_base_stack_get_section_frames()[ $section_frame ] ) ) {
+		$contract['classes'][] = 'mrn-section-frame--' . sanitize_html_class( $section_frame );
+	}
 
 	/**
 	 * Filter the row-spacing frontend contract before it is merged on the row wrapper.
@@ -13708,6 +14042,13 @@ function mrn_base_stack_get_two_column_column_layouts() {
 
 		if ( isset( $existing_only_lookup[ $layout_name ] ) ) {
 			$layout['max'] = -1;
+		}
+
+		// Column rows choose a named Display Style like top-level and card rows do. Layouts that clone a reusable block's
+		// fields (CTA, FAQ) already carry that block's Display Style; a second field of the same name would duplicate it.
+		$clones_fields = isset( $layout['sub_fields'] ) && is_array( $layout['sub_fields'] ) && in_array( 'clone', array_column( $layout['sub_fields'], 'type' ), true );
+		if ( ! $clones_fields && isset( $layout['sub_fields'] ) && is_array( $layout['sub_fields'] ) && function_exists( 'mrn_base_stack_ensure_builder_layout_display_style_fields' ) ) {
+			$layout['sub_fields'] = mrn_base_stack_ensure_builder_layout_display_style_fields( $layout['sub_fields'], $layout_name, 'field_mrn_split_column_' . $layout_name . '_display' );
 		}
 
 		$layouts[ $layout_key ] = $layout;

@@ -5683,7 +5683,7 @@ function mrn_site_colors_print_css_variables(): void {
     $dark_scroll_card_presets = mrn_site_styles_get_dark_scroll_card_presets();
     $row_width_values = mrn_site_styles_get_row_width_values();
 
-    echo "<style id='mrn-site-styles-accent-base'>.has-bottom-accent[data-bottom-accent]{position:relative;margin-bottom:var(--mrn-accent-space,3em);}.has-bottom-accent[data-bottom-accent]::after{content:\"\";position:absolute;left:0;right:0;bottom:0;pointer-events:none;}</style>";
+    echo "<style id='mrn-site-styles-accent-base'>.has-bottom-accent[data-bottom-accent]{position:relative;}.has-bottom-accent[data-bottom-accent]:not(.has-bottom-accent-row-spacing){margin-bottom:var(--mrn-accent-space,3em);}.has-bottom-accent[data-bottom-accent]::after{content:\"\";position:absolute;left:0;right:0;bottom:0;pointer-events:none;}</style>";
 
     echo "<style id='mrn-site-styles-row-widths'>html:root{";
     echo '--mrn-shell-content-width:' . esc_html($row_width_values['content'] ?? '780px') . ';';

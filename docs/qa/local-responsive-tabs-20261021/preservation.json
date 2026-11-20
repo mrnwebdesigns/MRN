@@ -1,0 +1,9 @@
+{
+  "records": 63,
+  "exact_snapshot_match": true,
+  "authored_writes": 0,
+  "candidate_only": true,
+  "backup_bytes": 187574335,
+  "backup_sha256": "3419120e2ce509936a22dfe8186be75331617c8678e1d59981e5363be61c100c",
+  "backup_mode": "0600"
+}

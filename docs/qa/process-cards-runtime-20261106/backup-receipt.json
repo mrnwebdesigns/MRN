@@ -1,0 +1,9 @@
+{
+  "bytes": 123111792,
+  "sha256": "63d81b4404d1b1e52c7e5bd8d4a6becefe2fc6c3b7540606612267a299d55cea",
+  "mode": "0o600",
+  "host_vm_match": true,
+  "complete_footer": true,
+  "all_tables_match_runtime": true,
+  "table_count": 70
+}

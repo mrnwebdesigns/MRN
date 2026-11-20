@@ -26,3 +26,51 @@ The native runtime fixture in `tests/runtime/hero-frame.php` verifies schema,
 save/readback, malformed values, opt-in rendering and unchanged defaults. A site
 migration must separately qualify its own content hierarchy, responsive layout,
 editor persistence and full-page accessibility before converting authored pages.
+
+## Unpublished local candidate: inner canvas and row spacing
+
+Two optional native controls support inherited layouts with a separate inner
+canvas and spacing breakpoint. **Wide Inner Maximum Width** caps the Wide/Full
+Hero's inner canvas (for example 1170px); blank retains 78rem. Content-width
+Heroes retain their separate cap. Values use the existing bounded length/clamp
+validator; `none`, negative values and CSS injection are refused for this cap.
+
+**Row Spacing Mobile Breakpoint** can select 767px instead of the existing 782px.
+Only that Hero keeps its desktop preset values through 768px; the selected
+spacing presets still own every margin and padding value. Gutter and typography
+breakpoints stay independent. Empty fields preserve existing markup and computed
+layout, and no new script, timer or request is added.
+
+
+## Optional heading entrance
+
+`hero_heading_entrance` is a native Basic Hero select. Blank keeps the existing
+static heading. `gentle-rise` selects a 700ms on-load fade from opacity 0 to 1
+and a 0.35em upward settle with `cubic-bezier(0.16, 1, 0.3, 1)`. It applies only
+to direct Hero heading elements, leaving body copy, actions, labels and media alone.
+It uses the existing Hero stylesheet and adds no JavaScript or Motion dependency.
+Reduced motion disables the animation. Enabling the existing Row Effects suppresses
+this entrance, preventing competing transforms. Unknown and malformed values do
+not activate it. It changes no row-spacing preset or unselected Hero output.
+
+
+## Optional narrow and small-screen type views
+
+A Basic Hero may select a **Narrow-Screen Heading Breakpoint** of 1100px; blank
+retains 900px. This moves only its narrow heading size, line height and following
+space. Narrow media, gutter and action controls keep their existing breakpoints.
+
+**Small-Screen Typography Breakpoint** may select 640px; blank retains 767px.
+It moves body size/line height and heading following space together. Two new
+optional small-screen heading size/line-height fields apply at the same selected
+breakpoint and override the narrow heading values. Values use the existing safe
+length validator. Unknown, array and injected settings add no output.
+
+The Row Padding Breakpoint additionally offers **640px (Vertical Padding Only)**.
+Top/bottom values come exclusively from the selected native spacing presets;
+side padding and all margins retain their independent row breakpoints. There is
+no site-specific selector, script, timer, CSS request or unselected default change.
+
+## Action line height
+
+An optional **Action Line Height** control (`hero_action_line_height`) sets the line height of Hero action links through `--mrn-hero-action-line-height` and the `has-hero-action-line-height` class. A blank value retains the existing inherited line height. Native sites use it to match a 20px action line box (48px button height).

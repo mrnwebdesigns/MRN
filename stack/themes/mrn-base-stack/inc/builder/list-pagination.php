@@ -29,6 +29,10 @@ function mrn_base_stack_get_content_list_source_type( array $row ) {
  */
 function mrn_base_stack_content_list_can_paginate( array $row ) {
 	$type = mrn_base_stack_get_content_list_source_type( $row );
+	// Show-all lists and article collections never create numbered pages.
+	if ( 'all' === ( $row['list_count_mode'] ?? '' ) || ( function_exists( 'mrn_base_stack_is_article_list' ) && mrn_base_stack_is_article_list( $row ) ) ) {
+		return false;
+	}
 	return ! empty( $row['enable_pagination'] ) && ( ! function_exists( 'mrn_admin_data_post_types_get_state' ) || 'disabled' !== mrn_admin_data_post_types_get_state( $type ) );
 }
 
@@ -78,6 +82,12 @@ function mrn_base_stack_get_content_list_query_args( array $row, $post_id, $page
 	if ( $tax_query ) {
 		// Preserve the renderer's existing taxonomy constraints.
 		$args['tax_query'] = $tax_query; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+	}
+	// Optional collection presentations adjust the same query that pagination validates.
+	foreach ( array( 'mrn_base_stack_get_content_list_collection_query', 'mrn_base_stack_get_article_collection_query', 'mrn_base_stack_get_project_collection_query' ) as $adjust ) {
+		if ( function_exists( $adjust ) ) {
+			$args = $adjust( $row, $args );
+		}
 	}
 	return $args;
 }

@@ -108,6 +108,9 @@ $section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' 
 $labeled_contract = mrn_base_stack_get_labeled_logos_contract( $row );
 $section_classes = mrn_base_stack_merge_builder_section_classes( $section_classes, $labeled_contract );
 $section_attrs = mrn_base_stack_merge_builder_attributes( $section_attrs, $labeled_contract['attributes'] );
+$slider_frame_contract = 'slider' === $display_mode ? mrn_base_stack_get_logos_slider_frame_contract( $row, count( $valid_items ) ) : array( 'classes' => array(), 'attributes' => array() );
+$section_classes = mrn_base_stack_merge_builder_section_classes( $section_classes, $slider_frame_contract );
+$section_attrs = mrn_base_stack_merge_builder_attributes( $section_attrs, $slider_frame_contract['attributes'] );
 $slider_id         = 'mrn-logos-' . $row_index . '-' . wp_generate_password( 6, false, false );
 $section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';
 $surface_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $section_styles ) : implode( '; ', $section_styles );

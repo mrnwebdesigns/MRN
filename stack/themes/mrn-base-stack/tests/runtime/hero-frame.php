@@ -18,14 +18,19 @@ try {
 	$hero = array_column( acf_get_field( 'field_mrn_page_hero_rows' )['layouts'], null, 'name' );
 	$body = array_column( acf_get_field( 'field_mrn_page_content_rows' )['layouts'], null, 'name' );
 	$fields = array_column( $hero['basic_block']['sub_fields'], null, 'name' );
+	// Per-row sizes, spacing, colors and breakpoints the theme's looks now own are not Hero fields. The contract still
+	// honors such values passed in directly, which the render checks below cover by adding them back to saved rows.
+	$retired = array( 'hero_inner_max_width', 'hero_actions_space_before_mobile', 'hero_actions_primary_min_width_mobile', 'hero_action_line_height', 'hero_media_space_after', 'hero_inner_gutter_narrow', 'hero_inner_gutter_small', 'hero_media_column_gap', 'hero_media_row_gap', 'hero_media_radius', 'hero_heading_size_narrow', 'hero_heading_size_mobile', 'hero_heading_line_height_mobile', 'hero_heading_line_height_narrow', 'hero_heading_space_after_narrow', 'hero_actions_space_before_narrow', 'hero_actions_gap_narrow', 'hero_paragraph_space_before', 'hero_lead_size', 'hero_lead_line_height', 'hero_lead_size_mobile', 'hero_lead_line_height_mobile', 'hero_lead_space_after', 'hero_padding_mobile_breakpoint', 'hero_heading_narrow_breakpoint', 'hero_typography_mobile_breakpoint', 'hero_media_stack_breakpoint', 'hero_media_shadow', 'hero_lead_weight', 'hero_lead_transform', 'hero_media_ratio', 'hero_row_spacing_mobile_breakpoint', 'hero_phrase_color', 'hero_lead_color', 'hero_inner_gutter', 'hero_inner_gutter_mobile', 'hero_inner_gutter_mobile_breakpoint', 'hero_content_width', 'hero_content_width_mobile', 'hero_heading_width', 'hero_heading_width_mobile', 'hero_text_width', 'hero_content_gap', 'hero_heading_space_after', 'hero_heading_space_after_mobile', 'hero_actions_space_before', 'hero_actions_row_gap', 'hero_actions_column_gap', 'hero_action_icon_height', 'hero_heading_size', 'hero_heading_line_height', 'hero_heading_weight', 'hero_heading_color', 'hero_text_size', 'hero_text_size_mobile', 'hero_text_line_height', 'hero_text_line_height_mobile', 'hero_text_color', 'hero_paragraph_space_after', 'hero_body_h2_space_before', 'hero_body_h2_space_after' );
+	$expect( ! array_intersect( $retired, array_keys( $fields ) ), 'Retired Hero styling values are not editable fields' );
+	$with_retired = static function ( $saved, $source ) use ( $retired ) { return array_merge( $saved, array_intersect_key( $source, array_flip( $retired ) ) ); };
 	foreach ( mrn_base_stack_get_hero_frame_fields() as $field ) {
 		$expect( isset( $fields[ $field['name'] ] ) && $fields[ $field['name'] ]['key'] === $field['key'], 'Native editable Hero control: ' . $field['name'] );
 	}
-	$expect( ! in_array( 'hero_content_width', array_column( $body['basic_block']['sub_fields'], 'name' ), true ) && ! in_array( 'hero_content_width', array_column( $hero['two_column_split']['sub_fields'], 'name' ), true ), 'Frame controls do not leak into body Basic or Split Heroes' );
+	$expect( ! in_array( 'hero_body_h2_style', array_column( $body['basic_block']['sub_fields'], 'name' ), true ) && ! in_array( 'hero_body_h2_style', array_column( $hero['two_column_split']['sub_fields'], 'name' ), true ), 'Frame controls do not leak into body Basic or Split Heroes' );
 	$again = mrn_base_stack_add_hero_sizing_fields_to_layout( $hero['basic_block'] );
 	$names = array_filter( array_column( $again['sub_fields'], 'name' ) );
 	$expect( count( $names ) === count( array_unique( $names ) ), 'Repeated Hero normalization does not duplicate controls' );
-	$expect( isset( $fields['hero_inner_gutter_mobile_breakpoint']['choices']['1199'], $fields['hero_body_h2_style']['choices']['h3'] ), 'Gutter breakpoints and semantic H2 typography are native editable choices' );
+	$expect( isset( $fields['hero_body_h2_style']['choices']['h3'] ) && ! isset( $fields['hero_inner_gutter_mobile_breakpoint'] ), 'Semantic H2 typography is a native editable choice; the gutter breakpoint comes from theme CSS' );
 	$empty = array( 'styles' => array(), 'heading_styles' => array(), 'classes' => array() );
 	$expect( $empty === mrn_base_stack_get_hero_frame_contract( array() ), 'Unconfigured Heroes receive no new class or inline declaration' );
 	foreach ( array( '-20px', '1px;position:fixed', 'url(https://invalid.test)', 'var(--unknown)', array( '2rem' ), 'clamp(1px, calc(2px + 3px), 4px)' ) as $bad ) {
@@ -33,13 +38,13 @@ try {
 	}
 	$expect( 'clamp(32px, 5vw, 64px)' === mrn_base_stack_validate_hero_frame_dimension( 'clamp(32px,5vw,64px)' ) && 'none' === mrn_base_stack_validate_hero_frame_dimension( 'none', true ) && '1.2' === mrn_base_stack_validate_hero_frame_dimension( '1.2', false, true ), 'Fluid lengths, unbounded widths and unitless line heights remain native values' );
 	$row = array(
-		'acf_fc_layout' => 'basic_block', 'hero_heading_mode' => 'custom_title', 'heading' => 'An editable native Hero',
+		'hero_heading_entrance' => 'gentle-rise', 'acf_fc_layout' => 'basic_block', 'hero_heading_mode' => 'custom_title', 'heading' => 'An editable native Hero',
 		'content' => '<p>Keep the first paragraph.</p><h2>Semantic second-level heading</h2><p>Keep the second paragraph.</p>',
-		'hero_inner_gutter' => '30px', 'hero_content_width' => '750px', 'hero_content_width_mobile' => '750px',
+		'hero_inner_gutter' => '30px', 'hero_inner_max_width' => '1170px', 'hero_row_spacing_mobile_breakpoint' => '767', 'hero_content_width' => '750px', 'hero_content_width_mobile' => '750px',
 		'hero_heading_width' => 'none', 'hero_heading_width_mobile' => 'none', 'hero_text_width' => 'none',
 		'hero_content_gap' => '0px', 'hero_heading_space_after' => '36px', 'hero_heading_space_after_mobile' => '16px',
-		'hero_actions_space_before' => '56px', 'hero_actions_row_gap' => '15px', 'hero_actions_column_gap' => '18px',
-		'hero_action_icon_height' => '10px',
+		'hero_actions_space_before' => '56px', 'hero_actions_space_before_mobile' => '30px', 'hero_actions_primary_min_width_mobile' => '197px', 'hero_actions_row_gap' => '15px', 'hero_actions_column_gap' => '18px', 'hero_rotation_control_placement' => 'overlay', 'hero_actions_mobile_flow' => 'paired-until-375',
+		'hero_action_icon_height' => '10px', 'hero_action_line_height' => '20px',
 		'hero_heading_size' => 'clamp(32px,5vw,64px)', 'hero_heading_line_height' => '1.2', 'hero_heading_weight' => '500',
 		'hero_text_size' => '20px', 'hero_text_line_height' => '1.5', 'hero_paragraph_space_after' => '0px',
 		'hero_inner_gutter_mobile' => '15px', 'hero_text_size_mobile' => '16px', 'hero_text_line_height_mobile' => '1.2',
@@ -52,20 +57,62 @@ try {
 	update_field( 'field_mrn_page_hero_rows', array( $row ), $id );
 	$readback = get_field( 'page_hero_rows', $id )[0];
 	foreach ( $row as $name => $value ) {
-		if ( 0 === strpos( $name, 'hero_' ) ) { $expect( $value === $readback[ $name ], 'ACF save/readback preserves ' . $name ); }
+		if ( 0 === strpos( $name, 'hero_' ) && ! in_array( $name, $retired, true ) ) { $expect( $value === $readback[ $name ], 'ACF save/readback preserves ' . $name ); }
 	}
+	$readback = $with_retired( $readback, $row );
 	$render = static function ( $value ) use ( $id ) {
 		ob_start(); get_template_part( 'template-parts/builder/hero', null, array( 'row' => $value, 'post_id' => $id ) ); return ob_get_clean();
 	};
 	$html = $render( $readback );
+	$expect( false !== strpos( $html, '--mrn-hero-action-line-height:20px' ) && false !== strpos( $html, 'has-hero-action-line-height' ), 'Hero renders the optional action line height contract' );
 	$expect( str_contains( $html, '--mrn-hero-content-width:750px' ) && str_contains( $html, '--mrn-hero-content-gap:0px' ) && str_contains( $html, 'font-size:clamp(32px, 5vw, 64px)' ), 'Native renderer uses actual saved frame and fluid typography values' );
+	$expect( str_contains( $html, '--mrn-hero-inner-max-width:1170px' ) && str_contains( $html, 'has-hero-row-spacing-at-767' ), 'Saved inner canvas cap and independent row-spacing breakpoint render natively' );
+	$expect( str_contains( $html, 'has-hero-rotation-control-overlay' ) && str_contains( $html, 'has-hero-actions-paired-until-375' ) && str_contains( $html, 'has-hero-actions-space-before-mobile' ) && str_contains( $html, '--mrn-hero-actions-space-before-mobile:30px' ) && str_contains( $html, '--mrn-hero-actions-primary-min-width-mobile:197px' ), 'Saved rotating-control placement and phone action flow render only on the selected Hero' );
 	$expect( 1 === substr_count( $html, '<h1 ' ) && str_contains( $html, 'second=2' ) && str_contains( $html, 'Keep the second paragraph.' ), 'Heading semantics, complete action and rich content survive rendering' );
 	$expect( str_contains( $html, 'has-hero-gutter-at-1199' ) && str_contains( $html, 'has-hero-body-h2-style-h3' ) && str_contains( $html, '--mrn-hero-body-h2-space-before:1em' ) && str_contains( $html, '<h2>Semantic second-level heading</h2>' ), 'Saved native breakpoint, H2 typography and heading spacing retain semantic heading markup' );
-	$bad = mrn_base_stack_get_hero_frame_contract( array( 'hero_heading_size' => '1px;position:fixed', 'hero_text_size' => array(), 'hero_heading_weight' => '999', 'hero_heading_color' => 'unconfigured-color', 'hero_inner_gutter_mobile_breakpoint' => '1199;bad', 'hero_body_h2_style' => array( 'h3' ), 'hero_body_h2_space_before' => '-1em' ) );
+	$expect( str_contains( $html, 'has-hero-heading-entrance-gentle-rise' ), 'Saved native heading entrance reaches the Hero class contract' );
+	foreach ( array( '', 'unknown', 'gentle-rise;display:none', array( 'gentle-rise' ) ) as $bad_entrance ) {
+		$expect( $empty === mrn_base_stack_get_hero_frame_contract( array( 'hero_heading_entrance' => $bad_entrance ) ), 'Unknown or malformed entrance stays inactive' );
+	}
+	$expect( $empty === mrn_base_stack_get_hero_frame_contract( array( 'hero_heading_entrance' => 'gentle-rise', 'motion_settings' => array( 'enabled' => 1, 'effect' => 'text-reveal' ) ) ), 'Existing Row Effects prevent competing heading entrance transforms' );
+	$needs = mrn_base_stack_get_front_end_component_needs_for_post( $id );
+	$expect( empty( $needs['motion'] ), 'CSS heading entrance requests no Motion library' );
+	$bad = mrn_base_stack_get_hero_frame_contract( array( 'hero_inner_max_width' => 'none', 'hero_row_spacing_mobile_breakpoint' => array( '767' ), 'hero_heading_size' => '1px;position:fixed', 'hero_text_size' => array(), 'hero_heading_weight' => '999', 'hero_heading_color' => 'unconfigured-color', 'hero_inner_gutter_mobile_breakpoint' => '1199;bad', 'hero_body_h2_style' => array( 'h3' ), 'hero_body_h2_space_before' => '-1em' ) );
 	$expect( $empty === $bad, 'Malformed optional data cannot inject CSS or invent Site Colors' );
 	$expect( $empty === mrn_base_stack_get_hero_frame_contract( array( 'hero_inner_gutter_mobile_breakpoint' => '767' ) ), 'Explicit existing 767px breakpoint keeps prior output' );
+	$expect( $empty === mrn_base_stack_get_hero_frame_contract( array( 'hero_row_spacing_mobile_breakpoint' => '782', 'hero_inner_max_width' => '-1px' ) ), 'Existing row-spacing breakpoint and invalid width retain defaults' );
+	$expect( $empty === mrn_base_stack_get_hero_frame_contract( array( 'hero_rotation_control_placement' => 'overlay;position:fixed', 'hero_actions_mobile_flow' => 'paired;position:fixed', 'hero_actions_space_before_mobile' => '-1px', 'hero_actions_primary_min_width_mobile' => '1px;position:fixed' ) ), 'Malformed rotating-control and phone action values cannot affect output' );
 	$default = array( 'acf_fc_layout' => 'basic_block', 'heading' => 'Existing native defaults', 'hero_heading_mode' => 'custom_title', 'content' => '<p>Original formatting.</p>' );
 	$expect( ! str_contains( $render( $default ), '--mrn-hero-content-width' ) && ! str_contains( $render( $default ), 'has-hero-text-' ), 'Existing basic Hero rendering stays opt-in' );
+	$media = array_merge( $row, array(
+		'hero_inner_gutter_narrow' => '28px', 'hero_inner_gutter_small' => '20px', 'hero_padding_mobile_breakpoint' => '900', 'hero_padding_bottom_mobile_source' => 'desktop',
+		'hero_media_width' => '422px', 'hero_media_max_share' => '40', 'hero_media_stack_breakpoint' => '900', 'hero_media_column_gap' => '64px', 'hero_media_row_gap' => '40px', 'hero_media_radius' => '0px', 'hero_media_ratio' => '540 / 430', 'hero_media_shadow' => 'none', 'hero_media_size' => 'full',
+		'hero_heading_size_narrow' => 'clamp(44px, 9vw, 64px)', 'hero_heading_line_height_narrow' => '1', 'hero_heading_space_after_narrow' => '24px', 'hero_actions_space_before_narrow' => '32px', 'hero_actions_gap_narrow' => '12px', 'hero_actions_small_layout' => 'full-column',
+		'hero_paragraph_space_before' => '22px', 'hero_lead_size' => '15px', 'hero_lead_line_height' => '36px', 'hero_lead_space_after' => '14px', 'hero_lead_weight' => '600', 'hero_lead_transform' => 'uppercase',
+	) );
+	update_field( 'field_mrn_page_hero_rows', array( $media ), $id ); $saved_media = get_field( 'page_hero_rows', $id )[0];
+	foreach ( $media as $name => $value ) { if ( str_starts_with( $name, 'hero_' ) && ! in_array( $name, $retired, true ) ) { $expect( $value === $saved_media[ $name ], 'Native media frame persists ' . $name ); } }
+	$saved_media = $with_retired( $saved_media, $media );
+	$media_html = $render( $saved_media );
+	$expect( str_contains( $media_html, 'has-hero-media-stack-breakpoint-900' ) && str_contains( $media_html, '--mrn-hero-media-max-share:40%' ) && str_contains( $media_html, '--mrn-hero-media-ratio:540 / 430' ), 'Native renderer consumes bounded media, ratio and stacking fields' );
+	$expect( str_contains( $media_html, 'font-size:var(--mrn-hero-current-heading-size, clamp(32px, 5vw, 64px))' ) && str_contains( $media_html, '--mrn-hero-heading-size-narrow:clamp(44px, 9vw, 64px)' ), 'Narrow heading override preserves the authored desktop inline fallback' );
+	$expect( str_contains( $media_html, 'has-hero-padding-mobile-breakpoint-900' ) && str_contains( $media_html, 'has-hero-lead-transform' ) && str_contains( $media_html, 'has-hero-actions-small-layout-full-column' ), 'Editable preset breakpoint, lead paragraph and small actions are opt-in' );
+	foreach ( array( '0 / 1', '1 / 0', '10001 / 2', '1 / 2;position:fixed', array( '4 / 3' ) ) as $bad_ratio ) { $expect( $empty === mrn_base_stack_get_hero_frame_contract( array( 'hero_media_ratio' => $bad_ratio ) ), 'Unsafe media ratio is refused: ' . wp_json_encode( $bad_ratio ) ); }
+	$expect( $empty === mrn_base_stack_get_hero_frame_contract( array( 'hero_media_width' => '-1px', 'hero_media_max_share' => '100', 'hero_media_shadow' => 'url(bad)', 'hero_media_stack_breakpoint' => array( '900' ), 'hero_padding_mobile_breakpoint' => '900;bad', 'hero_lead_weight' => '999', 'hero_lead_transform' => 'bad', 'hero_lead_color' => 'unconfigured-color', 'hero_heading_size_narrow' => 'calc(2px + 3px)' ) ), 'Malformed media/type/breakpoint settings cannot add output' );
+	$attributes = mrn_base_stack_get_hero_media_image_attributes( $media );
+	$expect( 'eager' === $attributes['loading'] && 'high' === $attributes['fetchpriority'] && 'async' === $attributes['decoding'] && '(max-width: 900px) 100vw, min(422px, 40vw)' === $attributes['sizes'], 'Bounded responsive image hints retain native Hero priority' );
+	$expect( mrn_base_stack_get_hero_image_attributes() === mrn_base_stack_get_hero_media_image_attributes( array( 'hero_media_width' => '422px;bad', 'hero_media_max_share' => '40' ) ) && mrn_base_stack_get_hero_image_attributes() === mrn_base_stack_get_hero_media_image_attributes( array() ), 'Default and malformed media hints retain original priority attributes' );
+	$views = array_merge( $row, array( 'hero_heading_size' => '64px', 'hero_heading_line_height' => '80px', 'hero_heading_size_narrow' => '54px', 'hero_heading_line_height_narrow' => '66px', 'hero_heading_narrow_breakpoint' => '1100', 'hero_heading_size_mobile' => '38px', 'hero_heading_line_height_mobile' => '46px', 'hero_typography_mobile_breakpoint' => '640', 'hero_padding_mobile_breakpoint' => '640' ) );
+	update_field( 'field_mrn_page_hero_rows', array( $views ), $id ); $saved_views = get_field( 'page_hero_rows', $id )[0];
+	foreach ( $views as $name => $value ) { if ( str_starts_with( $name, 'hero_' ) && ! in_array( $name, $retired, true ) ) { $expect( $value === $saved_views[ $name ], 'Responsive type view persists ' . $name ); } }
+	$saved_views = $with_retired( $saved_views, $views );
+	$views_html = $render( $saved_views );
+	$expect( str_contains( $views_html, 'has-hero-heading-narrow-breakpoint-1100' ) && str_contains( $views_html, 'has-hero-typography-mobile-breakpoint-640' ) && str_contains( $views_html, 'has-hero-padding-mobile-breakpoint-640' ), 'Independent type and vertical-padding choices render only on the selected Hero' );
+	$expect( str_contains( $views_html, '--mrn-hero-heading-size-mobile:38px' ) && str_contains( $views_html, '--mrn-hero-heading-line-height-mobile:46px' ) && str_contains( $views_html, 'font-size:var(--mrn-hero-current-heading-size, 64px)' ) && ! str_contains( $views_html, 'var(--mrn-hero-current-heading-size, var(' ), 'Mobile and narrow overrides share one desktop inline fallback' );
+	foreach ( array( '', 'unknown', '640;position:fixed', array( '640' ) ) as $bad_view ) {
+		$expect( $empty === mrn_base_stack_get_hero_frame_contract( array( 'hero_heading_narrow_breakpoint' => $bad_view, 'hero_typography_mobile_breakpoint' => $bad_view ) ), 'Unsupported responsive type breakpoints retain original output' );
+	}
+	$expect( $empty === mrn_base_stack_get_hero_frame_contract( array( 'hero_heading_size_mobile' => '-2px', 'hero_heading_line_height_mobile' => array( '1.2' ) ) ), 'Malformed mobile heading lengths add no declaration' );
 	$proof = getenv( 'MRN_HERO_FRAME_PROOF_PATH' );
 	if ( $proof ) {
 		$expect( str_ends_with( $proof, '.html' ) && is_dir( dirname( $proof ) ), 'Explicit source proof directory exists' );

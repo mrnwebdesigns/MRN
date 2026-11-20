@@ -1,0 +1,20 @@
+{
+  "scope": "Real local registered process contract and component behavior, not saved-editor/full-page migration acceptance",
+  "runtime_assertions": 79,
+  "default_spacing_browser_assertions": 44,
+  "native_frame_browser_assertions": 44,
+  "widths": 17,
+  "authored_writes": 0,
+  "source_files": {
+    "style.css": "f4c86a7144a6d43a8e0d3dd868153d5ee25d49a4d44b5b754511e78f30b905a8"
+  },
+  "proof_files": {
+    "native-frame-browser.json": "15688201b2589b72b81ede147256289877523c3896e97880a9bae92b2d2f85fc",
+    "backup-receipt.json": "54b2d23cf6713d1a8ffefde00f77e5e8e5b84f7745fc1d8e9fa75f9ba600e0f6",
+    "registered-runtime.json": "bc88ddab0a12009d71e63d4844007c23a0f37f32323255bc99f5ee6d76c284bd",
+    "README.md": "3cc23b0ece6311594d161623dd2ef3115956f6cbb2005deb64ec5692cf00c052",
+    "native-frame-desktop.png": "2f8e2e6bf21cea6091e8a88e9879e7621644232b44d0a0a57756eb70f5798885",
+    "default-spacing-browser.json": "e0c86432dc4c8dc0df6f120587e44cb96b8e037dfad1f3f745204c4754b6cb7d",
+    "native-frame-mobile.png": "38f70687c31b18372b8f634ce3a9eaf8d41251501405b0a770a2ae21452d7cbd"
+  }
+}

@@ -7,6 +7,14 @@
 
 $context              = is_array( $args ?? null ) ? $args : array();
 $row                  = isset( $context['row'] ) && is_array( $context['row'] ) ? $context['row'] : array();
+if ( 'process' === ( $row['card_presentation'] ?? '' ) ) {
+	get_template_part( 'template-parts/builder/process-cards', null, $context );
+	return;
+}
+if ( 'pricing' === ( $row['card_presentation'] ?? '' ) ) {
+	get_template_part( 'template-parts/builder/pricing-cards', null, $context );
+	return;
+}
 if ( 'timeline' === ( $row['card_presentation'] ?? '' ) ) {
 	get_template_part( 'template-parts/builder/timeline', null, $context );
 	return;
@@ -156,6 +164,12 @@ $section_classes = array(
 if ( $is_image_card ) {
 	$section_classes[] = 'mrn-content-builder__row--image-cards';
 	$section_classes[] = $reveal_content ? 'mrn-content-builder__row--image-card-reveal' : 'mrn-content-builder__row--image-card-caption';
+	if ( '1199' === ( $row['card_caption_flow_breakpoint'] ?? '' ) ) {
+		$section_classes[] = 'has-image-card-caption-flow-tablet';
+	}
+	if ( 'natural' === ( $row['card_image_mobile_sizing'] ?? '' ) ) {
+		$section_classes[] = 'has-image-card-natural-mobile';
+	}
 }
 if ( $has_card_links ) {
 	$section_classes[] = 'mrn-content-builder__row--card-full-link';
@@ -174,6 +188,9 @@ $motion_contract   = function_exists( 'mrn_base_stack_get_builder_motion_contrac
 );
 $section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $display_contract ) : $section_classes;
 $section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $accent_contract ) : $section_classes;
+if ( $bottom_accent && 'row-spacing' === ( $row['bottom_accent_space_source'] ?? '' ) && ! empty( $row['row_spacing_margin_bottom_preset'] ) ) {
+	$section_classes[] = 'has-bottom-accent-row-spacing';
+}
 $section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $motion_contract ) : $section_classes;
 $section_attrs     = isset( $display_contract['attributes'] ) && is_array( $display_contract['attributes'] ) ? $display_contract['attributes'] : array();
 $section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array() );

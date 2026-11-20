@@ -195,8 +195,6 @@ try {
 			'image'               => $attachments[0],
 			'image_presentation'  => 'tilted-gallery',
 			'gallery_columns'     => $columns,
-			'media_height'        => '600px',
-			'media_height_mobile' => '340px',
 			'image_overlay'       => 1,
 		),
 		array(
@@ -204,8 +202,6 @@ try {
 			'heading'             => 'Scroll zoom',
 			'image'               => $attachments[1],
 			'image_presentation'  => 'scroll-zoom',
-			'media_height'        => '500px',
-			'media_height_mobile' => '340px',
 		),
 		array(
 			'acf_fc_layout'         => 'showcase',
@@ -267,7 +263,7 @@ try {
 	mrn_presentation_expect( count( $saved ) === count( $rows ), 'Every authored presentation row survives native ACF save' );
 	mrn_presentation_expect( 11 === count( $saved[0]['rotating_phrases_one'] ) && 11 === count( $saved[0]['rotating_phrases_two'] ), 'CTA retains both complete eleven-phrase collections' );
 	mrn_presentation_expect( 5 === count( $saved[1]['gallery_columns'] ) && 5 === count( $saved[1]['gallery_columns'][4]['images'] ), 'Rotated gallery preserves five ordered columns of five images' );
-	mrn_presentation_expect( '600px' === $saved[1]['media_height'] && '340px' === $saved[1]['media_height_mobile'], 'Desktop and mobile media heights round trip as content fields' );
+	mrn_presentation_expect( ! array_intersect( array( 'media_height', 'media_height_mobile' ), array_column( $layouts['image_content']['sub_fields'], 'name' ) ), 'Desktop and mobile media heights come from theme CSS, not row fields' );
 	$bad_gallery                                    = $rows;
 	$bad_gallery[1]['gallery_columns'][0]['images'] = array_fill( 0, 31, $attachments[0] );
 	$bad_gallery[0]['heading']                      = 'Must not persist';
@@ -312,6 +308,13 @@ try {
 	mrn_presentation_expect( ! str_contains( $unsafe, '<script' ) && ! str_contains( $unsafe, '<img' ) && ! str_contains( $unsafe, 'onerror' ), 'Rotating headings escape text, JSON attributes and authored HTML' );
 	mrn_presentation_expect( 'Stay clear' === mrn_base_stack_get_rotating_heading_markup( array( 'rotating_phrases_one' => array( array( 'text' => 'clear' ) ) ), 'Stay {phrase_one}' ), 'A single phrase renders plain text without CSS-dependent duplicate spans' );
 	mrn_presentation_expect( mrn_base_stack_format_heading_inline_html( 'Ordinary heading' ) === mrn_base_stack_get_rotating_heading_markup( array(), 'Ordinary heading' ), 'Unset phrase collections preserve the existing heading formatter' );
+	$two_phrases = array( 'rotating_phrases_one' => array( array( 'text' => 'work' ), array( 'text' => 'solutions' ) ) );
+	$swap        = mrn_base_stack_get_rotating_heading_markup( $two_phrases, 'Like the {phrase_one}' );
+	mrn_presentation_expect( 2 === substr_count( $swap, 'mrn-rotate__size' ) && ! str_contains( $swap, 'data-effect' ) && ! str_contains( $swap, 'data-control' ) && ! str_contains( $swap, 'mrn-rotate--flow' ), 'Unset phrase effect, width and control keep the existing swap markup' );
+	$typed = mrn_base_stack_get_rotating_heading_markup( $two_phrases + array( 'rotation_effect' => 'typewriter', 'rotation_width' => 'flow', 'rotation_control' => 'icon' ), 'Like the {phrase_one}' );
+	mrn_presentation_expect( str_contains( $typed, 'data-effect="typewriter"' ) && str_contains( $typed, 'data-control="icon"' ) && str_contains( $typed, 'mrn-rotate mrn-rotate--flow' ) && ! str_contains( $typed, 'mrn-rotate__size' ) && str_contains( $typed, '<span class="screen-reader-text">work</span>' ), 'Type and Erase, fitted width and the icon control are opt-in and keep the readable first phrase' );
+	$unknown = mrn_base_stack_get_rotating_heading_markup( $two_phrases + array( 'rotation_effect' => '"bad', 'rotation_width' => 'x', 'rotation_control' => '<b>' ), 'Like the {phrase_one}' );
+	mrn_presentation_expect( $unknown === $swap, 'Unknown phrase effect, width and control values fall back to the existing swap markup' );
 	$unsafe_stage = mrn_base_stack_get_image_stage_attributes(
 		array(
 			'image_presentation' => 'scroll-zoom',

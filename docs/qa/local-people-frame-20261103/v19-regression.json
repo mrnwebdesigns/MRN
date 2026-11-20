@@ -1,0 +1,23 @@
+{
+  "version": "20261103.19",
+  "records": 63,
+  "unchanged_source_and_target_states": 63,
+  "changed_candidate_records": {
+    "1236": [
+      "issues",
+      "candidate_hash"
+    ]
+  },
+  "other_candidates_unchanged": 62,
+  "authored_records_unchanged": 79,
+  "styles_options_unchanged": 4,
+  "routes_unchanged": 65,
+  "mixed_native_records": [],
+  "team_records_unchanged": 9,
+  "selected_media_unchanged": 7,
+  "default_people_markup_unchanged": 7,
+  "converted_case_markup_unchanged": 11,
+  "authored_conversions_this_checkpoint": 0,
+  "converted_records_total": 15,
+  "total_migration_records": 63
+}

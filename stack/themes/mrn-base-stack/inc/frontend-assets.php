@@ -349,6 +349,8 @@ function mrn_base_stack_get_default_front_end_component_needs() {
 		'faq'            => false,
 		'gallery'        => false,
 		'image_action'   => false,
+		'articles'       => false,
+		'article_filters' => false,
 		'motion'         => false,
 		'presentation'   => false,
 		'slider'         => false,
@@ -439,9 +441,11 @@ function mrn_base_stack_collect_front_end_component_needs_from_content( $content
 	$content = (string) $content;
 	$markers = array(
 		'deferred_media' => array( 'data-video-src' ),
-		'faq'            => array( 'mrn-faq__item' ),
+		'faq'            => array( 'mrn-faq__item', 'mrn-process__item' ),
 		'gallery'        => array( 'data-gallery-root' ),
 		'image_action'   => array( 'data-mrn-image-action-follow' ),
+		'articles' => array( 'data-mrn-articles' ),
+		'article_filters' => array( 'data-article-interactive' ),
 		'presentation'   => array( 'data-mrn-image-drift', 'data-mrn-scroll-words' ),
 		'motion'         => array( 'data-mrn-motion-effect', 'data-mrn-surface' ),
 		'slider'         => array( 'mrn-splide' ),
@@ -553,11 +557,17 @@ function mrn_base_stack_collect_front_end_component_needs_for_post( $post_id, ar
 			}
 		}
 
+		if ( preg_match( '/_article_filters$/', $meta_key ) && in_array( 'client-tabs', $meta_values, true ) ) { $needs['article_filters'] = true; }
+		if ( preg_match( '/_article_load_more$/', $meta_key ) ) { foreach ( $meta_values as $value ) { if ( mrn_base_stack_front_end_meta_value_is_enabled( $value ) ) { $needs['article_filters'] = true; } } }
+
 		if ( preg_match( '/_image_action_follow_pointer$/', $meta_key ) ) { foreach ( $meta_values as $value ) { if ( mrn_base_stack_front_end_meta_value_is_enabled( $value ) ) { $needs['image_action'] = true; } } }
 
 		if ( preg_match( '/(?:^|_)(?:image_presentation|text_presentation|showcase_presentation|card_presentation|record_presentation|video_presentation|rotating_phrases_one|rotating_phrases_two)$/', $meta_key ) ) {
 			foreach ( $meta_values as $presentation_value ) {
-				if ( 'bento' === $presentation_value && preg_match( '/(?:^|_)showcase_presentation$/', $meta_key ) ) { continue; }
+				if ( 'articles' === $presentation_value && preg_match( '/(?:^|_)record_presentation$/', $meta_key ) ) { $needs['articles'] = true; continue; }
+				if ( in_array( $presentation_value, array( 'bento', 'split-records' ), true ) && preg_match( '/(?:^|_)showcase_presentation$/', $meta_key ) ) { continue; }
+				if ( 'process' === $presentation_value && preg_match( '/(?:^|_)card_presentation$/', $meta_key ) ) { $needs['faq'] = true; continue; }
+				if ( 'pricing' === $presentation_value && preg_match( '/(?:^|_)card_presentation$/', $meta_key ) ) { continue; }
 				if ( ! in_array( (string) $presentation_value, array( '', '0', 'standard' ), true ) ) {
 					$needs['presentation'] = true;
 				}
@@ -699,6 +709,8 @@ function mrn_base_stack_get_front_end_component_asset_manifest() {
 			'styles'  => array( 'mrn-base-stack-glightbox' ),
 			'scripts' => array( 'mrn-base-stack-front-end-gallery' ),
 		),
+		'articles' => array( 'styles' => array( 'mrn-base-stack-articles' ) ),
+		'article_filters' => array( 'scripts' => array( 'mrn-base-stack-front-end-articles' ) ),
 		'image_action' => array( 'scripts' => array( 'mrn-base-stack-front-end-image-action' ) ),
 		'motion'         => array(
 			'scripts' => array( 'mrn-base-stack-front-end-effects' ),
@@ -741,6 +753,8 @@ function mrn_base_stack_register_front_end_component_assets() {
 
 	wp_register_style( 'mrn-base-stack-splide', $theme_uri . 'css/vendor/splide.min.css', array(), '4.1.4' );
 	wp_register_style( 'mrn-base-stack-glightbox', $theme_uri . 'css/vendor/glightbox.min.css', array(), '3.3.1' );
+	wp_register_style( 'mrn-base-stack-articles', $theme_uri . 'css/articles.css', array(), $version( 'css/articles.css', _S_VERSION ) );
+	wp_register_script( 'mrn-base-stack-front-end-articles', $theme_uri . 'js/front-end-articles.js', array(), $version( 'js/front-end-articles.js', _S_VERSION ), true );
 	wp_register_style( 'mrn-base-stack-presentation', $theme_uri . 'css/presentation.css', array(), $version( 'css/presentation.css', _S_VERSION ) );
 	wp_register_script( 'mrn-base-stack-presentation', $theme_uri . 'js/presentation.js', array(), $version( 'js/presentation.js', _S_VERSION ), true );
 

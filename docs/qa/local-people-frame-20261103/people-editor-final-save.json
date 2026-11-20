@@ -1,0 +1,20 @@
+{
+    "result": "passed",
+    "configured_values": 70,
+    "expected_native_metadata": 143,
+    "additional_editor_metadata": 38,
+    "source_exact": true,
+    "ordered_members": [
+        1248,
+        1251,
+        1253,
+        1255,
+        1257,
+        1261,
+        1263
+    ],
+    "authored_records_unchanged": 79,
+    "team_records_unchanged": 9,
+    "portraits_unchanged": 7,
+    "markup_sha256": "ccba21152c80933b205be62476a85a343a2e879275865b20a95ad34105d7eafe"
+}
