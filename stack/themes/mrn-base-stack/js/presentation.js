@@ -421,13 +421,16 @@
 		const media = section.querySelector( '.mrn-video-row__media' );
 		let next = section.nextElementSibling;
 		while ( next && ! next.matches( '.mrn-content-builder__row' ) ) { next = next.nextElementSibling; }
-		const surface = next?.querySelector( '.mrn-layout-surface' ) || next?.querySelector( '.mrn-layout-section' ) || next;
+		const from = parseFloat( section.dataset.mrnVideoExpandFrom ) || 0;
+		// A video that expands from a start width grows to the full row width, so the following section's transition
+		// color spans that full row as well; otherwise it stays on the section's own surface.
+		const surface = next && from ? next : next?.querySelector( '.mrn-layout-surface' ) || next?.querySelector( '.mrn-layout-section' ) || next;
 		const original = surface ? surface.style.backgroundColor : '';
 		const base = surface ? getComputedStyle( surface ).backgroundColor : '';
 		const color = section.dataset.mrnFollowColor;
 		const release = 'release' === section.dataset.mrnFollowRelease;
 		if ( release && next ) { next.classList.add( 'has-mrn-follow-release' ); }
-		const from = parseFloat( section.dataset.mrnVideoExpandFrom ) || 0;
+		let away = 0;
 		if ( from ) {
 			// The following section's own color, or the page color when it has none.
 			const clear = /^(transparent|rgba\(0, 0, 0, 0\))$/;
@@ -445,8 +448,12 @@
 				const grown = still ? 1 : clamp( ( vh - section.getBoundingClientRect().top ) / Math.max( 220, vh * .3 ) );
 				media.style.transformOrigin = '50% 100%';
 				media.style.transform = still ? '' : 'scale(' + ( start + ( 1 - start ) * grown ) + ')';
-				const t = still || grown < .999 ? 0 : clamp( -media.getBoundingClientRect().top / Math.max( 200, vh * .4 ) );
-				section.style.setProperty( '--mrn-video-after-progress', ( t * t * t * ( t * ( t * 6 - 15 ) + 10 ) ).toFixed( 4 ) );
+				// Without the expand (reduced motion, or 767px and below) the background has already faded under reduced
+				// motion, and on small screens switches as soon as the video's top passes the top of the viewport.
+				const top = media.getBoundingClientRect().top;
+				const t = reduced.matches ? 1 : still ? ( top < 0 ? 1 : 0 ) : grown < .999 ? 0 : clamp( -top / Math.max( 200, vh * .4 ) );
+				away = t * t * t * ( t * ( t * 6 - 15 ) + 10 );
+				section.style.setProperty( '--mrn-video-after-progress', away.toFixed( 4 ) );
 			} else if ( media ) {
 				const compact = section.classList.contains( 'has-video-frame' ) && window.matchMedia( '(max-width: 767px)' ).matches;
 				media.style.transform = reduced.matches || compact ? '' : 'scale(' + ( .82 + .18 * p ) + ')';
@@ -454,13 +461,18 @@
 			}
 			if ( surface && color && /^--[a-zA-Z0-9_-]+$/.test( color ) ) {
 				let amount = p;
-				if ( release && next ) {
+				if ( release && next && from ) {
+					// Fully the transition color until the expanded video scrolls past the top, then back in step with the
+					// video row's own background.
+					amount = 1 - away;
+				} else if ( release && next ) {
 					// Fade back to the section's own color between 80% and 60% of the viewport height.
 					const arrive = next.getBoundingClientRect().top / window.innerHeight;
 					amount = Math.min( p, clamp( ( arrive - 0.6 ) / 0.2 ) );
 				}
 				surface.style.backgroundColor = reduced.matches ? original : 'color-mix(in srgb, var(' + color + ') ' + ( amount * 100 ) + '%, ' + base + ')';
-				if ( release && next ) { next.classList.toggle( 'is-mrn-follow-dark', ! reduced.matches && amount >= 0.5 ); }
+				// Light text holds until the background is more than a quarter of the way back (0.72) after an expanding video.
+				if ( release && next ) { next.classList.toggle( 'is-mrn-follow-dark', ! reduced.matches && amount >= ( from ? 0.72 : 0.5 ) ); }
 			}
 		} );
 	}
