@@ -139,7 +139,7 @@ if [[ -x "${REPO_ROOT}/vendor/bin/phpstan" && -f "${PHPSTAN_CONFIG_ROOT}/phpstan
 		echo "Skipping PHPStan; no runtime PHP files found."
 	elif ! php "${REPO_ROOT}/vendor/bin/phpstan" analyse \
 		--configuration="${PHPSTAN_CONFIG_ROOT}/phpstan.neon.dist" \
-		--memory-limit=2G \
+		--memory-limit="${MRN_QA_PHPSTAN_MEMORY_LIMIT:-3G}" \
 		--no-progress \
 		"${phpstan_paths[@]}"; then
 		mark_failure "PHPStan"
