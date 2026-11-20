@@ -1,0 +1,116 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "contract_version": 1,
+  "definitions": {
+    "hash": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64,
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "signed_envelope": {
+      "type": "object",
+      "properties": {
+        "key_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "payload_base64": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 131072,
+          "pattern": "^[A-Za-z0-9+/]+={0,2}$"
+        },
+        "signature_base64": {
+          "type": "string",
+          "minLength": 88,
+          "maxLength": 88,
+          "pattern": "^[A-Za-z0-9+/]{86}==$"
+        }
+      },
+      "required": [
+        "key_id",
+        "payload_base64",
+        "signature_base64"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "abilities": {
+    "install-content-recipe-catalog-v1": {
+      "role": "owner with fresh MRN verification",
+      "wrapper": null,
+      "workspace_exposed": false,
+      "delegated_staff_allowed": false,
+      "input": {
+        "type": "object",
+        "properties": {
+          "confirm": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "expected_policy_sha256": {
+            "$ref": "#/definitions/hash"
+          },
+          "catalog": {
+            "$ref": "#/definitions/signed_envelope"
+          }
+        },
+        "required": [
+          "confirm",
+          "expected_policy_sha256",
+          "catalog"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "installed": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "recipe_catalog_sha256": {
+            "$ref": "#/definitions/hash"
+          },
+          "authorization_policy_sha256": {
+            "$ref": "#/definitions/hash"
+          }
+        },
+        "required": [
+          "installed",
+          "recipe_catalog_sha256",
+          "authorization_policy_sha256"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readonly": false,
+        "destructive": false,
+        "idempotent": false
+      }
+    }
+  },
+  "frozen_dependencies": {
+    "content-qualification-v1.json": "9c8d3fa9e27d7e4aa36109ccb33d76f7babf5bc6aea4f3661fcfd6e26ab62e03",
+    "content-recipe-catalog-v1.json": "f50689675056aafdebacf22cb4b3f0c09d4e9247c61e73f2bd03b8b1d2850057"
+  },
+  "limits": {
+    "payload_utf8_bytes": 98304,
+    "envelope_utf8_bytes": 131072
+  },
+  "invariants": [
+    "Only fresh Google-authorized owner plus manage_options; pinned backend and all delegated staff routes denied. No credential, path, URL, actor, private key or source input.",
+    "Current catalog policy must be disabled and exact authorization digest must match expected_policy_sha256 under authoritative compare-and-swap. A caller cannot change the policy or its pin through installation.",
+    "Require exact canonical payload digest already pinned by owner policy, independent recipe-root signature and purpose, all three audiences, current epoch, expiry, unique sorted recipe IDs and sorted unique eligibility. Reject unsupported source/runtime/assertion hashes.",
+    "Retain exact signed envelope and canonical payload as immutable authenticated encrypted central records; never replace an existing catalog digest or activate trust during installation.",
+    "Sequence: configure disabled public policy, install matching independently signed catalog, enable only after complete revalidation. Actual provisioning/activation needs reviewed deployment and owner approval.",
+    "Frozen configure-v1 and staff contracts stay byte-identical; provider installation alone does not migrate gateway or runner static trust."
+  ]
+}

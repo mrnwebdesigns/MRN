@@ -1,0 +1,633 @@
+{
+  "schema": 2,
+  "qualification_protocol": "content-management-existing-v2",
+  "status": "closed-worker-wire-proposal-unregistered",
+  "production_enabled": false,
+  "runtime_registered": false,
+  "dispatch_enabled": false,
+  "source_admission_enabled": false,
+  "signature_role": "identity",
+  "purpose": "mrn-content-management-existing-worker-context-v2:",
+  "private_url": "https://operations.mrnwebdesigns.com/internal/mainwp/management-existing-worker-context",
+  "frozen_inputs_sha256": {
+    "content-management-existing-evidence-v2.json": "e511e4c9bc62eb839c68b59e64996e6b0d013f61ad8961520486ad821d4de6ff"
+  },
+  "imported_definitions": [
+    "context",
+    "binding",
+    "uuid",
+    "hash",
+    "site_id",
+    "site_url",
+    "target",
+    "source_sha",
+    "timestamp",
+    "protocol_contracts",
+    "provenance",
+    "id",
+    "envelope"
+  ],
+  "limits": {
+    "pointer_bytes": 512,
+    "response_bytes": 65536,
+    "claims_bytes": 48000,
+    "read_seconds": 5,
+    "worker_ttl_seconds": 300,
+    "original_intent_seconds": 900
+  },
+  "invariants": [
+    "Original Google identity and current authorization come from independently retained service state, never a caller email or OIDC token.",
+    "Only a genuine new original may initialize the future protected-dispatch marker; absent or inconsistent history refuses.",
+    "The immutable service policy must pin this additive wire before dispatch preparation. It does not replace or modify the frozen six-contract v2 map.",
+    "The worker signature uses only the independently configured current identity key; root, registrar and QA key roles are not alternatives.",
+    "The opaque workflow pointer cannot select a URL, source, principal, protocol, key, expiry or protected workflow.",
+    "The signed record and retained observation must agree on original binding, complete evidence context, exact source/provenance, dispatch, policy and expiry.",
+    "Five-second signed readback never renews original or worker authority. A new login, retry or source selection cannot refill the original.",
+    "Schema/signature consistency is not current staff verification, hosted OIDC provenance, source admission, report acceptance or write authority. No endpoint or dispatcher is registered by this proposal.",
+    "Both the response envelope and signed payload use canonical UTF-8 JSON. Duplicate keys, noncanonical encoding and invalid Unicode are refused."
+  ],
+  "$defs": {
+    "context": {
+      "type": "object",
+      "properties": {
+        "binding": {
+          "$ref": "#/$defs/binding"
+        },
+        "management_context_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "capture_artifact_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "measurement_record_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "parity_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "evidence_policy_epoch": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "evidence_policy_sha256": {
+          "$ref": "#/$defs/hash"
+        }
+      },
+      "required": [
+        "binding",
+        "management_context_sha256",
+        "capture_artifact_sha256",
+        "measurement_record_sha256",
+        "parity_sha256",
+        "evidence_policy_epoch",
+        "evidence_policy_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "binding": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 2
+        },
+        "adapter": {
+          "type": "string",
+          "enum": [
+            "content-management-v1"
+          ]
+        },
+        "qualification_job_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "operation_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "reviewed_digest": {
+          "$ref": "#/$defs/hash"
+        },
+        "requester_binding_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "authorization_policy_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "site_id": {
+          "$ref": "#/$defs/site_id"
+        },
+        "site_url": {
+          "$ref": "#/$defs/site_url"
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        },
+        "expected_target_revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "before_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "candidate_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "request_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "migration_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "profile_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "runtime_context_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "acf_schema_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "management_contract_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "provider_source_sha": {
+          "$ref": "#/$defs/source_sha"
+        },
+        "installed_manifest_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "source_binding_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "created_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "expires_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "before_paths_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "job_intent_ttl_seconds": {
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 900
+        },
+        "qualification_protocol": {
+          "type": "string",
+          "enum": [
+            "content-management-existing-v2"
+          ]
+        },
+        "protocol_contracts_sha256": {
+          "$ref": "#/$defs/protocol_contracts"
+        }
+      },
+      "required": [
+        "schema",
+        "adapter",
+        "qualification_job_id",
+        "operation_id",
+        "reviewed_digest",
+        "requester_binding_sha256",
+        "authorization_policy_sha256",
+        "site_id",
+        "site_url",
+        "target",
+        "expected_target_revision",
+        "before_sha256",
+        "candidate_sha256",
+        "request_sha256",
+        "migration_sha256",
+        "profile_sha256",
+        "runtime_context_sha256",
+        "acf_schema_sha256",
+        "management_contract_sha256",
+        "provider_source_sha",
+        "installed_manifest_sha256",
+        "source_binding_sha256",
+        "created_at",
+        "expires_at",
+        "before_paths_sha256",
+        "job_intent_ttl_seconds",
+        "qualification_protocol",
+        "protocol_contracts_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "uuid": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$",
+      "minLength": 36,
+      "maxLength": 36
+    },
+    "hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "minLength": 64,
+      "maxLength": 64
+    },
+    "site_id": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "site_url": {
+      "type": "string",
+      "format": "uri",
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "^https://[^/?#@]+(?:/[^?#]*)?$"
+    },
+    "target": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "wordpress-content"
+          ]
+        },
+        "post_type": {
+          "type": "string",
+          "maxLength": 4,
+          "enum": [
+            "post",
+            "page"
+          ]
+        },
+        "post_id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "kind",
+        "post_type",
+        "post_id"
+      ],
+      "additionalProperties": false
+    },
+    "source_sha": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$",
+      "minLength": 40,
+      "maxLength": 40
+    },
+    "timestamp": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "protocol_contracts": {
+      "type": "object",
+      "properties": {
+        "qualification": {
+          "$ref": "#/$defs/hash"
+        },
+        "report": {
+          "$ref": "#/$defs/hash"
+        },
+        "evidence": {
+          "$ref": "#/$defs/hash"
+        },
+        "source_transfer": {
+          "$ref": "#/$defs/hash"
+        },
+        "source_context": {
+          "$ref": "#/$defs/hash"
+        },
+        "wire_registry": {
+          "$ref": "#/$defs/hash"
+        }
+      },
+      "required": [
+        "qualification",
+        "report",
+        "evidence",
+        "source_transfer",
+        "source_context",
+        "wire_registry"
+      ],
+      "additionalProperties": false
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "dispatch_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "dispatch_request_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "dispatch_record_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "repository": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 191,
+          "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+        },
+        "repository_id": {
+          "$ref": "#/$defs/id"
+        },
+        "ref": {
+          "type": "string",
+          "enum": [
+            "refs/heads/main"
+          ]
+        },
+        "workflow_id": {
+          "$ref": "#/$defs/id"
+        },
+        "workflow_path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 191,
+          "pattern": "^\\.github/workflows/[a-z0-9._-]+\\.ya?ml$"
+        },
+        "workflow_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "run_id": {
+          "$ref": "#/$defs/id"
+        },
+        "run_attempt": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1
+        },
+        "runner_source_sha": {
+          "$ref": "#/$defs/source_sha"
+        },
+        "engine_commit": {
+          "$ref": "#/$defs/source_sha"
+        },
+        "engine_configuration_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "runtime_sha256": {
+          "$ref": "#/$defs/hash"
+        }
+      },
+      "required": [
+        "dispatch_id",
+        "dispatch_request_sha256",
+        "dispatch_record_sha256",
+        "repository",
+        "repository_id",
+        "ref",
+        "workflow_id",
+        "workflow_path",
+        "workflow_sha256",
+        "run_id",
+        "run_attempt",
+        "runner_source_sha",
+        "engine_commit",
+        "engine_configuration_sha256",
+        "runtime_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20,
+      "pattern": "^[1-9][0-9]{0,19}$"
+    },
+    "envelope": {
+      "type": "object",
+      "properties": {
+        "key_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "payload_base64": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 131072,
+          "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+        },
+        "signature_base64": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 88,
+          "pattern": "^[A-Za-z0-9+/]{86}==$"
+        }
+      },
+      "required": [
+        "key_id",
+        "payload_base64",
+        "signature_base64"
+      ],
+      "additionalProperties": false
+    },
+    "pointer": {
+      "type": "object",
+      "properties": {
+        "dispatch_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "context_sha256": {
+          "$ref": "#/$defs/hash"
+        }
+      },
+      "required": [
+        "dispatch_id",
+        "context_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "dispatch_request": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "integer",
+          "enum": [
+            2
+          ]
+        },
+        "dispatch_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "context_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "worker_contract_sha256": {
+          "$ref": "#/$defs/hash"
+        }
+      },
+      "required": [
+        "schema",
+        "dispatch_id",
+        "context_sha256",
+        "worker_contract_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "dispatch_observation": {
+      "type": "object",
+      "properties": {
+        "request": {
+          "$ref": "#/$defs/dispatch_request"
+        },
+        "context_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "evidence_policy_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "requested_at": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "original_expires_at": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "app_actor_id": {
+          "$ref": "#/$defs/id"
+        },
+        "run_id": {
+          "$ref": "#/$defs/id"
+        },
+        "observed_at": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "request",
+        "context_sha256",
+        "evidence_policy_sha256",
+        "requested_at",
+        "original_expires_at",
+        "app_actor_id",
+        "run_id",
+        "observed_at"
+      ],
+      "additionalProperties": false
+    },
+    "retained_record": {
+      "type": "object",
+      "properties": {
+        "context": {
+          "$ref": "#/$defs/context"
+        },
+        "provenance": {
+          "$ref": "#/$defs/provenance"
+        },
+        "observation": {
+          "$ref": "#/$defs/dispatch_observation"
+        }
+      },
+      "required": [
+        "context",
+        "provenance",
+        "observation"
+      ],
+      "additionalProperties": false
+    },
+    "claims": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "integer",
+          "enum": [
+            2
+          ]
+        },
+        "issuer": {
+          "type": "string",
+          "enum": [
+            "https://operations.mrnwebdesigns.com"
+          ]
+        },
+        "audience": {
+          "type": "string",
+          "pattern": "^https://github\\.com/mrnwebdesigns/mrn-code-qa-runner/actions/runs/[1-9][0-9]*$",
+          "maxLength": 512
+        },
+        "issued_at": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "expires_at": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "request_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "nonce": {
+          "$ref": "#/$defs/hash"
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "read-original-existing-management-dispatch"
+          ]
+        },
+        "dispatch_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "context_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "worker_contract_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "context": {
+          "$ref": "#/$defs/context"
+        },
+        "recorded_dispatch": {
+          "$ref": "#/$defs/provenance"
+        },
+        "dispatch_record": {
+          "$ref": "#/$defs/dispatch_observation"
+        }
+      },
+      "required": [
+        "schema",
+        "issuer",
+        "audience",
+        "issued_at",
+        "expires_at",
+        "request_id",
+        "nonce",
+        "action",
+        "dispatch_id",
+        "context_sha256",
+        "worker_contract_sha256",
+        "context",
+        "recorded_dispatch",
+        "dispatch_record"
+      ],
+      "additionalProperties": false
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "signed_context": {
+          "$ref": "#/$defs/envelope"
+        }
+      },
+      "required": [
+        "signed_context"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "encoding": "canonical-json-utf8"
+}

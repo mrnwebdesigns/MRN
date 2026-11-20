@@ -1,0 +1,87 @@
+{
+  "description": "Public interoperability fixtures only. Never enroll this test key in a runtime.",
+  "canonical_vectors": [
+    {
+      "input": {},
+      "canonical": "{}",
+      "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "input": [],
+      "canonical": "[]",
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "input": {
+        "z": 1,
+        "a": "https://example.test/été",
+        "nested": {
+          "b": false,
+          "a": null
+        }
+      },
+      "canonical": "{\"a\":\"https://example.test/été\",\"nested\":{\"a\":null,\"b\":false},\"z\":1}",
+      "sha256": "0386820e29ef143ddc55a58984770f42571040d92554e8c1a12f2567a05a8f47"
+    },
+    {
+      "input": {
+        "array": [
+          {
+            "z": 9,
+            "a": "<tag> & \"quote\" \\ /"
+          },
+          [],
+          {}
+        ],
+        "unicode": "emoji 👩‍💻    "
+      },
+      "canonical": "{\"array\":[{\"a\":\"<tag> & \\\"quote\\\" \\\\ /\",\"z\":9},[],{}],\"unicode\":\"emoji 👩‍💻    \"}",
+      "sha256": "9a945322d16d373e7b96a8f02b81a28aa76c2d97760d32d5ad2d74da63f76aef"
+    },
+    {
+      "input": {
+        "site_id": 85,
+        "site_url": "https://mrnwebdesigns.com/",
+        "include_content": true
+      },
+      "canonical": "{\"include_content\":true,\"site_id\":85,\"site_url\":\"https://mrnwebdesigns.com/\"}",
+      "sha256": "9007c7f7e2e1e15df37460b541b68316ababbd2049b2dc1acc77be4801e62bd8"
+    },
+    {
+      "input": {
+        "max": 9007199254740991,
+        "min": -9007199254740991
+      },
+      "canonical": "{\"max\":9007199254740991,\"min\":-9007199254740991}",
+      "sha256": "63546eb60913dcb1cdd5118f7bf4885beed344af930c8a9d5f38fad243fd4819"
+    }
+  ],
+  "signature_vector": {
+    "public_key_base64": "6kpsY+KcUgq+9VB7Ey7F+ZVHdq6+vnuSQh7qaRRG0iw=",
+    "payload": {
+      "schema": 1,
+      "issuer": "https://operations.mrnwebdesigns.com",
+      "audience": "https://wpcontrol.mrndev.io",
+      "issued_at": 1800000000,
+      "expires_at": 1800000060,
+      "request_id": "00000000-0000-4000-8000-000000000001",
+      "nonce": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "authenticated_connection_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "policy_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "oauth_subject": "google-oauth2|123456789",
+      "google_sub": "123456789",
+      "email": "fixture@mrnwebdesigns.com",
+      "email_verified": true,
+      "hosted_domain": "mrnwebdesigns.com",
+      "identity_provider": "google-oauth2",
+      "google_connection": "con_MRNGoogle",
+      "ability": "mainwp/get-site-v1",
+      "arguments_sha256": "fec21effdc5921dabb1620b940ffaf46847df81fb3c060458ccf33f0d54e0b88"
+    },
+    "envelope": {
+      "key_id": "fixture-only",
+      "payload_base64": "eyJhYmlsaXR5IjoibWFpbndwL2dldC1zaXRlLXYxIiwiYXJndW1lbnRzX3NoYTI1NiI6ImZlYzIxZWZmZGM1OTIxZGFiYjE2MjBiOTQwZmZhZjQ2ODQ3ZGY4MWZiM2MwNjA0NThjY2YzM2YwZDU0ZTBiODgiLCJhdWRpZW5jZSI6Imh0dHBzOi8vd3Bjb250cm9sLm1ybmRldi5pbyIsImF1dGhlbnRpY2F0ZWRfY29ubmVjdGlvbl9zaGEyNTYiOiJhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhIiwiZW1haWwiOiJmaXh0dXJlQG1ybndlYmRlc2lnbnMuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImV4cGlyZXNfYXQiOjE4MDAwMDAwNjAsImdvb2dsZV9jb25uZWN0aW9uIjoiY29uX01STkdvb2dsZSIsImdvb2dsZV9zdWIiOiIxMjM0NTY3ODkiLCJob3N0ZWRfZG9tYWluIjoibXJud2ViZGVzaWducy5jb20iLCJpZGVudGl0eV9wcm92aWRlciI6Imdvb2dsZS1vYXV0aDIiLCJpc3N1ZWRfYXQiOjE4MDAwMDAwMDAsImlzc3VlciI6Imh0dHBzOi8vb3BlcmF0aW9ucy5tcm53ZWJkZXNpZ25zLmNvbSIsIm5vbmNlIjoiY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjYyIsIm9hdXRoX3N1YmplY3QiOiJnb29nbGUtb2F1dGgyfDEyMzQ1Njc4OSIsInBvbGljeV9zaGEyNTYiOiJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiIiwicmVxdWVzdF9pZCI6IjAwMDAwMDAwLTAwMDAtNDAwMC04MDAwLTAwMDAwMDAwMDAwMSIsInNjaGVtYSI6MX0=",
+      "signature_base64": "Q0J9W41SwOJc5YWvVMGDwq9RjKkxlAYDeiAN1IMrVNsgpnVs3KY8jUxfxBTLgjmncr7Pcij8KeysdyAwC0DxAQ=="
+    }
+  }
+}
