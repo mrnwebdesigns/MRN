@@ -53,10 +53,13 @@ class BootstrapEnrollment(unittest.TestCase):
         self.assertNotEqual(result.returncode,0)
         self.assertEqual(calls,'bootstrap\n')
 
-    def test_enqueue_is_after_license_gate_and_uses_separate_state(self):
+    def test_enqueue_is_after_completed_bootstrap_and_uses_separate_state(self):
         source=(ROOT/'scripts/site-bootstrap.sh').read_text()
         main=source.split('main() {',1)[1]
-        self.assertLess(main.index('return 1'),main.index('bootstrap-dev-enrollment.sh'))
+        # Licenses are applied after bootstrap, so they can never gate enrollment.
+        self.assertNotIn('LICENSE',main)
+        self.assertNotIn('apply_licenses',source)
+        self.assertLess(main.index('touch "${SITE_PATH}/${MARKER_NAME}"'),main.index('bootstrap-dev-enrollment.sh'))
         self.assertIn('--enqueue --site-path "${WP_PATH}"',main)
         self.assertIn('add_warning "Dev deployment enrollment is pending',main)
 

@@ -1,0 +1,27 @@
+# Premium plugin license coverage registry.
+#
+# Bootstrap never reads or applies licenses. Licenses are applied after a site
+# is bootstrapped by the MainWP Dashboard actions
+# `mrn-mainwp/preview-plugin-licenses` and `mrn-mainwp/apply-plugin-licenses`
+# (MRN MainWP Operations API), which call the closed `mrn_plugin_licenses`
+# operation in mrn-stack-deployment-agent on the child site. See
+# docs/MRN-PLUGIN-LICENSE-DELIVERY.md.
+#
+# This file is a vendor-neutral coverage contract only. It is not shipped in
+# the bootstrap package and is not read at runtime.
+#
+# Rules:
+#   - Never store secret values here. Plugin basenames, handler ids and
+#     logical credential key names only.
+#   - <handler> must be an id implemented by the child-side
+#     `mrn_plugin_licenses` operation.
+#   - Logical keys name fields in the MRN-business 1Password item that is
+#     synchronised into the Dashboard's sealed license store.
+#
+# Format: <plugin basename>|<handler>|<LOGICAL_KEY[,LOGICAL_KEY...]>
+admin-menu-editor-pro/menu-editor.php|ame_pro|AME_LICENSE_KEY
+wpforms/wpforms.php|wpforms|WPFORMS_LICENSE_KEY
+updraftplus/updraftplus.php|updraftplus_premium|UPDRAFTPLUS_EMAIL,UPDRAFTPLUS_PASSWORD
+advanced-custom-fields-pro/acf.php|acf_pro|ACF_PRO_LICENSE_KEY
+wp-seopress-pro/seopress-pro.php|seopress_pro|SEOPRESS_LICENSE_KEY
+happyfiles-pro/happyfiles-pro.php|happyfiles_pro|HAPPYFILES_LICENSE_KEY
