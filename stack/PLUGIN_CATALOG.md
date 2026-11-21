@@ -23,7 +23,7 @@ The exact new-site selection and package versions are listed in [BOOTSTRAP_RELEA
 | `mrn-environment-runtime` | 0.6.1 | MU loader | Platform required | Provides environment, runtime, and notification diagnostics. |
 | `mrn-public-security-hardening` | 0.4.4 | MU loader | Platform required | Applies shared public REST and discovery hardening and preserves AME decisions for the native Advanced admin menu. |
 | `mrn-shared-assets` | 0.2.2 | MU loader | Platform required | Provides shared asset and icon interfaces, including consumer-aware ACF admin asset detection. |
-| `mrn-site-colors` | 0.1.39 | MU loader | Platform required | Owns persistent site design tokens and CSS-variable output. |
+| `mrn-site-colors` | 0.1.40 | MU loader | Platform required | Owns persistent site design tokens and CSS-variable output. |
 | `mrn-updraft-local-retention` | 0.8.11 | MU loader | Platform required | Enforces seven daily, four weekly, and twelve 30-day remote recovery points, uses a stable cross-environment S3 site slug, exposes MainWP compliance evidence, and routes backup-policy warnings to Notifications Center. |
 | `mrn-schema-bridge` | 0.7.2 | MU loader | Platform required | Normalizes provider and theme schema behavior, including automatic Article and visible-content JobPosting contracts. |
 | `mrn-active-style-guide` | 0.2.5 | MU loader | Platform required | Logged-in design-system reference, site-aware Layout Library, illustrative visual references, and preview-fixture diagnostics. |
