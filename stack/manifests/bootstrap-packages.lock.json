@@ -574,7 +574,7 @@
       "version": "0.1.2"
     }
   ],
-  "release_id": "2026.11.19-fleet-auto-46ed225e8048",
+  "release_id": "2026.11.21-fleet-auto-a84746c2d1a4",
   "schema_version": 1,
   "scope": "new-site-bootstrap-inputs",
   "stack_plugin_count": 36
