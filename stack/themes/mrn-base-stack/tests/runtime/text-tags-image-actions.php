@@ -9,7 +9,8 @@ $expect( ! is_wp_error( $id ) && $id > 0, 'Owned local draft created' );
 try {
 	$root = array_column( acf_get_field( 'field_mrn_page_content_rows' )['layouts'], null, 'name' );
 	$fields = array_column( $root['body_text']['sub_fields'], null, 'name' );
-	foreach ( array( 'text_tags', 'heading_link', 'list_presentation', 'tag_gap', 'tag_space_before' ) as $name ) { $expect( isset( $fields[ $name ] ), 'Registered editable Body Text field: ' . $name ); }
+	foreach ( array( 'text_tags', 'heading_link', 'list_presentation' ) as $name ) { $expect( isset( $fields[ $name ] ), 'Registered editable Body Text field: ' . $name ); }
+	foreach ( array( 'tag_gap', 'tag_space_before' ) as $name ) { $expect( ! isset( $fields[ $name ] ), 'Retired Body Text tag spacing stays unregistered; spacing comes from theme CSS: ' . $name ); }
 	$expect( 5 === $fields['text_tags']['max'] && isset( $fields['list_presentation']['choices']['pills'] ), 'Native tags expose bounded pill presentation' );
 	$tag_fields = array_column( $fields['text_tags']['sub_fields'], null, 'name' );
 	$expect( 'text' === $tag_fields['url']['type'] && acf_validate_value( '#', $tag_fields['url'], 'local_tag_url' ) && acf_validate_value( '/our-work/?first=1&second=2', $tag_fields['url'], 'local_tag_url' ), 'Native editor validation accepts retained placeholders and site-relative tag URLs' );
@@ -29,7 +30,7 @@ try {
 	$expect( $action === get_post_meta( $id, 'page_content_rows_0_heading_link', true ) && $action === get_post_meta( $id, 'page_content_rows_1_image_action', true ), 'Both native action fields preserve the complete link including its blank original title' );
 	$expect( 'View the complete case study' === $saved[1]['image_action_label'] && '1' === $saved[2]['columns'], 'Editable image naming and single-column Stats survive ACF' );
 	ob_start(); mrn_base_stack_render_builder_rows( $saved, $id, 'page_content_rows' ); $html = ob_get_clean();
-	$expect( str_contains( $html, 'mrn-text-tags--pills' ) && 2 === substr_count( $html, 'Repeated tag' ) && str_contains( $html, '--mrn-tag-space-before:36px' ), 'Native renderer preserves tag order and editable geometry' );
+	$expect( str_contains( $html, 'mrn-text-tags--pills' ) && 2 === substr_count( $html, 'Repeated tag' ) && ! str_contains( $html, '--mrn-tag-space-before' ) && ! str_contains( $html, '--mrn-tag-gap' ), 'Native renderer preserves tag order; stale retired tag spacing does not render' );
 	$expect( str_contains( $html, '&lt;script&gt;literal text&lt;/script&gt;' ) && ! str_contains( $html, '<script>literal text' ), 'Tag text is escaped, never treated as authored markup' );
 	$expect( str_contains( $html, '<span>Repeated tag</span>' ) && ! str_contains( $html, 'href="#"' ), 'Placeholder tags remain text without invented click targets' );
 	$expect( str_contains( $html, 'aria-label="View the complete case study"' ) && str_contains( $html, 'rel="noopener noreferrer"' ) && str_contains( html_entity_decode( $html ), 'first=1&second=2' ), 'Image action retains its full URL, meaningful name and safe target' );
