@@ -183,6 +183,7 @@ class FailedJobRetention(unittest.TestCase):
         real.rename(renamed)
         (self.jobs / ('b' * 20 + '-1')).symlink_to(renamed, target_is_directory=True)
         no_failure = self.job(failure=False)
+        (no_failure / 'selected-source.json').unlink()
         self.assertEqual(self.retain()['pruned'], [])
         self.assertIntact(renamed)
         self.assertIntact(no_failure)
@@ -345,7 +346,7 @@ class FailedJobRetention(unittest.TestCase):
         self.assertEqual(self.outside.read_text(), 'not part of any job')
         self.assertEqual(self.retain()['pruned'], [])
 
-    def test_fresh_referenced_or_started_checkouts_are_kept(self):
+    def test_fresh_referenced_or_started_checkouts_are_not_removed(self):
         fresh = self.checkout(created_at=NOW - 60)
         referenced = self.checkout()
         coordinator.write(self.state / 'status.json', {'status': 'blocked', 'evidence': str(referenced)})
@@ -354,8 +355,10 @@ class FailedJobRetention(unittest.TestCase):
         linked = self.checkout()
         (linked / 'repos').rename(linked / 'repos-real')
         (linked / 'repos').symlink_to(linked / 'repos-real', target_is_directory=True)
-        self.assertEqual(self.retain()['pruned'], [])
-        for job in (fresh, referenced, started):
+        # A started checkout is an interrupted attempt: thinned, not removed.
+        self.assertEqual(self.retain()['pruned'], [{'job': started.name, 'kind': 'interrupted'}])
+        self.assertTrue((started / 'selected-source.json').is_file())
+        for job in (fresh, referenced):
             self.assertTrue((job / 'repos/MRN/.git/objects/pack.pack').is_file())
         self.assertTrue((linked / 'repos-real/MRN/.git/objects/pack.pack').is_file())
 
@@ -398,6 +401,95 @@ class FailedJobRetention(unittest.TestCase):
         self.assertEqual(result['status'], 'no_change')
         (job,) = self.jobs.iterdir()
         self.assertTrue(coordinator.checkout_only(job))
+
+    def superseded(self, retired_at=OLD, phase='ready', **record):
+        job = self.job(failure=False)
+        coordinator.write(job / 'progress.json', {'phase': phase, 'seal': 'x'})
+        value = {'status': 'blocked', 'error': 'superseded: accepted source changed; queue a fresh qualification',
+                 'site_writes': False, **record}
+        coordinator.write(job / 'superseded.json', value)
+        os.utime(job / 'superseded.json', (retired_at, retired_at))
+        return job
+
+    def assertThinnedKeepingText(self, job):
+        for gone in ('repos', 'packages', 'bootstrap-a.tar', 'evidence/screenshot.png'):
+            self.assertFalse((job / gone).exists(), gone)
+        for kept in ('selected-source.json', 'metadata-commit-qa.log', 'notes.md',
+                     'evidence/native-fixture/native.log'):
+            self.assertTrue((job / kept).is_file(), kept)
+        self.assertTrue((job / 'pruned.json').is_file())
+
+    def test_superseded_jobs_keep_their_records_and_drop_bulk(self):
+        jobs = [self.superseded(phase=phase) for phase in ('qualified', 'proposed', 'merged', 'ready')]
+        summary = self.retain()
+        self.assertEqual(sorted(self.pruned(summary, 'superseded')), sorted(job.name for job in jobs))
+        for job in jobs:
+            self.assertThinnedKeepingText(job)
+            self.assertTrue((job / 'progress.json').is_file())
+            self.assertEqual(coordinator.read(job / 'superseded.json')['site_writes'], False)
+        self.assertEqual(self.retain()['pruned'], [])
+
+    def test_superseded_jobs_with_any_doubt_are_never_thinned(self):
+        cases = {
+            'fresh': self.superseded(retired_at=NOW - 60),
+            'other-error': self.superseded(error='Merged candidate reconciliation failed'),
+            'site-writes': self.superseded(site_writes=True),
+            'not-blocked': self.superseded(status='fleet_ready'),
+            'referenced': self.superseded(),
+        }
+        published = self.superseded()
+        (published / 'publication.json').write_text('{"status": "pass"}')
+        cases['publication'] = published
+        summed = self.superseded()
+        (summed / 'SHA256SUMS.txt').write_text('sums')
+        cases['checksums'] = summed
+        unreadable = self.superseded()
+        (unreadable / 'superseded.json').write_text('{broken')
+        os.utime(unreadable / 'superseded.json', (OLD, OLD))
+        cases['unreadable'] = unreadable
+        linked = self.superseded()
+        (linked / 'superseded.json').rename(linked / 'record.json')
+        (linked / 'superseded.json').symlink_to(linked / 'record.json')
+        cases['symlink'] = linked
+        unmarked = self.job(failure=False)
+        coordinator.write(unmarked / 'progress.json', {'phase': 'ready'})
+        cases['sealed-only'] = unmarked
+        coordinator.write(self.state / 'failure.json', {'status': 'blocked', 'evidence': str(cases['referenced'])})
+        self.assertEqual(self.retain()['pruned'], [])
+        for name, job in cases.items():
+            with self.subTest(case=name):
+                self.assertIntact(job)
+
+    def test_interrupted_attempts_are_thinned_once_old(self):
+        old = self.job(failure=False)
+        fresh = self.job(failure=False)
+        fresh = fresh.rename(fresh.with_name('d' * 20 + '-' + str(int((NOW - 60) * 1e9))))
+        unknown = self.job(failure=False)
+        (unknown / 'superseded.json').write_text('{broken')
+        manual = self.job(failure=False)
+        (manual / 'interrupted-superseded.json').write_text('{"site_writes": false}')
+        summary = self.retain()
+        self.assertEqual(sorted(self.pruned(summary, 'interrupted')), sorted([old.name, manual.name]))
+        self.assertThinnedKeepingText(old)
+        self.assertTrue((manual / 'interrupted-superseded.json').is_file())
+        self.assertIntact(fresh)
+        self.assertIntact(unknown)
+
+    def test_kinds_are_cleaned_in_order_within_the_limit(self):
+        published = self.published()
+        for _ in range(coordinator.PUBLISHED_KEEP):
+            self.published()
+        self.published(current=True)
+        superseded = self.superseded()
+        interrupted = self.job(failure=False)
+        failed = self.job()
+        checkout = self.checkout()
+        order = [self.retain(limit=1)['pruned'] for _ in range(5)]
+        self.assertEqual(order, [[{'job': checkout.name, 'kind': 'checkout'}],
+                                 [{'job': failed.name, 'kind': 'failed'}],
+                                 [{'job': interrupted.name, 'kind': 'interrupted'}],
+                                 [{'job': superseded.name, 'kind': 'superseded'}],
+                                 [{'job': published.name, 'kind': 'published'}]])
 
 if __name__ == '__main__':
     unittest.main()
