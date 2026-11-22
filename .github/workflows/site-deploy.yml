@@ -36,6 +36,10 @@ on:
         description: False protects a separate Phase 2 Dev preview from main and Both
         type: boolean
         default: true
+      qualify_main:
+        description: Qualify main pushes independently of automatic Dev authorization
+        type: boolean
+        default: false
       auto_dev_branch:
         type: string
         default: main
@@ -48,6 +52,10 @@ on:
       live_enabled:
         type: boolean
         default: true
+      promotion_evidence_id:
+        description: Optional explicit Dev or staging evidence artifact ID for a Live deployment
+        type: string
+        default: ''
     secrets:
       MRN_QA_ENGINE_TOKEN:
         required: false
@@ -95,6 +103,7 @@ jobs:
           MODE: ${{ inputs.mode }}
           SOURCE_BRANCH: ${{ inputs.source_branch }}
           DEV_MAIN_ENABLED: ${{ inputs.dev_main_enabled }}
+          QUALIFY_MAIN: ${{ inputs.qualify_main }}
           AUTO_DEV_BRANCH: ${{ inputs.auto_dev_branch }}
           AUTO_DEV_AFTER: ${{ inputs.auto_dev_after }}
         run: |
@@ -108,7 +117,7 @@ jobs:
           python3 .mrn-deploy-tools/tools/site-deploy/deployment_request.py
   source-qa:
     needs: request
-    if: needs.request.outputs.enabled == 'true' && inputs.mode == 'deploy'
+    if: needs.request.outputs.enabled == 'true' && inputs.mode != 'preflight' && needs.request.outputs.target != 'live'
     uses: ./.github/workflows/site-source-qa.yml
     with:
       source_sha: ${{ needs.request.outputs.source_sha }}
@@ -120,26 +129,77 @@ jobs:
       always() && !cancelled() && needs.request.result == 'success' &&
       needs.request.outputs.enabled == 'true' &&
       ((inputs.mode == 'preflight' && needs.source-qa.result == 'skipped') ||
-       (inputs.mode == 'deploy' && needs.source-qa.result == 'success'))
+       (inputs.mode != 'preflight' && needs.source-qa.result == 'success'))
     uses: ./.github/workflows/site-release-build.yml
     with:
       source_sha: ${{ needs.request.outputs.source_sha }}
       qa_source_sha: ${{ needs.source-qa.outputs.source_sha }}
+      qa_artifact_id: ${{ needs.source-qa.outputs.artifact_id }}
+      qa_report_sha256: ${{ needs.source-qa.outputs.report_sha256 }}
+      qualification_required: ${{ inputs.mode != 'preflight' }}
       source_path: ${{ inputs.source_path }}
       stylesheet: ${{ inputs.stylesheet }}
       tooling_ref: ${{ inputs.tooling_ref }}
-  dev:
+  publish-qualification:
     needs: [request, source-qa, build]
+    if: always() && !cancelled() && needs.request.outputs.enabled == 'true' && inputs.mode != 'preflight' && needs.request.outputs.target != 'live'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    permissions:
+      statuses: write
+    steps:
+      - name: Publish qualification for the selected source commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ needs.request.outputs.source_sha }}
+          QA_RESULT: ${{ needs.source-qa.result }}
+          BUILD_RESULT: ${{ needs.build.result }}
+          ARTIFACT_ID: ${{ needs.build.outputs.artifact_id }}
+          QUALIFICATION_ONLY: ${{ needs.request.outputs.target == 'qualify' }}
+        run: |
+          set -euo pipefail
+          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          state=failure
+          description='Source QA or artifact verification failed. No remote write.'
+          evidence="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/attempts/$GITHUB_RUN_ATTEMPT"
+          if [[ "$QA_RESULT" == success && "$BUILD_RESULT" == success && "$ARTIFACT_ID" =~ ^[1-9][0-9]*$ ]]; then
+            state=success
+            description='Exact source passed QA and its immutable artifact was verified.'
+            evidence="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts/$ARTIFACT_ID"
+          fi
+          {
+            printf '### Release qualification for `%s`\n\n' "$SOURCE_SHA"
+            printf '%s [Evidence](%s)\n' "$description" "$evidence"
+            if [[ "$QUALIFICATION_ONLY" == true ]]; then
+              echo 'Qualification only. No remote write.'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          # The status is an index to evidence. The target still requires the
+          # artifact ID and receipt handed off by this workflow run.
+          if ! gh api "repos/$GITHUB_REPOSITORY/statuses/$SOURCE_SHA" \
+            -f context='MRN/release-qualification' -f state="$state" \
+            -f description="$description" -f target_url="$evidence" >/dev/null; then
+            echo '::error::Qualification status publication failed. No remote write. Rerun the failed job.'
+            exit 1
+          fi
+          [[ "$state" == success ]]
+  dev:
+    needs: [request, source-qa, build, publish-qualification]
     if: >-
       always() && !cancelled() && needs.build.result == 'success' &&
-      (needs.request.outputs.target == 'dev' || needs.request.outputs.target == 'both')
+      (inputs.mode == 'preflight' || needs.publish-qualification.result == 'success') &&
+      (needs.request.outputs.target == 'dev' || needs.request.outputs.target == 'staging' || needs.request.outputs.target == 'both')
     uses: ./.github/workflows/site-deploy-target.yml
     with:
-      target: dev
+      target: ${{ needs.request.outputs.target == 'staging' && 'staging' || 'dev' }}
       qualify_dev: ${{ inputs.qualify_dev }}
+      require_promotion_qa: ${{ needs.request.outputs.target == 'both' || needs.request.outputs.target == 'staging' }}
       mode: ${{ inputs.mode }}
       source_sha: ${{ needs.request.outputs.source_sha }}
       qa_source_sha: ${{ needs.source-qa.outputs.source_sha }}
+      qa_artifact_id: ${{ needs.source-qa.outputs.artifact_id }}
+      qa_report_sha256: ${{ needs.source-qa.outputs.report_sha256 }}
+      build_attempt: ${{ needs.build.outputs.build_attempt }}
       source_branch: ${{ needs.request.outputs.source_branch }}
       release_intent: ${{ needs.request.outputs.release_intent }}
       release_requests_after: ${{ inputs.release_requests_after }}
@@ -154,16 +214,23 @@ jobs:
       tooling_ref: ${{ inputs.tooling_ref }}
     secrets: inherit
   live:
-    needs: [request, source-qa, build, dev]
+    needs: [request, source-qa, build, publish-qualification, dev]
     if: >-
       always() && !cancelled() &&
+      needs.request.result == 'success' && needs.request.outputs.enabled == 'true' &&
       (github.event_name == 'workflow_dispatch' || needs.request.outputs.release_intent != '{}') &&
-      needs.build.result == 'success' &&
-      ((needs.request.outputs.target == 'live' && needs.dev.result == 'skipped') ||
-       (needs.request.outputs.target == 'both' && needs.dev.result == 'success'))
+      ((inputs.mode == 'preflight' && needs.build.result == 'success' &&
+        (needs.request.outputs.target == 'live' ||
+         (needs.request.outputs.target == 'both' && needs.dev.result == 'success'))) ||
+       (inputs.mode == 'deploy' &&
+        (needs.request.outputs.target == 'live' ||
+         (needs.request.outputs.target == 'both' && needs.dev.result == 'success' &&
+          needs.dev.outputs.promotion_evidence_id != ''))))
     uses: ./.github/workflows/site-deploy-target.yml
     with:
       target: live
+      promotion_evidence_id: ${{ needs.request.outputs.target == 'both' && needs.dev.outputs.promotion_evidence_id || inputs.promotion_evidence_id }}
+      promotion_same_run: ${{ needs.request.outputs.target == 'both' }}
       qualify_doster_live: ${{ inputs.qualify_doster_live }}
       # Freedom House may request its approved local qualification through a
       # trusted deploy-live tag as well as the legacy dispatch checkbox.
@@ -171,6 +238,9 @@ jobs:
       mode: ${{ inputs.mode }}
       source_sha: ${{ needs.request.outputs.source_sha }}
       qa_source_sha: ${{ needs.source-qa.outputs.source_sha }}
+      qa_artifact_id: ${{ needs.source-qa.outputs.artifact_id }}
+      qa_report_sha256: ${{ needs.source-qa.outputs.report_sha256 }}
+      build_attempt: ${{ needs.build.outputs.build_attempt }}
       source_branch: ${{ needs.request.outputs.source_branch }}
       release_intent: ${{ needs.request.outputs.release_intent }}
       release_requests_after: ${{ inputs.release_requests_after }}

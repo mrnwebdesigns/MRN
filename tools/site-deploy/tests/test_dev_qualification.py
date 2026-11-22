@@ -72,8 +72,8 @@ class DevQualification(unittest.TestCase):
     def test_qualification_runtime_is_strict_and_rollback_enabled(self):
         workflow=(Path(__file__).parents[3]/'.github/workflows/site-deploy-target.yml').read_text()
         section=workflow.split('      - name: Run runtime QA\n',1)[1].split('      - name:',1)[0]
-        self.assertIn("!inputs.qualify_dev",section)
-        self.assertIn("(inputs.target == 'live' || inputs.qualify_dev)",workflow)
+        self.assertIn("!(inputs.qualify_dev || inputs.require_promotion_qa)",section)
+        self.assertIn("(inputs.target != 'dev' || inputs.qualify_dev || inputs.require_promotion_qa)",workflow)
         script=textwrap.dedent(section.split('        run: |\n',1)[1])
         with tempfile.TemporaryDirectory() as temp:
             engine=Path(temp)/'mrn-qa-engine/bin/mrn-qa'; engine.parent.mkdir(parents=True)

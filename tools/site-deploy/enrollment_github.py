@@ -198,7 +198,14 @@ class GitHub:
 
     def deployment_evidence(self, run, sha, allow_incomplete=False):
         artifacts = self.request('GET', self.prefix + '/actions/runs/' + str(run['id']) + '/artifacts?per_page=100')['artifacts']
-        matches = [row for row in artifacts if row['name'] == 'site-deployment-dev-' + sha and not row.get('expired')]
+        base = 'site-deployment-dev-' + sha
+        current = base + '-attempt-' + str(run.get('run_attempt', 1))
+        names = {current}
+        # Old pins produced one unsuffixed artifact. Once a run uses attempt
+        # names, never fall back to a different attempt's evidence.
+        if not any(row['name'].startswith(base + '-attempt-') for row in artifacts):
+            names.add(base)
+        matches = [row for row in artifacts if row['name'] in names and not row.get('expired')]
         if len(matches) != 1:
             raise ValueError('Exact deployment evidence artifact is missing or ambiguous')
         return self.evidence(matches[0]['id'], allow_incomplete=allow_incomplete)

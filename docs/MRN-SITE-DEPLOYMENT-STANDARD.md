@@ -34,7 +34,7 @@ must not automatically replace the phase being tested on Dev. Preserve history
 and verify the later phase can still merge completely after the correction.
 
 In GitHub Actions choose **Deploy site**, select **dev**, **live**, or **both**,
-and choose **preflight** (the default) or **deploy**. Run the trusted workflow
+and choose **preflight** (the default), **qualify**, or **deploy**. Run the trusted workflow
 from `main`; the separate **Source branch** input may select a same-repository
 feature branch for Dev. Live and Both reject every source branch except `main`.
 The source is resolved once to an immutable SHA before the target jobs run.
@@ -57,7 +57,7 @@ branch and activation cutoff. It uses the signal's immutable `head_sha`, never
 the downstream workflow's `github.sha`. Signal artifacts are never consumed.
 
 Blocking source QA of that exact commit -> immutable build -> verified
-artifact/preflight -> provider-appropriate backup -> atomic Dev activation ->
+artifact qualification -> target preflight -> provider-appropriate backup -> atomic Dev activation ->
 public/browser/REST verification. Failed, skipped or cancelled source QA cannot
 reach the build or deployment. The signal is notification, not QA acceptance.
 PRs and arbitrary branch pushes never deploy. Live and Both remain manual.
@@ -68,6 +68,68 @@ Existing direct-main-push consumers retain their supported contract until migrat
 Manual selection is the production intent gate; configure additional GitHub
 environment reviewers where the account plan supports them. Never assume a
 private repository has reviewer protection just because its environment exists.
+
+### Exact SHA qualification and retry
+
+The qualification job retains the source QA report and a verified release tar
+with `site-release-qualification.json`. The receipt binds the repository,
+workflow run, build attempt, tooling revision, source commit, report checksum
+and tar checksum. `MRN/release-qualification` on the selected source SHA links
+to that evidence. The target verifies the tar and bundled report against
+outputs from its qualifying workflow run before configuring site access.
+
+### Promote the exact artifact to Live
+
+Deploy reviewed `main` to **Dev** or, for a qualified Kinsta adapter, **Staging**.
+The target publishes `site-promotion-<SHA>` only after it verifies the backup,
+the activated artifact, browser checks and strict runtime QA. The receipt
+records the original build artifact's ID and SHA-256, and the evidence
+includes the passing runtime report. An advisory Dev QA failure leaves its
+runtime report available for diagnosis and does not produce promotion evidence.
+
+**Live / deploy** selects qualifying evidence for the exact requested main
+SHA, or uses the supplied **promotion_evidence_id**. A Live tag uses the
+same gate. The evidence must come from the same repository and reviewed
+workflow at the same shared tooling pin. Live fetches the original archive
+by ID, verifies its bytes and all QA bindings, then proceeds to target
+preflight and the Live backup gate. **Both / deploy** requires this run's
+passing Dev evidence and checks its artifact ID and digest against the
+original build before proceeding. Missing, expired or mismatched evidence
+stops before access to the target. A new tooling pin requires fresh
+pre-production evidence. Live runtime verification and rollback still run.
+**Live / preflight** remains read-only and can run without promotion evidence.
+
+### Qualification-only runs and recovery
+
+The current wrapper qualifies every main push, including pushes that are too
+old or unarmed for automatic Dev. Manual **qualify** selects the immutable
+`main` commit from the dispatch and stops after publishing evidence. Use it
+to exercise hosted qualification with no site access. Manual Dev and Live
+deployments on `main` keep the dispatch commit on retries and recheck that it
+is still current before backup and activation.
+
+- Source QA, build, or status publication failures stop before target access.
+  Use **Re-run failed jobs** to retry the original SHA. Retained artifacts
+  include their attempt number, and a failed-job rerun can reuse a successful
+  same-run build by its immutable artifact ID.
+- A target attempt with **No remote write** can be retried on the same run.
+  If a backup or activation was requested, check the target's
+  `site-write-state.json`, deployment receipt, current release and rollback
+  receipt before starting a new deployment. A missing write outcome after a
+  target ran requires reconciliation.
+- A new manual request selects a new main snapshot. A superseded Deploy run
+  cannot install an old main snapshot. For feature Dev retries, retain the
+  selected SHA through **Re-run failed jobs** after source selection succeeded.
+
+Legacy consumers of `MRN/local-release-qa` require strict local runtime
+qualification. From the exact theme checkout installed in its Local Hub
+runtime, use `tools/site-deploy/qualify_local_release.py` with the repository,
+full current main SHA, document root, local URL, stylesheet and a new
+evidence directory. Add `--publish` to run the checks and publish their
+result to the exact commit with the operator's GitHub status permission.
+The receipt and report are retained together locally. Preserve the legacy
+artifact, browser proof, backup and migration gates. The hosted
+`MRN/release-qualification` context covers source and artifact verification.
 
 See the [short developer guide](MRN-DEPLOYMENT-QUICK-START.md) for daily steps.
 
@@ -205,15 +267,17 @@ older commits. Migrate each approved site separately:
    for both `uses` and `tooling_ref`, plus the existing source path/stylesheet.
    Install it at the **existing** `site-deploy.yml` path. Add
    `tools/site-deploy/site-push.yml.template` as `.github/workflows/site-push.yml`.
-   Preserve explicit secret-name mappings and separate PR source checks. Remove
+   Grant `statuses: write` in the calling workflow permissions for the isolated
+   status publication job. Preserve explicit secret-name mappings and separate PR source checks. Remove
    duplicate deployment triggers; never reinstate the retired rsync uploader.
-4. For an active Phase 2 preview, put its exact branch in the signal's `branches`
-   list and the trusted wrapper's `auto_dev_branch`; set `dev_main_enabled: false`.
-   Install the signal file on that branch too. Main pushes will not replace Dev;
-   manual Dev-from-main and Both remain blocked. Manual feature Dev and approved
+4. For an active Phase 2 preview, use `branches: [main, <phase-branch>]` in
+   the signal and the exact phase branch in the wrapper's `auto_dev_branch`.
+   Set `dev_main_enabled: false` and install the signal file on that branch too.
+   Main pushes qualify with no target access. Manual Dev-from-main and Both
+   remain blocked. Manual feature Dev and approved
    main Live remain available. Do not merge or publish the phase as part of setup.
-5. Review/test/merge the configuration changes while unarmed. Verify every setup
-   run skipped source QA, build and deployment. After setup is merged on every
+5. Review/test/merge the configuration changes while unarmed. Verify setup
+   runs qualify main and skip the target jobs. After setup is merged on every
    applicable branch and the installation source signal is registered, set
    `MRN_AUTO_DEV_AFTER` to a later current UTC timestamp in
    `YYYY-MM-DDTHH:MM:SSZ` format. Only signals originally created **after** that

@@ -96,9 +96,20 @@ def metadata(ctx, token, opener):
     # Artifact names are metadata only. Never download or execute their content.
     artifacts = read_json(opener, urllib.request.Request(prefix + '/artifacts?per_page=100', headers=headers))
     shas = {match[1] for artifact in artifacts.get('artifacts', [])
-            if (match := re.fullmatch(r'site-(?:source-qa|release|deployment-(?:dev|live))-([0-9a-f]{40})', artifact.get('name', '')))}
+            if (match := re.fullmatch(r'site-(?:source-qa|release|promotion|deployment-(?:dev|staging|live))-([0-9a-f]{40})(?:-attempt-[1-9][0-9]*)?',
+                                      artifact.get('name', '')))}
     source = next(iter(shas)) if len(shas) == 1 else None
-    return {'failed_jobs': failed, 'source_sha': source}
+    targets = [job for job in jobs if re.search(r' / Site target \((dev|staging|live)\)$', job['name'])]
+    prewrite_jobs = ('request', 'source-qa / qa', 'build / build', 'publish-qualification')
+    prewrite_failure = bool(failed) and all(
+        any(job['name'].endswith(' / ' + phase) for phase in prewrite_jobs) for job in failed)
+    if targets and any(job.get('conclusion') != 'skipped' for job in targets):
+        no_write = all(job.get('conclusion') == 'skipped' or
+                       any(step.get('name') == 'Confirm no remote site write' and step.get('conclusion') == 'success'
+                           for step in job.get('steps', [])) for job in targets)
+    else:
+        no_write = prewrite_failure
+    return {'failed_jobs': failed, 'source_sha': source, 'no_remote_write': no_write}
 
 
 def message(ctx, details):
@@ -113,8 +124,10 @@ def message(ctx, details):
         lines.extend('  - ' + clean(step) for step in job.get('steps', []))
     if not failed:
         lines.append('- Workflow startup or validation failure; see the run link.')
-    lines += ['', 'Review the failure and deployment/rollback evidence before retrying.',
-              'A failure does not establish whether a runtime write occurred.', '', ctx['url']]
+    recovery = ('No remote site write in this attempt. Review the failed qualification or preflight before retrying.'
+                if details.get('no_remote_write')
+                else 'Review the site write summary and reconcile deployment and rollback evidence before retrying.')
+    lines += ['', recovery, '', ctx['url']]
     return {'From': SENDER, 'To': RECIPIENT,
             'Subject': f'[MRN deployment failed] {ctx["repository"]} — run {ctx["run_id"]}',
             'TextBody': '\n'.join(lines), 'MessageStream': 'outbound',

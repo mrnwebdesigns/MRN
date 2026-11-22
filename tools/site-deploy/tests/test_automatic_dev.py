@@ -51,6 +51,38 @@ class RequestContract(unittest.TestCase):
             with self.assertRaises(ValueError):
                 request.selection('workflow_dispatch', 'refs/heads/main', SHA, target, 'deploy', 'main', False)
 
+    def test_main_dispatch_and_retry_keep_the_event_commit(self):
+        with patch.object(request, 'resolve') as resolve:
+            for mode in ('deploy', 'preflight', 'qualify'):
+                self.assertEqual(SHA, request.selection('workflow_dispatch', 'refs/heads/main', SHA,
+                                                        'live', mode, 'main'))
+            resolve.assert_not_called()
+        env = {'GITHUB_EVENT_NAME': 'workflow_dispatch', 'GITHUB_RUN_ATTEMPT': '2',
+               'MODE': 'deploy', 'SOURCE_BRANCH': 'phase-2'}
+        with self.assertRaisesRegex(ValueError, 'original SHA'):
+            request.deployment_selection(env)
+
+    def test_main_dispatch_stops_before_writes_when_main_moved(self):
+        with patch.object(request.urllib.request, 'urlopen', return_value=io.BytesIO(
+                json.dumps({'object':{'sha':'b'*40}}).encode())):
+            with self.assertRaisesRegex(ValueError, 'superseded'):
+                request.require_current_push(order(event='workflow_dispatch'),
+                                             {'GH_TOKEN':'read-only-fixture', 'SOURCE_BRANCH':'main'})
+
+    def test_write_retry_accepts_only_definitive_no_write_for_that_target(self):
+        env = {'GITHUB_RUN_ID': '101', 'GITHUB_RUN_ATTEMPT': '2'}
+        job = {'name': 'deploy / live / Site target (live)', 'status': 'completed',
+               'steps': [{'name': 'Preflight or deploy exact child-theme payload', 'conclusion': 'failure'}]}
+        with patch.object(request.release_request, 'api', return_value={'total_count':1, 'jobs':[job]}):
+            request.require_safe_retry(env, 'dev')
+            with self.assertRaisesRegex(ValueError, 'may have written to live'):
+                request.require_safe_retry(env, 'live')
+            job['steps'].append({'name': 'Confirm no remote site write', 'conclusion': 'success'})
+            request.require_safe_retry(env, 'live')
+            job['status'] = 'in_progress'
+            with self.assertRaisesRegex(ValueError, 'may have written'):
+                request.require_safe_retry(env, 'live')
+
     def test_controller_requires_exact_successful_source_qa_for_push(self):
         env = dict(GITHUB_ACTIONS='true', GITHUB_EVENT_NAME='push', GITHUB_REF='refs/heads/main',
                    GITHUB_SHA=SHA, GITHUB_REPOSITORY='mrn/site', MRN_SOURCE_QA_SHA=SHA,
@@ -87,10 +119,14 @@ class WorkflowGraph(unittest.TestCase):
         cls.root = Path(__file__).resolve().parents[3]
         cls.workflow = yaml.load((cls.root / '.github/workflows/site-deploy.yml').read_text(), Loader=yaml.BaseLoader)
 
-    def enabled(self, job, event='push', target='dev', mode='deploy', qa='success', dev='success', intent='{}'):
+    def enabled(self, job, event='push', target='dev', mode='deploy', qa='success', dev='success',
+                intent='{}', publication='success', promotion='79', build='success'):
         needs = NS(request=NS(result='success', outputs=NS(enabled='true', target=target, release_intent=intent)),
-                   source_qa=NS(result=qa), build=NS(result='success'), dev=NS(result=dev))
+                   source_qa=NS(result=qa), build=NS(result=build),
+                   dev=NS(result=dev, outputs=NS(promotion_evidence_id=promotion)),
+                   publish_qualification=NS(result=publication))
         expression = self.workflow['jobs'][job]['if'].replace('needs.source-qa', 'needs.source_qa')
+        expression = expression.replace('needs.publish-qualification', 'needs.publish_qualification')
         expression = expression.replace('&&', ' and ').replace('||', ' or ').replace('!cancelled()', 'not cancelled()')
         return eval(expression, {'__builtins__':{}}, dict(needs=needs, inputs=NS(target=target, mode=mode),
                     github=NS(event_name=event), always=lambda:True, cancelled=lambda:False))
@@ -127,6 +163,29 @@ class WorkflowGraph(unittest.TestCase):
             self.assertEqual('${{ needs.build.outputs.artifact_id }}', jobs[name]['with']['artifact_id'])
             self.assertEqual('${{ needs.build.outputs.artifact_sha256 }}', jobs[name]['with']['artifact_sha256'])
             self.assertEqual('${{ needs.source-qa.outputs.source_sha }}', jobs[name]['with']['qa_source_sha'])
+
+    def test_qualification_and_failed_publication_cannot_dispatch_target(self):
+        self.assertTrue(self.enabled('build', target='qualify', mode='qualify'))
+        for target in ('dev', 'live'):
+            self.assertFalse(self.enabled(target, event='workflow_dispatch', target='qualify', mode='qualify'))
+            self.assertTrue(self.enabled(target, event='workflow_dispatch', target=target, mode='preflight',
+                                         dev='skipped', publication='skipped'))
+        self.assertFalse(self.enabled('dev', event='workflow_dispatch', target='dev', publication='failure'))
+        self.assertFalse(self.enabled('live', event='workflow_dispatch', target='both', promotion=''))
+        self.assertTrue(self.enabled('live', event='workflow_dispatch', target='live', qa='skipped',
+                                     build='skipped', dev='skipped', publication='skipped'))
+
+    def test_live_requires_promotion_before_site_access(self):
+        steps = yaml.load((self.root / '.github/workflows/site-deploy-target.yml').read_text(),
+                          Loader=yaml.BaseLoader)['jobs']['deploy']['steps']
+        by_name = {step.get('name'): (index, step) for index, step in enumerate(steps)}
+        gate = by_name['Require passing QA from the exact pre-production release'][0]
+        self.assertLess(gate, by_name['Configure pinned SSH identity'][0])
+        self.assertLess(gate, by_name['Preflight or deploy exact child-theme payload'][0])
+        _, archive = by_name['Download the exact immutable release artifact']
+        self.assertIn('steps.promotion.outputs.archive_id', archive['with']['artifact-ids'])
+        self.assertIn("steps.runtime.outcome == 'success'",
+                      by_name['Record passing pre-production promotion evidence'][1]['if'])
 
     def test_thin_wrapper_and_per_environment_serialization(self):
         wrapper = yaml.load((self.root / 'tools/site-deploy/site-deploy.yml.template').read_text(), Loader=yaml.BaseLoader)

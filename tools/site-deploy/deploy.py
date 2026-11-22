@@ -466,7 +466,16 @@ def deploy(args, c):
             plan.update(promote_kinsta_staging=promotion, promoted_source_archive=promoted_archive, exercise_rollback=True)
         if qualifying:
             plan.update(baseline=c['baseline'], exercise_rollback=True)
-        result = activate(plan, c)
+        write_state = getattr(args, 'write_state', None)
+        if write_state:
+            def record_write(phase):
+                path = Path(write_state)
+                scratch = path.with_suffix('.tmp')
+                scratch.write_text(json.dumps({'write_phase': phase}) + '\n')
+                scratch.replace(path)
+            result = activate(plan, c, record_write=record_write)
+        else:
+            result = activate(plan, c)
         Path(args.receipt).write_text(json.dumps(result, indent=2) + '\n')
         if result['status'] != 'public-verified':
             phase = 'Preflight' if result['status'] == 'preflight-failed' else 'Deployment'
@@ -483,6 +492,7 @@ def main():
     p.add_argument('--source', required=True)
     p.add_argument('--slug', required=True)
     p.add_argument('--receipt', required=True)
+    p.add_argument('--write-state', help='Local phase marker persisted before the first remote write request')
     p.add_argument('--artifact', help='Immutable tar from the trusted build job; no target-side rebuild')
     p.add_argument('--artifact-sha256', help='Expected SHA-256 supplied independently by the build job')
     p.add_argument('--bind-imported-source', help='Exact retained source SHA for one-time Kinsta staging enrollment and rollback qualification')
