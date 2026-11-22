@@ -70,10 +70,31 @@ def source_push(environ, payload=None):
     return request['source_sha'] if request and request['kind'] == 'branch' else None
 
 
+def require_hotfix(environ, source_sha, target):
+    """Bind the exception to one explicitly confirmed main dispatch."""
+    if ((environ.get('GITHUB_EVENT_NAME'), environ.get('GITHUB_REF'), environ.get('SOURCE_BRANCH'), target)
+            != ('workflow_dispatch', 'refs/heads/main', 'main', 'live')
+            or environ.get('LIVE_ENABLED', 'true') != 'true'):
+        raise ValueError('Hotfix requires a manual Live dispatch from main on a Live-enabled site')
+    with open(environ['GITHUB_EVENT_PATH']) as handle:
+        inputs = json.load(handle).get('inputs', {})
+    if (not re.fullmatch(r'[0-9a-f]{40}', source_sha) or source_sha == '0' * 40
+            or inputs.get('mode') != 'hotfix' or inputs.get('target') != 'live'
+            or inputs.get('hotfix_sha') != source_sha or environ.get('GITHUB_SHA') != source_sha):
+        raise ValueError('Hotfix confirmation must match the full reviewed main dispatch SHA')
+    reason = inputs.get('hotfix_reason', '')
+    if not isinstance(reason, str) or not reason.strip() or not reason.isprintable() or len(reason) > 500:
+        raise ValueError('Hotfix requires a one-line emergency reason of up to 500 characters')
+    actor = environ.get('GITHUB_ACTOR', '')
+    if not re.fullmatch(r'[A-Za-z0-9_-]+(?:\[bot\])?', actor):
+        raise ValueError('Hotfix requires the GitHub dispatch actor')
+    return {'actor': actor, 'reason': reason.strip()}
+
+
 def selection(event, ref, sha, target, mode, branch, dev_main_enabled=True):
     if ref != 'refs/heads/main' or event not in ('push', 'workflow_dispatch'):
         raise ValueError('Only main pushes and manual workflows from main may deploy')
-    if target not in ('dev', 'staging', 'live', 'both') or mode not in ('preflight', 'deploy', 'qualify'):
+    if target not in ('dev', 'staging', 'live', 'both') or mode not in ('preflight', 'deploy', 'qualify', 'hotfix'):
         raise ValueError('Invalid deployment selection')
     if event == 'push':
         if (target, mode, branch) != ('dev', 'deploy', 'main'):
@@ -86,6 +107,8 @@ def selection(event, ref, sha, target, mode, branch, dev_main_enabled=True):
         return sha
     if mode == 'qualify' and branch != 'main':
         raise ValueError('Qualification-only dispatch requires main')
+    if mode == 'hotfix' and target != 'live':
+        raise ValueError('Hotfix is a Live-only dispatch')
     if target != 'dev' and branch != 'main':
         raise ValueError('Staging, Live and Both require reviewed main')
     if not dev_main_enabled and mode != 'qualify' and (target == 'both' or (target == 'dev' and branch == 'main')):
@@ -103,8 +126,12 @@ def github_order(environ, source_sha, target, mode):
     event = environ.get('GITHUB_EVENT_NAME')
     if environ.get('GITHUB_REF') != 'refs/heads/main' or event not in ('push', 'workflow_run', 'workflow_dispatch'):
         raise ValueError('Untrusted deployment trigger')
-    if mode == 'deploy' and environ.get('MRN_SOURCE_QA_SHA') != source_sha:
-        raise ValueError('Deployment requires QA for the selected source SHA')
+    hotfix = None
+    if mode == 'deploy':
+        if environ.get('MODE') == 'hotfix':
+            hotfix = require_hotfix(environ, source_sha, target)
+        elif environ.get('MRN_SOURCE_QA_SHA') != source_sha:
+            raise ValueError('Deployment requires QA for the selected source SHA')
     intent = None
     signal = None
     if event == 'workflow_run':
@@ -130,6 +157,8 @@ def github_order(environ, source_sha, target, mode):
     workflow = workflow_ref.split('@', 1)[0]
     order = {'repository': repository, 'workflow': workflow, 'source_sha': source_sha,
              'event': event, 'run_id': environ.get('GITHUB_RUN_ID', '')}
+    if hotfix:
+        order['hotfix'] = hotfix
     if event == 'workflow_run':
         order['source_branch'] = signal['source_branch']
         if 'source_run_number' in signal:
@@ -165,6 +194,11 @@ def validate_order(order):
         if order['event'] != 'workflow_run':
             raise ValueError('Release tags require the trusted workflow-run receiver')
         release_request.validate_intent(order['release_intent'], order['source_sha'])
+    if 'hotfix' in order:
+        details = order['hotfix']
+        if (order['event'] != 'workflow_dispatch' or not isinstance(details, dict)
+                or set(details) != {'actor', 'reason'} or not all(isinstance(v, str) and v for v in details.values())):
+            raise ValueError('Invalid emergency deployment order')
     if 'source_run_number' in order and (type(order['source_run_number']) is not int or order['source_run_number'] < 1):
         raise ValueError('Invalid source signal sequence')
 
@@ -185,7 +219,8 @@ def check_order(incoming, previous, rollback=False):
         return  # Recovery in this same serialized deployment job.
     if incoming['run_number'] == previous['run_number'] and (
             incoming['run_id'] != previous['run_id'] or incoming['source_sha'] != previous['source_sha']
-            or incoming.get('release_intent') != previous.get('release_intent')):
+            or incoming.get('release_intent') != previous.get('release_intent')
+            or incoming.get('hotfix') != previous.get('hotfix')):
         raise ValueError('A rerun must retain its original run and source identity')
     if (incoming.get('source_run_number') and previous.get('source_run_number')
             and incoming['source_run_number'] < previous['source_run_number']):
@@ -275,6 +310,8 @@ def deployment_selection(environ):
         return {'source_sha':sha, 'source_branch':branch, 'target':'qualify', 'kind':'qualification'}
     if target in ('live', 'both') and environ.get('LIVE_ENABLED', 'true') != 'true':
         raise ValueError('This site is Dev-only; Live/Both are unavailable')
+    if environ['MODE'] == 'hotfix':
+        require_hotfix(environ, sha, target)
     return {'source_sha':sha, 'source_branch':branch, 'target':target, 'kind':'branch'}
 
 

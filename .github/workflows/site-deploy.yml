@@ -112,7 +112,7 @@ jobs:
             [[ "$GITHUB_EVENT_NAME" == workflow_dispatch && "$TARGET" == dev && "$MODE" == deploy && "$SOURCE_BRANCH" == main ]]
           fi
           if [[ "${QUALIFY_DOSTER_LIVE:-false}" == true ]]; then
-            [[ "$GITHUB_REPOSITORY" == mrnwebdesigns/doster-and-brown-child-theme && "$GITHUB_EVENT_NAME" == workflow_dispatch && "$TARGET" == live && "$SOURCE_BRANCH" == main && "$QUALIFY_DEV" != true ]]
+            [[ "$GITHUB_REPOSITORY" == mrnwebdesigns/doster-and-brown-child-theme && "$GITHUB_EVENT_NAME" == workflow_dispatch && "$TARGET" == live && "$MODE" == deploy && "$SOURCE_BRANCH" == main && "$QUALIFY_DEV" != true ]]
           fi
           python3 .mrn-deploy-tools/tools/site-deploy/deployment_request.py
   source-qa:
@@ -128,15 +128,15 @@ jobs:
     if: >-
       always() && !cancelled() && needs.request.result == 'success' &&
       needs.request.outputs.enabled == 'true' &&
-      ((inputs.mode == 'preflight' && needs.source-qa.result == 'skipped') ||
-       (inputs.mode != 'preflight' && needs.source-qa.result == 'success'))
+      (((inputs.mode == 'preflight' || inputs.mode == 'hotfix') && needs.source-qa.result == 'skipped') ||
+       ((inputs.mode == 'qualify' || inputs.mode == 'deploy') && needs.source-qa.result == 'success'))
     uses: ./.github/workflows/site-release-build.yml
     with:
       source_sha: ${{ needs.request.outputs.source_sha }}
       qa_source_sha: ${{ needs.source-qa.outputs.source_sha }}
       qa_artifact_id: ${{ needs.source-qa.outputs.artifact_id }}
       qa_report_sha256: ${{ needs.source-qa.outputs.report_sha256 }}
-      qualification_required: ${{ inputs.mode != 'preflight' }}
+      qualification_required: ${{ inputs.mode == 'qualify' || inputs.mode == 'deploy' }}
       source_path: ${{ inputs.source_path }}
       stylesheet: ${{ inputs.stylesheet }}
       tooling_ref: ${{ inputs.tooling_ref }}
@@ -222,6 +222,8 @@ jobs:
       ((inputs.mode == 'preflight' && needs.build.result == 'success' &&
         (needs.request.outputs.target == 'live' ||
          (needs.request.outputs.target == 'both' && needs.dev.result == 'success'))) ||
+       (inputs.mode == 'hotfix' && github.event_name == 'workflow_dispatch' &&
+        needs.request.outputs.target == 'live' && needs.build.result == 'success') ||
        (inputs.mode == 'deploy' &&
         (needs.request.outputs.target == 'live' ||
          (needs.request.outputs.target == 'both' && needs.dev.result == 'success' &&

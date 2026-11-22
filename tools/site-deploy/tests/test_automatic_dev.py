@@ -187,6 +187,33 @@ class WorkflowGraph(unittest.TestCase):
         self.assertIn("steps.runtime.outcome == 'success'",
                       by_name['Record passing pre-production promotion evidence'][1]['if'])
 
+    def test_hotfix_builds_only_for_the_manual_live_path(self):
+        args = dict(event='workflow_dispatch', target='live', mode='hotfix', qa='skipped', dev='skipped',
+                    publication='skipped')
+        self.assertTrue(self.enabled('build', **args))
+        self.assertTrue(self.enabled('live', **args))
+        self.assertFalse(self.enabled('dev', **args))
+        self.assertFalse(self.enabled('live', **{**args, 'build': 'failure'}))
+        self.assertFalse(self.enabled('live', **{**args, 'event': 'workflow_run', 'intent': 'validated'}))
+        self.assertFalse(self.enabled('live', **{**args, 'target': 'both'}))
+
+    def test_hotfix_retains_preflight_smoke_and_rollback_controls(self):
+        target = yaml.load((self.root / '.github/workflows/site-deploy-target.yml').read_text(),
+                           Loader=yaml.BaseLoader)['jobs']['deploy']
+        steps = target['steps']
+        by_name = {step.get('name'): (index, step) for index, step in enumerate(steps)}
+        _, promote = by_name['Require passing QA from the exact pre-production release']
+        self.assertIn("inputs.mode == 'deploy'", promote['if'])
+        approval, _ = by_name['Record emergency approval for this exact Live artifact']
+        self.assertLess(approval, by_name['Configure pinned SSH identity'][0])
+        activation, deploy = by_name['Preflight or deploy exact child-theme payload']
+        self.assertIn('tools/site-deploy/deploy.py', deploy['run'])
+        smoke, smoke_step = by_name['Smoke-check the activated Live hotfix']
+        self.assertGreater(smoke, activation)
+        self.assertIn("http_check(url + '/wp-json/', rest=True)", smoke_step['run'])
+        _, rollback = by_name['Restore the prior release if strict runtime acceptance fails']
+        self.assertIn("steps.hotfix-smoke.outcome == 'failure'", rollback['if'])
+
     def test_thin_wrapper_and_per_environment_serialization(self):
         wrapper = yaml.load((self.root / 'tools/site-deploy/site-deploy.yml.template').read_text(), Loader=yaml.BaseLoader)
         self.assertEqual({'workflow_run', 'workflow_dispatch'}, set(wrapper['on']))

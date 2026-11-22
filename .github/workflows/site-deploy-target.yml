@@ -111,7 +111,7 @@ jobs:
       promotion_evidence_id: ${{ steps.promotion-evidence.outputs.artifact-id }}
     environment:
       name: ${{ inputs.target }}
-      deployment: ${{ inputs.mode == 'deploy' }}
+      deployment: ${{ inputs.mode != 'preflight' }}
     concurrency:
       group: site-code-${{ github.repository }}-${{ inputs.target }}
       cancel-in-progress: false
@@ -166,7 +166,7 @@ jobs:
         run: |
           set -euo pipefail
           [[ "$GITHUB_EVENT_NAME" == push || "$GITHUB_EVENT_NAME" == workflow_run || "$GITHUB_EVENT_NAME" == workflow_dispatch ]]
-          [[ "$MODE" == preflight || "$MODE" == deploy ]]
+          [[ "$MODE" == preflight || "$MODE" == deploy || "$MODE" == hotfix ]]
           [[ "$TARGET" == dev || "$TARGET" == staging || "$TARGET" == live ]]
           [[ "$TOOLING_REF" =~ ^[0-9a-f]{40}$ ]]
           [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
@@ -187,6 +187,9 @@ jobs:
           fi
           if [[ "$MODE" == deploy && "$TARGET" != live ]]; then
             [[ "$MRN_SOURCE_QA_SHA" == "$SOURCE_SHA" ]]
+          fi
+          if [[ "$MODE" == hotfix ]]; then
+            [[ "$GITHUB_EVENT_NAME" == workflow_dispatch && "$TARGET" == live && "$QUALIFY_DEV" != true && "$QUALIFY_DOSTER_LIVE" != true && -z "$LOCAL_QA_ACCEPTANCE" ]]
           fi
           if [[ "${QUALIFY_DOSTER_LIVE:-false}" == true ]]; then
             [[ "$GITHUB_REPOSITORY" == mrnwebdesigns/doster-and-brown-child-theme && "$GITHUB_EVENT_NAME" == workflow_dispatch && "$TARGET" == live && "$SOURCE_BRANCH" == main && "$QUALIFY_DEV" != true ]]
@@ -217,7 +220,7 @@ jobs:
           mv .mrn-deploy-tools "$RUNNER_TEMP/mrn-deploy-tools"
           echo "MRN_QA_STACK_ROOT=$RUNNER_TEMP/mrn-deploy-tools" >> "$GITHUB_ENV"
       - name: Require a safe deployment retry
-        if: inputs.mode == 'deploy'
+        if: inputs.mode != 'preflight'
         run: |
           python3 - "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy" <<'PY'
           import os, sys
@@ -294,6 +297,25 @@ jobs:
               python3 "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/release_qualification.py" verify \
               "$RUNNER_TEMP/site-release/site-release-qualification.json"
           fi
+      - name: Record emergency approval for this exact Live artifact
+        if: inputs.mode == 'hotfix'
+        run: |
+          python3 - "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy" <<'PY'
+          import json, os, pathlib, sys
+          sys.path.insert(0, sys.argv[1])
+          from deployment_request import github_order
+
+          env = os.environ
+          order = github_order(env, env['SOURCE_SHA'], env['TARGET'], 'deploy')
+          receipt = {
+              'mode': 'hotfix', 'target': 'live', 'deployment_order': order,
+              'artifact_id': env['ARTIFACT_ID'], 'artifact_sha256': env['ARTIFACT_SHA256'],
+          }
+          (pathlib.Path(env['RUNNER_TEMP']) / 'site-hotfix-approval.json').write_text(json.dumps(receipt, indent=2) + '\n')
+          with open(env['GITHUB_STEP_SUMMARY'], 'a') as summary:
+              print(f"Emergency Live hotfix confirmed by {order['hotfix']['actor']} for `{env['SOURCE_SHA']}`.", file=summary)
+              print('Dev/staging acceptance and the full release QA suite were waived for this dispatch.', file=summary)
+          PY
       - name: Retrieve the exact original Doster qualification artifact
         if: inputs.qualify_doster_live
         uses: actions/download-artifact@v4
@@ -409,11 +431,15 @@ jobs:
         run: |
           set -euo pipefail
           promotion_args=()
+          deploy_mode="$MODE"
+          if [[ "$MODE" == hotfix ]]; then
+            deploy_mode=deploy
+          fi
           if [[ "${QUALIFY_DOSTER_LIVE:-false}" == true ]]; then
             promotion_args=(--promote-kinsta-staging-manifest "$RUNNER_TEMP/doster-live-promotion.json" --promoted-source-artifact "$RUNNER_TEMP/doster-original-release/site-release.tar")
           fi
           python3 "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/deploy.py" \
-            --mode "$MODE" --environment "$TARGET" --sha "$SOURCE_SHA" \
+            --mode "$deploy_mode" --environment "$TARGET" --sha "$SOURCE_SHA" \
             --source "$SOURCE_PATH" --slug "$STYLESHEET" \
             --artifact "$RUNNER_TEMP/site-release/site-release.tar" --artifact-sha256 "$ARTIFACT_SHA256" \
             --receipt "$RUNNER_TEMP/site-deployment.json" \
@@ -458,8 +484,31 @@ jobs:
             --project-root "$GITHUB_WORKSPACE" --site-url "$DEPLOY_URL" --scope site-only \
             --run-api always --run-smoke always --run-accessibility always --run-performance "$performance" --run-cwv "$cwv" \
             --run-phpcbf never --output-file "$RUNNER_TEMP/site-runtime-qa.md"
+      - name: Smoke-check the activated Live hotfix
+        id: hotfix-smoke
+        if: success() && inputs.mode == 'hotfix'
+        run: |
+          python3 - "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy" <<'PY'
+          import json, os, pathlib, sys
+          sys.path.insert(0, sys.argv[1])
+          from deploy import http_check
+
+          root = pathlib.Path(os.environ['RUNNER_TEMP'])
+          url = os.environ['DEPLOY_URL'].rstrip('/')
+          http_check(url + '/')
+          http_check(url + '/wp-json/', rest=True)
+          result = {'outcome': 'success', 'source_sha': os.environ['SOURCE_SHA'],
+                    'artifact_sha256': os.environ['ARTIFACT_SHA256'], 'checks': ['homepage', 'wp-json']}
+          (root / 'site-hotfix-smoke.json').write_text(json.dumps(result, indent=2) + '\n')
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+              print('Live hotfix smoke passed for the homepage and WordPress REST discovery.', file=summary)
+          PY
       - name: Restore the prior release if strict runtime acceptance fails
-        if: failure() && (inputs.target != 'dev' || inputs.qualify_dev || inputs.require_promotion_qa) && inputs.mode == 'deploy' && steps.activation.outcome == 'success' && steps.runtime.outcome == 'failure'
+        if: >-
+          failure() && steps.activation.outcome == 'success' &&
+          ((inputs.mode == 'deploy' && (inputs.target != 'dev' || inputs.qualify_dev || inputs.require_promotion_qa) &&
+           steps.runtime.outcome == 'failure') ||
+           (inputs.mode == 'hotfix' && steps.hotfix-smoke.outcome == 'failure'))
         env:
           DEPLOY_KINSTA_API_TOKEN: ${{ secrets.DEPLOY_KINSTA_API_TOKEN }}
           DEPLOY_KNOWN_HOSTS_FILE: ${{ runner.temp }}/site-deploy.known_hosts
@@ -560,6 +609,8 @@ jobs:
           path: |
             ${{ runner.temp }}/site-deployment.json
             ${{ runner.temp }}/site-write-state.json
+            ${{ runner.temp }}/site-hotfix-approval.json
+            ${{ runner.temp }}/site-hotfix-smoke.json
             ${{ runner.temp }}/site-release/site-release-qualification.json
             ${{ runner.temp }}/site-promotion/site-promotion.json
             ${{ runner.temp }}/site-artifact-verification.json

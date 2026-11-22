@@ -32,7 +32,9 @@ jobs:
         with:
           node-version: '22'
       - name: Exercise passing and blocked Live promotion contracts
-        run: python3 -m unittest discover -s tools/site-deploy/tests -p test_live_promotion.py -v
+        run: |
+          python3 -m unittest discover -s tools/site-deploy/tests -p test_live_promotion.py -v
+          python3 -m unittest discover -s tools/site-deploy/tests -p test_live_hotfix.py -v
       - name: Build disposable release archive
         env:
           PYTHONPATH: tools/site-deploy/tests

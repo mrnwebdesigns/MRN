@@ -99,6 +99,21 @@ stops before access to the target. A new tooling pin requires fresh
 pre-production evidence. Live runtime verification and rollback still run.
 **Live / preflight** remains read-only and can run without promotion evidence.
 
+### Emergency Live hotfix
+
+Dispatch the trusted workflow from `main`, select **Live / hotfix**, enter the
+full reviewed `main` SHA in **hotfix_sha**, and supply a one-line emergency
+reason. The confirmation applies to the complete child-theme artifact from
+that commit. The workflow records the dispatch actor, reason, SHA, artifact ID,
+and digest. It fails before the backup if the selected commit is superseded.
+
+Hotfix waives Dev or staging acceptance and the full release QA suite. The
+workflow still verifies the immutable artifact and target, obtains a verified
+backup, activates atomically, and checks public release identity and assets.
+It runs a focused Live homepage and WordPress REST smoke after activation and
+restores the prior release if either check fails. Live environment restrictions
+and ordinary deployment ordering apply to the hotfix.
+
 ### Qualification-only runs and recovery
 
 The current wrapper qualifies every main push, including pushes that are too
