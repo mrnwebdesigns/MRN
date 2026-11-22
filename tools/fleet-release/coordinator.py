@@ -29,6 +29,21 @@ REPOSITORY = 'mrnwebdesigns/MRN'
 HELPER = '!gh auth git-credential'
 CONFIG_KEYS = {'schema_version', 'state_root', 'qualified_packages', 'canonical_repo',
                'source_host', 'qualification', 'publish', 'report_failures'}
+# A fresh failure for the same source vector blocks a retry for this long. The
+# retention below leaves a failed job intact for at least the same window.
+FAILURE_BACKOFF_SECONDS = 1800
+JOB_NAME = re.compile(r'[0-9a-f]{20}-[0-9]+')
+# Thinning keeps a job's text evidence, because release notes cite job paths,
+# and removes the reproducible bytes: source clones, dependency trees, built
+# payloads, packages and archives. Every published byte is also kept in the
+# source-host depot and on the public GitHub release.
+EVIDENCE_SUFFIXES = ('.json', '.log', '.txt', '.md')
+PRUNED_TREES = ('node_modules', 'vendor')
+# Any of these marks a job that reached a sealed, proposed or published phase.
+RETAINED_MARKERS = ('SHA256SUMS.txt', 'publication.json', 'progress.json')
+# Published jobs left intact besides the one the Fleet-ready index names.
+PUBLISHED_KEEP = 3
+PRUNE_LIMIT = 20
 
 
 def config(path):
@@ -558,6 +573,187 @@ def dependencies(repo, standalone, settings):
                                 'qa_engine_root': str(engine)}
 
 
+def referenced_jobs(settings):
+    """Return (every job named by controller state or the Fleet index, the
+    jobs the Fleet-ready index itself names)."""
+    state = Path(settings['state_root'])
+    if not settings.get('canonical_repo'):
+        raise ValueError('Fleet index location is not configured')
+    index = Path(settings['canonical_repo']) / 'releases/fleet-ready/current.json'
+    pattern = re.compile(r'/jobs/(' + JOB_NAME.pattern + r')(?:/|$)')
+
+    def names(value, found):
+        if isinstance(value, dict):
+            for item in value.values():
+                names(item, found)
+        elif isinstance(value, list):
+            for item in value:
+                names(item, found)
+        elif isinstance(value, str):
+            found.update(pattern.findall(value))
+        return found
+
+    referenced, indexed = set(), set()
+    for record in (state / 'active.json', state / 'status.json', state / 'failure.json', index):
+        if record.exists() or record.is_symlink():
+            # An unreadable record fails closed: the caller thins nothing.
+            found = names(read(record), set())
+            referenced |= found
+            if record == index:
+                indexed = found
+    return referenced, indexed
+
+
+def tree_bytes(path):
+    path = Path(path)
+    if path.is_symlink() or not path.is_dir():
+        return path.lstat().st_size
+    total = 0
+    for root, directories, files in os.walk(path):
+        for name in directories + files:
+            total += (Path(root) / name).lstat().st_size
+    return total
+
+
+def _remove_protected(function, path, error):
+    # Clones can hold write-protected folders. Grant the owner write access to
+    # the folder inside the tree being removed and retry once; rmtree never
+    # follows symlinks, so this changes nothing outside the job.
+    if not isinstance(error, PermissionError):
+        raise error
+    os.chmod(os.path.dirname(path), 0o700)
+    if os.path.isdir(path) and not os.path.islink(path):
+        os.chmod(path, 0o700)
+    function(path)
+
+
+def thin_job(job, now, kind):
+    """Remove one job's reproducible bytes and keep its text evidence.
+
+    repos/, node_modules/ and vendor/ go entirely, as do symlinks and every
+    file that is not .json, .log, .txt or .md. Folders left empty go too.
+    """
+    job = Path(job)
+    trees, files_removed, freed = [], 0, 0
+
+    def remove(path):
+        nonlocal freed
+        freed += tree_bytes(path)
+        if path.is_symlink() or not path.is_dir():
+            path.unlink()
+        else:
+            shutil.rmtree(path, onexc=_remove_protected)
+
+    repos = job / 'repos'
+    if repos.exists() or repos.is_symlink():
+        remove(repos)
+        trees.append('repos')
+    for root, directories, files in os.walk(job):
+        base = Path(root)
+        for name in sorted(directories):
+            path = base / name
+            # os.walk lists a link to a folder here; it is removed, not followed.
+            if name in PRUNED_TREES or path.is_symlink():
+                directories.remove(name)
+                remove(path)
+                trees.append(path.relative_to(job).as_posix())
+        for name in sorted(files):
+            path = base / name
+            if path.is_symlink() or not name.lower().endswith(EVIDENCE_SUFFIXES):
+                remove(path)
+                files_removed += 1
+    for root, _, _ in os.walk(job, topdown=False):
+        base = Path(root)
+        if base != job and not any(base.iterdir()):
+            try:
+                base.rmdir()
+            except OSError:
+                pass
+    record = {'schema_version': 1, 'kind': kind, 'removed_trees': trees,
+              'removed_files': files_removed, 'bytes_freed': freed,
+              'kept': 'text evidence: ' + ', '.join(EVIDENCE_SUFFIXES),
+              'pruned_at_utc': dt.datetime.fromtimestamp(now, dt.timezone.utc).isoformat(),
+              'site_writes': False}
+    write(job / 'pruned.json', record)
+    return record
+
+
+def created(job):
+    return int(Path(job).name.rsplit('-', 1)[1])
+
+
+def published(job):
+    """True only for a job whose publication completed and verified."""
+    try:
+        return ((job / 'SHA256SUMS.txt').is_file()
+                and not any((job / name).is_symlink() for name in ('publication.json', 'progress.json'))
+                and read(job / 'publication.json').get('status') == 'pass'
+                and read(job / 'progress.json').get('phase') == 'published')
+    except (OSError, ValueError, AttributeError):
+        return False
+
+
+def retain_jobs(settings, now=None, limit=PRUNE_LIMIT, keep=PUBLISHED_KEEP):
+    """Bound disk use by finished source jobs without touching a live one.
+
+    No job named by active.json, status.json, failure.json or the Fleet-ready
+    index is touched, nor a job that is sealed or proposed but not published.
+    A failed pre-publication attempt is thinned once its failure is older than
+    the retry backoff. A published job is thinned once it is older than the
+    `keep` newest other published jobs, and only while the Fleet-ready index
+    names a job. Only the active job is ever resumed or seal-verified, and
+    rollback sources are the current index, the source-host depot and on-site
+    backups, so thinning an older published job cannot affect either.
+    Failed attempts go first, then published jobs, oldest first.
+    """
+    state = Path(settings['state_root'])
+    jobs = state / 'jobs'
+    now = time.time() if now is None else now
+    summary = {'schema_version': 1, 'status': 'pass', 'pruned': [], 'bytes_freed': 0,
+               'errors': [], 'remaining': 0, 'site_writes': False,
+               'observed_at_utc': dt.datetime.fromtimestamp(now, dt.timezone.utc).isoformat()}
+    if jobs.is_symlink() or not jobs.is_dir():
+        return summary
+    try:
+        protected, indexed = referenced_jobs(settings)
+    except (OSError, ValueError) as error:
+        summary.update(status='skipped', errors=[{'error': 'Unreadable job reference: ' + str(error)}])
+        write(state / 'retention.json', summary)
+        return summary
+    failed, finished = [], []
+    for job in jobs.iterdir():
+        marker = job / 'pruned.json'
+        if (not JOB_NAME.fullmatch(job.name) or job.is_symlink() or not job.is_dir()
+                or job.name in protected or marker.exists() or marker.is_symlink()):
+            continue
+        if any((job / name).exists() or (job / name).is_symlink() for name in RETAINED_MARKERS):
+            if published(job):
+                finished.append(job)
+            continue
+        failure = job / 'failure.json'
+        if failure.is_file() and not failure.is_symlink():
+            failed_at = failure.stat().st_mtime
+            if now - failed_at >= FAILURE_BACKOFF_SECONDS:
+                failed.append((failed_at, job.name, job))
+    finished.sort(key=created, reverse=True)
+    older = sorted(finished[keep:], key=created) if indexed else []
+    candidates = [('failed', job) for _, _, job in sorted(failed)] + [('published', job) for job in older]
+    for kind, job in candidates[:limit]:
+        try:
+            record = thin_job(job, now, kind)
+        except OSError as error:
+            summary['errors'].append({'job': job.name, 'kind': kind, 'error': str(error)})
+            continue
+        summary['pruned'].append({'job': job.name, 'kind': kind})
+        summary['bytes_freed'] += record['bytes_freed']
+    summary['remaining'] = max(0, len(candidates) - limit)
+    if summary['errors']:
+        summary['status'] = 'partial'
+    if candidates:
+        write(state / 'retention.json', summary)
+    return summary
+
+
 def once(settings):
     os.umask(0o077)
     state = Path(settings['state_root'])
@@ -572,6 +768,12 @@ def once(settings):
             fcntl.flock(lease, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
             return {'status': 'busy', 'site_writes': False}
+        # Housekeeping runs under the lease so no attempt is created or resumed
+        # meanwhile. It never blocks qualification; retention.json reports it.
+        try:
+            retain_jobs(settings)
+        except OSError:
+            pass
         active = state / 'active.json'
         if active.exists():
             progress_file = Path(read(active)['job']) / 'progress.json'
@@ -599,7 +801,7 @@ def once(settings):
             # diagnostics and every prior candidate; a failed attempt never wrote.
             vector = digest(canonical(refs))
             failures = list((state / 'jobs').glob(vector[:20] + '-*/failure.json'))
-            if failures and time.time() - max(p.stat().st_mtime for p in failures) < 1800:
+            if failures and time.time() - max(p.stat().st_mtime for p in failures) < FAILURE_BACKOFF_SECONDS:
                 return {'status': 'qualification_backoff', 'site_writes': False}
             job = state / 'jobs' / (vector[:20] + '-' + str(time.time_ns()))
             job.mkdir(parents=True)
