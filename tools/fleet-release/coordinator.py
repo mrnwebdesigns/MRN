@@ -33,13 +33,16 @@ CONFIG_KEYS = {'schema_version', 'state_root', 'qualified_packages', 'canonical_
 # retention below leaves a failed job intact for at least the same window.
 FAILURE_BACKOFF_SECONDS = 1800
 JOB_NAME = re.compile(r'[0-9a-f]{20}-[0-9]+')
-# Reproducible build output in a failed pre-publication attempt. Diagnostic
-# text outside these folders stays, because release notes cite it as evidence.
-PRUNED_DIRECTORY = re.compile(r'(?:bootstrap|platform|optional|fleet)-[ab]'
-                              r'|packages|additional-packages|public-readback')
-PRUNED_ARCHIVE = ('.zip', '.tar', '.tar.gz', '.tgz', '.phar')
+# Thinning keeps a job's text evidence, because release notes cite job paths,
+# and removes the reproducible bytes: source clones, dependency trees, built
+# payloads, packages and archives. Every published byte is also kept in the
+# source-host depot and on the public GitHub release.
+EVIDENCE_SUFFIXES = ('.json', '.log', '.txt', '.md')
+PRUNED_TREES = ('node_modules', 'vendor')
 # Any of these marks a job that reached a sealed, proposed or published phase.
 RETAINED_MARKERS = ('SHA256SUMS.txt', 'publication.json', 'progress.json')
+# Published jobs left intact besides the one the Fleet-ready index names.
+PUBLISHED_KEEP = 3
 PRUNE_LIMIT = 20
 
 
@@ -571,30 +574,34 @@ def dependencies(repo, standalone, settings):
 
 
 def referenced_jobs(settings):
-    """Job folders named by controller state or the owner-local Fleet index."""
+    """Return (every job named by controller state or the Fleet index, the
+    jobs the Fleet-ready index itself names)."""
     state = Path(settings['state_root'])
     if not settings.get('canonical_repo'):
         raise ValueError('Fleet index location is not configured')
-    records = (state / 'active.json', state / 'status.json', state / 'failure.json',
-               Path(settings['canonical_repo']) / 'releases/fleet-ready/current.json')
+    index = Path(settings['canonical_repo']) / 'releases/fleet-ready/current.json'
     pattern = re.compile(r'/jobs/(' + JOB_NAME.pattern + r')(?:/|$)')
-    names = set()
 
-    def visit(value):
+    def names(value, found):
         if isinstance(value, dict):
             for item in value.values():
-                visit(item)
+                names(item, found)
         elif isinstance(value, list):
             for item in value:
-                visit(item)
+                names(item, found)
         elif isinstance(value, str):
-            names.update(pattern.findall(value))
+            found.update(pattern.findall(value))
+        return found
 
-    for record in records:
+    referenced, indexed = set(), set()
+    for record in (state / 'active.json', state / 'status.json', state / 'failure.json', index):
         if record.exists() or record.is_symlink():
-            # An unreadable record fails closed: the caller prunes nothing.
-            visit(read(record))
-    return names
+            # An unreadable record fails closed: the caller thins nothing.
+            found = names(read(record), set())
+            referenced |= found
+            if record == index:
+                indexed = found
+    return referenced, indexed
 
 
 def tree_bytes(path):
@@ -620,10 +627,14 @@ def _remove_protected(function, path, error):
     function(path)
 
 
-def prune_failed_job(job, now):
-    """Remove reproducible bulk from one failed attempt; keep its diagnostics."""
+def thin_job(job, now, kind):
+    """Remove one job's reproducible bytes and keep its text evidence.
+
+    repos/, node_modules/ and vendor/ go entirely, as do symlinks and every
+    file that is not .json, .log, .txt or .md. Folders left empty go too.
+    """
     job = Path(job)
-    removed, freed = [], 0
+    trees, files_removed, freed = [], 0, 0
 
     def remove(path):
         nonlocal freed
@@ -632,36 +643,68 @@ def prune_failed_job(job, now):
             path.unlink()
         else:
             shutil.rmtree(path, onexc=_remove_protected)
-        removed.append(path.relative_to(job).as_posix())
 
     repos = job / 'repos'
     if repos.exists() or repos.is_symlink():
         remove(repos)
+        trees.append('repos')
     for root, directories, files in os.walk(job):
         base = Path(root)
         for name in sorted(directories):
-            if PRUNED_DIRECTORY.fullmatch(name):
+            path = base / name
+            # os.walk lists a link to a folder here; it is removed, not followed.
+            if name in PRUNED_TREES or path.is_symlink():
                 directories.remove(name)
-                remove(base / name)
+                remove(path)
+                trees.append(path.relative_to(job).as_posix())
         for name in sorted(files):
-            # A merged attempt links packages/ to its job; once that target is
-            # gone the dangling link is listed here as a file.
-            if (name.lower().endswith(PRUNED_ARCHIVE)
-                    or (PRUNED_DIRECTORY.fullmatch(name) and (base / name).is_symlink())):
-                remove(base / name)
-    record = {'schema_version': 1, 'removed': removed, 'bytes_freed': freed,
+            path = base / name
+            if path.is_symlink() or not name.lower().endswith(EVIDENCE_SUFFIXES):
+                remove(path)
+                files_removed += 1
+    for root, _, _ in os.walk(job, topdown=False):
+        base = Path(root)
+        if base != job and not any(base.iterdir()):
+            try:
+                base.rmdir()
+            except OSError:
+                pass
+    record = {'schema_version': 1, 'kind': kind, 'removed_trees': trees,
+              'removed_files': files_removed, 'bytes_freed': freed,
+              'kept': 'text evidence: ' + ', '.join(EVIDENCE_SUFFIXES),
               'pruned_at_utc': dt.datetime.fromtimestamp(now, dt.timezone.utc).isoformat(),
               'site_writes': False}
     write(job / 'pruned.json', record)
     return record
 
 
-def retain_failed_jobs(settings, now=None, limit=PRUNE_LIMIT):
-    """Bound disk use by failed attempts without touching any retained job.
+def created(job):
+    return int(Path(job).name.rsplit('-', 1)[1])
 
-    Only a pre-publication failure is pruned: it has failure.json, it has no
-    sealed/published marker, no controller or Fleet index record names it, and
-    its failure is older than the retry backoff. Oldest failures go first.
+
+def published(job):
+    """True only for a job whose publication completed and verified."""
+    try:
+        return ((job / 'SHA256SUMS.txt').is_file()
+                and not any((job / name).is_symlink() for name in ('publication.json', 'progress.json'))
+                and read(job / 'publication.json').get('status') == 'pass'
+                and read(job / 'progress.json').get('phase') == 'published')
+    except (OSError, ValueError, AttributeError):
+        return False
+
+
+def retain_jobs(settings, now=None, limit=PRUNE_LIMIT, keep=PUBLISHED_KEEP):
+    """Bound disk use by finished source jobs without touching a live one.
+
+    No job named by active.json, status.json, failure.json or the Fleet-ready
+    index is touched, nor a job that is sealed or proposed but not published.
+    A failed pre-publication attempt is thinned once its failure is older than
+    the retry backoff. A published job is thinned once it is older than the
+    `keep` newest other published jobs, and only while the Fleet-ready index
+    names a job. Only the active job is ever resumed or seal-verified, and
+    rollback sources are the current index, the source-host depot and on-site
+    backups, so thinning an older published job cannot affect either.
+    Failed attempts go first, then published jobs, oldest first.
     """
     state = Path(settings['state_root'])
     jobs = state / 'jobs'
@@ -672,30 +715,36 @@ def retain_failed_jobs(settings, now=None, limit=PRUNE_LIMIT):
     if jobs.is_symlink() or not jobs.is_dir():
         return summary
     try:
-        protected = referenced_jobs(settings)
+        protected, indexed = referenced_jobs(settings)
     except (OSError, ValueError) as error:
         summary.update(status='skipped', errors=[{'error': 'Unreadable job reference: ' + str(error)}])
         write(state / 'retention.json', summary)
         return summary
-    candidates = []
+    failed, finished = [], []
     for job in jobs.iterdir():
-        failure = job / 'failure.json'
+        marker = job / 'pruned.json'
         if (not JOB_NAME.fullmatch(job.name) or job.is_symlink() or not job.is_dir()
-                or job.name in protected or failure.is_symlink() or not failure.is_file()
-                or (job / 'pruned.json').exists()
-                or any((job / name).exists() or (job / name).is_symlink() for name in RETAINED_MARKERS)):
+                or job.name in protected or marker.exists() or marker.is_symlink()):
             continue
-        failed_at = failure.stat().st_mtime
-        if now - failed_at >= FAILURE_BACKOFF_SECONDS:
-            candidates.append((failed_at, job.name, job))
-    candidates.sort()
-    for _, _, job in candidates[:limit]:
+        if any((job / name).exists() or (job / name).is_symlink() for name in RETAINED_MARKERS):
+            if published(job):
+                finished.append(job)
+            continue
+        failure = job / 'failure.json'
+        if failure.is_file() and not failure.is_symlink():
+            failed_at = failure.stat().st_mtime
+            if now - failed_at >= FAILURE_BACKOFF_SECONDS:
+                failed.append((failed_at, job.name, job))
+    finished.sort(key=created, reverse=True)
+    older = sorted(finished[keep:], key=created) if indexed else []
+    candidates = [('failed', job) for _, _, job in sorted(failed)] + [('published', job) for job in older]
+    for kind, job in candidates[:limit]:
         try:
-            record = prune_failed_job(job, now)
+            record = thin_job(job, now, kind)
         except OSError as error:
-            summary['errors'].append({'job': job.name, 'error': str(error)})
+            summary['errors'].append({'job': job.name, 'kind': kind, 'error': str(error)})
             continue
-        summary['pruned'].append(job.name)
+        summary['pruned'].append({'job': job.name, 'kind': kind})
         summary['bytes_freed'] += record['bytes_freed']
     summary['remaining'] = max(0, len(candidates) - limit)
     if summary['errors']:
@@ -722,7 +771,7 @@ def once(settings):
         # Housekeeping runs under the lease so no attempt is created or resumed
         # meanwhile. It never blocks qualification; retention.json reports it.
         try:
-            retain_failed_jobs(settings)
+            retain_jobs(settings)
         except OSError:
             pass
         active = state / 'active.json'
