@@ -41,8 +41,13 @@ Completed phases have a durable checksum seal. Transient pre-publication
 qualification failures retain their evidence and retry in a fresh attempt after
 30 minutes.
 
-Each run also thins up to 20 finished jobs, failed attempts first and then
-published jobs, oldest first:
+Each run also cleans up to 20 finished jobs: checkout-only jobs first, then
+failed attempts, then published jobs, oldest first:
+- **Checkout-only jobs** hold nothing but `repos/`. A no-change exit removes
+  its own fresh checkout before returning. Any that remain, from a failed
+  removal or an interrupted checkout, are removed outright once they are
+  older than the 30-minute window. They hold no evidence and are never
+  resumed.
 - **Failed attempts** are thinned once their failure is older than the
   30-minute window.
 - **Published jobs** are thinned once they are older than the 3 newest
