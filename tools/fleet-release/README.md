@@ -41,8 +41,8 @@ Completed phases have a durable checksum seal. Transient pre-publication
 qualification failures retain their evidence and retry in a fresh attempt after
 30 minutes.
 
-Each run also cleans up to 20 finished jobs: checkout-only jobs first, then
-failed attempts, then published jobs, oldest first:
+Each run also cleans up to 20 finished jobs in this order, oldest first
+within each kind: checkout-only, failed, interrupted, superseded, published.
 - **Checkout-only jobs** hold nothing but `repos/`. A no-change exit removes
   its own fresh checkout before returning. Any that remain, from a failed
   removal or an interrupted checkout, are removed outright once they are
@@ -50,6 +50,14 @@ failed attempts, then published jobs, oldest first:
   resumed.
 - **Failed attempts** are thinned once their failure is older than the
   30-minute window.
+- **Interrupted attempts** have `selected-source.json` but no failure record
+  or seal, because the run stopped mid-qualification. They are thinned once
+  the job is older than the 30-minute window.
+- **Superseded jobs** carry the `superseded.json` that the worker writes only
+  after confirming that publication never started. They are thinned once that
+  record is older than the 30-minute window. A job with `publication.json` or
+  `SHA256SUMS.txt`, or whose record does not say `superseded:` with no site
+  writes, is never treated as superseded.
 - **Published jobs** are thinned once they are older than the 3 newest
   published jobs other than the one the Fleet-ready index names.
 - **Thinning** removes `repos/`, `node_modules/`, `vendor/`, symlinks and
@@ -59,10 +67,11 @@ failed attempts, then published jobs, oldest first:
   what was removed.
 - **Never touched:** a job named by `active.json`, `status.json`,
   `failure.json` or the Fleet-ready index, and a sealed, proposed or
-  unverified job that never reached `published`. With no Fleet-ready index,
-  no published job is thinned.
+  unverified job that neither reached `published` nor was retired as
+  superseded. With no Fleet-ready index, no published job is thinned.
 - **Why this is safe:** only the active job is ever resumed or
-  seal-verified. Fleet rollback packages come from the current index's
+  seal-verified. Interrupted and superseded jobs wrote nothing remote, and
+  qualified plugin ZIPs are kept in the canonical package cache, not the job. Fleet rollback packages come from the current index's
   registry. Published bytes also stay in the source-host depot and on the
   GitHub release.
 - **Failing closed:** if a reference record cannot be read, the run removes

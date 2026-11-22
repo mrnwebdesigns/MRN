@@ -706,6 +706,40 @@ def created(job):
     return int(Path(job).name.rsplit('-', 1)[1])
 
 
+def present(path):
+    return path.exists() or path.is_symlink()
+
+
+def superseded_at(job):
+    """When failure() retired this job before any publication, else None.
+
+    failure() writes superseded.json only after the host receipt shows that
+    publication never started, so the job wrote nothing remote. A job with
+    any publication record is never treated as superseded here.
+    """
+    record = job / 'superseded.json'
+    if (not record.is_file() or record.is_symlink()
+            or present(job / 'publication.json') or present(job / 'SHA256SUMS.txt')):
+        return None
+    try:
+        value = read(record)
+        if (value.get('status') != 'blocked' or value.get('site_writes') is not False
+                or not str(value.get('error', '')).startswith('superseded:')):
+            return None
+        return record.stat().st_mtime
+    except (OSError, ValueError, AttributeError):
+        return None
+
+
+def interrupted(job):
+    """True for an attempt stopped after source selection but before any
+    failure record or seal. Only the job in active.json is ever resumed."""
+    selected = job / 'selected-source.json'
+    return (selected.is_file() and not selected.is_symlink()
+            and not any(present(job / name) for name in
+                        RETAINED_MARKERS + ('failure.json', 'superseded.json')))
+
+
 def published(job):
     """True only for a job whose publication completed and verified."""
     try:
@@ -721,7 +755,8 @@ def retain_jobs(settings, now=None, limit=PRUNE_LIMIT, keep=PUBLISHED_KEEP):
     """Bound disk use by finished source jobs without touching a live one.
 
     No job named by active.json, status.json, failure.json or the Fleet-ready
-    index is touched, nor a job that is sealed or proposed but not published.
+    index is touched, nor a sealed or proposed job that neither reached
+    `published` nor was retired as superseded before publication.
     A failed pre-publication attempt is thinned once its failure is older than
     the retry backoff. A published job is thinned once it is older than the
     `keep` newest other published jobs, and only while the Fleet-ready index
@@ -729,9 +764,13 @@ def retain_jobs(settings, now=None, limit=PRUNE_LIMIT, keep=PUBLISHED_KEEP):
     rollback sources are the current index, the source-host depot and on-site
     backups, so thinning an older published job cannot affect either.
     A checkout-only job (a no-change exit or an interrupted checkout) is
-    removed outright once it is older than the same window.
-    Checkout-only jobs go first, then failed attempts, then published jobs,
-    oldest first.
+    removed outright once it is older than the same window. A superseded job
+    (retired by failure() before publication started) and an interrupted
+    attempt (selected source, but no failure record or seal) are thinned once
+    older than the window. Neither wrote anything remote, and neither is in
+    active.json, so neither is resumed.
+    Order: checkout-only, failed, interrupted, superseded, then published,
+    oldest first within each kind.
     """
     state = Path(settings['state_root'])
     jobs = state / 'jobs'
@@ -747,7 +786,7 @@ def retain_jobs(settings, now=None, limit=PRUNE_LIMIT, keep=PUBLISHED_KEEP):
         summary.update(status='skipped', errors=[{'error': 'Unreadable job reference: ' + str(error)}])
         write(state / 'retention.json', summary)
         return summary
-    checkouts, failed, finished = [], [], []
+    checkouts, failed, stopped, retired, finished = [], [], [], [], []
     for job in jobs.iterdir():
         marker = job / 'pruned.json'
         if (not JOB_NAME.fullmatch(job.name) or job.is_symlink() or not job.is_dir()
@@ -757,19 +796,27 @@ def retain_jobs(settings, now=None, limit=PRUNE_LIMIT, keep=PUBLISHED_KEEP):
             if now - created(job) / 1e9 >= FAILURE_BACKOFF_SECONDS:
                 checkouts.append(job)
             continue
-        if any((job / name).exists() or (job / name).is_symlink() for name in RETAINED_MARKERS):
+        if any(present(job / name) for name in RETAINED_MARKERS):
             if published(job):
                 finished.append(job)
+            else:
+                retired_at = superseded_at(job)
+                if retired_at is not None and now - retired_at >= FAILURE_BACKOFF_SECONDS:
+                    retired.append(job)
             continue
         failure = job / 'failure.json'
         if failure.is_file() and not failure.is_symlink():
             failed_at = failure.stat().st_mtime
             if now - failed_at >= FAILURE_BACKOFF_SECONDS:
                 failed.append((failed_at, job.name, job))
+        elif interrupted(job) and now - created(job) / 1e9 >= FAILURE_BACKOFF_SECONDS:
+            stopped.append(job)
     finished.sort(key=created, reverse=True)
     older = sorted(finished[keep:], key=created) if indexed else []
     candidates = ([('checkout', job) for job in sorted(checkouts, key=created)]
                   + [('failed', job) for _, _, job in sorted(failed)]
+                  + [('interrupted', job) for job in sorted(stopped, key=created)]
+                  + [('superseded', job) for job in sorted(retired, key=created)]
                   + [('published', job) for job in older])
     for kind, job in candidates[:limit]:
         try:
