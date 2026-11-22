@@ -678,6 +678,30 @@ def thin_job(job, now, kind):
     return record
 
 
+def checkout_only(job):
+    """True for a job that holds nothing but its source checkout.
+
+    once() writes selected-source.json, failure.json or a seal as soon as an
+    attempt gets past checkout, so a job whose only entry is repos/ is a
+    no-change exit or an interrupted checkout. It is never resumed and holds
+    no evidence.
+    """
+    try:
+        entries = list(Path(job).iterdir())
+    except OSError:
+        return False
+    return (len(entries) == 1 and entries[0].name == 'repos'
+            and entries[0].is_dir() and not entries[0].is_symlink())
+
+
+def discard_checkout(job):
+    """Remove a checkout-only job folder and return the bytes freed."""
+    job = Path(job)
+    freed = tree_bytes(job)
+    shutil.rmtree(job, onexc=_remove_protected)
+    return freed
+
+
 def created(job):
     return int(Path(job).name.rsplit('-', 1)[1])
 
@@ -704,7 +728,10 @@ def retain_jobs(settings, now=None, limit=PRUNE_LIMIT, keep=PUBLISHED_KEEP):
     names a job. Only the active job is ever resumed or seal-verified, and
     rollback sources are the current index, the source-host depot and on-site
     backups, so thinning an older published job cannot affect either.
-    Failed attempts go first, then published jobs, oldest first.
+    A checkout-only job (a no-change exit or an interrupted checkout) is
+    removed outright once it is older than the same window.
+    Checkout-only jobs go first, then failed attempts, then published jobs,
+    oldest first.
     """
     state = Path(settings['state_root'])
     jobs = state / 'jobs'
@@ -720,11 +747,15 @@ def retain_jobs(settings, now=None, limit=PRUNE_LIMIT, keep=PUBLISHED_KEEP):
         summary.update(status='skipped', errors=[{'error': 'Unreadable job reference: ' + str(error)}])
         write(state / 'retention.json', summary)
         return summary
-    failed, finished = [], []
+    checkouts, failed, finished = [], [], []
     for job in jobs.iterdir():
         marker = job / 'pruned.json'
         if (not JOB_NAME.fullmatch(job.name) or job.is_symlink() or not job.is_dir()
                 or job.name in protected or marker.exists() or marker.is_symlink()):
+            continue
+        if checkout_only(job):
+            if now - created(job) / 1e9 >= FAILURE_BACKOFF_SECONDS:
+                checkouts.append(job)
             continue
         if any((job / name).exists() or (job / name).is_symlink() for name in RETAINED_MARKERS):
             if published(job):
@@ -737,10 +768,15 @@ def retain_jobs(settings, now=None, limit=PRUNE_LIMIT, keep=PUBLISHED_KEEP):
                 failed.append((failed_at, job.name, job))
     finished.sort(key=created, reverse=True)
     older = sorted(finished[keep:], key=created) if indexed else []
-    candidates = [('failed', job) for _, _, job in sorted(failed)] + [('published', job) for job in older]
+    candidates = ([('checkout', job) for job in sorted(checkouts, key=created)]
+                  + [('failed', job) for _, _, job in sorted(failed)]
+                  + [('published', job) for job in older])
     for kind, job in candidates[:limit]:
         try:
-            record = thin_job(job, now, kind)
+            if kind == 'checkout':
+                record = {'bytes_freed': discard_checkout(job)}
+            else:
+                record = thin_job(job, now, kind)
         except OSError as error:
             summary['errors'].append({'job': job.name, 'kind': kind, 'error': str(error)})
             continue
@@ -821,6 +857,12 @@ def once(settings):
                 if previous.get('material_sha256') == selected['material_sha256']:
                     value = {**previous, 'status': 'no_change', 'observed_refs': refs, 'site_writes': False}
                     write(state / 'status.json', value)
+                    # Nothing references this fresh checkout. If removal
+                    # fails, retention removes it once it leaves the window.
+                    try:
+                        discard_checkout(job)
+                    except OSError:
+                        pass
                     return value
                 write(job / 'selected-source.json', selected)
                 metadata = prepare_metadata(repo, standalone, policy, settings['qualified_packages'],

@@ -7,6 +7,7 @@ import sys
 import tempfile
 import time
 import unittest
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import coordinator
@@ -324,6 +325,79 @@ class FailedJobRetention(unittest.TestCase):
         self.assertEqual(summary['remaining'], 1)
         self.assertEqual(self.pruned(self.retain(limit=1)), [published.name])
 
+
+    def checkout(self, created_at=OLD):
+        job = self.jobs / ('c' * 20 + '-' + str(int(created_at * 1e9) + self.serial))
+        self.serial += 1
+        (job / 'repos/MRN/.git/objects').mkdir(parents=True)
+        (job / 'repos/MRN/.git/objects/pack.pack').write_bytes(b'x' * 4096)
+        (job / 'repos/MRN-plugins').mkdir()
+        (job / 'repos/MRN-plugins/escape').symlink_to(self.outside)
+        return job
+
+    def test_old_checkout_only_jobs_are_removed_without_following_links(self):
+        old = self.checkout()
+        (old / 'repos/MRN/.git/objects').chmod(0o500)
+        summary = self.retain()
+        self.assertEqual(summary['pruned'], [{'job': old.name, 'kind': 'checkout'}])
+        self.assertFalse(old.exists())
+        self.assertGreaterEqual(summary['bytes_freed'], 4096)
+        self.assertEqual(self.outside.read_text(), 'not part of any job')
+        self.assertEqual(self.retain()['pruned'], [])
+
+    def test_fresh_referenced_or_started_checkouts_are_kept(self):
+        fresh = self.checkout(created_at=NOW - 60)
+        referenced = self.checkout()
+        coordinator.write(self.state / 'status.json', {'status': 'blocked', 'evidence': str(referenced)})
+        started = self.checkout()
+        (started / 'selected-source.json').write_text('{}')
+        linked = self.checkout()
+        (linked / 'repos').rename(linked / 'repos-real')
+        (linked / 'repos').symlink_to(linked / 'repos-real', target_is_directory=True)
+        self.assertEqual(self.retain()['pruned'], [])
+        for job in (fresh, referenced, started):
+            self.assertTrue((job / 'repos/MRN/.git/objects/pack.pack').is_file())
+        self.assertTrue((linked / 'repos-real/MRN/.git/objects/pack.pack').is_file())
+
+    def test_checkouts_go_before_failed_jobs_within_the_limit(self):
+        failed = self.job()
+        checkout = self.checkout()
+        summary = self.retain(limit=1)
+        self.assertEqual(summary['pruned'], [{'job': checkout.name, 'kind': 'checkout'}])
+        self.assertEqual(self.pruned(self.retain(limit=1)), [failed.name])
+
+    def no_change(self, **patches):
+        self.state.chmod(0o700)
+        refs = {'MRN': 'b' * 40, 'MRN-qa-engine': 'c' * 40}
+        coordinator.write(self.state / 'status.json', {
+            'status': 'fleet_ready', 'material_sha256': 'm' * 64, 'site_writes': False,
+            'observed_refs': {'MRN': 'a' * 40, 'MRN-qa-engine': 'c' * 40}})
+        clone = lambda name, destination: Path(destination).mkdir(parents=True)
+        with mock.patch.object(coordinator, 'clone', side_effect=clone), \
+                mock.patch.object(coordinator, 'roster', return_value=[]), \
+                mock.patch.object(coordinator, 'remote_refs', return_value=refs), \
+                mock.patch.object(coordinator, 'dependencies'), \
+                mock.patch.object(coordinator, 'snapshot',
+                                  return_value={'refs': refs, 'material_sha256': 'm' * 64}), \
+                mock.patch.object(coordinator, 'retain_jobs'):
+            for name, value in patches.items():
+                mock.patch.object(coordinator, name, value).start()
+            try:
+                return coordinator.once({**self.settings, 'qualification': {}, 'publish': True})
+            finally:
+                mock.patch.stopall()
+
+    def test_no_change_exit_removes_its_fresh_checkout(self):
+        result = self.no_change()
+        self.assertEqual(result['status'], 'no_change')
+        self.assertEqual(list(self.jobs.iterdir()), [])
+        self.assertEqual(coordinator.read(self.state / 'status.json')['status'], 'no_change')
+
+    def test_no_change_exit_survives_a_failed_removal(self):
+        result = self.no_change(discard_checkout=mock.Mock(side_effect=PermissionError('denied')))
+        self.assertEqual(result['status'], 'no_change')
+        (job,) = self.jobs.iterdir()
+        self.assertTrue(coordinator.checkout_only(job))
 
 if __name__ == '__main__':
     unittest.main()
