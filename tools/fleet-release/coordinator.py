@@ -29,6 +29,18 @@ REPOSITORY = 'mrnwebdesigns/MRN'
 HELPER = '!gh auth git-credential'
 CONFIG_KEYS = {'schema_version', 'state_root', 'qualified_packages', 'canonical_repo',
                'source_host', 'qualification', 'publish', 'report_failures'}
+# A fresh failure for the same source vector blocks a retry for this long. The
+# retention below leaves a failed job intact for at least the same window.
+FAILURE_BACKOFF_SECONDS = 1800
+JOB_NAME = re.compile(r'[0-9a-f]{20}-[0-9]+')
+# Reproducible build output in a failed pre-publication attempt. Diagnostic
+# text outside these folders stays, because release notes cite it as evidence.
+PRUNED_DIRECTORY = re.compile(r'(?:bootstrap|platform|optional|fleet)-[ab]'
+                              r'|packages|additional-packages|public-readback')
+PRUNED_ARCHIVE = ('.zip', '.tar', '.tar.gz', '.tgz', '.phar')
+# Any of these marks a job that reached a sealed, proposed or published phase.
+RETAINED_MARKERS = ('SHA256SUMS.txt', 'publication.json', 'progress.json')
+PRUNE_LIMIT = 20
 
 
 def config(path):
@@ -558,6 +570,141 @@ def dependencies(repo, standalone, settings):
                                 'qa_engine_root': str(engine)}
 
 
+def referenced_jobs(settings):
+    """Job folders named by controller state or the owner-local Fleet index."""
+    state = Path(settings['state_root'])
+    if not settings.get('canonical_repo'):
+        raise ValueError('Fleet index location is not configured')
+    records = (state / 'active.json', state / 'status.json', state / 'failure.json',
+               Path(settings['canonical_repo']) / 'releases/fleet-ready/current.json')
+    pattern = re.compile(r'/jobs/(' + JOB_NAME.pattern + r')(?:/|$)')
+    names = set()
+
+    def visit(value):
+        if isinstance(value, dict):
+            for item in value.values():
+                visit(item)
+        elif isinstance(value, list):
+            for item in value:
+                visit(item)
+        elif isinstance(value, str):
+            names.update(pattern.findall(value))
+
+    for record in records:
+        if record.exists() or record.is_symlink():
+            # An unreadable record fails closed: the caller prunes nothing.
+            visit(read(record))
+    return names
+
+
+def tree_bytes(path):
+    path = Path(path)
+    if path.is_symlink() or not path.is_dir():
+        return path.lstat().st_size
+    total = 0
+    for root, directories, files in os.walk(path):
+        for name in directories + files:
+            total += (Path(root) / name).lstat().st_size
+    return total
+
+
+def _remove_protected(function, path, error):
+    # Clones can hold write-protected folders. Grant the owner write access to
+    # the folder inside the tree being removed and retry once; rmtree never
+    # follows symlinks, so this changes nothing outside the job.
+    if not isinstance(error, PermissionError):
+        raise error
+    os.chmod(os.path.dirname(path), 0o700)
+    if os.path.isdir(path) and not os.path.islink(path):
+        os.chmod(path, 0o700)
+    function(path)
+
+
+def prune_failed_job(job, now):
+    """Remove reproducible bulk from one failed attempt; keep its diagnostics."""
+    job = Path(job)
+    removed, freed = [], 0
+
+    def remove(path):
+        nonlocal freed
+        freed += tree_bytes(path)
+        if path.is_symlink() or not path.is_dir():
+            path.unlink()
+        else:
+            shutil.rmtree(path, onexc=_remove_protected)
+        removed.append(path.relative_to(job).as_posix())
+
+    repos = job / 'repos'
+    if repos.exists() or repos.is_symlink():
+        remove(repos)
+    for root, directories, files in os.walk(job):
+        base = Path(root)
+        for name in sorted(directories):
+            if PRUNED_DIRECTORY.fullmatch(name):
+                directories.remove(name)
+                remove(base / name)
+        for name in sorted(files):
+            # A merged attempt links packages/ to its job; once that target is
+            # gone the dangling link is listed here as a file.
+            if (name.lower().endswith(PRUNED_ARCHIVE)
+                    or (PRUNED_DIRECTORY.fullmatch(name) and (base / name).is_symlink())):
+                remove(base / name)
+    record = {'schema_version': 1, 'removed': removed, 'bytes_freed': freed,
+              'pruned_at_utc': dt.datetime.fromtimestamp(now, dt.timezone.utc).isoformat(),
+              'site_writes': False}
+    write(job / 'pruned.json', record)
+    return record
+
+
+def retain_failed_jobs(settings, now=None, limit=PRUNE_LIMIT):
+    """Bound disk use by failed attempts without touching any retained job.
+
+    Only a pre-publication failure is pruned: it has failure.json, it has no
+    sealed/published marker, no controller or Fleet index record names it, and
+    its failure is older than the retry backoff. Oldest failures go first.
+    """
+    state = Path(settings['state_root'])
+    jobs = state / 'jobs'
+    now = time.time() if now is None else now
+    summary = {'schema_version': 1, 'status': 'pass', 'pruned': [], 'bytes_freed': 0,
+               'errors': [], 'remaining': 0, 'site_writes': False,
+               'observed_at_utc': dt.datetime.fromtimestamp(now, dt.timezone.utc).isoformat()}
+    if jobs.is_symlink() or not jobs.is_dir():
+        return summary
+    try:
+        protected = referenced_jobs(settings)
+    except (OSError, ValueError) as error:
+        summary.update(status='skipped', errors=[{'error': 'Unreadable job reference: ' + str(error)}])
+        write(state / 'retention.json', summary)
+        return summary
+    candidates = []
+    for job in jobs.iterdir():
+        failure = job / 'failure.json'
+        if (not JOB_NAME.fullmatch(job.name) or job.is_symlink() or not job.is_dir()
+                or job.name in protected or failure.is_symlink() or not failure.is_file()
+                or (job / 'pruned.json').exists()
+                or any((job / name).exists() or (job / name).is_symlink() for name in RETAINED_MARKERS)):
+            continue
+        failed_at = failure.stat().st_mtime
+        if now - failed_at >= FAILURE_BACKOFF_SECONDS:
+            candidates.append((failed_at, job.name, job))
+    candidates.sort()
+    for _, _, job in candidates[:limit]:
+        try:
+            record = prune_failed_job(job, now)
+        except OSError as error:
+            summary['errors'].append({'job': job.name, 'error': str(error)})
+            continue
+        summary['pruned'].append(job.name)
+        summary['bytes_freed'] += record['bytes_freed']
+    summary['remaining'] = max(0, len(candidates) - limit)
+    if summary['errors']:
+        summary['status'] = 'partial'
+    if candidates:
+        write(state / 'retention.json', summary)
+    return summary
+
+
 def once(settings):
     os.umask(0o077)
     state = Path(settings['state_root'])
@@ -572,6 +719,12 @@ def once(settings):
             fcntl.flock(lease, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
             return {'status': 'busy', 'site_writes': False}
+        # Housekeeping runs under the lease so no attempt is created or resumed
+        # meanwhile. It never blocks qualification; retention.json reports it.
+        try:
+            retain_failed_jobs(settings)
+        except OSError:
+            pass
         active = state / 'active.json'
         if active.exists():
             progress_file = Path(read(active)['job']) / 'progress.json'
@@ -599,7 +752,7 @@ def once(settings):
             # diagnostics and every prior candidate; a failed attempt never wrote.
             vector = digest(canonical(refs))
             failures = list((state / 'jobs').glob(vector[:20] + '-*/failure.json'))
-            if failures and time.time() - max(p.stat().st_mtime for p in failures) < 1800:
+            if failures and time.time() - max(p.stat().st_mtime for p in failures) < FAILURE_BACKOFF_SECONDS:
                 return {'status': 'qualification_backoff', 'site_writes': False}
             job = state / 'jobs' / (vector[:20] + '-' + str(time.time_ns()))
             job.mkdir(parents=True)

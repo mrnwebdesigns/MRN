@@ -39,7 +39,14 @@ one-time operator action, not another step after each source merge.
 
 Completed phases have a durable checksum seal. Transient pre-publication
 qualification failures retain their evidence and retry in a fresh attempt after
-30 minutes. Unknown remote write outcomes are reconciled by the host journal;
+30 minutes. After that window, each run removes up to 20 of the oldest failed
+attempts' reproducible bulk (`repos/`, `packages/`, build output folders and
+archives). Their `failure.json`, logs and other evidence stay in place, and a
+`pruned.json` record lists what was removed. Retention skips any job that has
+`SHA256SUMS.txt`, `publication.json` or `progress.json`, and any job named by
+`active.json`, `status.json`, `failure.json` or the Fleet-ready index. If one of
+those records cannot be read, the run removes nothing; `retention.json` reports
+each run's outcome. Unknown remote write outcomes are reconciled by the host journal;
 unknown bytes block recovery. An interrupted known publication restores its
 exact previous source before any new attempt. No failed release advances the
 owner-local Fleet index. A retained public release may exist before the hosted
