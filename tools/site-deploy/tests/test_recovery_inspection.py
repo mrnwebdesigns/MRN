@@ -28,8 +28,10 @@ class RecoveryInspection(unittest.TestCase):
         config = {'backup_provider': 'updraft', 'url': 'https://site.mrndev.io', 'ready': True}
         with patch.object(atomic_runner, 'Target') as constructor:
             constructor.return_value.inspect.side_effect = ValueError('stop before backup')
+            phases = []
             with self.assertRaisesRegex(ValueError, 'stop before backup'):
-                atomic_runner.run(plan, config)
+                atomic_runner.run(plan, config, record_write=phases.append)
+            self.assertEqual([], phases)
             constructor.return_value.inspect.assert_called_once_with('child', skip_themes=True)
 
     def test_rollback_remains_available_when_forward_deployment_is_disarmed(self):
@@ -57,8 +59,16 @@ class RecoveryInspection(unittest.TestCase):
         with patch.object(atomic_runner,'Target') as target, patch.object(atomic_runner,'verify_identity'), \
                 patch.object(atomic_runner,'verify_state_privacy'), patch.object(atomic_runner,'transfer_backup') as backup:
             target.return_value.inspect.return_value={'state':pointer,'git':False}
-            backup.side_effect=ValueError('remote backup not verified')
-            with self.assertRaisesRegex(ValueError,'remote backup not verified'):atomic_runner.run(plan,config)
+            phases = []
+
+            def failed_backup(_target):
+                self.assertEqual(['backup-requested'], phases)
+                raise ValueError('remote backup not verified')
+
+            backup.side_effect = failed_backup
+            with self.assertRaisesRegex(ValueError, 'remote backup not verified'):
+                atomic_runner.run(plan, config, record_write=phases.append)
+            self.assertEqual(['backup-requested'], phases)
             backup.assert_called_once_with(target.return_value)
             target.return_value.shell.assert_not_called()
             target.return_value.controller.assert_not_called()

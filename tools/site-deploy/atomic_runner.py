@@ -38,7 +38,7 @@ def transfer_backup(target):
     return receipts[0]
 
 
-def run(plan, c):
+def run(plan, c, record_write=None):
     # First adoption is an explicit qualification operation. Routine deployments
     # require the readiness switch plus the exact existing release pointer.
     native = c.get('host_provider') == 'kinsta' and c['backup_provider'] == 'kinsta'
@@ -94,7 +94,11 @@ def run(plan, c):
     check_order(order, before.get('deployment_order'), rollback=bool(plan.get('rollback_to')))
     if not plan.get('rollback_to'):
         require_current_push(order, os.environ)
+    if record_write:
+        record_write('backup-requested')
     backup = transfer_backup(target)
+    if record_write:
+        record_write('backup-verified')
     job = c['state_dir'] + '/jobs/' + str(time.time_ns())
     check(job, r'/[A-Za-z0-9_./-]+', 'private job path')
     target.shell('umask 077\nmkdir -p ' + shlex.quote(job) + '\n')
@@ -132,6 +136,8 @@ def run(plan, c):
                               'manual_approval': c.get('manual_backup_approval', '')}
     if not plan.get('rollback_to'):
         require_current_push(order, os.environ)
+    if record_write:
+        record_write('controller-requested')
     process = target.controller(job + '/host_controller.py', envelope)
     receipts = [json.loads(line[11:]) for line in process.stdout.splitlines() if line.startswith('MRN_RESULT=')]
     if len(receipts) != 1:
@@ -139,6 +145,8 @@ def run(plan, c):
     receipt = {**receipts[0], 'transfer_backup': backup, 'private_job': job}
     receipt['request_binding'] = {key: remote_plan.get(key) for key in
         ('repository', 'environment', 'url', 'root', 'slug', 'source_sha', 'expected_current', 'deployment_order')}
+    if record_write and receipt['status'] == 'public-verified':
+        record_write('activation-verified')
     return receipt
 
 

@@ -56,6 +56,24 @@ class ReleaseRequests(unittest.TestCase):
             with self.event_file():
                 self.assertEqual(result, request.deployment_selection(self.env))
 
+    def test_main_push_qualifies_exact_event_when_unarmed_or_superseded(self):
+        self.run['display_title'] = f'MRN request refs/heads/main {SHA} false false'
+        env = {**self.env, 'QUALIFY_MAIN':'true'}
+        for flags in ({'AUTO_DEV_AFTER':''}, {'DEV_MAIN_ENABLED':'false'}, {}):
+            with self.event_file(), patch.object(request, 'resolve', return_value='b'*40):
+                result = request.deployment_selection({**env, **flags})
+            self.assertEqual((SHA, 'qualify', 'qualification'),
+                             (result['source_sha'], result['target'], result['kind']))
+        with self.event_file(), patch.object(request, 'resolve', return_value=SHA):
+            self.assertEqual('dev', request.deployment_selection(env)['target'])
+
+    def test_main_with_separate_dev_preview_authenticates_but_only_qualifies(self):
+        self.run['display_title'] = f'MRN request refs/heads/main {SHA} false false'
+        env = {**self.env, 'QUALIFY_MAIN':'true', 'AUTO_DEV_BRANCH':'phase-2', 'DEV_MAIN_ENABLED':'false'}
+        with self.event_file(), patch.object(release.subprocess, 'check_output', return_value=(
+                self.template.replace(b'branches: [main]', b'branches: [main, phase-2]'))):
+            self.assertEqual('qualify', request.deployment_selection(env)['target'])
+
     def test_github_run_name_is_display_title_when_run_name_is_configured(self):
         # Observed in real annotated-tag signal 37232112105, not a guessed envelope.
         self.run['name'] = self.run['display_title']
