@@ -62,8 +62,11 @@ Pull-request code gates use the same changed-file boundary. A PR that modifies
 the QA workflow or policy may test those files without inheriting unrelated
 monorepo findings.
 
-The separate `Stack promotion drift` workflow runs after merges to `main`, on a
-daily schedule, and on explicit dispatch. It is not a pull-request task gate.
+The separate `Stack promotion drift` workflow runs when `main` changes release
+version or manifest metadata, on a daily schedule, and on explicit dispatch. It
+is not a pull-request task gate. Ordinary source merges first queue automatic
+qualification and lock generation. They do not produce a drift-failure email
+merely because that replacement lock is still being prepared.
 Its failure records visible release debt and preserves the machine-readable
 inventory while isolated feature work continues normally. Platform-required
 standalone repositories are compared with their merged default branches through
