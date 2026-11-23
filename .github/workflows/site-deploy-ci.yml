@@ -63,6 +63,12 @@ jobs:
           path: ${{ runner.temp }}/promotion-fixture.tar
           if-no-files-found: error
           retention-days: 3
+      # Artifact IDs are returned as soon as the upload completes, but GitHub's
+      # download service can take a few seconds to index a newly-created ID.
+      # Wait before the consumer assertion so this test exercises identity,
+      # rather than intermittently racing that indexing step.
+      - name: Await fixture artifact availability
+        run: sleep 10
       - name: Retrieve the fixture by immutable artifact ID
         uses: actions/download-artifact@v4
         with:
