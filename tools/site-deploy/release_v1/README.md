@@ -76,3 +76,21 @@ Follow `next_command` in status, substituting the original trusted request and a
 | Rollback after a content attempt | Keep the evidence and use the site's approved compensation or provider restore runbook. A shared whole-database restore could overwrite unrelated WordPress writes. Record the external recovery and reconcile the target before re-enrollment. |
 
 Treat a stopped local web server, upstream 502, host saturation or unstable performance samples as a failed preflight. Stabilize Local Hub and rerun preflight before continuing.
+
+## Simple execution and reviewed non-Git sources
+
+See [the shared deployment front door](../../../docs/MRN-DEPLOYMENT-QUICKSTART.md).
+`mrn-site-release deploy --adapter ... --request ... --archive ...` runs only
+remaining authorized phases. Repeating it after proof failure resumes proof;
+repeating a completed run performs no writes. Recovery remains explicit.
+`mrn-site-release snapshot` imports an explicit reviewed file list into a private
+source snapshot without changing or Git-enrolling the client site. Its real
+commit and file hashes feed the same QA/build/pack gates.
+
+New adapters call `qa_engine_proof` with a protected pinned QA Engine installation
+and manifest-bound request. Provider adapters own the cache-layer inventory and
+purge transport, not Playwright or device tests. The reference HostAdapter now
+requires `qa_engine_root`, a Path `proof_output`, and a provider
+`release_proof_request(request, release, urls)` method. Existing installed adapters
+are not replaced automatically. Legacy header-only proof examples remain for
+protocol compatibility; they do not qualify the new device/asset contract.

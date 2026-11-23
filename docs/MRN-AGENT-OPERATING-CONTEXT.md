@@ -322,6 +322,15 @@ Never treat LOCAL, `mrndev.io` review, and production environments as interchang
 
 ## 7) Deployment safety (global standards)
 
+Start every deployment task with [MRN deployment front door](MRN-DEPLOYMENT-QUICKSTART.md).
+Resolve the site's actual Git or reviewed-file route and exact Dev/staging/Live
+target. New provider enrollment is limited to WP Engine, SiteGround and Kinsta.
+Use QA Engine for device proof, the shared release controller for orchestration,
+and a separately verified backup before writes. A PR is not required to request
+a release. An explicit emergency Live hotfix may bypass Dev/staging acceptance
+while preserving artifact, identity, backup, public proof and rollback gates.
+Shared source publication does not establish per-site enrollment.
+
 - Backup-before-mutation:
   - For MRN-managed shared development/review, staging, and production WordPress sites, no mutation that can affect the site's WordPress runtime, database, code, files, configuration, plugins, themes, MU plugins, WordPress core, or customer-visible state should begin until the applicable MRN backup gate has successfully passed.
   - LOCAL runtimes are explicitly exempt from the remote-backup gate. They use Git for code rollback and may use an explicitly requested, temporary local database snapshot for destructive data work.

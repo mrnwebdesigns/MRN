@@ -69,6 +69,10 @@ on:
         required: false
       DEPLOY_KINSTA_API_TOKEN:
         required: false
+      DEPLOY_WPENGINE_API_USERNAME:
+        required: false
+      DEPLOY_WPENGINE_API_PASSWORD:
+        required: false
 permissions:
   contents: read
   actions: read
