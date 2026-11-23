@@ -24,7 +24,7 @@ const readAbilities = new Set([
   'get-stack-runtime-report', 'read-stack-brand-palette', 'qualify-stack-site', 'get-stack-deployment-agent-status', 'get-google-fonts-status',
   'inspect-backup-retention-policy', 'inspect-code-file', 'get-code-operation',
   'get-content-policy', 'inspect-content', 'get-content-operation', 'get-content-migration',
-  'list-content-records', 'read-content-record',
+  'list-content-records', 'read-content-record', 'read-content-core',
   'authorize-email-address-audit', 'audit-email-address',
 ].map(name => `mrn-mainwp/${name}-v1`)));
 readAbilities.add('mainwp/get-site-knowledge-v1');

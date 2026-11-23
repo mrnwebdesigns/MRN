@@ -27,6 +27,7 @@ const mapped = new Map([
   [toolNames.contentPolicy, 'inspect_content_record'], [toolNames.contentInspect, 'inspect_content_record'],
   [toolNames.contentTargetPolicy, 'inspect_content_record'],
   [toolNames.contentRecords, 'search_website_content'], [toolNames.contentRecord, 'read_website_content'],
+  [toolNames.contentCore, 'read_website_content'],
   [toolNames.contentPrepare, 'prepare_content_edit'], [toolNames.contentMigration, 'prepare_content_edit'],
   [toolNames.contentApprove, 'approve_operation'], [toolNames.contentExecute, 'execute_operation'], [toolNames.contentRollback, 'prepare_rollback'],
   ...Object.values(portfolioSections).map(name => [name, 'read_portfolio_details']),

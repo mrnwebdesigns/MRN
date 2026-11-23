@@ -135,7 +135,8 @@ export class Operations {
     };
     try { return await websiteDetails(session, section, this.readOnlySurface, observe); } finally { await session.close(); }
   }
-  async readContent(actor, { website, environment, kind, recordId, search, maximum, page, statuses }) {
+  async readContent(actor, { website, environment, kind, recordId, search, maximum, page, statuses, view = 'core_and_acf' }) {
+    requireThat(['core', 'core_and_acf'].includes(view) && (view !== 'core' || recordId !== undefined), 'CONTENT_INPUT', 'Core-only view requires one exact record.');
     await this.discovery?.refresh(actor);
     const target = this.registry.resolve(actor, website, environment);
     const session = await this.session(actor, target, 'read');
@@ -144,11 +145,12 @@ export class Operations {
       this.store.audit(actor, target, '', 'content:read', 'attempted');
       const authorize = async () => { this.registry.current(actor, target, 'read'); await this.verifyStaff?.(actor); };
       let result;
-      if (await session.supports(recordId === undefined ? toolNames.contentRecords : toolNames.contentRecord)) {
+      if (await session.supports(recordId === undefined ? toolNames.contentRecords : view === 'core' ? toolNames.contentCore : toolNames.contentRecord)) {
         requireThat(actor.identityProvider === 'google-oauth2' && this.verifyStaff, 'AUTH_REQUIRED', 'Structured content reads require live verified MRN Google membership.');
         await authorize();
-        result = await readManagedContent(session, site, { kind, recordId, search, maximum, page, statuses });
+        result = await readManagedContent(session, site, { kind, recordId, search, maximum, page, statuses, view });
       } else {
+        requireThat(view !== 'core', 'CAPABILITY_MISSING', 'Explicit core-only reads require the signed MainWP core-read capability; no combined-read or REST fallback was attempted.');
         // Only absent capability permits the existing native REST reader. A
         // failed or denied management call never switches routes/credentials.
         requireThat(!this.readOnlySurface && this.content, 'CONTENT_UNAVAILABLE', 'The approved structured MainWP reader does not expose this content operation.');

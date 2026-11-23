@@ -22,7 +22,7 @@ test('email audit discovery distinguishes configured workflow from filtered nati
 });
 
 test('capability inventory distinguishes backend counts, connected workflows and unknown tools', async t => {
-  const f = setup(); t.after(f.close); f.state.contentManagement = true;
+  const f = setup(); t.after(f.close); f.state.contentManagement = true; f.state.coreContent = true;
   const original = f.client.listTools.bind(f.client);
   f.client.listTools = async () => ({ tools: [...(await original()).tools, { name: 'future_mutator_v1', inputSchema: { type: 'object' }, annotations: { readOnlyHint: true } }] });
   const report = await f.service.capabilities(actor);
@@ -30,6 +30,7 @@ test('capability inventory distinguishes backend counts, connected workflows and
   assert.equal(report.backendExposedTools, Object.values(toolNames).length); // v2 absent, plus one unknown tool.
   assert.equal(report.capabilities.find(c => c.capability === 'future_mutator_v1').integration, 'integration_required');
   assert.equal(report.capabilities.find(c => c.capability === toolNames.contentRecord).workflow, 'read_website_content');
+  assert.equal(report.capabilities.find(c => c.capability === toolNames.contentCore).workflow, 'read_website_content');
   assert.equal(report.content.acf, 'structured_read_available_editing_requires_qualification');
   assert.equal(report.content.posts, 'structured_mainwp');
   assert.equal(report.content.pages, 'structured_mainwp');

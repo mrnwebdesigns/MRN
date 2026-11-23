@@ -14,7 +14,8 @@ export class FixtureMainwp {
   }
   async listTools() { return { tools: [...Object.values(toolNames), ...(this.data.directory ? ['get_sites_basic_v1'] : [])].filter(n => !(this.data.missing || []).includes(n)
     && (n !== toolNames.contentTargetPolicy || this.data.contentTargetPolicy === true)
-    && (![toolNames.contentRecords, toolNames.contentRecord].includes(n) || this.data.contentManagement === true)).map(name => ({ name, inputSchema: { type: 'object', properties: {} } })) }; }
+    && (![toolNames.contentRecords, toolNames.contentRecord].includes(n) || this.data.contentManagement === true)
+    && (n !== toolNames.contentCore || this.data.coreContent === true)).map(name => ({ name, inputSchema: { type: 'object', properties: {} } })) }; }
   async callTool({ name, arguments: a }) {
     this.data.calls.push(name);
     if (name === this.data.fail) throw new Error('DOWNSTREAM FAILURE private-token-sentinel');

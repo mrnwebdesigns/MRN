@@ -1,0 +1,223 @@
+{
+  "schema": 1,
+  "adapter": "wordpress-core-v1",
+  "limits": {
+    "maximum_result_bytes": 196608,
+    "transport_chunk_bytes": 32768,
+    "maximum_transport_chunks": 16,
+    "transport_deadline_seconds": 120
+  },
+  "abilities": {
+    "read-content-core-v1": {
+      "description": "Read complete native WordPress properties for one exact authorized existing post/page. ACF definitions, values and raw post metadata are not requested or inspected.",
+      "role": "reader",
+      "callback": "read_core",
+      "input": {
+        "type": "object",
+        "properties": {
+          "site_id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "site_url": {
+            "type": "string",
+            "format": "uri",
+            "maxLength": 512
+          },
+          "post_type": {
+            "type": "string",
+            "enum": [
+              "post",
+              "page"
+            ]
+          },
+          "post_id": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "site_id",
+          "site_url",
+          "post_type",
+          "post_id"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "$ref": "#/$defs/read",
+        "$defs": {
+          "core": {
+            "type": "object",
+            "properties": {
+              "post_title": {
+                "type": "string",
+                "maxLength": 196608
+              },
+              "post_name": {
+                "type": "string",
+                "maxLength": 196608
+              },
+              "post_content": {
+                "type": "string",
+                "maxLength": 196608
+              },
+              "post_excerpt": {
+                "type": "string",
+                "maxLength": 196608
+              },
+              "post_status": {
+                "type": "string",
+                "maxLength": 30,
+                "enum": [
+                  "publish",
+                  "draft",
+                  "pending",
+                  "private",
+                  "future"
+                ]
+              }
+            },
+            "required": [
+              "post_title",
+              "post_name",
+              "post_content",
+              "post_excerpt",
+              "post_status"
+            ],
+            "additionalProperties": false
+          },
+          "runtime": {
+            "type": "object",
+            "properties": {
+              "wordpress": {
+                "type": "string",
+                "maxLength": 40
+              },
+              "php_minor": {
+                "type": "string",
+                "maxLength": 10,
+                "pattern": "^[0-9]+\\.[0-9]+$"
+              },
+              "stylesheet": {
+                "type": "string",
+                "maxLength": 191
+              },
+              "template": {
+                "type": "string",
+                "maxLength": 191
+              },
+              "plugins_sha256": {
+                "type": "string",
+                "maxLength": 64,
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "wordpress",
+              "php_minor",
+              "stylesheet",
+              "template",
+              "plugins_sha256"
+            ],
+            "additionalProperties": false
+          },
+          "snapshot": {
+            "type": "object",
+            "properties": {
+              "scope": {
+                "type": "string",
+                "enum": [
+                  "wordpress-core-v1"
+                ]
+              },
+              "site_id": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "site_url": {
+                "type": "string",
+                "format": "uri",
+                "maxLength": 512
+              },
+              "post_id": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "post_type": {
+                "type": "string",
+                "enum": [
+                  "post",
+                  "page"
+                ]
+              },
+              "core": {
+                "$ref": "#/$defs/core"
+              },
+              "modified_gmt": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "post_record_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "runtime": {
+                "$ref": "#/$defs/runtime"
+              }
+            },
+            "required": [
+              "scope",
+              "site_id",
+              "site_url",
+              "post_id",
+              "post_type",
+              "core",
+              "modified_gmt",
+              "post_record_sha256",
+              "runtime"
+            ],
+            "additionalProperties": false
+          },
+          "paths": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 512,
+              "pattern": "^/(?!/)"
+            },
+            "maxItems": 100
+          },
+          "read": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "enum": [
+                  true
+                ]
+              },
+              "snapshot": {
+                "$ref": "#/$defs/snapshot"
+              },
+              "snapshot_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "affected_paths": {
+                "$ref": "#/$defs/paths"
+              }
+            },
+            "required": [
+              "success",
+              "snapshot",
+              "snapshot_sha256",
+              "affected_paths"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    }
+  }
+}

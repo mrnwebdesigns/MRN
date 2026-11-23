@@ -6,6 +6,15 @@ The hosted email-address audit candidate reuses the native MCP engine with
 individual Google authorization and private report resources. See its
 [source composition, workflow and deployment gates](deploy/EMAIL-AUDIT-REVIEW.md).
 
+The opt-in core reader uses `read_website_content` with `view: "core"` and one
+exact page/post ID. It returns the five supported native core properties, record
+type and modification time without ACF discovery. The result explicitly marks
+ACF `not_requested` and carries a separate read-only snapshot scope; it does not
+qualify an edit or claim complete visible-page content. Omitted `view` or
+`view: "core_and_acf"` preserves the existing combined reader and its explicit
+unsupported-ACF failures. A missing core capability fails closed without fallback.
+This source change does not deploy or activate the owner pilot.
+
 ## Team experience and acceptance
 
 The team-facing product must be: **add the MRN plugin in ChatGPT,

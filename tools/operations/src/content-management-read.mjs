@@ -2,10 +2,13 @@ import { z } from 'zod';
 import { requireThat } from './contracts.mjs';
 import { managementSchemas, validateManagementRead } from './content-management-contract.mjs';
 import { toolNames } from './mainwp.mjs';
+import { readCoreContent } from './content-core-read.mjs';
 
 const kinds = z.enum(['posts', 'pages']);
-export async function readManagedContent(session, site, { kind, recordId, search = '', maximum = 20, page = 1, statuses }) {
+export async function readManagedContent(session, site, { kind, recordId, search = '', maximum = 20, page = 1, statuses, view = 'core_and_acf' }) {
   kinds.parse(kind);
+  z.enum(['core', 'core_and_acf']).parse(view);
+  if (view === 'core') return readCoreContent(session, site, { kind, recordId });
   const post_type = kind === 'pages' ? 'page' : 'post';
   const base = { site_id: site.id, site_url: site.url, post_type };
   if (recordId !== undefined) {
