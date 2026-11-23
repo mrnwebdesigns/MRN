@@ -483,7 +483,6 @@ jobs:
       - name: Run runtime QA
         id: runtime
         if: success() && inputs.mode == 'deploy'
-        continue-on-error: ${{ inputs.target == 'dev' && !(inputs.qualify_dev || inputs.require_promotion_qa) }}
         run: |
           set -euo pipefail
           performance=never

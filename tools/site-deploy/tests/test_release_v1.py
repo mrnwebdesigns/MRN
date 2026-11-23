@@ -264,6 +264,33 @@ class Phases(Project):
         deploy_remaining(self.controller, self.request, self.archive)
         self.assertEqual(self.adapter.calls, before)
 
+    def test_deploy_does_not_report_green_after_a_verified_rollback(self):
+        from release_v1.cli import deploy_remaining
+        self.activate()
+        self.adapter.fail_proof = [Blocked('Wrong stylesheet')]
+        with self.assertRaises(Blocked):
+            self.run_phase('proof')
+        self.run_phase('rollback', confirmed=self.target.origin)
+        before = list(self.adapter.calls)
+        with self.assertRaisesRegex(Blocked, 'requested release was not verified'):
+            deploy_remaining(self.controller, self.request, self.archive)
+        self.assertEqual(self.adapter.calls, before)
+
+    def test_deploy_cli_does_not_report_green_after_abort(self):
+        import contextlib
+        import io
+        from release_v1 import cli
+        self.run_phase('preflight')
+        self.run_phase('abort', confirmed=self.target.origin)
+        before = list(self.adapter.calls)
+        with patch.object(cli, 'configuration', return_value=self.controller), \
+                patch.object(cli, 'request_from', return_value=self.request), \
+                contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            result = cli.main(['deploy', '--adapter', '/protected/site.py', '--request', '/private/request.json',
+                               '--archive', str(self.archive)])
+        self.assertEqual(1, result)
+        self.assertEqual(self.adapter.calls, before)
+
     def test_proof_failure_retries_only_proof_then_scoped_migration(self):
         self.activate()
         self.adapter.fail_proof = [Blocked('Wrong stylesheet')]
