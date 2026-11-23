@@ -248,6 +248,22 @@ class Phases(Project):
         for phase in ('preflight', 'backup', 'activate'):
             self.assertEqual(self.run_phase(phase)['phases'][phase]['result'], 'passed')
 
+    def test_one_command_deploy_resumes_only_remaining_phases_and_completed_replay_writes_nothing(self):
+        from release_v1.cli import deploy_remaining
+        self.adapter.fail_proof = [Blocked('Wrong stylesheet')]
+        with self.assertRaisesRegex(Blocked, 'retry only proof'):
+            deploy_remaining(self.controller, self.request, self.archive)
+        self.assertEqual(self.controller.status()['next'], 'proof')
+        result = deploy_remaining(self.controller, self.request, self.archive)
+        self.assertEqual(result['lock'], 'none')
+        self.assertEqual(self.adapter.calls.count('activate'), 1)
+        self.assertEqual(self.adapter.calls.count('backup:deploy'), 1)
+        self.assertEqual(self.adapter.calls.count('proof'), 2)
+        self.assertEqual(self.adapter.calls.count('migrate'), 1)
+        before = list(self.adapter.calls)
+        deploy_remaining(self.controller, self.request, self.archive)
+        self.assertEqual(self.adapter.calls, before)
+
     def test_proof_failure_retries_only_proof_then_scoped_migration(self):
         self.activate()
         self.adapter.fail_proof = [Blocked('Wrong stylesheet')]
@@ -474,6 +490,15 @@ class Phases(Project):
         self.assertEqual(list(self.journal.root.iterdir()), [])
         with self.assertRaisesRegex(Blocked, 'exact target authorization'):
             self.controller.plan(replace(self.request, target=replace(self.target, site_id='other')), self.archive)
+
+    def test_unprotected_adapter_is_rejected_before_import(self):
+        from release_v1.cli import configuration
+        public = self.root / 'public-adapter'
+        public.mkdir(mode=0o755)
+        script = public / 'adapter.py'
+        script.write_text('raise RuntimeError("must never execute")')
+        with self.assertRaisesRegex(Blocked, 'owner-only'):
+            configuration(script)
 
     def test_cli_status_is_read_only_and_reports_actionable_next_command(self):
         script = self.root / 'fixture_adapter.py'

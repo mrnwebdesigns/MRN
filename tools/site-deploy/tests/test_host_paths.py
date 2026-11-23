@@ -44,6 +44,13 @@ class ProviderIdentity(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     qualify_provider(dict(plan, **change), wordpress)
 
+    def test_staging_is_explicit_for_the_three_enrolled_providers(self):
+        from host_paths import activation_environment
+        for provider in ('wpengine', 'siteground', 'kinsta'):
+            activation_environment('staging', provider)
+        for provider in ('cloudpanel', 'nexcess', 'unknown'):
+            with self.assertRaises(ValueError): activation_environment('staging', provider)
+
     def test_kinsta_staging_uses_only_the_php_readable_deployment_sibling(self):
         plan = dict(environment='staging', host_provider='kinsta', backup_provider='kinsta',
                     url='https://stg-example-migration.kinsta.cloud', root='/www/example_123/public',

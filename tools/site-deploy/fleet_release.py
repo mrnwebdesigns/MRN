@@ -5,32 +5,18 @@ import json
 import os
 from pathlib import Path
 import shlex
-import stat
 import sys
 
 sys.dont_write_bytecode = True
 
-from release_v1.cli import configuration, request_from
+from release_v1.cli import configuration, request_from, protected, deploy_remaining
 from release_v1.controller import PHASES
 from release_v1.proof import Blocked
 
 
-def protected(path, *, key=False):
-    path = Path(path)
-    if not path.is_absolute() or path.resolve() != path:
-        raise Blocked('Use the absolute physical path of a protected runner file')
-    info = path.stat()
-    owner = os.geteuid()
-    parent = path.parent.stat()
-    if (not stat.S_ISREG(info.st_mode) or info.st_uid != owner or info.st_mode & (0o077 if key else 0o022)
-            or parent.st_uid != owner or parent.st_mode & 0o077):
-        raise Blocked('Runner configuration and receipt key require an owner-only directory')
-    return path
-
-
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, prog='mrn fleet release')
-    parser.add_argument('operation', choices=('plan', 'status', *PHASES, 'recover', 'rollback', 'abort'))
+    parser.add_argument('operation', choices=('plan', 'status', 'deploy', *PHASES, 'recover', 'rollback', 'abort'))
     parser.add_argument('--site', required=True, help='exact enrolled origin')
     parser.add_argument('--adapter', required=True, help='protected runner configuration')
     parser.add_argument('--key-file', help='owner-only receipt key file when no key is injected')
@@ -55,6 +41,10 @@ def main(argv=None):
             request = request_from(args.request)
             if args.operation == 'plan':
                 result = controller.plan(request, args.archive)
+            elif args.operation == 'deploy':
+                if not args.archive:
+                    raise Blocked('The original immutable archive is required')
+                result = deploy_remaining(controller, request, args.archive, args.confirm_site)
             else:
                 result = controller.run(args.operation, request, args.archive,
                                         confirmed_origin=args.confirm_site)

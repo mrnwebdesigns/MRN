@@ -1,5 +1,9 @@
 # Site Git, deployment, and server transitions
 
+Start with the [MRN deployment front door](MRN-DEPLOYMENT-QUICKSTART.md) for Git,
+reviewed non-Git packages, Dev/staging, Live and emergency hotfix routes.
+
+
 Status: shared automatic Dev workflow available for individually qualified environments.
 Use `preflight` until the target has passed the onboarding evidence below and
 `DEPLOY_READY=1` has been recorded. A provider connection or an installed workflow

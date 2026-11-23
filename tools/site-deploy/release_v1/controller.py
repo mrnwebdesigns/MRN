@@ -330,7 +330,8 @@ class Controller:
         for number in range(1, self.proof_attempts + 1):
             self.event(state, 'proof', 'running', attempt=number, urls=urls)
             try:
-                self.check_public(self.adapter.proof(request, state['desired'], urls), state['desired'], urls)
+                evidence = self.adapter.proof(request, state['desired'], urls)
+                self.check_public(evidence, state['desired'], urls)
             except Throttled as error:
                 now = self.clock()
                 delay = retry_delay(error.retry_after, now)
@@ -346,7 +347,8 @@ class Controller:
                 self.event(state, 'proof', 'failed', attempt=number, urls=urls, diagnostic=self.diagnostic(error))
                 raise Blocked('Browser proof failed; retry only proof after correcting the failure') from error
             else:
-                self.event(state, 'proof', 'passed', attempt=number, urls=urls, observed_release=state['desired'])
+                self.event(state, 'proof', 'passed', attempt=number, urls=urls, observed_release=state['desired'],
+                           evidence_sha256=sha256(canonical(evidence)), qa_engine_sha=evidence.get('qa_engine_sha'))
                 return
 
     @staticmethod

@@ -8,7 +8,7 @@ from urllib.parse import urlsplit
 
 
 def activation_environment(environment, provider):
-    if environment not in ('dev', 'live') and not (environment == 'staging' and provider == 'kinsta'):
+    if environment not in ('dev', 'live') and not (environment == 'staging' and provider in ('wpengine', 'siteground', 'kinsta')):
         raise ValueError('No qualified activation adapter for this environment/provider')
 
 

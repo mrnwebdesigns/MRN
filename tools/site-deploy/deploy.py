@@ -117,6 +117,13 @@ class Target:
     def __init__(self, c):
         self.c = c
         self.native_backup = None
+        self.delivery_cache = None
+        if c.get('host_provider') == 'wpengine':
+            from wpengine import WPEngine
+            self.delivery_cache = WPEngine(os.environ.get('DEPLOY_WPENGINE_API_USERNAME', ''),
+                                          os.environ.get('DEPLOY_WPENGINE_API_PASSWORD', ''),
+                                          os.environ.get('DEPLOY_WPENGINE_INSTALL_ID', ''))
+            self.delivery_cache.identity(c)
         self.password = None
         if c.get('backup_provider') == 'kinsta':
             from kinsta import adapter

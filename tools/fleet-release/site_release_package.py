@@ -17,7 +17,7 @@ RUNTIME = (
     'release_v1/wordpress.php',
 )
 EXAMPLES = ('adapter.py', 'header-proof.mjs', 'hero-v1.php', 'migrations.json')
-SUPPORT = ('backup.php', 'cache_policy.py')
+SUPPORT = ('backup.php', 'cache_policy.py', 'source_snapshot.py', 'wpengine.py')
 MEMBERS = (*RUNTIME, *SUPPORT, *('release_v1/examples/' + name for name in EXAMPLES))
 
 
