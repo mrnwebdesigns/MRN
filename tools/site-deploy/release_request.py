@@ -72,7 +72,7 @@ def current(environ, request):
             raise ValueError('Dev source must include current main; merge main before releasing')
 
 
-def signal(environ, run):
+def signal(environ, run, qualify_main=False):
     """Called only after deployment_request authenticates the workflow_run envelope."""
     title = run.get('display_title', '')
     if not title.startswith(PREFIX):
@@ -83,16 +83,19 @@ def signal(environ, run):
     if not match or match[2] != run['head_sha'] or match[4] != 'false':
         raise ValueError('Invalid release signal identity')
     branch = environ.get('AUTO_DEV_BRANCH', 'main')
-    expected = (Path(__file__).with_name('site-push.yml.template').read_bytes()
-                .replace(b'branches: [main]', ('branches: [' + branch + ']').encode()))
+    template = Path(__file__).with_name('site-push.yml.template').read_bytes()
+    expected = [template.replace(b'branches: [main]', ('branches: [' + branch + ']').encode())]
+    if qualify_main and branch != 'main':
+        expected.append(template.replace(b'branches: [main]', ('branches: [main, ' + branch + ']').encode()))
     actual = subprocess.check_output(['git', 'show', run['head_sha'] + ':.github/workflows/site-push.yml'])
-    if actual != expected:
+    if actual not in expected:
         raise ValueError('Source signal differs from the pinned no-secret workflow template')
     ref = match[1]
     if ref.startswith('refs/heads/'):
-        if ref != 'refs/heads/' + branch:
+        source_branch = ref.removeprefix('refs/heads/')
+        if source_branch != branch and not (qualify_main and source_branch == 'main'):
             raise ValueError('Unapproved source branch signal')
-        return {'kind': 'branch', 'source_sha': match[2], 'source_branch': branch, 'target': 'dev'}
+        return {'kind': 'branch', 'source_sha': match[2], 'source_branch': source_branch, 'target': 'dev'}
     tag = ref.removeprefix('refs/tags/')
     target = re.fullmatch(TAG, tag)
     if not target or match[3] != 'true':

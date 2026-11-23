@@ -115,7 +115,8 @@ class EnrollmentFlow(unittest.TestCase):
         import yaml
         permissions = yaml.load(wrapper, Loader=yaml.BaseLoader)['permissions']
         workflow = yaml.load((enrollment.TOOLS.parents[1]/'.github/workflows/site-deploy.yml').read_text(), Loader=yaml.BaseLoader)
-        self.assertEqual(workflow['permissions'], permissions)
+        self.assertEqual({**workflow['permissions'], 'statuses': 'write'}, permissions)
+        self.assertEqual({'statuses': 'write'}, workflow['jobs']['publish-qualification']['permissions'])
         self.assertNotIn('live',json.dumps([v for v in self.gh.calls if isinstance(v,tuple) and v[0]=='variable']))
     def test_source_qa_failure_never_creates_or_publishes_repository(self):
         self.mocks[1].side_effect=ValueError('QA failed')

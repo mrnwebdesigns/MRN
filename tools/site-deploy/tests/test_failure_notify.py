@@ -75,6 +75,7 @@ class FailureEmail(unittest.TestCase):
         self.assertNotIn('Bcc', payload)
         self.assertIn(SHA, payload['TextBody'])
         self.assertIn('MRN source acceptance', payload['TextBody'])
+        self.assertIn('No remote site write in this attempt', payload['TextBody'])
         self.assertIn('/attempts/2/jobs?', api.requests[0].full_url)
         self.assertIn('/actions/runs/123', payload['TextBody'])
         self.assertEqual('not_yet_verified', result['recipient_server_delivery'])

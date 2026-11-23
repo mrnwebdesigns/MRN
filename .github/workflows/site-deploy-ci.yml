@@ -18,7 +18,87 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+  actions: read
 jobs:
+  promotion-contract:
+    # Fixtures only. This job has no site environment or deployment credentials.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Exercise passing and blocked Live promotion contracts
+        run: |
+          python3 -m unittest discover -s tools/site-deploy/tests -p test_live_promotion.py -v
+          python3 -m unittest discover -s tools/site-deploy/tests -p test_live_hotfix.py -v
+      - name: Build disposable release archive
+        env:
+          PYTHONPATH: tools/site-deploy/tests
+        run: |
+          npm ci --ignore-scripts --prefix tools/site-deploy
+          python3 - <<'PY'
+          import os, shutil
+          from pathlib import Path
+          from test_release import ReleaseArtifactContract as Fixture
+
+          Fixture.setUpClass()
+          try:
+              root = Path(os.environ['RUNNER_TEMP'])
+              shutil.copyfile(Fixture.archive, root / 'promotion-fixture.tar')
+              with open(os.environ['GITHUB_ENV'], 'a') as env:
+                  print('FIXTURE_SOURCE=' + Fixture.sha, file=env)
+                  print('FIXTURE_SHA256=' + Fixture.expected, file=env)
+          finally:
+              Fixture.tearDownClass()
+          PY
+      - name: Retain immutable disposable archive
+        id: fixture
+        uses: actions/upload-artifact@v4
+        with:
+          name: promotion-ci-fixture-attempt-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/promotion-fixture.tar
+          if-no-files-found: error
+          retention-days: 3
+      # Artifact IDs are returned as soon as the upload completes, but GitHub's
+      # download service can take a few seconds to index a newly-created ID.
+      # Wait before the consumer assertion so this test exercises identity,
+      # rather than intermittently racing that indexing step.
+      - name: Await fixture artifact availability
+        run: sleep 10
+      - name: Retrieve the fixture by immutable artifact ID
+        uses: actions/download-artifact@v4
+        with:
+          artifact-ids: ${{ steps.fixture.outputs.artifact-id }}
+          github-token: ${{ github.token }}
+          run-id: ${{ github.run_id }}
+          path: ${{ runner.temp }}/promotion-readback
+          merge-multiple: true
+      - name: Verify original bytes and reject a changed archive
+        env:
+          PYTHONPATH: tools/site-deploy
+        run: |
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          from verify_release import verify
+
+          archive = Path(os.environ['RUNNER_TEMP']) / 'promotion-readback/promotion-fixture.tar'
+          args = (os.environ['FIXTURE_SHA256'], os.environ['FIXTURE_SOURCE'], '.', 'child')
+          assert verify(archive, *args)['status'] == 'artifact-verified'
+          with archive.open('ab') as stream:
+              stream.write(b'changed')
+          try:
+              verify(archive, *args)
+          except ValueError as error:
+              assert 'checksum differs' in str(error)
+          else:
+              raise AssertionError('Live archive verifier admitted different bytes')
+          print('GitHub artifact ID round trip preserved the exact archive and rejected changed bytes.')
+          PY
   contract:
     # Match the browser runtime used by the reusable deployment workflow.
     runs-on: ubuntu-24.04

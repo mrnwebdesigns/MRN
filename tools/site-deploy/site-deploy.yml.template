@@ -10,15 +10,23 @@ on:
       target:
         description: Destination
         type: choice
-        options: [dev, live, both]
+        options: [dev, staging, live, both]
         default: dev
         required: true
       mode:
-        description: Read-only preflight or authorized deployment
+        description: Preflight, qualification, deployment, or emergency Live hotfix
         type: choice
-        options: [preflight, deploy]
+        options: [preflight, qualify, deploy, hotfix]
         default: preflight
         required: true
+      hotfix_sha:
+        description: Hotfix only. Confirm the complete reviewed main SHA for this Live deploy
+        type: string
+        default: ''
+      hotfix_reason:
+        description: Hotfix only. One-line emergency reason retained with the deployed artifact
+        type: string
+        default: ''
       qualify_dev:
         description: Operator-only first Dev qualification
         type: boolean
@@ -28,14 +36,19 @@ on:
         type: string
         default: ''
       source_branch:
-        description: Same-repository branch (Dev only); Live/Both require main
+        description: Same-repository branch for Dev. Staging, Live and Both require main
         type: string
         default: main
         required: true
+      promotion_evidence_id:
+        description: Optional GitHub Dev or staging evidence artifact ID for Live
+        type: string
+        default: ''
 
 permissions:
   contents: read
   actions: read
+  statuses: write
 
 jobs:
   deploy:
@@ -47,9 +60,11 @@ jobs:
       target: ${{ inputs.target || 'dev' }}
       mode: ${{ inputs.mode || 'deploy' }}
       source_branch: ${{ inputs.source_branch || 'main' }}
+      promotion_evidence_id: ${{ inputs.promotion_evidence_id || '' }}
       release_requests_after: ${{ vars.MRN_RELEASE_REQUESTS_AFTER }}
       live_enabled: true
       qualify_dev: ${{ inputs.qualify_dev || false }}
       auto_dev_branch: main
       auto_dev_after: ${{ vars.MRN_AUTO_DEV_AFTER }}
+      qualify_main: true
     secrets: inherit

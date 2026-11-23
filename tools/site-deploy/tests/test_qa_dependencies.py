@@ -19,7 +19,8 @@ class QADependencyContract(unittest.TestCase):
                 data = yaml.load((root / '.github/workflows' / workflow).read_text(), Loader=yaml.BaseLoader)
                 steps = data['jobs'][job]['steps']
                 install = next(i for i, step in enumerate(steps) if step.get('name') == 'Install source QA dependencies')
-                accept = next(i for i, step in enumerate(steps) if step.get('name') == 'MRN source acceptance')
+                acceptance = 'Run runtime QA' if job == 'deploy' else 'MRN source acceptance'
+                accept = next(i for i, step in enumerate(steps) if step.get('name') == acceptance)
                 self.assertLess(install, accept)
                 self.assertIn('bash "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/install-qa-python.sh"', steps[install]['run'])
                 self.assertNotIn('pip install semgrep', steps[install]['run'])

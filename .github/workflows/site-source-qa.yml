@@ -15,6 +15,12 @@ on:
       source_sha:
         description: Exact source commit that passed the blocking QA job
         value: ${{ jobs.qa.outputs.source_sha }}
+      report_sha256:
+        description: Checksum of the exact successful source QA report
+        value: ${{ jobs.qa.outputs.report_sha256 }}
+      artifact_id:
+        description: Immutable artifact ID of the source QA report
+        value: ${{ jobs.qa.outputs.artifact_id }}
 permissions:
   contents: read
 jobs:
@@ -24,6 +30,8 @@ jobs:
     timeout-minutes: 20
     outputs:
       source_sha: ${{ steps.accepted.outputs.source_sha }}
+      report_sha256: ${{ steps.accepted.outputs.report_sha256 }}
+      artifact_id: ${{ steps.evidence.outputs.artifact-id }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -106,12 +114,17 @@ jobs:
         env:
           SOURCE_SHA: ${{ inputs.source_sha }}
         run: |
+          set -euo pipefail
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
-          echo "source_sha=$SOURCE_SHA" >> "$GITHUB_OUTPUT"
+          test -s "$RUNNER_TEMP/site-source-qa.md"
+          printf 'source_sha=%s\nreport_sha256=%s\n' "$SOURCE_SHA" \
+            "$(sha256sum "$RUNNER_TEMP/site-source-qa.md" | cut -d ' ' -f 1)" >> "$GITHUB_OUTPUT"
       - name: Retain source acceptance evidence
         if: always()
+        id: evidence
         uses: actions/upload-artifact@v4
         with:
-          name: site-source-qa-${{ inputs.source_sha }}
+          name: site-source-qa-${{ inputs.source_sha }}-attempt-${{ github.run_attempt }}
           path: ${{ runner.temp }}/site-source-qa.md
           if-no-files-found: warn
+          retention-days: 90

@@ -7,13 +7,12 @@ import os
 import re
 import urllib.request
 import urllib.parse
-from datetime import datetime, timezone
 
 from resolve_source import resolve
 import release_request
 
 
-def source_request(environ, payload=None):
+def source_request(environ, payload=None, qualify_main=False):
     """Authenticate the no-secret signal; never consume its code or artifacts.
 
     The downstream workflow and its configuration must come from main. GitHub's
@@ -45,23 +44,21 @@ def source_request(environ, payload=None):
         raise ValueError('Invalid source-push commit')
     if run.get('conclusion') != 'success':
         return None
-    request = release_request.signal(environ, run)
+    request = release_request.signal(environ, run, qualify_main=qualify_main)
     if request and request['kind'] in ('tag', 'disabled'):
         if request['kind'] == 'disabled':
             return None
         request['source_run_number'] = run['run_number']
         return request
+    main_signal = (request and request['source_branch'] == 'main') or (
+        not request and run.get('head_branch') == 'main')
+    qualification = {'kind':'qualification', 'source_sha':sha, 'source_branch':'main', 'target':'qualify'}
+    if qualify_main and main_signal and (branch != 'main' or environ.get('DEV_MAIN_ENABLED') == 'false'):
+        return qualification
     if not request and run.get('head_branch') != branch:
         return None
-    cutoff = environ.get('AUTO_DEV_AFTER', '')
-    if not cutoff:
-        return None
-    def utc_time(value):
-        if not re.fullmatch(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z', value):
-            raise ValueError('Automatic Dev cutoff and signal time must be UTC timestamps')
-        return datetime.strptime(value, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
-    if utc_time(run.get('created_at', '')) <= utc_time(cutoff):
-        return None
+    if not release_request.after(run.get('created_at', ''), environ.get('AUTO_DEV_AFTER', '')):
+        return qualification if qualify_main and main_signal else None
     request = request or {'kind':'branch', 'source_sha':sha, 'source_branch':branch, 'target':'dev'}
     if 'run_number' in run:
         request['source_run_number'] = run['run_number']
@@ -73,10 +70,31 @@ def source_push(environ, payload=None):
     return request['source_sha'] if request and request['kind'] == 'branch' else None
 
 
+def require_hotfix(environ, source_sha, target):
+    """Bind the exception to one explicitly confirmed main dispatch."""
+    if ((environ.get('GITHUB_EVENT_NAME'), environ.get('GITHUB_REF'), environ.get('SOURCE_BRANCH'), target)
+            != ('workflow_dispatch', 'refs/heads/main', 'main', 'live')
+            or environ.get('LIVE_ENABLED', 'true') != 'true'):
+        raise ValueError('Hotfix requires a manual Live dispatch from main on a Live-enabled site')
+    with open(environ['GITHUB_EVENT_PATH']) as handle:
+        inputs = json.load(handle).get('inputs', {})
+    if (not re.fullmatch(r'[0-9a-f]{40}', source_sha) or source_sha == '0' * 40
+            or inputs.get('mode') != 'hotfix' or inputs.get('target') != 'live'
+            or inputs.get('hotfix_sha') != source_sha or environ.get('GITHUB_SHA') != source_sha):
+        raise ValueError('Hotfix confirmation must match the full reviewed main dispatch SHA')
+    reason = inputs.get('hotfix_reason', '')
+    if not isinstance(reason, str) or not reason.strip() or not reason.isprintable() or len(reason) > 500:
+        raise ValueError('Hotfix requires a one-line emergency reason of up to 500 characters')
+    actor = environ.get('GITHUB_ACTOR', '')
+    if not re.fullmatch(r'[A-Za-z0-9_-]+(?:\[bot\])?', actor):
+        raise ValueError('Hotfix requires the GitHub dispatch actor')
+    return {'actor': actor, 'reason': reason.strip()}
+
+
 def selection(event, ref, sha, target, mode, branch, dev_main_enabled=True):
     if ref != 'refs/heads/main' or event not in ('push', 'workflow_dispatch'):
         raise ValueError('Only main pushes and manual workflows from main may deploy')
-    if target not in ('dev', 'live', 'both') or mode not in ('preflight', 'deploy'):
+    if target not in ('dev', 'staging', 'live', 'both') or mode not in ('preflight', 'deploy', 'qualify', 'hotfix'):
         raise ValueError('Invalid deployment selection')
     if event == 'push':
         if (target, mode, branch) != ('dev', 'deploy', 'main'):
@@ -87,8 +105,18 @@ def selection(event, ref, sha, target, mode, branch, dev_main_enabled=True):
             return None
         # Never resolve a moving branch tip in place of the triggering commit.
         return sha
-    if not dev_main_enabled and (target == 'both' or (target == 'dev' and branch == 'main')):
+    if mode == 'qualify' and branch != 'main':
+        raise ValueError('Qualification-only dispatch requires main')
+    if mode == 'hotfix' and target != 'live':
+        raise ValueError('Hotfix is a Live-only dispatch')
+    if target != 'dev' and branch != 'main':
+        raise ValueError('Staging, Live and Both require reviewed main')
+    if not dev_main_enabled and mode != 'qualify' and (target == 'both' or (target == 'dev' and branch == 'main')):
         raise ValueError('This site protects a separate Dev preview; select its feature branch')
+    if branch == 'main':
+        if not re.fullmatch('[0-9a-f]{40}', sha) or sha == '0' * 40:
+            raise ValueError('Invalid dispatch commit')
+        return sha
     return resolve(target, branch, ref)
 
 
@@ -98,6 +126,12 @@ def github_order(environ, source_sha, target, mode):
     event = environ.get('GITHUB_EVENT_NAME')
     if environ.get('GITHUB_REF') != 'refs/heads/main' or event not in ('push', 'workflow_run', 'workflow_dispatch'):
         raise ValueError('Untrusted deployment trigger')
+    hotfix = None
+    if mode == 'deploy':
+        if environ.get('MODE') == 'hotfix':
+            hotfix = require_hotfix(environ, source_sha, target)
+        elif environ.get('MRN_SOURCE_QA_SHA') != source_sha:
+            raise ValueError('Deployment requires QA for the selected source SHA')
     intent = None
     signal = None
     if event == 'workflow_run':
@@ -123,6 +157,8 @@ def github_order(environ, source_sha, target, mode):
     workflow = workflow_ref.split('@', 1)[0]
     order = {'repository': repository, 'workflow': workflow, 'source_sha': source_sha,
              'event': event, 'run_id': environ.get('GITHUB_RUN_ID', '')}
+    if hotfix:
+        order['hotfix'] = hotfix
     if event == 'workflow_run':
         order['source_branch'] = signal['source_branch']
         if 'source_run_number' in signal:
@@ -158,6 +194,11 @@ def validate_order(order):
         if order['event'] != 'workflow_run':
             raise ValueError('Release tags require the trusted workflow-run receiver')
         release_request.validate_intent(order['release_intent'], order['source_sha'])
+    if 'hotfix' in order:
+        details = order['hotfix']
+        if (order['event'] != 'workflow_dispatch' or not isinstance(details, dict)
+                or set(details) != {'actor', 'reason'} or not all(isinstance(v, str) and v for v in details.values())):
+            raise ValueError('Invalid emergency deployment order')
     if 'source_run_number' in order and (type(order['source_run_number']) is not int or order['source_run_number'] < 1):
         raise ValueError('Invalid source signal sequence')
 
@@ -178,7 +219,8 @@ def check_order(incoming, previous, rollback=False):
         return  # Recovery in this same serialized deployment job.
     if incoming['run_number'] == previous['run_number'] and (
             incoming['run_id'] != previous['run_id'] or incoming['source_sha'] != previous['source_sha']
-            or incoming.get('release_intent') != previous.get('release_intent')):
+            or incoming.get('release_intent') != previous.get('release_intent')
+            or incoming.get('hotfix') != previous.get('hotfix')):
         raise ValueError('A rerun must retain its original run and source identity')
     if (incoming.get('source_run_number') and previous.get('source_run_number')
             and incoming['source_run_number'] < previous['source_run_number']):
@@ -188,7 +230,9 @@ def check_order(incoming, previous, rollback=False):
 
 
 def require_current_push(order, environ):
-    if not order or order['event'] not in ('push', 'workflow_run'):
+    if not order:
+        return
+    if order['event'] == 'workflow_dispatch' and environ.get('SOURCE_BRANCH') != 'main':
         return
     validate_order(order)
     if order.get('release_intent'):
@@ -204,37 +248,70 @@ def require_current_push(order, environ):
     with urllib.request.urlopen(request, timeout=30) as response:
         current = json.load(response)['object']['sha']
     if current != order['source_sha']:
-        raise ValueError('Push was superseded by a newer branch commit; no deployment allowed')
+        raise ValueError('Source was superseded by a newer branch commit; no deployment allowed')
+
+
+def require_safe_retry(environ, target):
+    """Use previous attempt metadata to stop blind retries of target writes."""
+    run_id = environ['GITHUB_RUN_ID']
+    attempt = environ['GITHUB_RUN_ATTEMPT']
+    if target not in ('dev', 'staging', 'live') or any(not re.fullmatch(r'[1-9][0-9]*', n) for n in (run_id, attempt)):
+        raise ValueError('Invalid deployment retry identity')
+    job_name = f'Site target ({target})'
+    for prior in range(1, int(attempt)):
+        result = release_request.api(environ, f'actions/runs/{run_id}/attempts/{prior}/jobs?per_page=100')
+        jobs = result['jobs']
+        if result['total_count'] > len(jobs):
+            raise ValueError('Cannot establish the prior write boundary from GitHub job metadata')
+        for job in jobs:
+            if job['name'].split(' / ')[-1] != job_name:
+                continue
+            if job['status'] == 'completed' and job.get('conclusion') == 'skipped':
+                continue
+            steps = {step['name']: step['conclusion'] for step in job['steps']}
+            no_write = (steps.get('Preflight or deploy exact child-theme payload') == 'skipped'
+                        or steps.get('Confirm no remote site write') == 'success')
+            if job['status'] != 'completed' or not no_write:
+                raise ValueError(f'Attempt {prior} may have written to {target}. Reconcile target and rollback evidence before starting a new deployment.')
 
 
 def select_request(environ):
-    branch = environ['SOURCE_BRANCH']
-    if environ['GITHUB_EVENT_NAME'] == 'workflow_run':
-        if (environ['TARGET'], environ['MODE']) != ('dev', 'deploy'):
-            raise ValueError('Source pushes may deploy only Dev')
-        branch = environ.get('AUTO_DEV_BRANCH', 'main')
-        sha = source_push(environ)
-        if branch == 'main' and environ.get('DEV_MAIN_ENABLED', 'true') != 'true':
-            sha = None
-        if sha and resolve('dev', branch, environ['GITHUB_REF']) != sha:
-            print('Source push has been superseded; skipping deployment')
-            sha = None
-    else:
-        sha = selection(environ['GITHUB_EVENT_NAME'], environ['GITHUB_REF'], environ['GITHUB_SHA'],
-                        environ['TARGET'], environ['MODE'], branch,
-                        environ.get('DEV_MAIN_ENABLED', 'true') == 'true')
-    return sha, branch
+    request = deployment_selection(environ)
+    if request['kind'] == 'tag':
+        return None, environ.get('AUTO_DEV_BRANCH', 'main')
+    return request['source_sha'], request['source_branch']
 
 
 def deployment_selection(environ):
     if environ['GITHUB_EVENT_NAME'] == 'workflow_run':
-        request = source_request(environ)
-        if request and request['kind'] == 'tag':
+        qualify_main = environ.get('QUALIFY_MAIN') == 'true'
+        if (environ['TARGET'], environ['MODE']) != ('dev', 'deploy'):
+            raise ValueError('Source pushes may deploy only Dev unless an explicit release tag is approved')
+        request = source_request(environ, qualify_main=qualify_main)
+        if request and request['kind'] in ('tag', 'qualification'):
             return request
-    sha, branch = select_request(environ)
+        branch = environ.get('AUTO_DEV_BRANCH', 'main')
+        if request and (branch != 'main' or environ.get('DEV_MAIN_ENABLED', 'true') == 'true'):
+            if resolve('dev', branch, environ['GITHUB_REF']) == request['source_sha']:
+                return request
+            # Retain qualification for every main event. A superseded event
+            # must never use the new tip or dispatch a target.
+            if qualify_main and request['source_branch'] == 'main':
+                return {**request, 'kind':'qualification', 'target':'qualify'}
+        return {'source_sha':None, 'source_branch':branch, 'target':'dev', 'kind':'branch'}
+    if (environ['GITHUB_EVENT_NAME'] == 'workflow_dispatch' and environ['MODE'] == 'deploy'
+            and environ['SOURCE_BRANCH'] != 'main' and environ.get('GITHUB_RUN_ATTEMPT', '1') != '1'):
+        raise ValueError('Start a new feature deployment request or rerun only the failed jobs to retain the original SHA')
     target = environ['TARGET']
-    if target != 'dev' and environ.get('LIVE_ENABLED', 'true') != 'true':
+    branch = environ['SOURCE_BRANCH']
+    sha = selection(environ['GITHUB_EVENT_NAME'], environ['GITHUB_REF'], environ['GITHUB_SHA'],
+                    target, environ['MODE'], branch, environ.get('DEV_MAIN_ENABLED', 'true') == 'true')
+    if environ['MODE'] == 'qualify':
+        return {'source_sha':sha, 'source_branch':branch, 'target':'qualify', 'kind':'qualification'}
+    if target in ('live', 'both') and environ.get('LIVE_ENABLED', 'true') != 'true':
         raise ValueError('This site is Dev-only; Live/Both are unavailable')
+    if environ['MODE'] == 'hotfix':
+        require_hotfix(environ, sha, target)
     return {'source_sha':sha, 'source_branch':branch, 'target':target, 'kind':'branch'}
 
 
