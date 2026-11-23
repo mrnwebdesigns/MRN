@@ -3,11 +3,12 @@ const fs = require( 'node:fs' ), path = require( 'node:path' ), { execFileSync }
 const { chromium } = require( process.env.MRN_PLAYWRIGHT_MODULE || 'playwright' ), axe = require( process.env.MRN_AXE_MODULE || 'axe-core' );
 const root = path.resolve( __dirname, '../..' );
 const base = fs.readFileSync( root + '/style.css', 'utf8' ), css = fs.readFileSync( root + '/css/presentation.css', 'utf8' ), controller = fs.readFileSync( root + '/js/presentation.js', 'utf8' );
-const fixture = execFileSync( process.env.MRN_PHP_BINARY || 'php', [ root + '/tests/php/content-list-project-carousel-filters.php', '--render' ], { encoding: 'utf8' } );
-assert( fixture.includes( 'data-project-taxonomy="industry"' ), 'The PHP fixture renders the real filter controls' );
+const render = ( ...args ) => execFileSync( process.env.MRN_PHP_BINARY || 'php', [ root + '/tests/php/content-list-project-carousel-filters.php', '--render', ...args ], { encoding: 'utf8' } );
+const fixtures = { taxonomy: render(), custom: render( '--param=sector' ), reserved: render( '--param=page_id' ) };
+assert( fixtures.taxonomy.includes( 'data-project-param="industry"' ) && fixtures.custom.includes( 'data-project-param="sector"' ) && ! fixtures.reserved.includes( 'page_id' ), 'The PHP fixtures render the real filter controls' );
 const HEADER = 80;
 // The page asks for smooth document scrolling, so an instant jump proves the script does not animate.
-const shell = ( before = '' ) => `<!doctype html><html lang="en"><head><title>Our work</title><style>${ base }\n${ css }</style><style>html{scroll-behavior:smooth}body{margin:0;font:16px/1.5 Arial,sans-serif;color:#172033;background:#fff}.site-header{position:sticky;top:0;height:${ HEADER }px;background:#fff;z-index:5}.spacer{height:1600px}.after{height:2400px}</style></head><body><header class="site-header" id="masthead"><a href="/">Home</a></header><main><h1>Our work</h1><div class="spacer"><img src="/slow.png" alt="" width="10" height="10"></div>${ fixture }<div class="after"></div></main>${ before }<script>${ controller }</script></body></html>`;
+const shell = ( before = '', fixture = fixtures.taxonomy ) => `<!doctype html><html lang="en"><head><title>Our work</title><style>${ base }\n${ css }</style><style>html{scroll-behavior:smooth}body{margin:0;font:16px/1.5 Arial,sans-serif;color:#172033;background:#fff}.site-header{position:sticky;top:0;height:${ HEADER }px;background:#fff;z-index:5}.spacer{height:1600px}.after{height:2400px}</style></head><body><header class="site-header" id="masthead"><a href="/">Home</a></header><main><h1>Our work</h1><div class="spacer"><img src="/slow.png" alt="" width="10" height="10"></div>${ fixture }<div class="after"></div></main>${ before }<script>${ controller }</script></body></html>`;
 
 ( async () => {
 	const browser = await chromium.launch( { headless: true } );
@@ -24,7 +25,7 @@ const shell = ( before = '' ) => `<!doctype html><html lang="en"><head><title>Ou
 		} );
 		const page = await context.newPage();
 		const open = async ( query, options = {} ) => {
-			html = shell( options.before || '' ); slow = options.slow || 0;
+			html = shell( options.before || '', fixtures[ options.fixture || 'taxonomy' ] ); slow = options.slow || 0;
 			await page.goto( 'https://example.test/our-work/' + query, { waitUntil: options.waitUntil || 'load' } );
 			await page.waitForSelector( '[data-mrn-projects-mounted]', { state: 'attached' } );
 			if ( ! options.waitUntil ) { await page.evaluate( () => new Promise( ( resolve ) => requestAnimationFrame( () => requestAnimationFrame( resolve ) ) ) ); }
@@ -71,6 +72,17 @@ const shell = ( before = '' ) => `<!doctype html><html lang="en"><head><title>Ou
 			s = await state();
 			expect( 0 === s.checked.length && 9 === s.visible && '' === s.status && 0 === s.scrollY, query + ' changes nothing' );
 		}
+
+		// An editor-named link parameter replaces the taxonomy name.
+		await open( '?sector=retail', { fixture: 'custom' } );
+		s = await state();
+		expect( 'retail' === s.checked.join() && 'Showing 4 of 4 projects' === s.status && HEADER === s.top, 'A custom link parameter (?sector=retail) preselects, announces and scrolls' );
+		await open( '?industry=retail', { fixture: 'custom' } );
+		s = await state();
+		expect( 0 === s.checked.length && '' === s.status && 0 === s.scrollY, 'With a custom name the taxonomy name no longer preselects' );
+		await open( '?page_id=retail&industry=retail', { fixture: 'reserved' } );
+		s = await state();
+		expect( 0 === s.checked.length && '' === s.status && 0 === s.scrollY, 'A refused reserved name leaves that dropdown without a link parameter' );
 
 		// Second dropdown uses its own taxonomy name.
 		await open( '?feature=blog' );

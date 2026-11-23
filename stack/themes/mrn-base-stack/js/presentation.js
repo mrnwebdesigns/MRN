@@ -792,15 +792,15 @@
 				restored = Number.isFinite( saved.scroll ) ? saved.scroll : true;
 			}
 		} catch ( ignore ) {}
-		// A linked filter (?industry=non-profit,healthcare, named after the dropdown's taxonomy) checks those terms.
+		// A linked filter (?industry=non-profit,healthcare, using the dropdown's link parameter) checks those terms.
 		// Return-to-list state wins; unknown slugs, and terms with no record in this list, are ignored.
 		if ( false === restored ) {
 			try {
 				const params = new URLSearchParams( window.location.search );
 				groups.forEach( ( group ) => {
-					const taxonomy = group.element.getAttribute( 'data-project-taxonomy' );
-					if ( ! taxonomy || ! params.has( taxonomy ) ) { return; }
-					const wanted = params.getAll( taxonomy ).join( ',' ).split( ',' ).map( ( slug ) => slug.trim() ).filter( Boolean );
+					const name = group.element.getAttribute( 'data-project-param' );
+					if ( ! name || ! params.has( name ) ) { return; }
+					const wanted = params.getAll( name ).join( ',' ).split( ',' ).map( ( slug ) => slug.trim() ).filter( Boolean );
 					group.boxes.forEach( ( box ) => { if ( wanted.includes( box.value ) ) { box.checked = true; group.active.add( box.value ); } } );
 				} );
 			} catch ( ignore ) {}
