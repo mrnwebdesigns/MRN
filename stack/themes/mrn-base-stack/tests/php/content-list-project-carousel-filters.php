@@ -88,6 +88,7 @@ $controls = mrn_base_stack_get_project_filter_controls( $filters, 'case_study' )
 $expect( str_contains( $controls, 'data-project-controls hidden' ) && str_contains( $controls, 'data-project-tab="logo"' ) && str_contains( $controls, 'data-project-tab="web"' ) && ! str_contains( $controls, 'website-maintenance' ), 'Tabs are hidden until enhanced and skip excluded terms' );
 $expect( str_contains( $controls, 'Retail &amp; Co' ) && str_contains( $controls, 'data-project-group="one"' ) && str_contains( $controls, 'data-project-group="two"' ) && str_contains( $controls, 'data-project-reset disabled' ), 'Dropdowns escape labels and reset starts disabled' );
 $expect( 2 === substr_count( $controls, 'aria-expanded="false"' ) && ! str_contains( $controls, 'aria-expanded="true"' ), 'Both dropdown triggers start collapsed' );
+$expect( str_contains( $controls, 'data-project-group="one" data-project-taxonomy="industry"' ) && str_contains( $controls, 'data-project-group="two" data-project-taxonomy="feature"' ) && ! str_contains( $controls, 'data-project-taxonomy="service"' ), 'Each dropdown names its taxonomy for ?<taxonomy>=slug preselection; tabs do not' );
 $expect( '' === mrn_base_stack_get_project_filter_controls( array( 'record_presentation' => 'projects' ), 'case_study' ) && '' === mrn_base_stack_get_project_filter_controls( array( 'record_presentation' => 'projects' ), 'case_study', true ), 'Unfiltered rows output nothing' );
 $more = mrn_base_stack_get_project_filter_controls( $filters, 'case_study', true );
 $expect( str_contains( $more, 'data-project-more' ) && str_contains( $more, 'role="status"' ) && str_contains( $more, 'hidden' ), 'Load more and the status region follow the list' );
@@ -104,4 +105,20 @@ $plain = mrn_base_stack_render_project_list_item( $post, array( 'project_setting
 $expect( ! str_contains( $plain, 'title-tail' ) && ! str_contains( $plain, 'data-project-card' ), 'Unfiltered cards keep their existing markup' );
 $GLOBALS['title'] = 'Solo'; $solo = mrn_base_stack_render_project_list_item( $post, array( 'project_settings' => $filters, 'link_items' => true ) );
 $expect( str_contains( $solo, '<span class="mrn-project__title-tail">Solo<svg' ), 'A one-word title keeps its arrow with the word' );
+// --render: a filtered list fixture for tests/js/content-list-project-filters-url.cjs (twelve records, nine shown first).
+if ( in_array( '--render', $argv ?? array(), true ) ) {
+	$GLOBALS['all_terms']['industry'] = array( $term( 'healthcare', 'Healthcare', 3 ), $term( 'non-profit', 'Non-Profit', 5 ), $term( 'retail', 'Retail & Co', 4 ), $term( 'elsewhere', 'Only Elsewhere', 2 ) );
+	$cycle = array( 'non-profit', 'retail', 'healthcare', 'non-profit', 'retail', 'non-profit', 'healthcare', 'retail', 'non-profit', 'retail', 'healthcare', 'non-profit' );
+	$contract = mrn_base_stack_get_project_list_contract( $filters );
+	$attributes = ' id="our-work" class="mrn-content-list-row ' . esc_attr( implode( ' ', $contract['classes'] ) ) . '"';
+	foreach ( $contract['attributes'] as $name => $value ) { $attributes .= ' ' . $name . '="' . esc_attr( $value ) . '"'; }
+	$items = '';
+	foreach ( $cycle as $index => $slug ) {
+		$post = new WP_Post(); $post->ID = 100 + $index; $GLOBALS['title'] = 'Project ' . ( $index + 1 ) . ' ' . $slug;
+		$GLOBALS['terms'] = array( 'service' => array( $term( 0 === $index % 2 ? 'web' : 'logo', 'Service' ) ), 'industry' => array( $term( $slug, $slug ) ), 'feature' => array( $term( 'blog', 'Blog' ) ) );
+		$items .= mrn_base_stack_render_project_list_item( $post, array( 'project_settings' => $filters, 'link_items' => true, 'item_index' => $index ) );
+	}
+	echo '<section' . $attributes . '><h2>Our work</h2>' . mrn_base_stack_get_project_filter_controls( $filters, 'case_study' ) . '<ul class="mrn-content-list-row__items">' . $items . '</ul>' . mrn_base_stack_get_project_filter_controls( $filters, 'case_study', true ) . '</section>';
+	exit;
+}
 echo json_encode( array( 'result' => 'passed', 'assertions' => $checks, 'scope' => 'Real source helpers with isolated WordPress boundaries; registered runtime, browser and complete-page acceptance remain separate.' ), JSON_PRETTY_PRINT ) . "\n";

@@ -4,6 +4,8 @@
  *
  * Every queried record stays in the document. Controls are revealed only by the
  * front-end enhancement script, so the unfiltered list works without JavaScript.
+ * A query parameter named after a dropdown's taxonomy (?industry=non-profit,healthcare)
+ * checks those terms on load and brings the list into view; unknown slugs are ignored.
  *
  * @package mrn-base-stack
  */
@@ -51,11 +53,11 @@ function mrn_base_stack_get_project_filter_fields( $seed ) {
 		$make( 'tabs_excluded', 'text', array( 'instructions' => 'Term slugs, separated by commas, kept out of the tab row (their records still appear under All).' ) ),
 		$make( 'tabs_all_label', 'text', array( 'default_value' => 'All' ) ),
 		$make( 'tabs_label', 'text', array( 'default_value' => 'Filter by service' ) ),
-		$make( 'one_taxonomy', 'text', array( 'instructions' => 'Taxonomy for the first dropdown. Blank hides it.' ) ),
+		$make( 'one_taxonomy', 'text', array( 'instructions' => 'Taxonomy for the first dropdown. Blank hides it. Links can preselect its terms with the taxonomy name, for example ?industry=non-profit,healthcare.' ) ),
 		$make( 'one_label', 'text', array( 'default_value' => 'Industries' ) ),
 		$make( 'one_title', 'text', array( 'default_value' => 'Filter by Industry' ) ),
 		$make( 'one_terms', 'select', array( 'choices' => array( 'all' => 'Match Any Term', 'first' => 'Match First Term Only' ), 'default_value' => 'all' ) ),
-		$make( 'two_taxonomy', 'text', array( 'instructions' => 'Taxonomy for the second dropdown. Blank hides it.' ) ),
+		$make( 'two_taxonomy', 'text', array( 'instructions' => 'Taxonomy for the second dropdown. Blank hides it. Links can preselect its terms with the taxonomy name, for example ?industry=non-profit,healthcare.' ) ),
 		$make( 'two_label', 'text', array( 'default_value' => 'Features' ) ),
 		$make( 'two_title', 'text', array( 'default_value' => 'Filter by Feature' ) ),
 		$make( 'two_terms', 'select', array( 'choices' => array( 'all' => 'Match Any Term', 'first' => 'Match First Term Only' ), 'default_value' => 'all' ) ),
@@ -157,7 +159,8 @@ function mrn_base_stack_get_project_filter_controls( array $row, $post_type, $af
 		}
 		$id     = 'mrn-project-filter-' . $part . '-' . wp_unique_id();
 		$title  = mrn_base_stack_get_project_filter_label( $row, $part . '_title', '' );
-		$html  .= '<div class="mrn-project-filters__group" data-project-group="' . esc_attr( $part ) . '"><button type="button" class="mrn-project-filters__trigger" aria-expanded="false" aria-controls="' . esc_attr( $id ) . '"><span class="mrn-project-filters__badge" data-project-badge hidden aria-hidden="true">0</span><span>' . esc_html( mrn_base_stack_get_project_filter_label( $row, $part . '_label', 'one' === $part ? __( 'Industries', 'mrn-base-stack' ) : __( 'Features', 'mrn-base-stack' ) ) ) . '</span><svg class="mrn-project-filters__chevron" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg></button>';
+		// The taxonomy name is also the query parameter that preselects this group, as in ?industry=non-profit,healthcare.
+		$html  .= '<div class="mrn-project-filters__group" data-project-group="' . esc_attr( $part ) . '" data-project-taxonomy="' . esc_attr( $taxonomy ) . '"><button type="button" class="mrn-project-filters__trigger" aria-expanded="false" aria-controls="' . esc_attr( $id ) . '"><span class="mrn-project-filters__badge" data-project-badge hidden aria-hidden="true">0</span><span>' . esc_html( mrn_base_stack_get_project_filter_label( $row, $part . '_label', 'one' === $part ? __( 'Industries', 'mrn-base-stack' ) : __( 'Features', 'mrn-base-stack' ) ) ) . '</span><svg class="mrn-project-filters__chevron" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg></button>';
 		$html  .= '<div class="mrn-project-filters__panel" id="' . esc_attr( $id ) . '" role="group" aria-label="' . esc_attr( $title ) . '" hidden><ul>';
 		foreach ( $terms as $term ) {
 			$slug  = sanitize_html_class( $term->slug );
