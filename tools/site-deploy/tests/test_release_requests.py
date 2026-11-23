@@ -56,6 +56,33 @@ class ReleaseRequests(unittest.TestCase):
             with self.event_file():
                 self.assertEqual(result, request.deployment_selection(self.env))
 
+    def test_automatic_local_acceptance_is_only_for_freedomhouse_live_tags(self):
+        for repository in ('mrnwebdesigns/freedomhouse-site', 'mrnwebdesigns/another-site'):
+            for target in ('dev', 'live', 'both'):
+                self.run['display_title'] = f'MRN request refs/tags/deploy-{target}-test {SHA} true false'
+                selected = request.source_request(self.env, self.payload)
+                output = request.github_outputs(selected, repository)
+                expected = ('qa/release-acceptance/freedomhouse-20261014.json'
+                            if repository == 'mrnwebdesigns/freedomhouse-site' and target == 'live' else '')
+                self.assertEqual(expected, output['local_qa_acceptance'])
+                self.assertEqual(selected['tag'], json.loads(output['release_intent'])['tag'])
+            selected = {'source_sha': SHA, 'source_branch': 'main', 'kind': 'branch', 'target': 'live'}
+            self.assertEqual('', request.github_outputs(selected, repository)['local_qa_acceptance'])
+        selected = {'source_sha': None, 'source_branch': 'main', 'kind': 'branch', 'target': 'dev'}
+        self.assertEqual('false', request.github_outputs(selected, 'mrnwebdesigns/another-site')['enabled'])
+
+    def test_local_acceptance_rejects_malformed_tag_intent(self):
+        selected = request.source_request(self.env, self.payload)
+        for change in ({'source_sha': 'invalid'}, {'target': 'live'}, {'tag_object': 'invalid'}):
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                request.github_outputs({**selected, **change}, 'mrnwebdesigns/freedomhouse-site')
+
+    def test_workflow_uses_repository_scoped_request_output(self):
+        workflow = (Path(__file__).parents[3] / '.github/workflows/site-deploy.yml').read_text()
+        self.assertIn('local_qa_acceptance: ${{ steps.source.outputs.local_qa_acceptance }}', workflow)
+        self.assertIn("inputs.local_qa_acceptance || needs.request.outputs.local_qa_acceptance", workflow)
+        self.assertNotIn('freedomhouse-20261014.json', workflow)
+
     def test_main_push_qualifies_exact_event_when_unarmed_or_superseded(self):
         self.run['display_title'] = f'MRN request refs/heads/main {SHA} false false'
         env = {**self.env, 'QUALIFY_MAIN':'true'}
