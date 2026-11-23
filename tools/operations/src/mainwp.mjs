@@ -55,6 +55,7 @@ const providerBlockers = Object.freeze({
   mrn_content_ownership: ['CONTENT_OWNERSHIP', 'The content owner or rendering adapter is not qualified. ACF and builder content require their own supported workflow.'],
   mrn_content_target: ['CONTENT_TARGET_MISMATCH', 'The provider could not verify the exact content record or retained operation. Resolve and inspect the target again.'],
   mrn_content_size: ['CONTENT_SIZE', 'The complete content request exceeds the qualified limit. No content was truncated.'],
+  mrn_content_fields: ['CONTENT_ACF_UNSUPPORTED', 'The complete ACF-inclusive read is unsupported for this record. No partial content was returned. An explicitly requested core-only view can read native WordPress properties without inspecting ACF.'],
   mrn_content_precondition: ['CONTENT_PRECONDITION', 'The current content no longer matches the reviewed snapshot. Inspect it again and prepare a fresh preview.'],
   mrn_content_qa: ['CONTENT_QA_REQUIRED', 'The exact content plan lacks a valid protected QA receipt. A new qualifying QA run is required.'],
   mrn_content_approval: ['CONTENT_APPROVAL', 'The provider could not verify the current operator, exact approval or required execution evidence. Inspect the operation before proceeding.'],

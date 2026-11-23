@@ -9,6 +9,7 @@ test('native provider blockers retain a safe actionable class through the pinned
     ['mrn_delegation_target', 'TARGET_MISMATCH'],
     ['mrn_content_disabled', 'CONTENT_DISABLED'], ['mrn_content_profile', 'CONTENT_PROFILE_UNQUALIFIED'],
     ['mrn_content_precondition', 'CONTENT_PRECONDITION'], ['mrn_content_qa', 'CONTENT_QA_REQUIRED'],
+    ['mrn_content_fields', 'CONTENT_ACF_UNSUPPORTED'],
     ['mrn_content_backup', 'BACKUP_UNVERIFIED'], ['mrn_content_locked', 'SITE_LOCKED'],
     ['mrn_content_consumed', 'CONTENT_CONSUMED'], ['mrn_content_uncertain', 'CONTENT_OUTCOME_UNVERIFIED'],
     ['mrn_content_unsupported', 'CONTENT_ADAPTER_UNAVAILABLE'], ['mrn_code_directory_inactive', 'STAFF_ACCESS_DENIED'],

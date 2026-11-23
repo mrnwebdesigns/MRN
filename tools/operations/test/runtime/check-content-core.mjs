@@ -22,6 +22,8 @@ export async function checkContentCore({ privateDirectory, runtimeCli, token, ca
     const response = await execute(alice, args);
     assert.equal(response.status, 200);
     assert.equal(response.body.result?.isError, true, 'Legacy combined inspection must still reject unsupported ACF');
+    const error = JSON.parse(response.body.result.content[0].text);
+    assert.equal(error.error.code, 'CONTENT_ACF_UNSUPPORTED');
     const receipt = network().filter(row => row.ability === 'mrn-mainwp/read-content-record-v1').at(-1);
     assert.equal(receipt.errorCode, 'mrn_content_fields');
     transcript.push({ tool: 'read_website_content', arguments: args, result: 'REFUSED', providerError: receipt.errorCode });
