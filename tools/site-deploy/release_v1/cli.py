@@ -53,12 +53,21 @@ def add_package_args(parser):
     parser.add_argument('--limits', help='JSON media policy overrides')
 
 
+def require_deployed(result):
+    if (result.get('phases', {}).get('verify', {}).get('result') != 'passed'
+            or result.get('desired_release') is None
+            or result.get('current_release') != result['desired_release']
+            or result.get('recovery_required')):
+        raise Blocked('The requested release was not verified; inspect status before starting a new deployment')
+    return result
+
+
 def deploy_remaining(controller, request, archive, confirmed_origin=None):
     """Run approved remaining phases; recovery always remains an explicit action."""
     result = controller.run('preflight', request, archive, confirmed_origin=confirmed_origin)
     for _ in PHASES:
         if result['lock'] == 'none':
-            return result
+            return require_deployed(result)
         phase = result['next']
         if result['recovery_required'] or phase not in PHASES:
             raise Blocked('Recovery is required; run status and follow its next command')
@@ -66,7 +75,7 @@ def deploy_remaining(controller, request, archive, confirmed_origin=None):
                                 confirmed_origin=confirmed_origin)
     if result['lock'] != 'none':
         raise Blocked('Release did not reach a terminal state; inspect status')
-    return result
+    return require_deployed(result)
 
 
 def main(argv=None):

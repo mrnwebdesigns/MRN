@@ -5,6 +5,26 @@ providers are WP Engine, SiteGround and Kinsta. First identify the site's actual
 source and approved transport. A shared tooling release does not enroll a site,
 rotate its credentials, enable Live or authorize a deployment.
 
+## Deployment success means a verified release
+
+For an enrolled, ready environment, a release that passes its required QA should
+complete without manual repair and end green. Green means the requested immutable
+release is active, required QA and public verification passed, declared migrations
+completed and receipts were retained. A successful rollback or abort is not a
+successful deployment of the requested release. A repeat `deploy` command must
+not turn that earlier outcome into success.
+
+Required QA failures are red on Dev, staging and Live. Setup and provider problems
+belong in readiness checks before activation, with safe bounded retries and phase
+resume where the outcome is known. A failed backup, revoked access, unavailable
+provider or ambiguous write must still block honestly. Never hide it as green or
+skip a required gate to change a notification color. Temporary proof throttling
+resumes proof without repeating backup, activation or content writes.
+
+GitHub source/qualification checks and failure-notification jobs are separate from
+the deployment result. A green notification job means its notification succeeded.
+It does not prove the site deployed. Read the deployment's exact release receipt.
+
 ## Choose the release
 
 | Request | Route | Required evidence |
