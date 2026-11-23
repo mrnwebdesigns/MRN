@@ -7,6 +7,7 @@ Usage:
   preflight-live-site-deploy.sh \
     --site-hostname <site-hostname> \
     [--discovery-ssh-host <ssh-host>] \
+    [--site-user <user> --site-root <abs-path> --ssh-alias <ssh-alias>] \
     [--with-db-backup] \
     [--backup-label <label>] \
     [--skip-backup]
@@ -16,6 +17,11 @@ Description:
   malformed Updraft placeholder settings, and verify deploy readiness. Every
   real deployment must provide --with-db-backup; --skip-backup is only for a
   dry run or genuinely read-only readiness check.
+
+  --site-user, --site-root, and --ssh-alias together name an explicit
+  site-owner target (for example a non-CloudPanel host whose SSH alias, port,
+  and identity live in ~/.ssh/config). They replace CloudPanel owner discovery
+  only; the site-owner SSH verify and backup gate still run unchanged.
 
 Output:
   Prints shell-friendly key=value lines for:
@@ -48,6 +54,9 @@ DISCOVERY_SSH_HOST="mrndev"
 BACKUP_LABEL=""
 RUN_DB_BACKUP=0
 BACKUP_MODE_SET=0
+OVERRIDE_SITE_USER=""
+OVERRIDE_SITE_ROOT=""
+OVERRIDE_SSH_ALIAS=""
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 while [[ $# -gt 0 ]]; do
@@ -62,6 +71,18 @@ while [[ $# -gt 0 ]]; do
 			;;
 		--backup-label)
 			BACKUP_LABEL="${2:-}"
+			shift 2
+			;;
+		--site-user)
+			OVERRIDE_SITE_USER="${2:-}"
+			shift 2
+			;;
+		--site-root)
+			OVERRIDE_SITE_ROOT="${2:-}"
+			shift 2
+			;;
+		--ssh-alias)
+			OVERRIDE_SSH_ALIAS="${2:-}"
 			shift 2
 			;;
 		--with-db-backup)
@@ -150,8 +171,19 @@ SITE_ROOT=""
 SSH_ALIAS=""
 SSH_LOGIN=""
 
-RESOLVE_OUTPUT="$("${SCRIPT_DIR}/resolve-live-site-owner.sh" "${SITE_HOSTNAME}" --ssh-host "${DISCOVERY_SSH_HOST}")" || fail "Unable to resolve live site owner for ${SITE_HOSTNAME}."
-read_kv_output "${RESOLVE_OUTPUT}"
+if [[ -n "${OVERRIDE_SITE_USER}${OVERRIDE_SITE_ROOT}${OVERRIDE_SSH_ALIAS}" ]]; then
+	[[ -n "${OVERRIDE_SITE_USER}" && -n "${OVERRIDE_SITE_ROOT}" && -n "${OVERRIDE_SSH_ALIAS}" ]] || fail "--site-user, --site-root, and --ssh-alias must be given together."
+	[[ "${OVERRIDE_SITE_USER}" =~ ^[A-Za-z0-9._-]+$ ]] || fail "Unsafe --site-user."
+	[[ "${OVERRIDE_SSH_ALIAS}" =~ ^[A-Za-z0-9._-]+$ ]] || fail "Unsafe --ssh-alias."
+	[[ "${OVERRIDE_SITE_ROOT}" =~ ^/[A-Za-z0-9._/-]+$ && "${OVERRIDE_SITE_ROOT}" != *..* ]] || fail "Unsafe --site-root."
+	SITE_USER="${OVERRIDE_SITE_USER}"
+	SITE_ROOT="${OVERRIDE_SITE_ROOT%/}"
+	SSH_ALIAS="${OVERRIDE_SSH_ALIAS}"
+	SSH_LOGIN="${SITE_USER}@${SSH_ALIAS}"
+else
+	RESOLVE_OUTPUT="$("${SCRIPT_DIR}/resolve-live-site-owner.sh" "${SITE_HOSTNAME}" --ssh-host "${DISCOVERY_SSH_HOST}")" || fail "Unable to resolve live site owner for ${SITE_HOSTNAME}."
+	read_kv_output "${RESOLVE_OUTPUT}"
+fi
 
 [[ -n "${SITE_USER}" && -n "${SITE_ROOT}" && -n "${SSH_ALIAS}" && -n "${SSH_LOGIN}" ]] || fail "Resolved live-site details were incomplete."
 

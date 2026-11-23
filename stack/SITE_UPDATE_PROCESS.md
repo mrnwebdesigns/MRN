@@ -32,6 +32,42 @@ clone-style sites continue through the resolved per-site flow below.
 
 Resolve it with `wp option get stylesheet` and `wp option get template` before planning any theme deploy. Shared code updates should still preserve the live theme slug plus `Theme Name` and `Text Domain`, and keep stable theming hooks available.
 
+## First Adoption For Renamed-Parent Sites
+
+A site in the "site child on a renamed clone" shape has no valid runtime release
+lock, so `deploy-stack-release-to-site.py` refuses it (and would sync the parent
+into the renamed clone). Use the one-time
+`stack/scripts/stack-first-adoption.py` installer instead:
+
+1. `plan` (read-only) checks the exact `home_url()`, environment type,
+   `template`, `stylesheet`, and resolved site root against the arguments, then
+   reports for every lock component and theme whether the target is absent,
+   identical, or different, which files a replacement would remove, which MU
+   code starts loading on install, and legacy collisions (MU and standard copies
+   of one plugin, duplicate loaders, same-name plugins at other paths, legacy MU
+   components the release loader stops loading, unguarded function
+   redeclarations). It prints a plan hash.
+2. `apply --plan-hash <hash>` refuses a changed plan or any blocking finding,
+   runs the canonical preflight with `--with-db-backup`, tars every path it
+   replaces into `~/.mrn-deploy-backups/stack-first-adoption-<release>-<ts>/`
+   (outside the web root) with a journal, installs the parent as a new
+   `themes/mrn-base-stack` directory plus every component at its lock path and
+   the runtime release lock, then runs `verify`.
+3. `verify` re-hashes every installed path, requires HTTP 200 with the page
+   still rendering the legacy parent/child, and a full WP-CLI load.
+4. `rollback --journal <journal> --confirm "ROLLBACK <host> <release>"` refuses
+   if any target changed since apply, takes a fresh database backup, restores
+   replaced paths from the tar, and removes added ones.
+
+The installer does not switch the parent: `template` and `stylesheet` stay on
+the legacy theme, the legacy parent and the active child are never touched, and
+no plugin is activated or deactivated. The plan lists the remaining activation
+steps; the later site child deploy performs the parent switch. Every
+non-dry-run write (`apply`, `rollback`) requires the backup gate and explicit
+owner approval of the exact plan hash. Hosts without CloudPanel owner
+discovery pass `--site-user` and `--ssh-alias` (an `~/.ssh/config` alias), which
+the preflight accepts in place of discovery.
+
 ## Snapshot Directories Left Active
 
 A theme directory can be left active as a dated snapshot after a maintenance or relink operation, leaving an active stylesheet such as `<site>-child.prelink-<timestamp>` while the canonical child sits inactive at the same version.
