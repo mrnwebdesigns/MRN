@@ -93,3 +93,40 @@ def playwright_proof(script, release, urls, *, node='node', timeout=240):
     if result.returncode:
         raise Blocked('Browser proof process failed; inspect private browser diagnostics')
     return evidence
+
+
+def qa_engine_proof(engine_root, proof_request, output, *, node='node', timeout=900):
+    """Invoke a protected, pinned QA Engine installation without deployment keys.
+
+    The adapter binds a manifest-derived proof_request to the desired release.
+    This function only writes local proof artifacts. Rerunning it cannot back up,
+    upload, activate, migrate, purge or roll back the site.
+    """
+    from pathlib import Path
+    import tempfile
+    engine = Path(engine_root).resolve()
+    destination = Path(output)
+    destination.mkdir(parents=True, exist_ok=True)
+    env = {key: value for key, value in os.environ.items()
+           if key not in ('MRN_RELEASE_RECEIPT_KEY', 'SSH_AUTH_SOCK')
+           and not key.startswith(('DEPLOY_', 'OP_', 'AWS_', 'GH_', 'GITHUB_TOKEN'))}
+    with tempfile.TemporaryDirectory(prefix='mrn-proof-request-') as temp:
+        request_path = Path(temp) / 'proof-request.json'
+        request_path.write_text(json.dumps(proof_request))
+        process = subprocess.run([node, str(engine / 'tools/verify-release.mjs'), str(request_path), str(destination)],
+                                 capture_output=True, text=True, timeout=timeout, env=env)
+    try:
+        evidence = json.loads((destination / 'release-proof.json').read_text())
+        if (evidence.get('release_id') != proof_request['release_id']
+                or evidence.get('source_sha') != proof_request['source_sha']
+                or evidence.get('artifact_sha256') != proof_request['artifact_sha256']
+                or evidence.get('urls') != proof_request['urls']):
+            raise ValueError('Mismatched QA evidence')
+        if process.returncode == 2 and evidence.get('status') == 'throttled':
+            raise Throttled(evidence['http_status'], evidence.get('retry_after'))
+        if process.returncode or evidence.get('status') != 'passed':
+            raise Blocked('QA Engine release proof failed; inspect private proof artifacts')
+    except (ValueError, KeyError, TypeError, OSError) as error:
+        raise Blocked('QA Engine did not return release-bound proof evidence') from error
+    return {'passed': True, 'release_id': evidence['release_id'], 'urls': evidence['urls'],
+            'qa_engine_sha': evidence['qa_engine_sha'], 'evidence': str(destination / 'release-proof.json')}

@@ -178,7 +178,7 @@ class ControllerRest(unittest.TestCase):
         with patch.object(host_controller, 'html_cache', return_value={}), \
                 patch.object(host_controller, 'http_check', side_effect=ValueError('REST failed')) as check:
             with self.assertRaisesRegex(ValueError, 'REST failed'):
-                host_controller.public_check(plan, store, pointer)
+                host_controller.public_check(plan, store, pointer, delivery_cache=MagicMock())
             check.assert_called_once_with(acceptance.URL + '/wp-json/', rest=True)
         store.release.assert_not_called()
         store.verify_public_snapshot.assert_not_called()

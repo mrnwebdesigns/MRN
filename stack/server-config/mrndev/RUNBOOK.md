@@ -120,7 +120,31 @@ install -o root -g root -m 644 /home/mrndev-stack-manager/stack/runtime/stack-co
 ls -l /usr/local/sbin/stack-config-export.sh /etc/cron.d/stack-config-export /home/mrndev-stack-manager/stack/server-config-export/usr/local/sbin/stack-load-alerts.sh
 ```
 
-## 9) Capacity Decision Gate
+## 9) Site Deploy Keys (Server Console)
+
+Symptom: a site's GitHub deploy fails with `Permission denied (publickey)` while the MRN
+operator key still logs in. Cause: CloudPanel left `/home/<site-user>` group-writable (770)
+because another CloudPanel SSH user shares the site group, so sshd ignores
+`~/.ssh/authorized_keys`. `chmod g-w` fixes it only until CloudPanel resets the mode.
+
+Lasting fix: serve the site's deploy key through the AuthorizedKeysCommand, which does not
+read the home folder. Install or refresh the command first, as root, with this repo's
+`stack/server-config/mrndev/install-site-owner-authorized-keys-command.sh` (copy it to the
+server if the server's Stack copy is older). It also creates `/etc/ssh/mrn-site-deploy-keys`:
+```bash
+bash ./install-site-owner-authorized-keys-command.sh
+```
+
+Register a site owner's deploy key (public half only; one key per site user):
+```bash
+install -o root -g root -m 644 /path/to/deploy-key.pub /etc/ssh/mrn-site-deploy-keys/<site-user>.pub
+/usr/local/sbin/mrn-site-owner-authorized-keys <site-user>
+```
+The check prints the shared site-owner key and then the deploy key. Keys are served only to
+CloudPanel site owners, never to extra CloudPanel SSH users, and only from root-owned files
+that group and others cannot write. Remove a key by deleting its file.
+
+## 10) Capacity Decision Gate
 
 Scale resources only if sustained:
 - `load/core > 1.25` for 20+ minutes repeatedly

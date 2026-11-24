@@ -82,10 +82,13 @@ class Kinsta:
             raise ValueError('Missing native Kinsta credentials or identity')
         self.token, self.site_id, self.environment_id = token, site_id, environment_id
 
-    def api(self, path, body=None):
+    def api(self, path, body=None, *, method=None):
+        if method not in (None, 'DELETE') or (method == 'DELETE' and body is not None):
+            raise ValueError('Unsupported Kinsta API request method')
         request = urllib.request.Request('https://api.kinsta.com/v2' + path,
                                          data=None if body is None else json.dumps(body).encode(),
-                                         headers={'Authorization': 'Bearer ' + self.token, 'Content-Type': 'application/json'})
+                                         headers={'Authorization': 'Bearer ' + self.token, 'Content-Type': 'application/json'},
+                                         method=method)
         try:
             with urllib.request.urlopen(request, timeout=40) as response:
                 return json.load(response)

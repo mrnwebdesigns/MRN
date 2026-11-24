@@ -212,10 +212,12 @@ def bind_imported_staging(plan, store, binding, guard):
     return {'operation': 'bind-imported-staging', 'backup': receipt}
 
 
-def public_check(plan, store, pointer, native_backup=None):
+def public_check(plan, store, pointer, native_backup=None, delivery_cache=None):
     receipt = {'release_id': pointer['release_id']}
     if plan.get('host_provider') == 'kinsta' and native_backup is None:
         raise ValueError('Native Kinsta identity is required for edge invalidation')
+    if plan.get('host_provider') == 'wpengine' and delivery_cache is None:
+        raise ValueError('WP Engine API identity is required for delivery-cache invalidation')
     uncached = plan.get('host_provider', 'cloudpanel') == 'cloudpanel'
     if uncached:
         receipt['cache'] = verify_uncached_html(plan['url'], plan['pages'])
@@ -224,6 +226,8 @@ def public_check(plan, store, pointer, native_backup=None):
                 raise ValueError('Public PHP response did not select the released code: ' + page)
     else:
         receipt['cache'] = html_cache(plan, 'refresh')
+        if plan.get('host_provider') == 'wpengine':
+            receipt['cache']['delivery'] = delivery_cache.refresh_delivery(plan['url'])
         if plan.get('host_provider') == 'kinsta':
             receipt['cache']['edge'] = native_backup.refresh_edge_html(plan['url'], plan['pages'])
     http_check(plan['url'] + '/wp-json/', rest=True)
@@ -254,7 +258,11 @@ def public_check(plan, store, pointer, native_backup=None):
     return receipt
 
 
-def execute(plan, native_backup=None):
+def execute(plan, native_backup=None, delivery_cache=None):
+    if plan.get('host_provider') == 'wpengine':
+        if delivery_cache is None:
+            raise ValueError('WP Engine API identity is required before writes')
+        delivery_cache.identity(dict(plan, host=plan['ssh_host'], user=plan['ssh_user']))
     promotion = plan.get('promote_kinsta_staging')
     if promotion is not None:
         from promoted_store import validate, native_source, require_doster_workflow
@@ -271,6 +279,11 @@ def execute(plan, native_backup=None):
                                 'port': plan['ssh_port'], 'user': plan['ssh_user'], 'environment': plan['environment']})
         if promotion is not None:
             native_source(native_backup, promotion, plan)
+
+    def prove(pointer):
+        if plan.get('host_provider') == 'wpengine':
+            return public_check(plan, store, pointer, native_backup, delivery_cache)
+        return public_check(plan, store, pointer, native_backup)
 
     def guard(operation):
         if plan.get('host_provider') == 'kinsta':
@@ -318,7 +331,7 @@ def execute(plan, native_backup=None):
                 from promoted_store import import_store
                 receipt['promotion'] = import_store(plan, store, binding, guard, TOOLS / 'release-bootstrap.php')
                 before = store.pointer()
-                receipt['imported'] = public_check(plan, store, before, native_backup)
+                receipt['imported'] = prove(before)
             elif before is None:
                 if not plan.get('adopt') or digest(inventory(store.public_theme)) != plan['baseline']:
                     raise ValueError('First adoption requires the exact reviewed legacy tree')
@@ -326,7 +339,7 @@ def execute(plan, native_backup=None):
                 durable_replace(binding_path, (json.dumps(binding, sort_keys=True) + '\n').encode())
                 adopted = True
                 before = store.adopt(plan['baseline'], TOOLS / 'release-bootstrap.php')
-                receipt['legacy'] = public_check(plan, store, before, native_backup)
+                receipt['legacy'] = prove(before)
                 verify_legacy_assets(old_assets)
             elif not binding_path.exists():
                 if not plan.get('bind_imported_source'):
@@ -344,16 +357,16 @@ def execute(plan, native_backup=None):
                 selected_id = installed['release_id']
             receipt['steps'].append({'operation': 'activate', 'backup': guard('activate')})
             selected = store.select(selected_id, before)
-            receipt['activation'] = public_check(plan, store, selected, native_backup)
+            receipt['activation'] = prove(selected)
             verify_legacy_assets(old_assets)
             if plan.get('exercise_rollback'):
                 receipt['steps'].append({'operation': 'rollback-test', 'backup': guard('rollback')})
                 restored = store.select(before['release_id'], selected)
-                receipt['rollback'] = public_check(plan, store, restored, native_backup)
+                receipt['rollback'] = prove(restored)
                 verify_legacy_assets(old_assets)
                 receipt['steps'].append({'operation': 'reactivate', 'backup': guard('reactivate')})
                 selected = store.select(selected_id, restored)
-                receipt['reactivation'] = public_check(plan, store, selected, native_backup)
+                receipt['reactivation'] = prove(selected)
                 verify_legacy_assets(old_assets)
             receipt.update(status='public-verified', current=selected, previous=before,
                            legacy_asset_urls_preserved=sorted(old_assets), runtime_qa_required=True)
@@ -367,7 +380,7 @@ def execute(plan, native_backup=None):
                     current = store.pointer()
                     if current != before:
                         store.select(before['release_id'], current)
-                    receipt['recovery'] = public_check(plan, store, before, native_backup)
+                    receipt['recovery'] = prove(before)
                 except Exception as recovery_error:
                     receipt['recovery_error'] = str(recovery_error)
                     receipt['recovery_diagnostics'] = failure_receipt(recovery_error)['diagnostics']
@@ -418,6 +431,9 @@ def failure_receipt(error):
         row = {'type': type(error).__name__, 'frames': [
             {'file': Path(frame.filename).name, 'line': frame.lineno, 'function': frame.name}
             for frame in traceback.extract_tb(error.__traceback__)]}
+        from wpengine import ProviderThrottle
+        if isinstance(error, ProviderThrottle):
+            row['provider'] = {'name': 'wpengine', 'http_status': 429, 'retry_not_before': error.retry_not_before}
         if isinstance(error, (PublicHTTPError, urllib.error.HTTPError)):
             row['http'] = diagnostics(error)
         if isinstance(error, OSError):
@@ -440,7 +456,13 @@ if __name__ == '__main__':
             adapter = kinsta_adapter(native['token'], native['site_id'], native['environment_id'],
                                      native.get('manual_approval', ''), request['plan']['repository'])
             del native
-        response = execute(request['plan'], adapter)
+        delivery = request.pop('wpengine', None)
+        delivery_adapter = None
+        if delivery:
+            from wpengine import WPEngine
+            delivery_adapter = WPEngine(delivery['username'], delivery['password'], delivery['install_id'])
+            del delivery
+        response = execute(request['plan'], adapter, delivery_adapter)
     except Exception as error:
         response = failure_receipt(error)
     print('MRN_RESULT=' + json.dumps(response), flush=True)

@@ -18,7 +18,7 @@ from host_paths import activation_environment
 TOOLS = Path(__file__).resolve().parent
 HOST_FILES = ('host_controller.py', 'atomic_store.py', 'cache_policy.py', 'deploy.py', 'public_http.py',
               'verify_release.py', 'verify_public_assets.py', 'backup.php', 'release-bootstrap.php',
-              'host_paths.py', 'html_cache.php', 'kinsta.py', 'kinsta_html_cache.php',
+              'host_paths.py', 'html_cache.php', 'kinsta.py', 'wpengine.py', 'kinsta_html_cache.php',
               'deployment_request.py', 'release_request.py', 'resolve_source.py', 'promoted_store.py')
 
 
@@ -129,6 +129,10 @@ def run(plan, c, record_write=None):
                          " <<'MRN_PROMOTED_SOURCE'\n" + encoded_original + '\nMRN_PROMOTED_SOURCE\n')
             remote_plan['promoted_source_archive'] = original_archive
     envelope = {'plan': remote_plan}
+    if c.get('host_provider') == 'wpengine':
+        envelope['wpengine'] = {'username': target.delivery_cache.username,
+                                'password': target.delivery_cache.password,
+                                'install_id': target.delivery_cache.install_id}
     if native:
         remote_plan['native_backup_receipt'] = backup
         envelope['native'] = {'token': target.native_backup.token, 'site_id': target.native_backup.site_id,

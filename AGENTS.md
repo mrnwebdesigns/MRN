@@ -15,6 +15,13 @@ Scope:
   site just to make accepted source Fleet ready. Site backup, deployment, and
   installed verification remain separately initiated and authorized.
 
+Deployment tasks:
+- Start every site deployment task with `docs/MRN-DEPLOYMENT-QUICKSTART.md`.
+- Resolve the actual Git or reviewed-file source route and exact environment before selecting tooling.
+- New provider enrollment is limited to WP Engine, SiteGround and Kinsta.
+- QA Engine owns browser/device proof. Shared deployment orchestrates its gates.
+- Site enrollment and runtime qualification remain required; shared tests do not make all sites deployable.
+
 Implementation:
 - Prefer existing helpers, APIs, and contracts
 - Avoid duplicating logic across theme/plugins

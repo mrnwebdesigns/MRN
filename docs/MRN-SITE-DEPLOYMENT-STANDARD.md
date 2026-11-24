@@ -1,5 +1,9 @@
 # Site Git, deployment, and server transitions
 
+Start with the [MRN deployment front door](MRN-DEPLOYMENT-QUICKSTART.md) for Git,
+reviewed non-Git packages, Dev/staging, Live and emergency hotfix routes.
+
+
 Status: shared automatic Dev workflow available for individually qualified environments.
 Use `preflight` until the target has passed the onboarding evidence below and
 `DEPLOY_READY=1` has been recorded. A provider connection or an installed workflow
@@ -80,12 +84,14 @@ outputs from its qualifying workflow run before configuring site access.
 
 ### Promote the exact artifact to Live
 
-Deploy reviewed `main` to **Dev** or, for a qualified Kinsta adapter, **Staging**.
+Deploy reviewed `main` to **Dev** or, for a qualified provider adapter, **Staging**.
 The target publishes `site-promotion-<SHA>` only after it verifies the backup,
 the activated artifact, browser checks and strict runtime QA. The receipt
 records the original build artifact's ID and SHA-256, and the evidence
-includes the passing runtime report. An advisory Dev QA failure leaves its
-runtime report available for diagnosis and does not produce promotion evidence.
+includes the passing runtime report. Required runtime QA is blocking in Dev,
+Staging and Live. A Dev QA failure leaves its report available for diagnosis,
+makes the run red and does not produce promotion evidence. Existing Dev preview
+retention and explicit rollback policy remain in effect.
 
 **Live / deploy** selects qualifying evidence for the exact requested main
 SHA, or uses the supplied **promotion_evidence_id**. A Live tag uses the

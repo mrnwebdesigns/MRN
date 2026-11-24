@@ -80,9 +80,28 @@
   and bind a short-lived receipt to the exact site, environment, snapshot, and
   request. A queued, failed, stale, mismatched, or externally created snapshot
   cannot satisfy this gate.
-- Do not delete an existing Kinsta manual backup merely to make room for a
-  deployment. If Kinsta's manual-backup capacity is exhausted, stop and report
-  the named existing backups to the owner for a deliberate retention decision.
+- A protected, durably journaled adapter may opt into the approved
+  oldest-eligible MRN backup rotation rule. When the five manual slots are
+  full, retire at most one manual snapshot whose ID/label is recorded in the
+  authenticated MRN backup ledger and whose matching deployment has a signed
+  terminal verification, completed rollback, or pre-activation abort receipt.
+  Select by provider creation time, oldest first. Customer-created, untracked,
+  explicitly protected milestone, active-run, failed-run, and unresolved-run
+  snapshots are never eligible. A stale lease does not grant eligibility.
+- Rotation requires the same persistent target journal, signing key and
+  exclusive writer lease as deployment. Record intent before each API write,
+  retain deletion/creation job IDs, verify the one selected deletion, then
+  create and verify the replacement before any deployment write. Pending jobs
+  resume by their recorded ID; an ambiguous write without a recorded job ID
+  stops for reconciliation. A retry must not delete another snapshot.
+- Rotation permission belongs in protected enrollment, never in a release
+  artifact or an ephemeral GitHub workspace. It does not require approval for
+  each ordinary rotation once enrolled. If no eligible tracked backup exists,
+  stop for a deliberate owner retention decision; do not adopt existing
+  snapshots from an MRN-looking label alone. First-time enrollment may need
+  this one-time legacy-backup review. MainWP's standalone Kinsta backup button
+  does not acquire this behavior automatically; managed requests must use the
+  same protected controller and journal.
 - A Kinsta-enrolled environment must not also be configured for the Updraft
   scheduled-backup or pre-deployment route. Its native snapshot is the sole
   deployment gate for that environment; this prevents competing writers,

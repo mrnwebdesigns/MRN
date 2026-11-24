@@ -93,7 +93,7 @@ class HostControllerContract(unittest.TestCase):
                 host, 'verify_cached_public', side_effect=error) as verify, patch.object(host.time, 'sleep') as sleep:
             with self.assertRaises(host.PublicHTTPError):
                 host.public_check(dict(self.plan, host_provider='wpengine'), self.fixture.store,
-                                  {'release_id': 'a' * 64, 'public_path': None})
+                                  {'release_id': 'a' * 64, 'public_path': None}, delivery_cache=Mock())
         self.assertEqual(1, verify.call_count)
         sleep.assert_not_called()
 
