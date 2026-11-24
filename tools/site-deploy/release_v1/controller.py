@@ -117,12 +117,12 @@ class Controller:
         except Exception:
             current = None
         if not state:
-            return {'schema': SCHEMA, 'target': vars(self.target), 'current_release': current, 'lock': 'none',
+            return self.backup_status({'schema': SCHEMA, 'target': vars(self.target), 'current_release': current, 'lock': 'none',
                     'backup': None, 'proof': None, 'migrations': {}, 'pending_migrations': [],
                     'recovery_required': current is None,
-                    'next': 'preflight' if current else 'inspect-target'}
+                    'next': 'preflight' if current else 'inspect-target'})
         next_phase, recovery = self.next_phase(state, current)
-        return {'schema': SCHEMA, 'target': state['target'], 'current_release': current,
+        return self.backup_status({'schema': SCHEMA, 'target': state['target'], 'current_release': current,
                 'deployment_id': state['deployment_id'], 'owner': state['owner'],
                 'source_sha': state['source_sha'], 'artifact_sha256': state['artifact_sha256'],
                 'lock': 'none' if state['finished'] else 'stale' if self.stale(state) else 'active',
@@ -132,7 +132,17 @@ class Controller:
                 'pending_migrations': [name for name in state.get('selected_migrations', [])
                                        if name not in state['migrations']],
                 'rollback_state': state['rollback_state'], 'recovery_required': recovery, 'next': next_phase,
-                'verification_urls': state['verification_urls'], 'phases': state['phases']}
+                'verification_urls': state['verification_urls'], 'phases': state['phases']})
+
+    def backup_status(self, status):
+        hook = getattr(self.adapter, 'backup_status', None)
+        if hook is not None:
+            try:
+                status['backup_provider_status'] = hook()
+            except Exception as error:
+                status['backup_provider_status'] = {'ready': False, 'next': 'inspect-backup-provider',
+                                                    'diagnostic': self.diagnostic(error)}
+        return status
 
     def next_phase(self, state, current):
         if current is None:

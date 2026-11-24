@@ -1,4 +1,5 @@
 import importlib.util
+from io import BytesIO
 from pathlib import Path
 import unittest
 import time
@@ -10,6 +11,16 @@ spec.loader.exec_module(kinsta)
 
 
 class NativeBackupIdentity(unittest.TestCase):
+    def test_native_delete_uses_exact_fixed_api_endpoint_without_a_request_body(self):
+        adapter = kinsta.Kinsta('test-token', 'a'*36, 'b'*36)
+        with patch.object(kinsta.urllib.request, 'urlopen', return_value=BytesIO(b'{"status":202}')) as send:
+            self.assertEqual(202, adapter.api('/sites/environments/backups/42', method='DELETE')['status'])
+        request = send.call_args.args[0]
+        self.assertEqual('DELETE', request.get_method())
+        self.assertEqual('https://api.kinsta.com/v2/sites/environments/backups/42', request.full_url)
+        self.assertIsNone(request.data)
+        self.assertEqual('Bearer test-token', request.get_header('Authorization'))
+
     def test_wrong_environment_never_resolves_ssh_password(self):
         adapter = kinsta.Kinsta('test-token', 'a'*36, 'b'*36)
         with patch.object(adapter, 'api', return_value={'site': {'environments': []}}) as api:

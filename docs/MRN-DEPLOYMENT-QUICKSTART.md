@@ -129,6 +129,14 @@ provider need their own qualified purge route. Do not claim all-layer readiness
 from an origin-only purge. Legacy provider code remains for backward
 compatibility; no new enrollment is offered outside the three providers above.
 
+For Kinsta, a durable v1 adapter can enable [oldest-eligible backup rotation](../tools/site-deploy/release_v1/README.md#kinsta-backup-rotation).
+At full manual capacity it retires one tracked MRN snapshot only after its signed
+deployment receipt is terminal, preserving milestones and unresolved runs. It
+then creates and verifies the replacement. The read-only status command includes
+capacity and the next retention/recovery action. Rotation is a protected adapter
+policy; standalone MainWP API Backups and older atomic workflows retain their
+existing behavior until routed through that enrolled controller.
+
 QA Engine owns desktop/tablet/mobile release and asset proof. Deployment calls
 it after provider cache invalidation. These are distinct emulated device profiles
 and first/warm public responses, not a guarantee about every geographic edge or
