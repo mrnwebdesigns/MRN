@@ -792,11 +792,44 @@
 				restored = Number.isFinite( saved.scroll ) ? saved.scroll : true;
 			}
 		} catch ( ignore ) {}
+		// A linked filter (?industry=non-profit,healthcare, using the dropdown's link parameter) checks those terms.
+		// Return-to-list state wins; unknown slugs, and terms with no record in this list, are ignored.
+		if ( false === restored ) {
+			try {
+				const params = new URLSearchParams( window.location.search );
+				groups.forEach( ( group ) => {
+					const name = group.element.getAttribute( 'data-project-param' );
+					if ( ! name || ! params.has( name ) ) { return; }
+					const wanted = params.getAll( name ).join( ',' ).split( ',' ).map( ( slug ) => slug.trim() ).filter( Boolean );
+					group.boxes.forEach( ( box ) => { if ( wanted.includes( box.value ) ) { box.checked = true; group.active.add( box.value ); } } );
+				} );
+			} catch ( ignore ) {}
+		}
 		root.querySelectorAll( '[data-project-controls]' ).forEach( ( controls ) => { controls.hidden = false; } );
-		syncOptions(); render( false, false );
+		syncOptions();
+		const linked = false === restored && groups.some( ( group ) => group.active.size > 0 );
+		render( false, linked );
 		root.classList.add( 'is-filters-ready' );
 		root.dataset.mrnProjectsMounted = 'true';
 		if ( true !== restored && false !== restored ) { window.requestAnimationFrame( () => window.scrollTo( { top: restored, behavior: 'instant' } ) ); }
+		if ( linked && ! window.location.hash && window.scrollY < 1 ) {
+			// Bring the filtered list in under a sticky or fixed header, without smooth scrolling, unless the visitor moves first.
+			let moved = false;
+			const events = [ 'wheel', 'touchstart', 'keydown', 'pointerdown' ];
+			const stop = () => { moved = true; events.forEach( ( type ) => window.removeEventListener( type, stop, true ) ); };
+			events.forEach( ( type ) => window.addEventListener( type, stop, { capture: true, passive: true } ) );
+			const pinned = ( element ) => !! element && [ 'sticky', 'fixed' ].includes( window.getComputedStyle( element ).position );
+			const bring = () => {
+				if ( moved ) { return; }
+				const header = document.querySelector( '#masthead, #site-header, .site-header' ), bar = document.getElementById( 'wpadminbar' );
+				const offset = ( pinned( header ) ? header.getBoundingClientRect().height : 0 ) + ( pinned( bar ) ? bar.getBoundingClientRect().height : 0 );
+				window.scrollTo( { top: Math.max( 0, root.getBoundingClientRect().top + window.scrollY - offset ), behavior: 'instant' } );
+			};
+			const finish = () => { bring(); stop(); };
+			// Media above the list can still move it while it loads, so measure again on load.
+			window.requestAnimationFrame( 'complete' === document.readyState ? finish : bring );
+			if ( 'complete' !== document.readyState ) { window.addEventListener( 'load', finish, { once: true } ); }
+		}
 	} );
 }() );
 

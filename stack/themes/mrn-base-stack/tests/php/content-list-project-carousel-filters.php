@@ -88,6 +88,20 @@ $controls = mrn_base_stack_get_project_filter_controls( $filters, 'case_study' )
 $expect( str_contains( $controls, 'data-project-controls hidden' ) && str_contains( $controls, 'data-project-tab="logo"' ) && str_contains( $controls, 'data-project-tab="web"' ) && ! str_contains( $controls, 'website-maintenance' ), 'Tabs are hidden until enhanced and skip excluded terms' );
 $expect( str_contains( $controls, 'Retail &amp; Co' ) && str_contains( $controls, 'data-project-group="one"' ) && str_contains( $controls, 'data-project-group="two"' ) && str_contains( $controls, 'data-project-reset disabled' ), 'Dropdowns escape labels and reset starts disabled' );
 $expect( 2 === substr_count( $controls, 'aria-expanded="false"' ) && ! str_contains( $controls, 'aria-expanded="true"' ), 'Both dropdown triggers start collapsed' );
+$expect( str_contains( $controls, 'data-project-group="one" data-project-param="industry"' ) && str_contains( $controls, 'data-project-group="two" data-project-param="feature"' ) && ! str_contains( $controls, 'data-project-param="service"' ), 'A blank link parameter falls back to each dropdown\'s taxonomy name; tabs get none' );
+$param = static fn( array $extra ) => mrn_base_stack_get_project_filter_params( $extra + $filters, 'case_study' );
+$expect( array( 'one' => 'industry', 'two' => 'feature' ) === $param( array( 'project_filter_one_param' => '', 'project_filter_two_param' => '   ' ) ), 'Blank or whitespace parameters use the taxonomy names' );
+$expect( array( 'one' => 'sector', 'two' => 'capability' ) === $param( array( 'project_filter_one_param' => ' Sector ', 'project_filter_two_param' => 'capability' ) ), 'Custom names are used for both dropdowns, trimmed and lowercased' );
+$expect( array( 'one' => 'sector-2_x', 'two' => 'feature' ) === $param( array( 'project_filter_one_param' => 'sec<tor>-2_x!' ) ), 'Custom names keep only letters, numbers, - and _' );
+$expect( array( 'one' => 'industry', 'two' => 'feature' ) === $param( array( 'project_filter_one_param' => '<>!' ) ), 'A name that sanitizes to nothing falls back to the taxonomy' );
+foreach ( array( 'p', 'page_id', 's', 'paged', 'name', 'pagename', 'cat', 'tag', 'author', 'Page_ID', 'post_type' ) as $reserved ) { $expect( '' === $param( array( 'project_filter_one_param' => $reserved ) )['one'] && 'feature' === $param( array( 'project_filter_one_param' => $reserved ) )['two'], 'Reserved WordPress query name ' . $reserved . ' is refused for that dropdown only' ); }
+$GLOBALS['wp'] = (object) array( 'public_query_vars' => array( 'industry', 'custom_qv' ) );
+$expect( array( 'one' => '', 'two' => '' ) === $param( array( 'project_filter_two_param' => 'custom_qv' ) ), 'Names in $wp->public_query_vars are refused, including a taxonomy-name fallback' );
+unset( $GLOBALS['wp'] );
+$expect( array( 'one' => '', 'two' => '' ) === $param( array( 'project_filter_one_param' => 'feature' ) ) && array( 'one' => '', 'two' => '' ) === $param( array( 'project_filter_one_param' => 'shared', 'project_filter_two_param' => 'Shared' ) ), 'A name both dropdowns would share is ignored for both' );
+$expect( array( 'one' => '', 'two' => 'feature' ) === $param( array( 'project_filter_one_taxonomy' => 'missing', 'project_filter_one_param' => 'sector' ) ) && array( 'one' => 'industry', 'two' => '' ) === $param( array( 'project_filter_two_param' => str_repeat( 'x', 65 ) ) ), 'No parameter without a usable taxonomy, or past 64 characters' );
+$custom = mrn_base_stack_get_project_filter_controls( array( 'project_filter_one_param' => 'sector', 'project_filter_two_param' => 'page_id' ) + $filters, 'case_study' );
+$expect( str_contains( $custom, 'data-project-group="one" data-project-param="sector"' ) && str_contains( $custom, 'data-project-group="two"><button' ) && ! str_contains( $custom, 'page_id' ), 'Rendered groups carry the resolved name, and none when refused' );
 $expect( '' === mrn_base_stack_get_project_filter_controls( array( 'record_presentation' => 'projects' ), 'case_study' ) && '' === mrn_base_stack_get_project_filter_controls( array( 'record_presentation' => 'projects' ), 'case_study', true ), 'Unfiltered rows output nothing' );
 $more = mrn_base_stack_get_project_filter_controls( $filters, 'case_study', true );
 $expect( str_contains( $more, 'data-project-more' ) && str_contains( $more, 'role="status"' ) && str_contains( $more, 'hidden' ), 'Load more and the status region follow the list' );
@@ -104,4 +118,21 @@ $plain = mrn_base_stack_render_project_list_item( $post, array( 'project_setting
 $expect( ! str_contains( $plain, 'title-tail' ) && ! str_contains( $plain, 'data-project-card' ), 'Unfiltered cards keep their existing markup' );
 $GLOBALS['title'] = 'Solo'; $solo = mrn_base_stack_render_project_list_item( $post, array( 'project_settings' => $filters, 'link_items' => true ) );
 $expect( str_contains( $solo, '<span class="mrn-project__title-tail">Solo<svg' ), 'A one-word title keeps its arrow with the word' );
+// --render [--param=name]: a filtered list fixture for tests/js/content-list-project-filters-url.cjs (twelve records, nine shown first).
+if ( in_array( '--render', $argv ?? array(), true ) ) {
+	$GLOBALS['all_terms']['industry'] = array( $term( 'healthcare', 'Healthcare', 3 ), $term( 'non-profit', 'Non-Profit', 5 ), $term( 'retail', 'Retail & Co', 4 ), $term( 'elsewhere', 'Only Elsewhere', 2 ) );
+	$cycle = array( 'non-profit', 'retail', 'healthcare', 'non-profit', 'retail', 'non-profit', 'healthcare', 'retail', 'non-profit', 'retail', 'healthcare', 'non-profit' );
+	foreach ( $argv as $arg ) { if ( str_starts_with( $arg, '--param=' ) ) { $filters['project_filter_one_param'] = substr( $arg, 8 ); } }
+	$contract = mrn_base_stack_get_project_list_contract( $filters );
+	$attributes = ' id="our-work" class="mrn-content-list-row ' . esc_attr( implode( ' ', $contract['classes'] ) ) . '"';
+	foreach ( $contract['attributes'] as $name => $value ) { $attributes .= ' ' . $name . '="' . esc_attr( $value ) . '"'; }
+	$items = '';
+	foreach ( $cycle as $index => $slug ) {
+		$post = new WP_Post(); $post->ID = 100 + $index; $GLOBALS['title'] = 'Project ' . ( $index + 1 ) . ' ' . $slug;
+		$GLOBALS['terms'] = array( 'service' => array( $term( 0 === $index % 2 ? 'web' : 'logo', 'Service' ) ), 'industry' => array( $term( $slug, $slug ) ), 'feature' => array( $term( 'blog', 'Blog' ) ) );
+		$items .= mrn_base_stack_render_project_list_item( $post, array( 'project_settings' => $filters, 'link_items' => true, 'item_index' => $index ) );
+	}
+	echo '<section' . $attributes . '><h2>Our work</h2>' . mrn_base_stack_get_project_filter_controls( $filters, 'case_study' ) . '<ul class="mrn-content-list-row__items">' . $items . '</ul>' . mrn_base_stack_get_project_filter_controls( $filters, 'case_study', true ) . '</section>';
+	exit;
+}
 echo json_encode( array( 'result' => 'passed', 'assertions' => $checks, 'scope' => 'Real source helpers with isolated WordPress boundaries; registered runtime, browser and complete-page acceptance remain separate.' ), JSON_PRETTY_PRINT ) . "\n";
