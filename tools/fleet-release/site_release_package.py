@@ -14,10 +14,11 @@ RUNTIME = (
     'release_v1/README.md', 'release_v1/__init__.py', 'release_v1/artifact.py',
     'release_v1/browser.mjs', 'release_v1/cli.py', 'release_v1/controller.py', 'release_v1/host.py',
     'release_v1/journal.py', 'release_v1/proof.py', 'release_v1/requirements.txt',
+    'release_v1/kinsta_backup.py',
     'release_v1/wordpress.php',
 )
 EXAMPLES = ('adapter.py', 'header-proof.mjs', 'hero-v1.php', 'migrations.json')
-SUPPORT = ('backup.php', 'cache_policy.py', 'source_snapshot.py', 'wpengine.py')
+SUPPORT = ('backup.php', 'cache_policy.py', 'source_snapshot.py', 'wpengine.py', 'kinsta.py')
 MEMBERS = (*RUNTIME, *SUPPORT, *('release_v1/examples/' + name for name in EXAMPLES))
 
 

@@ -38,6 +38,65 @@ Use the [reference host adapter](examples/adapter.py) for an already enrolled at
 
 Trusted site migration closures resolve a stable WordPress record or fail on ambiguity, use WordPress or ACF APIs, read back the resulting field, and return `true` only when the intended state is verified. Keep reruns safe if a command stops mid-script. Use runtime URLs from WordPress. Retain replaced attachments. The WP-CLI runner verifies committed image bytes and uses a migration-owned attachment that can be found again after a stop. It verifies generated metadata and records a per-target WordPress fingerprint and attachment IDs. Completed replay rechecks its attachments and skips the closure. A different fingerprint for the same migration ID blocks. General-purpose PHP must be reviewed before approval because it executes with the WordPress owner's privileges.
 
+## Kinsta backup rotation
+
+Protected Kinsta adapters can compose `KinstaBackups` and `KinstaBackupAdapter`
+with their existing qualified activation, cache and QA adapter. The native
+snapshot covers files and database; this does not use Updraft or MainWP's
+independent Built-In Backups. Example wiring inside the protected `configure()`:
+
+```python
+from kinsta import Kinsta
+from release_v1.journal import Journal
+from release_v1.kinsta_backup import KinstaBackups, KinstaBackupAdapter
+
+# All values below come from protected enrollment and the runner secret store.
+# The controller must use this same journal directory and persistent signing key.
+native = Kinsta(api_token, site_id, environment_id)
+backups = KinstaBackups(native, target, native_target_config,
+    Journal(journal_path, receipt_key_bytes), rotate=True,
+    protected_ids=milestone_backup_ids)
+adapter = KinstaBackupAdapter(qualified_site_adapter, backups)
+```
+
+`target.site_id` is the exact Kinsta site UUID. The target's `production` maps
+only to native Live; Dev/staging maps only to native staging. Supply the exact
+origin, public root, SSH host/user/port and environment in `native_target_config`.
+Return `adapter`, `target`, the same `journal_path` and normal controller policy
+from the existing protected configuration. Never put `rotate`, protected IDs,
+credentials or the signing key in a release artifact. Rotation defaults off.
+
+At five manual snapshots, the helper selects the oldest eligible snapshot by
+Kinsta creation time. Eligibility requires both a signed backup ledger record
+and its authenticated terminal v1 deployment receipt. Untracked/customer
+snapshots, explicit milestone IDs, active/stale/failed/unresolved runs, daily
+and system backups are preserved. An MRN-looking tag is insufficient. If all
+slots predate enrollment, inspect them read-only and resolve one legacy slot
+with the owner; this helper never silently adopts them for deletion.
+
+The controller writer lease serializes rotation and deployment. Intent and
+provider job IDs live in the signed `kinsta-backups.json` journal. Deletion must
+complete and the selected ID must disappear before creation starts. Each backup
+transaction (deployment or explicitly requested rollback) can retire only one
+snapshot. Known pending jobs resume by ID after the normal
+controller `recover` flow; no repeated DELETE or POST is sent. An interrupted
+write with no recorded job ID requires provider reconciliation. A replacement
+failure prevents activation, while other recovery points are retained. Completed
+backup replay verifies and reuses its snapshot; proof-only retry creates none.
+
+`status` adds `backup_provider_status`, including manual count, capacity,
+oldest eligible ID, pending operations and the next action. Preflight checks the
+same readiness without creating/deleting a snapshot. Existing signing keys and
+both controller history and backup ledger must persist together.
+
+MainWP or GitHub requests can use this policy through the same protected v1
+controller. Installing the helper does not change MainWP's standalone Kinsta
+backup button, enroll a client environment, or enable deletion on older atomic
+workflows. The older exact Doster owner-managed exception is unchanged.
+
+Provider contracts: [manual snapshots and capacity](https://kinsta.com/docs/wordpress-hosting/wordpress-backups-and-disaster-recovery/wordpress-backups/),
+[create/delete API workflow](https://kinsta.com/blog/shell-scripts-kinsta-api/).
+
 ## Run and recover
 
 The protected configuration and CI authorization govern each command. Example request:
