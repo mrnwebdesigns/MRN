@@ -129,6 +129,14 @@ provider need their own qualified purge route. Do not claim all-layer readiness
 from an origin-only purge. Legacy provider code remains for backward
 compatibility; no new enrollment is offered outside the three providers above.
 
+For SiteGround, the build-owned asset helper excludes only manifest-owned child
+handles from Speed Optimizer runtime minify/combine processing. Adopters include
+the generated `mrn-release-assets.php` once; they do not copy provider filters
+into every theme. Parent/plugin assets and HTML-cache APIs keep their existing
+behavior. Nested shipped assets such as `css/vendor` stay in the immutable
+inventory; root development/dependency directories remain excluded. The builder
+verifies its complete candidate before exclusive archive publication.
+
 For Kinsta, a durable v1 adapter can enable [oldest-eligible backup rotation](../tools/site-deploy/release_v1/README.md#kinsta-backup-rotation).
 At full manual capacity it retires one tracked MRN snapshot only after its signed
 deployment receipt is terminal, preserving milestones and unresolved runs. It
@@ -150,6 +158,15 @@ or oversized files fail packaging/preflight. Site owners keep the content intent
 ACF/attachment lookups, environment allowlist and affected paths. Shared code owns
 media limits, checksums, backup gating, replay protection and scoped refresh.
 
+Public media may have a native provider representation, such as SiteGround's
+PNG-to-WebP delivery. Retain and verify the declared original. Bind any delivered
+derivative to the exact attachment, migration fingerprint and verified original
+using trusted provider/WordPress evidence. Retain its format, dimensions, checksum
+and byte count in the protected receipt. Never bless an arbitrary public download
+as the expected asset. QA Engine's tracked `resources` inventory checks those
+exact bytes and their required page references on each device profile; missing
+references and byte mismatches block verification.
+
 ## Global update
 
 Shared MRN release tooling now gives QA Engine ownership of device/asset proof,
@@ -159,6 +176,10 @@ explicit Live hotfix routes remain available. All site tasks start with this
 checklist and the existing [deployment standard](MRN-SITE-DEPLOYMENT-STANDARD.md).
 Adoption remains per environment, with credentials, target-specific qualification
 and a verified rollback. No client site was changed by the shared tooling work.
+
+The [SiteGround staging pilot update](MRN-DEPLOYMENT-PILOT-UPDATE-2026-11-24.md)
+records the qualification evidence and optimizer/media adoption requirements.
+Its staging result does not enroll Live or other sites.
 
 Provider references:
 [WP Engine purge API](https://developers.wpengine.com/docs/managed-hosting-platform/api/reference/operations/purgecache/),

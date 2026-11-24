@@ -38,6 +38,30 @@ Use the [reference host adapter](examples/adapter.py) for an already enrolled at
 
 Trusted site migration closures resolve a stable WordPress record or fail on ambiguity, use WordPress or ACF APIs, read back the resulting field, and return `true` only when the intended state is verified. Keep reruns safe if a command stops mid-script. Use runtime URLs from WordPress. Retain replaced attachments. The WP-CLI runner verifies committed image bytes and uses a migration-owned attachment that can be found again after a stop. It verifies generated metadata and records a per-target WordPress fingerprint and attachment IDs. Completed replay rechecks its attachments and skips the closure. A different fingerprint for the same migration ID blocks. General-purpose PHP must be reviewed before approval because it executes with the WordPress owner's privileges.
 
+### SiteGround assets and public media proof
+
+The generated `mrn-release-assets.php` excludes only manifest-owned child handles
+from native SiteGround minify/combine rewriting. Include it once; provider filters
+are shared helper logic, not code to duplicate in each site. Parent/plugin assets
+and native HTML-cache refresh keep their existing behavior. Shipped nested assets
+such as `css/vendor` are part of the immutable generation. Root dependency and
+development directories remain excluded. The code builder verifies its candidate
+archive before exclusive publication and never replaces another output.
+
+Final QA Engine requests may include `resources`, keyed by canonical same-origin
+URL. Each record supplies `sha256`, `bytes`, and a nonempty `required_on` subset of
+the proof page URLs. QA Engine must observe the resource on each required page,
+on every device and first/warm sample. Wrong bytes or a missing reference fail;
+the verifier never force-fetches an absent image to manufacture a passing page.
+
+Derive expected originals from the immutable migration manifest and verified
+attachment receipt. When the provider negotiates native WebP or another generated
+representation, retain the original and verify its checksum separately. Bind the
+derivative's format, dimensions, byte count and checksum to that exact original,
+attachment and migration using trusted native evidence. Keep this mapping in a
+protected signed receipt. A checksum copied only from a public response is not
+provenance and cannot make an unknown or stale representation acceptable.
+
 ## Kinsta backup rotation
 
 Protected Kinsta adapters can compose `KinstaBackups` and `KinstaBackupAdapter`

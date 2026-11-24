@@ -71,6 +71,27 @@ test('CSS dependency bytes change the generation and retain relative layout', as
   } finally { await rm(root, {recursive: true, force: true}); }
 });
 
+test('shipped nested vendor assets stay complete while root dependencies remain excluded', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'mrn-nested-vendor-'));
+  try {
+    const theme = path.join(root, 'source');
+    await mkdir(path.join(theme, 'css/vendor'), {recursive: true});
+    await mkdir(path.join(theme, 'vendor'), {recursive: true});
+    await writeFile(path.join(theme, 'style.css'), '@import "css/vendor/library.min.css";');
+    await writeFile(path.join(theme, 'css/vendor/library.min.css'), '.icon{background:url(icon.svg)}');
+    await writeFile(path.join(theme, 'css/vendor/icon.svg'), '<svg xmlns="http://www.w3.org/2000/svg"/>');
+    await writeFile(path.join(theme, 'vendor/development.js'), 'throw new Error("not shipped");');
+    const output = path.join(root, 'built');
+    const manifest = await buildAssets({theme, output, slug: 'child', sourceSha: 'a'.repeat(40)});
+    for (const name of ['css/vendor/library.min.css', 'css/vendor/icon.svg']) {
+      assert.ok(Object.hasOwn(manifest.static_files, name));
+      assert.deepEqual(await readFile(path.join(output, 'assets', manifest.public_path, name)),
+        await readFile(path.join(theme, name)));
+    }
+    assert.ok(!Object.hasOwn(manifest.static_files, 'vendor/development.js'));
+  } finally { await rm(root, {recursive: true, force: true}); }
+});
+
 test('Homepage alternatives are built into the release and other routes still require full CSS', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'mrn-routes-'));
   try {

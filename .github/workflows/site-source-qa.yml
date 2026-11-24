@@ -46,7 +46,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: mrnwebdesigns/MRN-qa-engine
-          ref: d0933252cbcec8b64cca464855008caaa7425de3
+          ref: 1454dfd6bd954a4e120e9bb50f67c5fe76d51037
           path: .mrn-qa-engine
           token: ${{ secrets.MRN_QA_ENGINE_TOKEN }}
           persist-credentials: false
@@ -91,7 +91,7 @@ jobs:
           bash "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/install-qa-python.sh"
           composer global config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
           composer global require --no-interaction --no-progress squizlabs/php_codesniffer:^3.13 wp-coding-standards/wpcs:^3.0 dealerdirect/phpcodesniffer-composer-installer:^1.1
-          echo "$(composer global config bin-dir --absolute)" >> "$GITHUB_PATH"
+          composer global config bin-dir --absolute >> "$GITHUB_PATH"
       - name: MRN source acceptance
         shell: bash
         env:

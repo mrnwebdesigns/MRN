@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -10,6 +11,7 @@ import tarfile
 import tempfile
 
 from deploy import export_payload, check, digest
+from verify_release import verify
 
 
 def inventory(root):
@@ -25,9 +27,12 @@ def inventory(root):
 def build(sha, source, slug, output):
     check(slug, r'[a-z0-9_-]+', 'stylesheet')
     output = Path(output)
-    if output.exists():
+    if output.exists() or output.with_suffix('.json').exists():
         raise ValueError('Release output already exists; do not overwrite artifacts')
-    with tempfile.TemporaryDirectory(prefix='mrn-release-') as temp:
+    output.parent.mkdir(parents=True, exist_ok=True)
+    # Keep the candidate on the destination filesystem for exclusive, atomic
+    # publication. No output is visible until the complete archive verifies.
+    with tempfile.TemporaryDirectory(prefix='.mrn-release-', dir=output.parent) as temp:
         root = Path(temp)
         theme = root / 'source'
         theme.mkdir()
@@ -50,9 +55,9 @@ def build(sha, source, slug, output):
                    'tree': digest(files), 'files': files, 'generation': manifest['generation'],
                    'manifest_sha256': files['theme/mrn-assets.json']}
         (built / 'release.json').write_text(json.dumps(release, indent=2, sort_keys=True) + '\n')
-        output.parent.mkdir(parents=True, exist_ok=True)
+        candidate = root / 'release.tar'
         # Uncompressed tar avoids timestamp-bearing gzip headers.
-        with tarfile.open(output, 'w', format=tarfile.USTAR_FORMAT) as archive:
+        with tarfile.open(candidate, 'w', format=tarfile.USTAR_FORMAT) as archive:
             for path in sorted(built.rglob('*')):
                 if not path.is_file():
                     continue
@@ -63,8 +68,14 @@ def build(sha, source, slug, output):
                 with path.open('rb') as content:
                     archive.addfile(info, content)
         receipt = {k: v for k, v in release.items() if k != 'files'}
-        receipt['artifact_sha256'] = hashlib.sha256(output.read_bytes()).hexdigest()
-        output.with_suffix('.json').write_text(json.dumps(receipt, indent=2) + '\n')
+        receipt['artifact_sha256'] = hashlib.sha256(candidate.read_bytes()).hexdigest()
+        verify(candidate, receipt['artifact_sha256'], sha, source, slug)
+        receipt_file = root / 'receipt.json'
+        receipt_file.write_text(json.dumps(receipt, indent=2) + '\n')
+        # link() refuses an existing name, including a competing builder's
+        # output. Never replace an earlier immutable archive or receipt.
+        os.link(candidate, output)
+        os.link(receipt_file, output.with_suffix('.json'))
         print(json.dumps(receipt, indent=2))
 
 
