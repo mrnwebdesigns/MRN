@@ -305,6 +305,29 @@ class Rotation(unittest.TestCase):
             with self.assertRaisesRegex(Blocked, 'inventory changed'): self.backup()
         self.assertEqual([], self.writes('DELETE') + self.writes('POST'))
 
+    def test_explicit_abort_releases_only_reservation_with_no_outstanding_provider_write(self):
+        binding = self.service.binding(self.request, 'deploy')
+        key = sha256(canonical(binding))
+        ledger = self.service.load()
+        ledger['records'][key] = {'stage': 'slot-ready', 'binding': binding}
+        self.service.save(ledger)
+        state = self.activate(finished=True, phases={'abort': {'result': 'passed'}})
+        self.journal.save(state, self.root / 'run-new.json')
+        request = replace(self.request, deployment_id='after-abort')
+        self.activate(request)
+        self.assertTrue(self.backup(request)['database_verified'])
+        self.assertEqual([], self.writes('DELETE'))
+
+    def test_abort_does_not_release_unknown_provider_write(self):
+        self.provider.unknown.add('create')
+        with self.assertRaises(TimeoutError): self.backup()
+        state = self.activate(finished=True, phases={'abort': {'result': 'passed'}})
+        self.journal.save(state, self.root / 'run-new.json')
+        request = replace(self.request, deployment_id='after-abort')
+        self.activate(request)
+        with self.assertRaisesRegex(Blocked, 'earlier Kinsta backup'): self.backup(request)
+        self.assertEqual(1, len(self.writes('POST')))
+
 
 class ControllerIntegration(unittest.TestCase):
     def fixture(self):

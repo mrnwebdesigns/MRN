@@ -109,8 +109,7 @@ class KinstaBackups:
         return {key: getattr(request, key) for key in
                 ('deployment_id', 'owner', 'source_sha', 'artifact_sha256')} | {'purpose': purpose}
 
-    def terminal(self, record):
-        """Only authenticated completed controller receipts release a snapshot."""
+    def controller_state(self, record):
         name = record['binding']['deployment_id']
         state = self.journal.read(self.journal.root / ('run-' + name + '.json'))
         if state is None:
@@ -120,6 +119,26 @@ class KinstaBackups:
                 or any(state.get(k) != binding[k] for k in
                        ('deployment_id', 'owner', 'source_sha', 'artifact_sha256'))
                 or state.get('finished') is not True):
+            return None
+        return state
+
+    def abandoned_reservation(self, record):
+        # slot-ready has no outstanding provider write: a recorded deletion
+        # already completed and creation has not started. Abort never releases
+        # create/delete intents or pending jobs, even if the lease is stale.
+        if record['stage'] != 'slot-ready':
+            return False
+        state = self.controller_state(record)
+        return bool(state and state.get('phases', {}).get('abort', {}).get('result') == 'passed'
+                    and state.get('phases', {}).get('activate', {}).get('result') != 'passed')
+
+    def pending(self, record):
+        return record['stage'] not in ('complete', 'planned') and not self.abandoned_reservation(record)
+
+    def terminal(self, record):
+        """Only authenticated completed controller receipts release a snapshot."""
+        state = self.controller_state(record)
+        if state is None:
             return False
         phases = state.get('phases', {})
         terminal = (phases.get('verify', {}).get('result') == 'passed'
@@ -153,11 +172,11 @@ class KinstaBackups:
         manual = sum(row.get('type') == 'manual' for row in inventory.values())
         eligible = self.candidates(ledger, inventory)
         pending = [row['binding']['deployment_id'] for row in ledger['records'].values()
-                   if row['stage'] not in ('complete', 'planned')]
+                   if self.pending(row)]
         operations = [{'deployment_id': row['binding']['deployment_id'], 'stage': row['stage'],
                        'delete_operation': row.get('delete_operation'),
                        'create_operation': row.get('create_operation')}
-                      for row in ledger['records'].values() if row['stage'] not in ('complete', 'planned')]
+                      for row in ledger['records'].values() if self.pending(row)]
         allowed = not pending and (manual < CAPACITY or (manual == CAPACITY and self.rotate and bool(eligible)))
         return {**self.identity, 'rotation_enabled': self.rotate, 'manual_count': manual,
                 'capacity': CAPACITY, 'oldest_eligible': str(eligible[0][1]) if eligible else None,
@@ -227,7 +246,7 @@ class KinstaBackups:
         ledger = self.load()
         record = ledger['records'].get(key)
         if record is None:
-            if any(row['stage'] not in ('complete', 'planned') for row in ledger['records'].values()):
+            if any(self.pending(row) for row in ledger['records'].values()):
                 raise Blocked('An earlier Kinsta backup operation requires reconciliation')
             record = {'binding': binding, 'label': 'mrn-' + key[:32], 'stage': 'planned',
                       'requested_at': self.clock(), 'rotated_backup_id': None}
