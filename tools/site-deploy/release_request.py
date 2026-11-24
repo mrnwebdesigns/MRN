@@ -123,3 +123,15 @@ def validate_intent(intent, sha):
             or intent.get('source_sha') != sha
             or intent.get('target') != re.fullmatch(TAG, intent['tag'])[1]):
         raise ValueError('Invalid explicit release intent')
+
+
+def local_acceptance(repository, intent, sha):
+    """Select the existing site-specific exception after trusted tag selection."""
+    if not intent:
+        return ''
+    if not isinstance(sha, str) or not re.fullmatch(SHA, sha):
+        raise ValueError('Invalid explicit release source SHA')
+    validate_intent(intent, sha)
+    if repository == 'mrnwebdesigns/freedomhouse-site' and intent['target'] == 'live':
+        return 'qa/release-acceptance/freedomhouse-20261014.json'
+    return ''

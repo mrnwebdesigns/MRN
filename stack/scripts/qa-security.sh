@@ -133,7 +133,17 @@ else
 fi
 
 if [[ -f "${THEME_DIR}/composer.lock" ]] && command -v composer >/dev/null 2>&1; then
-	if ! composer audit --locked --no-dev --working-dir="${THEME_DIR}"; then
+	# Composer can exit with "No installed packages found" when --no-dev
+	# selects an empty runtime set. Validate the lock before deciding this
+	# row is inapplicable; real runtime packages must still be audited.
+	runtime_package_count="$(php -r '
+$lock = json_decode(file_get_contents($argv[1]), true, 512, JSON_THROW_ON_ERROR);
+if (!isset($lock["packages"]) || !is_array($lock["packages"])) { exit(2); }
+echo count($lock["packages"]);
+' "${THEME_DIR}/composer.lock")"
+	if [[ "${runtime_package_count}" == "0" ]]; then
+		echo "No Composer runtime dependencies declared in the verified lock."
+	elif ! composer audit --locked --no-dev --working-dir="${THEME_DIR}"; then
 		STATUS=1
 	fi
 else

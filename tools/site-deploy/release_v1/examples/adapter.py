@@ -5,15 +5,16 @@ implements the site-specific methods shown here and supplies fixed connection
 settings. No site credentials, production permissions or target are included.
 """
 from release_v1.host import AtomicCode, WordPressMigrations
-from release_v1.proof import playwright_proof
+from release_v1.proof import qa_engine_proof
 
 
 class HostAdapter:
-    def __init__(self, provider, store, source_path, wp_root, proof_script):
+    def __init__(self, provider, store, source_path, wp_root, qa_engine_root, proof_output):
         self.provider = provider
         self.code = AtomicCode(store, source_path)
         self.content = WordPressMigrations(wp_root, provider.identify)
-        self.proof_script = proof_script
+        self.qa_engine_root = qa_engine_root
+        self.proof_output = proof_output
 
     def identify(self):
         return self.provider.identify()
@@ -41,7 +42,8 @@ class HostAdapter:
         self.code.activate(code, manifest, current)
 
     def proof(self, request, release, urls):
-        return playwright_proof(self.proof_script, release, urls)
+        proof = self.provider.release_proof_request(request, release, urls)
+        return qa_engine_proof(self.qa_engine_root, proof, self.proof_output / request.deployment_id)
 
     def migrate(self, request, row, root, files, fingerprint, backup, fence):
         return self.content.apply(request, row, root, files, fingerprint, backup, fence)

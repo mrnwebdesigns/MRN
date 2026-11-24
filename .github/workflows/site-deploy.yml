@@ -69,6 +69,10 @@ on:
         required: false
       DEPLOY_KINSTA_API_TOKEN:
         required: false
+      DEPLOY_WPENGINE_API_USERNAME:
+        required: false
+      DEPLOY_WPENGINE_API_PASSWORD:
+        required: false
 permissions:
   contents: read
   actions: read
@@ -78,6 +82,7 @@ jobs:
     outputs:
       target: ${{ steps.source.outputs.target }}
       release_intent: ${{ steps.source.outputs.release_intent }}
+      local_qa_acceptance: ${{ steps.source.outputs.local_qa_acceptance }}
       source_sha: ${{ steps.source.outputs.source_sha }}
       enabled: ${{ steps.source.outputs.enabled }}
       source_branch: ${{ steps.source.outputs.source_branch }}
@@ -234,9 +239,8 @@ jobs:
       promotion_evidence_id: ${{ needs.request.outputs.target == 'both' && needs.dev.outputs.promotion_evidence_id || inputs.promotion_evidence_id }}
       promotion_same_run: ${{ needs.request.outputs.target == 'both' }}
       qualify_doster_live: ${{ inputs.qualify_doster_live }}
-      # Freedom House may request its approved local qualification through a
-      # trusted deploy-live tag as well as the legacy dispatch checkbox.
-      local_qa_acceptance: ${{ inputs.local_qa_acceptance != '' && inputs.local_qa_acceptance || (fromJSON(needs.request.outputs.release_intent).kind == 'tag' && fromJSON(needs.request.outputs.release_intent).target == 'live' && 'qa/release-acceptance/freedomhouse-20261014.json' || '') }}
+      # The trusted request selector scopes automatic acceptance to its owning site.
+      local_qa_acceptance: ${{ inputs.local_qa_acceptance != '' && inputs.local_qa_acceptance || needs.request.outputs.local_qa_acceptance }}
       mode: ${{ inputs.mode }}
       source_sha: ${{ needs.request.outputs.source_sha }}
       qa_source_sha: ${{ needs.source-qa.outputs.source_sha }}

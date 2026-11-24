@@ -72,7 +72,7 @@ class DevQualification(unittest.TestCase):
     def test_qualification_runtime_is_strict_and_rollback_enabled(self):
         workflow=(Path(__file__).parents[3]/'.github/workflows/site-deploy-target.yml').read_text()
         section=workflow.split('      - name: Run runtime QA\n',1)[1].split('      - name:',1)[0]
-        self.assertIn("!(inputs.qualify_dev || inputs.require_promotion_qa)",section)
+        self.assertNotIn("continue-on-error",section)
         self.assertIn("(inputs.target != 'dev' || inputs.qualify_dev || inputs.require_promotion_qa)",workflow)
         script=textwrap.dedent(section.split('        run: |\n',1)[1])
         with tempfile.TemporaryDirectory() as temp:
@@ -116,7 +116,21 @@ class DevQualification(unittest.TestCase):
             self.assertFalse(plan['adopt']);self.assertTrue(plan['exercise_rollback']);self.assertTrue(plan['qualification'])
             self.assertEqual(before['state'],plan['expected_current'])
 
-    def test_runtime_receipt_preserves_actual_advisory_outcome(self):
+    def test_runtime_qa_failure_exits_nonzero_for_every_environment(self):
+        workflow=(Path(__file__).parents[3]/'.github/workflows/site-deploy-target.yml').read_text()
+        section=workflow.split('      - name: Run runtime QA\n',1)[1].split('      - name:',1)[0]
+        self.assertNotIn('continue-on-error',section)
+        script=textwrap.dedent(section.split('        run: |\n',1)[1])
+        with tempfile.TemporaryDirectory() as temp:
+            engine=Path(temp)/'mrn-qa-engine/bin/mrn-qa';engine.parent.mkdir(parents=True)
+            engine.write_text('#!/bin/sh\nexit 7\n');engine.chmod(0o755)
+            for target in ('dev','staging','live'):
+                result=subprocess.run(['bash','-c',script],capture_output=True,
+                    env={**os.environ,'RUNNER_TEMP':temp,'GITHUB_WORKSPACE':temp,
+                         'TARGET':target,'DEPLOY_URL':'https://example.org'})
+                self.assertEqual(7,result.returncode,target)
+
+    def test_runtime_receipt_preserves_actual_outcome(self):
         workflow=(Path(__file__).parents[3]/'.github/workflows/site-deploy-target.yml').read_text()
         section=workflow.split('      - name: Report deployment and runtime acceptance\n',1)[1].split('      - name:',1)[0]
         script=textwrap.dedent(section.split('        run: |\n',1)[1])

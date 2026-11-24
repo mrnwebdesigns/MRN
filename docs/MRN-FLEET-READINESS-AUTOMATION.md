@@ -88,6 +88,12 @@ publication gate is blocked. Authentication remains through the approved GitHub
 CLI account and business SSH agent; a failure never triggers credential fallback.
 
 The existing `stack-promotion-drift.yml` remains an independent read-only audit.
+Push-time audits follow changes to `stack/STACK_VERSION.md` or
+`stack/manifests/**`, after promotion updates the release contract. Daily and
+manual audits remain available. Ordinary source merges still start automatic
+reconciliation; waiting for its replacement lock is an expected transition. All
+source, lock, qualification and publication gates remain required before the
+Fleet selection advances.
 Source fixtures test default installation without WooCommerce and native
 editor/forms, API, accessibility and performance. Genuine provider assessment,
 recovery and installed site adoption remain explicit separate qualifications.
