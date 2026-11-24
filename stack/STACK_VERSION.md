@@ -1,7 +1,7 @@
 # Stack Version
 
 ## Candidate Release
-- Stack release: `2026.11.24-fleet-auto-3dce87a64512`
+- Stack release: `2026.11.24-fleet-auto-8e2055f33711`
 - Release date: `2026-11-24`
 - Status: `source snapshot; qualification/publication evidence establishes Fleet readiness; site rollout separate`
 
