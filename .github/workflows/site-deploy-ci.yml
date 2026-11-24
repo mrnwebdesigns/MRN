@@ -14,6 +14,7 @@ on:
       - .github/workflows/site-source-qa.yml
       - .github/workflows/site-deploy-notify.yml
       - .github/workflows/site-deploy-ci.yml
+      - .github/workflows/stack-promotion-drift.yml
       - .github/workflows/site-release-build.yml
   workflow_dispatch:
 permissions:

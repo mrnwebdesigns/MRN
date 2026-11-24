@@ -315,15 +315,25 @@ def deployment_selection(environ):
     return {'source_sha':sha, 'source_branch':branch, 'target':target, 'kind':'branch'}
 
 
-if __name__ == '__main__':
-    request = deployment_selection(os.environ)
+def github_outputs(request, repository):
     sha = request['source_sha']
     intent = ({k:request[k] for k in ('kind', 'tag', 'tag_object', 'source_sha', 'target')}
               if request['kind'] == 'tag' else {})
+    return {
+        'enabled': 'true' if sha else 'false',
+        'source_sha': sha or '',
+        'source_branch': request['source_branch'] if sha else '',
+        'target': request['target'],
+        'release_intent': json.dumps(intent, separators=(',', ':')),
+        'local_qa_acceptance': release_request.local_acceptance(repository, intent, sha),
+    }
+
+
+if __name__ == '__main__':
+    request = deployment_selection(os.environ)
+    outputs = github_outputs(request, os.environ['GITHUB_REPOSITORY'])
     with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
-        output.write('enabled=' + ('true' if sha else 'false') + '\n')
-        output.write('source_sha=' + (sha or '') + '\n')
-        output.write('source_branch=' + (request['source_branch'] if sha else '') + '\n')
-        output.write('target=' + request['target'] + '\n')
-        output.write('release_intent=' + json.dumps(intent, separators=(',', ':')) + '\n')
-    print('Selected commit: ' + sha if sha else 'No eligible new source push; no deployment requested')
+        for key, value in outputs.items():
+            output.write(key + '=' + value + '\n')
+    print('Selected commit: ' + outputs['source_sha'] if outputs['enabled'] == 'true'
+          else 'No eligible new source push; no deployment requested')

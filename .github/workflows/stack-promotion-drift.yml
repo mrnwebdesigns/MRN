@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+    # Ordinary source merges queue automatic qualification. Audit their release
+    # lock when promotion updates metadata, rather than failing during that queue.
+    paths:
+      - stack/STACK_VERSION.md
+      - stack/manifests/**
   schedule:
     - cron: "17 10 * * *"
   workflow_dispatch:
