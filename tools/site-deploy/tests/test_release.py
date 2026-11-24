@@ -8,10 +8,13 @@ import sys
 import tarfile
 import tempfile
 import unittest
+from unittest import mock
+import shutil
 
 sys.path.insert(0, str(Path(__file__).parents[1]))
 from deploy import digest
 from verify_release import verify
+import build_release
 
 TOOLS = Path(__file__).parents[1]
 
@@ -23,9 +26,12 @@ class ReleaseArtifactContract(unittest.TestCase):
         cls.root = Path(cls.temp.name)
         source = cls.root / 'repo'
         source.mkdir()
+        cls.source = source
         (source / 'functions.php').write_text("<?php require __DIR__ . '/mrn-release-assets.php';\n")
         (source / 'style.css').write_text('/* Theme Name: fixture */\nbody { color: #123456; }\n')
         (source / 'app.js').write_text('window.releaseFixture = 1;\n')
+        (source / 'css/vendor').mkdir(parents=True)
+        (source / 'css/vendor/library.min.css').write_text('.nested { color: red; }\n')
         subprocess.run(['git', 'init', '-q', str(source)], check=True)
         subprocess.run(['git', '-C', str(source), 'add', '.'], check=True)
         subprocess.run(['git', '-C', str(source), '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid',
@@ -75,6 +81,44 @@ class ReleaseArtifactContract(unittest.TestCase):
         self.assertFalse(result['runtime_qualified'])
         self.assertEqual(self.expected, result['artifact_sha256'])
         self.assertIn('style.min.css', result['theme_files'])
+        self.assertIn('css/vendor/library.min.css', result['theme_files'])
+
+    def source_export(self, sha, source, destination):
+        shutil.copytree(self.source, destination, dirs_exist_ok=True, ignore=shutil.ignore_patterns('.git'))
+
+    def test_invalid_compiler_output_is_rejected_before_publishing_archive_or_receipt(self):
+        output = self.root / 'invalid-compiler.tar'
+        real_run = subprocess.run
+
+        def corrupt_compiler(command, **kwargs):
+            result = real_run(command, **kwargs)
+            path = Path(command[3]) / 'theme/mrn-assets.json'
+            manifest = json.loads(path.read_text())
+            manifest['source_sha'] = '0' * 40
+            path.write_text(json.dumps(manifest))
+            return result
+
+        with mock.patch.object(build_release, 'export_payload', self.source_export), \
+                mock.patch.object(build_release.subprocess, 'run', corrupt_compiler):
+            with self.assertRaisesRegex(ValueError, 'identity'):
+                build_release.build(self.sha, '.', 'child', output)
+        self.assertFalse(output.exists())
+        self.assertFalse(output.with_suffix('.json').exists())
+
+    def test_competing_output_is_never_overwritten_after_candidate_verifies(self):
+        output = self.root / 'competing.tar'
+
+        def competing_publisher(*args):
+            result = verify(*args)
+            output.write_bytes(b'another publisher owns this name')
+            return result
+
+        with mock.patch.object(build_release, 'export_payload', self.source_export), \
+                mock.patch.object(build_release, 'verify', competing_publisher):
+            with self.assertRaises(FileExistsError):
+                build_release.build(self.sha, '.', 'child', output)
+        self.assertEqual(output.read_bytes(), b'another publisher owns this name')
+        self.assertFalse(output.with_suffix('.json').exists())
 
     def test_wrong_archive_and_source_identity_are_rejected(self):
         for values in [{'expected': '0' * 64}, {'sha': 'b' * 40}, {'source': 'other-theme'}, {'slug': 'other'}]:

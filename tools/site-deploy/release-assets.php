@@ -76,3 +76,63 @@ function mrn_site_release_asset_url( $src ) {
 
 add_filter( 'style_loader_src', 'mrn_site_release_asset_url', PHP_INT_MAX );
 add_filter( 'script_loader_src', 'mrn_site_release_asset_url', PHP_INT_MAX );
+
+/**
+ * Preserve immutable child assets when a host optimizer rewrites queued handles.
+ *
+ * @param string[]    $excluded Existing provider exclusions.
+ * @param object|null $registry WordPress scripts or styles registry.
+ * @return string[]
+ */
+function mrn_site_release_optimizer_exclusions( $excluded, $registry ) {
+	$excluded = is_array( $excluded ) ? $excluded : array();
+	$manifest = mrn_site_release_asset_manifest();
+	$base     = wp_parse_url( trailingslashit( get_stylesheet_directory_uri() ) );
+	if ( ! is_array( $base ) || empty( $base['host'] ) || empty( $base['path'] ) ) {
+		throw new RuntimeException( 'Immutable child assets require an absolute theme URL.' );
+	}
+	foreach ( $registry->registered ?? array() as $handle => $asset ) {
+		if ( ! isset( $asset->src ) || ! is_string( $asset->src ) ) {
+			continue;
+		}
+		$url = wp_parse_url( $asset->src );
+		if ( ( $url['host'] ?? null ) !== $base['host']
+			|| 0 !== strpos( $url['path'] ?? '', $base['path'] ) ) {
+			continue;
+		}
+		$name = rawurldecode( substr( $url['path'], strlen( $base['path'] ) ) );
+		if ( isset( $manifest['assets'][ $name ] ) ) {
+			$excluded[] = $handle;
+		}
+	}
+	return array_values( array_unique( $excluded ) );
+}
+
+/**
+ * Exclude build-owned CSS from native runtime minification and combination.
+ *
+ * @param string[] $excluded Existing provider exclusions.
+ * @return string[]
+ */
+function mrn_site_release_style_exclusions( $excluded ) {
+	global $wp_styles;
+	return mrn_site_release_optimizer_exclusions( $excluded, $wp_styles );
+}
+
+/**
+ * Exclude build-owned scripts from native runtime minification and combination.
+ *
+ * @param string[] $excluded Existing provider exclusions.
+ * @return string[]
+ */
+function mrn_site_release_script_exclusions( $excluded ) {
+	global $wp_scripts;
+	return mrn_site_release_optimizer_exclusions( $excluded, $wp_scripts );
+}
+
+// These native hooks have no effect on hosts without Speed Optimizer. Preserve
+// parent/plugin assets and HTML-cache behavior; only this manifest owns builds.
+add_filter( 'sgo_css_minify_exclude', 'mrn_site_release_style_exclusions', PHP_INT_MAX );
+add_filter( 'sgo_css_combine_exclude', 'mrn_site_release_style_exclusions', PHP_INT_MAX );
+add_filter( 'sgo_js_minify_exclude', 'mrn_site_release_script_exclusions', PHP_INT_MAX );
+add_filter( 'sgo_javascript_combine_exclude', 'mrn_site_release_script_exclusions', PHP_INT_MAX );

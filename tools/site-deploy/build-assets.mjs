@@ -14,7 +14,9 @@ const excluded = new Set(['node_modules', 'vendor', 'tests', 'docs', 'scripts', 
 async function inventory(root, prefix = '', excludedDirectories = excluded) {
   const files = [];
   for (const entry of (await readdir(path.join(root, prefix), {withFileTypes: true})).sort((a,b) => a.name < b.name ? -1 : 1)) {
-    if (entry.name.startsWith('.') || excludedDirectories.has(entry.name)) continue;
+    // Match deploy.allowed(): root development/dependency directories are
+    // excluded, while shipped dependencies such as css/vendor remain owned.
+    if (entry.name.startsWith('.') || (!prefix && excludedDirectories.has(entry.name))) continue;
     const name = path.posix.join(prefix, entry.name);
     if (entry.isSymbolicLink()) throw new Error('Asset symlink is not allowed: ' + name);
     if (entry.isDirectory()) files.push(...await inventory(root, name, excludedDirectories));
