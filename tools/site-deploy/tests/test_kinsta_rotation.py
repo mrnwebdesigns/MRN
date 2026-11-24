@@ -292,6 +292,46 @@ class Rotation(unittest.TestCase):
         with self.assertRaisesRegex(Blocked, 'duplicate'): self.backup()
         self.assertEqual([], self.writes('DELETE') + self.writes('POST'))
 
+    def test_waiting_for_capacity_does_not_make_the_replacement_look_stale(self):
+        self.provider.rows = [{'id': index, 'note': 'customer milestone', 'type': 'manual', 'created_at': index}
+                              for index in range(1, 6)]
+        now = time.time()
+        self.provider.clock = lambda: now
+        self.service.clock = lambda: now
+        with self.assertRaises(Blocked): self.backup()
+        now += 7200  # Owner resolves one legacy slot; the same request resumes.
+        self.provider.rows.pop()
+        receipt = self.backup()
+        self.assertTrue(self.service.verify_backup(self.request, receipt))
+        stored = next(iter(self.service.load()['records'].values()))
+        self.assertEqual(now, stored['receipt']['created_at'])
+        self.assertEqual([], self.writes('DELETE'))
+
+    def test_completed_replay_cannot_refresh_an_expired_snapshot(self):
+        now = time.time()
+        self.provider.clock = lambda: now
+        self.service.clock = lambda: now
+        receipt = self.backup()
+        now += 3601
+        self.assertFalse(self.service.verify_backup(self.request, receipt))
+        with self.assertRaises(ValueError): self.backup()
+        self.assertEqual(1, len(self.writes('POST')))
+
+    def test_identity_read_failure_before_post_does_not_create_an_uncertain_write_intent(self):
+        original = self.provider.identity
+        calls = 0
+        def identity(config):
+            nonlocal calls
+            calls += 1
+            if calls == 2:
+                raise RuntimeError('Temporary provider read failure')
+            return original(config)
+        with patch.object(self.provider, 'identity', side_effect=identity):
+            with self.assertRaises(RuntimeError): self.backup()
+        self.assertEqual('slot-ready', next(iter(self.service.load()['records'].values()))['stage'])
+        self.assertEqual([], self.writes('POST'))
+        self.assertTrue(self.backup()['database_verified'])
+
     def test_inventory_race_stops_before_deletion(self):
         self.tracked()
         original = self.service.inventory

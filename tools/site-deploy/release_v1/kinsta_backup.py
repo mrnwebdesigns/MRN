@@ -214,9 +214,11 @@ class KinstaBackups:
         raise Blocked('Kinsta backup operation remains pending; resume the same request')
 
     def start_operation(self, ledger, record, kind, path, body=None):
-        record['stage'] = kind + '-intent'
-        self.save(ledger)  # Persist before sending any destructive/provider request.
         self.provider.identity(self.config)
+        record['stage'] = kind + '-intent'
+        if kind == 'create':
+            record['create_requested_at'] = self.clock()
+        self.save(ledger)  # Persist before sending any destructive/provider request.
         result = (self.provider.api(path, method='DELETE') if kind == 'delete'
                   else self.provider.api(path, body))
         operation = result.get('operation_id')
@@ -290,12 +292,15 @@ class KinstaBackups:
                        if row.get('type') == 'manual' and (row.get('note') or row.get('tag')) == record['label']]
             if len(matches) != 1:
                 raise Blocked('Completed Kinsta backup could not be read back uniquely')
+            timestamp = created_at(matches[0].get('created_at'))
+            if not record['create_requested_at'] - 60 <= timestamp <= self.clock() + 60:
+                raise Blocked('Kinsta snapshot creation time differs from its recorded request')
             record['receipt'] = {'valid': True, 'provider': 'kinsta',
                 'environment_id': self.provider.environment_id, 'label': record['label'],
                 'operation_id': record['create_operation'], 'backup_id': matches[0]['id'],
-                'created_at': record['requested_at'], 'scope': 'deployment-transaction'}
+                'created_at': timestamp, 'scope': 'deployment-transaction'}
             backup_id(matches[0]['id'])
-            record['snapshot_created_at'] = created_at(matches[0].get('created_at'))
+            record['snapshot_created_at'] = timestamp
             record['stage'] = 'complete'
             self.save(ledger)
         if record['stage'] != 'complete':
