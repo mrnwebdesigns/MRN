@@ -73,7 +73,8 @@ Verify the exact 33-plugin inventory (32 active in development because Post SMTP
 is inactive), the active child/parent pair, all required MU components and no
 legacy collisions. Confirm native SEOPress fields and the absence of the retired
 SEO Helper Content Types and SEO & Schema panels. Save/reload content through
-Classic Editor/ACF, inspect the public page, sitemap and schema, and check license
-and managed-credential presence without exposing values. Test real backup storage,
+Classic Editor/ACF, inspect the public page, sitemap and schema, apply premium
+licenses through the [post-bootstrap license delivery](MRN-PLUGIN-LICENSE-DELIVERY.md)
+actions, and check license and managed-credential presence without exposing values. Test real backup storage,
 reCAPTCHA assessment and mail delivery only within the selected environment's
 policy. Record any warnings before deciding on existing-site rollout.

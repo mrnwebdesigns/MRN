@@ -42,8 +42,8 @@ SCRIPTS = {'scripts/site-bootstrap.sh', 'scripts/configure-wordfence.php',
            'scripts/configure-previewshare.php', 'scripts/verify-previewshare.php',
            'scripts/bootstrap_readiness.py', 'scripts/bootstrap-new-sites.sh',
            'scripts/bootstrap-dev-enrollment.sh', 'scripts/source-distribution-lease.sh', 'scripts/bootstrap_readiness.py'}
-MANIFESTS = {'plugins.txt', 'themes.txt', 'licenses.txt', 'importers.txt',
-             'credential-files.txt', 'license-exemptions.txt', 'stack-release.lock.json',
+# License manifests are not published: bootstrap no longer applies licenses.
+MANIFESTS = {'plugins.txt', 'themes.txt', 'importers.txt', 'stack-release.lock.json',
              'bootstrap-packages.lock.json', 'component-catalog.json', 'retired-capabilities.json'}
 
 

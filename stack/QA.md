@@ -106,8 +106,8 @@ What it checks:
 
 ### License Coverage QA
 
-Verify that every third-party packaged plugin in the bootstrap manifest is
-either licensed or has a declared exemption:
+Verify that every third-party packaged plugin in the bootstrap manifest has a
+post-bootstrap license handler or a declared exemption:
 
 ```bash
 /Users/khofmeyer/Development/MRN/stack/scripts/qa-license-coverage.sh
@@ -116,10 +116,12 @@ either licensed or has a declared exemption:
 What it checks:
 
 - every third-party package zip in `manifests/plugins.txt` either matches a
-  `manifests/licenses.txt` mapping or is listed in
+  `manifests/premium-licenses.txt` row or is listed in
   `manifests/license-exemptions.txt` with a reason
-- every secret file referenced by `licenses.txt` is declared in the
-  vendor-neutral `manifests/credential-files.txt` map
+- every `premium-licenses.txt` row names a known handler of the child-side
+  `mrn_plugin_licenses` operation and well-formed logical credential keys
+- `scripts/site-bootstrap.sh` does not read or apply licenses (licenses are
+  delivered after bootstrap; see `docs/MRN-PLUGIN-LICENSE-DELIVERY.md`)
 
 This is a static manifest check. It never reads secret values and never
 contacts a secret provider. Run it whenever a third-party plugin is added to or

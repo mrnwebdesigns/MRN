@@ -7,7 +7,7 @@ import unittest
 
 SCRIPT = (Path(__file__).parents[1] / 'scripts/site-bootstrap.sh').read_text()
 INSTALL = 'install_plugins() {' + SCRIPT.split('install_plugins() {', 1)[1].split('\nconfigure_wordfence_defaults()', 1)[0]
-ACTIVATE = 'ensure_all_plugins_active() {' + SCRIPT.split('ensure_all_plugins_active() {', 1)[1].split('\napply_licenses()', 1)[0]
+ACTIVATE = 'ensure_all_plugins_active() {' + SCRIPT.split('ensure_all_plugins_active() {', 1)[1]
 # End at the actual next function, regardless of future additions below it.
 ACTIVATE = ACTIVATE.split('\n}\n', 1)[0] + '\n}\n'
 

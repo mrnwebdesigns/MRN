@@ -32,7 +32,7 @@ Scope: non-custom plugins and package zips referenced by `stack/manifests/plugin
 | Classic Editor | `classic-editor` slug | latest at install | 1.7.0 | Current via WordPress.org. |
 | Enable Media Replace | `enable-media-replace` slug | latest at install | 4.2.2 | Current via WordPress.org. |
 | Post SMTP | `post-smtp` slug | latest at install | 4.0.2 (site evidence) | Replaces FluentSMTP; provider credentials and a delivery test remain site-specific go-live gates. |
-| HappyFiles Pro | `happyfiles-pro.zip` | 1.9.1 | not confirmed; vendor changelog is dynamic/account-gated | Unchanged at 1.9.1. No license mapping exists and its licensing model is unconfirmed. |
+| HappyFiles Pro | `happyfiles-pro.zip` | 1.9.1 | not confirmed; vendor changelog is dynamic/account-gated | Unchanged at 1.9.1. Licensed after bootstrap by the `happyfiles_pro` handler (see `docs/MRN-PLUGIN-LICENSE-DELIVERY.md`). |
 | Post Duplicator | `post-duplicator` slug | latest at install | 3.0.15 | Current via WordPress.org. |
 | PreviewShare | `previewshare` slug | 1.1.0 | 1.1.0 | Required Stack preview-sharing plugin. The checksum-locked WordPress.org release supports Classic Editor and Gutenberg, per-item expiry overrides, link revocation, and preview robots protections. |
 | Post Types Order | `post-types-order` slug | latest at install | 2.4.8 | Current via WordPress.org. |
