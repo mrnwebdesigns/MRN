@@ -6,6 +6,7 @@ No GitHub CLI, account-wide website credential, or legacy uploader is used.
 import base64
 import io
 import json
+import re
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -21,6 +22,29 @@ class GitHubError(RuntimeError):
 class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         return None
+
+
+def release_browser_rows(proof, receipt):
+    urls = list(dict.fromkeys(row['url'] for row in receipt.get('activation', {}).get('cache', {}).get('pages', [])))
+    if (not isinstance(proof, dict) or proof.get('schema') != 'mrn.release-proof/v1' or proof.get('status') != 'passed'
+            or proof.get('source_sha') != receipt.get('source_sha')
+            or not re.fullmatch(r'[0-9a-f]{64}', proof.get('artifact_sha256') or '')
+            or proof['artifact_sha256'] != receipt.get('artifact_sha256')
+            or proof.get('release_id') != receipt.get('current', {}).get('release_id')
+            or proof.get('origin') != receipt.get('url') or not urls or proof.get('urls') != urls
+            or not re.fullmatch(r'[0-9a-f]{40}', proof.get('qa_engine_sha') or '')):
+        raise ValueError('QA Engine browser proof does not match the activated release')
+    rows = proof.get('rows', [])
+    expected = {(url, device, phase) for url in urls for device in ('desktop', 'tablet', 'mobile')
+                for phase in ('first', 'warm')}
+    if (not isinstance(rows, list) or len(rows) != len(expected)
+            or any(not isinstance(row, dict) or row.get('errors') != [] or not isinstance(row.get('assets'), list)
+                   or not row['assets'] or row.get('url') not in urls
+                   or row.get('device') not in ('desktop', 'tablet', 'mobile') or row.get('phase') not in ('first', 'warm')
+                   for row in rows)
+            or {(row.get('url'), row.get('device'), row.get('phase')) for row in rows} != expected):
+        raise ValueError('QA Engine browser proof lacks passing first and warm checks for every device and URL')
+    return [{**row, 'viewport': row['device']} for row in rows]
 
 
 class GitHub:
@@ -331,4 +355,10 @@ class GitHub:
                 if len(matches) != 1 or matches[0].file_size > 8 * 1024 * 1024:
                     raise ValueError('Invalid evidence member: ' + name)
                 return json.loads(archive.read(matches[0]))
-            return member('site-deployment.json'), member('site-browser/browser-assets.json', []), member('site-runtime-result.json', {})
+            receipt = member('site-deployment.json')
+            if 'site-browser/release-proof.json' in archive.namelist():
+                proof = member('site-browser/release-proof.json')
+                browser = [] if allow_incomplete and isinstance(proof, dict) and proof.get('status') != 'passed' else release_browser_rows(proof, receipt)
+            else:
+                browser = member('site-browser/browser-assets.json', [])
+            return receipt, browser, member('site-runtime-result.json', {})

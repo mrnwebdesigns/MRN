@@ -14,7 +14,7 @@ from unittest.mock import patch
 
 sys.path.insert(0,str(Path(__file__).parents[1]))
 import enroll_dev as enrollment
-from enrollment_github import GitHub
+from enrollment_github import GitHub, release_browser_rows
 import enrollment_credentials
 
 SHA='a'*40
@@ -184,6 +184,30 @@ class EnrollmentFlow(unittest.TestCase):
             self.assertEqual('1', self.gh.variables['DEPLOY_READY'])
             self.assertEqual(2, policy.call_count)
 
+    def test_existing_qualification_proof_replays_without_dispatch_arming_or_runtime_write(self):
+        previous_ref = '9'*40
+        run_url = 'https://github.com/mrnwebdesigns/example-site/actions/runs/99'
+        self.gh.current = SHA
+        self.state.update(stage='qualification-dispatched', tooling_ref=previous_ref, source_sha=SHA,
+                          adoption={'repository_id': 37}, qualification_run=run_url)
+        self.gh.deployments = [{
+            'event': 'workflow_dispatch', 'display_title': 'MRN Dev qualification example-binding',
+            'id': 99, 'html_url': run_url, 'conclusion': 'success'}]
+        self.gh.prefix = '/repos/mrnwebdesigns/example-site'
+        with patch.object(self.gh, 'request', create=True, side_effect=[
+                {'value': '0'}, {'value': SHA}, None, None]), \
+                patch.object(self.gh, 'verify_dev_policy', create=True), \
+                patch.object(self.gh, 'proof', return_value={'source_sha': SHA, 'run_url': run_url, 'release_id': 'a'*64}), \
+                patch.object(enrollment, 'verify_uncached_html'), \
+                patch.object(enrollment, 'head', return_value={'x-mrn-site-release': 'a'*64}):
+            self.e.reconcile_adoption_proof(previous_ref, '99')
+        self.assertEqual('arm-dev', self.state['stage'])
+        self.assertEqual(SHA, self.state['tooling_ref'])
+        self.assertEqual(previous_ref, self.state['proof_reconciled_from'])
+        self.assertTrue((self.root / 'qualification.json').is_file())
+        self.assertEqual([], self.gh.calls)
+        self.mocks[2].assert_not_called()
+
 
 class ExistingAdoptionTests(unittest.TestCase):
     def test_exact_child_baseline_is_required_and_other_git_files_are_preserved(self):
@@ -267,6 +291,23 @@ class EvidenceTests(unittest.TestCase):
             return self.gh.proof(self.run,SHA,'https://example.mrndev.io','example-child',qualification=qualification,
                                  signal_number=None if qualification else 4,prior_release=prior_release,cloudpanel=cloudpanel)
     def test_passes_exact_receipts(self):self.assertEqual(SHA,self.prove(True)['source_sha']);self.prove()
+    def test_qa_engine_browser_receipt_binds_the_exact_artifact_all_devices_and_cache_phases(self):
+        url = self.receipt['url']
+        page = url + '/'
+        checksum = 'a'*64
+        self.receipt.update(artifact_sha256=checksum, activation={'cache': {'pages': [{'url': page}]}})
+        proof = {'schema': 'mrn.release-proof/v1', 'status': 'passed', 'source_sha': SHA,
+                 'artifact_sha256': checksum, 'release_id': self.receipt['current']['release_id'],
+                 'origin': url, 'urls': [page], 'qa_engine_sha': PILOT,
+                 'rows': [{'url': page, 'device': device, 'phase': phase, 'errors': [], 'assets': [{'sha256': checksum}]}
+                          for device in ('desktop', 'tablet', 'mobile') for phase in ('first', 'warm')]}
+        rows = release_browser_rows(proof, self.receipt)
+        self.assertEqual(6, len(rows))
+        self.assertEqual({'desktop', 'tablet', 'mobile'}, {row['viewport'] for row in rows})
+        for change in ({'artifact_sha256': 'b'*64}, {'rows': proof['rows'][:-1]},
+                       {'rows': [*proof['rows'][:-1], proof['rows'][0]]}, {'status': 'failed'}):
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                release_browser_rows({**proof, **change}, self.receipt)
     def test_green_workflow_with_advisory_runtime_failure_is_not_ready(self):
         self.jobs['jobs'][0]['steps'][-1]['conclusion']='failure'
         with self.assertRaises(ValueError):self.prove()
