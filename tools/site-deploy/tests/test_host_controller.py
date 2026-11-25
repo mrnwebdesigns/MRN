@@ -122,7 +122,7 @@ class HostControllerContract(unittest.TestCase):
         # Bypass only the test's identity stub to exercise the actual boundary.
         self.patches[0].stop()
         with patch.object(host, 'wp') as wp:
-            with self.assertRaisesRegex(ValueError, 'Live remains disabled'):
+            with self.assertRaisesRegex(ValueError, 'restricted to MRN Dev'):
                 host.identity({**self.plan, 'environment': 'live'})
             wp.assert_not_called()
 

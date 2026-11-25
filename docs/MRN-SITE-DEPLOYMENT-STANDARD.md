@@ -416,6 +416,13 @@ the repository to developers. Host installation and service credentials are
 required; this source capability does not enroll existing sites automatically.
 Live remains a separate, authorized qualification step.
 
+For an existing CloudPanel Dev site, use the
+[explicit adoption procedure](MRN-DEV-DEPLOYMENT-ONBOARDING.md#enroll-an-existing-cloudpanel-dev-site)
+with its existing private GitHub repository and reviewed main SHA. The
+controller compares the installed child to that commit and installs Dev-only
+wrappers in a descendant commit. The operator arms automatic Dev only after
+the shared qualification and rollback exercise pass.
+
 Deployment readiness belongs **before launch**, alongside DNS/TLS, backup,
 forms/mail, cron, indexability, cache, and runtime acceptance. For already-live sites, complete it as post-launch onboarding.
 

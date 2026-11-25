@@ -1,9 +1,9 @@
 # MRN deployment front door
 
 This is the starting point for every site deployment task. Supported enrollment
-providers are WP Engine, SiteGround and Kinsta. First identify the site's actual
-source and approved transport. A shared tooling release does not enroll a site,
-rotate its credentials, enable Live or authorize a deployment.
+providers are WP Engine, SiteGround, Kinsta and CloudPanel for Dev on
+`*.mrndev.io`. First identify the site's actual source and approved transport.
+Shared tooling publication and target enrollment are separate operations.
 
 ## Deployment success means a verified release
 
@@ -111,6 +111,14 @@ are not evidence that a customer environment is enrolled.
 | WP Engine | Existing site-owner SSH and pinned host key, verified remote Updraft backup, API username/password secrets and install UUID variable, matching API install/domain/environment, page plus CDN API purges |
 | SiteGround | Existing site-owner SSH and pinned host key, verified remote Updraft backup, qualified Speed Optimizer exact-URL Dynamic Cache API, file cache disabled, separate qualified purge for any active CDN |
 | Kinsta | API token, exact site/environment IDs, pinned connection identity, approved native transaction backup, origin and exact-URL edge invalidation, immutable versioned CDN assets |
+| CloudPanel Dev | Exact site ID, WordPress owner and HTTPS `<site>.mrndev.io` origin, development environment, dedicated pinned site-owner SSH, verified remote Updraft backup, and uncached WordPress/Varnish and Cloudflare HTML proof |
+
+[CloudPanel Dev onboarding](MRN-DEV-DEPLOYMENT-ONBOARDING.md#enroll-an-existing-cloudpanel-dev-site)
+covers explicit enrollment of an existing private MRN GitHub repository and
+the separate post-bootstrap path for new sites. Existing-site enrollment
+preserves Git history, qualifies and exercises rollback while Dev is disarmed,
+then requires explicit arming and an ordinary-push deployment receipt.
+CloudPanel enrollment covers Dev child-theme code only.
 
 WP Engine's API uses Basic authentication with an API username and password.
 Store `DEPLOY_WPENGINE_API_USERNAME` and `DEPLOY_WPENGINE_API_PASSWORD` as environment
@@ -126,8 +134,9 @@ SiteGround CDN is a separate layer from Speed Optimizer Dynamic Cache. A CDN
 that cannot be purged and qualified is an enrollment blocker. No shared
 SiteGround CDN automation is claimed by this change. Third-party CDNs on any
 provider need their own qualified purge route. Do not claim all-layer readiness
-from an origin-only purge. Legacy provider code remains for backward
-compatibility; no new enrollment is offered outside the three providers above.
+from an origin-only purge. CloudPanel's Dev adapter requires proof that HTML
+caching is disabled at both origin and edge. An active or unproven layer blocks
+enrollment pending an exact-target cache adapter.
 
 For SiteGround, the build-owned asset helper excludes only manifest-owned child
 handles from Speed Optimizer runtime minify/combine processing. Adopters include

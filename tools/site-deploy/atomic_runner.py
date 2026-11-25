@@ -13,7 +13,7 @@ import time
 from deploy import Target, check, config, digest, verify_identity, verify_state_privacy, verify_git_privacy, qualification_request, qualification_target
 from deployment_request import check_order, github_order, require_current_push
 from verify_release import verify
-from host_paths import activation_environment
+from host_paths import activation_environment, cloudpanel_dev_url
 
 TOOLS = Path(__file__).resolve().parent
 HOST_FILES = ('host_controller.py', 'atomic_store.py', 'cache_policy.py', 'deploy.py', 'public_http.py',
@@ -45,6 +45,8 @@ def run(plan, c, record_write=None):
     importing = bool(plan.get('bind_imported_source'))
     promotion = plan.get('promote_kinsta_staging')
     activation_environment(plan['environment'], c.get('host_provider', 'cloudpanel'))
+    if c.get('host_provider', 'cloudpanel') == 'cloudpanel':
+        cloudpanel_dev_url(c['url'])
     c = dict(c, environment=plan['environment'])
     if plan.get('bind_imported_source') and (not native or plan['environment'] != 'staging'):
         raise ValueError('Imported release enrollment is restricted to native Kinsta staging')
@@ -52,8 +54,6 @@ def run(plan, c, record_write=None):
         raise ValueError('Native transaction backup policy requires explicit owner approval')
     if c['backup_provider'] != 'updraft' and not native:
         raise ValueError('No qualified activation adapter for this backup provider')
-    if c.get('host_provider', 'cloudpanel') == 'cloudpanel' and (plan['environment'] != 'dev' or not c['url'].endswith('.mrndev.io')):
-        raise ValueError('Live activation remains disabled for the CloudPanel Dev adapter')
     qualifying = False
     if plan.get('qualification'):
         qualifying = qualification_request(argparse.Namespace(sha=plan['source_sha'], mode='deploy', environment=plan['environment']), c, os.environ)

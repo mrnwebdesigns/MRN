@@ -18,7 +18,9 @@ Scope:
 Deployment tasks:
 - Start every site deployment task with `docs/MRN-DEPLOYMENT-QUICKSTART.md`.
 - Resolve the actual Git or reviewed-file source route and exact environment before selecting tooling.
-- New provider enrollment is limited to WP Engine, SiteGround and Kinsta.
+- New provider enrollment supports WP Engine, SiteGround, Kinsta and
+  CloudPanel Dev on exact first-level `mrndev.io` sites. CloudPanel staging
+  and Live are outside this enrollment contract.
 - QA Engine owns browser/device proof. Shared deployment orchestrates its gates.
 - Site enrollment and runtime qualification remain required; shared tests do not make all sites deployable.
 

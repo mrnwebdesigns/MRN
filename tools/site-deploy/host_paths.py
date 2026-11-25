@@ -4,12 +4,20 @@ Provider aliases are resolved on the destination, never by trusting a caller's
 replacement root. These helpers do not enable a deployment or perform writes.
 """
 from pathlib import Path
+import re
 from urllib.parse import urlsplit
 
 
 def activation_environment(environment, provider):
+    if provider == 'cloudpanel' and environment != 'dev':
+        raise ValueError('CloudPanel adapter is restricted to MRN Dev')
     if environment not in ('dev', 'live') and not (environment == 'staging' and provider in ('wpengine', 'siteground', 'kinsta')):
         raise ValueError('No qualified activation adapter for this environment/provider')
+
+
+def cloudpanel_dev_url(url):
+    if not re.fullmatch(r'https://[a-z0-9][a-z0-9-]*\.mrndev\.io', url):
+        raise ValueError('CloudPanel requires an exact first-level HTTPS MRN Dev URL')
 
 
 def qualify_provider(plan, wordpress):
@@ -24,7 +32,9 @@ def qualify_provider(plan, wordpress):
     if plan.get('backup_provider') != expected_backup:
         raise ValueError('No qualified activation adapter for this environment/backup provider')
     if provider == 'cloudpanel':
-        if environment != 'dev' or not host.endswith('.mrndev.io'):
+        cloudpanel_dev_url(plan['url'])
+        if (wordpress.get('siteurl') != plan['url']
+                or wordpress.get('environment_type') != 'development'):
             raise ValueError('CloudPanel adapter is restricted to MRN Dev')
     elif provider == 'wpengine':
         account = plan.get('ssh_user', '')

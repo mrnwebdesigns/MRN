@@ -324,7 +324,8 @@ Never treat LOCAL, `mrndev.io` review, and production environments as interchang
 
 Start every deployment task with [MRN deployment front door](MRN-DEPLOYMENT-QUICKSTART.md).
 Resolve the site's actual Git or reviewed-file route and exact Dev/staging/Live
-target. New provider enrollment is limited to WP Engine, SiteGround and Kinsta.
+target. New provider enrollment supports WP Engine, SiteGround, Kinsta and
+CloudPanel Dev on exact first-level `mrndev.io` sites.
 Use QA Engine for device proof, the shared release controller for orchestration,
 and a separately verified backup before writes. A PR is not required to request
 a release. An explicit emergency Live hotfix may bypass Dev/staging acceptance

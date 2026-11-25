@@ -21,7 +21,7 @@ class DeploymentSafety(unittest.TestCase):
         self.config = {
             'url': 'https://example.org', 'host': 'host.example.org', 'root': '/home/site/public',
             'template': 'parent', 'state_dir': '/home/site/private', 'transport': 'rsync',
-            'baseline': deploy.digest(self.files), 'ready': True,
+            'baseline': deploy.digest(self.files), 'ready': True, 'host_provider': 'siteground',
         }
         self.before = {
             'home': 'https://example.org', 'stylesheet': 'child', 'template': 'parent',
@@ -111,6 +111,15 @@ class DeploymentSafety(unittest.TestCase):
         self.assertEqual('preflight', receipt['status'])
         self.assertEqual('verified-build-artifact', receipt['payload_kind'])
         self.assertFalse(receipt['artifact']['runtime_qualified'])
+
+    def test_cloudpanel_live_is_rejected_before_site_access_even_in_preflight(self):
+        self.config['host_provider'] = 'cloudpanel'
+        for mode in ('deploy', 'preflight'):
+            with self.subTest(mode=mode):
+                operations, error, receipt = self.exercise(mode)
+                self.assertEqual([], operations)
+                self.assertIn('restricted to MRN Dev', str(error))
+                self.assertIsNone(receipt)
 
     def test_qualified_native_routine_deploy_reaches_guarded_atomic_controller(self):
         self.config.update(host_provider='kinsta', backup_provider='kinsta', native_transaction_backup_approved=True)

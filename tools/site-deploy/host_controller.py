@@ -17,8 +17,8 @@ import traceback
 from urllib.parse import urlsplit, urljoin
 
 from atomic_store import Store, durable_replace, inventory
-from host_paths import qualify_provider, activation_environment
-from cache_policy import canonical_pages, head, verify_cloudpanel_origin, verify_uncached_html
+from host_paths import activation_environment, cloudpanel_dev_url, qualify_provider
+from cache_policy import WORDPRESS_CACHE_PROBE, canonical_pages, head, verify_cloudpanel_origin, verify_uncached_html
 from deploy import check, digest, http_check
 from public_http import diagnostics, PublicHTTPError
 import urllib.error
@@ -50,22 +50,17 @@ def backup(root, operation):
 
 def identity(plan):
     activation_environment(plan['environment'], plan.get('host_provider', 'cloudpanel'))
-    if plan.get('environment') == 'live' and plan.get('host_provider', 'cloudpanel') == 'cloudpanel':
-        raise ValueError('Live remains disabled without an explicit production adapter')
+    if plan.get('host_provider', 'cloudpanel') == 'cloudpanel':
+        cloudpanel_dev_url(plan['url'])
     canonical_pages(plan['url'], plan['pages'])
     check(plan['repository'], r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+', 'repository')
     check(plan['root'], r'/[A-Za-z0-9_./-]+', 'WordPress root')
-    result = wp(plan['root'], '''
-$plugins = array_values((array) get_option('active_plugins', array()));
-$caches = array_values(array_filter($plugins, static function($plugin) {
-    return (bool) preg_match('/cache|rocket|autoptimize|perfmatters|nitropack|breeze|hummingbird/i', $plugin);
-}));
-echo 'MRN_RESULT=' . wp_json_encode(array(
-    'url'=>untrailingslashit(get_option('home')), 'slug'=>get_stylesheet(), 'template'=>get_template(),
+    result = wp(plan['root'], WORDPRESS_CACHE_PROBE + '''
+echo 'MRN_RESULT=' . wp_json_encode($cache + array(
+    'url'=>untrailingslashit(get_option('home')), 'siteurl'=>untrailingslashit(site_url()),
+    'slug'=>get_stylesheet(), 'template'=>get_template(),
     'root'=>realpath(ABSPATH), 'content'=>realpath(WP_CONTENT_DIR),
-    'environment_type'=>wp_get_environment_type(),
-    'wp_cache'=>defined('WP_CACHE') && WP_CACHE,
-    'advanced_cache'=>file_exists(WP_CONTENT_DIR . '/advanced-cache.php'), 'cache_plugins'=>$caches
+    'environment_type'=>wp_get_environment_type()
 ));
 ''')
     if any(result.get(key) != plan[key] for key in ('url', 'slug', 'template')):

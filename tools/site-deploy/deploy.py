@@ -13,7 +13,7 @@ import tempfile
 import time
 import urllib.request
 import urllib.error
-from host_paths import activation_environment
+from host_paths import activation_environment, cloudpanel_dev_url
 from public_http import open_public, USER_AGENT
 
 EXCLUDED = {"tests", "docs", "scripts", "qa", "node_modules", "vendor", "AGENTS.md", "README.md",
@@ -382,6 +382,8 @@ def qualification_target(c, before):
 def deploy(args, c):
     from deployment_request import github_order
     activation_environment(args.environment, c.get('host_provider', 'cloudpanel'))
+    if c.get('host_provider', 'cloudpanel') == 'cloudpanel':
+        cloudpanel_dev_url(c['url'])
     c['environment'] = args.environment
     promotion_file = getattr(args, 'promote_kinsta_staging_manifest', None)
     promotion = json.loads(Path(promotion_file).read_text()) if promotion_file else None
@@ -453,8 +455,8 @@ def deploy(args, c):
         if not c['ready'] and not qualifying and not imported_source and promotion is None:
             raise ValueError('DEPLOY_READY is not enabled after target qualification')
         native = c.get('host_provider') == 'kinsta' and c.get('backup_provider') == 'kinsta'
-        if (c.get('backup_provider') != 'updraft' and not native) or (args.environment == 'live' and c.get('host_provider', 'cloudpanel') == 'cloudpanel'):
-            raise ValueError('Runtime writes disabled for Live: its provider adapter is not qualified')
+        if c.get('backup_provider') != 'updraft' and not native:
+            raise ValueError('Runtime writes disabled: its provider adapter is not qualified')
         if qualifying:
             qualification_target(c, before)
         if not qualifying and promotion is None and (not before['state'] or before['state'].get('schema') != 1):
