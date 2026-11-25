@@ -284,7 +284,8 @@ class GitHub:
                 raise ValueError('CloudPanel origin cache or retained rollback evidence is incomplete')
             phases = {'activation': current}
             if qualification:
-                if (order.get('event'), str(order.get('run_id')), order.get('source_branch')) != ('workflow_dispatch', str(run['id']), 'main'):
+                if (order.get('event'), str(order.get('run_id')), run.get('head_branch'), run.get('head_sha')) != (
+                        'workflow_dispatch', str(run['id']), 'main', sha):
                     raise ValueError('Qualification receipt does not belong to the exact manual Dev run')
                 phases.update(rollback=previous, reactivation=current)
             for name, release_id in phases.items():

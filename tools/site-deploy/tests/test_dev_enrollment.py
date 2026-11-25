@@ -290,10 +290,14 @@ class EvidenceTests(unittest.TestCase):
             {'url': 'https://example.mrndev.io/', 'phase': phase, 'edge': 'DYNAMIC'} for phase in ('first', 'warm')]}
         self.receipt.update(host_provider='cloudpanel', previous={'release_id': previous},
                             origin_cache={'provider': 'cloudpanel', 'html_cache': 'disabled', 'wordpress_page_cache': 'disabled'},
-                            deployment_order={'event': 'workflow_dispatch', 'run_id': '99', 'source_branch': 'main'})
+                            deployment_order={'event': 'workflow_dispatch', 'run_id': '99'})
+        self.run.update(head_branch='main', head_sha=SHA)
         for name, release_id in (('activation', active), ('rollback', previous), ('reactivation', active)):
             self.receipt[name] = {'release_id': release_id, 'cache': deepcopy(cache)}
         self.assertEqual(active, self.prove(True, cloudpanel=True)['release_id'])
+        with patch.dict(self.run, {'head_branch': 'feature'}):
+            with self.assertRaisesRegex(ValueError, 'exact manual Dev run'):
+                self.prove(True, cloudpanel=True)
         self.receipt['rollback']['cache']['pages'][1]['edge'] = 'HIT'
         with self.assertRaisesRegex(ValueError, 'CloudPanel public cache'):
             self.prove(True, cloudpanel=True)
