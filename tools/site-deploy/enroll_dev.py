@@ -24,7 +24,7 @@ from datetime import datetime, timezone
 
 from deploy import allowed, digest
 from enrollment_github import GitHub
-from cache_policy import WORDPRESS_CACHE_PROBE, verify_cloudpanel_origin, verify_uncached_html
+from cache_policy import WORDPRESS_CACHE_PROBE, head, verify_cloudpanel_origin, verify_uncached_html
 from deploy import http_check
 
 TOOLS = Path(__file__).resolve().parent
@@ -425,6 +425,40 @@ class Enrollment:
             raise ValueError('Source signal failed')
         return runs[0]
 
+    def qualification_runs(self):
+        return [row for row in self.github.runs('site-deploy.yml', self.state['source_sha'])
+                if row.get('event') == 'workflow_dispatch'
+                and row.get('display_title') == 'MRN Dev qualification ' + self.state['binding']]
+
+    def reconcile_adoption_proof(self, previous_tooling_ref, run_id):
+        s, gh, site = self.state, self.github, self.site
+        if (not s.get('adoption') or s['stage'] != 'qualification-dispatched'
+                or s['tooling_ref'] != previous_tooling_ref or previous_tooling_ref == self.config['tooling_ref']
+                or gh.head() != s['source_sha']):
+            raise ValueError('Proof reconciliation requires the unchanged existing-site qualification and prior tooling pin')
+        gh.verify_dev_policy()
+        for name, value in (('DEPLOY_READY', '0'), ('DEPLOY_ENROLLMENT_SOURCE_SHA', s['source_sha'])):
+            if gh.request('GET', gh.prefix + '/environments/dev/variables/' + name).get('value') != value:
+                raise ValueError('Proof reconciliation requires disarmed Dev and its original authorization')
+        for name in ('MRN_AUTO_DEV_AFTER', 'MRN_RELEASE_REQUESTS_AFTER'):
+            if gh.request('GET', gh.prefix + '/actions/variables/' + name, missing=True) is not None:
+                raise ValueError('Proof reconciliation requires absent automatic deployment cutoffs')
+        runs = self.qualification_runs()
+        if (len(runs) != 1 or str(runs[0].get('id')) != run_id
+                or runs[0].get('html_url') != s.get('qualification_run')
+                or runs[0].get('conclusion') != 'success'):
+            raise ValueError('Proof reconciliation requires the one recorded successful qualification run')
+        proof = gh.proof(runs[0], s['source_sha'], site['url'], site['slug'], qualification=True,
+                         prior_release=s.get('recovery_prior_release'), cloudpanel=True)
+        if not proof:
+            raise ValueError('Recorded qualification is not complete')
+        verify_uncached_html(site['url'], [site['url'] + '/'])
+        if head(site['url'] + '/').get('x-mrn-site-release') != proof['release_id']:
+            raise ValueError('The qualification release is no longer selected publicly')
+        save(self.directory / 'qualification.json', proof)
+        self.persist(stage='arm-dev', qualification_run=proof['run_url'], tooling_ref=self.config['tooling_ref'],
+                     proof_reconciled_from=previous_tooling_ref)
+
     def recover_qualification(self):
         """Explicit operator repair only; ordinary scanner retries cannot enter."""
         s, gh, site = self.state, self.github, self.site
@@ -670,8 +704,7 @@ print(json.dumps({'job_present':job.is_dir() and not job.is_symlink(),
                 self.persist(stage='qualification-dispatched', install_signal=signal['id'], dispatched_at=timestamp())
                 gh.dispatch(s['binding'])
         elif stage == 'qualification-dispatched':
-            runs = [row for row in gh.runs('site-deploy.yml', s['source_sha'])
-                    if row.get('event') == 'workflow_dispatch' and row.get('display_title') == 'MRN Dev qualification ' + s['binding']]
+            runs = self.qualification_runs()
             if len(runs) > 1:
                 raise ValueError('Multiple qualification runs; inspect before retrying')
             if not runs:
@@ -762,14 +795,22 @@ def main():
     parser.add_argument('--resume', action='store_true', help='Advance a post-bootstrap enrollment by one stage')
     parser.add_argument('--resume-adoption', action='store_true', help='Operator-only: advance an existing-site adoption by one stage')
     parser.add_argument('--arm-dev', action='store_true', help='Explicitly arm qualified existing-site Dev deployment')
+    parser.add_argument('--reconcile-adoption-proof', action='store_true', help='Read back a recorded successful qualification using corrected tooling')
+    parser.add_argument('--previous-tooling-ref', help='Prior enrollment tooling SHA for proof reconciliation')
+    parser.add_argument('--qualification-run', help='Exact recorded successful run for proof reconciliation')
     parser.add_argument('--recover-qualification', action='store_true', help='Operator-only repair after inspecting a failed qualification; preserve all evidence')
     parser.add_argument('--recover-preflight', action='store_true', help='Operator-only recovery before first adoption')
     parser.add_argument('--recover-startup', action='store_true', help='Operator-only recovery of a rejected workflow with no jobs')
     parser.add_argument('--failed-run', help='Exact failed GitHub run required for preflight recovery')
     args = parser.parse_args()
-    if sum((args.enqueue, args.adopt_existing, args.resume, args.resume_adoption, args.arm_dev,
+    if sum((args.enqueue, args.adopt_existing, args.resume, args.resume_adoption, args.arm_dev, args.reconcile_adoption_proof,
             args.recover_qualification, args.recover_preflight, args.recover_startup)) != 1:
         parser.error('Choose one enrollment or explicit recovery operation')
+    if args.reconcile_adoption_proof:
+        check(args.previous_tooling_ref, r'[0-9a-f]{40}', 'previous tooling SHA')
+        check(args.qualification_run, r'[1-9][0-9]*', 'qualification run ID')
+    elif args.previous_tooling_ref or args.qualification_run:
+        parser.error('Proof reconciliation arguments require --reconcile-adoption-proof')
     if (args.recover_preflight or args.recover_startup) and not re.fullmatch(r'[0-9]+', args.failed_run or ''):
         parser.error('Recovery requires --failed-run with the inspected run ID')
     config = load_config(args.config)
@@ -813,7 +854,8 @@ def main():
             if adoption:
                 site['repository'] = adoption['repository']
                 verify_cloudpanel_site_id(site, adoption['site_id'])
-            if state['site'] != site or (state['tooling_ref'] != config['tooling_ref'] and state['stage'] != 'ready' and not (args.recover_qualification or args.recover_preflight or args.recover_startup)):
+            if state['site'] != site or (state['tooling_ref'] != config['tooling_ref'] and state['stage'] != 'ready'
+                    and not (args.recover_qualification or args.recover_preflight or args.recover_startup or args.reconcile_adoption_proof)):
                 raise ValueError('Enrollment identity or tooling changed; operator review required')
         else:
             if not (args.enqueue or args.adopt_existing):
@@ -828,7 +870,7 @@ def main():
             save(state_path, state)
         if args.arm_dev and (not adoption or state['stage'] != 'arm-dev'):
             raise ValueError('Explicit Dev arming requires a completed existing-site qualification')
-        if (args.resume or args.resume_adoption or args.arm_dev or args.recover_qualification
+        if (args.resume or args.resume_adoption or args.arm_dev or args.reconcile_adoption_proof or args.recover_qualification
                 or args.recover_preflight or args.recover_startup) and state['stage'] != 'ready':
             secrets = credentials(config, site, repository_only=bool(adoption and state['stage'] != 'prepare-target'))
             enrollment = Enrollment(config, directory, state,
@@ -836,7 +878,9 @@ def main():
             try:
                 if adoption:
                     enrollment.github.adoption_repository(adoption['repository_id'])
-                if args.recover_startup:
+                if args.reconcile_adoption_proof:
+                    enrollment.reconcile_adoption_proof(args.previous_tooling_ref, args.qualification_run)
+                elif args.recover_startup:
                     enrollment.recover_startup(args.failed_run)
                 elif args.recover_preflight:
                     enrollment.recover_preflight(args.failed_run)

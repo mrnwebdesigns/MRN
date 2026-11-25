@@ -112,6 +112,13 @@ accepts it before enrollment reports `ready`. Retrieve the exact Actions and
 receipt links from the protected state. CloudPanel staging and Live are outside
 this adapter.
 
+If a completed qualification failed only while reading its retained proof,
+use the corrected, accepted tooling pin and its matching private configuration.
+Run `--reconcile-adoption-proof --previous-tooling-ref <old-sha>
+--qualification-run <recorded-run-id>` with the original site path. This reads
+the same successful run and checks its current public release before recording
+acceptance. It leaves Dev disarmed for the explicit `--arm-dev` step.
+
 ## Certificate and readiness gates
 
 Origin TLS is an exact-site onboarding gate after WordPress installation and
