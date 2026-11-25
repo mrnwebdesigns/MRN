@@ -6,6 +6,19 @@ import urllib.request
 from public_http import open_public
 
 
+WORDPRESS_CACHE_PROBE = """
+$plugins = array_values((array) get_option('active_plugins', array()));
+$caches = array_values(array_filter($plugins, static function($plugin) {
+    return (bool) preg_match('/cache|rocket|autoptimize|perfmatters|nitropack|breeze|hummingbird/i', $plugin);
+}));
+$cache = array(
+    'wp_cache'=>defined('WP_CACHE') && WP_CACHE,
+    'advanced_cache'=>file_exists(WP_CONTENT_DIR . '/advanced-cache.php'),
+    'cache_plugins'=>$caches
+);
+"""
+
+
 def canonical_pages(site_url, pages):
     site = urlsplit(site_url)
     if site.scheme != 'https' or not site.hostname or site.username or site.password or site.query or site.fragment:

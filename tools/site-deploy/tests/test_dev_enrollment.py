@@ -62,7 +62,7 @@ class EnrollmentFlow(unittest.TestCase):
         self.temp=tempfile.TemporaryDirectory();self.root=Path(self.temp.name)
         self.site=site(self.root/'site');self.gh=FakeGitHub()
         self.state={'site':self.site,'stage':'queued','binding':'example-binding'}
-        self.config={'tooling_ref':SHA,'ssh_host':'ssh.example.invalid','ssh_port':22,
+        self.config={'tooling_ref':SHA,'ssh_host':'ssh.example.invalid','ssh_port':22,'known_hosts_file':'/fixture/known_hosts',
                      'github_owner_type':'User','team_slugs':[],'collaborators':['mrn-developer-collab']}
         self.e=enrollment.Enrollment(self.config,self.root,self.state,self.gh,
             {'deploy_private_key':'private-fixture','known_hosts':'hostkey-fixture','qa_engine_token':'qa-fixture',
@@ -155,6 +155,99 @@ class EnrollmentFlow(unittest.TestCase):
         self.e.tick()
         self.assertEqual('ready',self.state['stage']);self.assertFalse(self.state['access_pending'])
 
+    def test_existing_repository_qualifies_disarmed_and_requires_explicit_arm(self):
+        self.state['adoption'] = {'source_sha': self.gh.head(), 'repository_id': 37,
+                                  'collaborator': 'mrn-developer-collab'}
+        source = self.site['source_path'] + '/style.css'
+        with patch.object(self.gh, 'adoption_tree', create=True, return_value={}), \
+                patch.object(self.gh, 'verify_dev_policy', create=True) as policy, \
+                patch.object(enrollment, 'adoption_files', return_value=({source: b'fixture'}, 'd'*64)), \
+                patch.object(enrollment, 'capture_child', return_value=({}, 'd'*64)), \
+                patch.object(enrollment, 'adoption_preflight', return_value={'status': 'uncached-html-verified'}), \
+                patch.object(enrollment, 'command'):
+            with self.assertRaisesRegex(ValueError, 'completed existing-site qualification'):
+                self.e.tick(arm=True)
+            self.advance(4)
+            self.assertEqual('wait-install-signal', self.state['stage'])
+            self.assertNotIn('repository', self.gh.calls)
+            self.assertEqual('0', self.gh.variables['DEPLOY_READY'])
+            self.signal(SHA)
+            self.e.tick()
+            self.gh.deployments = [{'event': 'workflow_dispatch', 'display_title': 'MRN Dev qualification example-binding'}]
+            self.gh.proof_ready = True
+            self.e.tick()
+            self.advance(2)
+            self.assertEqual('arm-dev', self.state['stage'])
+            self.assertNotIn('MRN_AUTO_DEV_AFTER', self.gh.variables)
+            self.e.tick(arm=True)
+            self.assertEqual('create-pilot', self.state['stage'])
+            self.assertEqual('1', self.gh.variables['DEPLOY_READY'])
+            self.assertEqual(2, policy.call_count)
+
+
+class ExistingAdoptionTests(unittest.TestCase):
+    def test_exact_child_baseline_is_required_and_other_git_files_are_preserved(self):
+        with tempfile.TemporaryDirectory() as temp:
+            target = site(Path(temp).resolve())
+            prefix = target['source_path'] + '/'
+            theme = Path(temp) / 'wp-content/themes' / target['slug']
+            theme.mkdir(parents=True)
+            deployed = {'functions.php': b'<?php\n', 'style.css': b'/*\nVersion: 1.2.3\n*/\n'}
+            tree = {name: {'type': 'blob'} for name in ('.gitignore', 'README.md', 'notes/brief.md')}
+            for name, content in deployed.items():
+                (theme / name).write_bytes(content)
+                tree[prefix + name] = {'type': 'blob', 'mode': '100644',
+                                       'sha': hashlib.sha1(b'blob %d\0' % len(content) + content).hexdigest()}
+            files, baseline = enrollment.adoption_files(target, {'tooling_ref': SHA}, tree)
+            self.assertEqual(enrollment.capture_child(target)[1], baseline)
+            self.assertIn(b'mrn-release-assets.php', files[prefix + 'functions.php'])
+            self.assertIn(b'Stable tag: 1.2.3', files[prefix + 'readme.txt'])
+            wrapper = files['.github/workflows/site-deploy.yml']
+            self.assertIn(b'options: [dev]', wrapper)
+            self.assertIn(b"inputs.target == 'dev'", wrapper)
+            self.assertIn(b'live_enabled: false', wrapper)
+            self.assertNotIn('README.md', files)
+            self.assertNotIn('.gitignore', files)
+            self.assertNotIn('notes/brief.md', files)
+            for collision in ('DEPLOYMENT.md', '.github', '.github/workflows/custom.yml', 'scripts/content/migrations.json'):
+                with self.subTest(collision=collision), self.assertRaises(ValueError):
+                    enrollment.adoption_files(target, {'tooling_ref': SHA}, {**tree, collision: {'type': 'blob'}})
+            (theme / 'style.css').write_bytes(b'drift')
+            with self.assertRaisesRegex(ValueError, 'differs from the exact existing Git commit'):
+                enrollment.adoption_files(target, {'tooling_ref': SHA}, tree)
+
+    def test_existing_github_identity_and_unused_deployment_settings_are_required(self):
+        github = GitHub('fixture', 'mrnwebdesigns/existing')
+        repo = {'id': 37, 'full_name': github.repository, 'private': True, 'fork': False,
+                'archived': False, 'disabled': False, 'default_branch': 'main', 'owner': {'type': 'User'}}
+        expected = {'readme': {'path': 'readme', 'type': 'blob'}}
+        responses = [repo, {'object': {'sha': SHA}}, {'total_count': 0}, {'total_count': 0},
+                     None, None, {'tree': {'sha': PILOT}}, {'truncated': False, 'tree': list(expected.values())}]
+        with patch.object(github, 'request', side_effect=responses) as api:
+            self.assertEqual(expected, github.adoption_tree(37, SHA))
+            self.assertTrue(all(call.args[0] == 'GET' for call in api.call_args_list))
+        variants = ([{**repo, 'id': 38}], [repo, {'object': {'sha': PILOT}}],
+                    [repo, responses[1], {'total_count': 1}], [repo, *responses[1:3], {'total_count': 1}],
+                    [*responses[:4], {'value': 'already-armed'}])
+        for replies in variants:
+            with self.subTest(replies=replies), patch.object(github, 'request', side_effect=replies), self.assertRaises(ValueError):
+                github.adoption_tree(37, SHA)
+
+    def test_cloudpanel_site_id_must_match_domain_and_owner(self):
+        from contextlib import closing
+        import sqlite3
+        with tempfile.TemporaryDirectory() as temp:
+            database = Path(temp) / 'cloudpanel.sqlite'
+            with closing(sqlite3.connect(database)) as connection, connection:
+                connection.execute('CREATE TABLE site (id INTEGER, domain_name TEXT, user TEXT, root_directory TEXT)')
+                connection.execute("INSERT INTO site VALUES (138, 'example.mrndev.io', 'example', 'example.mrndev.io')")
+            with patch.object(enrollment, 'CLOUDPANEL_DATABASE', database):
+                enrollment.verify_cloudpanel_site_id(site(temp), 138)
+                with self.assertRaisesRegex(ValueError, 'inventory'):
+                    enrollment.verify_cloudpanel_site_id(site(temp), 139)
+                with self.assertRaisesRegex(ValueError, 'inventory'):
+                    enrollment.verify_cloudpanel_site_id({**site(temp), 'user': 'other'}, 138)
+
 
 class EvidenceTests(unittest.TestCase):
     def setUp(self):
@@ -169,9 +262,10 @@ class EvidenceTests(unittest.TestCase):
         names=('Bind successful QA to this commit','Verify browser-loaded assets and responsive layout contracts','Run runtime QA')
         self.jobs={'jobs':[{'steps':[{'name':n,'conclusion':'success'} for n in names]}]}
         self.artifacts={'artifacts':[{'id':12,'name':'site-deployment-dev-'+SHA,'expired':False}]}
-    def prove(self,qualification=False,prior_release=None):
+    def prove(self,qualification=False,prior_release=None,cloudpanel=False):
         with patch.object(self.gh,'request',side_effect=[self.jobs,self.artifacts]),patch.object(self.gh,'evidence',return_value=(self.receipt,self.browser,self.runtime)):
-            return self.gh.proof(self.run,SHA,'https://example.mrndev.io','example-child',qualification=qualification,signal_number=None if qualification else 4,prior_release=prior_release)
+            return self.gh.proof(self.run,SHA,'https://example.mrndev.io','example-child',qualification=qualification,
+                                 signal_number=None if qualification else 4,prior_release=prior_release,cloudpanel=cloudpanel)
     def test_passes_exact_receipts(self):self.assertEqual(SHA,self.prove(True)['source_sha']);self.prove()
     def test_green_workflow_with_advisory_runtime_failure_is_not_ready(self):
         self.jobs['jobs'][0]['steps'][-1]['conclusion']='failure'
@@ -190,6 +284,23 @@ class EvidenceTests(unittest.TestCase):
     def test_qualification_requires_rollback_and_all_backups(self):
         self.receipt['steps']=[s for s in self.receipt['steps'] if s['operation']!='rollback-test']
         with self.assertRaises(ValueError):self.prove(True)
+    def test_existing_site_qualification_requires_exact_cache_and_rollback_evidence(self):
+        active, previous = 'f'*64, 'e'*64
+        cache = {'status': 'uncached-html-verified', 'purged_urls': [], 'pages': [
+            {'url': 'https://example.mrndev.io/', 'phase': phase, 'edge': 'DYNAMIC'} for phase in ('first', 'warm')]}
+        self.receipt.update(host_provider='cloudpanel', previous={'release_id': previous},
+                            origin_cache={'provider': 'cloudpanel', 'html_cache': 'disabled', 'wordpress_page_cache': 'disabled'},
+                            deployment_order={'event': 'workflow_dispatch', 'run_id': '99'})
+        self.run.update(head_branch='main', head_sha=SHA)
+        for name, release_id in (('activation', active), ('rollback', previous), ('reactivation', active)):
+            self.receipt[name] = {'release_id': release_id, 'cache': deepcopy(cache)}
+        self.assertEqual(active, self.prove(True, cloudpanel=True)['release_id'])
+        with patch.dict(self.run, {'head_branch': 'feature'}):
+            with self.assertRaisesRegex(ValueError, 'exact manual Dev run'):
+                self.prove(True, cloudpanel=True)
+        self.receipt['rollback']['cache']['pages'][1]['edge'] = 'HIT'
+        with self.assertRaisesRegex(ValueError, 'CloudPanel public cache'):
+            self.prove(True, cloudpanel=True)
     def test_requalification_requires_authorized_prior_and_repeated_rollback(self):
         self.receipt['steps']=[s for s in self.receipt['steps'] if s['operation']!='adopt']
         self.receipt['previous']={'release_id':'e'*64}

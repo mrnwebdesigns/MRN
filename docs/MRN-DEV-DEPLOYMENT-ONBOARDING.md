@@ -65,6 +65,53 @@ requesting Dev testing without pushing that work to `main`. Increment the final
 number for another request; never move or reuse a deployment tag. The shared
 controller resolves and checks the exact tagged commit before deployment.
 
+## Enroll an existing CloudPanel Dev site
+
+Run on the verified CloudPanel host using the root-owned enrollment
+configuration, an authorized operator, and a clean checkout of the published
+immutable tooling revision. Use the CloudPanel inventory and GitHub to read
+back the exact site ID, site-owner WordPress root, private repository name and
+numeric repository ID, current `main` SHA, and approved collaborator.
+
+The existing repository must hold the active child under
+`public/wp-content/themes/<stylesheet>`. Its deployable files must match the
+physical installed child byte for byte at the reviewed SHA. Reconcile drift in
+Git first. Existing deployment workflows, environments, conflicting generated
+paths, content migrations or a prior runtime enrollment need separate
+reconciliation before using this route. The controller preserves Git history,
+existing README and ignore rules, and other unrelated files. It adds the
+thin Dev-only workflows and handoff, and supplies missing release metadata or
+the asset-loader opt-in. Only the configured, explicitly named collaborator is
+checked for handoff.
+
+```sh
+python3 tools/site-deploy/enroll_dev.py \
+  --config /etc/mrn/dev-enrollment.json \
+  --site-path /home/<owner>/htdocs/<site>.mrndev.io \
+  --adopt-existing --cloudpanel-site-id <site-id> \
+  --repository mrnwebdesigns/<existing-repo> --repository-id <repo-id> \
+  --source-sha <reviewed-main-sha> --collaborator <approved-github-login>
+```
+
+Repeat the command with the same config and site path, replacing the adoption
+arguments with `--resume-adoption` to advance one stage. This is an operator-run
+sequence. The new-site bootstrap scanner continues to process its own queue.
+Before target setup the controller checks the exact site URL, complete backup
+configuration, origin cache settings and first/warm Cloudflare HTML responses.
+It verifies a fresh remote database-only Updraft backup before preparing
+site-owner access and private rollback storage. The Actions Dev environment
+uses the pinned host key and permits its deployment secrets only from `main`.
+
+At `arm-dev`, review the retained `qualification.json` and linked Actions run.
+Look for exact-source QA, the immutable release, verified backup, rollback and
+reactivation, first/warm public cache proof, and desktop, tablet, mobile,
+REST and accessibility results. When authorized, run `--arm-dev` with the same
+config and site path, then use `--resume-adoption` to prove a fresh ordinary main push and
+retain `automatic-push.json`. If an invitation is pending, the collaborator
+accepts it before enrollment reports `ready`. Retrieve the exact Actions and
+receipt links from the protected state. CloudPanel staging and Live are outside
+this adapter.
+
 ## Certificate and readiness gates
 
 Origin TLS is an exact-site onboarding gate after WordPress installation and
@@ -147,7 +194,7 @@ fixtures or explicitly qualified production targets, not Dev.
   Nonstandard layouts need an explicit adapter; they are not inferred.
 - New enrollment may create its own private repository or resume one bearing
   its exact enrollment identity. It refuses an unrelated existing repository.
-  Existing sites/repositories use the separate deployment adoption runbook.
+  Existing sites use the explicit adoption operation above.
 - This captures only the child theme. It does not copy plugins, the parent
   theme, uploads, database, credentials, hidden files or deployment output.
   Generated theme changes opt into the existing immutable asset adapter and add
@@ -293,13 +340,14 @@ multiple passes; WordPress can be bootstrapped while deployment is still pending
 5. Qualification permits only manual Dev/main, the exact environment-authorized
    source SHA and successful QA for that SHA. It adopts the exact existing tree,
    builds once, verifies backups, activates, exercises rollback and reactivates.
-   Browser/REST/accessibility/performance acceptance is strict for this first
-   qualification, even though routine Dev runtime findings remain advisory.
+   Browser, REST and accessibility checks are required. Dev performance and
+   Core Web Vitals checks follow the Dev QA policy described above.
 6. Verify GitHub job outcomes and downloaded artifact receipts. A green signal,
    successful upload, advisory runtime failure or wrong-site receipt is not ready.
    The separate runtime-result receipt records the actual QA outcome even when
    GitHub's advisory step is allowed to continue.
-7. Clear the one-commit qualification authorization, enable Dev readiness and
+7. For an existing site, wait at `arm-dev` for the operator's explicit command.
+   Clear the one-commit qualification authorization, enable Dev readiness and
    set automatic/release cutoffs later than the known installation signal.
    Clearing uses GitHub's variable DELETE operation and verifies absence;
    GitHub rejects saving an empty variable value.

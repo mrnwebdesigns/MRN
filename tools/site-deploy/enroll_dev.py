@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Resumable, operator-owned CloudPanel Dev deployment enrollment.
 
-Bootstrap only queues new sites; the scanner advances one bounded stage per
-pass. Existing sites, Live, database migrations and Stack promotion are excluded.
+Bootstrap only queues new sites. Operators can explicitly adopt a reviewed
+existing site and repository, then arm automatic Dev after qualification.
 """
 import argparse
 import base64
@@ -13,22 +13,25 @@ import os
 from pathlib import Path
 import pwd
 import re
+import sqlite3
 import stat
 import subprocess
 import sys
 import tempfile
 import time
+from contextlib import closing
 from datetime import datetime, timezone
 
 from deploy import allowed, digest
 from enrollment_github import GitHub
-from cache_policy import verify_uncached_html
+from cache_policy import WORDPRESS_CACHE_PROBE, verify_cloudpanel_origin, verify_uncached_html
 from deploy import http_check
 
 TOOLS = Path(__file__).resolve().parent
 sys.path.insert(0, str(TOOLS.parents[1] / 'stack/scripts'))
 from bootstrap_readiness import update as update_readiness
 ACCOUNT = 'mrnwebdesigns.1password.com'
+CLOUDPANEL_DATABASE = Path('/home/clp/htdocs/app/data/db.sq3')
 
 
 def check(value, pattern, label):
@@ -161,14 +164,22 @@ def identify(root, config):
     return site
 
 
-def credentials(config, site):
-    result = command(config['credential_command'], input=json.dumps({'account': ACCOUNT, 'domain': site['domain'],
-                      'site_user': site['user'], 'repository': site['repository']}), text=True)
+def credentials(config, site, repository_only=False):
+    request = {'account': ACCOUNT, 'domain': site['domain'],
+               'site_user': site['user'], 'repository': site['repository']}
+    if repository_only:
+        request['repository_only'] = True
+    result = command(config['credential_command'], input=json.dumps(request), text=True)
     data = json.loads(result)
-    if data.get('account') != ACCOUNT or any(not data.get(k) for k in ('github_token', 'qa_engine_token', 'deploy_private_key', 'deployment_notification_token')):
+    required = ('github_token',) if repository_only else (
+        'github_token', 'qa_engine_token', 'deploy_private_key', 'deployment_notification_token')
+    if data.get('account') != ACCOUNT or any(not data.get(key) for key in required):
         raise ValueError('MRN business credential lookup is incomplete')
+    if repository_only:
+        return data
     # Canonical operator-verified host keys, never ssh-keyscan trust-on-first-use.
-    data['known_hosts'] = private_path(config['known_hosts_file']).read_text()
+    known_hosts = private_path(config['known_hosts_file'])
+    data['known_hosts'] = known_hosts.read_text()
     if not data['known_hosts'].strip():
         raise ValueError('Pinned SSH host keys are missing')
     return data
@@ -221,7 +232,7 @@ if not present:
     return backup
 
 
-def snapshot(site):
+def capture_child(site):
     root = Path(site['root']) / 'wp-content/themes' / site['slug']
     if root.is_symlink() or root.resolve() != root:
         raise ValueError('Enrollment refuses a deployed loader or symlinked child; reconcile existing deployment first')
@@ -247,6 +258,17 @@ def snapshot(site):
         raise ValueError('Child functions.php and style.css are required')
     if any(name in baseline for name in ('mrn-assets.json', 'mrn-release.json', 'mrn-release-assets.php')):
         raise ValueError('Immutable deployment output is not editable source')
+    return files, digest(baseline)
+
+
+def snapshot(site):
+    files, baseline = capture_child(site)
+    return opt_in_assets(site, files), baseline
+
+
+def opt_in_assets(site, files):
+    files = dict(files)
+    functions = site['source_path'] + '/functions.php'
     if b'mrn-release-assets.php' not in files[functions]:
         original = files[functions]
         if not original.startswith(b'<?php'):
@@ -255,7 +277,67 @@ def snapshot(site):
         header = re.match(rb'<\?php\s*/\*\*.*?\*/', original, re.DOTALL)
         insertion = header.end() if header else 5
         files[functions] = original[:insertion] + (b'\n' if header else b'') + optin + original[insertion:]
-    return files, digest(baseline)
+    return files
+
+
+def verify_cloudpanel_site_id(site, site_id):
+    with closing(sqlite3.connect(CLOUDPANEL_DATABASE.as_uri() + '?mode=ro', uri=True)) as database:
+        rows = database.execute(
+            'SELECT id, domain_name, user, root_directory FROM site WHERE id = ? OR domain_name = ?',
+            (site_id, site['domain'])).fetchall()
+    if rows != [(site_id, site['domain'], site['user'], site['domain'])]:
+        raise ValueError('CloudPanel inventory does not match the reviewed Dev site ID, owner and root')
+
+
+def adoption_preflight(site, allow_prepared=False):
+    result = wp(site, WORDPRESS_CACHE_PROBE + """
+global $updraftplus;
+$services = array_values(array_filter((array) get_option('updraft_service', array())));
+$theme = get_stylesheet_directory();
+echo 'MRN_RESULT=' . wp_json_encode($cache + array(
+    'siteurl'=>untrailingslashit(site_url()),
+    'theme'=>realpath($theme), 'writable'=>is_writable($theme),
+    'backup_ready'=>is_object($updraftplus) && is_callable(array($updraftplus, 'backupnow_database'))
+        && !empty($services) && !in_array('none', $services, true)));
+""")
+    theme = Path(site['root']) / 'wp-content/themes' / site['slug']
+    if result.get('siteurl') != site['url'] or result.get('theme') != str(theme) or result.get('writable') is not True:
+        raise ValueError('Existing Dev requires an exact WordPress site URL and a writable physical child theme')
+    if result.get('backup_ready') is not True:
+        raise ValueError('Existing Dev requires a configured remote Updraft database backup')
+    command(['sudo', '-u', site['user'], '--', 'python3', '-c', '''
+import pathlib, subprocess, sys
+theme, state = map(pathlib.Path, sys.argv[1:3])
+repo = subprocess.run(['git', '-C', str(theme), 'rev-parse', '--show-toplevel'], capture_output=True)
+if (repo.returncode == 0 or (theme / '.git').is_symlink() or (theme / '.git').exists()
+        or state.resolve() != state or (state.exists() and
+            (sys.argv[3] != 'True' or not state.is_dir() or any(state.iterdir())))):
+    raise SystemExit('Existing deployment evidence')
+''', str(theme), site['state_dir'], str(allow_prepared)], env=site_process_env())
+    verify_cloudpanel_origin(Path(site['home']) / '.varnish-cache/settings.json', result)
+    http_check(site['url'] + '/wp-json/', rest=True)
+    return verify_uncached_html(site['url'], [site['url'] + '/'])
+
+
+def adoption_files(site, config, tree):
+    deployed, baseline = capture_child(site)
+    prefix = site['source_path'] + '/'
+    tracked = {name: row for name, row in tree.items()
+               if name.startswith(prefix) and allowed(name[len(prefix):]) and row.get('type') != 'tree'}
+    if tracked.keys() != deployed.keys() or any(
+            row.get('type') != 'blob' or row.get('mode') != '100644'
+            or row.get('sha') != hashlib.sha1(b'blob %d\0' % len(deployed[name]) + deployed[name]).hexdigest()
+            for name, row in tracked.items()):
+        raise ValueError('Installed child tree differs from the exact existing Git commit; reconcile in Git before adoption')
+    if any(name.startswith('.github/workflows/') or name == 'scripts/content/migrations.json' for name in tree):
+        raise ValueError('Existing workflows or content migrations require separate adoption review')
+    files = source_files(site, config, opt_in_assets(site, deployed), adopting=True)
+    additions = set(files) - set(deployed)
+    if additions & tree.keys() or any(
+            tree.get(str(parent), {}).get('type', 'tree') != 'tree'
+            for name in additions for parent in Path(name).parents):
+        raise ValueError('Existing tracked paths collide with the generated Dev deployment files')
+    return files, baseline
 
 
 def handoff(site):
@@ -270,15 +352,21 @@ def handoff(site):
             "Deployment setup verification: pending.\n").encode()
 
 
-def source_files(site, config, files):
+def source_files(site, config, files, adopting=False):
     files = release_metadata(site, files)
     wrapper = (TOOLS / 'site-deploy.yml.template').read_text().replace('TOOLING_SHA', config['tooling_ref'])
     wrapper = wrapper.replace('SOURCE_PATH', site['source_path']).replace('THEME_SLUG', site['slug']).replace('live_enabled: true', 'live_enabled: false')
-    return {**files, '.github/workflows/site-deploy.yml': wrapper.encode(),
+    if adopting:
+        wrapper = wrapper.replace('options: [dev, staging, live, both]', 'options: [dev]')
+        wrapper = wrapper.replace('  deploy:\n', "  deploy:\n    if: ${{ !inputs.target || inputs.target == 'dev' }}\n")
+    result = {**files, '.github/workflows/site-deploy.yml': wrapper.encode(),
             '.github/workflows/site-push.yml': (TOOLS / 'site-push.yml.template').read_bytes(),
             '.github/workflows/site-deploy-failure.yml': (TOOLS / 'site-deploy-failure.yml.template').read_text().replace('TOOLING_SHA', config['tooling_ref']).encode(),
-            'DEPLOYMENT.md': handoff(site), '.mrn-qa.env': b'MRN_QA_SAMPLE_PATH=/\n', '.gitignore': b'.DS_Store\n.env*\nnode_modules/\nvendor/\n',
-            'README.md': ('# ' + site['domain'] + '\n\nSite-owned child-theme source. See DEPLOYMENT.md.\n').encode()}
+            'DEPLOYMENT.md': handoff(site), '.mrn-qa.env': b'MRN_QA_SAMPLE_PATH=/\n'}
+    if not adopting:
+        result.update({'.gitignore': b'.DS_Store\n.env*\nnode_modules/\nvendor/\n',
+                       'README.md': ('# ' + site['domain'] + '\n\nSite-owned child-theme source. See DEPLOYMENT.md.\n').encode()})
+    return result
 
 
 def release_metadata(site, files):
@@ -377,7 +465,7 @@ class Enrollment:
             raise ValueError('Runtime changed since failed qualification; recovery requires inspection')
         prior = check(pointer.get('release_id'), r'[0-9a-f]{64}', 'retained recovery release')
         files = {key:base64.b64decode(value) for key,value in json.loads((self.directory / 'source.json').read_text()).items()}
-        files = source_files(site, self.config, files)
+        files = source_files(site, self.config, files, adopting=bool(s.get('adoption')))
         source_qa(self.config, files, self.directory / ('recovery-source-' + str(time.time_ns())))
         recovery_id = str(time.time_ns())
         save(self.directory / ('recovery-' + recovery_id + '.json'), {
@@ -420,7 +508,7 @@ print(json.dumps({'adoption_evidence':sorted(x.name for x in p.iterdir() if x.na
         if observed != {'adoption_evidence':[], 'releases':[]} or snapshot(site)[1] != s['baseline']:
             raise ValueError('Runtime has adoption evidence or differs from its accepted baseline')
         files = {k:base64.b64decode(v) for k,v in json.loads((self.directory/'source.json').read_text()).items()}
-        files = source_files(site, self.config, files)
+        files = source_files(site, self.config, files, adopting=bool(s.get('adoption')))
         source_qa(self.config, files, self.directory / ('startup-recovery-source-' + str(time.time_ns())))
         recovery_id = str(time.time_ns())
         save(self.directory / ('recovery-' + recovery_id + '.json'), {
@@ -477,7 +565,7 @@ print(json.dumps({'job_present':job.is_dir() and not job.is_symlink(),
         http_check(site['url'] + '/wp-json/', rest=True)
         public = verify_uncached_html(site['url'], [site['url'] + '/'])
         files = {k:base64.b64decode(v) for k,v in json.loads((self.directory/'source.json').read_text()).items()}
-        files = source_files(site, self.config, files)
+        files = source_files(site, self.config, files, adopting=bool(s.get('adoption')))
         source_qa(self.config, files, self.directory / ('preflight-recovery-source-' + str(time.time_ns())))
         recovery_id = str(time.time_ns())
         save(self.directory / ('recovery-' + recovery_id + '.json'), {
@@ -495,11 +583,15 @@ print(json.dumps({'job_present':job.is_dir() and not job.is_symlink(),
         status = 'failed' if s.get('last_error') else 'ready' if s['stage'] == 'ready' else 'pending'
         update_readiness(root, self.site['root'], s['stage'], status, detail=s.get('last_error', ''),
                          run_url=s.get('deployment_run') or s.get('qualification_run', ''),
-                         notify=status in ('failed', 'ready'), config=self.config.get('notifications', {}))
+                         notify=not s.get('adoption') and status in ('failed', 'ready'),
+                         config=self.config.get('notifications', {}))
 
-    def tick(self):
+    def tick(self, arm=False):
         s, site, gh = self.state, self.site, self.github
         stage = s['stage']
+        adoption = s.get('adoption')
+        if arm and (not adoption or stage != 'arm-dev'):
+            raise ValueError('Explicit Dev arming requires a completed existing-site qualification')
         if stage == 'recover-source':
             files = {key:base64.b64decode(value) for key,value in json.loads(
                 (self.directory / ('recovery-' + s['recovery_id'] + '-source.json')).read_text()).items()}
@@ -513,25 +605,50 @@ print(json.dumps({'job_present':job.is_dir() and not job.is_symlink(),
             gh.variable('DEPLOY_ENROLLMENT_SOURCE_SHA', s['source_sha'], 'dev')
             self.persist(stage='wait-install-signal')
         elif stage == 'queued':
-            files, baseline = snapshot(site)
-            files = source_files(site, self.config, files)
+            if adoption:
+                tree = gh.adoption_tree(adoption['repository_id'], adoption['source_sha'])
+                files, baseline = adoption_files(site, self.config, tree)
+                preflight = adoption_preflight(site)
+                save(self.directory / 'adoption-preflight.json', preflight)
+            else:
+                files, baseline = snapshot(site)
+                files = source_files(site, self.config, files)
             source_qa(self.config, files, self.directory / ('source-' + str(time.time_ns())))
             # Persist immutable input bytes for retries; no resnapshot of changed code.
             save(self.directory / 'source.json', {key: base64.b64encode(value).decode() for key, value in files.items()})
             self.persist(stage='source-accepted', baseline=baseline)
         elif stage == 'source-accepted':
-            gh.ensure_repository(s['binding'])
-            base = gh.head()
+            if adoption:
+                base = adoption['source_sha']
+                gh.adoption_tree(adoption['repository_id'], base)
+                if capture_child(site)[1] != s['baseline']:
+                    raise ValueError('Installed child changed since existing-site source acceptance')
+            else:
+                gh.ensure_repository(s['binding'])
+                base = gh.head()
             files = {key: base64.b64decode(value) for key, value in json.loads((self.directory / 'source.json').read_text()).items()}
-            sha = gh.make_commit(base, files, 'Initialize site source and shared MRN Dev deployment')
+            message = 'Adopt existing site into shared MRN Dev deployment' if adoption else 'Initialize site source and shared MRN Dev deployment'
+            sha = gh.make_commit(base, files, message)
             self.persist(stage='publish-source', base=base, source_sha=sha)
         elif stage == 'publish-source':
+            if adoption and gh.head() != s['source_sha']:
+                gh.adoption_tree(adoption['repository_id'], s['base'])
+                if capture_child(site)[1] != s['baseline']:
+                    raise ValueError('Installed child changed before publication of existing-site deployment source')
             gh.publish(s['base'], s['source_sha'])
             self.persist(stage='prepare-target')
         elif stage == 'prepare-target':
             if gh.head() != s['source_sha'] or snapshot(site)[1] != s['baseline']:
                 raise ValueError('Source or Dev changed during enrollment; reconcile before continuing')
-            backup = runtime_prepare(site, self.secrets)
+            if adoption:
+                adoption_preflight(site, allow_prepared=True)
+                endpoint = self.config['ssh_host']
+                if self.config['ssh_port'] != 22:
+                    endpoint = '[' + endpoint + ']:' + str(self.config['ssh_port'])
+                command(['ssh-keygen', '-F', endpoint, '-f', self.config['known_hosts_file']], env=site_process_env())
+            backup = s.get('setup_backup') or runtime_prepare(site, self.secrets)
+            if adoption and not s.get('setup_backup'):
+                self.persist(setup_backup=backup)
             variables = {'DEPLOY_HOST': self.config['ssh_host'], 'DEPLOY_PORT': self.config['ssh_port'],
                 'DEPLOY_USER': site['user'], 'DEPLOY_ROOT': site['root'], 'DEPLOY_URL': site['url'],
                 'DEPLOY_TEMPLATE': site['template'], 'DEPLOY_STATE_DIR': site['state_dir'],
@@ -547,6 +664,8 @@ print(json.dumps({'job_present':job.is_dir() and not job.is_symlink(),
         elif stage == 'wait-install-signal':
             signal = self.signal(s['source_sha'])
             if signal:
+                if adoption:
+                    gh.verify_dev_policy()
                 # Save before dispatch: an unknown HTTP outcome must not cause a second deployment.
                 self.persist(stage='qualification-dispatched', install_signal=signal['id'], dispatched_at=timestamp())
                 gh.dispatch(s['binding'])
@@ -562,13 +681,20 @@ print(json.dumps({'job_present':job.is_dir() and not job.is_symlink(),
                 return
             self.persist(qualification_run=runs[0].get('html_url', ''))
             proof = gh.proof(runs[0], s['source_sha'], site['url'], site['slug'], qualification=True,
-                             prior_release=s.get('recovery_prior_release'))
+                             prior_release=s.get('recovery_prior_release'), cloudpanel=bool(adoption))
             if proof:
                 save(self.directory / 'qualification.json', proof)
                 self.persist(stage='arm-dev', qualification_run=proof['run_url'])
         elif stage == 'arm-dev':
+            if adoption and not arm:
+                return
             if gh.head() != s['source_sha']:
                 raise ValueError('main advanced before arming Dev')
+            if adoption:
+                gh.verify_dev_policy()
+                proof = json.loads(private_path(self.directory / 'qualification.json').read_text())
+                if proof.get('source_sha') != s['source_sha'] or proof.get('run_url') != s['qualification_run']:
+                    raise ValueError('Retained qualification does not match the reviewed Dev source')
             # Installation signal is known; choose a later second so its delayed callbacks stay ineligible.
             signal = self.signal(s['source_sha'])
             if not signal or timestamp() <= signal['created_at']:
@@ -602,7 +728,8 @@ print(json.dumps({'job_present':job.is_dir() and not job.is_symlink(),
                 return
             if len(runs) != 1:
                 raise ValueError('Ambiguous automatic deployment runs; inspect evidence')
-            proof = gh.proof(runs[0], s['pilot_sha'], site['url'], site['slug'], signal_number=signal['run_number'])
+            proof = gh.proof(runs[0], s['pilot_sha'], site['url'], site['slug'],
+                             signal_number=signal['run_number'], cloudpanel=bool(adoption))
             if proof:
                 if gh.head() != s['pilot_sha']:
                     raise ValueError('main advanced during push verification')
@@ -611,7 +738,9 @@ print(json.dumps({'job_present':job.is_dir() and not job.is_symlink(),
         elif stage == 'grant-access':
             if gh.head() != s['pilot_sha']:
                 raise ValueError('main changed before developer handoff')
-            if gh.grant_access(self.config.get('team_slugs', []), self.config.get('collaborators', [])):
+            teams = [] if adoption else self.config.get('team_slugs', [])
+            collaborators = [adoption['collaborator']] if adoption else self.config.get('collaborators', [])
+            if gh.grant_access(teams, collaborators):
                 self.persist(stage='ready', access_pending=False)
             else:
                 self.persist(access_pending=True)
@@ -624,20 +753,43 @@ def main():
     parser.add_argument('--config', required=True)
     parser.add_argument('--site-path', required=True)
     parser.add_argument('--enqueue', action='store_true', help='Only after successful new-site bootstrap')
-    parser.add_argument('--resume', action='store_true', help='Advance an existing enrollment; never adopt old sites')
+    parser.add_argument('--adopt-existing', action='store_true', help='Operator-only: record a reviewed existing CloudPanel Dev site and GitHub repository')
+    parser.add_argument('--cloudpanel-site-id', type=int)
+    parser.add_argument('--repository', help='Exact existing owner/repository')
+    parser.add_argument('--repository-id', type=int)
+    parser.add_argument('--source-sha', help='Exact existing main commit approved as the installed child baseline')
+    parser.add_argument('--collaborator', help='One preapproved developer login for the existing site')
+    parser.add_argument('--resume', action='store_true', help='Advance a post-bootstrap enrollment by one stage')
+    parser.add_argument('--resume-adoption', action='store_true', help='Operator-only: advance an existing-site adoption by one stage')
+    parser.add_argument('--arm-dev', action='store_true', help='Explicitly arm qualified existing-site Dev deployment')
     parser.add_argument('--recover-qualification', action='store_true', help='Operator-only repair after inspecting a failed qualification; preserve all evidence')
     parser.add_argument('--recover-preflight', action='store_true', help='Operator-only recovery before first adoption')
     parser.add_argument('--recover-startup', action='store_true', help='Operator-only recovery of a rejected workflow with no jobs')
     parser.add_argument('--failed-run', help='Exact failed GitHub run required for preflight recovery')
     args = parser.parse_args()
-    if sum((args.enqueue, args.resume, args.recover_qualification, args.recover_preflight, args.recover_startup)) != 1:
+    if sum((args.enqueue, args.adopt_existing, args.resume, args.resume_adoption, args.arm_dev,
+            args.recover_qualification, args.recover_preflight, args.recover_startup)) != 1:
         parser.error('Choose one enrollment or explicit recovery operation')
     if (args.recover_preflight or args.recover_startup) and not re.fullmatch(r'[0-9]+', args.failed_run or ''):
         parser.error('Recovery requires --failed-run with the inspected run ID')
     config = load_config(args.config)
+    adoption = None
+    if args.adopt_existing:
+        if not (args.cloudpanel_site_id and args.cloudpanel_site_id > 0 and args.repository_id and args.repository_id > 0):
+            parser.error('Existing-site adoption requires positive CloudPanel and GitHub repository IDs')
+        repository = check(args.repository, r'mrnwebdesigns/[a-zA-Z0-9][a-zA-Z0-9._-]*', 'existing GitHub repository')
+        collaborator = check(args.collaborator, r'[a-z0-9][a-z0-9-]*', 'existing-site collaborator')
+        if collaborator not in config.get('collaborators', []):
+            parser.error('Existing-site collaborator must be approved in the operator configuration')
+        adoption = {'site_id': args.cloudpanel_site_id, 'repository_id': args.repository_id,
+                    'source_sha': check(args.source_sha, r'[0-9a-f]{40}', 'existing main SHA'),
+                    'repository': repository, 'collaborator': collaborator}
+    elif any(value is not None for value in (args.cloudpanel_site_id, args.repository, args.repository_id,
+                                              args.source_sha, args.collaborator)):
+        parser.error('Existing-site identity options require --adopt-existing')
     binding = hashlib.sha256(args.site_path.encode()).hexdigest()[:24]
     directory = Path(config['state_root']) / binding
-    if not directory.exists() and not args.enqueue:
+    if not directory.exists() and not (args.enqueue or args.adopt_existing):
         print(json.dumps({'status': 'not-enrolled', 'action': 'none'})); return
     directory.mkdir(mode=0o700, exist_ok=True)
     private_path(directory, directory=True)
@@ -653,17 +805,37 @@ def main():
         site = identify(args.site_path, config)
         if state_path.exists():
             state = json.loads(private_path(state_path).read_text())
+            recorded = state.get('adoption')
+            if ((args.adopt_existing and adoption != recorded) or ((args.enqueue or args.resume) and recorded)
+                    or (args.resume_adoption and not recorded)):
+                raise ValueError('Recorded enrollment mode or reviewed adoption identity differs')
+            adoption = recorded
+            if adoption:
+                site['repository'] = adoption['repository']
+                verify_cloudpanel_site_id(site, adoption['site_id'])
             if state['site'] != site or (state['tooling_ref'] != config['tooling_ref'] and state['stage'] != 'ready' and not (args.recover_qualification or args.recover_preflight or args.recover_startup)):
                 raise ValueError('Enrollment identity or tooling changed; operator review required')
         else:
+            if not (args.enqueue or args.adopt_existing):
+                print(json.dumps({'status': 'not-enrolled', 'action': 'none'})); return
+            if adoption:
+                verify_cloudpanel_site_id(site, adoption['site_id'])
+                site['repository'] = adoption['repository']
             state = {'schema': 1, 'binding': binding, 'site': site, 'tooling_ref': config['tooling_ref'],
                      'stage': 'queued', 'created_at': timestamp()}
+            if adoption:
+                state['adoption'] = adoption
             save(state_path, state)
-        if (args.resume or args.recover_qualification or args.recover_preflight or args.recover_startup) and state['stage'] != 'ready':
-            secrets = credentials(config, site)
+        if args.arm_dev and (not adoption or state['stage'] != 'arm-dev'):
+            raise ValueError('Explicit Dev arming requires a completed existing-site qualification')
+        if (args.resume or args.resume_adoption or args.arm_dev or args.recover_qualification
+                or args.recover_preflight or args.recover_startup) and state['stage'] != 'ready':
+            secrets = credentials(config, site, repository_only=bool(adoption and state['stage'] != 'prepare-target'))
             enrollment = Enrollment(config, directory, state,
                 GitHub(secrets['github_token'], site['repository'], config['github_owner_type']), secrets)
             try:
+                if adoption:
+                    enrollment.github.adoption_repository(adoption['repository_id'])
                 if args.recover_startup:
                     enrollment.recover_startup(args.failed_run)
                 elif args.recover_preflight:
@@ -671,7 +843,7 @@ def main():
                 elif args.recover_qualification:
                     enrollment.recover_qualification()
                 else:
-                    enrollment.tick()
+                    enrollment.tick(arm=args.arm_dev)
                 state.pop('last_error', None)
                 save(state_path, state)
                 enrollment.readiness()
@@ -682,13 +854,15 @@ def main():
                 raise
         print(json.dumps({'status': state['stage'], 'repository': 'https://github.com/' + site['repository'],
                           'dev_url': site['url'], 'source_sha': state.get('deployed_sha'),
-                          'evidence': str(directory)}))
+                          'qualification_run': state.get('qualification_run'),
+                          'deployment_run': state.get('deployment_run'),
+                          'access_pending': state.get('access_pending', False), 'evidence': str(directory)}))
 
 
 if __name__ == '__main__':
     try:
         main()
-    except (ValueError, RuntimeError, OSError, KeyError, subprocess.TimeoutExpired) as error:
+    except (ValueError, RuntimeError, OSError, KeyError, sqlite3.Error, subprocess.TimeoutExpired) as error:
         if isinstance(error, (ValueError, RuntimeError)):
             print('Dev enrollment stopped: ' + str(error), file=sys.stderr)
         else:

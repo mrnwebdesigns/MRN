@@ -181,7 +181,9 @@ class FailureEmail(unittest.TestCase):
 
     def test_future_enrollment_stores_mail_secret_outside_dev_environment(self):
         github = GitHub('github-fixture-only', REPO)
-        with patch.object(github, 'request', side_effect=[None, {'branch_policies': [{'name': 'main', 'type': 'branch'}]}, None]), patch.object(github, 'secret') as secret:
+        branches = {'branch_policies': [{'name': 'main', 'type': 'branch'}]}
+        environment = {'deployment_branch_policy': {'protected_branches': False, 'custom_branch_policies': True}}
+        with patch.object(github, 'request', side_effect=[None, branches, environment, branches, None]), patch.object(github, 'secret') as secret:
             github.configure({}, {'MRN_DEPLOY_NOTIFY_POSTMARK_TOKEN': 'mail-fixture',
                                   'DEPLOY_SSH_PRIVATE_KEY': 'deploy-fixture'})
             secret.assert_any_call('MRN_DEPLOY_NOTIFY_POSTMARK_TOKEN', 'mail-fixture', None)

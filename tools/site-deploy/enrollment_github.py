@@ -87,6 +87,30 @@ class GitHub:
     def head(self):
         return self.request('GET', self.prefix + '/git/ref/heads/main')['object']['sha']
 
+    def adoption_repository(self, repository_id):
+        repo = self.request('GET', self.prefix)
+        if (repo.get('id') != repository_id or repo.get('full_name') != self.repository
+                or repo.get('private') is not True or repo.get('fork') is not False
+                or repo.get('archived') is not False or repo.get('disabled') is not False
+                or repo.get('default_branch') != 'main' or repo.get('owner', {}).get('type') != self.owner_type):
+            raise ValueError('Existing private repository identity differs from the reviewed adoption target')
+
+    def adoption_tree(self, repository_id, source_sha):
+        self.adoption_repository(repository_id)
+        if self.head() != source_sha:
+            raise ValueError('Existing repository main differs from the reviewed source commit')
+        for endpoint in ('/actions/workflows', '/environments'):
+            if self.request('GET', self.prefix + endpoint).get('total_count') != 0:
+                raise ValueError('Existing workflows or environments require separate adoption review')
+        for name in ('MRN_AUTO_DEV_AFTER', 'MRN_RELEASE_REQUESTS_AFTER'):
+            if self.request('GET', self.prefix + '/actions/variables/' + name, missing=True) is not None:
+                raise ValueError('Existing deployment cutoffs require separate adoption review')
+        parent = self.request('GET', self.prefix + '/git/commits/' + source_sha)
+        tree = self.request('GET', self.prefix + '/git/trees/' + parent['tree']['sha'] + '?recursive=1')
+        if tree.get('truncated') is not False:
+            raise ValueError('Existing repository tree inventory is incomplete')
+        return {row['path']: row for row in tree['tree']}
+
     def make_commit(self, base, files, message):
         parent = self.request('GET', self.prefix + '/git/commits/' + base)
         entries = []
@@ -143,12 +167,21 @@ class GitHub:
             raise ValueError('Unexpected Dev environment policy; operator review required')
         if not policies:
             self.request('POST', self.prefix + '/environments/dev/deployment-branch-policies', {'name': 'main', 'type': 'branch'})
+        self.verify_dev_policy()
         self.request('PUT', self.prefix + '/actions/permissions/workflow',
                      {'default_workflow_permissions': 'read', 'can_approve_pull_request_reviews': False})
         for name, value in variables.items():
             self.variable(name, str(value), 'dev')
         for name, value in secrets.items():
             self.secret(name, value, None if name in ('MRN_QA_ENGINE_TOKEN', 'MRN_DEPLOY_NOTIFY_POSTMARK_TOKEN') else 'dev')
+
+    def verify_dev_policy(self):
+        environment = self.request('GET', self.prefix + '/environments/dev')
+        branch_policy = environment.get('deployment_branch_policy') or {}
+        policies = self.request('GET', self.prefix + '/environments/dev/deployment-branch-policies')['branch_policies']
+        if (branch_policy.get('custom_branch_policies') is not True or branch_policy.get('protected_branches') is not False
+                or [(row.get('name'), row.get('type', 'branch')) for row in policies] != [('main', 'branch')]):
+            raise ValueError('Dev environment must restrict deployment secrets to main')
 
     def grant_teams(self, teams):
         org, _ = self.repository.split('/')
@@ -210,7 +243,7 @@ class GitHub:
             raise ValueError('Exact deployment evidence artifact is missing or ambiguous')
         return self.evidence(matches[0]['id'], allow_incomplete=allow_incomplete)
 
-    def proof(self, run, sha, url, slug, qualification=False, signal_number=None, prior_release=None):
+    def proof(self, run, sha, url, slug, qualification=False, signal_number=None, prior_release=None, cloudpanel=False):
         if run.get('status') != 'completed':
             return None
         if run.get('conclusion') != 'success':
@@ -241,6 +274,29 @@ class GitHub:
         steps = {row['operation']: row.get('backup', {}).get('valid') for row in receipt.get('steps', [])}
         if not all(steps.get(key) is True for key in required):
             raise ValueError('Missing verified backups or rollback exercise')
+        if cloudpanel:
+            previous = (receipt.get('previous') or {}).get('release_id')
+            current = receipt['current']['release_id']
+            origin = receipt.get('origin_cache', {})
+            if (receipt.get('host_provider') != 'cloudpanel' or origin.get('provider') != 'cloudpanel'
+                    or origin.get('html_cache') != 'disabled' or origin.get('wordpress_page_cache') != 'disabled'
+                    or not previous or previous == current):
+                raise ValueError('CloudPanel origin cache or retained rollback evidence is incomplete')
+            phases = {'activation': current}
+            if qualification:
+                if (order.get('event'), str(order.get('run_id')), run.get('head_branch'), run.get('head_sha')) != (
+                        'workflow_dispatch', str(run['id']), 'main', sha):
+                    raise ValueError('Qualification receipt does not belong to the exact manual Dev run')
+                phases.update(rollback=previous, reactivation=current)
+            for name, release_id in phases.items():
+                phase = receipt.get(name, {})
+                cache = phase.get('cache', {})
+                pages = cache.get('pages', [])
+                if (phase.get('release_id') != release_id or cache.get('status') != 'uncached-html-verified'
+                        or cache.get('purged_urls') != []
+                        or [(page.get('url'), page.get('phase')) for page in pages] != [(url + '/', 'first'), (url + '/', 'warm')]
+                        or any(page.get('edge', '').upper() not in ('DYNAMIC', 'BYPASS') for page in pages)):
+                    raise ValueError('CloudPanel public cache evidence is incomplete: ' + name)
         if not browser or any(row.get('errors') or not row.get('assets') for row in browser):
             raise ValueError('Released browser asset delivery did not pass')
         if {row.get('viewport') for row in browser} != {'desktop', 'tablet', 'mobile'}:

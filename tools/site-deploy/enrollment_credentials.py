@@ -108,7 +108,12 @@ def resolve(config_path, request):
     provision = 'new_site_identity' in config
     if provision and 'deploy_private_key' in config['references']:
         raise ValueError('Choose an existing identity reference or new-site provisioning')
-    names = ('github_token', 'qa_engine_token', 'deployment_notification_token') if provision else ('github_token', 'qa_engine_token', 'deployment_notification_token', 'deploy_private_key')
+    repository_only = request.get('repository_only') is True
+    names = ('github_token',)
+    if not repository_only:
+        names += ('qa_engine_token', 'deployment_notification_token')
+        if not provision:
+            names += ('deploy_private_key',)
     for name in names:
         reference = config['references'][name].format(domain=request['domain'], site_user=request['site_user'])
         if not reference.startswith('op://' + vault + '/') or any(ord(c) < 32 for c in reference):
@@ -118,7 +123,7 @@ def resolve(config_path, request):
         if process.returncode or not process.stdout.strip():
             raise ValueError('MRN service credential is unavailable: ' + name)
         result[name] = process.stdout.strip()
-    if provision:
+    if provision and not repository_only:
         result['deploy_private_key'] = deployment_identity(config, request, env)
     return result
 
