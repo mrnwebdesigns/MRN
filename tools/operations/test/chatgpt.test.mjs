@@ -8,6 +8,9 @@ import { createHttpServer } from '../src/http.mjs';
 import { oauthChallenge } from '../src/auth.mjs';
 import { configSchema } from '../src/config.mjs';
 import { actor, setup } from './helpers.mjs';
+import { makePlan } from './fixtures/content.mjs';
+import { response as mainwpResponse } from './fixtures/mainwp.mjs';
+import { toolNames } from '../src/mainwp.mjs';
 
 async function hosted(t, authenticate) {
   const f = setup(); t.after(() => f.close());
@@ -28,9 +31,11 @@ async function hosted(t, authenticate) {
 test('ChatGPT receives OAuth declarations on the wire and accurate operation effects', async t => {
   const f = await hosted(t, async () => actor);
   const { status, body } = await f.call('tools/list'); assert.equal(status, 200);
-  assert.equal(body.result.tools.length, 11);
+  assert.equal(body.result.tools.length, 21);
+  const writeNames = ['prepare_repair', 'prepare_rollback', 'prepare_code_edit', 'prepare_content_edit',
+    'approve_code_source', 'approve_operation', 'execute_operation', 'reconcile_operation'];
   for (const tool of body.result.tools) {
-    assert.deepEqual(tool.securitySchemes, [{ type: 'oauth2', scopes: ['mrn:operations'] }]);
+    assert.deepEqual(tool.securitySchemes, [{ type: 'oauth2', scopes: writeNames.includes(tool.name) ? ['mrn:operations', 'mrn:operations:write'] : ['mrn:operations'] }]);
     assert.deepEqual(tool._meta.securitySchemes, tool.securitySchemes);
     assert.equal(tool.inputSchema.type, 'object'); assert.ok(tool.title);
   }
@@ -43,6 +48,8 @@ test('ChatGPT receives OAuth declarations on the wire and accurate operation eff
   assert.equal(tools.inspect_website.annotations.idempotentHint, false);
   assert.equal(tools.list_websites.annotations.openWorldHint, false);
   assert.equal(tools.inspect_website.annotations.openWorldHint, true);
+  assert.equal(tools.get_operation.annotations.openWorldHint, true);
+  assert.equal(tools.get_operation.annotations.readOnlyHint, true);
   const inspection = await f.call('tools/call', { name: 'inspect_website', arguments: { website: 'example', environment: 'development' } });
   assert.equal(JSON.parse(inspection.body.result.content[0].text).target.url, f.state.url);
 });
@@ -54,6 +61,47 @@ test('an expired tool identity returns the ChatGPT relinking challenge without a
   assert.deepEqual(response.body.result._meta['mcp/www_authenticate'], [oauthChallenge(`${f.base}/mcp`)]);
   assert.match(response.body.result._meta['mcp/www_authenticate'][0], /error="invalid_token".*error_description=/);
   assert.equal(f.state.calls.length, 0);
+});
+
+test('ChatGPT can request retained provider status using the existing read-only operation tool', async t => {
+  const reader = { ...actor, identityProvider: 'google-oauth2', scopes: ['mrn:operations'] };
+  const f = await hosted(t, async () => reader); f.service.verifyStaff = async () => {};
+  const plan = makePlan().plan, target = f.registry.resolve(reader, 'example', 'development');
+  const record = f.store.create('operation', reader, target, { workflow: 'content', status: 'uncertain', plan: { provider: plan } });
+  let reads = 0; const original = f.client.callTool.bind(f.client);
+  f.client.callTool = async request => {
+    if (request.name !== toolNames.contentStatus) return original(request);
+    reads++; assert.equal(request.arguments.operation_id, plan.operation_id);
+    return mainwpResponse({ ...Object.fromEntries(['operation_id', 'site_id', 'site_url', 'target', 'before_sha256', 'candidate_sha256', 'migration_artifact', 'affected_paths'].map(k => [k, plan[k]])),
+      state: 'completed', current_sha256: plan.candidate_sha256, changed: true, rollback_available: true, error_code: null });
+  };
+  await f.call('tools/call', { name: 'get_operation', arguments: { operationId: record.id } }); assert.equal(reads, 0);
+  const refreshed = await f.call('tools/call', { name: 'get_operation', arguments: { operationId: record.id, refreshProvider: true } });
+  const result = JSON.parse(refreshed.body.result.content[0].text);
+  assert.equal(result.status, 'uncertain'); assert.equal(result.providerStatus.state, 'completed'); assert.equal(result.providerStatus.liveStateVerified, false);
+  assert.equal(reads, 1); assert.equal(f.state.mutations, 0); assert.equal(f.state.backups, 0);
+});
+
+test('every change lifecycle tool refuses a read-only sign-in before work or caller identity hints', async t => {
+  const f = await hosted(t, async () => ({ ...actor, scopes: ['mrn:operations'] }));
+  const id = '00000000-0000-4000-8000-000000000001'; const hash = 'a'.repeat(64);
+  const calls = [
+    ['prepare_repair', { inspectionId: id, findingId: id, requestKey: 'scope-test' }],
+    ['prepare_rollback', { operationId: id, requestKey: 'scope-test' }],
+    ['prepare_code_edit', { website: 'example', path: 'wp-content/themes/child/style.css', expectedSha256: hash, content: 'body {}', reason: 'Scope test', requestKey: 'scope-test' }],
+    ['prepare_content_edit', { website: 'example', target: { kind: 'post', post_type: 'page', post_id: 123, field: 'post_content' }, expectedSnapshotSha256: hash, newValue: 'Text', reason: 'Scope test', requestKey: 'scope-test' }],
+    ['approve_code_source', { operationId: id, planDigest: hash }],
+    ['approve_operation', { operationId: id, planDigest: hash }],
+    ['execute_operation', { operationId: id }],
+    ['reconcile_operation', { operationId: id }],
+  ];
+  for (const [name, args] of calls) {
+    const { body } = await f.call('tools/call', { name, arguments: args, _meta: { scopes: ['mrn:operations:write'] } });
+    assert.equal(body.result?.isError, true, name);
+    assert.equal(JSON.parse(body.result.content[0].text).error.code, 'INSUFFICIENT_SCOPE', name);
+    assert.deepEqual(body.result._meta['mcp/www_authenticate'], [oauthChallenge(`${f.base}/mcp`, true)], name);
+  }
+  assert.equal(f.state.calls.length, 0); assert.equal(f.state.backups, 0); assert.equal(f.state.mutations, 0);
 });
 
 test('ChatGPT receives named update versions and type totals over HTTP, with private package metadata excluded', async t => {

@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "members": [],
+  "emailDomains": [{
+    "domain": "mrnwebdesigns.com",
+    "enabled": true,
+    "portfolio": { "sources": ["mainwp"], "actions": ["read", "test", "content", "code"] }
+  }]
+}

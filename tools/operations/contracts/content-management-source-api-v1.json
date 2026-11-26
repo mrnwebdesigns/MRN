@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "adapter": "content-management-private-source-api-v1",
+  "status": "source-only machine registration; no source provenance or production admission",
+  "production_enabled": false,
+  "consumer_binding_enabled": false,
+  "frozen_protocols": {
+    "content-management-source-transfer-v1.json": "36320f6d2d5dac5523ecc68b0fa463c2fa1246cbf75f81e3209c055aa196f3e9",
+    "content-management-source-context-v1.json": "d114207fef098af71299e3c5b5a6b22f3ef36b55115b56efb03bb0d4bcab5418"
+  },
+  "abilities": [
+    {
+      "name": "mrn-mainwp/capture-content-edit-qualification-source-v1",
+      "contract": "content-management-source-transfer-v1.json",
+      "input_definition": "capture_input",
+      "output_definition": "capture_output",
+      "callback": "capture",
+      "registered": true,
+      "private_backend_only": true,
+      "staff_allowlisted": false,
+      "maximum_response_bytes": 1048576
+    },
+    {
+      "name": "mrn-mainwp/read-content-edit-qualification-source-v1",
+      "contract": "content-management-source-transfer-v1.json",
+      "input_definition": "read_input",
+      "output_definition": "read_output",
+      "callback": "read",
+      "registered": true,
+      "private_backend_only": true,
+      "staff_allowlisted": false,
+      "maximum_response_bytes": 1048576
+    },
+    {
+      "name": "mrn-mainwp/get-content-edit-qualification-source-v1",
+      "contract": "content-management-source-transfer-v1.json",
+      "input_definition": "status_input",
+      "output_definition": "status_output",
+      "callback": "status",
+      "registered": true,
+      "private_backend_only": true,
+      "staff_allowlisted": false,
+      "maximum_response_bytes": 1048576
+    },
+    {
+      "name": "mrn-mainwp/read-content-edit-qualification-source-context-v1",
+      "contract": "content-management-source-context-v1.json",
+      "input_definition": "input",
+      "output_definition": "output",
+      "callback": "lookup",
+      "registered": true,
+      "private_backend_only": true,
+      "staff_allowlisted": false,
+      "maximum_response_bytes": 32768
+    }
+  ]
+}

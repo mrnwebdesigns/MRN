@@ -10,7 +10,7 @@ import { Qualifications } from '../src/qualification.mjs';
 import { RecoveryEvidence } from '../src/recovery.mjs';
 import { responseEvidence } from '../src/probe.mjs';
 
-export const actor = { subject: 'team-member', expiresAt: Date.now() + 3600000 };
+export const actor = { subject: 'team-member', expiresAt: Date.now() + 3600000, scopes: ['mrn:operations', 'mrn:operations:write'] };
 export function setup() {
   const root = mkdtempSync(join(tmpdir(), 'mrn-ops-'));
   const registryData = { version: 1, websites: [{ id: 'example', name: 'Example', aliases: ['Client'], facts: [], environments: [{ name: 'development',

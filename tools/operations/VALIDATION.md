@@ -1,5 +1,205 @@
 # Operations validation
 
+## Unified Google delegation and guarded code integration — 2026-10-14
+
+This is an unshipped integration candidate. The existing workspace plugin and live service are unchanged. Active MRN Google staff use automatic domain/customer membership; there is no named-user approval or enrollment step.
+
+The new `provider-transport` CI job uses immutable provider/MCP commits in
+`test/runtime/sources.json`, the provider's disposable WordPress/MainWP HTTPS
+harness and the gateway's actual JWT, delegation, HTTP MCP and SQLite audit
+code. Its synthetic OAuth/Directory checks cover concurrent staff reads,
+outsider and revoked/suspended denials, read-only scope enforcement, persistent
+nonce replay denial and raw service-route denial. The MCP subprocess trusts only
+the generated fixture CA and routes the Dashboard hostname only to the fixture's
+private address; TLS verification remains enabled. It never loads local MainWP
+configuration or live credentials. Only a bounded pass report is retained, not
+credentials, signed envelopes, requests or private runtime files. At source
+`2929578`, [the first CI attempt](https://github.com/mrnwebdesigns/MRN/actions/runs/38591395905/job/115947138549)
+stopped before provider checkout: the existing MRN CI Standalone Repos App
+received HTTP 404 for that repository's installation lookup. No runtime check
+ran in that attempt. The controlled-contracts and Code gate jobs passed at that
+exact source. On 2026-10-14 the owner explicitly approved adding the provider to
+the existing read-only CI App. Saved readback verified 29 repository selections,
+preserving all prior 28, and unchanged read-only code/metadata permissions. The
+[rerun at 57d61e4](https://github.com/mrnwebdesigns/MRN/actions/runs/38592055915/job/115951238897)
+passed source-token creation, both pinned checkouts and builds. Its old provider
+pin passed 34 HTTP, 23 content and 13 parity checks; the job then failed because
+that pin has no gateway hook and the mandatory gateway report was absent. No
+alternative credential was used. That integration checkpoint pinned provider
+`27ac5bc1371db01db7c0d5cf5c418ef776e23e1e`, including the CI-only hook. Its
+[complete CI](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38593325241)
+passed 34 native HTTP, 26 content, 13 parity, 12 profile-context and 25 controller
+lifecycle checks. The controller suite uses real WordPress/MySQL and signed
+individual delegation but a synthetic MainWP child seam, QA signer and backup
+receipt; it does not prove real child transport, protected-runner QA or remote
+backup creation. The fix compares retained selector objects canonically, with a
+reordered-key regression, without weakening exact target or snapshot checks.
+Gateway source `a6eccc20bb3149cc6557f33e8a7041a28272776d` then passed all ten
+actual gateway/MCP/WordPress transport cases in [run 38593686429](https://github.com/mrnwebdesigns/MRN/actions/runs/38593686429/job/115955067868),
+alongside controlled contracts and the [Code gate](https://github.com/mrnwebdesigns/MRN/actions/runs/38593686491).
+The retained bounded report pins provider `27ac5bc` and MCP `3249bde`, and explicitly
+records `productionCredentials: false`, `liveGoogleVerified: false`,
+`chatgptAcceptanceVerified: false`, `managedSites: 0`, `contentWriteVerified: false`
+and `codeWriteVerified: false`. Its ten checks cover the identities, denials,
+nonce/route enforcement and private audit described above. The empty synthetic
+portfolio does not prove real-site discovery, content/code writes or ChatGPT
+acceptance. Documentation checkpoint `a0f8521` also passed all Operations CI checks and the Code gate at the unchanged runtime source.
+
+Gateway source `a3b55ea888ff0a4c92834bf74ea9fd5655aca850` adds the actual
+MainWP Child lifecycle through HTTP MCP and pins provider
+`e615e988cade54f2ceb3493e561094341c91c053`. The provider's own
+[CI run 38608084539](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38608084539)
+passes native content edit, exact rollback and hook/source refusal checks.
+The combined [gateway run 38608469036](https://github.com/mrnwebdesigns/MRN/actions/runs/38608469036)
+passes controlled contracts and the ten authorization transport cases, then
+discovers the one real disposable Child. It fails before any gateway content
+mutation: delegated `get-site-v1` rejects the exact URL because the provider's
+target guard only accepts numeric IDs. The gateway retains URL resolution,
+one-site sync and fresh exact readback; substituting a cached numeric ID is not
+an accepted fix. The [Code gate](https://github.com/mrnwebdesigns/MRN/actions/runs/38608469081)
+passes at this same source. Native gateway content acceptance remains failed.
+
+Provider fix `aeb0f2cfe1d7496e338845ff0c810e206a45a1b0` passes
+[all four CI jobs](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38611997072),
+including real exact-URL resolution, one-site numeric sync and fresh exact URL,
+ID, connection and timestamp readback. URL reads bind one current authorized
+record and recheck the returned identity; malformed/alias/ambiguous/disconnected
+targets and response drift are denied. Sync and mutations stay numeric-only.
+Gateway `b7851e1215b4a661eab32602e7de0171e095c99a` pins that fix and passes
+controlled contracts and the [Code gate](https://github.com/mrnwebdesigns/MRN/actions/runs/38613140903).
+Its [combined run 38613140657](https://github.com/mrnwebdesigns/MRN/actions/runs/38613140657)
+passes the ten authorization cases, native provider checks and initial exact URL
+resolution, but fails the same-URL readback after HTTP sync. The sync route
+returns HTTP 200; the following read returns `mrn_delegation_target`. No gateway
+content mutation ran. HTTP-originated child sync remains unqualified even though
+the provider's CLI-context native sequence passes.
+
+The gateway now checks the canonical sync body as well as subsequent freshness:
+no queue, one synchronized record matching the resolved ID/normalized URL, zero
+errors and consistent counts. A failed or malformed sync returns fixed
+`SYNC_UNVERIFIED` without reflecting provider messages. Two new tests reject
+failed/queued/malformed/wrong-site/multiple-site results even with a fresh
+timestamp, and retain valid normalized URL plus fresh-readback behavior. All 234
+controlled tests and direct lint pass. A transport timeout still permits only
+the existing one exact freshness readback, never a sync retry or fallback.
+
+Provider `47de8802681450bd07f0b3610b02919531135601` passes
+[all four jobs](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38616458943),
+including the actual delegated HTTP fresh-sync sequence. Metadata-only probes
+confirmed root-owned signing files blocked the web user. The disposable fixture
+now assigns only its generated MainWP data to that user and creates private keys
+with a private process mask, preserving 0700 directories and 0600 keys. No vendor
+code, TLS verification, credential or production setting changed.
+Gateway `9039d17` pins that fix. Its [combined run](https://github.com/mrnwebdesigns/MRN/actions/runs/38616849742)
+passes discovery/fresh sync, native inspection and exact policy, unchanged
+preparation and denial checks, then marks the approved execution uncertain.
+The gateway expected a null error code where the provider uses an empty string
+on success; it also incorrectly required rollback availability on reverse plans.
+The fix admits only null/empty success codes and requires the exact forward versus
+reverse rollback flag. Every state/site/target/hash/migration/readback gate remains.
+The fixture now mirrors native output; failed or inconsistent outcomes retain
+their locks and never retry. All 237 controlled tests pass.
+
+Gateway `7105c1582e6f8bfde7f6ec726d9cf17dfe0d7c5b` then passed
+[complete Operations CI](https://github.com/mrnwebdesigns/MRN/actions/runs/38617704685)
+and the [Code gate](https://github.com/mrnwebdesigns/MRN/actions/runs/38617704678).
+All ten identity/authorization transport cases and all six native content groups
+pass: exact discovery/sync/snapshot/policy, unchanged preparation, approval and
+revocation refusals, actual approved Child page-title edit with public HTML and provider
+status, separately approved exact rollback, and verified-individual audit.
+Artifact `11919998889` was downloaded and checked; archive digest is
+`c601a99d7b1a8f8fbbe4173f8035ce8f871f80bb22b663a4ddb85d6e6c407f54`.
+Its native report digest is
+`db9421da5b2279c4cc6ea8e1366f30f3f4b4c46ef4b771a5331eea8cd6bd247e`;
+the authorization report digest is
+`051b8f0f25b0a0ce110e7ce398bdaa0b095fc7eee0c6c6c9b9cbc9c7bf81537a`.
+The immutable sources are provider `47de880` and canonical MCP `3249bde`.
+This closes the demonstrated disposable gateway content transport lifecycle,
+not real-site rendering qualification, code editing or team acceptance.
+
+Consumer preparation extracts the existing closed content-schema compiler and
+adds bounded, acyclic local definition references plus semantic unique-item
+checks. External/unknown/cyclic references, unknown schema vocabulary, open
+objects, duplicate records, malformed Unicode and unsafe integers are rejected.
+All 242 controlled tests and direct lint pass with the unchanged frozen v1/v2
+wire. A read-only probe compiles the provider's 30 staged definitions and accepts
+its six structural vectors; it is not an immutable contract acceptance or a
+signature/lifecycle test. No new provider schema is copied into the gateway, no
+qualification endpoint is enabled, and static profile trust is unchanged. The
+cross-consumer target binding still needs explicit signed claims, purpose,
+audiences, revision and expiry semantics before consumer wiring.
+
+The corrected provider contract checkpoint `402991371ce0d9f258af60319c85b1848a7fa40a`
+passes [all four CI jobs](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38621727078).
+The gateway retains exact qualification, recipe and target-binding schemas plus
+independent canonical structural vectors with source-blob SHA-256 checksums.
+All 41 definitions compile and all eight vectors match; all 246 gateway tests
+and direct lint pass. The existing v1 bytes remain identical. The existing v2
+copy differs only in descriptive metadata; its schema, ability, role, wrapper,
+input and output match the checksum-pinned upstream document exactly.
+
+The initial qualification status requires `qualification_binding: null` and
+provider-only acceptance. Queue metadata, protected worker context, expiry and
+current revision/profile/binding hashes are explicit; replaced or revoked
+historical jobs cannot imply current acceptance. The separate binding contract
+has its own purpose, all consumer audiences, actual published revision and
+bounded expiry. New-target consumer trust requires a separately versioned output
+and accepted issuance/verification. These files do not enable queue dispatch,
+registrar runtime, signed-profile trust, new site eligibility or staff access.
+The integration fixture now pins `4029913`; its gateway rerun remains a separate
+check from the provider's passing contract/runtime CI.
+
+The newer provider foundation `792226abd7b3ed28532b661aca385f0d917a81c3` passes
+[all four CI jobs](https://github.com/mrnwebdesigns/mrn-mainwp-operations-api/actions/runs/38638976550).
+Its disposable harness installs the committed runtime ZIP, including the nine
+required contracts and generated source manifest. Recorded results are 25 native
+content lifecycle checks, 44 actual WordPress/InnoDB catalog-storage checks with
+two independent publishers and one winner, 253 contract checks, and 17 package
+and extracted-source tests. Stale negative-cache overwrites, stale lock owners,
+successor deletion, target revision races and capacity overflow are rejected.
+Source readback rejects missing, extra, altered or linked package inputs and a
+forged source claim against an independent expected commit. Original frozen
+contracts remain byte-identical. The gateway now pins this exact source and
+retains both additive contracts plus the full capture vector; 43 definitions and
+nine canonical vectors validate. The new owner-only wire test rejects caller
+identity, paths, URLs, private keys and activation fields; it does not prove
+owner authorization or worker timing at runtime. No new provider control/job
+ability, target binding or production consumer trust is enabled. The combined
+gateway test against this packaged checkpoint remains a separate required gate.
+
+The internal recipe-catalog verifier adds 11 controlled tests covering distinct
+root/registrar/identity/QA keys, purpose-bound Ed25519 signatures, exact canonical
+JSON/base64, duplicate fields, payload bounds, approved digest/epoch, date
+boundaries, all three audiences, unique sorted recipe IDs and eligibility,
+independent source/runtime/assertion pins, and reserved-origin/field restrictions.
+These use the accepted provider's structural catalog vector and ephemeral local
+signing keys. They prove verifier behavior only. No application workflow imports
+the module, no target binding is accepted, and static target inventories remain
+authoritative. Catalog installation and worker preflight/handoff have reviewed
+additive source contracts but no gateway runtime or live activation evidence.
+
+The passing six-group lifecycle harness requires exact snapshot and public HTML
+verification after the approved edit and separate rollback, with individual
+audit attribution and approval/revocation refusals. Only the two backup calls
+are substituted with explicitly synthetic provider-consumable receipts; QA
+uses a synthetic signer while exercising the real receipt verifier. OAuth and
+Directory are synthetic too. Private credentials, receipts and fixture files
+are never uploaded. Both retained reports explicitly state that protected QA, remote backup
+creation, live Google, code editing and ChatGPT acceptance remain unverified.
+
+- Verified canonical MainWP status on wpcontrol.mrndev.io: connected, 107 provider abilities, 52 exposed by a fresh configured connection at 15:06 UTC (previously 48). The abilities resource is policy-filtered too; the unexposed 55 are not enumerated or qualified. Last verified live provider 0.13.4 retains the company-only code policy and QA scope. Native REST post/page reads succeeded using the separately authorized Production Hub bearer lookup; no site write was attempted.
+- Added per-request Google identity delegation, strict cross-language signed claims, POST-only metadata checks, active-membership authorization, audit identity migration, expanded portfolio/site reads, exact native content reads, code inspection, central GitHub source handling and protected QA/code lifecycle adapters.
+- Full Node 24 suite passed 258 checks. Tests include signature/identity forgery, outsider and revoked denial, request isolation, unsafe GET metadata rejection, live-state drift, backup/approval gates, exact snapshot edit/rollback, pre-PR QA versus merged-source QA and live approvals, rejection before source publication on failed preliminary QA or disabled writes, lost response lock retention, bounded receipt extraction and token narrowing. Site-directory reads require portfolio access; ignored-update reads reject empty, different-site or expanded selectors. Read-only OAuth consent cannot authorize the eight change-lifecycle tools. These are controlled integration fixtures, not ordinary-member ChatGPT acceptance.
+- Configuration preflight and startup use the same QA-policy loader before opening SQLite state. Fourteen CLI/loader regressions cover legacy read-only, code-only, content-only and combined configurations; missing, malformed and interchanged policy files; central QA/source repository pins; bounded non-secret output; and rejection before state creation. Snapshot workflows require no source repository. This is static configuration validation, not credential, hosted-runtime or live Google acceptance.
+- Direct ESLint passed. The staged MRN task QA gate is required for the final index. A broader MRN QA invocation resolved the parent monorepo and reported static Pass, with PHPStan missing-stub advisory; it skipped service ESLint/npm rows because no root package exists. Its report is not a substitute for direct Node tests/lint or live provider/runtime checks.
+- There is no new browser UI in the gateway. Its hosted WordPress/API, browser, accessibility and performance acceptance remains unverified; the separate disposable provider/runner evidence below does not establish live gateway acceptance. Central service credentials, runner/App provisioning, automatic access policy, workspace tool refresh and deployment are pending concrete approval gates.
+- Typed content gateway tests cover exact before/candidate/migration/descriptor hashes, the PHP public signing vector, separate content QA signatures, normal and rollback paths, revoked membership during backup, concurrent approval, stale public content and lost-response lock retention. Protected runner source `6551079` passed [disposable runtime CI](https://github.com/mrnwebdesigns/mrn-code-qa-runner/actions/runs/38581916586): actual HTTP dependency parity before/after QA, page/title/post/rollback, mandatory API/browser/accessibility/performance checks, and invalid-candidate/cross-record-parity denial. The later native gateway proof above qualifies disposable Child transport only; real-site profiles remain blocked. No production content profile is implied.
+- Runner helper update `0fd0ff7` pins provider `27ac5bc` and SHA-256 `66110c269fe347648885fd12bce178e4ec73bc476dfdae80a4166064e15389ba`. Its 41 tests and staged PHP lint/WPCS/compatibility/PHPStan/secrets checks passed. [Run 38593836989, attempt 2](https://github.com/mrnwebdesigns/mrn-code-qa-runner/actions/runs/38593836989/attempts/2) passed contracts and both disposable isolation jobs, including required report uploads. The owner-approved $5/month Actions budget, with cutoff and alerts preserved, resolved the initial artifact-quota failure. Downloaded artifacts `11910930605` and `11909304607` bind the same source and contain four code and four content QA reports plus two independent HTTP parity manifests. All eight reports pass mandatory API runtime, browser, accessibility and performance checks; code edit/rollback and failed-candidate denial pass, and content/title/post/rollback plus unsafe-HTML, unnormalized-title, stale-render, wrong-parity and cross-record-baseline rejection pass. The page/post parity digests remain distinct (`38dcf1b6…` / `6b4a0b45…`). Inapplicable static rows and remote Fleet inventory/license/rollout checks remain explicitly skipped within these isolated fixture profiles; they are not production release coverage. No evidence, retention setting or report gate was changed. Live provider transport and real-site rendering qualification remain separate gates.
+- Native REST content reads repeat live staff authorization after both identity and content responses, and again at the service return boundary. Controlled revocation during identity resolution, record retrieval, search and service completion discards the result without retrying. Fixed allowlisted MainWP error mappings preserve content/profile/QA/backup/lock/uncertainty and Directory blockers through the pinned MCP transport, without reflecting upstream messages or credentials. Safe Mode remains a hard stop; uncertain outcomes never claim that no mutation occurred.
+- The existing read-only `get_operation` tool can explicitly refresh retained code/content provider metadata. Controlled tests include actual HTTP tool dispatch, exact plan/site/target/hash checks, revocation before/after dispatch, bounded output and the unchanged local lock/status even when the provider reports completion or owner-side resolution. The read does not inspect current child state, retry a mutation, reconcile an operation or authorize rollback. Real hosted-provider status acceptance remains open.
+- The gateway's `content-policy-v2.json` matches the provider proposal's input/output/role/wrapper exactly. Capability-negotiated target-aware lookup passes tests for two distinct records/fields on one site, a closed required tuple, exact signed read delegation, legacy-only-when-absent behavior, no downgrade after denial/malformed/null qualification, wrong-profile rejection before preparation/QA and the unchanged v1 edit/rollback lifecycle. No generic v2 ability or profile-registration write is admitted. Provider `27ac5bc` additionally passed v2 exact-field selection and v1 ambiguity denial in its disposable controller suite. Service-owned catalog registration, actual child transport, real-site qualification and hosted acceptance remain open.
+- Native content edits, typed ACF/menu/media edits, ordinary staff ChatGPT edit/rollback acceptance and live outsider/revoked-account denial remain unverified. Do not call the product complete.
+
 ## PR #256 source integration and hosted readback — 2026-10-13
 
 - Refreshed `main` at `0d5040f09b814994a5c4199fcb6cc670d5051c33` and updated

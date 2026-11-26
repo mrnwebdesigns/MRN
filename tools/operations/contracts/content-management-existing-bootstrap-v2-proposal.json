@@ -1,0 +1,865 @@
+{
+  "schema": 2,
+  "qualification_protocol": "content-management-existing-v2",
+  "status": "bootstrap-wire-proposal-unregistered",
+  "signature_role": "registrar",
+  "production_enabled": false,
+  "runtime_registered": false,
+  "delivery_enabled": false,
+  "source_admission_enabled": false,
+  "private_url": "https://operations.mrnwebdesigns.com/internal/mainwp/management-existing-worker-bootstrap",
+  "purposes": {
+    "commitment": "mrn-content-management-existing-bootstrap-commitment-v2:",
+    "observation": "mrn-content-management-existing-bootstrap-observation-v2:"
+  },
+  "frozen_inputs_sha256": {
+    "content-management-existing-worker-v2-proposal.json": "8881911cea6435b470f3776aab29a200f54015828ee2d53589abbe1b4810247d",
+    "content-management-existing-evidence-v2.json": "e511e4c9bc62eb839c68b59e64996e6b0d013f61ad8961520486ad821d4de6ff"
+  },
+  "imported_worker_definitions": [
+    "context",
+    "binding",
+    "uuid",
+    "hash",
+    "site_id",
+    "site_url",
+    "target",
+    "source_sha",
+    "timestamp",
+    "protocol_contracts",
+    "provenance",
+    "id",
+    "envelope",
+    "pointer",
+    "dispatch_request",
+    "dispatch_observation",
+    "retained_record"
+  ],
+  "limits": {
+    "pointer_bytes": 512,
+    "response_bytes": 65536,
+    "commitment_bytes": 16384,
+    "observation_bytes": 32768,
+    "read_seconds": 5,
+    "worker_ttl_seconds": 300,
+    "original_intent_seconds": 900
+  },
+  "metadata_delivery_gate": "one-use-new-original-only; no provider counter charge or additional provider allowance",
+  "$defs": {
+    "context": {
+      "type": "object",
+      "properties": {
+        "binding": {
+          "$ref": "#/$defs/binding"
+        },
+        "management_context_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "capture_artifact_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "measurement_record_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "parity_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "evidence_policy_epoch": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "evidence_policy_sha256": {
+          "$ref": "#/$defs/hash"
+        }
+      },
+      "required": [
+        "binding",
+        "management_context_sha256",
+        "capture_artifact_sha256",
+        "measurement_record_sha256",
+        "parity_sha256",
+        "evidence_policy_epoch",
+        "evidence_policy_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "binding": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 2
+        },
+        "adapter": {
+          "type": "string",
+          "enum": [
+            "content-management-v1"
+          ]
+        },
+        "qualification_job_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "operation_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "reviewed_digest": {
+          "$ref": "#/$defs/hash"
+        },
+        "requester_binding_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "authorization_policy_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "site_id": {
+          "$ref": "#/$defs/site_id"
+        },
+        "site_url": {
+          "$ref": "#/$defs/site_url"
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        },
+        "expected_target_revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "before_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "candidate_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "request_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "migration_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "profile_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "runtime_context_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "acf_schema_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "management_contract_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "provider_source_sha": {
+          "$ref": "#/$defs/source_sha"
+        },
+        "installed_manifest_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "source_binding_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "created_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "expires_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "before_paths_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "job_intent_ttl_seconds": {
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 900
+        },
+        "qualification_protocol": {
+          "type": "string",
+          "enum": [
+            "content-management-existing-v2"
+          ]
+        },
+        "protocol_contracts_sha256": {
+          "$ref": "#/$defs/protocol_contracts"
+        }
+      },
+      "required": [
+        "schema",
+        "adapter",
+        "qualification_job_id",
+        "operation_id",
+        "reviewed_digest",
+        "requester_binding_sha256",
+        "authorization_policy_sha256",
+        "site_id",
+        "site_url",
+        "target",
+        "expected_target_revision",
+        "before_sha256",
+        "candidate_sha256",
+        "request_sha256",
+        "migration_sha256",
+        "profile_sha256",
+        "runtime_context_sha256",
+        "acf_schema_sha256",
+        "management_contract_sha256",
+        "provider_source_sha",
+        "installed_manifest_sha256",
+        "source_binding_sha256",
+        "created_at",
+        "expires_at",
+        "before_paths_sha256",
+        "job_intent_ttl_seconds",
+        "qualification_protocol",
+        "protocol_contracts_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "uuid": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$",
+      "minLength": 36,
+      "maxLength": 36
+    },
+    "hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "minLength": 64,
+      "maxLength": 64
+    },
+    "site_id": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "site_url": {
+      "type": "string",
+      "format": "uri",
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "^https://[^/?#@]+(?:/[^?#]*)?$"
+    },
+    "target": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "wordpress-content"
+          ]
+        },
+        "post_type": {
+          "type": "string",
+          "maxLength": 4,
+          "enum": [
+            "post",
+            "page"
+          ]
+        },
+        "post_id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "kind",
+        "post_type",
+        "post_id"
+      ],
+      "additionalProperties": false
+    },
+    "source_sha": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$",
+      "minLength": 40,
+      "maxLength": 40
+    },
+    "timestamp": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "protocol_contracts": {
+      "type": "object",
+      "properties": {
+        "qualification": {
+          "$ref": "#/$defs/hash"
+        },
+        "report": {
+          "$ref": "#/$defs/hash"
+        },
+        "evidence": {
+          "$ref": "#/$defs/hash"
+        },
+        "source_transfer": {
+          "$ref": "#/$defs/hash"
+        },
+        "source_context": {
+          "$ref": "#/$defs/hash"
+        },
+        "wire_registry": {
+          "$ref": "#/$defs/hash"
+        }
+      },
+      "required": [
+        "qualification",
+        "report",
+        "evidence",
+        "source_transfer",
+        "source_context",
+        "wire_registry"
+      ],
+      "additionalProperties": false
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "dispatch_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "dispatch_request_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "dispatch_record_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "repository": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 191,
+          "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+        },
+        "repository_id": {
+          "$ref": "#/$defs/id"
+        },
+        "ref": {
+          "type": "string",
+          "enum": [
+            "refs/heads/main"
+          ]
+        },
+        "workflow_id": {
+          "$ref": "#/$defs/id"
+        },
+        "workflow_path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 191,
+          "pattern": "^\\.github/workflows/[a-z0-9._-]+\\.ya?ml$"
+        },
+        "workflow_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "run_id": {
+          "$ref": "#/$defs/id"
+        },
+        "run_attempt": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1
+        },
+        "runner_source_sha": {
+          "$ref": "#/$defs/source_sha"
+        },
+        "engine_commit": {
+          "$ref": "#/$defs/source_sha"
+        },
+        "engine_configuration_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "runtime_sha256": {
+          "$ref": "#/$defs/hash"
+        }
+      },
+      "required": [
+        "dispatch_id",
+        "dispatch_request_sha256",
+        "dispatch_record_sha256",
+        "repository",
+        "repository_id",
+        "ref",
+        "workflow_id",
+        "workflow_path",
+        "workflow_sha256",
+        "run_id",
+        "run_attempt",
+        "runner_source_sha",
+        "engine_commit",
+        "engine_configuration_sha256",
+        "runtime_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20,
+      "pattern": "^[1-9][0-9]{0,19}$"
+    },
+    "envelope": {
+      "type": "object",
+      "properties": {
+        "key_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "payload_base64": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 131072,
+          "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+        },
+        "signature_base64": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 88,
+          "pattern": "^[A-Za-z0-9+/]{86}==$"
+        }
+      },
+      "required": [
+        "key_id",
+        "payload_base64",
+        "signature_base64"
+      ],
+      "additionalProperties": false
+    },
+    "pointer": {
+      "type": "object",
+      "properties": {
+        "dispatch_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "context_sha256": {
+          "$ref": "#/$defs/hash"
+        }
+      },
+      "required": [
+        "dispatch_id",
+        "context_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "dispatch_request": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "integer",
+          "enum": [
+            2
+          ]
+        },
+        "dispatch_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "context_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "worker_contract_sha256": {
+          "$ref": "#/$defs/hash"
+        }
+      },
+      "required": [
+        "schema",
+        "dispatch_id",
+        "context_sha256",
+        "worker_contract_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "dispatch_observation": {
+      "type": "object",
+      "properties": {
+        "request": {
+          "$ref": "#/$defs/dispatch_request"
+        },
+        "context_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "evidence_policy_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "requested_at": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "original_expires_at": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "app_actor_id": {
+          "$ref": "#/$defs/id"
+        },
+        "run_id": {
+          "$ref": "#/$defs/id"
+        },
+        "observed_at": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "request",
+        "context_sha256",
+        "evidence_policy_sha256",
+        "requested_at",
+        "original_expires_at",
+        "app_actor_id",
+        "run_id",
+        "observed_at"
+      ],
+      "additionalProperties": false
+    },
+    "retained_record": {
+      "type": "object",
+      "properties": {
+        "context": {
+          "$ref": "#/$defs/context"
+        },
+        "provenance": {
+          "$ref": "#/$defs/provenance"
+        },
+        "observation": {
+          "$ref": "#/$defs/dispatch_observation"
+        }
+      },
+      "required": [
+        "context",
+        "provenance",
+        "observation"
+      ],
+      "additionalProperties": false
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "commitment": {
+          "$ref": "#/$defs/envelope"
+        },
+        "observation": {
+          "$ref": "#/$defs/envelope"
+        }
+      },
+      "required": [
+        "commitment",
+        "observation"
+      ],
+      "additionalProperties": false
+    },
+    "worker_policy": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1
+        },
+        "enabled": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "policy_epoch": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "qa_key_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$"
+          },
+          "minItems": 1,
+          "maxItems": 20,
+          "uniqueItems": true
+        },
+        "repository": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 191,
+          "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+        },
+        "repository_id": {
+          "$ref": "#/$defs/id"
+        },
+        "ref": {
+          "type": "string",
+          "enum": [
+            "refs/heads/main"
+          ]
+        },
+        "workflow_id": {
+          "$ref": "#/$defs/id"
+        },
+        "workflow_path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 191,
+          "pattern": "^\\.github/workflows/[a-z0-9._-]+\\.ya?ml$"
+        },
+        "workflow_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "runner_source_sha": {
+          "$ref": "#/$defs/source_sha"
+        },
+        "engine_commit": {
+          "$ref": "#/$defs/source_sha"
+        },
+        "engine_configuration_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "runtime_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "performance_budget_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "render_assertions_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "hook_policy_sha256": {
+          "$ref": "#/$defs/hash"
+        }
+      },
+      "required": [
+        "schema",
+        "enabled",
+        "policy_epoch",
+        "qa_key_ids",
+        "repository",
+        "repository_id",
+        "ref",
+        "workflow_id",
+        "workflow_path",
+        "workflow_sha256",
+        "runner_source_sha",
+        "engine_commit",
+        "engine_configuration_sha256",
+        "runtime_sha256",
+        "performance_budget_sha256",
+        "render_assertions_sha256",
+        "hook_policy_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "key_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "bootstrap_policy": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "integer",
+          "enum": [
+            2
+          ]
+        },
+        "policy_epoch": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "contract_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "worker_policy_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "app_actor_id": {
+          "$ref": "#/$defs/id"
+        },
+        "registrar_key_id": {
+          "$ref": "#/$defs/key_id"
+        },
+        "registrar_public_key_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "identity_key_id": {
+          "$ref": "#/$defs/key_id"
+        },
+        "identity_public_key_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "run_policy_sha256": {
+          "$ref": "#/$defs/hash"
+        }
+      },
+      "required": [
+        "schema",
+        "policy_epoch",
+        "contract_sha256",
+        "worker_policy_sha256",
+        "app_actor_id",
+        "registrar_key_id",
+        "registrar_public_key_sha256",
+        "identity_key_id",
+        "identity_public_key_sha256",
+        "run_policy_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "observed_run": {
+      "type": "object",
+      "properties": {
+        "run_id": {
+          "$ref": "#/$defs/id"
+        },
+        "run_attempt": {
+          "type": "integer",
+          "enum": [
+            1
+          ]
+        },
+        "repository_id": {
+          "$ref": "#/$defs/id"
+        },
+        "runner_source_sha": {
+          "$ref": "#/$defs/source_sha"
+        },
+        "app_actor_id": {
+          "$ref": "#/$defs/id"
+        }
+      },
+      "required": [
+        "run_id",
+        "run_attempt",
+        "repository_id",
+        "runner_source_sha",
+        "app_actor_id"
+      ],
+      "additionalProperties": false
+    },
+    "commitment": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "integer",
+          "enum": [
+            2
+          ]
+        },
+        "issuer": {
+          "type": "string",
+          "enum": [
+            "https://operations.mrnwebdesigns.com"
+          ]
+        },
+        "audience": {
+          "type": "string",
+          "enum": [
+            "https://operations.mrnwebdesigns.com/internal/mainwp/management-existing-worker-bootstrap"
+          ]
+        },
+        "bootstrap_contract_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "bootstrap_policy_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "worker_contract_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "context": {
+          "$ref": "#/$defs/context"
+        },
+        "request": {
+          "$ref": "#/$defs/dispatch_request"
+        },
+        "requested_at": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "original_expires_at": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "app_actor_id": {
+          "$ref": "#/$defs/id"
+        }
+      },
+      "required": [
+        "schema",
+        "issuer",
+        "audience",
+        "bootstrap_contract_sha256",
+        "bootstrap_policy_sha256",
+        "worker_contract_sha256",
+        "context",
+        "request",
+        "requested_at",
+        "original_expires_at",
+        "app_actor_id"
+      ],
+      "additionalProperties": false
+    },
+    "observation": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "integer",
+          "enum": [
+            2
+          ]
+        },
+        "issuer": {
+          "type": "string",
+          "enum": [
+            "https://operations.mrnwebdesigns.com"
+          ]
+        },
+        "audience": {
+          "type": "string",
+          "pattern": "^https://github\\.com/mrnwebdesigns/mrn-code-qa-runner/actions/runs/[1-9][0-9]*$",
+          "maxLength": 512
+        },
+        "bootstrap_contract_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "bootstrap_policy_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "commitment_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "worker_history_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "retained": {
+          "$ref": "#/$defs/retained_record"
+        }
+      },
+      "required": [
+        "schema",
+        "issuer",
+        "audience",
+        "bootstrap_contract_sha256",
+        "bootstrap_policy_sha256",
+        "commitment_sha256",
+        "worker_history_sha256",
+        "retained"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "encoding": "canonical-json-utf8",
+  "invariants": [
+    "The bootstrap policy separately pins the complete protected-run owner/environment policy. Current configuration cannot silently substitute it for an original.",
+    "Normative hash, lifetime, original-journal and retention rules are defined in deploy/EXISTING-WORKER-BOOTSTRAP-SEMANTICS.md. This contract alone enables no route or delivery."
+  ]
+}

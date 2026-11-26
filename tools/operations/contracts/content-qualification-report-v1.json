@@ -1,0 +1,638 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "contract_version": 1,
+  "status": "candidate additive contract for review; no endpoint registered or runtime admission",
+  "namespace": "mrn-mainwp/",
+  "frozen_dependencies": {
+    "content-qualification-v1.json": "9c8d3fa9e27d7e4aa36109ccb33d76f7babf5bc6aea4f3661fcfd6e26ab62e03"
+  },
+  "acceptance_scope": "provider-only",
+  "binding_issuance": false,
+  "production_enabled": false,
+  "registrar_purpose_prefix": "mrn-content-qualification-report-retain-v1:",
+  "qa_purpose_prefix": "mrn-content-profile-qualification-report-v1:",
+  "http_method": "POST",
+  "limits": {
+    "assertion_ttl_seconds": 300,
+    "payload_utf8_bytes": 98304,
+    "envelope_utf8_bytes": 131072,
+    "input_utf8_bytes": 262144,
+    "reports_per_job": 1,
+    "evidence_archive_compressed_bytes": 16777216,
+    "evidence_archive_expanded_bytes": 33554432,
+    "evidence_archive_member_bytes": 4400000,
+    "evidence_archive_members": 64,
+    "measurement_manifest_utf8_bytes": 98304
+  },
+  "definitions": {
+    "registrar_claims": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "$ref": "#/definitions/schema_one"
+        },
+        "issuer": {
+          "type": "string",
+          "enum": [
+            "mrn-content-qualification"
+          ]
+        },
+        "audience": {
+          "type": "string",
+          "enum": [
+            "https://wpcontrol.mrndev.io"
+          ]
+        },
+        "issued_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "expires_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "request_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "nonce": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "authorization_policy_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "catalog_epoch": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "qualification_job_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "expected_snapshot_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "requester_binding_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "site_id": {
+          "$ref": "#/definitions/site_id"
+        },
+        "site_url": {
+          "$ref": "#/definitions/site_url"
+        },
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "recipe_catalog_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "recipe_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "recipe_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "retain-report"
+          ]
+        },
+        "expected_target_revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "capture_artifact_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "qualification_report_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "profile_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "parity_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "provider_source_sha": {
+          "type": "string",
+          "minLength": 40,
+          "maxLength": 40,
+          "pattern": "^[a-f0-9]{40}$"
+        }
+      },
+      "required": [
+        "schema",
+        "issuer",
+        "audience",
+        "issued_at",
+        "expires_at",
+        "request_id",
+        "nonce",
+        "authorization_policy_sha256",
+        "catalog_epoch",
+        "qualification_job_id",
+        "expected_snapshot_sha256",
+        "requester_binding_sha256",
+        "site_id",
+        "site_url",
+        "target",
+        "recipe_catalog_sha256",
+        "recipe_id",
+        "recipe_sha256",
+        "action",
+        "expected_target_revision",
+        "capture_artifact_sha256",
+        "qualification_report_sha256",
+        "profile_sha256",
+        "parity_sha256",
+        "provider_source_sha"
+      ],
+      "additionalProperties": false
+    },
+    "qa_report_claims": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "$ref": "#/definitions/schema_one"
+        },
+        "issuer": {
+          "type": "string",
+          "enum": [
+            "mrn-qa-engine"
+          ]
+        },
+        "audience": {
+          "type": "string",
+          "enum": [
+            "https://wpcontrol.mrndev.io"
+          ]
+        },
+        "issued_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "expires_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "request_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "nonce": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "authorization_policy_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "catalog_epoch": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "qualification_job_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "expected_snapshot_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "requester_binding_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "site_id": {
+          "$ref": "#/definitions/site_id"
+        },
+        "site_url": {
+          "$ref": "#/definitions/site_url"
+        },
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "recipe_catalog_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "recipe_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "recipe_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "qualify-profile"
+          ]
+        },
+        "expected_target_revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "purpose": {
+          "type": "string",
+          "enum": [
+            "profile-qualification"
+          ]
+        },
+        "result": {
+          "type": "string",
+          "enum": [
+            "Pass"
+          ]
+        },
+        "capture_artifact_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "profile_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "parity_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "provider_source_sha": {
+          "type": "string",
+          "minLength": 40,
+          "maxLength": 40,
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "capture_template_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "mutation_template_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "parity_helper_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "run_provenance": {
+          "$ref": "#/definitions/run_provenance"
+        },
+        "mandatory_evidence": {
+          "type": "object",
+          "properties": {
+            "wordpress_api": {
+              "$ref": "#/definitions/evidence_reference"
+            },
+            "accessibility": {
+              "$ref": "#/definitions/evidence_reference"
+            },
+            "performance": {
+              "$ref": "#/definitions/evidence_reference"
+            },
+            "native_content_lifecycle": {
+              "$ref": "#/definitions/evidence_reference"
+            },
+            "capture_integrity": {
+              "$ref": "#/definitions/evidence_reference"
+            },
+            "scope_ownership": {
+              "$ref": "#/definitions/evidence_reference"
+            },
+            "parity_consistency": {
+              "$ref": "#/definitions/evidence_reference"
+            },
+            "source_integrity": {
+              "$ref": "#/definitions/evidence_reference"
+            }
+          },
+          "required": [
+            "wordpress_api",
+            "accessibility",
+            "performance",
+            "native_content_lifecycle",
+            "capture_integrity",
+            "scope_ownership",
+            "parity_consistency",
+            "source_integrity"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema",
+        "issuer",
+        "audience",
+        "issued_at",
+        "expires_at",
+        "request_id",
+        "nonce",
+        "authorization_policy_sha256",
+        "catalog_epoch",
+        "qualification_job_id",
+        "expected_snapshot_sha256",
+        "requester_binding_sha256",
+        "site_id",
+        "site_url",
+        "target",
+        "recipe_catalog_sha256",
+        "recipe_id",
+        "recipe_sha256",
+        "action",
+        "expected_target_revision",
+        "purpose",
+        "result",
+        "capture_artifact_sha256",
+        "profile_sha256",
+        "parity_sha256",
+        "provider_source_sha",
+        "capture_template_sha256",
+        "mutation_template_sha256",
+        "parity_helper_sha256",
+        "run_provenance",
+        "mandatory_evidence"
+      ],
+      "additionalProperties": false
+    },
+    "run_provenance": {
+      "type": "object",
+      "properties": {
+        "repository": {
+          "type": "string",
+          "enum": [
+            "mrnwebdesigns/mrn-code-qa-runner"
+          ]
+        },
+        "ref": {
+          "type": "string",
+          "enum": [
+            "refs/heads/main"
+          ]
+        },
+        "run_id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "run_attempt": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "workflow_path": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^\\.github/workflows/[a-z0-9._-]+\\.ya?ml$"
+        },
+        "workflow_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "runner_source_sha": {
+          "type": "string",
+          "minLength": 40,
+          "maxLength": 40,
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "engine_commit": {
+          "type": "string",
+          "minLength": 40,
+          "maxLength": 40,
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "engine_configuration_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "runtime_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "runtime_url": {
+          "$ref": "#/definitions/site_url"
+        }
+      },
+      "required": [
+        "repository",
+        "ref",
+        "run_id",
+        "run_attempt",
+        "workflow_path",
+        "workflow_sha256",
+        "runner_source_sha",
+        "engine_commit",
+        "engine_configuration_sha256",
+        "runtime_sha256",
+        "runtime_url"
+      ],
+      "additionalProperties": false
+    },
+    "evidence_reference": {
+      "type": "object",
+      "properties": {
+        "artifact_id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "artifact_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "manifest_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "measurement_sha256": {
+          "$ref": "#/definitions/hash"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "artifact_sha256",
+        "manifest_sha256",
+        "measurement_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "input": {
+      "type": "object",
+      "properties": {
+        "signed_request": {
+          "$ref": "#/definitions/signed_envelope"
+        },
+        "signed_qa_report": {
+          "$ref": "#/definitions/signed_envelope"
+        }
+      },
+      "required": [
+        "signed_request",
+        "signed_qa_report"
+      ],
+      "additionalProperties": false
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "qualification_job_id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "qualification_report_sha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "retained": {
+          "type": "boolean",
+          "enum": [
+            true
+          ]
+        },
+        "acceptance_scope": {
+          "type": "string",
+          "enum": [
+            "provider-only"
+          ]
+        },
+        "qualification_binding": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "qualification_job_id",
+        "qualification_report_sha256",
+        "retained",
+        "acceptance_scope",
+        "qualification_binding"
+      ],
+      "additionalProperties": false
+    },
+    "schema_one": {
+      "type": "integer",
+      "enum": [
+        1
+      ]
+    },
+    "uuid": {
+      "type": "string",
+      "minLength": 36,
+      "maxLength": 36,
+      "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+    },
+    "hash": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64,
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "site_id": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "site_url": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "^https://[a-z0-9.-]+\\.example\\.invalid(?:/[A-Za-z0-9._~%/@:+-]+)*$"
+    },
+    "target": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "post"
+          ]
+        },
+        "post_type": {
+          "type": "string",
+          "enum": [
+            "post",
+            "page"
+          ]
+        },
+        "post_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "field": {
+          "type": "string",
+          "enum": [
+            "post_title",
+            "post_excerpt",
+            "post_content"
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "post_type",
+        "post_id",
+        "field"
+      ],
+      "additionalProperties": false
+    },
+    "signed_envelope": {
+      "type": "object",
+      "properties": {
+        "key_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "payload_base64": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 131072,
+          "pattern": "^[A-Za-z0-9+/]+={0,2}$"
+        },
+        "signature_base64": {
+          "type": "string",
+          "minLength": 88,
+          "maxLength": 88,
+          "pattern": "^[A-Za-z0-9+/]{86}==$"
+        }
+      },
+      "required": [
+        "key_id",
+        "payload_base64",
+        "signature_base64"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "ability": {
+    "name": "retain-content-qualification-report-v1",
+    "role": "protected-registrar plus independent protected QA authority",
+    "workspace_exposed": false,
+    "delegated_staff_allowed": false,
+    "input": {
+      "$ref": "#/definitions/input"
+    },
+    "output": {
+      "$ref": "#/definitions/output"
+    }
+  },
+  "mandatory_evidence_groups": [
+    "wordpress_api",
+    "accessibility",
+    "performance",
+    "native_content_lifecycle",
+    "capture_integrity",
+    "scope_ownership",
+    "parity_consistency",
+    "source_integrity"
+  ],
+  "invariants": [
+    "Pinned service and fresh registrar purpose signature cannot substitute for independent owner-pinned QA signature; QA key must differ from registrar/identity/recipe root keys.",
+    "QA qualification purpose is distinct from content-change approval receipts. Registrar claims and independently signed QA report must bind exact original job/requester/epoch/policy/revision/recipe/catalog/capture/profile/parity/source/template/helper values.",
+    "Report SHA256 is canonical qa_report_claims digest. Closed signatures/schemas/hashes alone do not qualify: independently retrieve/verify bounded artifacts and trusted run metadata before retention.",
+    "Verify actual completed run, attempt, protected ref, exact reviewed runner/workflow/engine/config/runtime sources and every mandatory runtime group against a separately reviewed owner-pinned provenance trust policy; no caller-selected service URLs, commands, sources or success flags.",
+    "GitHub artifact_sha256 hashes binary ZIP bytes. Separately enforce compressed archive, total expanded bytes, per-member bytes and member count before and during extraction; reject links/encryption/unsafe or duplicate paths/unsupported members/CRC failures. Measurement manifests alone use UTF8/canonical JSON bounds. Closed measurement schemas and reviewed workflow/provenance/evidence retrieval are a separate unimplemented contract; these limits do not make ZIPs or measurement claims admissible.",
+    "Verify artifact bytes/digests, closed runtime measurement manifests and all required measured outcomes. Missing/faked/manual/static-only/wrong-source evidence fails closed. Pass text or caller report hash alone is never admissible.",
+    "Until evidence retrieval, provenance policy and current-access propagation veto are implemented and tested, runtime admission remains closed. These schemas expose no ability.",
+    "Recheck current original requester/Directory/principal/role/current authority/source/epoch/expiry and original target revision before and under authoritative storage transaction. Retain one complete encrypted report immutably and audit attributable outcome.",
+    "No Child mutation, publication, user approval, backup replacement, consumer binding or production activation. One report per job; lost response requires exact authoritative reconciliation, never overwrite."
+  ]
+}
